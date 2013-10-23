@@ -53,39 +53,30 @@ import org.netbeans.modules.bugtracking.api.Repository;
  *
  * @author Tomas Stupka
  */
-// XXX provide commit hook support instead of addComment() and addAttachent() in Issue
-public abstract class BugtrackingConnector {
+public interface BugtrackingConnector {
 
     /**
+     * Creates a {@link Repository} instance.
      * 
-     * @param info
-     * @return 
+     * @param info repository information based on which the repository should be created
+     * 
+     * @return a {@link Repository} instance.
+     * @see BugtrackingFactory
      */
-    public abstract Repository createRepository(RepositoryInfo info);  
+    public Repository createRepository(RepositoryInfo info);  
     
     /**
-     * Creates a new repository instance.
+     * Creates a new repository instance. 
      * 
      * @return the created repository
+     * @see BugtrackingFactory
      */
-    public abstract Repository createRepository();
-
-    /**
-     * Returns an {@code IssueFinder} for the connector, or {@code null}
-     * if no {@code IssueFinder} is available.
-     * The default implementation returns {@code null}.
-     *
-     * @return  an instance of {@code IssueFinder} corresponding to this
-     *          type of bugtracker, or {@code null}
-     */
-    // XXX provide via lookup
-    public IssueFinder getIssueFinder() {
-        return null;
-    }
+    public Repository createRepository();
 
     @Retention(RetentionPolicy.SOURCE)
     @Target({ElementType.TYPE, ElementType.METHOD})
     public @interface Registration {    
+        
         /**
          * Returns a unique ID for this connector
          *
@@ -116,9 +107,10 @@ public abstract class BugtrackingConnector {
         
         /**
          * Determines if this connector provides the possibility for a user 
-         * to create, edit or removal of repositories.<br/>
+         * to create, edit or removal of repositories.
+         * <p>
          * Typically the expected value for a connector is to return <code>true</code>. 
-         * 
+         * </p>
          * @return <code>true</code> if this connector provides the possibility 
          *         to create, edit or removal of repositories. Otherwise <code>false</code>.
          */

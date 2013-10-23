@@ -51,12 +51,70 @@ class InterpXTerm extends InterpProtoANSIX {
 
     protected static class InterpTypeXTerm extends InterpTypeProtoANSIX {
 
+	protected final State st_esc_lb_gt = new State("esc_lb_gt");	// NOI18N
 	protected final Actor act_done_collect_escbs = new ACT_DONE_COLLECT_ESCBS();
 
 	protected InterpTypeXTerm() {
+	    st_esc_lb.setAction('>', st_esc_lb_gt, act_reset_number);
+	    for (char c = '0'; c <= '9'; c++)
+		st_esc_lb_gt.setAction(c, st_esc_lb_gt, act_remember_digit);
+	    st_esc_lb_gt.setAction(';', st_esc_lb_gt, act_push_number);
+	    st_esc_lb_gt.setAction('T', st_base, new ACT_XTERM_T());
+	    st_esc_lb_gt.setAction('c', st_base, new ACT_XTERM_c());
+	    st_esc_lb_gt.setAction('m', st_base, new ACT_XTERM_m());
+	    st_esc_lb_gt.setAction('n', st_base, new ACT_XTERM_n());
+	    st_esc_lb_gt.setAction('p', st_base, new ACT_XTERM_p());
+	    st_esc_lb_gt.setAction('t', st_base, new ACT_XTERM_t());
+
 	    st_esc_rb_N.setAction((char) 27, st_wait, act_nop);         // ESC
 	    st_wait.setAction('\\', st_base, act_done_collect_escbs);
 	}
+
+	static final class ACT_XTERM_T implements Actor {
+            @Override
+	    public String action(AbstractInterp ai, char c) {
+                return "ACT_XTERM_T: UNIMPLEMENTED";  // NOI18N
+            }
+        }
+
+	static final class ACT_XTERM_c implements Actor {
+            @Override
+	    public String action(AbstractInterp ai, char c) {
+                // first number: 0 for vt100, 1 for vt220
+                // second number: firmware version / patch# 
+                // third number: always 0
+                ai.ops.op_send_chars("\033[>0;0;0c");   // NOI18N
+                return null;
+            }
+        }
+
+	static final class ACT_XTERM_m implements Actor {
+            @Override
+	    public String action(AbstractInterp ai, char c) {
+                return "ACT_XTERM_m: UNIMPLEMENTED";  // NOI18N
+            }
+        }
+
+	static final class ACT_XTERM_n implements Actor {
+            @Override
+	    public String action(AbstractInterp ai, char c) {
+                return "ACT_XTERM_n: UNIMPLEMENTED";  // NOI18N
+            }
+        }
+
+	static final class ACT_XTERM_p implements Actor {
+            @Override
+	    public String action(AbstractInterp ai, char c) {
+                return "ACT_XTERM_p: UNIMPLEMENTED";  // NOI18N
+            }
+        }
+
+	static final class ACT_XTERM_t implements Actor {
+            @Override
+	    public String action(AbstractInterp ai, char c) {
+                return "ACT_XTERM_t: UNIMPLEMENTED";  // NOI18N
+            }
+        }
 
 	static final class ACT_DONE_COLLECT_ESCBS implements Actor {
             @Override
@@ -126,6 +184,53 @@ class InterpXTerm extends InterpProtoANSIX {
     @Override
     public void reset() {
 	super.reset();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected boolean dispatchAttr(AbstractInterp ai, int n) {
+        switch (n) {
+            case 0:
+            case 1:
+            case 4:
+            case 5:
+            case 7:
+            case 8:
+
+            case 22:
+            case 24:
+            case 25:
+            case 27:
+            case 28:
+
+            case 30:
+            case 31:
+            case 32:
+            case 33:
+            case 34:
+            case 35:
+            case 36:
+            case 37:
+
+            case 39:
+
+            case 40:
+            case 41:
+            case 42:
+            case 43:
+            case 44:
+            case 45:
+            case 46:
+            case 47:
+
+            case 49:
+                ai.ops.op_attr(n);
+                return true;
+            default:
+                return false;
+        }
     }
 
     private void setup() {

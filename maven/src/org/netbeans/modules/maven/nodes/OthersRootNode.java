@@ -54,6 +54,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.maven.LogicalViewProviderImpl;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import static org.netbeans.modules.maven.nodes.Bundle.*;
@@ -79,6 +80,8 @@ class OthersRootNode extends AnnotatedAbstractNode {
     private FileObject file;
     private static final String SHOW_AS_PACKAGES = "show.as.packages"; //NOI18N
     private static final String PREF_RESOURCES_UI = "org/netbeans/modules/maven/resources/ui"; //NOI18N
+    private static final @StaticResource String OTHERS_BADGE = "org/netbeans/modules/maven/others-badge.png";
+    
     
     @Messages({"LBL_Other_Test_Sources=Other Test Sources", "LBL_Other_Sources=Other Sources"})
     OthersRootNode(NbMavenProjectImpl mavproject, boolean testResource, FileObject fo) {
@@ -102,7 +105,7 @@ class OthersRootNode extends AnnotatedAbstractNode {
     }
     
     private Image getIcon(boolean opened) {
-        Image badge = ImageUtilities.loadImage("org/netbeans/modules/maven/others-badge.png", true); //NOI18N
+        Image badge = ImageUtilities.loadImage(OTHERS_BADGE, true); //NOI18N
         return ImageUtilities.mergeImages(NodeUtils.getTreeFolderIcon(opened), badge, 8, 8);
     }
 

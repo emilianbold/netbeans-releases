@@ -45,12 +45,17 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -64,6 +69,7 @@ import org.netbeans.modules.web.jsf.JSFUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
 import org.netbeans.modules.web.jsfapi.api.NamespaceUtils;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -142,27 +148,34 @@ public class TemplateIterator implements TemplateWizard.Iterator {
                     JSFConfigUtilities.extendJsfFramework(dir, false);
                 }
                 final JSFVersion jsfVersion = JSFVersion.forWebModule(wm) != null ? JSFVersion.forWebModule(wm) : JSFVersion.JSF_2_2;
-                String folderName = jsfVersion.isAtLeast(JSFVersion.JSF_2_0) ? CSS_FOLDER2 : CSS_FOLDER;
-                FileObject cssFolder = docBase.getFileObject(folderName);
-                if (cssFolder == null) {
-                    cssFolder = FileUtil.createFolder(docBase, folderName);
+                FileObject cssFolder = handleCssFolderCreation(jsfVersion, docBase);
+                return createTemplate(wiz, df, targetName, cssFolder, jsfVersion);
+            } else {
+                // get the JSF version
+                Project project = Templates.getProject(wiz);
+                JSFVersion jsfVersion = JSFVersion.forProject(project);
+                jsfVersion = jsfVersion == null ? JSFVersion.JSF_2_2 : jsfVersion;
+
+                String folderName = (jsfVersion == null || jsfVersion.isAtLeast(JSFVersion.JSF_2_0)) ? CSS_FOLDER2 : CSS_FOLDER;
+                Sources sources = ProjectUtils.getSources(project);
+                SourceGroup[] sourceGroups = sources.getSourceGroups("java"); //NOII18N
+                if (sourceGroups.length > 0) {
+                    // create META-INF folder
+                    FileObject root = sourceGroups[0].getRootFolder();
+                    FileObject metaInf = root.getFileObject("META-INF");
+                    if (metaInf == null) {
+                        metaInf = FileUtil.createFolder(root, "META-INF");
+                    }
+
+                    // css folder
+                    FileObject cssFolder = handleCssFolderCreation(jsfVersion, metaInf);
+
+                    // template creation
+                    return createTemplate(wiz, df, targetName, cssFolder, jsfVersion);
                 }
-
-                CreateTemplateAction createTemplateAction = new CreateTemplateAction(
-                        templatePanel.getComponent(),
-                        Templates.getTargetName(wiz),
-                        Templates.getTargetFolder(wiz),
-                        cssFolder,
-                        jsfVersion);
-                df.getPrimaryFile().getFileSystem().runAtomicAction(createTemplateAction);
-
-                FileObject target = df.getPrimaryFile().getFileObject(targetName, XHTML_EXT);
-                DataObject dob = DataObject.find(target);
-                JSFPaletteUtilities.reformat(dob);
-                return Collections.singleton(dob);
             }
         }
-        return Collections.EMPTY_SET;
+        return Collections.emptySet();
     }
 
     @Override
@@ -289,6 +302,30 @@ public class TemplateIterator implements TemplateWizard.Iterator {
             }
         }
         return res;
+    }
+
+    private FileObject handleCssFolderCreation(JSFVersion jsfVersion, FileObject rootDir) throws IOException {
+        String folderName = (jsfVersion == null || jsfVersion.isAtLeast(JSFVersion.JSF_2_0)) ? CSS_FOLDER2 : CSS_FOLDER;
+        FileObject cssFolder = rootDir.getFileObject(folderName);
+        if (cssFolder == null) {
+            cssFolder = FileUtil.createFolder(rootDir, folderName);
+        }
+        return cssFolder;
+    }
+
+    private Set<DataObject> createTemplate(TemplateWizard wiz, DataFolder df, String targetName, FileObject cssFolder, JSFVersion jsfVersion) throws IOException {
+        CreateTemplateAction createTemplateAction = new CreateTemplateAction(
+                templatePanel.getComponent(),
+                Templates.getTargetName(wiz),
+                Templates.getTargetFolder(wiz),
+                cssFolder,
+                jsfVersion);
+        df.getPrimaryFile().getFileSystem().runAtomicAction(createTemplateAction);
+
+        FileObject target = df.getPrimaryFile().getFileObject(targetName, XHTML_EXT);
+        DataObject dob = DataObject.find(target);
+        JSFPaletteUtilities.reformat(dob);
+        return Collections.singleton(dob);
     }
 
     /*package*/ static class CreateTemplateAction implements FileSystem.AtomicAction {

@@ -45,6 +45,7 @@
 package org.netbeans.modules.bugtracking.issuetable;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -74,12 +75,6 @@ public abstract class Filter {
     public static Filter getNewFilter() {
         return getFilter(null, NewFilter.class);
     }
-    public static Filter getObsoleteDateFilter(QueryImpl query) {
-        return getFilter(query, ObsoleteDateFilter.class);
-    }
-    public static Filter getAllButObsoleteDateFilter(QueryImpl query) {
-        return getFilter(query, AllButObsoleteDateFilter.class);
-    }
 
     private static <T extends Filter> Filter getFilter(QueryImpl query, Class<T> clazz) {
         Map<Class, Filter> filters = queryToFilter.get(query);
@@ -90,15 +85,19 @@ public abstract class Filter {
         Filter filter = filters.get(clazz);
         if(filter == null) {
             try {
-                Constructor<T> c;
-                if(query == null) {
-                    c = clazz.getDeclaredConstructor();
-                    filter = c.newInstance();
-                } else {
-                    c = clazz.getDeclaredConstructor(QueryImpl.class);
-                    filter = c.newInstance(query);
-                }
-            } catch (Exception ex) {
+                Constructor<T> c = clazz.getDeclaredConstructor();
+                filter = c.newInstance();
+            } catch (NoSuchMethodException ex) {
+                BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+            } catch (SecurityException ex) {
+                BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+            } catch (InstantiationException ex) {
+                BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+            } catch (IllegalAccessException ex) {
+                BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+            } catch (IllegalArgumentException ex) {
+                BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+            } catch (InvocationTargetException ex) {
                 BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
             }            
             filters.put(clazz, filter);
@@ -107,36 +106,29 @@ public abstract class Filter {
     }
 
     private static class AllFilter extends Filter {
-        private final QueryImpl query;
-        AllFilter(QueryImpl query) {
-            this.query = query;
-        }
+        AllFilter() { }
         @Override
         public String getDisplayName() {
             return NbBundle.getMessage(Filter.class, "LBL_AllIssuesFilter");     // NOI18N
         }
         @Override
         public boolean accept(IssueNode node) {
-            return contains(query, node.getIssue().getID());
+            return true;
         }
     }
     private static class NotSeenFilter extends Filter {
-        private final QueryImpl query;
-        NotSeenFilter(QueryImpl query) {
-            this.query = query;
-        }
+        NotSeenFilter() { }
         @Override
         public String getDisplayName() {
             return NbBundle.getMessage(Filter.class, "LBL_UnseenIssuesFilter");  // NOI18N
         }
         @Override
         public boolean accept(IssueNode node) {
-            return node.getIssue().getStatus() != IssueStatusProvider.Status.SEEN && contains(query, node.getIssue().getID());
+            return node.getIssue().getStatus() != IssueStatusProvider.Status.SEEN;
         }
     }
     private static class NewFilter extends Filter {
-        NewFilter() {
-        }
+        NewFilter() { }
         @Override
         public String getDisplayName() {
             return NbBundle.getMessage(Filter.class, "LBL_NewIssuesFilter");     // NOI18N
@@ -145,38 +137,6 @@ public abstract class Filter {
         public boolean accept(IssueNode node) {
             return node.getIssue().getStatus() == IssueStatusProvider.Status.INCOMING_NEW;
         }
-    }
-    private static class ObsoleteDateFilter extends Filter {
-        private final QueryImpl query;
-        ObsoleteDateFilter(QueryImpl query) {
-            this.query = query;
-        }
-        @Override
-        public String getDisplayName() {
-            return NbBundle.getMessage(Filter.class, "LBL_ObsoleteIssuesFilter");// NOI18N
-        }
-        @Override
-        public boolean accept(IssueNode node) {
-            return !contains(query, node.getIssue().getID());
-        }
-    }
-    private static class AllButObsoleteDateFilter extends Filter {
-        private final QueryImpl query;
-        AllButObsoleteDateFilter(QueryImpl query) {
-            this.query = query;
-        }
-        @Override
-        public String getDisplayName() {
-            return NbBundle.getMessage(Filter.class, "LBL_AllButObsoleteIssuesFilter");  // NOI18N
-        }
-        @Override
-        public boolean accept(IssueNode node) {
-            return contains(query, node.getIssue().getID());
-        }
-    }
-    
-    private static boolean contains(QueryImpl query, String id) {
-        return query.contains(id);
     }
     
 }

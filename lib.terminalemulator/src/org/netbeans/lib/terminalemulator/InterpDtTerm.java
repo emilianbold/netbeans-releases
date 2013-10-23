@@ -127,6 +127,52 @@ class InterpDtTerm extends InterpProtoANSIX {
 	super.reset();
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected boolean dispatchAttr(AbstractInterp ai, int n) {
+        switch (n) {
+            case 0:
+            case 1:
+            case 2:
+            case 4:
+            case 5:
+            case 7:
+            case 8:
+
+            case 22:
+            case 24:
+            case 25:
+            case 27:
+            case 28:
+
+            case 30:
+            case 31:
+            case 32:
+            case 33:
+            case 34:
+            case 35:
+            case 36:
+            case 37:
+            case 39:
+
+            case 40:
+            case 41:
+            case 42:
+            case 43:
+            case 44:
+            case 45:
+            case 46:
+            case 47:
+            case 49:
+                ai.ops.op_attr(n);
+                return true;
+            default:
+                return false;
+        }
+    }
+
     private void setup() {
 	state = type.st_base;
     }

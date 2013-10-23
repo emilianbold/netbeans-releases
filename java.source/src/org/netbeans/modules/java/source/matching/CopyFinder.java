@@ -54,6 +54,7 @@ import com.sun.source.tree.IfTree;
 import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -71,7 +72,6 @@ import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
-import com.sun.source.tree.TreeVisitor;
 import com.sun.source.tree.TryTree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
@@ -104,6 +104,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -363,11 +364,21 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
 
                 if (designed != null && designed.getKind() != TypeKind.ERROR) {
                     TypeMirror real = info.getTrees().getTypeMirror(currentPath);
-
-                    if (real != null && !IGNORE_KINDS.contains(real.getKind()))
-                        bind = info.getTypes().isAssignable(real, designed);
-                    else
+                    if (real != null && !IGNORE_KINDS.contains(real.getKind())) {
+                        // special hack: if the designed type is DECLARED (assuming a boxed primitive) and the real type is 
+                        // not DECLARED or is null (assuming a real primitive), do not treat them as assignable.
+                        // this will stop matching constraint to boxed types against primitive subexpressions. Exclude j.l.Object
+                        // which will allow to match raw type parameters
+                        if (designed.getKind() == TypeKind.DECLARED &&
+                            real.getKind().ordinal() <= TypeKind.DOUBLE.ordinal() &&
+                            !((TypeElement)((DeclaredType)designed).asElement()).getQualifiedName().contentEquals("java.lang.Object")) { //NOI18N
+                            bind = false;
+                        } else {
+                            bind = info.getTypes().isAssignable(real, designed);
+                        }
+                    } else {
                         bind = false;
+                    }
                 } else {
                     bind = designed == null;
                 }
@@ -1542,7 +1553,34 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
         }
         return scan(node.getBody(), t.getBody(), p);
     }
-    
+
+    @Override
+    public Boolean visitMemberReference(MemberReferenceTree node, TreePath p) {
+        if (p == null)
+            return super.visitMemberReference(node, p);
+
+        MemberReferenceTree t = (MemberReferenceTree) p.getLeaf();
+        
+        if (!node.getMode().equals(t.getMode()))
+            return false;
+
+        if (!scan(node.getQualifierExpression(), t.getQualifierExpression(), p))
+            return false;
+
+        String ident = t.getName().toString();
+
+        if (ident.startsWith("$")) { //XXX: there should be a utility method for this check
+            if (bindState.variables2Names.containsKey(ident)) {
+                return node.getName().contentEquals(bindState.variables2Names.get(ident));
+            } else {
+                bindState.variables2Names.put(ident, node.getName().toString());
+            }
+            return true;
+        }
+
+        return node.getName().contentEquals(t.getName());
+    }
+
 //
 //    public Boolean visitOther(Tree node, TreePath p) {
 //        throw new UnsupportedOperationException("Not supported yet.");

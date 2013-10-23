@@ -42,9 +42,10 @@
 package org.netbeans.modules.maven.hints.ui.nodes;
 
 import javax.swing.Action;
+import org.netbeans.api.annotations.common.StaticResource;
 
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
-import org.netbeans.modules.maven.spi.nodes.NodeUtils;
+import org.netbeans.modules.maven.spi.IconResources;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.ImageUtilities;
@@ -55,6 +56,8 @@ import org.openide.util.ImageUtilities;
  * @author Anuradha
  */
 public class VersionNode extends AbstractNode {
+    private static final @StaticResource String SOURCE = "org/netbeans/modules/maven/hints/DependencySrcIncluded.png";
+    private static final @StaticResource String JAVADOC = "org/netbeans/modules/maven/hints/DependencyJavadocIncluded.png";
 
     private final NBVersionInfo nbvi;
     private final boolean hasJavadoc;
@@ -77,7 +80,7 @@ public class VersionNode extends AbstractNode {
                     
                     );
         
-        setIconBaseWithExtension(NodeUtils.ICON_DEPENDENCY_JAR);
+        setIconBaseWithExtension(IconResources.ICON_DEPENDENCY_JAR);
     }
 
     @Override
@@ -91,12 +94,12 @@ public class VersionNode extends AbstractNode {
         java.awt.Image retValue = super.getIcon(param);
         if (hasJavadoc) {
             retValue = ImageUtilities.mergeImages(retValue,
-                    ImageUtilities.loadImage("org/netbeans/modules/maven/hints/DependencyJavadocIncluded.png"),//NOI18N
+                    ImageUtilities.loadImage(JAVADOC),//NOI18N
                     12, 12);
         }
         if (hasSources) {
             retValue = ImageUtilities.mergeImages(retValue,
-                    ImageUtilities.loadImage("org/netbeans/modules/maven/hints/DependencySrcIncluded.png"),//NOI18N
+                    ImageUtilities.loadImage(SOURCE),//NOI18N
                     12, 8);
         }
         return retValue;

@@ -69,7 +69,6 @@ import org.netbeans.modules.javaee.project.api.JavaEEProjectSettings;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.modules.maven.j2ee.BaseEEModuleImpl;
 import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation2;
@@ -396,10 +395,7 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
             webappFO = getDocumentBase();
         } else {
             MavenProject mavenProject = mavenproject().getMavenProject();
-            String webappLocation = PluginPropertyUtils.getPluginProperty(project,
-                Constants.GROUP_APACHE_PLUGINS,
-                Constants.PLUGIN_WAR,
-                "webappDirectory", "war", null); //NOI18N
+            String webappLocation = WebProjectUtils.getPluginProperty(project, "webappDirectory"); // NOI18N
             if (webappLocation == null) {
                 webappLocation = mavenProject.getBuild().getDirectory() + File.separator + mavenProject.getBuild().getFinalName();
             }

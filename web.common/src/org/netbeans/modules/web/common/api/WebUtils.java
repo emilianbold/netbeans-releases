@@ -52,6 +52,7 @@ import java.net.NetworkInterface;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -103,13 +104,13 @@ public class WebUtils {
     public static FileReference resolveToReference(FileObject source, String importedFileName) {
         Parameters.notNull("source", source);
         Parameters.notNull("importedFileName", importedFileName);
-        
+
         //possibly remove the query part of the link
         int qmIndex = importedFileName.indexOf("?"); //NOI18N
         if(qmIndex >= 0) {
             importedFileName = importedFileName.substring(0, qmIndex);
         }
-        
+
         try {
             URI u = new URI(importedFileName);
             File file = null;
@@ -135,7 +136,7 @@ public class WebUtils {
                     //relative to the current file's folder - let's resolve
                     FileObject parent = source.getParent();
                     if(parent != null) {
-                        FileObject resolvedFileObject = parent.getFileObject(importedFileName);
+                        FileObject resolvedFileObject = parent.getFileObject(URLDecoder.decode(importedFileName, "UTF-8")); //NOI18N
                         //test if the link is resolved to something else than the parent file,
                         //which may happen at least in the case of empty importedFileName string
                         if (resolvedFileObject != null &&
@@ -385,7 +386,7 @@ public class WebUtils {
         }
         return null;
     }
-    
+
     /**
      * Converts given URL into a String with all values decoded.
      */
@@ -431,21 +432,21 @@ public class WebUtils {
         }
         return sb.toString();
     }
-    
+
     private static final byte COLOR_ICON_SIZE = 16; //px
     private static final byte COLOR_RECT_SIZE = 10; //px
     private static String WHITE_COLOR_HEX_CODE = "ffffff"; //NOI18N
     private static Map<String, ImageIcon> ICONS_WEAK_CACHE = new WeakHashMap<String, ImageIcon>();
-    
+
     /**
      * Creates a custom icon according to the given color code.
-     * 
-     * Creates a 16x16 pixels icon with black border and the inner area filled 
+     *
+     * Creates a 16x16 pixels icon with black border and the inner area filled
      * with the color of the given color code or white with diagonal black line
      * if the color code is null.
-     * 
+     *
      * The implementation caches the created icons weakly by their color codes.
-     * 
+     *
      * @since 1.24
      * @param colorCode 3 or 6 digits hex color code (examples: aabbcc, #ff0012). May or may not start with hash char.
      * @return an instance of ImageIcon.
@@ -455,15 +456,15 @@ public class WebUtils {
             //strip the leading hash
             colorCode = colorCode.substring(1);
         }
-        
+
         ImageIcon icon = ICONS_WEAK_CACHE.get(colorCode);
         if(icon == null) {
             icon = _createColorIcon(colorCode);
             ICONS_WEAK_CACHE.put(colorCode, icon);
         }
         return icon;
-    }    
-    
+    }
+
     private static ImageIcon _createColorIcon(String colorCode) {
         BufferedImage i = new BufferedImage(COLOR_ICON_SIZE, COLOR_ICON_SIZE, BufferedImage.TYPE_4BYTE_ABGR);
         Graphics g = i.createGraphics();
@@ -516,10 +517,10 @@ public class WebUtils {
 
         return new ImageIcon(i);
     }
-    
+
     /**
      * Returns IP address of localhost in local network
-     * @return 
+     * @return
      */
     public static InetAddress getLocalhostInetAddress() {
         try {

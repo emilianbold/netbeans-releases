@@ -81,24 +81,25 @@ public class FruchtermanReingoldLayout extends SceneLayout {
         this.scene = scene;
         init();
         this.panel = panel;
+
     }
     
     public @Override void performLayout() {
         performLayout(true);
-        scene.validate();
-        Rectangle rectangle = new Rectangle (0, 0, 1, 1);
-        for (Widget widget : scene.getChildren()) {
-            Rectangle childBounds = widget.getBounds();
-            if (childBounds == null) {
-                continue;
-            }
-            rectangle = rectangle.union(widget.convertLocalToScene(childBounds));
-        }
-        Dimension dim = rectangle.getSize ();
-        Dimension viewDim = panel.getViewportBorderBounds ().getSize ();
-        double zoom = Math.min ((float) viewDim.width / dim.width, (float) viewDim.height / dim.height);
-        scene.setZoomFactor (Math.min(zoom, 1));
-        scene.validate();
+//        scene.validate();
+//        Rectangle rectangle = new Rectangle (0, 0, 1, 1);
+//        for (Widget widget : scene.getChildren()) {
+//            Rectangle childBounds = widget.getBounds();
+//            if (childBounds == null) {
+//                continue;
+//            }
+//            rectangle = rectangle.union(widget.convertLocalToScene(childBounds));
+//        }
+//        Dimension dim = rectangle.getSize ();
+//        Dimension viewDim = panel.getViewportBorderBounds ().getSize ();
+//        double zoom = Math.min ((float) viewDim.width / dim.width, (float) viewDim.height / dim.height);
+//        scene.setZoomFactor (Math.min(zoom, 1));
+//        scene.validate();
     }
     
     private void performLayout(boolean finish) {
@@ -180,7 +181,11 @@ public class FruchtermanReingoldLayout extends SceneLayout {
             Widget wid = scene.findWidget(n);
             Point point = new Point();
             point.setLocation(n.locX, n.locY);
-            wid.setPreferredLocation(point);
+            if (scene.isAnimated()) {
+                scene.getSceneAnimator().animatePreferredLocation(wid, point);
+            } else {
+                wid.setPreferredLocation(point);
+            }
         }
     }
     

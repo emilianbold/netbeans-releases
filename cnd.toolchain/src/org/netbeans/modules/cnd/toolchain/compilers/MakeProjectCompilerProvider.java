@@ -92,13 +92,13 @@ public class MakeProjectCompilerProvider extends CompilerProvider {
             }
         } else /* if (flavor.isGnuCompiler()) */ { // Assume GNU (makeproject system doesn't handle Unknown)
            if (kind == PredefinedToolKind.CCompiler) {
-               if ("MSVC".equals(flavor.toString())) { // NOI18N
+               if ("MSVC".equals(flavor.getToolchainDescriptor().getName())) { // NOI18N
                    return MsvcCompiler.create(env, flavor, kind, name, displayName, path);
                } else {
                    return GNUCCompiler.create(env, flavor, kind, name, displayName, path);
                }
            } else if (kind == PredefinedToolKind.CCCompiler) {
-               if ("MSVC".equals(flavor.toString())) { // NOI18N
+               if ("MSVC".equals(flavor.getToolchainDescriptor().getName())) { // NOI18N
                    return new MsvcCompiler(env, flavor, kind, name, displayName, path);
                } else {
                    return GNUCCCompiler.create(env, flavor, kind, name, displayName, path);

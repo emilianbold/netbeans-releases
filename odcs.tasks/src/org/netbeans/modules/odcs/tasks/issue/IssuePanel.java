@@ -2786,7 +2786,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             public void run() {
                 boolean cleared = false;
                 try {
-                    cleared = issue.cancelChanges();
+                    cleared = issue.discardLocalEdits();
                 } finally {
                     final boolean fCleared = cleared;
                     EventQueue.invokeLater(new Runnable() {

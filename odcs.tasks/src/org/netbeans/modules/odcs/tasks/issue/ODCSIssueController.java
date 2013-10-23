@@ -43,10 +43,11 @@
 package org.netbeans.modules.odcs.tasks.issue;
 
 import java.awt.Font;
+import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.UIManager;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.openide.util.HelpCtx;
 
@@ -54,8 +55,8 @@ import org.openide.util.HelpCtx;
  *
  * @author Tomas Stupka, Jan Stola
  */
-public class ODCSIssueController extends BugtrackingController {
-    private JComponent component;
+public class ODCSIssueController implements IssueController {
+    private final JComponent component;
     private final IssuePanel panel;
 
     public ODCSIssueController(ODCSIssue issue) {
@@ -100,21 +101,32 @@ public class ODCSIssueController extends BugtrackingController {
         return new HelpCtx("org.netbeans.modules.odcs.tasks.issue.ODCSIssue"); // NOI18N
     }
 
-    @Override
-    public boolean isValid() {
-        return true; // PENDING
-    }
-
-    @Override
-    public void applyChanges() {
-    }
-
     void refreshViewData(boolean force) {
         panel.reloadFormInAWT(force);
     }
 
     void modelStateChanged (boolean modelDirty, boolean modelHasLocalChanges) {
         panel.modelStateChanged(modelDirty, modelHasLocalChanges);
+    }
+
+    @Override
+    public boolean saveChanges() {
+        return true;
+    }
+
+    @Override
+    public boolean discardUnsavedChanges() {
+        return true;
+    }
+
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        
     }
 
 }

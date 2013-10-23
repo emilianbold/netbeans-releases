@@ -59,6 +59,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.ParseException;
@@ -108,7 +109,7 @@ import org.openide.util.RequestProcessor.Task;
  *
  * @author Tomas Stupka
  */
-public class ODCSQueryController extends QueryController implements ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener {
+public class ODCSQueryController implements QueryController, ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener {
 
     protected QueryPanel panel;
 
@@ -137,7 +138,7 @@ public class ODCSQueryController extends QueryController implements ItemListener
         this.modifiable = modifiable;
         this.criteria = criteria;
         
-        issueTable = new IssueTable<ODCSQuery>(ODCSUtil.getRepository(repository), query, query.getColumnDescriptors(), false);
+        issueTable = new IssueTable<ODCSQuery>(ODCSUtil.getRepository(repository), query, query.getColumnDescriptors());
         setupRenderer(issueTable);
         panel = new QueryPanel(issueTable.getComponent());
 
@@ -201,11 +202,16 @@ public class ODCSQueryController extends QueryController implements ItemListener
             querySemaphore.acquireUninterruptibly();
             postPopulate(false);
         } else {
-            hideModificationFields();
+            panel.hideModificationFields();
             populated = true;
         }
     }
 
+    @Override
+    public boolean providesMode(QueryMode mode) {
+        return modifiable || mode != QueryMode.EDIT;
+    }
+    
     private void setupRenderer(IssueTable issueTable) {
         QueryCellRenderer renderer = new QueryCellRenderer(query, issueTable, (QueryTableCellRenderer)issueTable.getRenderer());
         issueTable.setRenderer(renderer);
@@ -251,7 +257,8 @@ public class ODCSQueryController extends QueryController implements ItemListener
     }
 
     @Override
-    public JComponent getComponent() {
+    public JComponent getComponent(QueryMode mode) {
+        setMode(mode);
         return panel;
     }
 
@@ -260,24 +267,18 @@ public class ODCSQueryController extends QueryController implements ItemListener
         return new HelpCtx("org.netbeans.modules.odcs.tasks.query.ODCSQueryController"); // NOI18N
     }
 
-    @Override
     public void setMode(QueryMode mode) {
         switch(mode) {
             case EDIT:
                 onModify();
                 break;            
-            case SHOW_ALL:
+            case VIEW:
                 onCancelChanges();
                 selectFilter(issueTable.getAllFilter());
-                break;
-            case SHOW_NEW_OR_CHANGED:
-                onCancelChanges();
-                selectFilter(issueTable.getNewOrChangedFilter());
                 break;
             default: 
                 throw new IllegalStateException("Unsupported mode " + mode);
         }
-
     }
         
     protected ODCSRepository getRepository() {
@@ -374,16 +375,22 @@ public class ODCSQueryController extends QueryController implements ItemListener
         }
     }
 
-    protected void enableFields(boolean bl) {
-        // set all non parameter fields
-        panel.enableFields(bl);
-        if(!modifiable) {
-            hideModificationFields();
-        }
-        // set the parameter fields
-        for (QueryParameters.Parameter qp : parameters.getAll()) {
-            qp.setEnabled(bl);
-        }
+    protected void enableFields(final boolean bl) {
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                // set all non parameter fields
+                panel.enableFields(bl);
+                if (!modifiable) {
+                    panel.hideModificationFields();
+                }
+                // set the parameter fields
+                for (QueryParameters.Parameter qp : parameters.getAll()) {
+                    qp.setEnabled(bl);
+                }
+            }
+        };
+        ODCSUtil.runInAwt(r);
     }
 
     protected void selectFirstProduct() {
@@ -542,7 +549,8 @@ public class ODCSQueryController extends QueryController implements ItemListener
                     }
                 }
                 assert name != null;
-                save(name);
+                final String fname = name;
+                save(fname);
                 ODCS.LOG.fine("on save finnish");
 
                 if(refresh) {
@@ -625,11 +633,7 @@ public class ODCSQueryController extends QueryController implements ItemListener
                     setIssueCount(issueCount);
                 }
             };
-            if(EventQueue.isDispatchThread()) {
-                r.run();
-            } else {
-                EventQueue.invokeLater(r);
-            }
+            ODCSUtil.runInAwt(r);
         }
         issueTable.setFilter(filter);
     }
@@ -929,15 +933,6 @@ public class ODCSQueryController extends QueryController implements ItemListener
         }
     }
 
-    private void hideModificationFields () {
-        // can't change the controllers data
-        // so alwasy keep those fields disabled
-        panel.modifyButton.setEnabled(false);
-        panel.removeButton.setEnabled(false);
-        panel.refreshConfigurationButton.setEnabled(false);
-        panel.cloneQueryButton.setEnabled(false);
-    }
-
     String getQueryString() {
         String queryString = null;
         synchronized(CRITERIA_LOCK) {
@@ -961,6 +956,26 @@ public class ODCSQueryController extends QueryController implements ItemListener
         }
         ODCS.LOG.log(Level.FINE, "returning queryString [{0}]", queryString); // NOI18N        
         return queryString;
+    }
+
+    @Override
+    public boolean saveChanges() {
+        return true;
+    }
+
+    @Override
+    public boolean discardUnsavedChanges() {
+        return true;
+    }
+
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+
     }
 
     private class QueryTask implements Runnable, Cancellable, QueryNotifyListener {
@@ -1097,11 +1112,6 @@ public class ODCSQueryController extends QueryController implements ItemListener
         @Override
         public void notifyData(final ODCSIssue issue) {
             issueTable.addNode(issue.getNode());
-            if(!query.contains(issue.getID())) {
-                // XXX this is quite ugly - the query notifies an archived issue
-                // but it doesn't "contain" it!
-                return;
-            }
             setIssueCount(++counter);
             if(counter == 1) {
                 EventQueue.invokeLater(new Runnable() {

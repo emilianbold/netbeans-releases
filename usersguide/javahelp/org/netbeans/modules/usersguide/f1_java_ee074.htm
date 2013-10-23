@@ -2,100 +2,18 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>JMS Resource General Attributes</title>
+<title>JMS Resource Properties</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="AS_Wiz_JMS_general" name="AS_Wiz_JMS_general"></a></p>
+<p><a id="AS_Wiz_JMS_props" name="AS_Wiz_JMS_props"></a></p>
 <!-- infolevel="all" infotype="General" --><a id="sthref658" name="sthref658"></a>
-<h1>JMS Resource General Attributes</h1>
+<h1>JMS Resource Properties</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>You see this page of the New File wizard when you are defining a JMS resource. On this page you choose to create either an Admin Object resource (destination) or a Connector resource (connection factory), and specify the JNDI name of the resource. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1705">
-<param name="text" value="<html><u>How?</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p><b>Note</b>: A JMS application normally uses at least one connection factory and at least one destination. The order in which these are created is not important.</p>
-<p>Enter the configuration information for the resource.</p>
-
-<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="22%" />
-<col width="*" />
-<thead>
-<tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t73">Element</th>
-<th align="left" valign="bottom" id="r1c2-t73">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr align="left" valign="top">
-<td align="left" id="r2c1-t73" headers="r1c1-t73">
-<p>JNDI name</p>
-</td>
-<td align="left" headers="r2c1-t73 r1c2-t73">
-<p>The JNDI name for the resource is required and must be unique to this resource. Because all resource JNDI names are in the java:comp/env subcontext, when you specify the JNDI name of a JMS resource enter only jms/name. For example, specify jms/ConnectionFactory1. You cannot change the JNDI name of the resource after it has been registered with the server. To change the JNDI name, you must delete the resource from the server, after which you can change the JNDI name in the properties window of the resource and register the resource again.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t73" headers="r1c1-t73">
-<p>Enabled</p>
-</td>
-<td align="left" headers="r3c1-t73 r1c2-t73">
-<p>The resource is enabled by default. To disable the resource, select false from the dropdown list. You can change this setting in the properties window for the resource.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r4c1-t73" headers="r1c1-t73">
-<p>Description</p>
-</td>
-<td align="left" headers="r4c1-t73 r1c2-t73">
-<p>Enter a description of the resource. This field is optional.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r5c1-t73" headers="r1c1-t73">
-<p>Resource Type</p>
-</td>
-<td align="left" headers="r5c1-t73 r1c2-t73">
-<p>A JMS resource may be either an Admin Object resource or it may be a Connector resource, in which case it is accessed via the Connector API.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r6c1-t73" headers="r1c1-t73">
-<p>Admin Object Resource</p>
-</td>
-<td align="left" headers="r6c1-t73 r1c2-t73">
-<ul>
-<li>Check the <code>javax.jms.QueueConnectionFactory</code> radio button if it is a queue.</li>
-<li>Check the <code>javax.jms.Topic</code> radio button if it is a topic.</li>
-</ul>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r7c1-t73" headers="r1c1-t73">
-<p>Connector Resource</p>
-</td>
-<td align="left" headers="r7c1-t73 r1c2-t73">
-<ul>
-<li>Check the <code>ConnectionFactory</code> radio button if it is used as a queue.</li>
-<li>Check the <code>javax.jms.TopicConnectionFactory</code> radio button if it is used as a topic.</li>
-<li>
-<p>Check the <code>javax.jms.ConnectionFactory</code> radio button if it is used as a connection factory.</p>
-<p><b>Note</b>: With the introduction of the JMS 1.1 specification, it is recommended that you use <code>javax.jms.ConnectionFactory</code> if you do not need to support existing code.</p>
-</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<br />
-<!-- -->
-<p>The JMS resource properties are added to glassfish-resources.xml. You can open glassfish-resources.xml in the Source Editor by locating the file in your project in the Projects window and double-clicking the file.</p>
-<p>Once you have created the object in your project, the resource needs to be registered with the server before you can use it. The resource is automatically registered when you deploy your project.</p>
+<p>You see this page of the New File wizard when you are defining a JMS resource.</p>
+<p>This page of the wizard enables you to add additional configuration information and properties for a JMS resource.</p>
+<p>Click <b>Add</b> to add a row for the new property to the table. In the Properties table, enter the <b>Name</b> and <b>Value</b> of the new property and click <b>Enter</b> to save the changes to the property table. To remove a property, select the property in the Properties table and click Remove.</p>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">

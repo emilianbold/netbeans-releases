@@ -42,6 +42,8 @@
 package org.netbeans.modules.maven.model.settings;
 
 import javax.xml.namespace.QName;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
  *
@@ -50,25 +52,81 @@ import javax.xml.namespace.QName;
 public final class SettingsQName {
 
     public static final String NS_URI = "http://maven.apache.org/POM/4.0.0";  // NOI18N
-    public static final String NS_URI_NEW = "http://maven.apache.org/SETTINGS/1.0.0";  // NOI18N
-    public static final String NS_PREFIX = "profile";   // NOI18N
+       public static final String NS_PREFIX = "profile";   // NOI18N
     
-    public static QName createQName(String localName, boolean ns, boolean old) {
-        if (ns) {
-            if (old) {
-                return new QName(NS_URI, localName, NS_PREFIX);
-            } else {
-                return new QName(NS_URI_NEW, localName, NS_PREFIX);
-            }
+    /**
+     * version of the namespace used in the file.
+     *
+     * @since 1.34
+     */
+    public enum Version {
+
+        /**
+         * no namespace
+         */
+        NONE(null),
+        /**
+         * old (wrong) namespace - http://maven.apache.org/POM/4.0.0
+         */
+        OLD("http://maven.apache.org/POM/4.0.0"),
+        /**
+         * settings own namespace in version 1.0.0
+         */
+        NEW_100("http://maven.apache.org/SETTINGS/1.0.0"),
+        /**
+         * settings own namespace in version 1.1.0
+         */
+        NEW_110("http://maven.apache.org/SETTINGS/1.1.0");
+        private final String namespace;
+
+        private Version(String namespace) {
+            this.namespace = namespace;
+        }
+
+        @CheckForNull
+        public String getNamespace() {
+            return namespace;
+        }
+    }
+    /**
+     * 
+     * @param localName
+     * @param version
+     * @return 
+     * @since 1.34
+     */
+    public static QName createQName(String localName, @NonNull Version version) {
+        if (version.getNamespace() != null) {
+            return new QName(version.getNamespace(), localName, NS_PREFIX);
         } else {
             return new QName("", localName);
         }
     }
+    
+    @Deprecated
+    public static QName createQName(String localName, boolean ns, boolean old) {
+        Version v = resolveVersion(ns, old);
+        return createQName(localName, v);
+    }
+
+    static Version resolveVersion(boolean ns, boolean old) {
+        Version v;
+        if (ns) {
+            if (old) {
+                v = Version.OLD;
+            } else {
+                v = Version.NEW_100;
+            }
+        } else {
+            v = Version.NONE;
+        }
+        return v;
+    }
 
     private final QName qName;
 
-    SettingsQName(QName name) {
-        qName = name;
+    SettingsQName(String localName, @NonNull Version version) {
+        qName = SettingsQName.createQName(localName, version);
     }
     
     public QName getQName() {

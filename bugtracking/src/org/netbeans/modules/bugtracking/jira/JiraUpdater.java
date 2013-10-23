@@ -219,18 +219,18 @@ public class JiraUpdater {
         return panel;
     }
     
-    private class JiraProxyConector extends BugtrackingConnector {
-        private BugtrackingFactory<Object, Object, Object> f = new BugtrackingFactory<Object, Object, Object>();
+    private class JiraProxyConector implements BugtrackingConnector {
+        private BugtrackingSupport<Object, Object, Object> f = new BugtrackingSupport<Object, Object, Object>(new JiraProxyRepositoryProvider(), null, null);
         @Override
         public Repository createRepository() {
-            return f.createRepository(f, new JiraProxyRepositoryProvider(), null, null);
+            return f.createRepository(f);
         }
         @Override
         public Repository createRepository(RepositoryInfo info) {
             throw new UnsupportedOperationException("Not supported yet.");      // NOI18N
         }
     }
-    private class JiraProxyRepositoryProvider extends RepositoryProvider<Object,Object,Object> {
+    private class JiraProxyRepositoryProvider implements RepositoryProvider<Object,Object,Object> {
         @Override
         public Image getIcon(Object r) {
             return null;
@@ -273,6 +273,14 @@ public class JiraUpdater {
         public void addPropertyChangeListener(Object r, PropertyChangeListener listener) {
             // do nothing
         }
+        @Override
+        public Object createIssue(Object r, String summary, String description) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+        @Override
+        public boolean canAttachFiles(Object r) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
     private class JiraProxyController implements RepositoryController {
@@ -293,7 +301,7 @@ public class JiraUpdater {
             return false;
         }
         @Override
-        public void applyChanges() throws IOException {
+        public void applyChanges() {
 
         }
 

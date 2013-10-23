@@ -234,56 +234,11 @@ public class RepositoryRegistryTest extends NbTestCase {
         public RepositoryInfo getInfo() {
             return info;
         }
-
-        @Override
-        public Image getIcon() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public TestIssue[] getIssues(String[] id) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public RepositoryController getController() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public TestQuery createQuery() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public TestIssue createIssue() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Collection<TestQuery> getQueries() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-        @Override
-        public Collection<TestIssue> simpleSearch(String criteria) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public void removePropertyChangeListener(PropertyChangeListener listener) { }
-
-        @Override
-        public void addPropertyChangeListener(PropertyChangeListener listener) { }
     }
     
     private static final String ID_CONNECTOR1 = "RepositoryRegistryTestConector1";
     @BugtrackingConnector.Registration (id=ID_CONNECTOR1,displayName=ID_CONNECTOR1,tooltip=ID_CONNECTOR1)    
-    public static class MyConnector1 extends BugtrackingConnector {
+    public static class MyConnector1 implements BugtrackingConnector {
         public MyConnector1() {
         }
 

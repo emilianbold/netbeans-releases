@@ -69,6 +69,7 @@ import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
+import org.netbeans.modules.maven.j2ee.OneTimeDeployment;
 import org.netbeans.modules.maven.j2ee.SessionContent;
 import org.netbeans.modules.maven.j2ee.utils.LoggingUtils;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
@@ -98,11 +99,8 @@ public class SelectAppServerPanel extends javax.swing.JPanel {
     private SelectAppServerPanel(boolean showIgnore, Project project) {
         this.project = project;
         initComponents();
-        buttonGroup1.add(rbSession);
-        buttonGroup1.add(rbPermanent);
         loadComboModel();
         if (showIgnore) {
-            buttonGroup1.add(rbIgnore);
             checkIgnoreEnablement();
             comServer.addActionListener(new ActionListener() {
                 @Override
@@ -136,7 +134,17 @@ public class SelectAppServerPanel extends javax.swing.JPanel {
                 String serverId = panel.getSelectedServerType();
                 if (!ExecutionChecker.DEV_NULL.equals(instanceId)) {
                     boolean permanent = panel.isPermanent();
-                    if (permanent) {
+                    boolean doNotRemember = panel.isDoNotRemember();
+
+                    // The server should be used only for this deployment
+                    if (doNotRemember) {
+                        OneTimeDeployment oneTimeDeployment = project.getLookup().lookup(OneTimeDeployment.class);
+                        if (oneTimeDeployment != null) {
+                            oneTimeDeployment.setServerInstanceId(instanceId);
+                        }
+
+                        MavenProjectSupport.changeServer(project, true);
+                    } else if (permanent) {
                         persistServer(project, instanceId, serverId, panel.getChosenProject());
                     } else {
                         SessionContent sc = project.getLookup().lookup(SessionContent.class);
@@ -225,6 +233,10 @@ public class SelectAppServerPanel extends javax.swing.JPanel {
         return rbIgnore.isSelected();
     }
 
+    private boolean isDoNotRemember() {
+        return rbDontRemember.isSelected();
+    }
+
     private Project getChosenProject() {
         return project;
     }
@@ -267,13 +279,15 @@ public class SelectAppServerPanel extends javax.swing.JPanel {
         rbIgnore = new javax.swing.JRadioButton();
         lblProject = new javax.swing.JLabel();
         btChange = new javax.swing.JButton();
+        rbDontRemember = new javax.swing.JRadioButton();
 
         lblServer.setLabelFor(comServer);
         org.openide.awt.Mnemonics.setLocalizedText(lblServer, org.openide.util.NbBundle.getMessage(SelectAppServerPanel.class, "SelectAppServerPanel.lblServer.text")); // NOI18N
 
-        rbSession.setSelected(true);
+        buttonGroup1.add(rbSession);
         org.openide.awt.Mnemonics.setLocalizedText(rbSession, org.openide.util.NbBundle.getMessage(SelectAppServerPanel.class, "SelectAppServerPanel.rbSession.text")); // NOI18N
 
+        buttonGroup1.add(rbPermanent);
         org.openide.awt.Mnemonics.setLocalizedText(rbPermanent, org.openide.util.NbBundle.getMessage(SelectAppServerPanel.class, "SelectAppServerPanel.rbPermanent.text")); // NOI18N
         rbPermanent.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
@@ -281,6 +295,7 @@ public class SelectAppServerPanel extends javax.swing.JPanel {
             }
         });
 
+        buttonGroup1.add(rbIgnore);
         org.openide.awt.Mnemonics.setLocalizedText(rbIgnore, org.openide.util.NbBundle.getBundle(SelectAppServerPanel.class).getString("SelectAppServerPanel.rbIgnore.text")); // NOI18N
 
         lblProject.setFont(lblProject.getFont().deriveFont(lblProject.getFont().getSize()-1f));
@@ -294,26 +309,35 @@ public class SelectAppServerPanel extends javax.swing.JPanel {
             }
         });
 
+        buttonGroup1.add(rbDontRemember);
+        rbDontRemember.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(rbDontRemember, org.openide.util.NbBundle.getMessage(SelectAppServerPanel.class, "SelectAppServerPanel.rbDontRemember.text")); // NOI18N
+        rbDontRemember.setToolTipText(org.openide.util.NbBundle.getMessage(SelectAppServerPanel.class, "SelectAppServerPanel.rbDontRemember.toolTipText")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                        .addGap(12, 12, 12)
-                        .addComponent(lblProject))
-                    .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(lblServer)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(comServer, 0, 400, Short.MAX_VALUE))
-                    .addComponent(rbSession, javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                        .addComponent(comServer, 0, 443, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
                         .addComponent(rbPermanent)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 168, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(btChange))
-                    .addComponent(rbIgnore, javax.swing.GroupLayout.Alignment.LEADING))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(rbIgnore)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(11, 11, 11)
+                                .addComponent(lblProject))
+                            .addComponent(rbDontRemember)
+                            .addComponent(rbSession))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -323,18 +347,19 @@ public class SelectAppServerPanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblServer)
                     .addComponent(comServer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
+                .addGap(32, 32, 32)
+                .addComponent(rbDontRemember)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(rbSession)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(rbPermanent)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(lblProject))
-                    .addComponent(btChange))
+                    .addComponent(btChange, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(rbPermanent))
                 .addGap(18, 18, 18)
+                .addComponent(lblProject)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(rbIgnore)
-                .addContainerGap(20, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -372,6 +397,7 @@ public class SelectAppServerPanel extends javax.swing.JPanel {
     private javax.swing.JComboBox comServer;
     private javax.swing.JLabel lblProject;
     private javax.swing.JLabel lblServer;
+    private javax.swing.JRadioButton rbDontRemember;
     javax.swing.JRadioButton rbIgnore;
     javax.swing.JRadioButton rbPermanent;
     javax.swing.JRadioButton rbSession;

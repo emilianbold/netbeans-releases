@@ -51,6 +51,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -149,6 +150,39 @@ public enum JSFVersion {
             projectVersionCache.put(webModule, get(webModule, true));
         }
         return version;
+    }
+
+    /**
+     * Gets the JSF version supported by the project. It seeks for the JSF only on the compile classpath.
+     *
+     * @param project project to seek for JSF version
+     * @return JSF version if any found on the project compile classpath, {@code null} otherwise
+     * @since 1.65
+     */
+    @CheckForNull
+    public synchronized static JSFVersion forProject(@NonNull final Project project) {
+        Parameters.notNull("project", project); //NOI18N
+        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+        if (webModule != null) {
+            return forWebModule(webModule);
+        } else {
+            ClassPathProvider cpp = project.getLookup().lookup(ClassPathProvider.class);
+            Sources sources = ProjectUtils.getSources(project);
+            if (sources == null) {
+                return null;
+            }
+            SourceGroup[] sourceGroups = sources.getSourceGroups("java"); //NOII18N
+            if (sourceGroups.length > 0) {
+                ClassPath compileClasspath = cpp.findClassPath(sourceGroups[0].getRootFolder(), ClassPath.COMPILE);
+                List<URL> cpUrls = new ArrayList<>();
+                for (ClassPath.Entry entry : compileClasspath.entries()) {
+                    cpUrls.add(entry.getURL());
+                }
+                return JSFVersion.forClasspath(cpUrls);
+            } else {
+                return null;
+            }
+        }
     }
 
     /**

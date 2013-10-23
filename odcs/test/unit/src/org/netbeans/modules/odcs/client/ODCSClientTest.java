@@ -55,6 +55,7 @@ import com.tasktop.c2c.server.profile.domain.project.Profile;
 import com.tasktop.c2c.server.profile.domain.project.Project;
 import com.tasktop.c2c.server.profile.domain.project.ProjectService;
 import com.tasktop.c2c.server.scm.domain.ScmRepository;
+import com.tasktop.c2c.server.tasks.domain.Product;
 import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
 import com.tasktop.c2c.server.tasks.domain.SavedTaskQuery;
 import com.tasktop.c2c.server.tasks.domain.Task;
@@ -221,45 +222,48 @@ public class ODCSClientTest extends NbTestCase  {
         assertTrue(watchedProjects.isEmpty());
     }
     
-//    public void testGetRecentActivities () throws Exception {
-//        ODCSClient client = getClient();
-//        Project project = client.getProjectById(MY_PROJECT);
-//        List<ProjectActivity> shortActivities = client.getRecentShortActivities(project.getIdentifier());
-//        assertNotNull(shortActivities);
-//        assertTrue(shortActivities.size() > 0);
-//        List<ProjectActivity> activities = client.getRecentActivities(project.getIdentifier());
-//        assertNotNull(activities);
-//        assertTrue(activities.size() > 0);
+    public void testGetRecentActivities () throws Exception {
+        ODCSClient client = getClient();
+        Project project = client.getProjectById(MY_PROJECT);
+        
+        List<ProjectActivity> activities = client.getRecentActivities(project.getIdentifier());
+        assertNotNull(activities);
+        assertTrue(activities.size() > 0);
+        
+        List<ProjectActivity> shortActivities = client.getRecentShortActivities(project.getIdentifier());
+        assertNotNull(shortActivities);
+        assertTrue(shortActivities.size() > 0);
+        
+        
+        // lets not compare the arrays for now. short activities seem to skip some ...
+        
+//        Comparator<ProjectActivity> c = new Comparator<ProjectActivity>() {
+//            @Override
+//            public int compare(ProjectActivity o1, ProjectActivity o2) {
+//                return o1.getActivityDate().compareTo(o2.getActivityDate()) * -1;
+//            }
+//        };
+//        Collections.sort(activities, c);
+//        Collections.sort(shortActivities, c);
 //        
-//        // lets not compare the arrays for now. short activities seem to skip some ...
-//        
-////        Comparator<ProjectActivity> c = new Comparator<ProjectActivity>() {
-////            @Override
-////            public int compare(ProjectActivity o1, ProjectActivity o2) {
-////                return o1.getActivityDate().compareTo(o2.getActivityDate()) * -1;
-////            }
-////        };
-////        Collections.sort(activities, c);
-////        Collections.sort(shortActivities, c);
-////        
-////        for (int i = 0; i < shortActivities.size(); ++i) {
-////            print(shortActivities.get(i));
-////            print(activities.get(i));
-////            System.out.println();
-////        }
-////                
-////        // is it the same??
-////        for (int i = 0; i < shortActivities.size(); ++i) {
-////            ProjectActivity a1 = shortActivities.get(i);
-////            ProjectActivity a2 = activities.get(i);
-////            assertEquals(a1.getActivityDate(), a2.getActivityDate());
-////            assertEquals(a1.getProjectIdentifier(), a2.getProjectIdentifier());
-////            assertEquals(a1.getClass(), a2.getClass());
-////            if (a1 instanceof TaskActivity) {
-////                assertActivity((TaskActivity) a1, (TaskActivity) a2);
-////            }
-////        }
-//    }
+//        for (int i = 0; i < shortActivities.size(); ++i) {
+//            print(shortActivities.get(i));
+//            print(activities.get(i));
+//            System.out.println();
+//        }
+//                
+//        // is it the same??
+//        for (int i = 0; i < shortActivities.size(); ++i) {
+//            ProjectActivity a1 = shortActivities.get(i);
+//            ProjectActivity a2 = activities.get(i);
+//            assertEquals(a1.getActivityDate(), a2.getActivityDate());
+//            assertEquals(a1.getProjectIdentifier(), a2.getProjectIdentifier());
+//            assertEquals(a1.getClass(), a2.getClass());
+//            if (a1 instanceof TaskActivity) {
+//                assertActivity((TaskActivity) a1, (TaskActivity) a2);
+//            }
+//        }
+    }
     
 //    public void testGetHudsonStatus () throws Exception {
 //        ODCSClient client = getClient();
@@ -325,6 +329,22 @@ public class ODCSClientTest extends NbTestCase  {
         
         client.deleteQuery(MY_PROJECT, stq.getId());
         assertQuery(client, null, queryName, queryString);
+    }
+    
+    public void testRepoConfig () throws Exception {
+        ODCSClient client = getClient();
+        RepositoryConfiguration rc = client.getRepositoryContext(MY_PROJECT);
+        assertNotNull(rc);
+        
+        List<Product> products = rc.getProducts();
+        boolean found = false;
+        for (Product product : products) {
+            if(product.getName().equals("Default")) {
+                found = true;
+                break;
+            }
+        }
+        assertTrue(found);
     }
     
 //    public void testCreateDeleteProject () throws Exception {

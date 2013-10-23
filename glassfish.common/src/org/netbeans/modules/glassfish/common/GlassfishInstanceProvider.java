@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.glassfish.common;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
@@ -52,6 +53,7 @@ import org.glassfish.tools.ide.GlassFishStatus;
 import org.glassfish.tools.ide.admin.CommandSetProperty;
 import org.glassfish.tools.ide.server.config.ConfigBuilderProvider;
 import org.netbeans.api.server.ServerInstance;
+import org.netbeans.modules.glassfish.common.parser.DomainXMLChangeListener;
 import org.netbeans.modules.glassfish.common.utils.ServerUtils;
 import org.netbeans.modules.glassfish.common.utils.Util;
 import org.netbeans.modules.glassfish.spi.CommandFactory;
@@ -60,6 +62,7 @@ import org.netbeans.modules.glassfish.spi.RegisteredDDCatalog;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.netbeans.spi.server.ServerInstanceProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.*;
 import org.openide.util.lookup.Lookups;
 
@@ -249,6 +252,11 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
         }
     }
 
+    /**
+     * Add GlassFish server instance into this provider.
+     * <p/>
+     * @param si GlassFish server instance to be added.
+     */
     public void addServerInstance(GlassfishInstance si) {
         synchronized(instanceMap) {
             try {
@@ -266,10 +274,15 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
                         "Could not store GlassFish server attributes", ex);
             }
         }
-
+        DomainXMLChangeListener.registerListener(si);
         support.fireChange();
     }
 
+    /**
+     * Remove GlassFish server instance from this provider.
+     * <p/>
+     * @param si GlassFish server instance to be removed.
+     */
     public boolean removeServerInstance(GlassfishInstance si) {
         boolean result = false;
         synchronized(instanceMap) {
@@ -288,11 +301,11 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
             }
         }
         GlassFishStatus.remove(si);
-        if(result) {
+        if (result) {
             ConfigBuilderProvider.destroyBuilder(si);
+            DomainXMLChangeListener.unregisterListener(si);
             support.fireChange();
         }
-
         return result;
     }
     

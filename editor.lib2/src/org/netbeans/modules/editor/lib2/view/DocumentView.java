@@ -575,7 +575,8 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
                     Rectangle2D.Double docViewRect = getAllocationCopy();
                     int pIndex = getViewIndex(startOffset);
                     ParagraphView pView = getParagraphView(pIndex);
-                    if (endOffset <= pView.getEndOffset()) {
+                    int pViewEndOffset = pView.getEndOffset();
+                    if (endOffset <= pViewEndOffset) {
                         Shape pAlloc = getChildAllocation(pIndex, docViewRect);
                         if (pView.children != null) { // Do local repaint
                             if (pView.checkLayoutUpdate(pIndex, pAlloc)) {
@@ -583,8 +584,15 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
                             }
                             Shape s = pView.modelToViewChecked(startOffset, Bias.Forward,
                                     endOffset, Bias.Forward, pAlloc);
-                            repaintRect = ViewUtils.shapeAsRect(s);
-                            
+                            // In case it ends right at the paragraph's end extend to visible width
+                            if (endOffset == pViewEndOffset) {
+                                Rectangle2D.Double r = ViewUtils.shape2Bounds(s);
+                                op.extendToVisibleWidth(r);
+                                repaintRect = r;
+                            } else {
+                                repaintRect = ViewUtils.shapeAsRect(s);
+                            }
+
                         } else { // Repaint single paragraph
                             Rectangle2D.Double r = ViewUtils.shape2Bounds(pAlloc);
                             op.extendToVisibleWidth(r);

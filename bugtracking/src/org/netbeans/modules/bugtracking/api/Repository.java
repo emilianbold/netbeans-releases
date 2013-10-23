@@ -158,6 +158,16 @@ public final class Repository {
     }
     
     /**
+     * Determines whether it is possible to attach files to Issues from this repository.
+     * 
+     * @return <code>true</code> in case it is possible to attach files, otherwise <code>false</code>
+     */
+    public boolean canAttachFiles() {
+        return impl.canAttachFiles();
+    }
+    
+    
+    /**
      * Removes this repository
      */
     public void remove() {
@@ -191,9 +201,9 @@ public final class Repository {
     }
 
     /**
-     * Returns the issue with the given id or null in case such doens't exist.
+     * Returns the issue with the given id or null in case such doesn't exist.
      * 
-     * @param id
+     * @param ids
      * @return 
      */
     public Issue[] getIssues(String... ids) {
@@ -203,6 +213,19 @@ public final class Repository {
             ret.add(issueImpl.getIssue());
         }
         return ret.toArray(new Issue[ret.size()]);
+    }
+    
+    /**
+     * Creates a new {@ link Issue} instance prefilled with 
+     * the given summary and description.
+     * 
+     * @param summary
+     * @param description
+     * @return 
+     */
+    public Issue createIssue(String summary, String description) {
+        IssueImpl issueImpl = impl.createNewIssue(summary, description);
+        return issueImpl.getIssue();
     }
     
     <R, Q, I> RepositoryImpl<R, Q, I> getImpl() {

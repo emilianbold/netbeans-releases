@@ -108,6 +108,26 @@ is the proper place.
 
     <changes>
         <change>
+            <summary>Implement profiles for annotations coloring</summary>
+            <version major="1" minor="43"/>
+            <date day="17" month="9" year="2013"/>
+            <author login="mkristofic"/>
+            <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible"  deprecation="no" deletion="no" modification="no" />
+            <description>
+                <p>
+                    <code>EditorSettings</code> is extended to handle saving and loading annotations colorings for any profile.
+                </p>
+                <pre>
+                    Class org.netbeans.modules.editor.settings.storage.api.EditorSettings
+  [sigtest]   "E5.2 - Adding abstract methods" : method public abstract void org.netbeans.modules.editor.settings.storage.api.EditorSettings.setAnnotations(java.lang.String,java.util.Map)
+  [sigtest]   "E5.2 - Adding abstract methods" : method public abstract java.util.Map org.netbeans.modules.editor.settings.storage.api.EditorSettings.getAnnotations(java.lang.String)
+  [sigtest]   "E5.2 - Adding abstract methods" : method public abstract java.util.Map org.netbeans.modules.editor.settings.storage.api.EditorSettings.getAnnotationDefaults(java.lang.String)
+  [sigtest] 
+                </pre>
+            </description>
+            <issue number="231735"/>
+        </change>
+        <change>
             <summary>Detect preferences override and support inheritance</summary>
             <version major="1" minor="38"/>
             <date day="21" month="2" year="2013"/>

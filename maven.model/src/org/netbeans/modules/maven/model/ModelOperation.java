@@ -47,6 +47,9 @@ import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 /**
  * A single model modifying operation unit. Used by the {@link org.netbeans.modules.maven.model.Utilities}
  * class to perform one or many operation on top of the model.
+ * 
+ * Please note that ModelOperation should not be used to GET values out of the model, all such values will be unresolved.
+ * The primary objective of the ModelOperation and AbstractDocumentModel subclasses is to modify a single file.
  *
  * @author mkleint
  */

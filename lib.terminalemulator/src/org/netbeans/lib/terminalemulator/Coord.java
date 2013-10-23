@@ -59,7 +59,7 @@ package org.netbeans.lib.terminalemulator;
  * </ul>
  */
 
-public final class Coord implements Comparable {
+public final class Coord implements Comparable<Coord> {
     public int row;
     public int col;
 
@@ -127,19 +127,17 @@ public final class Coord implements Comparable {
      * </pre>
      */
     @Override
-    public int compareTo(Object o) throws ClassCastException {
-	Coord target = (Coord) o;
-
+    public int compareTo(Coord that) throws ClassCastException {
 	// -1 or negative  -> this < o
 	//  0              -> this == o
 	// +1 or positive  -> this > o
 
-	if (this.row < target.row)
+	if (this.row < that.row)
 	    return -1;
-	else if (this.row > target.row)
+	else if (this.row > that.row)
 	    return +1;
 	else {
-	    return this.col - target.col;
+	    return this.col - that.col;
 	}
     } 
 

@@ -101,6 +101,11 @@ public class BugzillaRepositoryProvider extends TeamRepositoryProvider<BugzillaR
     }
 
     @Override
+    public boolean canAttachFiles(BugzillaRepository r) {
+        return true;
+    }
+    
+    @Override
     public void removePropertyChangeListener(BugzillaRepository r, PropertyChangeListener listener) {
         r.removePropertyChangeListener(listener);
     }
@@ -110,11 +115,6 @@ public class BugzillaRepositoryProvider extends TeamRepositoryProvider<BugzillaR
         r.addPropertyChangeListener(listener);
     }
 
-    @Override
-    public Collection<BugzillaIssue> getUnsubmittedIssues (BugzillaRepository r) {
-        return r.getUnsubmittedIssues();
-    }
-    
     /********************************************************************************
      * Kenai
      ********************************************************************************/
@@ -136,5 +136,10 @@ public class BugzillaRepositoryProvider extends TeamRepositoryProvider<BugzillaR
         return repository instanceof KenaiRepository ? 
                 ((KenaiRepository)repository).getKenaiProject() :
                 null;
+    }
+
+    @Override
+    public BugzillaIssue createIssue(BugzillaRepository r, String summary, String description) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

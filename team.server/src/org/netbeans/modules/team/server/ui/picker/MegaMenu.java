@@ -43,6 +43,10 @@
 package org.netbeans.modules.team.server.ui.picker;
 
 import java.awt.BorderLayout;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
@@ -91,13 +95,17 @@ public class MegaMenu {
         JPanel content = new JPanel( new BorderLayout() );
 
         List<JComponent> serverPanels = new ArrayList<>( 3 );
+        JComponent selectedComponent = null;
         for( TeamServer server : getServers() ) {
             JComponent c = ServerPanel.create( server, selModel );
+            if(server == selectedServer) {
+                selectedComponent = c;
+            }
             serverPanels.add( c );
         }
-
-        content.add( ServersContainer.create( serverPanels ), BorderLayout.CENTER );
-
+        
+        content.add( ServersContainer.create( serverPanels, selectedComponent ), BorderLayout.CENTER );
+        
         LookAndFeel.installProperty(content, "opaque", Boolean.TRUE); //NOI18N
         LookAndFeel.installBorder(content, "PopupMenu.border"); //NOI18N
         LookAndFeel.installColorsAndFont(content,
@@ -174,17 +182,6 @@ public class MegaMenu {
     private Collection<TeamServer> getServers() {
         List<TeamServer> servers = new ArrayList<>(serverManager.getTeamServers());
         Collections.sort(servers, new TeamServerComparator());
-        if(selectedServer != null) {
-            for (int i = 0; i < servers.size(); i++) {
-                TeamServer teamServer = servers.get(i);
-                if(teamServer == selectedServer) {
-                    if( i > 0) {
-                        servers.add(0, servers.remove(i));
-                    } 
-                    break;
-                }
-            }
-        }
         return servers;
     }
 

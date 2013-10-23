@@ -274,7 +274,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener, Clonea
         if (flavor == null) {
             CompilerSet cs = getCompilerSet();
             if (cs != null) {
-                this.flavor = cs.getCompilerFlavor().toString();
+                this.flavor = cs.getCompilerFlavor().getToolchainDescriptor().getName();
             }
         }
         return flavor;

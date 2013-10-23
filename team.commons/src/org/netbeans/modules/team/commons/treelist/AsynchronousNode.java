@@ -49,6 +49,7 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.util.MissingResourceException;
 import javax.swing.AbstractAction;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -71,6 +72,7 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
     private JComponent inner = null;
     private JPanel panel;
     private JLabel lblTitle;
+    private JLabel lblIcon;
     private ProgressLabel lblLoading;
     private JLabel lblError;
     private LinkButton btnRetry;
@@ -80,6 +82,7 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
     private JLabel lblFill;
     private boolean expandAfterRefresh;;
     private final String title;
+    private final Icon icon;
     private static final RequestProcessor RP = new RequestProcessor("Asynchronous Tree List Node - Loader", 5); // NOI18N
 
     /**
@@ -91,8 +94,13 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
      * getting created, can be null.
      */
     public AsynchronousNode(boolean expandable, TreeListNode parent, String title) {
+        this(expandable, parent, title, null);
+    }
+
+    public AsynchronousNode(boolean expandable, TreeListNode parent, String title, Icon icon) {
         super(expandable, parent);
         this.title = title;
+        this.icon = icon;
     }
 
     @Override
@@ -169,9 +177,9 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
                     if (null != inner) {
                         p.remove(inner);
                         lblTitle.setText(title);
-                        p.add(lblTitle, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                                GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-                        p.add(lblFill, new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+                        p.add(lblIcon, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
+                        p.add(lblTitle, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
+                        p.add(lblFill, new GridBagConstraints(2, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
                     }
                     inner = null;
                     startLoading();
@@ -232,6 +240,7 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
                         inner = c;
                         p.remove(lblTitle);
                         lblTitle.setText("");
+                        p.remove(lblIcon);
                         p.remove(lblFill);
                         p.add(inner, new GridBagConstraints(0, 0, 1, 1, 1.0, 0.0,
                                 GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
@@ -254,6 +263,8 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
             panel = new JPanel(new GridBagLayout());
             panel.setOpaque(false);
             lblTitle = new TreeLabel(this.title);
+            lblIcon = new TreeLabel();
+            lblIcon.setIcon(icon);
             lblLoading = createProgressLabel(""); //NOI18N
             lblLoading.setForeground(ColorManager.getDefault().getDisabledColor());
             lblError = new TreeLabel(NbBundle.getMessage(AsynchronousNode.class, "LBL_NotResponding")); //NOI18N
@@ -268,11 +279,12 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
                 }
             });
             
-            panel.add(lblTitle, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-            panel.add(lblFill, new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-            panel.add(lblLoading, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0, 0));
-            panel.add(lblError, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0, 0));
-            panel.add(btnRetry, new GridBagConstraints(4, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 8, 0, 0), 0, 0));
+            panel.add(lblIcon, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
+            panel.add(lblTitle, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
+            panel.add(lblFill, new GridBagConstraints(2, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+            panel.add(lblLoading, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0, 0));
+            panel.add(lblError, new GridBagConstraints(4, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0, 0));
+            panel.add(btnRetry, new GridBagConstraints(5, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 8, 0, 0), 0, 0));
         }
         return panel;
     }

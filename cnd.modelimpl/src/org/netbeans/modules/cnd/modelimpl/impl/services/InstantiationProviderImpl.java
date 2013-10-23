@@ -65,7 +65,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.CsmClass;
@@ -508,12 +507,14 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                         Collection<CsmOffsetableDeclaration> specs = new ArrayList<CsmOffsetableDeclaration>();
                         
                         for (ProjectBase proj : projects) {
-                            fqn = new StringBuilder(Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.CLASS));
+                            fqn = new StringBuilder();
+                            fqn.append(Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.CLASS));
                             fqn.append(OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR);
                             fqn.append(cls.getQualifiedName());
                             fqn.append('<'); // NOI18N
                             specs.addAll(proj.findDeclarationsByPrefix(fqn.toString()));
-                            fqn = new StringBuilder(Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.STRUCT));
+                            fqn.setLength(0);
+                            fqn.append(Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.STRUCT));
                             fqn.append(OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR);
                             fqn.append(cls.getQualifiedName());
                             fqn.append('<'); // NOI18N
@@ -1275,10 +1276,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                 return false;
             }
             final BaseTemplateKey other = (BaseTemplateKey) obj;
-            if (!Objects.equals(this.declaration, other.declaration)) {
-                return false;
-            }
-            return true;
+            return Objects.equals(this.declaration, other.declaration);
         }        
     }
     
@@ -1326,10 +1324,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
             if (!Objects.equals(this.contextFile, other.contextFile)) {
                 return false;
             }
-            if (!Objects.equals(this.decl, other.decl)) {
-                return false;
-            }
-            return true;
+            return Objects.equals(this.decl, other.decl);
         }
 
         

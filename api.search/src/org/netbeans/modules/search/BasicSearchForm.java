@@ -225,10 +225,11 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
      *				 search &amp; replace should be created;
      *                           {@code false} otherwise
      */
+    @SuppressWarnings("unchecked")
     private void initComponents(final boolean searchAndReplace) {
 
         lblTextToFind = new JLabel();
-        cboxTextToFind = ComponentUtils.adjustComboForSearchPattern(new JComboBox());
+        cboxTextToFind = ComponentUtils.adjustComboForSearchPattern(new JComboBox<String>());
         lblTextToFind.setLabelFor(cboxTextToFind.getComponent());
         btnTestTextToFind = new JButton();
         lblTextToFindHint = new JLabel();
@@ -236,7 +237,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
 
         if (searchAndReplace) {
             lblReplacement = new JLabel();
-            cboxReplacement = new JComboBox();
+            cboxReplacement = new JComboBox<ReplaceModelItem>();
             cboxReplacement.setEditable(true);
             cboxReplacement.setRenderer(new ShorteningCellRenderer());
             lblReplacement.setLabelFor(cboxReplacement);
@@ -244,7 +245,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         }
 
         lblScope = new JLabel();
-        cboxScope = ComponentUtils.adjustComboForScope(new JComboBox(),
+        cboxScope = ComponentUtils.adjustComboForScope(new JComboBox<Object>(),
                 preferredSearchScopeType, extraSearchScopes);
         lblScope.setLabelFor(cboxScope.getComponent());
 
@@ -252,7 +253,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         lblFileNameHint = new JLabel();
         lblFileNameHint.setForeground(SystemColor.controlDkShadow);
         cboxFileNamePattern = ComponentUtils.adjustComboForFileName(
-                new JComboBox());
+                new JComboBox<String>());
         lblFileNamePattern.setLabelFor(cboxFileNamePattern.getComponent());
         
         chkWholeWords = new JCheckBox();
@@ -518,7 +519,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
                 entries.add(0, new ReplaceModelItem(replacePattern));
             }
             if (!entries.isEmpty()) {
-                cboxReplacement.setModel(new ListComboBoxModel(entries, true));
+                cboxReplacement.setModel(new ListComboBoxModel<ReplaceModelItem>(entries, true));
             }
         }
     }
@@ -797,7 +798,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             "org.netbeans.modules.search.BasicSearchForm.FileNamePatternWatcher");//NOI18N
 
     private SearchPatternController cboxTextToFind;
-    private JComboBox cboxReplacement;
+    private JComboBox<ReplaceModelItem> cboxReplacement;
     private FileNameController cboxFileNamePattern;
     private JCheckBox chkWholeWords;
     private JCheckBox chkCaseSensitive;
@@ -1022,10 +1023,10 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         }
     }
 
-    private static class TextToFindTypeComboBox extends JComboBox {
+    private static class TextToFindTypeComboBox extends JComboBox<MatchType> {
 
         public TextToFindTypeComboBox() {
-            super(new Object[]{MatchType.LITERAL,
+            super(new MatchType[]{MatchType.LITERAL,
                 MatchType.BASIC, MatchType.REGEXP});
         }
 

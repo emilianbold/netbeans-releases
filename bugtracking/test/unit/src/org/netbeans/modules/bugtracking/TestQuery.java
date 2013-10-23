@@ -51,24 +51,48 @@ import org.netbeans.modules.bugtracking.spi.QueryController;
  */
 public abstract class TestQuery {
 
-    public abstract String getDisplayName();
+    public void removePropertyChangeListener(PropertyChangeListener listener) { }
 
-    public abstract String getTooltip();
+    public void addPropertyChangeListener(PropertyChangeListener listener) { }
+    
+    public String getDisplayName() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public abstract QueryController getController();
+    public String getTooltip() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public abstract boolean isSaved();
+    public QueryController getController() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public abstract Collection<? extends TestIssue> getIssues();
+    public boolean isSaved() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public abstract boolean contains(String id);
+    public Collection<? extends TestIssue> getIssues() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public abstract void removePropertyChangeListener(PropertyChangeListener listener);
+    public void remove() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public abstract void addPropertyChangeListener(PropertyChangeListener listener);
+    public void refresh() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
+    public boolean canRename() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
+    public void rename(String name) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public abstract void remove();
-
-    public abstract void refresh();
+    boolean canRemove() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
     
 }

@@ -43,10 +43,13 @@
 package org.netbeans.modules.maven.j2ee.web;
 
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.maven.api.Constants;
+import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.j2ee.J2eeMavenSourcesImpl;
 import org.openide.filesystems.FileObject;
 
@@ -75,5 +78,47 @@ public final class WebProjectUtils {
             return grp[0].getRootFolder();
         }
         return null;
+    }
+
+    /**
+     * Simplifies usage of {@link PluginPropertyUtils} for Web based project's.
+     * <p>
+     * Use this method in case if you want to check for configuration property in maven-war-plugin
+     * with <i>war</i> goal.
+     * </p>
+     *
+     * @param project where we want to evaluate given property
+     * @param property the name of the plugin parameter to look for
+     * @return value of the property
+     */
+    public static String getPluginProperty(@NonNull Project project, @NonNull String property) {
+        return PluginPropertyUtils.getPluginProperty(
+                project,
+                Constants.GROUP_APACHE_PLUGINS,
+                Constants.PLUGIN_WAR,
+                property,
+                "war", // NOI18N
+                null);
+    }
+
+    /**
+     * Simplifies usage of {@link PluginPropertyUtils} for Web based project's.
+     * <p>
+     * Use this method in case if you want to check for configuration property in maven-war-plugin with
+     * <i>war</i> goal and when you need to use specific {@link PluginPropertyUtils.ConfigurationBuilder}.
+     * </p>
+     *
+     * @param <T> type of our {@link PluginPropertyUtils.ConfigurationBuilder}
+     * @param project where we want to evaluate given property
+     * @param property the name of the plugin parameter to look for
+     * @return value of the property
+     */
+    public static <T> T getPluginProperty(@NonNull Project project, @NonNull PluginPropertyUtils.ConfigurationBuilder<T> config) {
+        return PluginPropertyUtils.getPluginPropertyBuildable(
+                project,
+                Constants.GROUP_APACHE_PLUGINS,
+                Constants.PLUGIN_WAR,
+                "war", // NOI18N
+                config);
     }
 }

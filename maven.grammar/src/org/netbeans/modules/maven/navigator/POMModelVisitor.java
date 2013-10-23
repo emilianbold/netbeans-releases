@@ -64,6 +64,7 @@ import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.xml.namespace.QName;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.maven.model.pom.Activation;
 import org.netbeans.modules.maven.model.pom.ActivationCustom;
 import org.netbeans.modules.maven.model.pom.ActivationFile;
@@ -126,6 +127,10 @@ import org.openide.util.lookup.Lookups;
  * @author mkleint
  */
 public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POMComponentVisitor {
+    private static final @StaticResource String VALUE = "org/netbeans/modules/maven/navigator/value.png";
+    private static final @StaticResource String VALUE2 = "org/netbeans/modules/maven/navigator/value2.png";
+    private static final @StaticResource String VALUE3 = "org/netbeans/modules/maven/navigator/value3.png";
+    private static final @StaticResource String VALUE4 = "org/netbeans/modules/maven/navigator/value4.png";
 
     private static final Logger LOG = Logger.getLogger(POMModelVisitor.class.getName());
     private Map<String, POMCutHolder> childs = new LinkedHashMap<String, POMCutHolder>();
@@ -1252,10 +1257,10 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
 
 
     private static final Image[] ICONS = new Image[] {
-        ImageUtilities.loadImage("org/netbeans/modules/maven/navigator/value.png"), // NOI18N
-        ImageUtilities.loadImage("org/netbeans/modules/maven/navigator/value2.png"), // NOI18N
-        ImageUtilities.loadImage("org/netbeans/modules/maven/navigator/value3.png"), // NOI18N
-        ImageUtilities.loadImage("org/netbeans/modules/maven/navigator/value4.png"), // NOI18N
+        ImageUtilities.loadImage(VALUE), // NOI18N
+        ImageUtilities.loadImage(VALUE2), // NOI18N
+        ImageUtilities.loadImage(VALUE3), // NOI18N
+        ImageUtilities.loadImage(VALUE4), // NOI18N
     };
 
     private static Image getIconForCutHolder(POMCutHolder holder) {

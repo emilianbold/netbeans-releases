@@ -176,6 +176,7 @@ public final class Terminal extends JComponent {
     private final ShortcutsListener shortcutsListener = new ShortcutsListener();
 
     private String title;
+    private boolean customTitle;
 
     // AKA ! weak closed
     private boolean visibleInContainer;
@@ -262,6 +263,19 @@ public final class Terminal extends JComponent {
 	    IOResizable.Size size = new IOResizable.Size(cells, pixels);
 	    tio.pcs().firePropertyChange(IOResizable.PROP_SIZE, null, size);
 	}
+
+	private final static int MAX_TITLE_LENGTH = 40;
+
+	@Override
+	public void titleChanged(String title) {
+	    if (!customTitle) {
+		final String prefix = "...";			// NOI18N
+		if (prefix.length() + title.length() > MAX_TITLE_LENGTH) {
+		    title = prefix + title.substring(title.length() - MAX_TITLE_LENGTH);
+		}
+		setTitle(title);
+	    }
+	}
     }
 
     private static class TerminalOutputEvent extends OutputEvent {
@@ -298,7 +312,7 @@ public final class Terminal extends JComponent {
         findState = new DefaultFindState(term);
 
         term.setHorizontallyScrollable(false);
-        term.setEmulation("ansi");	// NOI18N
+        term.setEmulation("xterm");	// NOI18N
         term .setBackground(Color.white);
         term.setHistorySize(4000);
         term.setRenderingHints(getRenderingHints());
@@ -587,6 +601,7 @@ public final class Terminal extends JComponent {
 	    if (DialogDisplayer.getDefault().notify(inputLine) == NotifyDescriptor.OK_OPTION) {
 		String newTitle = inputLine.getInputText().trim();
 		if (!newTitle.equals(title)) {
+		    customTitle = !newTitle.isEmpty();
 		    setTitle(newTitle);
 		}
 	    }

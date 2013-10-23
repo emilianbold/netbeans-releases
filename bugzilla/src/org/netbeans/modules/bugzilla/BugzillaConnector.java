@@ -81,33 +81,17 @@ public class BugzillaConnector extends TeamBugtrackingConnector {
         if(BugzillaUtil.isNbRepository(bugzillaRepository)) {
             NBRepositorySupport.getInstance().setNBBugzillaRepository(bugzillaRepository);
         }
-        return Bugzilla.getInstance().getBugtrackingFactory().
-                createRepository(
-                    bugzillaRepository, 
-                    Bugzilla.getInstance().getRepositoryProvider(), 
-                    Bugzilla.getInstance().getQueryProvider(), 
-                    Bugzilla.getInstance().getIssueProvider());
+        return BugzillaUtil.createRepository(bugzillaRepository);
     }
     
     @Override
     public Repository createRepository() {
         Bugzilla.init();
-        BugzillaRepository bugzillaRepository = new BugzillaRepository();
-        return Bugzilla.getInstance().getBugtrackingFactory().
-                createRepository(
-                    bugzillaRepository, 
-                    Bugzilla.getInstance().getRepositoryProvider(), 
-                    Bugzilla.getInstance().getQueryProvider(), 
-                    Bugzilla.getInstance().getIssueProvider());
+        return BugzillaUtil.createRepository(new BugzillaRepository());
     }
 
     public static String getConnectorName() {
         return NbBundle.getMessage(BugzillaConnector.class, "LBL_ConnectorName");           // NOI18N
-    }
-
-    @Override
-    public IssueFinder getIssueFinder() {
-        return SimpleIssueFinder.getInstance();
     }
 
     /******************************************************************************
@@ -124,7 +108,7 @@ public class BugzillaConnector extends TeamBugtrackingConnector {
         if(BugzillaUtil.isNbRepository(repo)) {
             NBRepositorySupport.getInstance().setNBBugzillaRepository(repo);
         }
-        return BugzillaUtil.getRepository(repo);
+        return BugzillaUtil.createRepository(repo);
     }
 
     private KenaiRepository createKenaiRepository(TeamProject kenaiProject, String displayName, String location) {

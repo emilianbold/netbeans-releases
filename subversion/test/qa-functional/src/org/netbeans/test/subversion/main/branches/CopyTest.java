@@ -105,8 +105,8 @@ public class CopyTest extends JellyTestCase {
     public static Test suite() {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(CopyTest.class).addTest(
-                "testCreateNewCopySwitch",
-                "testCreateNewCopy").enableModules(".*").clusters(".*"));
+                        "testCreateNewCopySwitch",
+                        "testCreateNewCopy").enableModules(".*").clusters(".*"));
     }
 
     public void testCreateNewCopySwitch() throws Exception {
@@ -118,12 +118,10 @@ public class CopyTest extends JellyTestCase {
         if (TestKit.getOsName().indexOf("Mac") > -1) {
             NewProjectWizardOperator.invoke().close();
         }
-        
 
         stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
-        
 
         //create repository...
         File work = new File(TMP_PATH + File.separator + WORK_PATH + File.separator + "w" + System.currentTimeMillis());
@@ -139,7 +137,7 @@ public class CopyTest extends JellyTestCase {
         RepositoryStepOperator rso = new RepositoryStepOperator();
         new EventTool().waitNoEvent(2000);
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
-        
+
         new EventTool().waitNoEvent(2000);
         rso.next();
         WorkDirStepOperator wdso = new WorkDirStepOperator();
@@ -155,7 +153,7 @@ public class CopyTest extends JellyTestCase {
         JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
         open.push();
         TestKit.waitForScanFinishedSimple();
-       
+
         mh = new MessageHandler("Copying");
         TestKit.removeHandlers(log);
         log.addHandler(mh);
@@ -167,10 +165,11 @@ public class CopyTest extends JellyTestCase {
         cto.checkSwitchToCopy(true);
         cto.copy();
 
-        TestKit.waitText(mh);
         new EventTool().waitNoEvent(2000);
+        TestKit.waitText(mh);
+        //new EventTool().waitNoEvent(2000);
 
-         new EventTool().checkNoEvent(3000);
+        new EventTool().checkNoEvent(3000);
         TestKit.showStatusLabels();
         new EventTool().checkNoEvent(3000);
         Node nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp" + "|Main.java");
@@ -210,8 +209,6 @@ public class CopyTest extends JellyTestCase {
         stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
-        
-        
 
         //create repository...
         File work = new File(TMP_PATH + File.separator + WORK_PATH + File.separator + "w" + System.currentTimeMillis());
@@ -290,6 +287,7 @@ public class CopyTest extends JellyTestCase {
         so.setRepositoryFolder("branches/release01/" + PROJECT_NAME);
         so.switchBt();
 
+        new EventTool().waitNoEvent(2000);
         TestKit.waitText(mh);
 
         nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp" + "|Main.java");

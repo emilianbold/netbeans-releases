@@ -168,8 +168,7 @@ made subject to such option by the copyright holder.
         <exec executable="xcodebuild" dir="platforms/ios" failonerror="true">
             <arg value="-project"/>
             <arg value="${project.name}.xcodeproj"/>
-            <arg value="-arch"/>   
-            <arg value="${ios.build.arch}" />
+            <arg value="ARCHS=${ios.build.arch}"/>   
             <arg value="-target"/>
             <arg value="${project.name}"/>
             <arg value="-configuration"/> 

@@ -89,7 +89,7 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
     private ColorModel          colorModel;
     private boolean		listen = false;
     private String              currentScheme;
-    private Map<String, Vector<AttributeSet>> schemes = new HashMap<String, Vector<AttributeSet>>();
+    private Map<String, List<AttributeSet>> schemes = new HashMap<String, List<AttributeSet>>();
     private Set<String> toBeSaved = new HashSet<String>();
     private boolean             changed = false;
     
@@ -125,7 +125,7 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
         lCategory.setLabelFor (lCategories);
         loc(lCategory, "CTL_Category");
         loc(lForeground, "CTL_Foreground_label");
-        loc(lWaveUnderlined, "CTL_Wave_underlined_label");
+        loc(lEffectColor, "CTL_Effects_color");
         loc(lbackground, "CTL_Background_label");
         
         cbEffects.addItem (loc ("CTL_Effects_None"));
@@ -148,7 +148,7 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
         lCategories = new javax.swing.JList<AttributeSet>();
         lForeground = new javax.swing.JLabel();
         lbackground = new javax.swing.JLabel();
-        lWaveUnderlined = new javax.swing.JLabel();
+        lEffectColor = new javax.swing.JLabel();
         cbForeground = new ColorComboBox();
         cbBackground = new ColorComboBox();
         cbEffectColor = new ColorComboBox();
@@ -163,7 +163,7 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
 
         lbackground.setText(org.openide.util.NbBundle.getMessage(AnnotationsPanel.class, "CTL_Background_label")); // NOI18N
 
-        lWaveUnderlined.setText(org.openide.util.NbBundle.getMessage(AnnotationsPanel.class, "CTL_Wave_underlined_label")); // NOI18N
+        lEffectColor.setText(org.openide.util.NbBundle.getMessage(AnnotationsPanel.class, "CTL_Effects_color")); // NOI18N
 
         lEffects.setLabelFor(cbEffects);
         lEffects.setText(org.openide.util.NbBundle.getMessage(AnnotationsPanel.class, "CTL_Effects_label")); // NOI18N
@@ -176,17 +176,17 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(cpCategories, javax.swing.GroupLayout.DEFAULT_SIZE, 152, Short.MAX_VALUE)
+                        .addComponent(cpCategories, javax.swing.GroupLayout.DEFAULT_SIZE, 168, Short.MAX_VALUE)
                         .addGap(20, 20, 20)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(lbackground)
                             .addComponent(lForeground)
                             .addComponent(lEffects)
-                            .addComponent(lWaveUnderlined))
+                            .addComponent(lEffectColor))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(cbEffectColor, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(cbForeground, javax.swing.GroupLayout.Alignment.TRAILING, 0, 122, Short.MAX_VALUE)
+                            .addComponent(cbForeground, javax.swing.GroupLayout.Alignment.TRAILING, 0, 138, Short.MAX_VALUE)
                             .addComponent(cbBackground, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(cbEffects, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addComponent(lCategory))
@@ -213,7 +213,7 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
                             .addComponent(cbEffects, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(10, 10, 10)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(lWaveUnderlined)
+                            .addComponent(lEffectColor)
                             .addComponent(cbEffectColor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addComponent(cpCategories, javax.swing.GroupLayout.DEFAULT_SIZE, 258, Short.MAX_VALUE))
@@ -232,9 +232,9 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
     private javax.swing.JScrollPane cpCategories;
     private javax.swing.JList<AttributeSet> lCategories;
     private javax.swing.JLabel lCategory;
+    private javax.swing.JLabel lEffectColor;
     private javax.swing.JLabel lEffects;
     private javax.swing.JLabel lForeground;
-    private javax.swing.JLabel lWaveUnderlined;
     private javax.swing.JLabel lbackground;
     // End of variables declaration//GEN-END:variables
     
@@ -263,7 +263,7 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
         this.colorModel = colorModel;
         listen = false;
         currentScheme = colorModel.getCurrentProfile ();
-        lCategories.setListData (getAnnotations (currentScheme));
+        lCategories.setListData (getAnnotations (currentScheme).toArray(new AttributeSet[]{}));
         if (lCategories.getModel ().getSize () > 0)
             lCategories.setSelectedIndex (0);
         refreshUI ();
@@ -273,7 +273,7 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
     
     public void cancel () {
         toBeSaved = new HashSet<String>();
-        schemes = new HashMap<String, Vector<AttributeSet>>();
+        schemes = new HashMap<String, List<AttributeSet>>();
         changed = false;
     }
     
@@ -283,7 +283,7 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
             colorModel.setAnnotations(scheme, getAnnotations(scheme));
         }
         toBeSaved = new HashSet<String>();
-        schemes = new HashMap<String, Vector<AttributeSet>>();
+        schemes = new HashMap<String, List<AttributeSet>>();
     }
     
     public boolean isChanged () {
@@ -293,7 +293,7 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
     public void setCurrentProfile (String currentScheme) {
         String oldScheme = this.currentScheme;
         this.currentScheme = currentScheme;
-        Vector<AttributeSet> v = getAnnotations(currentScheme);
+        List<AttributeSet> v = getAnnotations(currentScheme);
         if (v == null) {
             // clone scheme
             v = getAnnotations (oldScheme);
@@ -301,13 +301,23 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
             toBeSaved.add (currentScheme);
             v = getAnnotations (currentScheme);
         }
-        lCategories.setListData (v);
+        lCategories.setListData (v.toArray(new AttributeSet[]{}));
         if (lCategories.getModel ().getSize () > 0)
             lCategories.setSelectedIndex (0);
         refreshUI ();
     }
     
     public void deleteProfile (String scheme) {
+        if (colorModel.isCustomProfile (scheme))
+            schemes.remove (scheme);
+        else {
+            schemes.put (scheme, getDefaults (scheme));
+            lCategories.setListData (getAnnotations(scheme).toArray(new AttributeSet[]{}));
+            lCategories.repaint();
+            lCategories.setSelectedIndex (0);   
+            refreshUI ();
+        }
+        toBeSaved.add (scheme);
     }
 
     public JComponent getComponent() {
@@ -334,8 +344,9 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
     }
 
     private void updateData () {
-        Vector<AttributeSet> annotations = getAnnotations(currentScheme);
-        SimpleAttributeSet c = (SimpleAttributeSet) annotations.get(lCategories.getSelectedIndex());
+        List<AttributeSet> annotations = getAnnotations(currentScheme);
+        int index = lCategories.getSelectedIndex();
+        SimpleAttributeSet c = new SimpleAttributeSet(annotations.get(index));
         
         Color color = ColorComboBoxSupport.getSelectedColor( (ColorComboBox)cbBackground );
         if (color != null) {
@@ -359,6 +370,8 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
         } else {
             c.removeAttribute(EditorStyleConstants.WaveUnderlineColor);
         }
+        
+        annotations.set(index, c);
         
         toBeSaved.add(currentScheme);
         changed = true;
@@ -396,7 +409,7 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
         }
 
         // set values
-        Vector<AttributeSet> annotations = getAnnotations (currentScheme);
+        List<AttributeSet> annotations = getAnnotations (currentScheme);
         AttributeSet c = annotations.get (index);
         ColorComboBoxSupport.setSelectedColor( (ColorComboBox)cbForeground, (Color) c.getAttribute (StyleConstants.Foreground));
         ColorComboBoxSupport.setSelectedColor( (ColorComboBox)cbBackground, (Color) c.getAttribute (StyleConstants.Background));
@@ -426,14 +439,27 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
         return null;
     }
     
-    private Vector<AttributeSet> getAnnotations(String scheme) {
+    private List<AttributeSet> getAnnotations(String scheme) {
         if (!schemes.containsKey(scheme)) {
             Collection<AttributeSet> c = colorModel.getAnnotations(currentScheme);
             if (c == null) return null;
             List<AttributeSet> l = new ArrayList<AttributeSet>(c);
             Collections.sort(l, new CategoryComparator());
-            schemes.put(scheme, new Vector<AttributeSet>(l));
+            schemes.put(scheme, new ArrayList<AttributeSet>(l));
         }
         return schemes.get(scheme);
+    }
+    /** cache Map (String (profile name) > List (AttributeSet)). */
+    private Map<String, List<AttributeSet>> profileToDefaults = new HashMap<String, List<AttributeSet>>();
+    
+    private List<AttributeSet> getDefaults(String profile) {
+        if (!profileToDefaults.containsKey(profile)) {
+            Collection<AttributeSet> c = colorModel.getAnnotationsDefaults(profile);
+            List<AttributeSet> l = new ArrayList<AttributeSet>(c);
+            Collections.sort(l, new CategoryComparator());
+            profileToDefaults.put(profile, l);
+        }
+        List<AttributeSet> defaultprofile = profileToDefaults.get(profile);
+        return new ArrayList<AttributeSet>(defaultprofile);
     }
 }

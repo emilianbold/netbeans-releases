@@ -80,6 +80,7 @@ public class ComponentUtils {
      * @param jComboBox Freshly created component that will be adjusted.
      * @return Controller for modified {@code jComboBox}.
      */
+    @SuppressWarnings("rawtypes")
     public static @NonNull FileNameController adjustComboForFileName(
             @NonNull JComboBox jComboBox) {
         return new FileNameController(jComboBox);
@@ -99,7 +100,7 @@ public class ComponentUtils {
      * @return Controller for modified {@code jComboBox}.
      */
     public static @NonNull ScopeController adjustComboForScope(
-            @NonNull JComboBox jComboBox,
+            @SuppressWarnings("rawtypes") @NonNull JComboBox jComboBox,
             @NullAllowed String preferredScopeId,
             @NonNull SearchScopeDefinition... extraSearchScopes) {
         return new ScopeController(jComboBox,
@@ -184,7 +185,7 @@ public class ComponentUtils {
      * @since api.search/1.1
      */
     public static @NonNull SearchPatternController adjustComboForSearchPattern(
-            @NonNull JComboBox jComboBox) {
+            @SuppressWarnings("rawtypes") @NonNull JComboBox jComboBox) {
         return new SearchPatternController(jComboBox);
     }
 }

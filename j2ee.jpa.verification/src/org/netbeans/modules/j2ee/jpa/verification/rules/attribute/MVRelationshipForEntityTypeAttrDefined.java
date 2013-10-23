@@ -44,8 +44,9 @@
 package org.netbeans.modules.j2ee.jpa.verification.rules.attribute;
 
 import com.sun.source.tree.Tree;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -62,7 +63,10 @@ import org.netbeans.modules.j2ee.jpa.verification.common.Utilities;
 import org.netbeans.modules.j2ee.jpa.verification.fixes.CreateManyToManyRelationshipHint;
 import org.netbeans.modules.j2ee.jpa.verification.fixes.CreateOneToManyRelationshipHint;
 import org.netbeans.modules.j2ee.jpa.verification.fixes.CreateUnidirOneToManyRelationshipHint;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
@@ -77,58 +81,73 @@ import org.openide.util.NbBundle;
  */
 public class MVRelationshipForEntityTypeAttrDefined extends JPAEntityAttributeCheck {
 
-    public Collection<ErrorDescription> check(JPAProblemContext ctx, HintContext hc, AttributeWrapper attrib) {
+    @Override
+    public Collection<ErrorDescription> check(final JPAProblemContext ctx, final HintContext hc, final AttributeWrapper attrib) {
 
         // Not applicable for embeddable classes, which do not have relationships.
         if (ctx.isEmbeddable()) {
             return null;
         }
 
-        TypeMirror type = attrib.getType();
+        final TypeMirror type = attrib.getType();
+        final ArrayList<ErrorDescription> ret = new ArrayList<>();
 
         if (type.getKind() == TypeKind.DECLARED) {
             List<? extends TypeMirror> typeArgs = ((DeclaredType) type).getTypeArguments();
 
             if (typeArgs.size() == 1) {
-                Element typeElement = ctx.getCompilationInfo().getTypes().asElement(typeArgs.get(0));
+                final Element typeElement = ctx.getCompilationInfo().getTypes().asElement(typeArgs.get(0));
 
                 if (typeElement != null && typeElement.getKind() == ElementKind.CLASS) {
-                    Entity entity = ModelUtils.getEntity(ctx.getMetaData(), ((TypeElement) typeElement));
-                    String remoteClassName = ((TypeElement) typeElement).getQualifiedName().toString();
 
-                    if (entity != null) {
-                        ElementHandle<TypeElement> classHandle = ElementHandle.create(ctx.getJavaClass());
-                        ElementHandle<Element> elemHandle = ElementHandle.create(attrib.getJavaElement());
+                    try {
+                        MetadataModel<EntityMappingsMetadata> model = ModelUtils.getModel(hc.getInfo().getFileObject());
+                        model.runReadAction(new MetadataModelAction<EntityMappingsMetadata, Void>() {
+                            @Override
+                            public Void run(EntityMappingsMetadata metadata) {
 
-                        Fix fix1 = new CreateUnidirOneToManyRelationshipHint(ctx.getFileObject(),
-                                classHandle, elemHandle);
 
-                        Fix fix2 = new CreateOneToManyRelationshipHint(ctx.getFileObject(),
-                                classHandle, ctx.getAccessType(), attrib.getName(), remoteClassName);
+                                Entity entity = ModelUtils.getEntity(ctx.getMetaData(), ((TypeElement) typeElement));
+                                String remoteClassName = ((TypeElement) typeElement).getQualifiedName().toString();
 
-                        Fix fix3 = new CreateManyToManyRelationshipHint(ctx.getFileObject(),
-                                classHandle,
-                                ctx.getAccessType(),
-                                attrib.getName(),
-                                remoteClassName);
+                                if (entity != null) {
+                                    ElementHandle<TypeElement> classHandle = ElementHandle.create(ctx.getJavaClass());
+                                    ElementHandle<Element> elemHandle = ElementHandle.create(attrib.getJavaElement());
 
-                        Tree elementTree = ctx.getCompilationInfo().getTrees().getTree(attrib.getJavaElement());
+                                    Fix fix1 = new CreateUnidirOneToManyRelationshipHint(ctx.getFileObject(),
+                                            classHandle, elemHandle);
 
-                        Utilities.TextSpan underlineSpan = Utilities.getUnderlineSpan(
-                                ctx.getCompilationInfo(), elementTree);
+                                    Fix fix2 = new CreateOneToManyRelationshipHint(ctx.getFileObject(),
+                                            classHandle, ctx.getAccessType(), attrib.getName(), remoteClassName);
 
-                        ErrorDescription error = ErrorDescriptionFactory.forSpan(
-                                hc,
-                                underlineSpan.getStartOffset(),
-                                underlineSpan.getEndOffset(),
-                                NbBundle.getMessage(MVRelationshipForEntityTypeAttrDefined.class, "MSG_MVEntityRelationNotDefined"),
-                                fix1, fix2, fix3);
-                        return Collections.singletonList(error);
+                                    Fix fix3 = new CreateManyToManyRelationshipHint(ctx.getFileObject(),
+                                            classHandle,
+                                            ctx.getAccessType(),
+                                            attrib.getName(),
+                                            remoteClassName);
+
+                                    Tree elementTree = ctx.getCompilationInfo().getTrees().getTree(attrib.getJavaElement());
+
+                                    Utilities.TextSpan underlineSpan = Utilities.getUnderlineSpan(
+                                            ctx.getCompilationInfo(), elementTree);
+
+                                    ErrorDescription error = ErrorDescriptionFactory.forSpan(
+                                            hc,
+                                            underlineSpan.getStartOffset(),
+                                            underlineSpan.getEndOffset(),
+                                            NbBundle.getMessage(MVRelationshipForEntityTypeAttrDefined.class, "MSG_MVEntityRelationNotDefined"),
+                                            fix1, fix2, fix3);
+                                    ret.add(error);
+                                }
+                                return null;
+                            }
+                        });
+                    } catch (IOException ex) {
                     }
                 }
             }
         }
 
-        return null;
+        return ret;
     }
 }

@@ -69,12 +69,12 @@ import oracle.eclipse.tools.cloud.dev.tasks.CloudDevClient;
 import oracle.eclipse.tools.cloud.dev.tasks.CloudDevConstants;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.TaskMapping;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
-import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.bugtracking.team.spi.TeamAccessor;
 import org.netbeans.modules.bugtracking.team.spi.TeamProject;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
@@ -271,8 +271,16 @@ public class ODCSRepository implements PropertyChangeListener {
     private static void setupProperties (TaskRepository repository, String displayName,
             String user, char[] password, String httpUser, char[] httpPassword) {
         repository.setRepositoryLabel(displayName);
+        
+        // set u/p as well as http u/p which is being used by the odcs http client
+        if(httpUser == null || httpUser.trim().equals("")) {
+            httpUser = user;
+        }
+        if(httpPassword == null || new String(httpPassword).trim().equals("")) {
+            httpPassword = password;
+        }
+        
         MylynUtils.setCredentials(repository, user, password, httpUser, httpPassword);
-        patchHttpCredentials(repository, user, password);
     }
     
     synchronized void resetRepository (boolean logout) {
@@ -435,7 +443,7 @@ public class ODCSRepository implements PropertyChangeListener {
             for (SavedTaskQuery sq : savedQueries) {
                 ODCSQuery q = ODCSQuery.createSaved(this, sq);
                 queries.add(q);
-                
+
                 ODCS.LOG.log(Level.FINER, "added remote query {0} to repository {1}", new Object[]{sq.getName(), getDisplayName()});
             }
         }
@@ -455,19 +463,21 @@ public class ODCSRepository implements PropertyChangeListener {
     private void initializePredefinedQueries () {
         if (predefinedQueries == null) {
             Map<PredefinedTaskQuery, IRepositoryQuery> queries = new EnumMap<PredefinedTaskQuery, IRepositoryQuery>(PredefinedTaskQuery.class);
-            for (PredefinedTaskQuery ptq : PredefinedTaskQuery.values()) {
-                try {
-                    MylynSupport supp = MylynSupport.getInstance();
-                    IRepositoryQuery query = supp.getRepositoryQuery(getTaskRepository(), ODCSUtil.getPredefinedQueryName(ptq));
-                    if (query == null) {
-                        query = supp.createNewQuery(taskRepository, ODCSUtil.getPredefinedQueryName(ptq));
-                        query.setUrl(CloudDevConstants.PREDEFINED_QUERY);
-                        query.setAttribute(CloudDevConstants.QUERY_NAME, ptq.toString());
-                        supp.addQuery(taskRepository, query);
+            if(!Boolean.getBoolean("odcs.tasks.noPredefinedQueries")) { // NOI18N
+                for (PredefinedTaskQuery ptq : PredefinedTaskQuery.values()) {
+                    try {
+                        MylynSupport supp = MylynSupport.getInstance();
+                        IRepositoryQuery query = supp.getRepositoryQuery(getTaskRepository(), ODCSUtil.getPredefinedQueryName(ptq));
+                        if (query == null) {
+                            query = supp.createNewQuery(taskRepository, ODCSUtil.getPredefinedQueryName(ptq));
+                            query.setUrl(CloudDevConstants.PREDEFINED_QUERY);
+                            query.setAttribute(CloudDevConstants.QUERY_NAME, ptq.toString());
+                            supp.addQuery(taskRepository, query);
+                        }
+                        queries.put(ptq, query);
+                    } catch (CoreException ex) {
+                        ODCS.LOG.log(Level.WARNING, null, ex);
                     }
-                    queries.put(ptq, query);
-                } catch (CoreException ex) {
-                    ODCS.LOG.log(Level.WARNING, null, ex);
                 }
             }
             synchronized(QUERIES_LOCK) {
@@ -494,6 +504,12 @@ public class ODCSRepository implements PropertyChangeListener {
         try {
             task = MylynSupport.getInstance().createTask(taskRepository, new TaskMapping());
             return getIssueForTask(task);
+        } catch (OperationCanceledException ex) {
+            // creation of new task may be immediately canceled
+            // happens when more repositories are available and
+            // the RepoComboSupport immediately switches to another repo
+            ODCS.LOG.log(Level.FINE, null, ex);
+            return null;
         } catch (CoreException ex) {
             ODCS.LOG.log(Level.WARNING, null, ex);
             return null;
@@ -528,17 +544,13 @@ public class ODCSRepository implements PropertyChangeListener {
         return info.getId();
     }
 
-    private Cache getCache () {
+    public Cache getIssueCache() {
         synchronized (CACHE_LOCK) {
             if(cache == null) {
                 cache = new Cache();
             }
             return cache;
         }
-    }
-    
-    public IssueCache<ODCSIssue> getIssueCache() {
-        return getCache();
     }
 
     public ODCSExecutor getExecutor() {
@@ -549,7 +561,6 @@ public class ODCSRepository implements PropertyChangeListener {
     }
 
     public void removeQuery(ODCSQuery query) {
-        getIssueCache().removeQuery(query.getDisplayName()); // XXX do we have to do this?
         synchronized (QUERIES_LOCK) {
             remoteSavedQueries.remove(query);
         }
@@ -580,12 +591,6 @@ public class ODCSRepository implements PropertyChangeListener {
         support.firePropertyChange(RepositoryProvider.EVENT_UNSUBMITTED_ISSUES_CHANGED, null, null);
     }
 
-    private static void patchHttpCredentials(TaskRepository taskRepository, String user, char[] password) {
-        // XXX have to setup http credentials as that is requested by the odcs client
-        AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(user != null ? user : "", password != null ? new String(password) : ""); // NOI18N
-        taskRepository.setCredentials(AuthenticationType.HTTP, authenticationCredentials, false);
-    }
-
     public void refreshConfiguration() {
         getRepositoryConfiguration(true);
     }
@@ -608,10 +613,10 @@ public class ODCSRepository implements PropertyChangeListener {
         if (task != null) {
             synchronized (CACHE_LOCK) {
                 String taskId = ODCSIssue.getID(task);
-                Cache issueCache = getCache();
+                Cache issueCache = getIssueCache();
                 issue = issueCache.getIssue(taskId);
                 if (issue == null) {
-                    issue = issueCache.setIssueData(taskId, new ODCSIssue(task, this));
+                    issue = issueCache.setIssue(taskId, new ODCSIssue(task, this));
                 }
             }
         }
@@ -649,7 +654,7 @@ public class ODCSRepository implements PropertyChangeListener {
     }
 
     public void taskDeleted (String taskId) {
-        getCache().removeIssue(taskId);
+        getIssueCache().removeIssue(taskId);
     }
 
     public Collection<ODCSIssue> getUnsubmittedIssues () {
@@ -670,14 +675,11 @@ public class ODCSRepository implements PropertyChangeListener {
         }
     }
     
-    private class Cache extends IssueCache<ODCSIssue> {
+    public class Cache {
         private final Map<String, Reference<ODCSIssue>> issues = new HashMap<String, Reference<ODCSIssue>>();
         
-        Cache() {
-            super(ODCSRepository.this.getUrl(), new IssueAccessorImpl());
-        }
+        Cache() { }
 
-        @Override
         public ODCSIssue getIssue (String id) {
             synchronized (CACHE_LOCK) {
                 Reference<ODCSIssue> issueRef = issues.get(id);
@@ -685,28 +687,11 @@ public class ODCSRepository implements PropertyChangeListener {
             }
         }
 
-        @Override
-        public ODCSIssue setIssueData (String id, ODCSIssue issue) {
+        public ODCSIssue setIssue (String id, ODCSIssue issue) {
             synchronized (CACHE_LOCK) {
                 issues.put(id, new SoftReference<ODCSIssue>(issue));
             }
             return issue;
-        }
-
-        @Override
-        public Status getStatus (String id) {
-            ODCSIssue issue = getIssue(id);
-            if (issue != null) {
-                switch (issue.getStatus()) {
-                    case INCOMING_MODIFIED:
-                        return Status.ISSUE_STATUS_MODIFIED;
-                    case INCOMING_NEW:
-                        return Status.ISSUE_STATUS_NEW;
-                    case SEEN:
-                        return Status.ISSUE_STATUS_SEEN;
-                }
-            }
-            return Status.ISSUE_STATUS_UNKNOWN;
         }
 
         private void removeIssue (String id) {
@@ -716,20 +701,4 @@ public class ODCSRepository implements PropertyChangeListener {
         }
     }
 
-    private class IssueAccessorImpl implements IssueCache.IssueAccessor<ODCSIssue> {
-        @Override
-        public long getLastModified(ODCSIssue issue) {
-            assert issue != null;
-            return issue.getLastModify();
-        }
-        @Override
-        public long getCreated(ODCSIssue issue) {
-            assert issue != null;
-            return issue.getCreated();
-        }
-        @Override
-        public Map<String, String> getAttributes(ODCSIssue issue) {
-            return Collections.<String, String>emptyMap();
-        }
-    }    
 }

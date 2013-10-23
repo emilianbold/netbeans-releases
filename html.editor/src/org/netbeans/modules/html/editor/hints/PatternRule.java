@@ -52,6 +52,8 @@ import org.openide.util.NbBundle;
  */
 public abstract class PatternRule extends HtmlValidatorRule {
 
+    protected int matched_pattern_index;
+    
     @Override
     public String getDescription() {
         StringBuilder sb = new StringBuilder();
@@ -74,9 +76,12 @@ public abstract class PatternRule extends HtmlValidatorRule {
 
     @Override
     protected final boolean appliesTo(HtmlRuleContext content, Error e) {
+        matched_pattern_index = -1;
         String msg = e.getDescription();
-        for(Pattern p : getPatterns()) {
+        for(int i = 0; i< getPatterns().length; i++) {
+            Pattern p = getPatterns()[i];
             if(p.matcher(msg).matches()) {
+                matched_pattern_index = i;
                 return true;
             }
         }

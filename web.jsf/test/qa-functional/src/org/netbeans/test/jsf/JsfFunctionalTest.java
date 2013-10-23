@@ -74,10 +74,12 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
         "testManagedBeanWizard",
         "testManagedBeanDelete",
         "testCreateFacesConfig",
+        /* actions are no longer available in projects with JSF 2
         "testAddManagedBean",
         "testAddNavigationRule",
         "testAddNavigationCase",
         "testAddNavigationCaseWithNewRule",
+        */
         "testAddJSFToProject",
         "testJSFPalette",
         "testCreateEntityClassAndPU",

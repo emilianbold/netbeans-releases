@@ -100,7 +100,7 @@ public interface HudsonJob extends Comparable<HudsonJob> {
          * Suitable for {@link AbstractNode#setIconBaseWithExtension(String)}.
          */
         public String iconBase() {
-            return "org/netbeans/modules/hudson/ui/resources/" + iconBaseName + ".png"; // NOI18N
+            return "org/netbeans/modules/hudson/resources/" + iconBaseName + ".png"; // NOI18N
         }
         /**
          * Adds color to a label if necessary.

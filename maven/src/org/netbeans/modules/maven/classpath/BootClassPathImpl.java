@@ -170,7 +170,7 @@ public final class BootClassPathImpl implements ClassPathImplementation, Propert
 
     public @Override void propertyChange(PropertyChangeEvent evt) {
         String newVal = project.getAuxProps().get(Constants.HINT_JDK_PLATFORM, true);
-        if (evt.getSource() == project && evt.getPropertyName().equals(NbMavenProjectImpl.PROP_PROJECT)) {
+        if (evt.getSource() == project && evt.getPropertyName().equals(NbMavenProject.PROP_PROJECT)) {
             if (ecpImpl.resetCache()) {
                 resetCache();
             } else {

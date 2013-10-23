@@ -128,19 +128,6 @@ public class QueryTest extends NbTestCase {
         assertEquals(apiQuery.getIssues().size(), query.getIssues().size());
     }
     
-    /**
-     * invoked from BugtrackingViewsTest
-     * @throws InterruptedException 
-     */
-    public void _testOpen() throws InterruptedException {
-        APITestQuery apiQuery = getAPIQuery();
-        Query query = getQuery();
-        
-//        assertOpen(query, apiQuery, Query.QueryMode.EDIT);
-        assertOpen(query, apiQuery, Query.QueryMode.SHOW_ALL);
-        assertOpen(query, apiQuery, Query.QueryMode.SHOW_NEW_OR_CHANGED);
-    }    
-    
     public void testPCL() {
         APITestQuery apiQuery = getAPIQuery();
         Query query = getQuery();
@@ -189,17 +176,6 @@ public class QueryTest extends NbTestCase {
                 fail("issue wasn't opened");
             }
         }
-    }
-
-    private void assertOpen(Query query, APITestQuery apiQuery, Query.QueryMode mode) throws InterruptedException {
-        apiQuery.wasOpened = false;
-        query.open(mode);
-        assertOpened(apiQuery);
-        assertEquals(mode.name(), apiQuery.openedMode.name());
-        
-        QueryTopComponent tc = QueryTopComponent.find(APIAccessor.IMPL.getImpl(query));
-        assertNotNull(tc);
-        tc.close();
     }
 
 }

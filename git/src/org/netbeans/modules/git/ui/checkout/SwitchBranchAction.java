@@ -78,7 +78,7 @@ public class SwitchBranchAction extends AbstractCheckoutAction {
     
     private static class SwitchBranch extends AbstractCheckoutRevision {
         public SwitchBranch (File repository, RepositoryInfo info, String initialRevision) {
-            super(info, new RevisionDialogController(repository, new File[] { repository }, info.getBranches()));
+            super(info, new RevisionDialogController(repository, new File[] { repository }, info.getBranches(), null));
             panel.jLabel1.setText(NbBundle.getMessage(CheckoutRevisionAction.class, "SwitchBranch.jLabel1.text")); //NOI18N
         }
 

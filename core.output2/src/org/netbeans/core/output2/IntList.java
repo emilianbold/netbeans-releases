@@ -135,7 +135,7 @@ final class IntList {
     
     private void growArray() {
         int[] old = array;
-        array = allocArray(Math.round(array.length * 1.5f));
+        array = allocArray(Math.round(array.length * 2));
         System.arraycopy(old, 0, array, 0, old.length);
     }
     

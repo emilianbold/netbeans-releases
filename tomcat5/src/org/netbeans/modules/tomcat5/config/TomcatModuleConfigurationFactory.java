@@ -77,14 +77,14 @@ public class TomcatModuleConfigurationFactory implements ModuleConfigurationFact
     public ModuleConfiguration create(J2eeModule j2eeModule) throws ConfigurationException {
         // XXX is there a better value for unknown tomcat ?
         return new TomcatModuleConfiguration(j2eeModule,
-                version != null ? version : TomcatVersion.TOMCAT_80);
+                version != null ? version : TomcatVersion.TOMCAT_80, null);
     }
 
     @Override
     public ModuleConfiguration create(J2eeModule j2eeModule, String instanceUrl) throws ConfigurationException {
         try {
             TomcatManager manager = (TomcatManager) TomcatFactory.getInstance().getDisconnectedDeploymentManager(instanceUrl);
-            return new TomcatModuleConfiguration(j2eeModule, manager.getTomcatVersion());
+            return new TomcatModuleConfiguration(j2eeModule, manager.getTomcatVersion(), manager.getTomEEVersion());
         } catch (DeploymentManagerCreationException ex) {
             return create(j2eeModule);
         }

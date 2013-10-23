@@ -45,11 +45,15 @@
 package org.netbeans.core;
 
 import java.awt.BorderLayout;
+import java.awt.Cursor;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -66,9 +70,12 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
@@ -625,10 +632,13 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
                 flash.timer.restart();
             } else {
                 flash = new ExceptionFlasher();
+                JComponent detailsPanel = getDetailsPanel(summary);
+                JComponent bubblePanel = getDetailsPanel(summary);
+
                 flash.note = NotificationDisplayer.getDefault().notify(
                     NbBundle.getMessage(NotifyExcPanel.class, "NTF_ExceptionalExceptionTitle"),
-                    icon, summary,
-                    flash, NotificationDisplayer.Priority.SILENT, NotificationDisplayer.Category.ERROR);
+                    icon, bubblePanel, detailsPanel,
+                    NotificationDisplayer.Priority.SILENT, NotificationDisplayer.Category.ERROR);
             }
             return flash;
         }
@@ -647,6 +657,9 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
                 return;
             }
             synchronized (ExceptionFlasher.class) {
+                if (note != null) {
+                    note.clear();
+                }
                 flash = null;
             }
             if (null != exceptions && exceptions.size() > 0) {
@@ -672,6 +685,26 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
                 if( null != note )
                     note.clear();
             }
+        }
+
+        private static JComponent getDetailsPanel(String summary) {
+            JPanel details = new JPanel(new GridBagLayout());
+            details.setOpaque(false);
+            JLabel lblMessage = new JLabel(summary);
+            
+            JButton reportLink = new JButton("<html><a href=\"_blank\">" + NbBundle.getMessage(NotifyExcPanel.class, "NTF_ExceptionalExceptionReport")); //NOI18N
+            reportLink.setFocusable(false);
+            reportLink.setBorder(BorderFactory.createEmptyBorder());
+            reportLink.setBorderPainted(false);
+            reportLink.setFocusPainted(false);
+            reportLink.setOpaque(false);
+            reportLink.setContentAreaFilled(false);
+            reportLink.addActionListener(flash);
+            reportLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+            details.add(reportLink, new GridBagConstraints(0, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3, 0, 3, 0), 0, 0));
+            details.add(lblMessage, new GridBagConstraints(0, 1, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3, 0, 3, 0), 0, 0));
+            return details;
         }
     }
 

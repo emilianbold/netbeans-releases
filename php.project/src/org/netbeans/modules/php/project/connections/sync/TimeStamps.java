@@ -46,6 +46,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.LinkedList;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
@@ -112,9 +113,19 @@ public final class TimeStamps {
     }
 
     /**
+     * Set timestamp of remote synchronization to current time for the given file. Timestamp is saved only for directories.
+     * @param transferFile transfer file of the synchronization
+     * @see #setSyncTimestamp(TransferFile, long)
+     */
+    public void setSyncTimestamp(TransferFile transferFile) {
+        setSyncTimestamp(transferFile, TimeUnit.SECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS));
+    }
+
+    /**
      * Set timestamp of remote synchronization for the given file. Timestamp is saved only for directories.
      * @param transferFile transfer file of the synchronization
-     * @param timestamp timestamp to be saved
+     * @param timestamp timestamp to be saved, <b>in seconds</b>
+     * @see #setSyncTimestamp(TransferFile)
      */
     public void setSyncTimestamp(TransferFile transferFile, long timestamp) {
         assert transferFile != null;

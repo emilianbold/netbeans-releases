@@ -106,7 +106,7 @@ public class QueryHandleImpl extends QueryHandle implements QueryDescriptor, Act
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        TeamUtil.openQuery(query, Query.QueryMode.SHOW_ALL, true);
+        TeamUtil.openQuery(query, true);
     }
 
     @Override

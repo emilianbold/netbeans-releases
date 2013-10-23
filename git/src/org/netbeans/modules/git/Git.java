@@ -64,7 +64,6 @@ import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.modules.git.ui.shelve.ShelveChangesAction;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.shelve.ShelveChangesActionsRegistry;
-import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.util.RootsToFile;
 import org.netbeans.modules.versioning.util.Utils;
@@ -143,7 +142,7 @@ public final class Git {
         });
     }
 
-    public VCSAnnotator getVCSAnnotator() {
+    public Annotator getVCSAnnotator() {
         return annotator;
     }
 

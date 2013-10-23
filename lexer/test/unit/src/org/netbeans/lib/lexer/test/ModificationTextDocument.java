@@ -50,6 +50,15 @@ import javax.swing.text.PlainDocument;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 
 public class ModificationTextDocument extends PlainDocument {
+    
+    public void runAtomic(Runnable r) {
+        writeLock();
+        try {
+            r.run();
+        } finally {
+            writeUnlock();
+        }
+    }
 
     protected void insertUpdate(DefaultDocumentEvent chng, AttributeSet attr) {
         super.insertUpdate(chng, attr);

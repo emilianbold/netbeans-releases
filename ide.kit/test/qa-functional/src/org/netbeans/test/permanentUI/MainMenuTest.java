@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -41,122 +41,82 @@
  */
 package org.netbeans.test.permanentUI;
 
-import java.io.*;
-import java.util.ArrayList;
-import javax.swing.MenuElement;
-import javax.swing.JMenuItem;
+import java.io.IOException;
 import junit.framework.Test;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jemmy.operators.Operator;
-import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
-import org.netbeans.jemmy.util.PNGEncoder;
-import org.netbeans.junit.Manager;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.test.permanentUI.utils.NbMenuItem;
-import org.netbeans.test.permanentUI.utils.Utilities;
 import org.netbeans.test.permanentUI.utils.MenuChecker;
 import org.netbeans.test.permanentUI.utils.ProjectContext;
 
 /**
  *
- * @author Lukas Hasik, Jan Peska
+ * @author Lukas Hasik, Jan Peska, Marian.Mirilovic@oracle.com
  */
-public class MainMenuTest extends JellyTestCase {
-
-    //context says what kind of project is open
-    public static ProjectContext context = ProjectContext.NONE;
-    private static final boolean screen = false;
-    // array of tests to be executed
-    public static final String[] TESTS = new String[]{
-        // here you test main-menu bar
-        "testFileMenu",
-        "testEditMenu",
-        "testViewMenu",
-        "testNavigateMenu",
-        "testSourceMenu",
-        "testRefactorMenu",
-        "testDebugMenu",
-        "testRunMenu",
-        "testHelpMenu",
-        "testToolsMenu",
-        "testTeamMenu",
-        "testWindowMenu",
-        "testProfileMenu",
-        // here you test sub-menus in each menu.
-        "testFile_ProjectGroupSubMenu",
-        "testFile_ImportProjectSubMenu",
-        "testFile_ExportProjectSubMenu",
-        "testNavigate_InspectSubMenu",
-        "testView_CodeFoldsSubMenu",
-        "testView_ToolbarsSubMenu",
-        "testProfile_AdvancedCommandsSubMenu",
-        "testDebug_StackSubMenu",
-        "testSource_PreprocessorBlocksSubMenu",
-        "testTools_InternationalizationSubMenu",
-        "testTools_PaletteSubMenu",
-        "testTeam_GitSubMenu",
-        "testTeam_MercurialSubMenu",
-        "testTeam_SubversionSubMenu",
-        "testTeam_HistorySubMenu",
-        "testWindow_DebuggingSubMenu",
-        "testWindow_IDE_ToolsSubMenu",
-        "testWindow_Configure_WindowSubMenu",
-        "testWindow_ProfilingSubMenu"
-    };
+public class MainMenuTest extends MainMenuTestCase {
 
     /**
      * Need to be defined because of JUnit
+     *
+     * @param name
      */
     public MainMenuTest(String name) {
         super(name);
     }
 
     public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(MainMenuTest.class).clusters(".*").enableModules(".*");
-        conf.addTest(TESTS);
-        //conf = conf.addTest("testView_CodeFoldsSubMenu");
-        return conf.suite();
+        return MainMenuTest.emptyConfiguration().
+                // here you test main-menu bar
+                addTest(MainMenuTest.class, "testFileMenu").
+                addTest(MainMenuTest.class, "testEditMenu").
+                addTest(MainMenuTest.class, "testViewMenu").
+                addTest(MainMenuTest.class, "testNavigateMenu").
+                addTest(MainMenuTest.class, "testSourceMenu").
+                addTest(MainMenuTest.class, "testRefactorMenu").
+                addTest(MainMenuTest.class, "testDebugMenu").
+                addTest(MainMenuTest.class, "testRunMenu").
+                addTest(MainMenuTest.class, "testHelpMenu").
+                addTest(MainMenuTest.class, "testToolsMenu").
+                addTest(MainMenuTest.class, "testTeamMenu").
+                addTest(MainMenuTest.class, "testWindowMenu").
+                addTest(MainMenuTest.class, "testProfileMenu").
+                // here you test sub-menus in each menu.
+                addTest(MainMenuTest.class, "testFile_ProjectGroupSubMenu").
+                addTest(MainMenuTest.class, "testFile_ImportProjectSubMenu").
+                addTest(MainMenuTest.class, "testFile_ExportProjectSubMenu").
+                addTest(MainMenuTest.class, "testNavigate_InspectSubMenu").
+                // Submenu disabled - do nothing addTest(MainMenuTest.class, "testView_CodeFoldsSubMenu").
+                addTest(MainMenuTest.class, "testView_ToolbarsSubMenu").
+                addTest(MainMenuTest.class, "testProfile_AdvancedCommandsSubMenu").
+                addTest(MainMenuTest.class, "testDebug_StackSubMenu").
+                //addTest(MainMenuTest.class, "testSource_PreprocessorBlocksSubMenu").
+                addTest(MainMenuTest.class, "testTools_InternationalizationSubMenu").
+                addTest(MainMenuTest.class, "testTools_PaletteSubMenu").
+                addTest(MainMenuTest.class, "testTeam_GitSubMenu").
+                addTest(MainMenuTest.class, "testTeam_MercurialSubMenu").
+                addTest(MainMenuTest.class, "testTeam_SubversionSubMenu").
+                addTest(MainMenuTest.class, "testTeam_HistorySubMenu").
+                addTest(MainMenuTest.class, "testWindow_DebuggingSubMenu").
+                //addTest(MainMenuTest.class, "testWindow_NavigatingSubMenu").
+                //addTest(MainMenuTest.class, "testWindow_OtherSubMenu").
+                //addTest(MainMenuTest.class, "testWindow_OutputSubMenu").
+                addTest(MainMenuTest.class, "testWindow_IDE_ToolsSubMenu").
+                addTest(MainMenuTest.class, "testWindow_Configure_WindowSubMenu").
+                addTest(MainMenuTest.class, "testWindow_ProfilingSubMenu").
+                //addTest(MainMenuTest.class, "testWindow_VersioningSubMenu").
+                //addTest(MainMenuTest.class, "testMnemonicsCollision").
+                clusters(".*").enableModules(".*").
+                suite();
     }
 
-    /**
-     * Setup called before every test case.
-     */
     @Override
-    public void setUp() {
-        System.out.println("########  " + " CONTEXT -> " + ProjectContext.NONE.toString() + " - " + getName() + "  #######");
-        try {
-            clearWorkDir();
-            getWorkDir();
-            if (isInit()) {
-                openDataProjects("SampleProject");
-                setInit(false);
-                initSources();
-            }
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
+    public void initialize() throws IOException {
+        // do nothing
     }
 
-    protected void initSources() {
-        setContext();
-    }
-
-    public boolean isInit() {
-        return false;
-    }
-
-    public void setInit(boolean init) {
-    }
-
-    /**
-     * Tear down called after every test case.
-     */
     @Override
-    public void tearDown() {
+    public ProjectContext getContext() {
+        return ProjectContext.NONE;
     }
-
+    
+    
     public void testFileMenu() {
         oneMenuTest("File");
     }
@@ -225,10 +185,10 @@ public class MainMenuTest extends JellyTestCase {
         oneSubMenuTest("Navigate|Inspect", false);
     }
 
-    public void testView_CodeFoldsSubMenu() {
+/**    public void testView_CodeFoldsSubMenu() {
         //Submenu disabled - do nothing
     }
-
+*/
     public void testView_ToolbarsSubMenu() {
         oneSubMenuTest("View|Toolbars", false);
     }
@@ -241,10 +201,10 @@ public class MainMenuTest extends JellyTestCase {
         oneSubMenuTest("Debug|Stack", false);
     }
 
-    public void testSource_PreprocessorBlocksSubMenu() {
+/**    public void testSource_PreprocessorBlocksSubMenu() {
         //Submenu disabled - do nothing
     }
-
+*/
     public void testTools_InternationalizationSubMenu() {
         oneSubMenuTest("Tools|Internationalization", false);//here
     }
@@ -262,7 +222,7 @@ public class MainMenuTest extends JellyTestCase {
     }
 
     public void testTeam_SubversionSubMenu() {
-        //Submenu initializing - do nothing
+        oneSubMenuTest("Team|Subversion", true);
     }
 
     public void testTeam_HistorySubMenu() {
@@ -285,211 +245,12 @@ public class MainMenuTest extends JellyTestCase {
         oneSubMenuTest("Window|Profiling", false);
     }
 
-    //=============================oneMenuTests=================================
-    /**
-     * @param menuName to be tested
-     * @return difference between menuName and golden file with the same name
-     */
-    void oneMenuTest(String menuName) {
-        oneMenuTest(menuName, getMainMenuGoldenFile(menuName, context));
+/**    public void testMnemonicsCollision() {
+        String collisions = MenuChecker.checkMnemonicCollision();
+        assertFalse(collisions, collisions.length() > 0);
     }
+*/    
+    @Override
+    protected void tearDown() throws Exception {}
 
-    /**
-     * @param menuName to be tested
-     * @param goldenFileName to be tested
-     * @return difference between menuName and goldenFileName
-     * 
-     * You shouldn't call directly this method.
-     */
-    private void oneMenuTest(String menuName, String goldenFileName) throws IllegalArgumentException {
-        NbMenuItem testedMenu = Utilities.readMenuStructureFromFile(goldenFileName);
-        assertNotNull("Nothing read from " + goldenFileName, testedMenu); //was the file read correctly?
-
-        PrintStream ideFileStream = null;
-        PrintStream goldenFileStream = null;
-        final String pathToIdeLogFile = getLogFile("_ide.txt");
-        final String pathToGoldenLogFile = getLogFile("_golden.txt");
-        final String pathToDiffLogFile = getLogFile("_diff.txt");
-
-        //filtering separators out from sub-menu
-        testedMenu.setSubmenu(removeSeparators(testedMenu));
-
-        try {
-            ideFileStream = new PrintStream(pathToIdeLogFile);
-            goldenFileStream = new PrintStream(pathToGoldenLogFile);
-
-            Utilities.printMenuStructure(goldenFileStream, testedMenu, "   ", 1);
-            captureScreen();
-
-            NbMenuItem menuItem = getMainMenuItem(menuName);
-            Utilities.printMenuStructure(ideFileStream, menuItem, "   ", 1);
-
-            assertNotNull("Cannot find menu " + menuName, menuItem);//is there such menu?
-
-            Manager.getSystemDiff().diff(pathToIdeLogFile, pathToGoldenLogFile, pathToDiffLogFile);
-            String message = Utilities.readFileToString(pathToDiffLogFile);
-            assertFile(message, pathToIdeLogFile, pathToGoldenLogFile, pathToDiffLogFile);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        } finally {
-            ideFileStream.close();
-            goldenFileStream.close();
-        }
-    }
-
-    //===========================oneSubMenuTests================================
-    /**
-     * Tests submenu items including mnemonics.
-     *
-     * @param submenuPath Menu name e.g. Window|Projects.
-     * @param context context e.g. Java, Php, none
-     * @param preInitSubMenu when sub menu doesn't pop up in time, you can try
-     * to pre-initialize the sub menu. TRUE = pre-init. FALSE by default. The
-     * item HAS TO BE JAVAX.SWING item !!!
-     */
-    void oneSubMenuTest(String submenuPath, boolean preInitSubMenu) {
-        String fileName = submenuPath.replace('|', '-').replace(' ', '_');
-        oneSubMenuTest(submenuPath, getMainMenuGoldenFile(fileName, context), preInitSubMenu);
-    }
-
-    /**
-     * Tests submenu items including mnemonics.
-     *
-     * @param submenuName to be tested
-     * @param mainmenuName to be tested
-     * @param goldenFileName to be tested
-     * @return difference between submenuName and goldenFileName
-     */
-    private void oneSubMenuTest(String submenuPath, String goldenFileName, boolean preInitSubMenu) throws IllegalArgumentException {
-        NbMenuItem testedSubMenuItem = Utilities.readSubmenuStructureFromFile(goldenFileName);
-        assertNotNull("Nothing read from " + goldenFileName, testedSubMenuItem); //was the file read correctly?
-
-        // when sub-menu has time out exception problems. It can Helps.
-        if (preInitSubMenu) {
-            String firstSubMenuItem = testedSubMenuItem.getSubmenu().get(0).getName();
-            MainWindowOperator.getDefault().menuBar().showMenuItem(submenuPath + "|" + firstSubMenuItem, new Operator.DefaultStringComparator(true, true));
-        }
-
-        PrintStream ideFileStream = null;
-        PrintStream goldenFileStream = null;
-        final String pathToIdeLogFile = getLogFile("_ide.txt");
-        final String pathToGoldenLogFile = getLogFile("_golden.txt");
-        final String pathToDiffLogFile = getLogFile("_diff.txt");
-
-        //filtering separators out from sub-menu
-        testedSubMenuItem.setSubmenu(removeSeparators(testedSubMenuItem));
-
-        try {
-            ideFileStream = new PrintStream(pathToIdeLogFile);
-            goldenFileStream = new PrintStream(pathToGoldenLogFile);
-
-            Utilities.printMenuStructure(goldenFileStream, testedSubMenuItem, "   ", 1);
-            captureScreen();
-
-            //TEST 1
-            String submenuItems[] = submenuPath.split("\\|");
-            assertTrue("submenuPath must be >= 2. - " + submenuPath, submenuItems.length >= 2); //check the size
-            //TEST 2
-            NbMenuItem mainM = getMainMenuItem(submenuItems[0]);
-            NbMenuItem submenuItem = Utilities.getMenuByName(submenuItems[submenuItems.length - 1], mainM);
-            assertNotNull("Cannot find submenu " + submenuPath, submenuItem);//is there such submenu?
-            //remove the mnemonic of the submenu item because it is not in the perm ui spec too
-            submenuItem.setMnemo((char) 0);
-
-            Utilities.printMenuStructure(ideFileStream, submenuItem, "   ", 1);
-
-            //TEST - menu structure
-            Manager.getSystemDiff().diff(pathToIdeLogFile, pathToGoldenLogFile, pathToDiffLogFile);
-            String message = Utilities.readFileToString(pathToDiffLogFile);
-            assertFile(message, pathToGoldenLogFile, pathToIdeLogFile, pathToDiffLogFile);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        } finally {
-            ideFileStream.close();
-            goldenFileStream.close();
-        }
-    }
-
-    //===========================Other Methods==================================
-    /**
-     * constructs the relative path to the golden file with main menu permanent
-     * UI spec
-     *
-     * @param menuName
-     * @return
-     */
-    private String getMainMenuGoldenFile(String menuName, ProjectContext context) {
-        String dataDir = "";
-        try {
-            dataDir = getDataDir().getCanonicalPath();
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-        return dataDir + File.separator + "permanentUI" + File.separator + "mainmenu" + File.separator + menuName + context.getPathSuffix() + ".txt";
-    }
-
-    /**
-     * Press menu item.
-     *
-     * @param mainMenuItem the item.
-     * @return Operator.
-     */
-    public JMenuBarOperator pushMainMenuItem(String mainMenuItem) {
-        ///open menu to let it create sucesfully
-        JMenuBarOperator mainmenuOp = MainWindowOperator.getDefault().menuBar();
-        ///use string comparator with exact matching
-        mainmenuOp.pushMenu(mainMenuItem, new DefaultStringComparator(true, false));
-
-        return mainmenuOp;
-    }
-
-    /**
-     * Construct path to menu item.
-     *
-     * @param mainMenuItem item in menu.
-     * @return path.
-     */
-    private NbMenuItem getMainMenuItem(String mainMenuItem) {
-
-        JMenuBarOperator mainmenuOp = pushMainMenuItem(mainMenuItem);
-        //parse all the menu elements
-        int position = MenuChecker.getElementPosition(mainMenuItem, mainmenuOp.getSubElements());
-        MenuElement theMenuElement = mainmenuOp.getSubElements()[position];
-        NbMenuItem theMenu = new NbMenuItem((JMenuItem) theMenuElement);
-        theMenu.setSubmenu(MenuChecker.getMenuArrayList(mainmenuOp.getMenu(position)));
-
-        return theMenu;
-    }
-
-    /**
-     * Take a screen shot.
-     */
-    private void captureScreen() {
-        if (screen) {
-            try {
-                String captureFile = getWorkDir().getAbsolutePath() + File.separator + "screen.png";
-                PNGEncoder.captureScreen(captureFile, PNGEncoder.COLOR_MODE);
-            } catch (Exception ex) {
-                ex.printStackTrace(getLog());
-            }
-        }
-    }
-
-    private ArrayList<NbMenuItem> removeSeparators(NbMenuItem item) {
-        return Utilities.filterOutSeparators(item.getSubmenu());
-    }
-
-    /**
-     * Build path to log file.
-     *
-     * @param fileType IDE or GOLDEN
-     * @return path to file.
-     */
-    private String getLogFile(String fileType) {
-        return getWorkDirPath() + File.separator + getName() + fileType;
-    }
-
-    public void setContext() {
-        MainMenuTest.context = ProjectContext.NONE;
-    }
 }

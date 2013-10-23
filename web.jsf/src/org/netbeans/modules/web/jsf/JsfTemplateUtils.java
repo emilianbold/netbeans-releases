@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.web.jsf;
 
+import java.awt.Component;
+import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -48,8 +51,19 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
+import org.netbeans.modules.web.jsf.palette.items.CancellableDialog;
+import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -58,10 +72,14 @@ import org.openide.util.NbBundle;
  */
 public class JsfTemplateUtils {
 
+    /** Base path within the layer.xml for definition of templates. */
+    public static final String BASE_TPL_PATH = "/Templates/JSF/JSF_From_Entity_Wizard"; //NOI18N
+
+    /** Path of the Standard JavaServer Faces templates. */
+    public static final String STANDARD_TPL = "StandardJSF"; //NOI18N
+
     private static final String LOCALIZING_BUNDLE = "SystemFileSystem.localizingBundle"; //NOI18N
     private static final Comparator TEMPLATE_COMPARATOR = new TemplateComparator();
-
-    public static final String TEMPLATE_SNIPET_BP = "/Templates/JSF/JSF_From_Entity_Snippets";
 
     public static String getLocalizedName(FileObject fo) {
         String name = fo.getNameExt();
@@ -82,9 +100,9 @@ public class JsfTemplateUtils {
         return name;
     }
 
-    public static List<Template> getSnippetTemplates() {
+    public static List<Template> getTemplates(TemplateType tt) {
         List<Template> result = new ArrayList<>();
-        FileObject templateRoot = FileUtil.getConfigRoot().getFileObject(TEMPLATE_SNIPET_BP);
+        FileObject templateRoot = FileUtil.getConfigRoot().getFileObject(tt.getValue());
         assert templateRoot != null; // at least the base templates should be registered
         Enumeration<? extends FileObject> children = templateRoot.getChildren(false);
         while (children.hasMoreElements()) {
@@ -100,12 +118,8 @@ public class JsfTemplateUtils {
         return result;
     }
 
-    public static String getTemplatePath(String basePath, String templatesStyle, String template) {
-        return basePath + "/" + templatesStyle + "/" + template; //NOI18N
-    }
-
-    public static String getSnippetTemplatePath(String templatesStyle, String template) {
-        return TEMPLATE_SNIPET_BP + "/" + templatesStyle + "/" + template; //NOI18N
+    public static String getTemplatePath(TemplateType tt, String templatesStyle, String template) {
+        return tt.getValue() + "/" + templatesStyle + "/" + template; //NOI18N
     }
 
     public static class TemplateComparator implements Comparator<Template> {
@@ -113,6 +127,22 @@ public class JsfTemplateUtils {
         public int compare(Template o1, Template o2) {
             return o1.getPosition() - o2.getPosition();
         }
+    }
+
+    public static enum TemplateType {
+        SNIPPETS("/Templates/JSF/JSF_From_Entity_Snippets"),
+        PAGES("/Templates/JSF/JSF_From_Entity_Wizard");
+
+        private final String value;
+
+        private TemplateType(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
     }
 
     public static class Template {
@@ -144,4 +174,55 @@ public class JsfTemplateUtils {
         }
 
     }
+
+    public static class TemplateCellRenderer implements ListCellRenderer {
+
+        protected DefaultListCellRenderer defaultRenderer = new DefaultListCellRenderer();
+
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            JLabel renderer = (JLabel) defaultRenderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            if (value instanceof JsfTemplateUtils.Template) {
+                renderer.setText(((JsfTemplateUtils.Template) value).getDisplayName());
+            }
+            return renderer;
+        }
+    }
+
+    public static class OpenTemplateAction extends AbstractAction {
+        private static final long serialVersionUID = 1L;
+
+        private String[] templateFileName;
+        private CancellableDialog panel;
+
+        public OpenTemplateAction(CancellableDialog panel, String actionName, String ... templateFileName) {
+            this.templateFileName = templateFileName;
+            this.panel = panel;
+            this.putValue(Action.NAME, actionName);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent arg0) {
+            for (String template : templateFileName) {
+                openSingle(template);
+            }
+        }
+
+        private void openSingle(String template) {
+            FileObject tableTemplate = FileUtil.getConfigRoot().getFileObject(template);
+            try {
+                final DataObject dob = DataObject.find(tableTemplate);
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        dob.getLookup().lookup(EditCookie.class).edit();
+                    }
+                });
+                panel.cancel();
+            } catch (DataObjectNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+
 }

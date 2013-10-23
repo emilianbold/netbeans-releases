@@ -41,14 +41,12 @@
  */
 package org.netbeans.modules.bugtracking.api;
 
-import java.awt.Panel;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.Arrays;
 import java.util.Collection;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import org.netbeans.modules.bugtracking.TestIssue;
 import org.netbeans.modules.bugtracking.TestQuery;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
@@ -65,7 +63,7 @@ public class APITestQuery extends TestQuery {
     
     static final String TOOLTIP_SUF = " - tooltip";
     
-    private final String name;
+    private String name;
     boolean isSaved;
     boolean wasRefreshed;
     boolean wasOpened;
@@ -100,16 +98,30 @@ public class APITestQuery extends TestQuery {
                 }
                 JPanel panel;
                 @Override
-                public JComponent getComponent() {
+                public JComponent getComponent(QueryMode mode) {
+                    openedMode = mode;
                     if(panel == null) {
                         panel = new JPanel();
                     }
                     return panel;
                 }
-                @Override public void setMode(QueryController.QueryMode mode) { 
-                    openedMode = mode;
-                }
+                
+                @Override public void closed() {  }                
                 @Override public HelpCtx getHelpCtx() { return null; }
+                @Override
+                public boolean providesMode(QueryController.QueryMode mode) {
+                    return true;
+                }
+                @Override
+                public boolean saveChanges() {
+                    return true;
+                }
+                @Override
+                public boolean discardUnsavedChanges() {
+                    return true;
+                }
+                @Override public void addPropertyChangeListener(PropertyChangeListener l) { }
+                @Override public void removePropertyChangeListener(PropertyChangeListener l) { }
             }; 
         }
         return controller;
@@ -123,11 +135,6 @@ public class APITestQuery extends TestQuery {
     @Override
     public Collection<APITestIssue> getIssues() {
         return Arrays.asList(repo.getIssues(new String[] {APITestIssue.ID_1}));
-    }
-
-    @Override
-    public boolean contains(String id) {
-        return getIssues().contains(id);
     }
 
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
@@ -150,6 +157,20 @@ public class APITestQuery extends TestQuery {
     public void refresh() {
         wasRefreshed = true;
         support.firePropertyChange(QueryProvider.EVENT_QUERY_ISSUES_CHANGED, null, null);
+    }
+
+    @Override
+    public boolean canRename() {
+        return true;
+    }
+
+    @Override
+    public void rename(String name) {
+        this.name = name;
+    }
+
+    boolean canRemove() {
+        return true;
     }
     
 }

@@ -287,8 +287,8 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         RP.post(new Runnable(){
             @Override
             public void run() {
-                final CompilerSetImpl cs = ((CompilerSetImpl) selectedCompilerSet).createCopy(
-                        selectedCompilerSet.getCompilerFlavor(), selectedCompilerSet.getDirectory(), compilerSetName, false, selectedCompilerSet.getEncoding(), true);
+                final CompilerSetImpl cs = ((CompilerSetImpl) selectedCompilerSet)
+                        .createCopy(selectedCompilerSet.getCompilerFlavor(), selectedCompilerSet.getDirectory(), compilerSetName, null, false, true);
                 csm.add(cs);
                 changed = true;
                 SwingUtilities.invokeLater(new Runnable(){
@@ -459,14 +459,6 @@ public final class ToolsPanel extends JPanel implements ActionListener,
             return "";
         } else {
             return name;
-        }
-    }
-
-    private void setCompilerSetName(String name) {
-        String n = getCompilerSetName();
-        if (n == null || !n.equals(name)) {
-            NbPreferences.forModule(ToolsPanel.class).put(PROP_COMPILER_SET_NAME, name);
-            firePropertyChange(PROP_COMPILER_SET_NAME, n, name);
         }
     }
 

@@ -75,8 +75,8 @@ import org.w3c.dom.NodeList;
  */
 public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configuration> {
 
-    private PropertyChangeSupport support = new PropertyChangeSupport(this);
-    private NbMavenProjectImpl project;
+    private final PropertyChangeSupport support = new PropertyChangeSupport(this);
+    private final NbMavenProjectImpl project;
     private final M2Configuration DEFAULT;
     // next four guarded by this
     private SortedSet<M2Configuration> profiles = null;
@@ -84,9 +84,9 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
     private SortedSet<M2Configuration> nonshared = null;
     private M2Configuration active;
     private String initialActive;
-    private AuxiliaryConfiguration aux;
-    private ProjectProfileHandler profileHandler;
-    private PropertyChangeListener propertyChange;
+    private final AuxiliaryConfiguration aux;
+    private final ProjectProfileHandler profileHandler;
+    private final PropertyChangeListener propertyChange;
 
 
     private static final RequestProcessor RP = new RequestProcessor(M2ConfigProvider.class.getName(),10);
@@ -102,7 +102,7 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
         active = DEFAULT;
         propertyChange = new PropertyChangeListener() {
             public @Override void propertyChange(PropertyChangeEvent evt) {
-                if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
+                if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
                     synchronized (M2ConfigProvider.this) {
                         profiles = null;
                     }
@@ -218,10 +218,7 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
     }
 
     public @Override boolean configurationsAffectAction(String action) {
-        if (ActionProvider.COMMAND_DELETE.equals(action) || ActionProvider.COMMAND_COPY.equals(action) || ActionProvider.COMMAND_MOVE.equals(action)) {
-            return false;
-        }
-        return true;
+        return !ActionProvider.COMMAND_DELETE.equals(action) && !ActionProvider.COMMAND_COPY.equals(action) && !ActionProvider.COMMAND_MOVE.equals(action);
     }
 
 

@@ -135,7 +135,7 @@ public class TokenListChange<T extends TokenId> {
     }
 
     public int increaseMatchIndex() {
-        matchOffset += tokenList().tokenOrEmbeddingUnsync(matchIndex++).token().length();
+        matchOffset += tokenList().tokenOrEmbeddingDirect(matchIndex++).token().length();
         return matchOffset;
     }
 
@@ -215,6 +215,7 @@ public class TokenListChange<T extends TokenId> {
 
     public void setRemovedTokens(TokenOrEmbedding<T>[] removedTokensOrBranches) {
         tokenChangeInfo.setRemovedTokenList(new RemovedTokenList<T>(
+                tokenChangeInfo.currentTokenList().rootTokenList(),
                 languagePath(), removedTokensOrBranches));
     }
     

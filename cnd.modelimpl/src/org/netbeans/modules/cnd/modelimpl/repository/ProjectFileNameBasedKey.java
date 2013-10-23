@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.modelimpl.repository;
 
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
@@ -100,19 +101,16 @@ import org.openide.util.CharSequences;
     }
 
     @Override
-    public int hashCode() {
-        int key = super.hashCode();
-        key = 19 * key + fileNameIndex;
-        return key;
+    public int hashCode(int unitID) {
+        return 17*fileNameIndex + super.hashCode(unitID);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (!super.equals(obj)) {
+    public boolean equals(int unitThis, Key obj, int unitObject) {
+        if (!super.equals(unitThis, obj, unitObject)) {
             return false;
         }
         ProjectFileNameBasedKey other = (ProjectFileNameBasedKey) obj;
-
         return this.fileNameIndex == other.fileNameIndex;
     }
 

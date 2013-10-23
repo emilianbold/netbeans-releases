@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolchainDescriptor;
 
@@ -55,17 +56,18 @@ import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolchainDescript
 public final class CompilerFlavorImpl extends CompilerFlavor {
 
     private static final List<CompilerFlavorImpl> flavors = new ArrayList<CompilerFlavorImpl>();
+    private static final Map<CompilerFlavorImpl, String> productNames = new ConcurrentHashMap<CompilerFlavorImpl, String>();
     private static final Map<Integer, CompilerFlavorImpl> unknown = new HashMap<Integer, CompilerFlavorImpl>();
     static {
         for (ToolchainDescriptor descriptor : ToolchainManagerImpl.getImpl().getAllToolchains()) {
-            flavors.add(new CompilerFlavorImpl(descriptor.getName(), descriptor));
+            flavors.add(new CompilerFlavorImpl(descriptor));
         }
     }
-    private String sval;
-    private ToolchainDescriptor descriptor;
+    private final String sval;
+    private final ToolchainDescriptor descriptor;
 
-    CompilerFlavorImpl(String sval, ToolchainDescriptor descriptor) {
-        this.sval = sval;
+    CompilerFlavorImpl(ToolchainDescriptor descriptor) {
+        this.sval = descriptor.getName();
         this.descriptor = descriptor;
     }
 
@@ -139,10 +141,8 @@ public final class CompilerFlavorImpl extends CompilerFlavor {
                         d = list.get(0);
                     }
                 }
-                if (d == null) {
-                    d = new CompilerSetImpl.UnknownToolchainDescriptor();
-                }
-                unknownFlavor = new CompilerFlavorImpl(CompilerSetImpl.UNKNOWN, d);
+                d = new CompilerSetImpl.UnknownToolchainDescriptor(d);
+                unknownFlavor = new CompilerFlavorImpl(d);
                 unknown.put(platform, unknownFlavor);
             }
         }
@@ -206,8 +206,16 @@ public final class CompilerFlavorImpl extends CompilerFlavor {
         return list;
     }
 
+    public static void putProductName(CompilerFlavorImpl flavor, String productName)  {
+        productNames.put(flavor, productName);
+    }
+    
+    public String getDisplayName() {
+        return CompilerSetImpl.extractDisplayName(this, productNames.get(this));
+    }
+    
     @Override
     public String toString() {
-        return sval;
+        return CompilerSetImpl.extractDisplayName(this, productNames.get(this));
     }
 }

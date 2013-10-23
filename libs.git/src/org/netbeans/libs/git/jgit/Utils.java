@@ -95,7 +95,9 @@ public final class Utils {
     }
 
     public static Repository getRepositoryForWorkingDir (File workDir) throws IOException, IllegalArgumentException {
-         return new FileRepositoryBuilder().setWorkTree(workDir).build();
+         Repository repo = new FileRepositoryBuilder().setWorkTree(workDir).build();
+         repo.getConfig().setBoolean("pack", null, "buildbitmaps", false);
+         return repo;
     }
 
     public static File getMetadataFolder (File workDir) {

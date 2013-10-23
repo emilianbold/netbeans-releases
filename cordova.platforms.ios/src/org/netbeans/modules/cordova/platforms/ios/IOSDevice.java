@@ -74,6 +74,7 @@ public enum IOSDevice implements Device {
     String displayName;
     String args;
     private boolean simulator;
+    private static boolean ios_sim_bug;
     
     private Logger LOG = Logger.getLogger(IOSDevice.class.getName());
 
@@ -124,6 +125,9 @@ public enum IOSDevice implements Device {
             return;
         }
         try {
+            if (ios_sim_bug) {
+                return;
+            }
             try {
                 ProcessUtilities.callProcess("killall", true, IOSPlatform.DEFAULT_TIMEOUT, "MobileSafari"); // NOI18N
             } catch (IOException ex) {
@@ -133,6 +137,9 @@ public enum IOSDevice implements Device {
             LOG.finest(retVal);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
+        } catch (IllegalStateException ex) {
+            //MobileSafari failed to load
+            ios_sim_bug = true;
         }
     }
 

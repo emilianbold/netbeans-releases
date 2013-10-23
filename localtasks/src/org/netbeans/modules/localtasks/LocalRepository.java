@@ -58,11 +58,12 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.mylyn.tasks.core.TaskMapping;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.localtasks.task.LocalTask;
-import org.netbeans.modules.bugtracking.spi.BugtrackingFactory;
+import org.netbeans.modules.bugtracking.spi.BugtrackingSupport;
 import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.mylyn.util.NbTask;
 import org.openide.util.Exceptions;
@@ -78,9 +79,9 @@ public final class LocalRepository {
     private static final String ID = "LocalRepositoryInstance"; //NOI18N
     private static LocalRepository instance;
     private final Repository repository;
-    private final BugtrackingFactory<LocalRepository, LocalQuery, LocalTask> fac;
+    private final BugtrackingSupport<LocalRepository, LocalQuery, LocalTask> fac;
     private final PropertyChangeSupport propertySuport;
-    private static final String ICON_PATH = "org/netbeans/modules/bugtracking/ui/resources/repository.png"; // NOI18N
+    private static final String ICON_PATH = "org/netbeans/modules/localtasks/resources/local_repo.png"; // NOI18N
     private final Image icon;
     private TaskRepository taskRepository;
     private final Object CACHE_LOCK = new Object();
@@ -97,11 +98,10 @@ public final class LocalRepository {
     }
 
     public LocalRepository () {
-        fac = new BugtrackingFactory<>();
+        fac = new BugtrackingSupport<>(new RepositoryProviderImpl(), new QueryProviderImpl(), new IssueProviderImpl());
         icon = ImageUtilities.loadImage(ICON_PATH, true);
         propertySuport = new PropertyChangeSupport(this);
-        repository = fac.createRepository(this, new RepositoryProviderImpl(),
-                new QueryProviderImpl(), new IssueProviderImpl());
+        repository = fac.createRepository(this, null, new IssueSchedulingProviderImpl(), null, null);
     }
 
     public Repository getRepository () {
@@ -204,6 +204,12 @@ public final class LocalRepository {
             });
             LocalQuery.getInstance().fireTasksChanged();
             return getLocalTask(task);
+        } catch (OperationCanceledException ex) {
+            // creation of new task may be immediately canceled
+            // happens when more repositories are available and
+            // the RepoComboSupport immediately switches to another repo
+            LOG.log(Level.FINE, null, ex);
+            return null;
         } catch (CoreException ex) {
             LOG.log(Level.WARNING, null, ex);
             return null;

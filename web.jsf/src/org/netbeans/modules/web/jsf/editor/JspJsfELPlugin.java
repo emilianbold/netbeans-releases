@@ -306,6 +306,10 @@ public class JspJsfELPlugin extends ELPlugin {
         String attributeName = textToCaret.substring(spaceLastIndex).replaceAll("[^A-Za-z0-9 ]", "").trim();
         
         JsfSupport jsfSupport = JsfSupportProvider.get(source);
+        if (jsfSupport == null) {
+            return null;
+        }
+
         Library library = jsfSupport.getLibrary(namespace);
         if (library == null) {
             return null;

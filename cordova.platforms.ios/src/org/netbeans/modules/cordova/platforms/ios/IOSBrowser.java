@@ -183,7 +183,7 @@ public class IOSBrowser extends HtmlBrowser.Impl implements EnhancedBrowser {
                             });
                         }
                     } else {
-                        build.startDebugging(dev, project, new ProxyLookup(projectContext, Lookups.fixed(ImageUtilities.loadImage("org/netbeans/modules/cordova/platforms/ios/iossimulator16.png"), url)), false);
+                        build.startDebugging(dev, project, new ProxyLookup(projectContext, Lookups.fixed(ImageUtilities.loadImage("org/netbeans/modules/cordova/platforms/ios/iossimulator16.png"), url)), true);
                     }
                 }
             }, kind == Kind.IOS_DEVICE_DEFAULT ? Bundle.LBL_OpeningiOS() : Bundle.LBL_Opening(), new AtomicBoolean(), true);

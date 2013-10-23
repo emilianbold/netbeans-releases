@@ -59,6 +59,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 import org.apache.maven.artifact.Artifact;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.core.spi.multiview.CloseOperationState;
@@ -148,6 +149,10 @@ public class BasicPomMD implements MultiViewDescription, Serializable {
             if (toolbar == null) {
                 toolbar = new JToolBar();
                 toolbar.setFloatable(false);
+                if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+                    toolbar.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+                }
+                
                 Action[] a = new Action[1];
                 Action[] actions = lookup.lookup(a.getClass());
                 Dimension space = new Dimension(3, 0);

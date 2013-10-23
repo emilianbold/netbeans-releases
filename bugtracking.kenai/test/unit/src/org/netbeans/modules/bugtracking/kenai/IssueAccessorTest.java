@@ -224,24 +224,6 @@ public class IssueAccessorTest extends NbTestCase {
         public RepositoryInfo getInfo() {
             return delegate.getInfo();
         }
-        public Image getIcon() { throw new UnsupportedOperationException("Not supported yet."); }
-        public TestIssue[] getIssues(String[] id) { throw new UnsupportedOperationException("Not supported yet."); }
-        public void remove() { throw new UnsupportedOperationException("Not supported yet."); }
-        public RepositoryController getController() { throw new UnsupportedOperationException("Not supported yet.");}
-        public TestQuery createQuery() { throw new UnsupportedOperationException("Not supported yet.");}
-        public TestIssue createIssue() {throw new UnsupportedOperationException("Not supported yet.");}
-        public Collection<TestQuery> getQueries() {throw new UnsupportedOperationException("Not supported yet.");}
-        public Collection<TestIssue> simpleSearch(String criteria) {throw new UnsupportedOperationException("Not supported yet.");}
-
-        @Override
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
-            
-        }
-
-        @Override
-        public void addPropertyChangeListener(PropertyChangeListener listener) {
-            
-        }
     }
 
     private static class IATestIssue extends TestIssue {
@@ -251,71 +233,62 @@ public class IssueAccessorTest extends NbTestCase {
         public IATestIssue(String name) {
             this.name = name;
         }
+        @Override
         public String getDisplayName() {
             return name;
         }
+        @Override
         public String getTooltip() {
             return name;
         }
+        @Override
         public boolean isNew() {
             return false;
         }
+        @Override
         public boolean isFinished() {
             return false;
         }
+        @Override
         public String getSummary() {
             return "This is" + name;
         }
+        @Override
         public String getID() {
             return name;
         }
-        public BugtrackingController getController() {
+        @Override
+        public IssueController getController() {
             return controller;
         }
+        @Override
         public boolean refresh() {return true;}
         public Map<String, String> getAttributes() {return Collections.EMPTY_MAP;}
-        public void addComment(String comment, boolean closeAsFixed) {throw new UnsupportedOperationException("Not supported yet.");}
-        public void attachPatch(File file, String description) {throw new UnsupportedOperationException("Not supported yet.");}
-        public IssueNode getNode() {throw new UnsupportedOperationException("Not supported yet.");}
-
-        @Override
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public void addPropertyChangeListener(PropertyChangeListener listener) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public String[] getSubtasks() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }        
-
-        @Override
-        public IssueStatusProvider.Status getStatus() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public void setSeen(boolean seen) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
     }
 
-    private static class TestIssueController extends BugtrackingController {
-        private JPanel panel = new JPanel();
+    private static class TestIssueController implements IssueController {
+        private final JPanel panel = new JPanel();
+        @Override
         public JComponent getComponent() {
             return panel;
         }
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(this.getClass());
         }
-        public boolean isValid() {
+        @Override public void opened() { }
+        @Override public void closed() { }
+
+        @Override
+        public boolean saveChanges() { 
             return true;
         }
-        public void applyChanges() throws IOException { }
+        @Override
+        public boolean discardUnsavedChanges() {
+            return true;
+        }
+        @Override public void addPropertyChangeListener(PropertyChangeListener l) { }
+        @Override public void removePropertyChangeListener(PropertyChangeListener l) { }
     }
 
     @BugtrackingConnector.Registration(
@@ -323,7 +296,7 @@ public class IssueAccessorTest extends NbTestCase {
             tooltip=IATestConnector.ID,
             id=IATestConnector.ID
     )
-    public static class IATestConnector extends BugtrackingConnector {
+    public static class IATestConnector implements BugtrackingConnector {
         public final static String ID = "KenaiCconector";
         static Repository kolibaRepository;
 //        static TestRepository goldenProjectRepository;

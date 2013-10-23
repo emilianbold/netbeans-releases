@@ -128,28 +128,29 @@ final class ViewFolderPasteType  extends PasteType {
         if (!provider.gotMakeConfigurationDescriptor() || !(provider.getMakeConfigurationDescriptor().okToChange())) {
             return null;
         }
+        FileObject itemFO = getFolderFileObject(fromFolder);
         if (type == DnDConstants.ACTION_MOVE) {
             // Drag&Drop, Cut&Paste
-                // Move within same project
+            // Move within same project
             if (toFolder.isDiskFolder() && fromFolder.isDiskFolder()) {
-                FileObject itemFO = getFolderFileObject(fromFolder);
-
-                String toFolderPath = CndPathUtilities.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDirFileObject(), toFolder.getRootPath());
-                FileObject toFolderFO = CndFileUtils.toFileObject(toFolder.getConfigurationDescriptor().getBaseDirFileObject().getFileSystem(), toFolderPath); // should it be normalized?
-                String newName = CndPathUtilities.createUniqueFileName(toFolderFO, itemFO.getNameExt(), ""); // NOI18N
-                final FileLock lock = itemFO.lock();
-                try {
-                    FileObject movedFileFO = itemFO.move(lock, toFolderFO, newName, ""); // NOI18N
-                    Folder movedFolder = toFolder.findFolderByName(movedFileFO.getNameExt());
-                    if (toFolder.getProject() == fromFolder.getProject()) {
-                        if (!fromFolder.getAllFolders(true).contains(toFolder)) {
-                            if (movedFolder != null) {
-                                recussiveMoveConfigurations(fromFolder, toFolder, movedFolder.getName(), true);
+                if (itemFO.isValid()) {
+                    String toFolderPath = CndPathUtilities.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDirFileObject(), toFolder.getRootPath());
+                    FileObject toFolderFO = CndFileUtils.toFileObject(toFolder.getConfigurationDescriptor().getBaseDirFileObject().getFileSystem(), toFolderPath); // should it be normalized?
+                    String newName = CndPathUtilities.createUniqueFileName(toFolderFO, itemFO.getNameExt(), ""); // NOI18N
+                    final FileLock lock = itemFO.lock();
+                    try {
+                        FileObject movedFileFO = itemFO.move(lock, toFolderFO, newName, ""); // NOI18N
+                        Folder movedFolder = toFolder.findFolderByName(movedFileFO.getNameExt());
+                        if (toFolder.getProject() == fromFolder.getProject()) {
+                            if (!fromFolder.getAllFolders(true).contains(toFolder)) {
+                                if (movedFolder != null) {
+                                    recussiveMoveConfigurations(fromFolder, toFolder, movedFolder.getName(), true);
+                                }
                             }
                         }
+                    } finally {
+                        lock.releaseLock();
                     }
-                } finally {
-                    lock.releaseLock();
                 }
             } else if (!toFolder.isDiskFolder() && !fromFolder.isDiskFolder()) {
                 if (!fromFolder.getAllFolders(true).contains(toFolder)) {
@@ -159,17 +160,18 @@ final class ViewFolderPasteType  extends PasteType {
         } else if (type == DnDConstants.ACTION_COPY || type == DnDConstants.ACTION_NONE) {
             // Copy&Paste
             if (toFolder.isDiskFolder() && fromFolder.isDiskFolder()) {
-                FileObject fo = getFolderFileObject(fromFolder);
-                String toFolderPath = CndPathUtilities.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDirFileObject(), toFolder.getRootPath());
-                FileObject toFolderFO = CndFileUtils.toFileObject(toFolder.getConfigurationDescriptor().getBaseDirFileSystem(), toFolderPath); // should it be normalized?
-                String newName = CndPathUtilities.createUniqueFileName(toFolderFO, fo.getNameExt(), "");
-                FileObject copiedFileObject = fo.copy(toFolderFO, newName, "");
+                if (itemFO.isValid()) {
+                    String toFolderPath = CndPathUtilities.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDirFileObject(), toFolder.getRootPath());
+                    FileObject toFolderFO = CndFileUtils.toFileObject(toFolder.getConfigurationDescriptor().getBaseDirFileSystem(), toFolderPath); // should it be normalized?
+                    String newName = CndPathUtilities.createUniqueFileName(toFolderFO, itemFO.getNameExt(), "");
+                    FileObject copiedFileObject = itemFO.copy(toFolderFO, newName, "");
 
-                Folder copiedFolder = toFolder.findFolderByName(copiedFileObject.getNameExt());
-                if (toFolder.getProject() == fromFolder.getProject()) {
-                    if (!fromFolder.getAllFolders(true).contains(toFolder)) {
-                        if (copiedFolder != null) {
-                            recussiveMoveConfigurations(fromFolder, toFolder, copiedFolder.getName(), false);
+                    Folder copiedFolder = toFolder.findFolderByName(copiedFileObject.getNameExt());
+                    if (toFolder.getProject() == fromFolder.getProject()) {
+                        if (!fromFolder.getAllFolders(true).contains(toFolder)) {
+                            if (copiedFolder != null) {
+                                recussiveMoveConfigurations(fromFolder, toFolder, copiedFolder.getName(), false);
+                            }
                         }
                     }
                 }

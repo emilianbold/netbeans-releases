@@ -56,10 +56,21 @@ import com.sun.source.util.Trees;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+import com.sun.source.tree.ExpressionStatementTree;
+import com.sun.source.tree.MemberReferenceTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.ReturnTree;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.matching.Matcher;
@@ -85,10 +96,10 @@ public class ConvertToLambdaConverter {
         this.preconditionChecker = new ConvertToLambdaPreconditionChecker(this.pathToNewClassTree, this.copy);
     }
 
-    public void performRewrite() {
+    public void performRewriteToLambda() {
 
         LambdaExpressionTree lambdaTree = getLambdaTreeFromAnonymous(newClassTree, copy);
-
+        
         if (preconditionChecker.foundShadowedVariable()) {
             TreePath pathToLambda = new TreePath(pathToNewClassTree, lambdaTree);
             renameShadowedVariables(pathToLambda);
@@ -100,6 +111,44 @@ public class ConvertToLambdaConverter {
         }
 
         copy.rewrite(newClassTree, convertedTree);
+    }
+
+    public void performRewriteToMemberReference() {
+        MethodTree methodTree = getMethodFromFunctionalInterface(newClassTree);
+        if (methodTree.getBody() == null || methodTree.getBody().getStatements().size() != 1)
+            return;
+        Tree tree = methodTree.getBody().getStatements().get(0);
+        if (tree.getKind() == Tree.Kind.EXPRESSION_STATEMENT) {
+            tree = ((ExpressionStatementTree)tree).getExpression();
+        } else if (tree.getKind() == Tree.Kind.RETURN) {
+            tree = ((ReturnTree)tree).getExpression();
+        } else {
+            return;
+        }
+        if (tree.getKind() != Tree.Kind.METHOD_INVOCATION)
+            return;
+        ExpressionTree ms = ((MethodInvocationTree)tree).getMethodSelect();
+        Name name = null;
+        ExpressionTree expr = null;
+        TreeMaker make = copy.getTreeMaker();
+        if (ms.getKind() == Tree.Kind.IDENTIFIER) {
+            name = ((IdentifierTree)ms).getName();
+            expr = make.Identifier("this"); //NOI18N
+        } else if (ms.getKind() == Tree.Kind.MEMBER_SELECT) {
+            name = ((MemberSelectTree)ms).getIdentifier();
+            if (methodTree.getParameters().size() == ((MethodInvocationTree)tree).getArguments().size()) {
+                expr = ((MemberSelectTree)ms).getExpression();
+            } else {
+                Element e = copy.getTrees().getElement(new TreePath(pathToNewClassTree, ms));
+                if (e != null && e.getKind() == ElementKind.METHOD) {
+                    expr = make.Identifier(e.getEnclosingElement());
+                }
+            }
+        }
+        if (name != null && expr != null) {
+            MemberReferenceTree referenceTree = make.MemberReference(MemberReferenceTree.ReferenceMode.INVOKE, expr, name, Collections.<ExpressionTree>emptyList());
+            copy.rewrite(newClassTree, referenceTree);
+        }
     }
 
     private LambdaExpressionTree getLambdaTreeFromAnonymous(NewClassTree newClassTree, WorkingCopy copy) {
@@ -218,18 +267,6 @@ public class ConvertToLambdaConverter {
 
     private boolean isVariableShadowed(CharSequence variableName) {
         return Utilities.isVariableShadowedInScope(variableName, localScope);
-    }
-
-    private boolean isTreeAncestor(TreePath ancestor, TreePath possibleChild) {
-
-        TreePath parent = possibleChild;
-        while (parent != null) {
-            if (ancestor.getLeaf().equals(parent.getLeaf())) {
-                return true;
-            }
-            parent = parent.getParentPath();
-        }
-        return false;
     }
 
     private Scope getScopeFromTree(TreePath path) {

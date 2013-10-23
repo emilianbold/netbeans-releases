@@ -73,7 +73,7 @@
            <public-packages/>
            <class-path-extension>
                <runtime-relative-path>oracle-eclipse-tools-cloud-dev-tasks.jar</runtime-relative-path>
-                <binary-origin>external/oracle.eclipse.tools.cloud.dev.tasks_6.2.1.201309190018.jar</binary-origin>
+                <binary-origin>external/oracle.eclipse.tools.cloud.dev.tasks_6.2.1.201310022205.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

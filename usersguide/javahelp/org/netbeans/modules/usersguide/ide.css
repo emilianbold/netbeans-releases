@@ -1,4 +1,4 @@
-/*
+﻿/*
  * rave.css      08/13/2004
  *
  * Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
@@ -74,15 +74,15 @@ li p{margin-top: 5;
 
 /* Ordered lists */
 
-ul {list-style-image:url(images/blue-ball-mid.gif);
+ul {list-style-image:url(img/blue-ball-mid.gif);
     margin-top: 5;
     margin-bottom: 0;
 	 margin-left: 16;
 }
 
-ul li ul{list-style-image:url(images/blue-sqr-mid.gif)}
+ul li ul{list-style-image:url(img/blue-sqr-mid.gif)}
 
-ul ul{list-style-image:url(images/blue-sqr-mid.gif)}
+ul ul{list-style-image:url(img/blue-sqr-mid.gif)}
 
 /* Numbered lists embedded in ordered lists */
 
@@ -127,17 +127,17 @@ ol ol{list-style-type: lower-alpha}
 
 /* Ordered lists embedded in Numbered lists */
 
-ol li ul {list-style-image:url(images/blue-ball-mid.gif)}
+ol li ul {list-style-image:url(img/blue-ball-mid.gif)}
 
-ol li ul li ul {list-style-image:url(images/blue-sqr-mid.gif)}
+ol li ul li ul {list-style-image:url(img/blue-sqr-mid.gif)}
 
-ol li ul ul {list-style-image:url(images/blue-sqr-mid.gif)}
+ol li ul ul {list-style-image:url(img/blue-sqr-mid.gif)}
 
-ol ul {list-style-image:url(images/blue-ball-mid.gif)}
+ol ul {list-style-image:url(img/blue-ball-mid.gif)}
 
-ol ul li ul {list-style-image:url(images/blue-sqr-mid.gif)}
+ol ul li ul {list-style-image:url(img/blue-sqr-mid.gif)}
 
-ol ul ul{list-style-image:url(images/blue-sqr-mid.gif)}
+ol ul ul{list-style-image:url(img/blue-sqr-mid.gif)}
 
 dl {margin-left: 0;
     margin-top: 10;

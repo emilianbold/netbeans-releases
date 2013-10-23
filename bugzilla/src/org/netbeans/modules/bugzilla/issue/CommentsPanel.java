@@ -89,7 +89,7 @@ import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
-import org.netbeans.modules.bugtracking.cache.IssueSettingsStorage;
+import org.netbeans.modules.bugtracking.util.IssueSettingsStorage;
 import org.netbeans.modules.bugtracking.util.HyperlinkSupport;
 import org.netbeans.modules.bugtracking.util.HyperlinkSupport.Link;
 import org.netbeans.modules.bugtracking.util.LinkButton;
@@ -131,6 +131,7 @@ public class CommentsPanel extends JPanel {
         if( null == greyForeground )
             greyForeground = new Color(0x999999);
     }
+    private ArrayList<ExpandLabel> sections;
 
     public CommentsPanel() {
         setOpaque( false );
@@ -158,6 +159,8 @@ public class CommentsPanel extends JPanel {
         initCollapsedComments();
         this.attachments = attachments;
         this.attachmentIds = getAttachmentIds(attachments);
+        BugzillaIssue.Comment[] comments = issue.getComments();
+        this.sections = new ArrayList<>(comments.length + 1);
         GroupLayout layout = new GroupLayout(this);
         GroupLayout.ParallelGroup horizontalGroup = layout.createParallelGroup(GroupLayout.Alignment.LEADING);
         layout.setHorizontalGroup(layout.createSequentialGroup()
@@ -177,15 +180,15 @@ public class CommentsPanel extends JPanel {
         } catch (ParseException pex) {
             Bugzilla.LOG.log(Level.INFO, null, pex);
         }
-        addSection(layout,
+        sections.add(addSection(layout,
             new Long(0),    
             issue.getFieldValue(IssueField.DESCRIPTION),
             issue.getFieldValue(IssueField.REPORTER),
             issue.getFieldValue(IssueField.REPORTER_NAME),
-            creationTxt, horizontalGroup, verticalGroup, true);
-        for (BugzillaIssue.Comment comment : issue.getComments()) {
+            creationTxt, horizontalGroup, verticalGroup, true));
+        for (BugzillaIssue.Comment comment : comments) {
             String when = format.format(comment.getWhen());
-            addSection(layout, comment.getNumber(), comment.getText(), comment.getAuthor(), comment.getAuthorName(), when, horizontalGroup, verticalGroup, false);
+            sections.add(addSection(layout, comment.getNumber(), comment.getText(), comment.getAuthor(), comment.getAuthorName(), when, horizontalGroup, verticalGroup, false));
         }
         verticalGroup.addContainerGap();
         setLayout(layout);
@@ -208,7 +211,7 @@ public class CommentsPanel extends JPanel {
         newCommentHandler = handler;
     }
 
-    private void addSection(GroupLayout layout, final Long number, String text, final String author, String authorName, String dateTimeString,
+    private ExpandLabel addSection(GroupLayout layout, final Long number, String text, final String author, String authorName, String dateTimeString,
             GroupLayout.ParallelGroup horizontalGroup, GroupLayout.SequentialGroup verticalGroup, boolean description) {
         
         JTextPane textPane = new JTextPane();
@@ -315,6 +318,7 @@ public class CommentsPanel extends JPanel {
             .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
                 .addComponent(placeholder)
                 .addComponent(pane, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE));
+        return iconLabel;
         }
 
     private void setupTextPane(final JTextPane textPane, String comment) {
@@ -434,6 +438,18 @@ public class CommentsPanel extends JPanel {
         layout.setHorizontalGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGap(0, ICON_WIDTH, Short.MAX_VALUE));
         layout.setVerticalGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGap(0, 0, Short.MAX_VALUE));
         return placeholder;
+    }
+
+    void collapseAll () {
+        for (ExpandLabel lbl : sections) {
+            lbl.setState(true);
+        }
+    }
+
+    void expandAll () {
+        for (ExpandLabel lbl : sections) {
+            lbl.setState(false);
+        }
     }
 
     class PopupMenu extends JPopupMenu {

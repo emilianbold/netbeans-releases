@@ -43,9 +43,9 @@ package org.netbeans.modules.bugtracking.settings;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.Preferences;
+import org.netbeans.modules.bugtracking.tasks.TaskAttribute;
 import org.openide.util.NbPreferences;
 
 /**
@@ -56,6 +56,7 @@ public class DashboardSettings {
 
     public static final String TASKS_LIMIT_SETTINGS_CHANGED = "dashboard.task_limit_changed"; //NOI18N
     public static final String AUTO_SYNC_SETTINGS_CHANGED = "dashboard.auto_sync_changed"; //NOI18N
+    public static final String SORT_ATTRIBUTES_SETTINGS_CHANGED = "dashboard.sort_attributes_changed"; //NOI18N
 
     private static DashboardSettings instance = null;
     private static final String AUTO_SYNC = "dashboard.auto_sync"; //NOI18N
@@ -81,7 +82,7 @@ public class DashboardSettings {
     private DashboardSettings() {
     }
 
-    public static DashboardSettings getInstance(){
+    public static DashboardSettings getInstance() {
         if (instance == null) {
             instance = new DashboardSettings();
         }
@@ -161,13 +162,32 @@ public class DashboardSettings {
             fireLimitChangedEvent();
         }
     }
-    
+
     public boolean showFinishedTasks() {
         return getPreferences().getBoolean(FINISHED_TASK_FILTER, DEFAULT_FINISHED_TASK_FILTER);
     }
 
     public void setShowFinishedTasks(boolean tasksLimitQuery) {
         getPreferences().putBoolean(FINISHED_TASK_FILTER, tasksLimitQuery);
+    }
+
+    public void updateSortingAttributes(List<TaskAttribute> attributes) {
+        for (TaskAttribute taskAttribute : attributes) {
+            taskAttribute.setRank(getPreferences().getInt(taskAttribute.getId(), taskAttribute.getRank()));
+            taskAttribute.setAsceding(getPreferences().getBoolean(getAttributeAscedingId(taskAttribute.getId()), taskAttribute.isAsceding()));
+        }
+    }
+
+    public void setSortingAttributes(List<TaskAttribute> attributes) {
+        for (TaskAttribute taskAttribute : attributes) {
+            getPreferences().putInt(taskAttribute.getId(), taskAttribute.getRank());
+            getPreferences().putBoolean(getAttributeAscedingId(taskAttribute.getId()), taskAttribute.isAsceding());
+        }
+        fireSortChangedEvent();
+    }
+
+    private String getAttributeAscedingId(String attributeId) {
+        return attributeId + ".asceding";
     }
 
     private Preferences getPreferences() {
@@ -180,5 +200,9 @@ public class DashboardSettings {
 
     private void fireSyncChangedEvent() {
         support.firePropertyChange(AUTO_SYNC_SETTINGS_CHANGED, null, null);
+    }
+
+    private void fireSortChangedEvent() {
+        support.firePropertyChange(SORT_ATTRIBUTES_SETTINGS_CHANGED, null, null);
     }
 }

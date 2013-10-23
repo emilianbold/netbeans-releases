@@ -352,9 +352,12 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
                 File root = git.getRepositoryRoot(f);
                 if (root != null) {
                     if (f.equals(root)) {
-                        // huh? this is weird
-                        LOG.log(Level.WARNING, "Bump... Trying to display a repository root in status table: {0}, {1}, {2}", new Object[] { f, root, displayStatuses });
-                        LOG.log(Level.WARNING, "File status in cache: {0}", git.getFileStatusCache().getStatus(f).getStatus());
+                        // gitlink???
+                        File parentFile = f.getParentFile();
+                        File parentRepository = parentFile == null ? null : git.getRepositoryRoot(parentFile);
+                        if (parentRepository != null) {
+                            root = parentRepository;
+                        }
                     }
                     nodes.add(new GitStatusNodeImpl(new GitLocalFileNode(root, f), mode));
                 }
@@ -413,10 +416,11 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
                     } else {
                         File root = git.getRepositoryRoot(evt.getFile());
                         if (root != null) {
-                            if (evt.getFile().equals(root)) {
-                                // huh? this is weird
-                                LOG.log(Level.WARNING, "Bump... Trying to display a repository root in status table: {0}, {1}, {2}", new Object[] { evt.getFile(), root, displayStatuses });
-                                LOG.log(Level.WARNING, "File status in cache: {0}", git.getFileStatusCache().getStatus(evt.getFile()).getStatus());
+                            // gitlink???
+                            File parentFile = evt.getFile().getParentFile();
+                            File parentRepository = parentFile == null ? null : git.getRepositoryRoot(parentFile);
+                            if (parentRepository != null) {
+                                root = parentRepository;
                             }
                             toAdd.add(new GitStatusNodeImpl(new GitLocalFileNode(root, evt.getFile()), mode));
                         }

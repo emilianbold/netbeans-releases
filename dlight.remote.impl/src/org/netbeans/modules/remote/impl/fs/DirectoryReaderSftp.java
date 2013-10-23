@@ -59,32 +59,25 @@ import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo;
  */
 public class DirectoryReaderSftp implements DirectoryReader {
 
-    private final ExecutionEnvironment execEnv;
-    private final String remotePath;
-    private List<DirEntry> entries = new ArrayList<DirEntry>();
-    private final Object lock = new Object();
+    private final ExecutionEnvironment execEnv;    
     
-    public DirectoryReaderSftp(ExecutionEnvironment execEnv, String remotePath) {    
+    private DirectoryReaderSftp(ExecutionEnvironment execEnv) {
         this.execEnv = execEnv;        
+    }
+    
+    public static DirectoryReaderSftp getInstance(ExecutionEnvironment execEnv) {
+        return new DirectoryReaderSftp(execEnv);
+    }
+
+    @Override
+    public List<DirEntry> readDirectory(String remotePath) throws InterruptedException, CancellationException, ExecutionException {
         if (remotePath.length() == 0) {
-            this.remotePath = "/"; //NOI18N
+            remotePath = "/"; //NOI18N
         } else  {
             if (!remotePath.startsWith("/")) { //NOI18N
                 throw new IllegalArgumentException("path should be absolute: " + remotePath); // NOI18N
             }
-            this.remotePath = remotePath;
         }
-    }
-
-    @Override
-    public List<DirEntry> getEntries() {
-        synchronized (lock) {
-            return Collections.<DirEntry>unmodifiableList(entries);
-        }
-    }
-
-    @Override
-    public void readDirectory() throws InterruptedException, CancellationException, ExecutionException {
         Future<StatInfo[]> res = FileInfoProvider.ls(execEnv, remotePath);
         StatInfo[] infos;
         try {
@@ -98,8 +91,6 @@ public class DirectoryReaderSftp implements DirectoryReader {
             // filtering of "." and ".." is up to provider now
             newEntries.add(new DirEntrySftp(statInfo, statInfo.getName()));
         }
-        synchronized (lock) {
-            entries = newEntries;
-        }
+        return Collections.<DirEntry>unmodifiableList(newEntries);
     }
 }

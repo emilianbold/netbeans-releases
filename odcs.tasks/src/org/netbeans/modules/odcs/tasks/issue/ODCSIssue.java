@@ -75,7 +75,8 @@ import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskOperation;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.IssueController;
+import org.netbeans.modules.bugtracking.spi.IssuePriorityInfo;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.util.UIUtils;
@@ -140,7 +141,7 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
     private static final URL ICON_CONFLICT_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/odcs/tasks/resources/conflict.png"); //NOI18N
     private static final URL ICON_UNSUBMITTED_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/odcs/tasks/resources/unsubmitted.png"); //NOI18N
     private boolean loading;
-
+    
     public ODCSIssue(NbTask task, ODCSRepository repo) {
         super(task);
         this.repository = repo;
@@ -554,7 +555,7 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
     public void attachPatch(File file, String description) {
         // HACK for attaching hg bundles - they are NOT patches
         boolean isPatch = !file.getName().endsWith(".hg"); //NOI18N
-        addAttachment(file, null, description, null, isPatch);
+        addAttachment(file, description, description, null, isPatch);
     }
     
     void addAttachment (File file, final String comment, final String desc, String contentType, final boolean patch) {
@@ -651,11 +652,7 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
                         updateTooltip();
                         fireDataChanged();
                         String id = getID();
-                        try {
-                            repository.getIssueCache().setIssueData(id, ODCSIssue.this);
-                        } catch (IOException ex) {
-                            ODCS.LOG.log(Level.INFO, null, ex);
-                        }
+                        repository.getIssueCache().setIssue(id, ODCSIssue.this);
                         ODCS.LOG.log(Level.FINE, "created issue #{0}", id);
                     } else {
                         ODCS.LOG.log(Level.FINE, "submiting failed");
@@ -704,7 +701,7 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
         return updateModel() && refresh();
     }
 
-    public BugtrackingController getController() {
+    public IssueController getController() {
         if(controller == null) {
             controller = new ODCSIssueController(this);
         }
@@ -901,6 +898,15 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
 
     void delete () {
         deleteTask();
+    }
+    
+    public boolean discardLocalEdits () {
+        clearUnsavedChanges();
+        return cancelChanges();
+    }
+
+    public String getPriorityID() {
+        return getPriority().getId().toString();
     }
 
     private static class IssueFieldColumnDescriptor extends ColumnDescriptor<String> {

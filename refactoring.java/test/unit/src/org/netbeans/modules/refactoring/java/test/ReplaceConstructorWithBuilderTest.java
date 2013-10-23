@@ -56,6 +56,7 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.java.api.ReplaceConstructorWithBuilderRefactoring;
 import org.netbeans.modules.refactoring.java.api.ReplaceConstructorWithBuilderRefactoring.Setter;
+import org.netbeans.modules.refactoring.spi.impl.UndoManager;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -95,6 +96,34 @@ public class ReplaceConstructorWithBuilderTest extends RefTestBase {
 
         performTest("test.TestBuilder", new ReplaceConstructorWithBuilderRefactoring.Setter("setI", "int", null, "i", false));
 
+        assertContent(src,
+                new File("test/Test.java", "package test;\n public class Test {\n public Test(int i) {}\n private void t() {\n Test t = new TestBuilder().setI(1).createTest();\n }\n }\n"),
+                new File("test/Use.java", "package test; public class Use { private void t(java.util.List<String> ll) { Test t = new TestBuilder().setI(-1).createTest(); } }"),
+                new File("test/TestBuilder.java", "package test; public class TestBuilder { private int i; public TestBuilder() { } public TestBuilder setI(int i) { this.i = i; return this; } public Test createTest() { return new Test(i); } } "));
+    }
+    
+    public void testReplaceWithBuilderUndo() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("test/Test.java", "package test;\n public class Test {\n public Test(int i) {}\n private void t() {\n Test t = new Test(1);\n }\n }\n"),
+                new File("test/Use.java", "package test; public class Use { private void t(java.util.List<String> ll) { Test t = new Test(-1); } }"));
+
+        performTest("test.TestBuilder", new ReplaceConstructorWithBuilderRefactoring.Setter("setI", "int", null, "i", false));
+        
+        assertContent(src,
+                new File("test/Test.java", "package test;\n public class Test {\n public Test(int i) {}\n private void t() {\n Test t = new TestBuilder().setI(1).createTest();\n }\n }\n"),
+                new File("test/Use.java", "package test; public class Use { private void t(java.util.List<String> ll) { Test t = new TestBuilder().setI(-1).createTest(); } }"),
+                new File("test/TestBuilder.java", "package test; public class TestBuilder { private int i; public TestBuilder() { } public TestBuilder setI(int i) { this.i = i; return this; } public Test createTest() { return new Test(i); } } "));
+        
+        UndoManager undoManager = UndoManager.getDefault();
+        undoManager.setAutoConfirm(true);
+        undoManager.undo(null);
+
+        assertContent(src,
+                new File("test/Test.java", "package test;\n public class Test {\n public Test(int i) {}\n private void t() {\n Test t = new Test(1);\n }\n }\n"),
+                new File("test/Use.java", "package test; public class Use { private void t(java.util.List<String> ll) { Test t = new Test(-1); } }"));
+        
+        undoManager.redo(null);
+        
         assertContent(src,
                 new File("test/Test.java", "package test;\n public class Test {\n public Test(int i) {}\n private void t() {\n Test t = new TestBuilder().setI(1).createTest();\n }\n }\n"),
                 new File("test/Use.java", "package test; public class Use { private void t(java.util.List<String> ll) { Test t = new TestBuilder().setI(-1).createTest(); } }"),

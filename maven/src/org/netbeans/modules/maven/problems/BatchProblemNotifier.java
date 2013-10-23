@@ -53,7 +53,7 @@ import java.util.TreeMap;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.maven.artifact.Artifact;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
@@ -64,11 +64,8 @@ import org.netbeans.modules.maven.configurations.M2ConfigProvider;
 import org.netbeans.modules.maven.configurations.M2Configuration;
 import org.netbeans.modules.maven.execute.BeanRunConfig;
 import org.netbeans.modules.maven.execute.ReactorChecker;
-import org.netbeans.modules.maven.execute.ui.RunGoalsPanel;
 import static org.netbeans.modules.maven.problems.Bundle.*;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.netbeans.modules.maven.spi.IconResources;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.filesystems.FileObject;
@@ -213,8 +210,8 @@ public class BatchProblemNotifier {
             n = NotificationDisplayer.getDefault().notify(
                 build_title(root.getName()),
                 ImageUtilities.image2Icon(ImageUtilities.mergeImages(
-                    ImageUtilities.loadImage("org/netbeans/modules/maven/resources/Maven2Icon.gif", true),
-                    ImageUtilities.loadImage("org/netbeans/modules/maven/brokenProjectBadge.png", true), 8, 0)),
+                    ImageUtilities.loadImage(IconResources.MAVEN_ICON, true),
+                    ImageUtilities.loadImage(IconResources.BROKEN_PROJECT_BADGE_ICON, true), 8, 0)),
                 build_details(root), this);
             LOG.log(Level.FINE, "created for {0}", root);
         }

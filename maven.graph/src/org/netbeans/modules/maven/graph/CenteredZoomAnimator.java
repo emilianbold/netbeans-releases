@@ -97,7 +97,7 @@ class CenteredZoomAnimator extends Animator {
             Dimension viewSize = view.getVisibleRect ().getSize();
             Point oldCenter = scene.convertSceneToView (center);
 
-            scene.setZoomFactor (nextZoom);
+            ((DependencyGraphScene)scene).setMyZoomFactor (nextZoom);
             scene.validate (); // HINT - forcing to change preferred size of the JComponent view
 
             Point newCenter = scene.convertSceneToView (center);
@@ -113,7 +113,7 @@ class CenteredZoomAnimator extends Animator {
                     viewSize.height
             ));
         } else {
-            scene.setZoomFactor (nextZoom);
+            ((DependencyGraphScene)scene).setMyZoomFactor (nextZoom);
         }
     }
 

@@ -63,8 +63,11 @@ public class TestSemanticHighlighting {
     public static List<Highlight> gethighlightsBagForTests(Document doc, Interrupter interrupter) {
         List<Highlight> ret = new ArrayList<Highlight>();
         
-        PositionsBag bag = SemanticHighlighter.getSemanticBagForTests(doc, interrupter);
-
+        PositionsBag fastBag = SemanticHighlighter.getSemanticBagForTests(doc, interrupter, true);
+        PositionsBag slowBag = SemanticHighlighter.getSemanticBagForTests(doc, interrupter, false);
+        PositionsBag bag = new PositionsBag(doc);
+        bag.addAllHighlights(fastBag);
+        bag.addAllHighlights(slowBag);
         HighlightsSequence hs = bag.getHighlights(0, doc.getLength());
         while (hs.moveNext() && !interrupter.cancelled()) {
             int start = hs.getStartOffset();

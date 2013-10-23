@@ -136,38 +136,46 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
                 <attr name="position" intvalue="93"/>
                 <attr name="templateCategory" stringvalue="always-hidden"/>
-                <file name="PaginationHelper.ftl" url="templates/PaginationHelper.ftl">
+                <folder name="StandardJSF">
+                    <attr name="position" intvalue="100"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
-                    <attr name="template" boolvalue="true"/>
-                </file>
-                <file name="JsfUtil.ftl" url="templates/JsfUtil.ftl">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
-                    <attr name="template" boolvalue="true"/>
-                </file>
-                <file name="controller.ftl" url="templates/controller.ftl">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
-                    <attr name="template" boolvalue="true"/>
-                </file>
-                <file name="create.ftl" url="templates/create.ftl">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
-                    <attr name="template" boolvalue="true"/>
-                </file>
-                <file name="edit.ftl" url="templates/edit.ftl">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
-                    <attr name="template" boolvalue="true"/>
-                </file>
-                <file name="list.ftl" url="templates/list.ftl">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
-                    <attr name="template" boolvalue="true"/>
-                </file>
-                <file name="view.ftl" url="templates/view.ftl">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
-                    <attr name="template" boolvalue="true"/>
-                </file>
-                <file name="bundle.ftl" url="templates/bundle.ftl">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
-                    <attr name="template" boolvalue="true"/>
-                </file>
+                    <file name="PaginationHelper.ftl" url="templates/PaginationHelper.ftl">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                        <attr name="template" boolvalue="true"/>
+                    </file>
+                    <file name="JsfUtil.ftl" url="templates/JsfUtil.ftl">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                        <attr name="template" boolvalue="true"/>
+                    </file>
+                    <file name="controller.ftl" url="templates/controller.ftl">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                        <attr name="template" boolvalue="true"/>
+                    </file>
+                    <file name="create.ftl" url="templates/create.ftl">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                        <attr name="template" boolvalue="true"/>
+                    </file>
+                    <file name="edit.ftl" url="templates/edit.ftl">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                        <attr name="template" boolvalue="true"/>
+                    </file>
+                    <file name="list.ftl" url="templates/list.ftl">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                        <attr name="template" boolvalue="true"/>
+                    </file>
+                    <file name="view.ftl" url="templates/view.ftl">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                        <attr name="template" boolvalue="true"/>
+                    </file>
+                    <file name="bundle.ftl" url="templates/bundle.ftl">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                        <attr name="template" boolvalue="true"/>
+                    </file>
+                    <file name="template.ftl" url="templates/crudtemplate.ftl">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                        <attr name="template" boolvalue="true"/>
+                    </file>
+                </folder>
             </folder>
             <!-- JSF From Entity Snippets -->
             <folder name="JSF_From_Entity_Snippets">

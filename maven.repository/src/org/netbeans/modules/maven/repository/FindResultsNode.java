@@ -87,7 +87,7 @@ public class FindResultsNode extends AbstractNode {
     private static final RequestProcessor queryRP = new RequestProcessor(FindResultsNode.class.getName(), 10);
     private final QueryRequest queryRequest;
     private String toAppend;
-    private HtmlDisplayNameChanger changer = new HtmlDisplayNameChanger();
+    private final HtmlDisplayNameChanger changer = new HtmlDisplayNameChanger();
 
     FindResultsNode(QueryRequest request) {
         super(Children.LEAF, Lookups.singleton(request));

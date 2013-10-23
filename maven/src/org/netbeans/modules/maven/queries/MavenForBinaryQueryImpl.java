@@ -83,7 +83,7 @@ public class MavenForBinaryQueryImpl extends AbstractMavenForBinaryQueryImpl {
         map = new HashMap<String, BinResult>();
         NbMavenProject.addPropertyChangeListener(proj, new PropertyChangeListener() {
             public @Override void propertyChange(PropertyChangeEvent event) {
-                if (NbMavenProjectImpl.PROP_PROJECT.equals(event.getPropertyName())) {
+                if (NbMavenProject.PROP_PROJECT.equals(event.getPropertyName())) {
                     if (p.getLookup().lookup(NbMavenProject.class).isUnloadable()) {
                         return; //let's just continue with the old value, reloading classpath for broken project and re-creating it later serves no greater good.
                     }

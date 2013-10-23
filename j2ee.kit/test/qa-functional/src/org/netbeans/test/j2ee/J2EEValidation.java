@@ -99,6 +99,7 @@ public class J2EEValidation extends J2eeTestCase {
 
     /**
      * Need to be defined because of JUnit
+     * @param name test name
      */
     public J2EEValidation(String name) {
         super(name);
@@ -113,6 +114,11 @@ public class J2EEValidation extends J2eeTestCase {
         System.out.println("########  " + getName() + "  #######");
     }
 
+    @Override
+    public void testEmpty() {
+        fail("GlassFish server registration fails.");
+    }
+    
     /**
      * Test Web Application
      * <pre>

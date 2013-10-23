@@ -460,6 +460,10 @@ public class ASTPHP5ParserTest extends ParserTestBase {
         performTest("parser/finally_02");
     }
 
+    public void testFinally_03() throws Exception {
+        performTest("parser/finally_03");
+    }
+
     public void testListInForeach() throws Exception {
         performTest("parser/listInForeach");
     }

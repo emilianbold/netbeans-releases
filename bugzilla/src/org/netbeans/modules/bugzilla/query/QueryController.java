@@ -53,6 +53,8 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -80,6 +82,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
+import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.OwnerUtils;
 import org.netbeans.modules.bugtracking.util.SaveQueryPanel.QueryNameValidator;
@@ -111,7 +114,7 @@ import org.openide.util.RequestProcessor.Task;
  *
  * @author Tomas Stupka
  */
-public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryController implements ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener, ChangeListener {
+public class QueryController implements org.netbeans.modules.bugtracking.spi.QueryController, ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener, ChangeListener {
 
     protected QueryPanel panel;
 
@@ -271,6 +274,11 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
     }
 
     @Override
+    public boolean providesMode(QueryMode mode) {
+        return true;
+    }
+    
+    @Override
     public void opened() {
         wasOpened = true;
         if(query.isSaved()) {
@@ -320,7 +328,8 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
     }
 
     @Override
-    public JComponent getComponent() {
+    public JComponent getComponent(QueryMode mode) {
+        setMode(mode);
         return panel;
     }
 
@@ -329,21 +338,15 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         return new HelpCtx(org.netbeans.modules.bugzilla.query.BugzillaQuery.class);
     }
 
-    @Override
-    public void setMode(QueryMode mode) {
+    private void setMode(QueryMode mode) {
         switch(mode) {
             case EDIT:
                 onModify();
                 break;
-            case SHOW_ALL:
+            case VIEW:
                 wasModeShow = true;
                 onCancelChanges();
                 selectFilter(issueTable.getAllFilter());
-                break;
-            case SHOW_NEW_OR_CHANGED:
-                wasModeShow = true;
-                onCancelChanges();
-                selectFilter(issueTable.getNewOrChangedFilter());
                 break;
             default: 
                 throw new IllegalStateException("Unsupported mode " + mode);
@@ -601,37 +604,37 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
        Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
-                Bugzilla.LOG.fine("on save start");
-                String name = query.getDisplayName();
-                if(!query.isSaved()) {
-                    name = getSaveName();
-                    if(name == null) {
-                        return;
-                    }
-                }
-                assert name != null;
-                
-                Bugzilla.LOG.log(Level.FINE, "saving query '{0}'", new Object[]{name});
-                
-                query.setName(name);
-                saveQuery();
-                query.setSaved(true); // XXX
-                setAsSaved();
-                if (!query.wasRun()) {
-                    Bugzilla.LOG.log(Level.FINE, "refreshing query '{0}' after save", new Object[]{name});
-                    onRefresh();
-                }
-                
-                Bugzilla.LOG.log(Level.FINE, "query '{0}' saved", new Object[]{name});
-                Bugzilla.LOG.fine("on save finnish");
-
-                if(refresh) {
-                    onRefresh();
-                }
-                
+                if(saveSynchronously(refresh)) return;
                 BugtrackingUtil.openTasksDashboard();
             }
        });
+    }
+
+    private boolean saveSynchronously(boolean refresh) {
+        Bugzilla.LOG.fine("on save start");
+        String name = query.getDisplayName();
+        if (!query.isSaved()) {
+            name = getSaveName();
+            if (name == null) {
+                return true;
+            }
+        }
+        assert name != null;
+        Bugzilla.LOG.log(Level.FINE, "saving query '{0}'", new Object[]{name});
+        query.setName(name);
+        saveQuery();
+        query.setSaved(true); // XXX
+        setAsSaved();
+        if (!query.wasRun()) {
+            Bugzilla.LOG.log(Level.FINE, "refreshing query '{0}' after save", new Object[]{name});
+            onRefresh();
+        }
+        Bugzilla.LOG.log(Level.FINE, "query '{0}' saved", new Object[]{name});
+        Bugzilla.LOG.fine("on save finnish");
+        if(refresh) {
+            onRefresh();
+        }
+        return false;
     }
 
     private String getSaveName() {
@@ -1032,8 +1035,10 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
             public void run() {
                 if (isChanged()) {
                     panel.saveChangesButton.setEnabled(true);
+                    fireUnsaved();
                 } else {
                     panel.saveChangesButton.setEnabled(false);
+                    fireSaved();
                 }                
             }
         });
@@ -1062,6 +1067,36 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         Bugzilla.LOG.log(Level.FINE, "query '{0}' saved", new Object[]{name});  // NOI18N                 
     }
 
+    @Override
+    public boolean saveChanges() {
+        return saveSynchronously(true);
+    }
+
+    @Override
+    public boolean discardUnsavedChanges() {
+        onCancelChanges();
+        return true;
+    }
+
+    private final PropertyChangeSupport support = new PropertyChangeSupport(this);
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        support.addPropertyChangeListener(l);
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        support.removePropertyChangeListener(l);
+    }
+
+    private void fireUnsaved() {
+        support.firePropertyChange(IssueController.PROPERTY_ISSUE_NOT_SAVED, null, null);
+    }
+ 
+    private void fireSaved() {
+        support.firePropertyChange(IssueController.PROPERTY_ISSUE_SAVED, null, null);
+    }
+    
     private class QueryTask implements Runnable, Cancellable, QueryNotifyListener {
         private ProgressHandle handle;
         private Task task;
@@ -1214,11 +1249,6 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
                 synchronized(notifiedIssues) {
                     notifiedIssues.add(issue);
                 }
-            }
-            if (!query.contains(issue.getID())) {
-                // XXX this is quite ugly - the query notifies an archoived issue
-                // but it doesn't "contain" it!
-                return;
             }
             setIssueCount(++counter);
             if(counter == 1) {

@@ -53,7 +53,7 @@ import org.openide.util.Lookup;
  *
  * @author tomas
  */
-public class TestRepositoryProvider extends RepositoryProvider<TestRepository, TestQuery, TestIssue> {
+public class TestRepositoryProvider implements RepositoryProvider<TestRepository, TestQuery, TestIssue> {
 
     @Override
     public RepositoryInfo getInfo(TestRepository r) {
@@ -109,4 +109,15 @@ public class TestRepositoryProvider extends RepositoryProvider<TestRepository, T
     public void addPropertyChangeListener(TestRepository r, PropertyChangeListener listener) {
         r.addPropertyChangeListener(listener);
     }
+
+    @Override
+    public TestIssue createIssue(TestRepository r, String summary, String description) {
+        return r.createIssue(summary, description);
+    }
+
+    @Override
+    public boolean canAttachFiles(TestRepository r) {
+        return r.canAttachFile();
+    }
+
 }

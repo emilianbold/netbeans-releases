@@ -49,6 +49,7 @@ import java.beans.PropertyChangeSupport;
 import java.net.URL;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 
 /**
  * The ExtBrowserImpl is generalized external browser.
@@ -56,6 +57,9 @@ import org.openide.util.Lookup;
  * @author Radim Kubacki
  */
 public abstract class ExtBrowserImpl extends HtmlBrowser.Impl {
+
+    private static final RequestProcessor RP = new RequestProcessor(ExtBrowserImpl.class);
+
     /** Lookup of this {@code HtmlBrowser.Impl}.  */
     private Lookup lookup;
 
@@ -154,9 +158,25 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl {
         loadURLInBrowser(url);
         this.url = url;
     }
-    
-    abstract protected void loadURLInBrowser(URL url);
-    
+
+    protected final void loadURLInBrowser(final URL url) {
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                loadURLInBrowserInternal(url);
+            }
+        });
+    }
+
+    /**
+     * Loads given URL in the browser.
+     * <p>
+     * This method is always called in a background thread.
+     * @param url URL to be loaded
+     * @since 1.46
+     */
+    protected abstract void loadURLInBrowserInternal(URL url);
+
     /** Returns visual component of html browser.
      *
      * @return visual component of html browser.

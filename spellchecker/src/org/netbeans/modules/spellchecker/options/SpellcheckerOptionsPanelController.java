@@ -66,19 +66,23 @@ public class SpellcheckerOptionsPanelController extends OptionsPanelController {
 
     private SpellcheckerOptionsPanel comp;
     private boolean valid = true;
+    private boolean changed = false;
 
     public SpellcheckerOptionsPanelController() {}
 
     public void update() {
         getComponentImpl().update();
+        changed = false;
     }
 
     public void applyChanges() {
         getComponentImpl().commit();
+        changed = false;
     }
 
     public void cancel() {
         getComponentImpl().update();
+        changed = false;
     }
 
     public boolean isValid() {
@@ -86,7 +90,11 @@ public class SpellcheckerOptionsPanelController extends OptionsPanelController {
     }
 
     public boolean isChanged() {
-        return false;
+        return changed;
+    }
+    
+    void notifyChanged(boolean changed) {
+        this.changed = changed;
     }
     
     void setValid(boolean valid) {

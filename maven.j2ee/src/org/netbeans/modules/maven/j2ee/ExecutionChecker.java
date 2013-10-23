@@ -63,13 +63,19 @@ import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.j2ee.ui.SelectAppServerPanel;
 import org.netbeans.modules.maven.j2ee.ui.customizer.impl.CustomizerRunWeb;
+import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.modules.maven.spi.debug.MavenDebugger;
 import org.netbeans.modules.web.browser.spi.URLDisplayerImplementation;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 import org.openide.windows.OutputWriter;
+import static org.netbeans.modules.maven.j2ee.Bundle.*;
+import org.openide.util.Exceptions;
 
 
 @ProjectServiceProvider(
@@ -86,13 +92,14 @@ import org.openide.windows.OutputWriter;
 )
 public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesChecker {
 
-    private final Project project;
-    private static final Logger LOGGER = Logger.getLogger(ExecutionChecker.class.getName());
-    public static final String DEV_NULL = "DEV-NULL"; //NOI18N
-    public static final String MODULEURI = "netbeans.deploy.clientModuleUri"; //NOI18N
     public static final String CLIENTURLPART = "netbeans.deploy.clientUrlPart"; //NOI18N
+    public static final String MODULEURI = "netbeans.deploy.clientModuleUri"; //NOI18N
+    public static final String DEV_NULL = "DEV-NULL"; //NOI18N
 
+    private static final Logger LOGGER = Logger.getLogger(ExecutionChecker.class.getName());
     private static final String NB_COS = ".netbeans_automatic_build"; //NOI18N
+
+    private final Project project;
 
 
     public ExecutionChecker(Project prj) {
@@ -143,12 +150,23 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
             err.println("NetBeans: Application Server deployment not available for Maven project '" + ProjectUtils.getInformation(project).getDisplayName() + "'"); // NOI18N
             return;
         }
-        String serverInstanceID = jmp.getServerInstanceID();
-        if (DEV_NULL.equals(serverInstanceID)) {
-            err.println();
-            err.println();
-            err.println("NetBeans: No suitable Deployment Server is defined for the project or globally."); // NOI18N
-            return;
+
+        String serverInstanceID = null;
+
+        // First check if the one-time deployment server is set
+        OneTimeDeployment oneTimeDeployment = project.getLookup().lookup(OneTimeDeployment.class);
+        if (oneTimeDeployment != null) {
+            serverInstanceID = oneTimeDeployment.getServerInstanceId();
+        }
+
+        if (serverInstanceID == null) {
+            serverInstanceID = jmp.getServerInstanceID();
+            if (DEV_NULL.equals(serverInstanceID) || serverInstanceID == null) {
+                err.println();
+                err.println();
+                err.println("NetBeans: No suitable Deployment Server is defined for the project or globally."); // NOI18N
+                return;
+            }
         }
         ServerInstance si = Deployment.getDefault().getServerInstance(serverInstanceID);
         try {
@@ -233,10 +251,20 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
         } catch (Exception ex) {
             LOGGER.log(Level.FINE, "Exception occured wile deploying to Application Server.", ex); //NOI18N
         }
+
+        // Reset the value of the one-time server
+        if (oneTimeDeployment != null) {
+            oneTimeDeployment.reset();
+            MavenProjectSupport.changeServer(project, false);
+        }
     }
     
     @Override
     public boolean checkRunConfig(RunConfig config) {
+        if (!isSupported()) { // #234767
+            return false;
+        }
+
         boolean depl = Boolean.parseBoolean(config.getProperties().get(MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY));
         if (depl) {
             J2eeModuleProvider provider = config.getProject().getLookup().lookup(J2eeModuleProvider.class);
@@ -245,6 +273,46 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
             }
         }
         return true;
+    }
+
+    @NbBundle.Messages({
+        "MSG_Server_No_Profiling=<html>The target server does not support profiling.<br><b>Choose a different server</b> in project properties.</html>",
+        "MSG_Server_No_Debugging=<html>The target server does not support debugging.<br><b>Choose a different server</b> in project properties.</html>"
+    })
+    private boolean isSupported() {
+        String serverInstanceID = getServerInstanceID();
+        ServerInstance serverInstance = Deployment.getDefault().getServerInstance(serverInstanceID);
+        try {
+            if (serverInstance != null && !DEV_NULL.equals(serverInstanceID)) {
+                if (!serverInstance.isDebuggingSupported()) {
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(MSG_Server_No_Debugging(), NotifyDescriptor.WARNING_MESSAGE));
+                    return false;
+                }
+                if (!serverInstance.isProfilingSupported()) {
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(MSG_Server_No_Profiling(), NotifyDescriptor.WARNING_MESSAGE));
+                    return false;
+                }
+            }
+        } catch (InstanceRemovedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return true;
+    }
+
+    private String getServerInstanceID() {
+        J2eeModuleProvider moduleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
+        String serverInstanceID = null;
+
+        // First check if the one-time deployment server is set
+        OneTimeDeployment oneTimeDeployment = project.getLookup().lookup(OneTimeDeployment.class);
+        if (oneTimeDeployment != null) {
+            serverInstanceID = oneTimeDeployment.getServerInstanceId();
+        }
+
+        if (serverInstanceID == null && moduleProvider != null) {
+            serverInstanceID = moduleProvider.getServerInstanceID();
+        }
+        return serverInstanceID;
     }
 
     private boolean touchCoSTimeStamp(RunConfig rc, long stamp) {

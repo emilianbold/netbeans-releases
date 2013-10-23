@@ -43,26 +43,21 @@
 package org.netbeans.modules.bugtracking.ui.selectors;
 
 import java.awt.Image;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
-import java.util.Collection;
 import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.bugtracking.TestIssue;
 import org.netbeans.modules.bugtracking.TestKit;
-import org.netbeans.modules.bugtracking.TestQuery;
 import org.netbeans.modules.bugtracking.TestRepository;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.spi.*;
-import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
@@ -136,16 +131,6 @@ public class RepositorySelectorTest extends NbTestCase {
         }
 
         @Override
-        public TestIssue[] getIssues(String[] id) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
         public RepositoryController getController() {
             final JPanel panel = new JPanel();
             JLabel label = new JLabel();
@@ -172,7 +157,7 @@ public class RepositorySelectorTest extends NbTestCase {
                 }
 
                 @Override
-                public void applyChanges() throws IOException {
+                public void applyChanges() {
 
                 }
 
@@ -198,40 +183,9 @@ public class RepositorySelectorTest extends NbTestCase {
             };
         }
 
-        @Override
-        public TestQuery createQuery() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public TestIssue createIssue() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Collection<TestQuery> getQueries() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Collection<TestIssue> simpleSearch(String criteria) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        protected IssueCache getIssueCache() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
         public Lookup getLookup() {
             return Lookup.EMPTY;
         }
-
-        @Override
-        public void removePropertyChangeListener(PropertyChangeListener listener) { }
-
-        @Override
-        public void addPropertyChangeListener(PropertyChangeListener listener) { }
-
     }
 
 }

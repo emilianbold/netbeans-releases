@@ -58,6 +58,7 @@ class Attr {
     private final static int BGCOLORf = 0;
     private final static int BGCOLORw = 5;
     private final static int BGCOLORm = 0xf;
+    @SuppressWarnings("PointlessBitwiseExpression")
     public final static int BGCOLOR = BGCOLORm << BGCOLORf;
 
     private final static int FGCOLORf = BGCOLORf + BGCOLORw;
@@ -93,11 +94,6 @@ class Attr {
     private final static int ACTIVEw = 1;
     public final static int ACTIVE = 0x1 << ACTIVEf;
 
-    private final static int FONTf = ACTIVEf + ACTIVEw;
-    private final static int FONTw = 4;
-    private final static int FONTm = 0xf;
-    public final static int FONT = FONTm << FONTf;
-
     // Since an attr value of 0 means render using default attributes
     // We need a value that signifies that no attribute has been set.
     // Can't use the highest (sign) bit since Java has no unsigned and
@@ -110,6 +106,7 @@ class Attr {
      * attr = Attr.setBackgroundColor(attr, 7);
      */
 
+    @SuppressWarnings("PointlessBitwiseExpression")
     public static int setBackgroundColor(int attr, int code) {
 	code &= BGCOLORm;	// throw all but lowest relevant bits away
 	attr &= ~ BGCOLOR;	// 0 out existing bits
@@ -130,18 +127,6 @@ class Attr {
     }
 
     /**
-     * Set at the font value embedded in an attr.
-     * Value of 0 means default font.
-     * Values 1-9 means alternate fonts.
-     */
-    public static int setFont(int attr, int font) {
-	font &= FONTm;	// throw all but lowest relevant bits away
-	attr &= ~ FONT;	// 0 out existing bits
-	attr |= font << FONTf;
-	return attr;
-    }
-
-    /**
      * Use this to get at the FG color value embedded in an attr.
      */
     public static int foregroundColor(int attr) {
@@ -151,17 +136,9 @@ class Attr {
     /**
      * Use this to get at the BG color value embedded in an attr.
      */
+    @SuppressWarnings("PointlessBitwiseExpression")
     public static int backgroundColor(int attr) {
 	return (attr >> BGCOLORf) & BGCOLORm;
-    }
-
-    /**
-     * Get at the font value embedded in an attr.
-     * Value of 0 means default font.
-     * Values 1-9 means alternate fonts.
-     */
-    public static int font(int attr) {
-	return (attr >> FONTf) & FONTm;
     }
 
     /*
@@ -173,7 +150,8 @@ class Attr {
 		// Reset all attributes
 		attr = 0;
 		break;
-	    case 5:
+	    case 5:             // slow blink
+	    case 6:             // fast blink
 		// Attr.BLINK
 		// FALLTHRU
 	    case 1:
@@ -184,6 +162,9 @@ class Attr {
 		attr &= ~ Attr.BRIGHT;
 		attr |= Attr.DIM;
 		break;
+            case 3:
+                // Italic - not supported
+                break;
 	    case 4:
 		attr |= Attr.UNDERSCORE;
 		break;
@@ -198,19 +179,6 @@ class Attr {
 		// Term specific
 		attr |= Attr.ACTIVE;
 		break;
-
-            case 10:
-            case 11:
-            case 12:
-            case 13:
-            case 14:
-            case 15:
-            case 16:
-            case 17:
-            case 18:
-            case 19:
-		attr = Attr.setFont(attr, value-10);
-                break;
 
 	    // turn individual attributes off (dtterm specific?)
 	    case 25:
@@ -325,20 +293,6 @@ class Attr {
 	    case 9:
 		attr &= ~ Attr.ACTIVE;
 		break;
-
-            case 10:
-            case 11:
-            case 12:
-            case 13:
-            case 14:
-            case 15:
-            case 16:
-            case 17:
-            case 18:
-            case 19:
-		attr = Attr.setFont(attr, 0);
-                break;
-
 
 	    case 30:
 	    case 31:

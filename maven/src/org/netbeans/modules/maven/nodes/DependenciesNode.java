@@ -64,6 +64,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
@@ -95,6 +96,9 @@ import org.openide.util.lookup.Lookups;
 public class DependenciesNode extends AbstractNode {
     enum Type {COMPILE, TEST, RUNTIME, /** any scope */NONCP}
     public static final String PREF_DEPENDENCIES_UI = "org/netbeans/modules/maven/dependencies/ui"; //NOI18N
+    private static final @StaticResource String LIBS_BADGE = "org/netbeans/modules/maven/libraries-badge.png";
+    private static final @StaticResource String DEF_FOLDER = "org/netbeans/modules/maven/defaultFolder.gif";
+
     
     private final DependenciesSet dependencies;
 
@@ -114,13 +118,13 @@ public class DependenciesNode extends AbstractNode {
             case RUNTIME : setDisplayName(LBL_Runtime_Libraries()); break;
             default : setDisplayName(LBL_non_cp_libraries()); break;
         }
-        setIconBaseWithExtension("org/netbeans/modules/maven/defaultFolder.gif"); //NOI18N
+        setIconBaseWithExtension(DEF_FOLDER); //NOI18N
     }
     
     @Override
     public Image getIcon(int param) {
         Image retValue = ImageUtilities.mergeImages(getTreeFolderIcon(false),
-                ImageUtilities.loadImage("org/netbeans/modules/maven/libraries-badge.png"), //NOI18N
+                ImageUtilities.loadImage(LIBS_BADGE), //NOI18N
                 8, 8);
         return retValue;
     }
@@ -128,7 +132,7 @@ public class DependenciesNode extends AbstractNode {
     @Override
     public Image getOpenedIcon(int param) {
         Image retValue = ImageUtilities.mergeImages(getTreeFolderIcon(true),
-                ImageUtilities.loadImage("org/netbeans/modules/maven/libraries-badge.png"), //NOI18N
+                ImageUtilities.loadImage(LIBS_BADGE), //NOI18N
                 8, 8);
         return retValue;
     }
@@ -223,7 +227,7 @@ public class DependenciesNode extends AbstractNode {
         }
 
         @Override public void propertyChange(PropertyChangeEvent evt) {
-            if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
+            if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
                 cs.fireChange();
             }
         }
@@ -388,7 +392,7 @@ public class DependenciesNode extends AbstractNode {
     @SuppressWarnings("serial")
     private static class ResolveDepsAction extends AbstractAction {
 
-        private Project project;
+        private final Project project;
 
         @Messages("LBL_Download=Download Declared Dependencies")
         ResolveDepsAction(Project prj) {
@@ -428,8 +432,8 @@ public class DependenciesNode extends AbstractNode {
     private static final String OPENED_ICON_KEY_UIMANAGER = "Tree.openIcon"; // NOI18N
     private static final String ICON_KEY_UIMANAGER_NB = "Nb.Explorer.Folder.icon"; // NOI18N
     private static final String OPENED_ICON_KEY_UIMANAGER_NB = "Nb.Explorer.Folder.openedIcon"; // NOI18N
-    private static final String ICON_PATH = "org/netbeans/modules/maven/defaultFolder.gif"; // NOI18N
-    private static final String OPENED_ICON_PATH = "org/netbeans/modules/maven/defaultFolderOpen.gif"; // NOI18N
+    private static final String ICON_PATH = DEF_FOLDER; // NOI18N
+    private static final @StaticResource String OPENED_ICON_PATH = "org/netbeans/modules/maven/defaultFolderOpen.gif"; // NOI18N
     
     /**
      * Returns default folder icon as {@link java.awt.Image}. Never returns

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<metaDD>
+  <meta-element>
+    <dtd-name>resources</dtd-name>
+    <bean-name>TomeeResources</bean-name>
+  </meta-element>
+  <meta-element>
+    <dtd-name>Resource</dtd-name>
+    <bean-name>TomeeResource</bean-name>
+    <wrapper-class>String</wrapper-class>
+  </meta-element>
+  <meta-element>
+    <dtd-name>Container</dtd-name>
+    <bean-name>TomeeContainer</bean-name>
+    <wrapper-class>String</wrapper-class>
+  </meta-element>
+  <meta-element>
+    <dtd-name>TransactionManager</dtd-name>
+    <bean-name>TomeeTransactionManager</bean-name>
+    <wrapper-class>String</wrapper-class>
+  </meta-element> 
+</metaDD>
+

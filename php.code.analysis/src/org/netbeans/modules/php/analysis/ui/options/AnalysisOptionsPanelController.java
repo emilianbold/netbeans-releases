@@ -44,12 +44,11 @@ package org.netbeans.modules.php.analysis.ui.options;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.Collection;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.php.analysis.options.AnalysisOptions;
-import org.netbeans.modules.php.analysis.options.AnalysisOptionsValidator;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.netbeans.spi.options.OptionsPanelController;
@@ -72,16 +71,17 @@ public class AnalysisOptionsPanelController extends OptionsPanelController imple
 
     // @GuardedBy("EDT")
     private AnalysisOptionsPanel analysisOptionsPanel = null;
+    // @GuardedBy("EDT")
+    private Collection<AnalysisCategoryPanel> categoryPanels = null;
     private volatile boolean changed = false;
 
 
     @Override
     public void update() {
         assert EventQueue.isDispatchThread();
-        getAnalysisOptionsPanel().setCodeSnifferPath(getAnalysisOptions().getCodeSnifferPath());
-        getAnalysisOptionsPanel().setCodeSnifferStandard(getAnalysisOptions().getCodeSnifferStandard());
-        getAnalysisOptionsPanel().setMessDetectorPath(getAnalysisOptions().getMessDetectorPath());
-        getAnalysisOptionsPanel().setMessDetectorRuleSets(getAnalysisOptions().getMessDetectorRuleSets());
+        for (AnalysisCategoryPanel panel : getCategoryPanels()) {
+            panel.update();
+        }
 
         changed = false;
     }
@@ -91,10 +91,9 @@ public class AnalysisOptionsPanelController extends OptionsPanelController imple
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                getAnalysisOptions().setCodeSnifferPath(getAnalysisOptionsPanel().getCodeSnifferPath());
-                getAnalysisOptions().setCodeSnifferStandard(getAnalysisOptionsPanel().getCodeSnifferStandard());
-                getAnalysisOptions().setMessDetectorPath(getAnalysisOptionsPanel().getMessDetectorPath());
-                getAnalysisOptions().setMessDetectorRuleSets(getAnalysisOptionsPanel().getMessDetectorRuleSets());
+                for (AnalysisCategoryPanel panel : getCategoryPanels()) {
+                    panel.applyChanges();
+                }
 
                 changed = false;
             }
@@ -109,19 +108,19 @@ public class AnalysisOptionsPanelController extends OptionsPanelController imple
     public boolean isValid() {
         assert EventQueue.isDispatchThread();
         AnalysisOptionsPanel panel = getAnalysisOptionsPanel();
-        ValidationResult result = new AnalysisOptionsValidator()
-                .validateCodeSniffer(panel.getCodeSnifferPath(), panel.getCodeSnifferStandard())
-                .validateMessDetector(panel.getMessDetectorPath(), panel.getMessDetectorRuleSets())
-                .getResult();
-        // errors
-        if (result.hasErrors()) {
-            panel.setError(result.getErrors().get(0).getMessage());
-            return false;
-        }
-        // warnings
-        if (result.hasWarnings()) {
-            panel.setWarning(result.getWarnings().get(0).getMessage());
-            return true;
+        AnalysisCategoryPanel selectedPanel = panel.getSelectedPanel();
+        if (selectedPanel != null) {
+            ValidationResult result = selectedPanel.getValidationResult();
+            // errors
+            if (result.hasErrors()) {
+                panel.setError(result.getErrors().get(0).getMessage());
+                return false;
+            }
+            // warnings
+            if (result.hasWarnings()) {
+                panel.setWarning(result.getWarnings().get(0).getMessage());
+                return true;
+            }
         }
         // everything ok
         panel.setError(" "); // NOI18N
@@ -168,12 +167,29 @@ public class AnalysisOptionsPanelController extends OptionsPanelController imple
         if (analysisOptionsPanel == null) {
             analysisOptionsPanel = new AnalysisOptionsPanel();
             analysisOptionsPanel.addChangeListener(this);
+            // inner panels
+            String firstPanelName = null;
+            for (AnalysisCategoryPanel panel : getCategoryPanels()) {
+                if (firstPanelName == null) {
+                    firstPanelName = panel.getCategoryName();
+                }
+                panel.addChangeListener(this);
+                analysisOptionsPanel.addCategoryPanel(panel);
+            }
+            if (firstPanelName != null) {
+                // set selected panel
+                analysisOptionsPanel.selectCategoryPanel(firstPanelName);
+            }
         }
         return analysisOptionsPanel;
     }
 
-    private AnalysisOptions getAnalysisOptions() {
-        return AnalysisOptions.getInstance();
+    private Collection<AnalysisCategoryPanel> getCategoryPanels() {
+        assert EventQueue.isDispatchThread();
+        if (categoryPanels == null) {
+            categoryPanels = AnalysisCategoryPanels.getCategoryPanels();
+        }
+        return categoryPanels;
     }
 
 }

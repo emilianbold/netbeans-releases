@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.maven.nodes;
 
+import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
@@ -56,6 +57,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JFileChooser;
 import org.apache.maven.project.MavenProject;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -67,6 +69,7 @@ import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import static org.netbeans.modules.maven.nodes.Bundle.*;
 import org.netbeans.modules.maven.spi.nodes.NodeUtils;
+import org.netbeans.modules.project.ui.api.ProjectActionUtils;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -74,6 +77,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
@@ -83,6 +87,7 @@ import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 /**
@@ -91,6 +96,7 @@ import org.openide.util.WeakListeners;
  */
 public class ModulesNode extends AbstractNode {
 
+    private static final @StaticResource String MODULES_BADGE = "org/netbeans/modules/maven/modules-badge.png";
     private final NbMavenProjectImpl proj;
 
     @Messages("LBL_Modules=Modules")
@@ -110,7 +116,7 @@ public class ModulesNode extends AbstractNode {
     }
 
     private Image getIcon(boolean opened) {
-        Image badge = ImageUtilities.loadImage("org/netbeans/modules/maven/modules-badge.png", true); //NOI18N
+        Image badge = ImageUtilities.loadImage(MODULES_BADGE, true); //NOI18N
         return ImageUtilities.mergeImages(NodeUtils.getTreeFolderIcon(opened), badge, 8, 8);
     }
 
@@ -142,7 +148,7 @@ public class ModulesNode extends AbstractNode {
             listener = new PropertyChangeListener() {
                                        @Override
                                        public void propertyChange(PropertyChangeEvent evt) {
-                                           if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
+                                           if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
                                                refresh(false);
                                            }
                                        }
@@ -192,8 +198,8 @@ public class ModulesNode extends AbstractNode {
   
     private static class ProjectFilterNode extends FilterNode {
 
-        private NbMavenProjectImpl project;
-        private NbMavenProjectImpl parent;
+        private final NbMavenProjectImpl project;
+        private final NbMavenProjectImpl parent;
 
         ProjectFilterNode(NbMavenProjectImpl parent, NbMavenProjectImpl proj, Node original, boolean isAggregator) {
             super(original, isAggregator ? Children.create(new ModulesChildFactory(proj), true) : Children.LEAF);
@@ -220,8 +226,8 @@ public class ModulesNode extends AbstractNode {
 
     private static class RemoveModuleAction extends AbstractAction {
 
-        private NbMavenProjectImpl project;
-        private NbMavenProjectImpl parent;
+        private final NbMavenProjectImpl project;
+        private final NbMavenProjectImpl parent;
 
         @Messages("BTN_Remove_Module=Remove Module")
         RemoveModuleAction(NbMavenProjectImpl parent, NbMavenProjectImpl proj) {
@@ -275,7 +281,15 @@ public class ModulesNode extends AbstractNode {
             return new AbstractAction(BTN_Open_Project()) {
                 public @Override void actionPerformed(ActionEvent e) {
                     Collection<? extends NbMavenProjectImpl> projects = context.lookupAll(NbMavenProjectImpl.class);
-                    OpenProjects.getDefault().open(projects.toArray(new NbMavenProjectImpl[projects.size()]), false, true);
+                    final NbMavenProjectImpl [] projectsArray = new NbMavenProjectImpl[projects.size()];
+                    OpenProjects.getDefault().open(projects.toArray(projectsArray), false, true);
+                    if(projectsArray.length > 0) {
+                        RequestProcessor.getDefault().post(new Runnable() {
+                            public @Override void run() {
+                                ProjectActionUtils.selectAndExpandProject(projectsArray[0]);
+                            }
+                        }, 500);
+                    }
                 }
             };
         }

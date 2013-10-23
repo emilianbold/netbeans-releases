@@ -1021,7 +1021,7 @@ final class TaskPanel extends javax.swing.JPanel {
         if (noSummary) {
             JLabel noSummaryLabel = new JLabel();
             noSummaryLabel.setText(Bundle.IssuePanel_noSummary());
-            String icon = "org/netbeans/modules/bugtracking/local/resources/error.gif"; //NOI18N
+            String icon = "org/netbeans/modules/localtasks/resources/error.gif"; //NOI18N
             noSummaryLabel.setIcon(new ImageIcon(ImageUtilities.loadImage(icon)));
             messagePanel.add(noSummaryLabel);
         }
@@ -1066,7 +1066,7 @@ final class TaskPanel extends javax.swing.JPanel {
 
             @Override
             protected boolean storeValue () {
-                task.setTaskDueDate(dueDatePicker.getDate());
+                task.setTaskDueDate(dueDatePicker.getDate(), false);
                 return true;
             }
         });
@@ -1081,7 +1081,7 @@ final class TaskPanel extends javax.swing.JPanel {
                     cal = Calendar.getInstance();
                     cal.setTime(date);
                 }
-                task.setTaskScheduleDate(cal == null ? null : new NbDateRange(cal));
+                task.setTaskScheduleDate(cal == null ? null : new NbDateRange(cal).toSchedulingInfo(), false);
                 return true;
             }
         });
@@ -1092,7 +1092,7 @@ final class TaskPanel extends javax.swing.JPanel {
             protected boolean storeValue () {
                 int value = ((Number) estimateField.getValue()).intValue();
                 if (value != task.getEstimate()) {
-                    task.setTaskEstimate(value);
+                    task.setTaskEstimate(value, false);
                     return true;
                 } else {
                     return false;

@@ -264,7 +264,7 @@ public class ODCSHandler {
                 Support.getInstance().post(new Runnable() { // XXX add post method to BM
                     @Override
                     public void run () {
-                        TeamUtil.openNewQuery(repo, true);
+                        TeamUtil.openNewQuery(repo);
                     }
                 });
             }

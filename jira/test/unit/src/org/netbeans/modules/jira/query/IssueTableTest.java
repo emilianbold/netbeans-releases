@@ -48,7 +48,7 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 import junit.framework.Test;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.jira.*;
 import org.netbeans.modules.bugtracking.BugtrackingManager;

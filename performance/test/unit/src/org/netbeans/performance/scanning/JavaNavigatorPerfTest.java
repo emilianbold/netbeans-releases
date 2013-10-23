@@ -39,25 +39,18 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.performance.scanning;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import junit.framework.Test;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbPerformanceTest.PerformanceData;
 import org.netbeans.junit.NbTestCase;
@@ -72,62 +65,69 @@ import org.openide.filesystems.FileUtil;
 public class JavaNavigatorPerfTest extends NbTestCase {
 
     private final List<PerformanceData> data;
+    private static String logged;
 
     public JavaNavigatorPerfTest(String name) {
         super(name);
-        data = new ArrayList<PerformanceData>();
+        data = new ArrayList<>();
     }
 
     /**
      * Set-up the services and project
+     *
+     * @throws java.io.IOException
      */
     @Override
-    protected void setUp() throws IOException, InterruptedException {
-        clearWorkDir();
-        System.setProperty("netbeans.user", getWorkDirPath());
+    protected void setUp() throws IOException {
+        System.out.println("###########  " + getName() + " ###########");
     }
 
-    public void testEditorPaneSwitch() throws IOException, ExecutionException, InterruptedException, InvocationTargetException {
-        String zipPath = Utilities.projectOpen("http://hg.netbeans.org/binaries/BBD005CDF8785223376257BD3E211C7C51A821E7-jEdit41.zip", "jEdit41.zip");
-        File zipFile = FileUtil.normalizeFile(new File(zipPath));
-        Utilities.unzip(zipFile, getWorkDirPath());
-        final FileObject projectDir = Utilities.openProject("jEdit", getWorkDir());
+    public void testEditorPaneSwitch() throws Exception {
+        String projectName = "jEdit";
+        File projectsDir = getWorkDir();
+        Utilities.projectDownloadAndUnzip(projectName, projectsDir);
+        final File projectDir = new File(projectsDir, projectName);
 
         Logger navigatorUpdater = Logger.getLogger("org.netbeans.modules.java.navigation.ClassMemberPanelUI.perf");
         navigatorUpdater.setLevel(Level.FINE);
-        navigatorUpdater.addHandler(new NavigatorHandler());
-        
-        JavaSource src = JavaSource.create(ClasspathInfo.create(projectDir));
+        NavigatorHandler handler = new NavigatorHandler();
+        navigatorUpdater.addHandler(handler);
 
-        src.runWhenScanFinished(new Task<CompilationController>() {
-
-            @Override()
-            public void run(CompilationController controller) throws Exception {
-                controller.toPhase(JavaSource.Phase.RESOLVED);
-            }
-        }, false).get();
+        Utilities.openProjects(projectsDir, projectName);
+        Utilities.waitScanningFinished(new File(projectsDir, projectName));
         SwingUtilities.invokeAndWait(new Runnable() {
 
+            @Override
             public void run() {
                 ProjectTab pt = ProjectTab.findDefault(ProjectTab.ID_LOGICAL);
                 pt.requestActive();
-                FileObject testFile = projectDir.getFileObject("/src/bsh/This.java");
+                FileObject testFile = FileUtil.toFileObject(new File(projectDir, "src/bsh/This.java"));
                 pt.selectNodeAsync(testFile);
             }
         });
-        Thread.sleep(500);
+        if(!"This".equals(logged)) {
+            synchronized(handler) {
+                handler.wait(5000);
+            }
+        }
         SwingUtilities.invokeAndWait(new Runnable() {
 
+            @Override
             public void run() {
                 ProjectTab pt = ProjectTab.findDefault(ProjectTab.ID_LOGICAL);
                 pt.requestActive();
-                FileObject testFile = projectDir.getFileObject("/src/org/gjt/sp/jedit/jEdit.java");
+                FileObject testFile = FileUtil.toFileObject(new File(projectDir, "src/org/gjt/sp/jedit/jEdit.java"));
                 pt.selectNodeAsync(testFile);
             }
         });
-        Thread.sleep(5000);
+        if(!"jEdit".equals(logged)) {
+            synchronized(handler) {
+                handler.wait(5000);
+            }
+        }
         SwingUtilities.invokeAndWait(new Runnable() {
 
+            @Override
             public void run() {
                 Logger.getAnonymousLogger().log(Level.INFO, "Test finished execution.");
             }
@@ -138,34 +138,31 @@ public class JavaNavigatorPerfTest extends NbTestCase {
     protected void tearDown() throws Exception {
         Logger.getAnonymousLogger().log(Level.INFO, "Processing results.");
         super.tearDown();
-        for (PerformanceData rec : getPerformanceData()) {
+        for (PerformanceData rec : data) {
             Utilities.processUnitTestsResults(JavaNavigatorPerfTest.class.getCanonicalName(), rec);
         }
         data.clear();
     }
 
-
     public static Test suite() throws InterruptedException {
-        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration().
-            addTest(JavaNavigatorPerfTest.class).gui(false));
-    }
-
-    public PerformanceData[] getPerformanceData() {
-        return data.toArray(new PerformanceData[0]);
+        return NbModuleSuite.createConfiguration(JavaNavigatorPerfTest.class).
+                clusters(".*").enableModules(".*").suite();
     }
 
     private class NavigatorHandler extends Handler {
 
         @Override
-        public void publish(LogRecord record) {
+        public synchronized void publish(LogRecord record) {
             PerformanceData perfRec = new PerformanceData();
             perfRec.name = (String) record.getParameters()[0];
             perfRec.value = (Long) record.getParameters()[1];
             perfRec.unit = "ms";
             perfRec.runOrder = 0;
-            perfRec.threshold = 5000;
+            perfRec.threshold = 1000;
             System.err.println(perfRec.name);
             data.add(perfRec);
+            logged = perfRec.name;
+            notifyAll();
         }
 
         @Override

@@ -1,12 +1,15 @@
-26:6-26:7:warning:The entity relationship is not defined.
-28:12-28:17:warning:The multi-valued entity relationship is not defined.
-30:13-30:19:warning:The multi-valued entity relationship is not defined.
+26:6-26:7:verifier:The entity relationship is not defined.
+28:12-28:17:verifier:The multi-valued entity relationship is not defined.
+30:13-30:19:verifier:The multi-valued entity relationship is not defined.
 48:15-48:23:verifier:Add @Override Annotation
 54:19-54:25:verifier:Add @Override Annotation
+60:12-60:31:verifier:Long values compared using == or !=
+60:8-60:10:verifier:The if statement is redundant
 64:18-64:26:verifier:Add @Override Annotation
 Add @Override Annotation
 Add @Override Annotation
 Add @Override Annotation
+Configure "Boxed value identity comparison" Hint
 Create bidirectional ManyToMany relationship...
 Create bidirectional ManyToMany relationship...
 Create bidirectional ManyToOne relationship...
@@ -17,6 +20,7 @@ Create unidirectional ManyToOne relationship
 Create unidirectional OneToMany relationship
 Create unidirectional OneToMany relationship
 Create unidirectional OneToOne relationship
+The if statement is redundant
 ---------------------
 /*
  * B.java

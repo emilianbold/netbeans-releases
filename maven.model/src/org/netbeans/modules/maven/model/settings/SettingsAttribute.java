@@ -48,6 +48,7 @@ import org.netbeans.modules.xml.xam.dom.Attribute;
  *
  * @author mkleint
  */
+@Deprecated
 public enum SettingsAttribute implements Attribute {
         NS("xmlns"),            // NOI18N // TMP
         ;

@@ -131,18 +131,17 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.issuetable.TableSorter;
 import org.netbeans.modules.bugtracking.team.spi.RepositoryUser;
-import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugtracking.util.RepositoryUserRenderer;
 import org.netbeans.modules.bugtracking.util.UIUtils;
-import org.netbeans.modules.bugtracking.util.UndoRedoSupport;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.issue.NbJiraIssue.IssueField;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
+import org.netbeans.modules.jira.repository.JiraRepository.Cache;
 import org.netbeans.modules.jira.util.JiraUtils;
 import org.netbeans.modules.jira.util.PriorityRenderer;
 import org.netbeans.modules.jira.util.ProjectRenderer;
@@ -182,7 +181,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private IssueLinksPanel issueLinksPanel;
     private boolean skipReload;
     private boolean reloading;
-    private UndoRedoSupport undoRedoSupport;
     private final Set<String> unsavedFields = new HashSet<>();
     private static final String WORKLOG = "WORKLOG"; //NOI18N
     private static final String NEW_ATTACHMENTS = AbstractNbTaskWrapper.NEW_ATTACHMENT_ATTRIBUTE_ID;
@@ -2225,7 +2223,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             @Override
             public void run() {
                 try {
-                    IssueCache<NbJiraIssue> cache = issue.getRepository().getIssueCache();
+                    Cache cache = issue.getRepository().getIssueCache();
                     String parentKey = issue.getParentKey();
                     if ((parentKey != null) && (parentKey.trim().length()>0)) {
                         NbJiraIssue parentIssue = cache.getIssue(parentKey);
@@ -2272,7 +2270,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             public void run() {
                 boolean cleared = false;
                 try {
-                    cleared = issue.cancelChanges();
+                    cleared = issue.discardLocalEdits();
                 } finally {
                     final boolean fCleared = cleared;
                     EventQueue.invokeLater(new Runnable() {
@@ -2454,7 +2452,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }//GEN-LAST:event_logWorkButtonActionPerformed
 
     private void addToCategoryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addToCategoryButtonActionPerformed
-        Jira.getInstance().getBugtrackingFactory().addToCategory(JiraUtils.getRepository(issue.getRepository()), issue); 
+        Jira.getInstance().getBugtrackingFactory().addToCategory(issue.getRepository(), issue); 
     }//GEN-LAST:event_addToCategoryButtonActionPerformed
 
     @NbBundle.Messages({
@@ -2728,10 +2726,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
     void opened() {
         open = true;
-        undoRedoSupport = Jira.getInstance().getUndoRedoSupport(issue);
-        undoRedoSupport.register(addCommentArea); 
-        undoRedoSupport.register(environmentArea); 
-        
         enableComponents(false);
         issue.opened();
     }
@@ -2740,10 +2734,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         open = false;
         if(issue != null) {
             commentsPanel.storeSettings();
-            if (undoRedoSupport != null) {
-                undoRedoSupport.unregisterAll();
-                undoRedoSupport = null;
-            }
             issue.closed();
         }
     }

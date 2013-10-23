@@ -45,7 +45,7 @@ package org.netbeans.modules.bugzilla;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
-import org.netbeans.modules.bugtracking.cache.IssueCache.Status;
+import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.bugzilla.query.QueryNotifyListener;
@@ -80,7 +80,7 @@ public class TestQueryNotifyListener implements QueryNotifyListener {
         finished = false;
         issues = new ArrayList<BugzillaIssue>();
     }
-    public List<BugzillaIssue> getIssues(EnumSet<Status> includeStatus) {
+    public List<BugzillaIssue> getIssues(EnumSet<IssueStatusProvider.Status> includeStatus) {
         List<BugzillaIssue> ret = new ArrayList<BugzillaIssue>();
         for (BugzillaIssue issue : issues) {
             if (q == null || includeStatus.contains(q.getIssueStatus(issue.getID()))) {

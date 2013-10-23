@@ -118,6 +118,7 @@ public final class JFXProjectProperties {
     public static final String JAVAFX_ENABLE_CONCURRENT_EXTERNAL_RUNS = "javafx.enable.concurrent.external.runs"; // NOI18N
     public static final String JAVAFX_ENDORSED_ANT_CLASSPATH = "endorsed.javafx.ant.classpath"; // NOI18N
     public static final String PLATFORM_ACTIVE = "platform.active"; // NOI18N
+    public static final String PLATFORM_ANT_NAME = "platform.ant.name";    //NOI18N
     
     /** The standard extension for FXML source files. */
     public static final String FXML_EXTENSION = "fxml"; // NOI18N    
@@ -234,6 +235,7 @@ public final class JFXProjectProperties {
     // explicit manifest entries (see #231951, #234231, http://docs.oracle.com/javase/7/docs/technotes/guides/jweb/no_redeploy.html)
     public static final String MANIFEST_CUSTOM_CODEBASE = "manifest.custom.codebase"; // NOI18N
     public static final String MANIFEST_CUSTOM_PERMISSIONS = "manifest.custom.permissions"; // NOI18N
+    public static final String PLATFORM_RUNTIME = "platform.runtime";           //NOI18N
     
     // FX RT artifact reference to be kept at compile classpath
     private static final String JFX_EXTENSION_CPREF = "${javafx.classpath.extension}";  //NOI18N

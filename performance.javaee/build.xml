@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="performance.javaee" default="netbeans" basedir=".">
+    <description>Builds and runs performance java EE tests</description>
+
+    <property name="test.timeout" value="3600000"/>
+    <condition property="glassfish.home" value="c:/space/hudson/glassfish4" else="/space/hudson/glassfish4">
+        <os family="windows"/>
+    </condition>
+    <condition property="tomcat.webserver.path" value="c:\\space\\tomcat">
+        <os family="windows"/>
+    </condition>
+    <condition property="tomcat.webserver.path" value="/space/tomcat">
+        <os family="unix"/>
+    </condition>
+    <property name="test.run.args" value="-client 
+            -Xss4m -Xms64m -Xmx512m -XX:PermSize=64m -XX:MaxPermSize=300m 
+            -Dnetbeans.keyring.no.master=true 
+            -Xverify:none -Dsun.java2d.noddraw=true
+            -Dtomcat.installRoot=&quot;${tomcat.webserver.path}&quot;
+            -Dglassfish.home=&quot;${glassfish.home}&quot;"/>
+    
+    <import file="../nbbuild/templates/projectized.xml"/>
+</project>

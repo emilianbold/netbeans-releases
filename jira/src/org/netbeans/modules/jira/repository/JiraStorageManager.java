@@ -270,7 +270,7 @@ public class JiraStorageManager {
 
     private static class JiraQueryData implements Serializable {
         private static final String VERSION = "0.1";                    //NOI18N
-        private String queryName;
+        private final String queryName;
         private final long lastRefresh;
         private final FilterDefinition filterDefinition;
 

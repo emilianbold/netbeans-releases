@@ -51,6 +51,7 @@ import com.tasktop.c2c.server.tasks.domain.TaskResolution;
 import com.tasktop.c2c.server.tasks.domain.TaskSeverity;
 import com.tasktop.c2c.server.tasks.domain.TaskStatus;
 import com.tasktop.c2c.server.tasks.domain.TaskUserProfile;
+import java.awt.EventQueue;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -74,7 +75,9 @@ import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.team.spi.TeamProject;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.ListValuePicker;
+import org.netbeans.modules.bugtracking.util.SimpleIssueFinder;
 import org.netbeans.modules.odcs.tasks.ODCS;
 import org.netbeans.modules.odcs.tasks.ODCSConnector;
 import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
@@ -168,11 +171,11 @@ public class ODCSUtil {
     }
     
     public static void openIssue(ODCSIssue odcsIssue) {
-        ODCS.getInstance().getBugtrackingFactory().openIssue(getRepository(odcsIssue.getRepository()), odcsIssue);
+        ODCS.getInstance().getBugtrackingFactory().openIssue(odcsIssue.getRepository(), odcsIssue);
     }
     
     public static void openQuery(ODCSQuery odcsQuery) {
-        ODCS.getInstance().getBugtrackingFactory().openQuery(getRepository(odcsQuery.getRepository()), odcsQuery);
+        ODCS.getInstance().getBugtrackingFactory().editQuery(odcsQuery.getRepository(), odcsQuery);
     }
 
     public static Repository getRepository(ODCSRepository odcsRepository) {
@@ -189,22 +192,21 @@ public class ODCSUtil {
             repository = TeamUtil.getRepository(teamProject);
         }
         if (repository == null) {
-            
-            repository = createRepository(odcsRepository);
+            repository = BugtrackingUtil.getRepository(ODCSConnector.ID, odcsRepository.getID());
+            if(repository == null) {
+                repository = createRepository(odcsRepository);
+            }
         }
         return repository;
     }
 
-    public static Repository createRepository (ODCSRepository odcsRepository) {
-        Repository repository = ODCS.getInstance().getBugtrackingFactory().getRepository(ODCSConnector.ID, odcsRepository.getID());
-        if(repository == null) {
-            repository = ODCS.getInstance().getBugtrackingFactory().createRepository(
-                    odcsRepository, 
-                    ODCS.getInstance().getRepositoryProvider(), 
-                    ODCS.getInstance().getQueryProvider(),
-                    ODCS.getInstance().getIssueProvider());
-        }
-        return repository;
+    public static Repository createRepository(ODCSRepository odcsRepository) {
+        return ODCS.getInstance().getBugtrackingFactory().createRepository(
+                odcsRepository,
+                ODCS.getInstance().getStatusProvider(),
+                null, 
+                ODCS.getInstance().getPriorityProvider(odcsRepository),
+                SimpleIssueFinder.getInstance());
     }
 
     public static TaskResolution getResolutionByValue(RepositoryConfiguration rc, String value) {
@@ -423,4 +425,13 @@ public class ODCSUtil {
         }
         return null;
     }
+    
+    public static void runInAwt(Runnable r) {
+        if(EventQueue.isDispatchThread()) {
+            r.run();
+        } else {
+            EventQueue.invokeLater(r);
+        }
+    }
+    
 }

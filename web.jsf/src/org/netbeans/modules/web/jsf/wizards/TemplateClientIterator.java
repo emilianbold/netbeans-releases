@@ -52,6 +52,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -113,8 +114,7 @@ public class TemplateClientIterator implements TemplateWizard.Iterator {
                         ((content.indexOf("<html") == -1)?1:3));    //NOI18N
 
                 Project project = Templates.getProject(wiz);
-                WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
-                final JSFVersion jsfVersion = webModule != null ? JSFVersion.forWebModule(webModule) : null;
+                final JSFVersion jsfVersion = JSFVersion.forProject(project);
                 String namespaceLocation = jsfVersion != null && jsfVersion.isAtLeast(JSFVersion.JSF_2_2)
                         ? "http://xmlns.jcp.org" : "http://java.sun.com"; // NOI18N
                 HashMap args = new HashMap();
@@ -231,7 +231,14 @@ public class TemplateClientIterator implements TemplateWizard.Iterator {
     
     protected WizardDescriptor.Panel[] createPanels(Project project, TemplateWizard wiz) {
         Sources sources = (Sources) ProjectUtils.getSources(project);
-        SourceGroup[] sourceGroups = sources.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
+        SourceGroup[] docSourceGroups = sources.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
+        SourceGroup[] sourceGroups;
+        if (docSourceGroups.length == 0) {
+            sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        } else {
+            sourceGroups = docSourceGroups;
+        }
+
         templateClientPanel = new TemplateClientPanel(wiz);
         // creates simple wizard panel with bottom panel
         return new WizardDescriptor.Panel[] {

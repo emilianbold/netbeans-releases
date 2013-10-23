@@ -1,7 +1,9 @@
 /*
+ * To change this license header, choose License Headers in Project Properties.
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
+
 package ejbs.entity.bean;
 
 import javax.ejb.EntityBean;
@@ -78,4 +80,5 @@ public class LRBE implements EntityBean {
         // throw javax.ejb.ObjectNotFoundException if aKey is not in
         // persistent storage.
     }
+
 }

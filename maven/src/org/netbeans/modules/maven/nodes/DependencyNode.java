@@ -114,6 +114,7 @@ import static org.netbeans.modules.maven.nodes.Bundle.*;
 import org.netbeans.modules.maven.queries.MavenFileOwnerQueryImpl;
 import org.netbeans.modules.maven.queries.RepositoryForBinaryQueryImpl;
 import org.netbeans.modules.maven.queries.RepositoryForBinaryQueryImpl.Coordinates;
+import org.netbeans.modules.maven.spi.IconResources;
 import org.netbeans.modules.maven.spi.nodes.DependencyTypeIconBadge;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.DialogDescriptor;
@@ -146,15 +147,6 @@ import org.openide.util.lookup.Lookups;
  * @author  Milos Kleint 
  */
 public class DependencyNode extends AbstractNode implements PreferenceChangeListener {
-    private static final @StaticResource String JAVADOC_BADGE_ICON = "org/netbeans/modules/maven/DependencyJavadocIncluded.png"; //NOI18N
-    private static final @StaticResource String SOURCE_BADGE_ICON = "org/netbeans/modules/maven/DependencySrcIncluded.png"; //NOI18N
-    private static final @StaticResource String MANAGED_BADGE_ICON = "org/netbeans/modules/maven/DependencyManaged.png"; //NOI18N
-    private static final @StaticResource String ARTIFACT_ICON = "org/netbeans/modules/maven/ArtifactIcon.png";
-    private static final @StaticResource String DEPENDENCY_ICON = "org/netbeans/modules/maven/DependencyIcon.png";
-    private static final @StaticResource String MAVEN_ICON = "org/netbeans/modules/maven/resources/Maven2Icon.gif";
-    private static final @StaticResource String TRANSITIVE_ARTIFACT_ICON = "org/netbeans/modules/maven/TransitiveArtifactIcon.png";
-    private static final @StaticResource String TRANSITIVE_DEPENDENCY_ICON = "org/netbeans/modules/maven/TransitiveDependencyIcon.png";
-    private static final @StaticResource String TRANSITIVE_MAVEN_ICON = "org/netbeans/modules/maven/TransitiveMaven2Icon.png";
 
     private Artifact art;
     private NbMavenProjectImpl project;
@@ -165,15 +157,15 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
     private final java.util.concurrent.atomic.AtomicBoolean sourceExists = new AtomicBoolean(false);
     private final java.util.concurrent.atomic.AtomicBoolean javadocExists = new AtomicBoolean(false);
     
-    private volatile String iconBase = DEPENDENCY_ICON;
+    private volatile String iconBase = IconResources.DEPENDENCY_ICON;
     
-    private static final String toolTipJavadoc = "<img src=\"" + DependencyNode.class.getClassLoader().getResource(JAVADOC_BADGE_ICON) + "\">&nbsp;" //NOI18N
+    private static final String toolTipJavadoc = "<img src=\"" + DependencyNode.class.getClassLoader().getResource(IconResources.JAVADOC_BADGE_ICON) + "\">&nbsp;" //NOI18N
             + NbBundle.getMessage(DependencyNode.class, "ICON_JavadocBadge");//NOI18N
-    private static final String toolTipSource = "<img src=\"" + DependencyNode.class.getClassLoader().getResource(SOURCE_BADGE_ICON) + "\">&nbsp;" //NOI18N
+    private static final String toolTipSource = "<img src=\"" + DependencyNode.class.getClassLoader().getResource(IconResources.SOURCE_BADGE_ICON) + "\">&nbsp;" //NOI18N
             + NbBundle.getMessage(DependencyNode.class, "ICON_SourceBadge");//NOI18N
-    private static final String toolTipMissing = "<img src=\"" + DependencyNode.class.getClassLoader().getResource(MavenProjectNode.BADGE_ICON) + "\">&nbsp;" //NOI18N
+    private static final String toolTipMissing = "<img src=\"" + DependencyNode.class.getClassLoader().getResource(IconResources.BROKEN_PROJECT_BADGE_ICON) + "\">&nbsp;" //NOI18N
             + NbBundle.getMessage(DependencyNode.class, "ICON_MissingBadge");//NOI18N
-    private static final String toolTipManaged = "<img src=\"" + DependencyNode.class.getClassLoader().getResource(MANAGED_BADGE_ICON) + "\">&nbsp;" //NOI18N
+    private static final String toolTipManaged = "<img src=\"" + DependencyNode.class.getClassLoader().getResource(IconResources.MANAGED_BADGE_ICON) + "\">&nbsp;" //NOI18N
             + NbBundle.getMessage(DependencyNode.class, "ICON_ManagedBadge");//NOI18N
 
     private static final RequestProcessor RP = new RequestProcessor(DependencyNode.class);
@@ -223,7 +215,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
             listener = new PropertyChangeListener() {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
-                    if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
+                    if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
                         refreshNode();
                     }
                 }
@@ -286,20 +278,20 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
         String base;
         if (longLiving && isDependencyProjectAvailable()) {
             if (isTransitive()) {
-                base = TRANSITIVE_MAVEN_ICON;
+                base = IconResources.TRANSITIVE_MAVEN_ICON;
             } else {
-                base = MAVEN_ICON;
+                base = IconResources.MAVEN_ICON;
             }
         } else if (isTransitive()) {
             if (isAddedToCP()) {
-                base = TRANSITIVE_DEPENDENCY_ICON;
+                base = IconResources.TRANSITIVE_DEPENDENCY_ICON;
             } else {
-                base = TRANSITIVE_ARTIFACT_ICON;
+                base = IconResources.TRANSITIVE_ARTIFACT_ICON;
             }
         } else if (isAddedToCP()) {
-            base = DEPENDENCY_ICON;
+            base = IconResources.DEPENDENCY_ICON;
         } else {
-            base = ARTIFACT_ICON;
+            base = IconResources.ARTIFACT_ICON;
         }
         this.iconBase = base;
         setIconBaseWithExtension(base);
@@ -587,7 +579,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
             progress.progress(org.openide.util.NbBundle.getMessage(DependencyNode.class, bundleName,artifact.getId()), 1);
             online.resolve(sources, prjimpl.getOriginalMavenProject().getRemoteArtifactRepositories(), prjimpl.getEmbedder().getLocalRepository());
             if (artifact.getFile() != null && artifact.getFile().exists()) {
-                List<Coordinates> coordinates = RepositoryForBinaryQueryImpl.getShadedCoordinates(artifact.getFile());
+                List<Coordinates> coordinates = RepositoryForBinaryQueryImpl.getJarMetadataCoordinates(artifact.getFile());
                 if (coordinates != null) {
                     for (Coordinates coordinate : coordinates) {
                         sources = prjimpl.getEmbedder().createArtifactWithClassifier(
@@ -620,25 +612,25 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
     
     private boolean isIconProjectBased() {
         String base = iconBase;
-        return TRANSITIVE_MAVEN_ICON.equals(base) || MAVEN_ICON.equals(base);
+        return IconResources.TRANSITIVE_MAVEN_ICON.equals(base) || IconResources.MAVEN_ICON.equals(base);
     }
 
     private Image badge(Image retValue) {
         if (isLocal()) {
             if (!isIconProjectBased()) {
                 if (hasJavadocInRepository()) {
-                    Image ann = ImageUtilities.loadImage(JAVADOC_BADGE_ICON); //NOI18N
+                    Image ann = ImageUtilities.loadImage(IconResources.JAVADOC_BADGE_ICON); //NOI18N
                     ann = ImageUtilities.addToolTipToImage(ann, toolTipJavadoc);
                     retValue = ImageUtilities.mergeImages(retValue, ann, 12, 0);//NOI18N
                 }
                 if (hasSourceInRepository()) {
-                    Image ann = ImageUtilities.loadImage(SOURCE_BADGE_ICON); //NOI18N
+                    Image ann = ImageUtilities.loadImage(IconResources.SOURCE_BADGE_ICON); //NOI18N
                     ann = ImageUtilities.addToolTipToImage(ann, toolTipSource);
                     retValue = ImageUtilities.mergeImages(retValue, ann, 12, 8);//NOI18N
                 }
             }
             if (showManagedState() && isManaged()) {
-                Image ann = ImageUtilities.loadImage(MANAGED_BADGE_ICON); //NOI18N
+                Image ann = ImageUtilities.loadImage(IconResources.MANAGED_BADGE_ICON); //NOI18N
                 ann = ImageUtilities.addToolTipToImage(ann, toolTipManaged);
                 retValue = ImageUtilities.mergeImages(retValue, ann, 0, 8);//NOI18N
             }
@@ -654,7 +646,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
             }
             return retValue;
         } else if (!isIconProjectBased()) {
-            Image ann = ImageUtilities.loadImage(MavenProjectNode.BADGE_ICON); //NOI18N
+            Image ann = ImageUtilities.loadImage(IconResources.BROKEN_PROJECT_BADGE_ICON); //NOI18N
             ann = ImageUtilities.addToolTipToImage(ann, toolTipMissing);
             return ImageUtilities.mergeImages(retValue, ann, 0, 0);//NOI18N
         } else {

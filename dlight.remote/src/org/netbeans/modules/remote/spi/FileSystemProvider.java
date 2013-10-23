@@ -291,6 +291,16 @@ public final class FileSystemProvider {
         noProvidersWarning(url);
         return null;
     }
+    
+    public static FileSystem urlToFileSystem(String url) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(url)) {
+                return provider.urlToFileSystem(url);
+            }
+        }
+        noProvidersWarning(url);
+        return null;
+    }
 
     public static String toUrl(FileSystem fileSystem, String absPath) {
         Parameters.notNull("fileSystem", fileSystem); //NOI18N

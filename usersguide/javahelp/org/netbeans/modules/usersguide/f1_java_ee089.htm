@@ -2,17 +2,24 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>New Web Service Client Wizard: WSDL and Client Location</title>
+<title>New Message Handler Wizard: Specify SOAP Message Handler Class Information</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="org.netbeans.modules.websvc.core.client.wizard.WebServiceClientWizardDescriptor" name="org.netbeans.modules.websvc.core.client.wizard.WebServiceClientWizardDescriptor"></a></p>
+<p><a id="org.netbeans.modules.websvc.core.dev.wizard.MessageHandlerWizard" name="org.netbeans.modules.websvc.core.dev.wizard.MessageHandlerWizard"></a></p>
 <!-- infolevel="all" infotype="General" --><a id="sthref674" name="sthref674"></a>
-<h1>New Web Service Client Wizard: WSDL and Client Location</h1>
+<h1>New Message Handler Wizard: Specify SOAP Message Handler Class Information</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>The New Web Service Client wizard creates a new Web Service Client.</p>
-<p>Use this page to specify the details of the local or remote domain by selecting one of the following options.</p>
+<p>The New Message Handler Wizard wizard creates a new message handler. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1924">
+<param name="text" value="<html><u>More</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p>Use this page to specify the name and location of the new file.</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
@@ -26,59 +33,26 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t86" headers="r1c1-t86">
-<p>Specify WSDL file of the Web Service</p>
+<p>Message Handler Name</p>
 </td>
 <td align="left" headers="r2c1-t86 r1c2-t86">
-<p>Specify one of the following</p>
+<p>Specifies the name of the message handler.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t86" headers="r1c1-t86">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Project</p>
+<p>Location</p>
 </td>
 <td align="left" headers="r3c1-t86 r1c2-t86">
-<p>Select this option to specify an open project where the web service is defined. Click Browse to locate it in the IDE.</p>
+<p>Specifies the source root where the message handler will be created. By default, you only have one source root, the <code>src</code> folder. To add additional source roots, right-click the project node in the Projects window, choose Properties, click Sources, and define a new source package folder.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t86" headers="r1c1-t86">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Local File</p>
-</td>
-<td align="left" headers="r4c1-t86 r1c2-t86">
-<p>Select this option to specify a WSDL file in your local filesystem. Click Browse to locate it in your filesystem.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r5c1-t86" headers="r1c1-t86">
-<p>WSDL URL</p>
-</td>
-<td align="left" headers="r5c1-t86 r1c2-t86">
-<p>Select this option to specify the URL to a running web service's WSDL file. If you use a proxy server, you must click Proxy Settings and set the proxy host and port number, otherwise the IDE will not be able to download the WSDL file.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r6c1-t86" headers="r1c1-t86">
-<p>IDE Registered</p>
-</td>
-<td align="left" headers="r6c1-t86 r1c2-t86">
-<p>Select this option to select a web service that is registered with the IDE. Click Browse to select from a list of registered services.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r7c1-t86" headers="r1c1-t86">
 <p>Package</p>
 </td>
-<td align="left" headers="r7c1-t86 r1c2-t86">
-<p>(Optional) Specify the package where the client files will be generated. The generated client files can be found in the Projects window, in the Generated Sources node of the client project, or in the Files window, within the <code>build</code> folder.</p>
-<p>If you do not specify a package name, the IDE generates the client files in the default package, which is based on the namespace in the WSDL. You can change this package name later in the WSDL Customization editor.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r8c1-t86" headers="r1c1-t86">
-<p>Generate Dispatch Code</p>
-</td>
-<td align="left" headers="r8c1-t86 r1c2-t86">
-<p>If you want to use raw XML messages when invoking the web service, select Generate Dispatch Code. The client code is generated using the <code>java.xml.ws</code>.Dispatch interface instead of the usual service endpoint interface. This is an advanced feaure and is unselected by default.</p>
+<td align="left" headers="r4c1-t86 r1c2-t86">
+<p>Specifies the package name where the message handler will be housed.</p>
 </td>
 </tr>
 </tbody>
@@ -88,8 +62,8 @@
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1681">
-<param name="text" value="<html><u>&quot;Working with Glassfish Application Servers&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1842">
+<param name="text" value="<html><u>&quot;Developing and Securing Web Services&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

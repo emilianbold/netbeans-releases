@@ -46,9 +46,9 @@ import com.tasktop.c2c.server.tasks.domain.TaskStatus;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import javax.swing.table.DefaultTableModel;
-import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.odcs.tasks.ODCS;
 import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
+import org.netbeans.modules.odcs.tasks.repository.ODCSRepository.Cache;
 import org.openide.util.NbBundle;
 
 /**
@@ -84,7 +84,7 @@ public class SubtaskTableModel extends DefaultTableModel {
 
     private static Object[][] data(ODCSIssue issue) {
         ODCSRepository repository = issue.getRepository();
-        IssueCache cache = repository.getIssueCache();
+        Cache cache = repository.getIssueCache();
         String[] subtasks = issue.getSubtasks();
         Object[][] data = new Object[subtasks.length][];
         int count = 0;

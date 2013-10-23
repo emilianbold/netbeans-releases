@@ -107,7 +107,7 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
     public MavenFileOwnerQueryImpl() {
         projectListener = new PropertyChangeListener() {
             public @Override void propertyChange(PropertyChangeEvent evt) {
-                if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
+                if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
                     if (!registerProject((NbMavenProjectImpl) evt.getSource(), true)) {
                         fireChange(new ChangeEvent(this));
                     }

@@ -49,7 +49,6 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.lib.lexer.EmbeddingContainer;
 import org.netbeans.lib.lexer.LexerUtilsConstants;
 import org.netbeans.lib.lexer.TokenHierarchyOperation;
 import org.netbeans.lib.lexer.TokenList;
@@ -66,21 +65,26 @@ import org.netbeans.lib.lexer.TokenOrEmbedding;
 
 public final class RemovedTokenList<T extends TokenId> implements TokenList<T> {
     
+    private final TokenList<?> rootTokenList;
+    
     private final LanguagePath languagePath;
     
-    private TokenOrEmbedding<T>[] tokenOrEmbeddings;
+    private final TokenOrEmbedding<T>[] tokenOrEmbeddings;
     
     private int removedTokensStartOffset;
     
-    public RemovedTokenList(LanguagePath languagePath, TokenOrEmbedding<T>[] tokensOrBranches) {
+    public RemovedTokenList(TokenList<?> rootTokenList, LanguagePath languagePath, TokenOrEmbedding<T>[] tokensOrBranches) {
+        this.rootTokenList = rootTokenList;
         this.languagePath = languagePath;
         this.tokenOrEmbeddings = tokensOrBranches;
     }
     
+    @Override
     public LanguagePath languagePath() {
         return languagePath;
     }
     
+    @Override
     public TokenOrEmbedding<T> tokenOrEmbedding(int index) {
         return (index < tokenOrEmbeddings.length) ? tokenOrEmbeddings[index] : null;
     }
@@ -89,14 +93,17 @@ public final class RemovedTokenList<T extends TokenId> implements TokenList<T> {
         return tokenOrEmbeddings;
     }
 
+    @Override
     public int lookahead(int index) {
         return -1;
     }
 
+    @Override
     public Object state(int index) {
         return null;
     }
 
+    @Override
     public int tokenOffset(int index) {
         Token<?> token = existingToken(index);
         if (token.isFlyweight()) {
@@ -117,6 +124,7 @@ public final class RemovedTokenList<T extends TokenId> implements TokenList<T> {
         }
     }
 
+    @Override
     public int[] tokenIndex(int offset) {
         return LexerUtilsConstants.tokenIndexBinSearch(this, offset, tokenCountCurrent());
     }
@@ -125,25 +133,30 @@ public final class RemovedTokenList<T extends TokenId> implements TokenList<T> {
         return tokenOrEmbeddings[index].token();
     }
 
-    public synchronized AbstractToken<T> replaceFlyToken(
+    @Override
+    public AbstractToken<T> replaceFlyToken(
     int index, AbstractToken<T> flyToken, int offset) {
         TextToken<T> nonFlyToken = ((TextToken<T>)flyToken).createCopy(this, offset);
         tokenOrEmbeddings[index] = nonFlyToken;
         return nonFlyToken;
     }
 
+    @Override
     public int tokenCount() {
         return tokenCountCurrent();
     }
 
+    @Override
     public int tokenCountCurrent() {
         return tokenOrEmbeddings.length;
     }
 
+    @Override
     public int modCount() {
         return LexerUtilsConstants.MOD_COUNT_IMMUTABLE_INPUT;
     }
     
+    @Override
     public int tokenOffset(AbstractToken<T> token) {
         int rawOffset = token.rawOffset();
         // Offsets of contained tokens are absolute
@@ -154,32 +167,39 @@ public final class RemovedTokenList<T extends TokenId> implements TokenList<T> {
         throw new IllegalStateException("Querying of text for removed tokens not supported"); // NOI18N
     }
 
-    public void wrapToken(int index, EmbeddingContainer embeddingContainer) {
+    @Override
+    public void setTokenOrEmbedding(int index, TokenOrEmbedding<T> t) {
         throw new IllegalStateException("Branching of removed tokens not supported"); // NOI18N
     }
     
+    @Override
     public TokenList<?> rootTokenList() {
-        return null;
+        return rootTokenList;
     }
 
+    @Override
     public CharSequence inputSourceText() {
         return null;
     }
 
+    @Override
     public TokenHierarchyOperation<?,?> tokenHierarchyOperation() {
         return null;
     }
     
+    @Override
     public InputAttributes inputAttributes() {
         return null;
     }
 
+    @Override
     public int startOffset() {
         if (tokenCountCurrent() > 0 || tokenCount() > 0)
             return tokenOffset(0);
         return 0;
     }
 
+    @Override
     public int endOffset() {
         int cntM1 = tokenCount() - 1;
         if (cntM1 >= 0)
@@ -187,16 +207,24 @@ public final class RemovedTokenList<T extends TokenId> implements TokenList<T> {
         return 0;
     }
 
+    @Override
     public boolean isRemoved() {
         return true; // Collects tokens removed from TH
     }
 
+    @Override
     public boolean isContinuous() {
         return true;
     }
 
+    @Override
     public Set<T> skipTokenIds() {
         return null;
+    }
+
+    @Override
+    public String dumpInfoType() {
+        return "RemovedTL";
     }
 
     @Override

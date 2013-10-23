@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.bugtracking.util;
 
+import org.netbeans.modules.bugtracking.BugtrackingOwnerSupport;
 import java.io.File;
 import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.RepositoryImpl;

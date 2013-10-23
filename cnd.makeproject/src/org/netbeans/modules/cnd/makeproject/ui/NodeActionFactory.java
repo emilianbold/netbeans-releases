@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.makeproject.ui;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
@@ -155,14 +156,19 @@ final class NodeActionFactory {
                 return;
             }
             final List<MakeConfigurationDescriptor> projects = new ArrayList<MakeConfigurationDescriptor>();
+            final AtomicBoolean isItem = new AtomicBoolean(false);
             for (Node activatedNode : activatedNodes) {
-                ViewItemNode vin = activatedNode.getLookup().lookup(ViewItemNode.class);
-                if (vin == null) {
-                    return;
-                }
-                Folder folder = vin.getFolder();
+                Folder folder = activatedNodes[0].getLookup().lookup(Folder.class);
                 if (folder == null) {
-                    return;
+                    ViewItemNode vin = activatedNode.getLookup().lookup(ViewItemNode.class);
+                    if (vin == null) {
+                        return;
+                    }
+                    folder = vin.getFolder();
+                    if (folder == null) {
+                        return;
+                    }
+                    isItem.set(true);
                 }
                 MakeConfigurationDescriptor mcd = folder.getConfigurationDescriptor();
                 if (mcd == null) {
@@ -197,13 +203,24 @@ final class NodeActionFactory {
                 public void run() {
                     a.actionPerformed(new ActionEvent(StandardNodeAction.this, 0, null));
                     for(final MakeConfigurationDescriptor mcd : projects) {
-                        ViewItemNode.getRP().post(new Runnable() {
+                        if (isItem.get()) {
+                            ViewItemNode.getRP().post(new Runnable() {
 
-                            @Override
-                            public void run() {
-                                mcd.save();
-                            }
-                        });
+                                @Override
+                                public void run() {
+                                    mcd.save();
+                                }
+                            });
+                        } else {
+                            MakeLogicalViewProvider provider = mcd.getProject().getLookup().lookup(MakeLogicalViewProvider.class);
+                            provider.getAnnotationRP().post(new Runnable() {
+
+                                @Override
+                                public void run() {
+                                    mcd.save();
+                                }
+                            });
+                        }
                     }
                 }
             });

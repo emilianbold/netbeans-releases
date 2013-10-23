@@ -97,6 +97,7 @@ public final class SearchHistoryTest extends NbTestCase {
                     }
                 }
         };
+        SearchHistory.getDefault().add(SearchPattern.create("init",true,true,false));
         SearchHistory.getDefault().addPropertyChangeListener(pcl);
         SearchHistory.getDefault().setLastSelected(SearchPattern.create("newSearchtext",true,true,false));
         SearchHistory.getDefault().removePropertyChangeListener(pcl);

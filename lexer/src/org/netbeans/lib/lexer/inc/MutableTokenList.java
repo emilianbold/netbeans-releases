@@ -60,12 +60,11 @@ public interface MutableTokenList<T extends TokenId> extends TokenList<T> {
 
     /**
      * Return token or branch token list at the requested index
-     * but do not synchronize the access - there should only be one thread
-     * accessing the token list at this time.
+     * but do not lazily initialize tokens if they are missing at the given index.
      * Also do not perform any checks regarding index validity
      * - only items below {@link #tokenCountCurrent()} will be requested.
      */
-    TokenOrEmbedding<T> tokenOrEmbeddingUnsync(int index);
+    TokenOrEmbedding<T> tokenOrEmbeddingDirect(int index);
 
     /**
      * Create lexer input operation used for relexing of the input.

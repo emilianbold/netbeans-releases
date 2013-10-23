@@ -61,6 +61,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
+import javax.swing.event.HyperlinkListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -249,7 +250,7 @@ public class HyperlinkOperation implements MouseListener, MouseMotionListener, P
             if (provider != null) {
                 int[] offsets = provider.getHyperlinkSpan(doc, position, type);
                 if (offsets != null) {
-                    makeHyperlink(type, provider, offsets[0], offsets[1]);
+                    makeHyperlink(type, provider, offsets[0], offsets[1], position);
                 }
             } else {
                 unHyperlink(true);
@@ -323,7 +324,7 @@ public class HyperlinkOperation implements MouseListener, MouseMotionListener, P
         return null;
     }
     
-    private synchronized void makeHyperlink(HyperlinkType type, HyperlinkProviderExt provider, final int start, final int end) {
+    private synchronized void makeHyperlink(HyperlinkType type, HyperlinkProviderExt provider, final int start, final int end, final int offset) {
         boolean makeCursorSnapshot = true;
         
         if (hyperlinkUp) {
@@ -337,7 +338,7 @@ public class HyperlinkOperation implements MouseListener, MouseMotionListener, P
         AttributeSet hyperlinksHighlight = fcs.getFontColors("hyperlinks"); //NOI18N
         prepare.addHighlight(start, end, AttributesUtilities.createComposite(
             hyperlinksHighlight != null ? hyperlinksHighlight : defaultHyperlinksHighlight,
-            AttributesUtilities.createImmutable(EditorStyleConstants.Tooltip, new TooltipResolver(provider, start, type))));
+            AttributesUtilities.createImmutable(EditorStyleConstants.Tooltip, new TooltipResolver(provider, offset, type))));
 
         getBag(currentDocument).setHighlights(prepare);
 
@@ -492,8 +493,9 @@ public class HyperlinkOperation implements MouseListener, MouseMotionListener, P
         }
     }
 
-    private static final class TooltipResolver implements HighlightAttributeValue<String> {
+    private static final class TooltipResolver implements HighlightAttributeValue<CharSequence> {
 
+        private static final String HYPERLINK_LISTENER = "TooltipResolver.hyperlinkListener"; //NOI18N
         private HyperlinkProviderExt provider;
         private int offset;
         private HyperlinkType type;
@@ -504,9 +506,49 @@ public class HyperlinkOperation implements MouseListener, MouseMotionListener, P
             this.type = type;
         }
 
-        public String getValue(JTextComponent component, Document document, Object attributeKey, int startOffset, int endOffset) {
-            return provider.getTooltipText(document, offset, type);
-        }
+        public CharSequence getValue(JTextComponent component, Document document, Object attributeKey, int startOffset, int endOffset) {
+            try {
+                String tooltipText = provider.getTooltipText(document, offset, type);
+                HyperlinkListener hl = (HyperlinkListener)document.getProperty(HYPERLINK_LISTENER);
+                return hl != null ? new TooltipInfo(tooltipText, hl) : tooltipText;
+            } finally {
+                document.putProperty(HYPERLINK_LISTENER, null);
+            }
+        }        
+    }
+    
+    public static final class TooltipInfo implements CharSequence {
         
+        private final String tooltipText;
+        private final HyperlinkListener listener;
+
+        private TooltipInfo(String tooltipText, HyperlinkListener listener) {
+            this.tooltipText = tooltipText;
+            this.listener = listener;
+        }
+
+        public HyperlinkListener getListener() {
+            return listener;
+        }
+
+        @Override
+        public int length() {
+            return tooltipText.length();
+        }
+
+        @Override
+        public char charAt(int index) {
+            return tooltipText.charAt(index);
+        }
+
+        @Override
+        public CharSequence subSequence(int start, int end) {
+            return tooltipText.subSequence(start, end);
+        }
+
+        @Override
+        public String toString() {
+            return tooltipText;
+        }
     }
 }

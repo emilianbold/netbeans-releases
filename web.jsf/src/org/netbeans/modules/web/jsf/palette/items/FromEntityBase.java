@@ -70,6 +70,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.jsf.JSFUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
 import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
@@ -222,12 +223,7 @@ public abstract class FromEntityBase {
 
         // namespace location
         WebModule webModule = WebModule.getWebModule(targetJspFO);
-        JSFVersion version = webModule != null ? JSFVersion.forWebModule(webModule) : null;
-        String nsLocation = NamespaceUtils.SUN_COM_LOCATION;
-        if (version != null && version.isAtLeast(JSFVersion.JSF_2_2)) {
-            nsLocation = NamespaceUtils.JCP_ORG_LOCATION;
-        }
-        params.put("nsLocation", nsLocation); //NOI18N
+        params.put("nsLocation", JSFUtils.getNamespaceDomain(webModule)); //NOI18N
 
         return params;
     }
@@ -236,6 +232,7 @@ public abstract class FromEntityBase {
             TypeElement bean, String managedBeanProperty, boolean collectionComponent, boolean initValueGetters) {
         List<TemplateData> templateData = new ArrayList<TemplateData>();
         List<FieldDesc> fields = new ArrayList<FieldDesc>();
+        String idFieldName = "";
         if (bean != null) {
             ExecutableElement[] methods = JpaControllerUtil.getEntityMethods(bean);
             JpaControllerUtil.EmbeddedPkSupport embeddedPkSupport = null;
@@ -250,6 +247,7 @@ public abstract class FromEntityBase {
                     int relationship = fd.getRelationship();
                     if (EntityClass.isId(method, fd.isFieldAccess())) {
                         fd.setPrimaryKey();
+                        idFieldName = fd.getPropertyName();
                         TypeMirror rType = method.getReturnType();
                         if (TypeKind.DECLARED == rType.getKind()) {
                             DeclaredType rTypeDeclared = (DeclaredType)rType;
@@ -290,6 +288,7 @@ public abstract class FromEntityBase {
         params.put("entityDescriptors", templateData); // NOI18N
         params.put("item", ITEM_VAR); // NOI18N
         params.put("comment", Boolean.FALSE); // NOI18N
+        params.put("entityIdField", idFieldName); //NOI18N
     }
 
     private static ExecutableElement findPrimaryKeyGetter(CompilationController controller, TypeElement bean) {
@@ -668,6 +667,9 @@ public abstract class FromEntityBase {
             return !JpaControllerUtil.isFieldOptionalAndNullable(method, isFieldAccess());
         }
 
+        public String getReturnType() {
+            return (String) method.getReturnType().toString();
+        }
     }
 
     public static final class TemplateData {
@@ -689,6 +691,10 @@ public abstract class FromEntityBase {
 
         public String getDateTimeFormat() {
             return fd.getDateTimeFormat();
+        }
+
+        public String getReturnType() {
+            return fd.getReturnType();
         }
 
         public boolean isBlob() {
@@ -738,16 +744,6 @@ public abstract class FromEntityBase {
 
         public String getCodeToPopulate() {
             return codeToPopulate;
-        }
-    }
-
-    public static class Getter {
-
-        public Getter() {
-        }
-
-        public String getP() {
-            return "p";
         }
     }
 

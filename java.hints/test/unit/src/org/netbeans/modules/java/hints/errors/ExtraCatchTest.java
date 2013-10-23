@@ -100,6 +100,60 @@ public class ExtraCatchTest extends ErrorHintsTestBase {
                         "}\n").replaceAll("\\s+", " "));
     }
     
+    /**
+     * Checks that alternative is correctly removed, but the multicatch remains
+     */
+    public void testNotThrownMulti3() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "    public void test() {\n" +
+                       "        try {\n" +
+                       "            if (Boolean.getBoolean(\"\")) { throw new RuntimeException(); } else { throw new InvocationTargetException(); }\n" +
+                       "        } catch (RuntimeException | java.io.IOException | InvocationTargetException ex) {" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n",
+                       -1,
+                       Bundle.FIX_RemoveCatchException("IOException"),
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "    public void test() {\n" +
+                        "        try {\n" +
+                        "            if (Boolean.getBoolean(\"\")) { throw new RuntimeException(); } else { throw new InvocationTargetException(); }\n" +
+                        "        } catch (RuntimeException | InvocationTargetException ex) {" +
+                        "        }\n" +
+                        "    }\n" +
+                        "}\n").replaceAll("\\s+", " "));
+    }
+    
+    /**
+     * Checks that in 2-alternative multicatch, the catch multicatch is removed, regular catch remains.
+     */
+    public void testNotThrownMulti2() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "    public void test() {\n" +
+                       "        try {\n" +
+                       "            if (Boolean.getBoolean(\"\")) { throw new RuntimeException(); } \n" +
+                       "        } catch (RuntimeException | java.io.IOException ex) {" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n",
+                       -1,
+                       Bundle.FIX_RemoveCatchException("IOException"),
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "    public void test() {\n" +
+                        "        try {\n" +
+                        "            if (Boolean.getBoolean(\"\")) { throw new RuntimeException(); } \n" +
+                        "        } catch (RuntimeException ex) {" +
+                        "        }\n" +
+                        "    }\n" +
+                        "}\n").replaceAll("\\s+", " "));
+    }
+
     public void testNotThrownRemoveTry() throws Exception {
         performFixTest("test/Test.java",
                        "package test;\n" +

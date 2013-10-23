@@ -135,6 +135,13 @@ public final class NamingFactory {
         return childName;
     }
     
+    /**
+     * Rename a FileNaming.
+     *
+     * @return An array, where the first item (index 0) is the new FileNaming,
+     * and other items are original FileNamings under (in directory tree)
+     * {@code fNaming} (before renaming).
+     */
     public static FileNaming[] rename (FileNaming fNaming, String newName, ProvidedExtensions.IOHandler handler) throws IOException {
         final Collection<FileNaming> all = new LinkedHashSet<FileNaming>();
         
@@ -142,12 +149,26 @@ public final class NamingFactory {
         boolean retVal = newNaming != fNaming;
         
         synchronized(NamingFactory.class) {        
-            all.add(newNaming);
             collectSubnames(fNaming, all);
-            return (retVal) ? ((FileNaming[]) all.toArray(new FileNaming[all.size()])) : null;
+            return (retVal) ? createArray(newNaming, all) : null;
         }
     }
     
+    /**
+     * Create an array composed of the first item and a collection of remaining
+     * items.
+     */
+    private static FileNaming[] createArray(FileNaming first,
+            Collection<FileNaming> rest) {
+        FileNaming[] res = new FileNaming[rest.size() + 1];
+        res[0] = first;
+        int i = 1;
+        for (FileNaming fn : rest) {
+            res[i++] = fn;
+        }
+        return res;
+    }
+
     public static Collection<FileNaming> findSubTree(FileNaming root) {
         final Collection<FileNaming> all = new LinkedHashSet<FileNaming>();
         synchronized (NamingFactory.class) {

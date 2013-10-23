@@ -290,7 +290,7 @@ public final class CndFileUtils {
     }
 
     public static File createLocalFile(URI uri) {
-        File file = new File(uri);
+        File file = Utilities.toFile(uri);
         CndUtils.assertAbsoluteFileInConsole(file); //NOI18N
         return file;
     }
@@ -364,6 +364,10 @@ public final class CndFileUtils {
         return CndFileSystemProvider.urlToFileObject(url);
     }
 
+    public static FileSystem urlToFileSystem(CharSequence url) {
+        return CndFileSystemProvider.urlToFileSystem(url);
+    }
+    
     public static CharSequence fileObjectToUrl(FileObject fileObject) {
         return CndFileSystemProvider.fileObjectToUrl(fileObject);
     }

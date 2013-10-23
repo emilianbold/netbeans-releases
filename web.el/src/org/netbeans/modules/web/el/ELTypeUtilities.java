@@ -415,6 +415,19 @@ public final class ELTypeUtilities {
         return isImplicitObjectReference(info, target, Arrays.asList(ImplicitObjectType.RAW), directly);
     }
 
+    public static String getRawObjectName(Node root) {
+        List<Node> path = new AstPath(root).rootToLeaf();
+        for (int i = 0; i < root.jjtGetNumChildren(); i++) {
+            if ("cc".equals(path.get(i).getImage())) { //NOI18N
+                if ((i + 2) < root.jjtGetNumChildren()
+                        && "attrs".equals(path.get(i + 1).getImage())) { //NOI18N
+                    return path.get(i + 2).getImage();
+                }
+            }
+        }
+        return null;
+    }
+
     public static boolean isImplicitObjectReference(CompilationContext info, Node target, List<ImplicitObjectType> types, boolean directly) {
         int repeation = directly ? 2 : Integer.MAX_VALUE;
         while (target != null && repeation > 0) {

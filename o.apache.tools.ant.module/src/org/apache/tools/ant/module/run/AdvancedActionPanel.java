@@ -49,6 +49,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.text.Collator;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -65,13 +66,16 @@ import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.AntSettings;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.api.support.TargetLister;
+import org.netbeans.api.annotations.common.NonNull;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
+import org.openide.util.Parameters;
 
 /**
  * Panel for advanced Ant target invocation.
@@ -85,6 +89,9 @@ final class AdvancedActionPanel extends javax.swing.JPanel {
     private static final String ATTR_PROPERTIES = "org.apache.tools.ant.module.preferredProperties"; // NOI18N
     /** File attribute storing last-run verbosity. Format: int. */
     private static final String ATTR_VERBOSITY = "org.apache.tools.ant.module.preferredVerbosity"; // NOI18N
+
+    /** String to used to replace password (concealed) property values */
+    private static final String PASSWORD_REPLACEMENT = "*****";    //NOI18N
     
     private static final String[] VERBOSITIES = {
         /* #45482: this one is really useless:
@@ -106,6 +113,8 @@ final class AdvancedActionPanel extends javax.swing.JPanel {
     private final AntProjectCookie project;
     private final Set<TargetLister.Target> allTargets;
     private String defaultTarget = null;
+    private Set<? extends String> antConcealedProperties = Collections.<String>emptySet();
+    private Properties antProperties = new Properties();
     
     public AdvancedActionPanel(AntProjectCookie project, Set<TargetLister.Target> allTargets) {
         this.project = project;
@@ -154,12 +163,17 @@ final class AdvancedActionPanel extends javax.swing.JPanel {
         // Initialize description field:
         targetComboBoxActionPerformed(null);
         String initialProperties = (String) script.getAttribute(ATTR_PROPERTIES);
-        if (initialProperties == null) {
-            Properties props = new Properties();
-            props.putAll(AntSettings.getProperties());
-            initialProperties = propertiesToString(props);
+        if (initialProperties != null) {
+            try {
+                antProperties = parseProperties(initialProperties);
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+        } else {
+            antProperties = new Properties();
+            antProperties.putAll(AntSettings.getProperties());
         }
-        propertiesPane.setText(initialProperties);
+        propertiesPane.setText(propertiesToString(antProperties, antConcealedProperties));
         Integer verbosity = (Integer) script.getAttribute(ATTR_VERBOSITY);
         if (verbosity == null) {
             verbosity = AntSettings.getVerbosity();
@@ -168,10 +182,21 @@ final class AdvancedActionPanel extends javax.swing.JPanel {
         setVerbosity(verbosity);
     }
 
-    private String propertiesToString(Properties props) {
+    private String propertiesToString(
+            @NonNull final Properties props,
+            @NonNull final Set<? extends String> concealedProperties) {
+        final Properties newProps = new Properties();
+        for (Map.Entry<Object, Object> e : props.entrySet()) {
+            final Object key = e.getKey();
+            Object value = e.getValue();
+            if (concealedProperties.contains(key)) {
+                value = PASSWORD_REPLACEMENT;
+            }
+            newProps.put(key,value);
+        }
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {
-            props.store(baos, null);
+            newProps.store(baos, null);
             String text = baos.toString("ISO-8859-1"); // NOI18N
             // Strip the annoying initial comment:
             return text.replaceFirst("^#.*\n", ""); // NOI18N
@@ -203,10 +228,16 @@ final class AdvancedActionPanel extends javax.swing.JPanel {
         }
     }
 
+    public void setConcealedProperties(@NonNull final Set<? extends String> concealedProperties) {
+        Parameters.notNull("concealedProperties", concealedProperties); //NOI18N
+        antConcealedProperties = new HashSet<>(concealedProperties);
+        propertiesPane.setText(propertiesToString(antProperties, antConcealedProperties));
+    }
+
     public void setProperties(Map<String,String> properties) {
-        Properties props = new Properties();
-        props.putAll(properties);
-        propertiesPane.setText(propertiesToString(props));
+        antProperties = new Properties();
+        antProperties.putAll(properties);
+        propertiesPane.setText(propertiesToString(antProperties, antConcealedProperties));
     }
     
     /** This method is called from within the constructor to
@@ -356,9 +387,15 @@ final class AdvancedActionPanel extends javax.swing.JPanel {
                 targets = targetsL.toArray(new String[targetsL.size()]);
             }
         }
-        Properties props = new Properties();
-        ByteArrayInputStream bais = new ByteArrayInputStream(propertiesPane.getText().getBytes("ISO-8859-1"));
-        props.load(bais);
+        Properties props = parseProperties(propertiesPane.getText());
+        for (Map.Entry<Object,Object> e : props.entrySet()) {
+            final Object key = e.getKey();
+            final Object value = e.getValue();
+            if (antConcealedProperties.contains(key) &&
+                PASSWORD_REPLACEMENT.equals(value)) {
+                e.setValue(antProperties.get(key));
+            }
+        }
         int verbosity = 2;
         String verbosityString = (String) verbosityComboBox.getSelectedItem();
         for (int i = 0; i < VERBOSITIES.length; i++) {
@@ -396,6 +433,7 @@ final class AdvancedActionPanel extends javax.swing.JPanel {
         // Actually run the target(s).
         TargetExecutor exec = new TargetExecutor(project, targets);
         exec.setProperties(NbCollections.checkedMapByCopy(props, String.class, String.class, true));
+        exec.setConcealedProperties(antConcealedProperties);
         exec.setVerbosity(verbosity);
         exec.execute();
     }
@@ -420,6 +458,14 @@ final class AdvancedActionPanel extends javax.swing.JPanel {
             }
         }
         return false;
+    }
+
+    @NonNull
+    private static Properties parseProperties(@NonNull final String text) throws IOException {
+        final Properties props = new Properties();
+        final ByteArrayInputStream bais = new ByteArrayInputStream(text.getBytes("ISO-8859-1"));  //NOI18N
+        props.load(bais);
+        return props;
     }
     
 }

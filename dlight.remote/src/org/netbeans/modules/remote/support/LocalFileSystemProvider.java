@@ -83,7 +83,7 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
     private static final String FILE_PROTOCOL_PREFIX = "file:"; // NOI18N
 
     private FileSystem rootFileSystem = null;
-    private Map<String, LocalFileSystem> nonRootFileSystems = new HashMap<String, LocalFileSystem>();
+    private final Map<String, LocalFileSystem> nonRootFileSystems = new HashMap<String, LocalFileSystem>();
     private final boolean isWindows = Utilities.isWindows();
     private static final RequestProcessor RP = new RequestProcessor(LocalFileSystemProvider.class.getSimpleName());
     private static volatile RequestProcessor.Task lastRefreshTask;
@@ -267,7 +267,7 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
         if (path.startsWith(FILE_PROTOCOL_PREFIX)) {
             try {
                 URL u = new URL(path);
-                file = FileUtil.normalizeFile(new File(u.toURI()));
+                file = FileUtil.normalizeFile(Utilities.toFile(u.toURI()));
             } catch (IllegalArgumentException ex) {
                 RemoteLogger.getInstance().log(Level.WARNING, "LocalFileSystemProvider.urlToFileObject can not convert {0}:\n{1}", new Object[]{absoluteURL, ex.getLocalizedMessage()});
                 return null;
@@ -285,6 +285,24 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
             return FileUtil.toFileObject(file);
         } catch (Throwable ex) {
             RemoteLogger.getInstance().log(Level.WARNING, "LocalFileSystemProvider.urlToFileObject can not convert {0}:\n{1}", new Object[]{absoluteURL, ex.getLocalizedMessage()});
+            return null;
+        }
+    }
+    
+    @Override
+    public FileSystem urlToFileSystem(String rootUrl) {
+        if (rootUrl.isEmpty()) {
+            return getRootFileSystem();
+        } else {
+            FileObject root = urlToFileObject(rootUrl);
+            if (root != null) {
+                try {
+                    return root.getFileSystem();
+                } catch (FileStateInvalidException ex) {
+                    RemoteLogger.getInstance().log(Level.WARNING, "LocalFileSystemProvider.urlToFileSystem can not convert {0}:\n{1}", new Object[]{rootUrl, ex.getLocalizedMessage()});
+                    return null;
+                }
+            }
             return null;
         }
     }

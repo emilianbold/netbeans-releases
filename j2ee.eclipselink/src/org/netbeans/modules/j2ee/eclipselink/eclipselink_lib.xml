@@ -51,7 +51,7 @@ made subject to such option by the copyright holder.
         <type>classpath</type>
         <resource>jar:nbinst://org.netbeans.modules.j2ee.eclipselink/modules/ext/eclipselink/eclipselink.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.j2ee.eclipselink/modules/ext/eclipselink/javax.persistence_2.1.0.v201304241213.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.j2ee.eclipselink/modules/ext/eclipselink/org.eclipse.persistence.jpa.jpql_2.5.0.v20130507-3faac2b.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.j2ee.eclipselink/modules/ext/eclipselink/org.eclipse.persistence.jpa.jpql_2.5.1.v20130918-f2b9fc5.jar!/</resource>
     </volume>
     <volume>
         <type>javadoc</type>
@@ -64,12 +64,8 @@ made subject to such option by the copyright holder.
         <property>
             <name>maven-dependencies</name>
             <value>
-                org.eclipse.persistence:eclipselink:2.5.0-SNAPSHOT:jar
+                org.eclipse.persistence:eclipselink:2.5.1:jar
             </value>
-        </property>
-        <property>
-            <name>maven-repositories</name>
-            <value>default:http://download.eclipse.org/rt/eclipselink/maven.repo/</value>
         </property>
     </properties>
 </library>

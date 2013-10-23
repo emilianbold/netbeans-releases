@@ -83,7 +83,7 @@ public class JoinLexerInputOperation<T extends TokenId> extends LexerInputOperat
     /**
      * Token list in which the last recognized token started.
      */
-    private EmbeddedTokenList<T> activeTokenList;
+    private EmbeddedTokenList<?,T> activeTokenList;
     
     /**
      * Index of activeTokenList in JTL.
@@ -123,11 +123,7 @@ public class JoinLexerInputOperation<T extends TokenId> extends LexerInputOperat
         fetchActiveTokenList();
         // readOffset contains relex-offset. Skip empty parts (ETLs) to obtain
         // correct start offset of first lexed token
-        readText = new TokenListText();
-        readText.tokenListIndex = activeTokenListIndex;
-        readText.tokenListStartOffset = realTokenStartOffset; // contains start of active ETL
-        readText.tokenListEndOffset = activeTokenListEndOffset;
-        // Leave readText.readOffsetShift == 0 for first list
+        readText = new TokenListText(activeTokenListIndex);
 
         // Assign realTokenStartOffset after fetchActiveTokenList() since it would overwrite it
         realTokenStartOffset = readOffset;
@@ -137,7 +133,7 @@ public class JoinLexerInputOperation<T extends TokenId> extends LexerInputOperat
      * Get active ETL into which the last produced token should be added.
      * For join tokens there is an ETL into which a last part of JT should be added.
      */
-    public EmbeddedTokenList<T> activeTokenList() {
+    public EmbeddedTokenList<?,T> activeTokenList() {
         return activeTokenList;
     }
     
@@ -171,17 +167,18 @@ public class JoinLexerInputOperation<T extends TokenId> extends LexerInputOperat
         return realTokenStartOffset;
     }
 
+    @Override
     public int read(int offset) { // index >= 0 is guaranteed by contract
         return readText.read(offset);
     }
 
+    @Override
     public char readExisting(int offset) {
         if (readText.isInBounds(offset)) {
             return readText.inBoundsChar(offset);
         }
         if (readExistingText == null) {
-            readExistingText = new TokenListText();
-            readExistingText.initFrom(readText);
+            readExistingText = new TokenListText(readText);
         }
         return readExistingText.existingChar(offset);
     }
@@ -213,7 +210,7 @@ public class JoinLexerInputOperation<T extends TokenId> extends LexerInputOperat
         activeTokenListEndOffset = activeTokenList.endOffset();
     }
     
-    public EmbeddedTokenList<T> tokenList(int tokenListIndex) { // Also used by JoinTokenListChange
+    public EmbeddedTokenList<?,T> tokenList(int tokenListIndex) { // Also used by JoinTokenListChange
         return ((JoinTokenList<T>) tokenList).tokenList(tokenListIndex);
     }
 
@@ -324,17 +321,21 @@ public class JoinLexerInputOperation<T extends TokenId> extends LexerInputOperat
         /**
          * A constant added to readOffset to allow a smoothly increasing reading offset
          * when reading through multiple ETLs with gaps among them.
+         * Its value is zero for the first ETL at relexOffset. When going to next TL it should be increased by
+         * (tokenList(n+1).getStartOffset() - tokenList(n).getEndOffset()) and similarly
+         * for backward move among token lists.
          */
         int readOffsetShift;
 
-        void init() {
-            EmbeddedTokenList<T> etl = tokenList(activeTokenListIndex);
+        TokenListText(int tokenListIndex) {
+            this.tokenListIndex = tokenListIndex;
+            EmbeddedTokenList<?,T> etl = tokenList(tokenListIndex);
             tokenListStartOffset = etl.startOffset();
             tokenListEndOffset = etl.endOffset();
-            // No extra shift for first token
+            readOffsetShift = 0;
         }
 
-        void initFrom(TokenListText text) {
+        TokenListText(TokenListText text) {
             this.tokenListIndex = text.tokenListIndex;
             this.tokenListStartOffset = text.tokenListStartOffset;
             this.tokenListEndOffset = text.tokenListEndOffset;

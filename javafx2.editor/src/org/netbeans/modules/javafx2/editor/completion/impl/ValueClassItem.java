@@ -76,7 +76,7 @@ final class ValueClassItem extends SimpleClassItem {
     }
     
     protected boolean isValueAttributePresent() {
-        String n = ctx.attributeName(JavaFXEditorUtils.FXML_FX_NAMESPACE, getAttributeName());
+        String n = ctx.fxAttributeName(getAttributeName());
         if (n == null) {
             return false;
         }
@@ -107,12 +107,12 @@ final class ValueClassItem extends SimpleClassItem {
     }
     
     private void addAttribute(JTextComponent c, Document d, String text) throws BadLocationException {
-        String nsPrefix = ctx.findNsPrefix(JavaFXEditorUtils.FXML_FX_NAMESPACE);
+        String nsPrefix = ctx.findFxmlNsPrefix();
         boolean addNsDecl = false;
         
         // declare the namespace, if not yet present
         if (nsPrefix == null) {
-            nsPrefix = ctx.findPrefixString(JavaFXEditorUtils.FXML_FX_NAMESPACE, JavaFXEditorUtils.FXML_FX_PREFIX);
+            nsPrefix = ctx.findPrefixString(JavaFXEditorUtils.FXML_FX_NAMESPACE_CURRENT, JavaFXEditorUtils.FXML_FX_PREFIX);
             addNsDecl = true;
         }
         int start = getStartOffset() + text.length();
@@ -155,7 +155,7 @@ final class ValueClassItem extends SimpleClassItem {
         // must start with space!
         sb2.append(" xmlns:").
                 append(nsPrefix).
-                append("=\"").append(JavaFXEditorUtils.FXML_FX_NAMESPACE).append("\" ");
+                append("=\"").append(JavaFXEditorUtils.FXML_FX_NAMESPACE_CURRENT).append("\" ");
         return sb2.toString();
     }
     

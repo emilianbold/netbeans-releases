@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.repository;
 
-import org.netbeans.modules.cnd.api.model.CsmDeclaration;
-import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.KeyPresentationFactory;
@@ -57,7 +55,7 @@ public class KeyPresentationFactoryImpl implements KeyPresentationFactory {
 
     @Override
     public Key create(KeyDataPresentation presentation) {
-        switch (presentation.getKindPresentation()) {
+        switch (presentation.getHandler()) {
             case KeyObjectFactory.KEY_INCLUDED_FILE_STORAGE_KEY:
                 return new IncludedFileStorageKey(presentation);
             case KeyObjectFactory.KEY_CLASSIFIER_CONTAINER_KEY:
@@ -86,54 +84,76 @@ public class KeyPresentationFactoryImpl implements KeyPresentationFactory {
                 return new ProjectDeclarationContainerKey(presentation);
             case KeyObjectFactory.KEY_PROJECT_KEY:
                 return new ProjectKey(presentation);
-            case 'I':
+            case KeyObjectFactory.KEY_INCLUDE_KEY:
                 return new IncludeKey(presentation);
-            case 'i':
+            case KeyObjectFactory.KEY_INSTANTIATION_KEY:
                 return new InstantiationKey(presentation);
-            case 'h':
-            case 'y':
-            case 'H':
-            case 'Y':
-                return new InheritanceKey(presentation);
-            case 'P':
+            case KeyObjectFactory.KEY_INHERITANCE_PRIVATE_KEY:
+                return new InheritanceKey.PRIVATE(presentation);
+            case  KeyObjectFactory.KEY_INHERITANCE_PROTECTED_KEY:
+                return new InheritanceKey.PROTECTED(presentation);
+            case KeyObjectFactory.KEY_INHERITANCE_PUBLIC_KEY:
+                return new InheritanceKey.PUBLIC(presentation);
+            case KeyObjectFactory.KEY_INHERITANCE_NONE_KEY:
+                return new InheritanceKey.NONE(presentation);
+            case KeyObjectFactory.KEY_PARAM_LIST_KEY:
                 return new ParamListKey(presentation);
-            default:
-                CsmDeclaration.Kind kind = Utils.getCsmDeclarationKind((char)presentation.getKindPresentation());
-                if (kind != null) {
-                    switch (kind) {
-                        case MACRO:
-                            return new MacroKey(presentation);
-                        case ASM:
-                        case BUILT_IN:
-                        case CLASS:
-                        case ENUM:
-                        case FUNCTION:
-                        case NAMESPACE_DEFINITION:
-                        case STRUCT:
-                        case TEMPLATE_DECLARATION:
-                        case UNION:
-                        case VARIABLE:
-                        case NAMESPACE_ALIAS:
-                        case ENUMERATOR:
-                        case FUNCTION_DEFINITION:
-                        case FUNCTION_LAMBDA:
-                        case FUNCTION_INSTANTIATION:
-                        case USING_DIRECTIVE:
-                        case TEMPLATE_PARAMETER:
-                        case CLASS_FRIEND_DECLARATION:
-                        case TEMPLATE_SPECIALIZATION:
-                        case TYPEDEF:
-                        case TYPEALIAS:
-                        case USING_DECLARATION:
-                        case VARIABLE_DEFINITION:
-                        case CLASS_FORWARD_DECLARATION:
-                        case ENUM_FORWARD_DECLARATION:
-                        case FUNCTION_FRIEND:
-                        case FUNCTION_FRIEND_DEFINITION:
-                            return new OffsetableDeclarationKey(presentation);
-                    }
-                }
-
+            case KeyObjectFactory.KEY_MACRO_KEY:
+                return new MacroKey(presentation);
+            case KeyObjectFactory.KEY_ASM_KEY:
+                return new OffsetableDeclarationKey.ASM(presentation);
+            case KeyObjectFactory.KEY_BUILT_IN_KEY:
+                return new OffsetableDeclarationKey.BUILT_IN(presentation);
+            case KeyObjectFactory.KEY_CLASS_KEY:
+                return new OffsetableDeclarationKey.CLASS(presentation);
+            case KeyObjectFactory.KEY_ENUM_KEY:
+                return new OffsetableDeclarationKey.ENUM(presentation);
+            case KeyObjectFactory.KEY_FUNCTION_KEY:
+                return new OffsetableDeclarationKey.FUNCTION(presentation);
+            case KeyObjectFactory.KEY_NAMESPACE_DEFINITION_KEY:
+                return new OffsetableDeclarationKey.NAMESPACE_DEFINITION(presentation);
+            case KeyObjectFactory.KEY_STRUCT_KEY:
+                return new OffsetableDeclarationKey.STRUCT(presentation);
+            case KeyObjectFactory.KEY_TEMPLATE_DECLARATION_KEY:
+                return new OffsetableDeclarationKey.TEMPLATE_DECLARATION(presentation);
+            case KeyObjectFactory.KEY_UNION_KEY:
+                return new OffsetableDeclarationKey.UNION(presentation);
+            case KeyObjectFactory.KEY_VARIABLE_KEY:
+                return new OffsetableDeclarationKey.VARIABLE(presentation);
+            case KeyObjectFactory.KEY_NAMESPACE_ALIAS_KEY:
+                return new OffsetableDeclarationKey.NAMESPACE_ALIAS(presentation);
+            case KeyObjectFactory.KEY_ENUMERATOR_KEY:
+                return new OffsetableDeclarationKey.ENUMERATOR(presentation);
+            case KeyObjectFactory.KEY_FUNCTION_DEFINITION_KEY:
+                return new OffsetableDeclarationKey.FUNCTION_DEFINITION(presentation);
+            case KeyObjectFactory.KEY_FUNCTION_LAMBDA_KEY:
+                return new OffsetableDeclarationKey.FUNCTION_LAMBDA(presentation);
+            case KeyObjectFactory.KEY_FUNCTION_INSTANTIATION_KEY:
+                return new OffsetableDeclarationKey.FUNCTION_INSTANTIATION(presentation);
+            case KeyObjectFactory.KEY_USING_DIRECTIVE_KEY:
+                return new OffsetableDeclarationKey.USING_DIRECTIVE(presentation);
+            case KeyObjectFactory.KEY_TEMPLATE_PARAMETER_KEY:
+                return new OffsetableDeclarationKey.TEMPLATE_PARAMETER(presentation);
+            case KeyObjectFactory.KEY_CLASS_FRIEND_DECLARATION_KEY:
+                return new OffsetableDeclarationKey.CLASS_FRIEND_DECLARATION(presentation);
+            case KeyObjectFactory.KEY_TEMPLATE_SPECIALIZATION_KEY:
+                return new OffsetableDeclarationKey.TEMPLATE_SPECIALIZATION(presentation);
+            case KeyObjectFactory.KEY_TYPEDEF_KEY:
+                return new OffsetableDeclarationKey.TYPEDEF(presentation);
+            case KeyObjectFactory.KEY_TYPEALIAS_KEY:
+                return new OffsetableDeclarationKey.TYPEALIAS(presentation);
+            case KeyObjectFactory.KEY_USING_DECLARATION_KEY:
+                return new OffsetableDeclarationKey.USING_DECLARATION(presentation);
+            case KeyObjectFactory.KEY_VARIABLE_DEFINITION_KEY:
+                return new OffsetableDeclarationKey.VARIABLE_DEFINITION(presentation);
+            case KeyObjectFactory.KEY_CLASS_FORWARD_DECLARATION_KEY:
+                return new OffsetableDeclarationKey.CLASS_FORWARD_DECLARATION(presentation);
+            case KeyObjectFactory.KEY_ENUM_FORWARD_DECLARATION_KEY:
+                return new OffsetableDeclarationKey.ENUM_FORWARD_DECLARATION(presentation);
+            case KeyObjectFactory.KEY_FUNCTION_FRIEND_KEY:
+                return new OffsetableDeclarationKey.FUNCTION_FRIEND(presentation);
+            case KeyObjectFactory.KEY_FUNCTION_FRIEND_DEFINITION_KEY:
+                return new OffsetableDeclarationKey.FUNCTION_FRIEND_DEFINITION(presentation);
         }
         return null;
     }

@@ -220,10 +220,10 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
         if (!isValid()) {
             return null;
         }
-        String uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
+        String uname = ""+Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix(); //NOI18N
         Collection<? extends CsmDeclaration> prjDecls = getContainingFile().getProject().findDeclarations(uname);
         if (prjDecls.isEmpty()) {
-            uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_FRIEND) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
+            uname = ""+Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_FRIEND) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix(); //NOI18N
             prjDecls = getContainingFile().getProject().findDeclarations(uname);
         }
         Collection<CsmDeclaration> decls = new ArrayList<CsmDeclaration>(1);

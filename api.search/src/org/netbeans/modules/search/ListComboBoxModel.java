@@ -46,9 +46,9 @@ import static javax.swing.event.ListDataEvent.CONTENTS_CHANGED;
  *
  * @author  Marian Petras
  */
-public final class ListComboBoxModel implements ComboBoxModel {
+public final class ListComboBoxModel<E> implements ComboBoxModel<E> {
 
-    private final List<? extends Object> elements;
+    private final List<? extends E> elements;
     private final int maxIndex;
     private final boolean reverseOrder;
     private Object selectedItem;
@@ -56,11 +56,11 @@ public final class ListComboBoxModel implements ComboBoxModel {
     private ListDataEvent event
                           = new ListDataEvent(this, CONTENTS_CHANGED, -1, -1);
 
-    public ListComboBoxModel(List<? extends Object> elements) {
+    public ListComboBoxModel(List<E> elements) {
         this(elements, false);
     }
 
-    public ListComboBoxModel(List<? extends Object> elements,
+    public ListComboBoxModel(List<? extends E> elements,
                              final boolean reverseOrder) {
         if (elements == null) {
             throw new IllegalArgumentException(
@@ -75,6 +75,7 @@ public final class ListComboBoxModel implements ComboBoxModel {
         this.reverseOrder = reverseOrder;
     }
 
+    @Override
     public void setSelectedItem(Object item) {
         if ((selectedItem != null) && !selectedItem.equals(item)
                 || (selectedItem == null) && (item != null)) {
@@ -83,19 +84,23 @@ public final class ListComboBoxModel implements ComboBoxModel {
         }
     }
 
+    @Override
     public Object getSelectedItem() {
         return selectedItem;
     }
 
+    @Override
     public int getSize() {
         return maxIndex + 1;
     }
 
-    public Object getElementAt(int index) {
+    @Override
+    public E getElementAt(int index) {
         return elements.get(reverseOrder ? maxIndex - index
                                          : index);
     }
 
+    @Override
     public void addListDataListener(ListDataListener l) {
         if (listeners == null) {
             listeners = new ArrayList<ListDataListener>(3);
@@ -104,6 +109,7 @@ public final class ListComboBoxModel implements ComboBoxModel {
         listeners.add(l);
     }
 
+    @Override
     public void removeListDataListener(ListDataListener l) {
         if ((listeners != null) && listeners.remove(l) && listeners.isEmpty()) {
             listeners = null;

@@ -68,6 +68,7 @@ import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Scope.ImportScope;
+import com.sun.tools.javac.code.Scope.StarImportScope;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.*;
 import com.sun.tools.javac.code.Type;
@@ -411,12 +412,19 @@ public class SourceUtils {
                 });
             }
             JCCompilationUnit unit = (JCCompilationUnit) info.getCompilationUnit();
-            ImportScope importScope = new ImportScope(unit.namedImportScope.owner);
-            for (Symbol symbol : unit.namedImportScope.getElements()) {
-                importScope.enter(symbol);
+            if (toImport.getKind() == ElementKind.PACKAGE) {
+                StarImportScope importScope = new StarImportScope(unit.starImportScope.owner);
+                importScope.importAll(unit.starImportScope);
+                importScope.importAll(((PackageSymbol)toImport).members());
+                unit.starImportScope = importScope;
+            } else {
+                ImportScope importScope = new ImportScope(unit.namedImportScope.owner);
+                for (Symbol symbol : unit.namedImportScope.getElements()) {
+                    importScope.enter(symbol);
+                }
+                importScope.enterIfAbsent((Symbol) toImport);
                 unit.namedImportScope = importScope;
-                unit.namedImportScope.enterIfAbsent((Symbol) toImport);
-            }        
+            }
         } else { // embedded java, look up the handler for the top level language
             Lookup lookup = MimeLookup.getLookup(MimePath.get(topLevelLanguageMIMEType));
             Collection<? extends ImportProcessor> instances = lookup.lookupAll(ImportProcessor.class);

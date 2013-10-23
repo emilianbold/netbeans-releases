@@ -55,6 +55,8 @@ public class ConvertToLambdaTest extends NbTestCase {
     
     private static final String lambdaConvDesc = "This anonymous inner class creation can be turned into a lambda expression.";
     private static final String lambdaConvWarning = "verifier:" + lambdaConvDesc;
+    private static final String lambdaFix = "Use lambda expression";
+    private static final String memberReferenceFix = "Use member reference";
 
     public ConvertToLambdaTest(String name) {
         super(name);
@@ -100,12 +102,36 @@ public class ConvertToLambdaTest extends NbTestCase {
                        "}\n")
                 .run(ConvertToLambda.class)
                 .findWarning("4:38-4:56:" + lambdaConvWarning)
-                .applyFix()
+                .applyFix(lambdaFix)
                 .assertOutput("package test;\n" +
                        "import java.util.*;\n" +
                        "public class Test {\n" +
                        "    {\n" +
                        "        Comparator<String> comp = (String s0, String s1) -> s0.compareTo(s1);\n" +
+                       "    }\n" +
+                       "}\n");
+    }
+    
+    public void testConversionForMemberReference() throws Exception {
+        HintTest.create()
+                .sourceLevel("1.8")
+                .input("package test;\n" +
+                       "import java.util.*;\n" +
+                       "public class Test {\n" +
+                       "    {\n" +
+                       "        Comparator<String> comp = new Comparator<String>() {\n" +
+                       "            public int compare(String s0, String s1) { return s0.compareTo(s1); }\n" +
+                       "        };\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(ConvertToLambda.class)
+                .findWarning("4:38-4:56:" + lambdaConvWarning)
+                .applyFix(memberReferenceFix)
+                .assertOutput("package test;\n" +
+                       "import java.util.*;\n" +
+                       "public class Test {\n" +
+                       "    {\n" +
+                       "        Comparator<String> comp = String::compareTo;\n" +
                        "    }\n" +
                        "}\n");
     }
@@ -193,6 +219,31 @@ public class ConvertToLambdaTest extends NbTestCase {
                        "}\n");
     }
     
+    public void testThatCastIsIfAssignedToRaw() throws Exception {
+        HintTest.create()
+                .sourceLevel("1.8")
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    {\n" +
+                       "        Comparable c = new Comparable<String>(){            \n" +
+                       "            @Override\n" +
+                       "            public int compareTo(String o) {\n" +
+                       "                return 1;\n" +
+                       "            }            \n" +
+                       "        };" +
+                       "    }\n" +
+                       "}\n")
+                .run(ConvertToLambda.class)
+                .findWarning("3:27-3:45:" + lambdaConvWarning)
+                .applyFix()
+                .assertOutput("package test;\n" +
+                    "public class Test {\n" +
+                       "    {\n" +
+                       "        Comparable c = (Comparable<String>) (String o) -> 1;\n" +
+                       "    }\n" +
+                       "}\n");
+       }
+
     public void testThatSiteWithinConstrIsConverted() throws Exception {
         HintTest.create()
                 .sourceLevel("1.8")
@@ -454,7 +505,7 @@ public class ConvertToLambdaTest extends NbTestCase {
                        "}\n")
                 .run(ConvertToLambda.class)
                 .findWarning("4:34-4:44:" + lambdaConvWarning)
-                .applyFix()
+                .applyFix(lambdaFix)
                 .assertOutput("package test;\n" +
                        "public class Test {\n" +
                        "    {\n" +
@@ -784,7 +835,7 @@ public class ConvertToLambdaTest extends NbTestCase {
                        "}\n")
                 .run(ConvertToLambda.class)
                 .findWarning("5:32-5:50:" + lambdaConvWarning)
-                .applyFix()
+                .applyFix(lambdaFix)
                 .assertOutput("package test;\n" +
                        "import java.util.*;\n" +
                        "public class Test {\n" +

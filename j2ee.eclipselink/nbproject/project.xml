@@ -16,7 +16,7 @@
                 <runtime-relative-path>ext/eclipselink/javax.persistence_2.1.0.v201304241213.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/eclipselink/org.eclipse.persistence.jpa.jpql_2.5.0.v20130507-3faac2b.jar</runtime-relative-path>
+                <runtime-relative-path>ext/eclipselink/org.eclipse.persistence.jpa.jpql_2.5.1.v20130918-f2b9fc5.jar</runtime-relative-path>
             </class-path-extension>
         </data>
     </configuration>

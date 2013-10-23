@@ -57,6 +57,7 @@ import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
+import javax.swing.JOptionPane;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitClient.RebaseOperationType;
 import org.netbeans.libs.git.GitException;
@@ -88,6 +89,8 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.Mnemonics;
+import org.openide.util.Mutex;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -105,6 +108,8 @@ public class RebaseAction extends SingleRepositoryAction {
     private static final String NETBEANS_REBASE_UPSTREAM = "netbeans-rebase.upstream"; //NOI18N
     private static final String NETBEANS_REBASE_ONTO = "netbeans-rebase.onto"; //NOI18N
     private static final String REBASE_MERGE_DIR = "rebase-merge"; //NOI18N
+    private static final String REBASE_APPLY_DIR = "rebase-apply"; //NOI18N
+    private static final String MESSAGE = "message"; //NOI18N
 
     @Override
     protected void performAction (File repository, File[] roots, VCSContext context) {
@@ -183,6 +188,9 @@ public class RebaseAction extends SingleRepositoryAction {
                             if (op == RebaseOperationType.BEGIN) {
                                 
                             } else {
+                                if (op != RebaseOperationType.ABORT && !checkRebaseFolder(repository)) {
+                                    return null;
+                                }
                                 lSource = getRebaseFileContent(repository, NETBEANS_REBASE_ORIGHEAD);
                                 lOnto = getOnto(repository);
                                 lUpstream = getRebaseFileContent(repository, NETBEANS_REBASE_UPSTREAM);
@@ -216,12 +224,37 @@ public class RebaseAction extends SingleRepositoryAction {
     }
 
     @NbBundle.Messages({
-        "MSG_RebaseAction.noMergeStrategies=Cannot continue rebase. It was probably started externally but without "
-            + "the merging algorithm (\"-m\" option) which is the only supported option in the NetBeans IDE.\n"
+        "LBL_RebaseAction.continueExternalRebase.title=Cannot Continue Rebase",
+        "MSG_RebaseAction.continueExternalRebase.text=Rebase was probably started by an external tool "
+                + "in non-interactive mode. \nNetBeans IDE cannot continue and finish the action.\n\n"
+                + "Please use the external tool or abort and restart rebase inside NetBeans."
+    })
+    private boolean checkRebaseFolder (File repository) {
+        File folder = getRebaseFolder(repository);
+        File messageFile = new File(folder, MESSAGE);
+        if (messageFile.exists()) {
+            return true;
+        } else {
+            Mutex.EVENT.readAccess(new Runnable() {
+                @Override
+                public void run () {
+                    JOptionPane.showMessageDialog(WindowManager.getDefault().getMainWindow(),
+                        Bundle.MSG_RebaseAction_continueExternalRebase_text(),
+                        Bundle.LBL_RebaseAction_continueExternalRebase_title(),
+                        JOptionPane.ERROR_MESSAGE);
+                }
+            });
+            return false;
+        }
+    }
+
+    @NbBundle.Messages({
+        "MSG_RebaseAction.noMergeStrategies=Cannot continue rebase. It was probably started externally "
+            + "with an unknown algorithm to the NetBeans IDE.\n"
             + "Please use the external tool you started rebase with to finish it."
     })
     private static String getRebaseFileContent (File repository, String filename) throws GitException {
-        File rebaseFolder = new File(GitUtils.getGitFolderForRoot(repository), REBASE_MERGE_DIR);
+        File rebaseFolder = getRebaseFolder(repository);
         if (rebaseFolder.exists()) {
             File file = new File(rebaseFolder, filename);
             if (file.canRead()) {
@@ -243,6 +276,14 @@ public class RebaseAction extends SingleRepositoryAction {
             throw new GitException(Bundle.MSG_RebaseAction_noMergeStrategies());
         }
         return null;
+    }
+
+    private static File getRebaseFolder (File repository) {
+        File rebaseFolder = new File(GitUtils.getGitFolderForRoot(repository), REBASE_APPLY_DIR);
+        if (!rebaseFolder.exists()) {
+            rebaseFolder = new File(GitUtils.getGitFolderForRoot(repository), REBASE_MERGE_DIR);
+        }
+        return rebaseFolder;
     }
 
     private static String getOnto (File repository) throws GitException {
@@ -421,7 +462,7 @@ public class RebaseAction extends SingleRepositoryAction {
 
         private void persistNBConfig () {
             if (onto != null && upstream != null && origHead != null) {
-                File rebaseFolder = new File(GitUtils.getGitFolderForRoot(repository), REBASE_MERGE_DIR);
+                File rebaseFolder = getRebaseFolder(repository);
                 if (rebaseFolder.canWrite()) {
                     try {
                         FileUtils.copyStreamToFile(new ByteArrayInputStream(onto.getBytes()), new File(rebaseFolder, NETBEANS_REBASE_ONTO));

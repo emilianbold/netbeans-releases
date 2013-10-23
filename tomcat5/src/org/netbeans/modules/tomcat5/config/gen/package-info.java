@@ -44,7 +44,7 @@
     @Schema2Beans(
         schema="../../resources/tomcat5_context.dtd",
         schemaType=SchemaType.DTD,
-        mddFile="../../resources/tomcat5.mdd",
+        mddFile="../../resources/tomcat5_context.mdd",
         outputType=OutputType.TRADITIONAL_BASEBEAN,
         attrProp=true,
         java5=true
@@ -53,6 +53,14 @@
         schema="../../resources/tomcat5_server.dtd",
         schemaType=SchemaType.DTD,
         mddFile="../../resources/tomcat5_server.mdd",
+        outputType=OutputType.TRADITIONAL_BASEBEAN,
+        attrProp=true,
+        java5=true
+    ),
+    @Schema2Beans(
+        schema="../../resources/tomee_resources.dtd",
+        schemaType=SchemaType.DTD,
+        mddFile="../../resources/tomee_resources.mdd",
         outputType=OutputType.TRADITIONAL_BASEBEAN,
         attrProp=true,
         java5=true

@@ -112,11 +112,11 @@ public class LibraryTest extends J2eeTestCase {
                 WizardUtils.setProjectNameLocation(appName, getProjectPath());
         WizardUtils.setJ2eeSpecVersion(npnlso, "5");
         //Create EJB Module:
-        String moduleLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.common.project.ui.Bundle", "LBL_NEAP_CreateEjbModule");
+        String moduleLabel = Bundle.getStringTrimmed("org.netbeans.modules.javaee.project.api.ant.ui.wizard.Bundle", "LBL_NEAP_CreateEjbModule");
         JCheckBoxOperator jcbo = new JCheckBoxOperator(npnlso, moduleLabel);
         jcbo.setSelected(false);
         //Create Web Application Module:
-        moduleLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.common.project.ui.Bundle", "LBL_NEAP_CreatWebAppModule");
+        moduleLabel = Bundle.getStringTrimmed("org.netbeans.modules.javaee.project.api.ant.ui.wizard.Bundle", "LBL_NEAP_CreatWebAppModule");
         jcbo = new JCheckBoxOperator(npnlso, moduleLabel);
         jcbo.setSelected(false);
         npnlso.finish();

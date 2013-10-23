@@ -56,6 +56,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import static org.netbeans.modules.maven.nodes.Bundle.*;
+import org.netbeans.modules.maven.spi.IconResources;
 import org.netbeans.modules.maven.spi.nodes.SpecialIcon;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider.ProjectProblem;
@@ -73,11 +74,10 @@ import org.openide.xml.XMLUtil;
  * @author Milos Kleint
  */
 public class MavenProjectNode extends AbstractNode {
-    public static final String BADGE_ICON = "org/netbeans/modules/maven/brokenProjectBadge.png";//NOI18N
     @Messages("ICON_BrokenProjectBadge=Project loading failed or was not complete")
-    private static final String toolTipBroken = "<img src=\"" + MavenProjectNode.class.getClassLoader().getResource(BADGE_ICON) + "\">&nbsp;" + ICON_BrokenProjectBadge();
+    private static final String toolTipBroken = "<img src=\"" + MavenProjectNode.class.getClassLoader().getResource(IconResources.BROKEN_PROJECT_BADGE_ICON) + "\">&nbsp;" + ICON_BrokenProjectBadge();
 
-     private NbMavenProjectImpl project;
+     private final NbMavenProjectImpl project;
      private final ProjectInformation info;
 
      public MavenProjectNode(Lookup lookup, NbMavenProjectImpl proj) {

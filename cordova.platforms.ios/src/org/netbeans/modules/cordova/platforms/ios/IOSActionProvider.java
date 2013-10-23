@@ -80,7 +80,7 @@ public class IOSActionProvider implements ActionProvider {
     @NbBundle.Messages({
         "ERR_NotMac=iOS Development is available only on Mac OS X",
         "ERR_Title=Error",
-        "LBL_Opening=Connecting to iOS Simulator",
+        "LBL_Opening=Connecting to iOS Simulator.\n Please start Mobile Safari if it is not already running.",
         "ERR_NO_Xcode=Supported version of Xcode and Command Line Tools for Xcode not found.\n"
             + "Make sure, that you have latest version of Xcode and iOS SDK installed from Mac App Store."
     })

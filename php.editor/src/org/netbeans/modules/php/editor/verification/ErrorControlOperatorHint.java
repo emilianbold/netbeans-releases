@@ -80,6 +80,7 @@ public class ErrorControlOperatorHint extends HintRule {
         IGNORE_ERROR_VALIDATORS.add(new FunctionInvocationValidator("ob_end_clean")); //NOI18N
         IGNORE_ERROR_VALIDATORS.add(new FunctionInvocationValidator("ob_end_flush")); //NOI18N
         IGNORE_ERROR_VALIDATORS.add(new FunctionInvocationValidator("mkdir")); //NOI18N
+        IGNORE_ERROR_VALIDATORS.add(new FunctionInvocationValidator("iconv")); //NOI18N
         IGNORE_ERROR_VALIDATORS.add(new MethodInvocationValidator(QualifiedName.create("\\DOMDocument"), "loadHTML")); //NOI18N
         IGNORE_ERROR_VALIDATORS.add(new MethodInvocationValidator(QualifiedName.create("\\DOMDocument"), "loadHTMLFile")); //NOI18N
         IGNORE_ERROR_VALIDATORS.add(new MethodInvocationValidator(QualifiedName.create("\\DOMDocument"), "loadXML")); //NOI18N

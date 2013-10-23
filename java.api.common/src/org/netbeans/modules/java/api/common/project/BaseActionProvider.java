@@ -324,7 +324,9 @@ public abstract class BaseActionProvider implements ActionProvider {
     }
 
     private JavaPlatform getActivePlatform() {
-        return CommonProjectUtils.getActivePlatform(evaluator.getProperty("platform.active"));
+        return callback instanceof CustomPlatformCallback ?
+            ((CustomPlatformCallback)callback).getActivePlatform() :
+            CommonProjectUtils.getActivePlatform(evaluator.getProperty(ProjectProperties.PLATFORM_ACTIVE));
     }
 
     private void modification(FileObject f) {
@@ -376,7 +378,7 @@ public abstract class BaseActionProvider implements ActionProvider {
     }
 
     // Main build.xml location
-    public static final String BUILD_SCRIPT ="buildfile";      //NOI18N
+    public static final String BUILD_SCRIPT = ProjectProperties.BUILD_SCRIPT;
 
     @NonNull
     public static String getBuildXmlName (final Project project, PropertyEvaluator evaluator) {
@@ -519,7 +521,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                                 String url = p.getProperty("applet.url");
                                 execProperties.put("applet.url", url);
                                 execProperties.put(JavaRunner.PROP_EXECUTE_FILE, file);
-                                prepareSystemProperties(execProperties, command, false);
+                                prepareSystemProperties(execProperties, command, context, false);
                                 task =
                                 JavaRunner.execute(targetNames[0], execProperties);
                             }
@@ -529,7 +531,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                         return;
                     }
                     if (!isServerExecution() && (COMMAND_RUN.equals(command) || COMMAND_DEBUG.equals(command) || COMMAND_DEBUG_STEP_INTO.equals(command) || COMMAND_PROFILE.equals(command))) {
-                        prepareSystemProperties(execProperties, command, false);
+                        prepareSystemProperties(execProperties, command, context, false);
                         AtomicReference<ExecutorTask> _task = new AtomicReference<ExecutorTask>();
                         bypassAntBuildScript(command, context, execProperties, _task);
                         task = _task.get();
@@ -539,7 +541,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                     boolean serverExecution = p.getProperty(PROPERTY_RUN_SINGLE_ON_SERVER) != null;
                     p.remove(PROPERTY_RUN_SINGLE_ON_SERVER);
                     if (!serverExecution && (COMMAND_RUN_SINGLE.equals(command) || COMMAND_DEBUG_SINGLE.equals(command) || COMMAND_PROFILE_SINGLE.equals(command))) {
-                        prepareSystemProperties(execProperties, command, false);
+                        prepareSystemProperties(execProperties, command, context, false);
                         if (COMMAND_RUN_SINGLE.equals(command)) {
                             execProperties.put(JavaRunner.PROP_CLASSNAME, p.getProperty("run.class"));
                         } else if (COMMAND_DEBUG_SINGLE.equals(command)) {
@@ -557,7 +559,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                         @SuppressWarnings("MismatchedReadAndWriteOfArray")
                         FileObject[] files = findTestSources(context, true);
                         try {
-                            prepareSystemProperties(execProperties, command, true);
+                            prepareSystemProperties(execProperties, command, context, true);
                             execProperties.put(JavaRunner.PROP_EXECUTE_FILE, files[0]);
                             if (buildDir != null) { // #211543
                                 execProperties.put("tmp.dir", updateHelper.getAntProjectHelper().resolvePath(buildDir));
@@ -590,12 +592,15 @@ public abstract class BaseActionProvider implements ActionProvider {
                     }
                 }
                 collectStartupExtenderArgs(p, command);
+                Set<String> concealedProperties = collectAdditionalProperties(p, command, context);
                 if (targetNames.length == 0) {
                     targetNames = null;
                 }
                 if (isCompileOnSaveEnabled && !NO_SYNC_COMMANDS.contains(command)) {
                     p.put("nb.wait.for.caches", "true");
                 }
+                final Callback cb = getCallback();
+                final Callback2 cb2 = (cb instanceof Callback2) ? (Callback2) cb : null;
                 if (p.keySet().isEmpty()) {
                     p = null;
                 }
@@ -605,16 +610,12 @@ public abstract class BaseActionProvider implements ActionProvider {
                         //The build.xml was deleted after the isActionEnabled was called
                         NotifyDescriptor nd = new NotifyDescriptor.Message(LBL_No_Build_XML_Found(), NotifyDescriptor.WARNING_MESSAGE);
                         DialogDisplayer.getDefault().notify(nd);
-                    }
-                    else {
-                        final Callback cb = getCallback();
-                        final Callback2 cb2 = (cb instanceof Callback2) ? (Callback2) cb : null;
-
+                    } else {
                         if (cb2 != null) {
                             cb2.antTargetInvocationStarted(command, context);
                         }
                         try {
-                            task = ActionUtils.runTarget(buildFo, targetNames, p);
+                            task = ActionUtils.runTarget(buildFo, targetNames, p, concealedProperties);
                             task.addTaskListener(new TaskListener() {
                                 @Override
                                 public void taskFinished(Task _) {
@@ -1614,13 +1615,26 @@ public abstract class BaseActionProvider implements ActionProvider {
             p.put(ProjectProperties.RUN_JVM_ARGS_IDE, b.toString());
         }
     }
-    
-    private void prepareSystemProperties(Map<String, Object> properties, String command, boolean test) {
+
+    @CheckForNull
+    private Set<String> collectAdditionalProperties(Map<? super String,? super String> p, String command, Lookup context) {
+        final Callback cb = getCallback();
+        if (cb instanceof Callback3) {
+            final Map<String,String> additionalProperties = ((Callback3)cb).createAdditionalProperties(command, context);
+            assert additionalProperties != null;
+            p.putAll(additionalProperties);
+            return ((Callback3)cb).createConcealedProperties(command, context);
+        }
+        return null;
+    }
+
+    @CheckForNull
+    private Set<String> prepareSystemProperties(Map<String, Object> properties, String command, Lookup context, boolean test) {
         String prefix = test ? ProjectProperties.SYSTEM_PROPERTIES_TEST_PREFIX : ProjectProperties.SYSTEM_PROPERTIES_RUN_PREFIX;
         Map<String, String> evaluated = evaluator.getProperties();
 
         if (evaluated == null) {
-            return ;
+            return null;
         }
         
         for (Entry<String, String> e : evaluated.entrySet()) {
@@ -1629,6 +1643,7 @@ public abstract class BaseActionProvider implements ActionProvider {
             }
         }        
         collectStartupExtenderArgs(properties, command);
+        return collectAdditionalProperties(properties, command, context);
     }
 
     private static enum MainClassStatus {
@@ -2032,6 +2047,57 @@ public abstract class BaseActionProvider implements ActionProvider {
          */
         void antTargetInvocationFailed(final String command, final Lookup context);
 
+    }
+
+    /**
+     * Callback for accessing project private data and supporting
+     * ant invocation hooks.
+     *
+     * @since 1.58
+     */
+    public static interface Callback3 extends Callback2 {
+        /**
+         * Creates additional properties passed to the <i>ant</t>.
+         * Called before an <i>ant</i> target is invoked. Note that call to
+         * {@link #invokeAction(java.lang.String, org.openide.util.Lookup)} does
+         * not necessarily means call to ant.
+         *
+         * @param command the command to be invoked
+         * @param context the invocation context
+         * @return the {@link Map} of additional properties.
+         */
+        @NonNull
+        Map<String,String> createAdditionalProperties(@NonNull String command, @NonNull Lookup context);
+
+
+        /**
+         * Returns names of concealed properties.
+         * Values of such properties are not printed into UI.
+         *
+         * @param command the command to be invoked
+         * @param context the invocation context
+         * @return the {@link Set} of property names.
+         */
+        @NonNull
+        Set<String> createConcealedProperties(@NonNull String command, @NonNull Lookup context);
+    }
+
+    /**
+     * Callback to find an active project platform.
+     * By default the {@link BaseActionProvider} finds an active project
+     * platform using the {@link ProjectProperties#PLATFORM_ACTIVE} property
+     * among J2SE platforms. When a project type needs to change such a behavior
+     * the {@link CustomPlatformCallback} provides a possibility for custom
+     * {@link JavaPlatform} lookup.
+     * @since 1.61
+     */
+    public interface CustomPlatformCallback extends Callback {
+        /**
+         * Returns the active project platform.
+         * @return the active {@link JavaPlatform} or null in case of broken platform.
+         */
+        @CheckForNull
+        JavaPlatform getActivePlatform();
     }
 
     public static final class CallbackImpl implements Callback {

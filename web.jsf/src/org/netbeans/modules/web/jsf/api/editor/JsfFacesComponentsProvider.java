@@ -49,10 +49,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
+import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 import org.netbeans.modules.web.jsf.JSFUtils;
 import org.netbeans.modules.web.jsf.api.metamodel.Component;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
@@ -63,6 +71,7 @@ import org.netbeans.modules.web.jsfapi.api.LibraryComponent;
 import org.netbeans.modules.web.jsfapi.api.LibraryType;
 import org.netbeans.modules.web.jsfapi.api.Tag;
 import org.netbeans.modules.web.jsfapi.spi.LibraryUtils;
+import org.openide.filesystems.FileObject;
 
 /**
  * Provides libraries defined by @FacesComponents.
@@ -94,12 +103,12 @@ public class JsfFacesComponentsProvider {
                     @Override
                     public Collection<? extends Library> run(JsfModel metadata) throws Exception {
                         List<Component> facesComponents = metadata.getElements(Component.class);
-                        Map<String, FacesComponentLibrary> libraries = new HashMap<String, FacesComponentLibrary>();
+                        Map<String, FacesComponentLibrary> libraries = new HashMap<>();
                         for (Component component : facesComponents) {
-                            //@FacesComponent to be used as a tag in the facelet can be defined by annotation only for now.
+                            // @FacesComponent to be used as a tag in the facelet can be defined by annotation only for now.
                             if (component instanceof ComponentImpl) {
                                 ComponentImpl facesComponent = (ComponentImpl) component;
-                                includeComponentIntoLibraries(libraries, facesComponent);
+                                includeComponentIntoLibraries(libraries, (ComponentImpl) facesComponent);
                             }
                         }
                         return libraries.values();
@@ -107,10 +116,8 @@ public class JsfFacesComponentsProvider {
                 });
             } catch (MetadataModelException ex) {
                 LOGGER.log(Level.INFO, "Failed to read Faces Components for " + project, ex);
-            } catch (IOException ex) {
+            } catch (IOException | IllegalStateException ex) {
                 LOGGER.log(Level.INFO, "Failed to read Faces Components for " + project, ex);
-            } catch (IllegalStateException ise) {
-                LOGGER.log(Level.INFO, "Failed to read Faces Components for " + project, ise);
             }
             return Collections.emptyList();
         } finally {
@@ -129,10 +136,10 @@ public class JsfFacesComponentsProvider {
             library = new FacesComponentLibrary(namespace);
             libraries.put(namespace, library);
         }
-        library.addComponent(new FacesLibraryComponent(library, facesComponent.getTagName()));
+        library.addComponent(new FacesLibraryComponent(library, facesComponent));
     }
 
-    private static final class FacesComponentLibrary implements Library {
+    public static final class FacesComponentLibrary implements Library {
 
         private static final String FACES_COMPONENT = "Faces Component";
 
@@ -141,7 +148,7 @@ public class JsfFacesComponentsProvider {
 
         public FacesComponentLibrary(String namespace) {
             this.namespace = namespace;
-            this.components = new HashMap<String, LibraryComponent>(1);
+            this.components = new HashMap<>(1);
         }
 
         public void addComponent(LibraryComponent component) {
@@ -189,16 +196,18 @@ public class JsfFacesComponentsProvider {
         }
     }
 
-    private static final class FacesLibraryComponent implements LibraryComponent {
+    public static final class FacesLibraryComponent implements LibraryComponent {
 
+        private final ElementHandle handle;
         private final String name;
         private final Library library;
         private final Tag tag;
 
-        public FacesLibraryComponent(Library library, String tagName) {
-            this.name = tagName;
+        public FacesLibraryComponent(Library library, ComponentImpl component) {
+            this.handle = component.getTypeElementHandle();
+            this.name = component.getTagName();
             this.library = library;
-            this.tag = new FacesComponentTag(tagName);
+            this.tag = new FacesComponentTag(component.getTagName());
         }
 
         @Override
@@ -220,6 +229,46 @@ public class JsfFacesComponentsProvider {
         public String[][] getDescription() {
             return new String[0][0];
         }
+
+        /**
+         * Gets the FQN of the class.
+         * @return file
+         */
+        public FileObject getComponentFile(Project project) {
+            WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+            if (webModule == null) {
+                return null;
+            }
+            
+            JavaSource js = JSFConfigUtilities.createJavaSource(webModule);
+            if (js != null) {
+                FileObject file = SourceUtils.getFile(handle, js.getClasspathInfo());
+                if (file != null) {
+                    return file;
+                } else {
+                    String qualifiedName = handle.getQualifiedName();
+                    String relPath = qualifiedName.replace('.', '/') + ".class"; //NOI18N
+                    ClassPath classPath = js.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.COMPILE);
+                    for (ClassPath.Entry entry : classPath.entries()) {
+                        FileObject[] roots;
+                        if (entry.isValid()) {
+                            roots = new FileObject[]{entry.getRoot()};
+                        } else {
+                            SourceForBinaryQuery.Result res = SourceForBinaryQuery.findSourceRoots(entry.getURL());
+                            roots = res.getRoots();
+                        }
+                        for (FileObject root : roots) {
+                            file = root.getFileObject(relPath);
+                            if (file != null) {
+                                return file;
+                            }
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
     }
 
     private static final class FacesComponentTag implements Tag {

@@ -55,6 +55,8 @@ import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
+import org.netbeans.modules.bugtracking.spi.QueryController;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.team.server.ui.spi.QueryHandle;
 import org.netbeans.modules.team.server.ui.spi.QueryResultHandle;
 import org.openide.util.WeakListeners;
@@ -107,7 +109,7 @@ class QueryHandleImpl extends QueryHandle implements QueryDescriptor, ActionList
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        TeamUtil.openQuery(query, Query.QueryMode.SHOW_ALL, true);
+        TeamUtil.openQuery(query, true);
     }
 
     @Override

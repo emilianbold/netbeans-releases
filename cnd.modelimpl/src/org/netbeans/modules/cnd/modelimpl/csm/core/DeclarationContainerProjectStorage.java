@@ -123,7 +123,7 @@ public class DeclarationContainerProjectStorage implements DatabaseTableDescript
         }
 
         @Override
-        public short getKindPresentation() {
+        public short getHandler() {
             return kind;
         }
 
@@ -258,7 +258,7 @@ public class DeclarationContainerProjectStorage implements DatabaseTableDescript
         }
 
         @Override
-        public short getKindPresentation() {
+        public short getHandler() {
             return kind;
         }
 

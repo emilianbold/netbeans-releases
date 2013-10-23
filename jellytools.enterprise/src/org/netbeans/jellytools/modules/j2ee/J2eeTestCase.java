@@ -389,6 +389,7 @@ public class J2eeTestCase extends JellyTestCase {
      *                 <include name="enterprise/modules/org-netbeans-modules-j2eeapis.jar"/>
      *                 <include name="enterprise/modules/org-netbeans-modules-j2eeserver.jar"/>
      *                 <include name="enterprise/modules/org-netbeans-modules-glassfish-common.jar"/>
+     *                 <include name="enterprise/modules/ext/glassfish-tooling-sdk.jar"/>
      *             </fileset>
      *         </classpath>
      *     </java>
@@ -417,9 +418,9 @@ public class J2eeTestCase extends JellyTestCase {
                         + "Trying to register server within this JVM "
                         + "but it can influence test cases by loading classes too early", result);
                 Class<?> regClass = Class.forName("org.netbeans.modules.glassfish.common.registration.AutomaticRegistration", true, getLoader(GLASSFISH));
-                Method method = regClass.getDeclaredMethod("autoregisterGlassFishInstance", String.class, String.class);
+                Method method = regClass.getDeclaredMethod("autoregisterGlassFishInstance", String.class, String.class, String.class);
                 method.setAccessible(true);
-                result = (Integer) method.invoke(null, findCluster("enterprise"), glassFishHome + "/glassfish");
+                result = (Integer) method.invoke(null, findCluster("enterprise"), glassFishHome + "/glassfish", "");
             }
             if (result == 0) {
                 alreadyRegistered.add(GLASSFISH);
@@ -535,6 +536,7 @@ public class J2eeTestCase extends JellyTestCase {
         jars.add(new File(findCluster("enterprise"), "modules/org-netbeans-modules-j2eeserver.jar"));
         if (server == GLASSFISH) {
             jars.add(new File(findCluster("enterprise"), "modules/org-netbeans-modules-glassfish-common.jar"));
+            jars.add(new File(findCluster("enterprise"), "modules/ext/glassfish-tooling-sdk.jar"));
         } else if (server == TOMCAT) {
             jars.add(new File(findCluster("enterprise"), "modules/org-netbeans-modules-tomcat5.jar"));
         }

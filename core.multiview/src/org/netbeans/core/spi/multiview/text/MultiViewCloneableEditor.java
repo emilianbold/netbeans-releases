@@ -191,6 +191,7 @@ class MultiViewCloneableEditor extends CloneableEditor  implements MultiViewElem
             tc.setDisplayName(getDisplayName());
             tc.setName(getName());
             tc.setToolTipText(getToolTipText());
+            tc.setIcon(getIcon());
         }
     }
     
