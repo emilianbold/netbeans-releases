@@ -655,7 +655,9 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
     public void setMode(QueryMode mode) {
         switch(mode) {
             case EDIT:
-                onModify();
+                if(query.isSaved()) {
+                    onModify();
+                }
                 break;                        
             case VIEW:
                 onCancelChanges();

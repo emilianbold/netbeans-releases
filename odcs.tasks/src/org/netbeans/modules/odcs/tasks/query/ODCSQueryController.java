@@ -270,7 +270,9 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
     public void setMode(QueryMode mode) {
         switch(mode) {
             case EDIT:
-                onModify();
+                if(query.isSaved()) {
+                    onModify();
+                }
                 break;            
             case VIEW:
                 onCancelChanges();
