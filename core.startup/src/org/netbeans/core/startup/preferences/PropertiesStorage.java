@@ -44,6 +44,7 @@
 
 package org.netbeans.core.startup.preferences;
 
+import java.io.File;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -323,6 +324,10 @@ class PropertiesStorage implements NbPreferences.FileStorage {
 	    SFS_ROOT.refresh();
 	    // and try again
 	    retval = toPropertiesFile();
+	    if (retval == null) {
+                // let's see if the file exists on disk and a FileObject can be obtained for it
+                retval = FileUtil.toFileObject(new File(FileUtil.toFile(SFS_ROOT), filePath()));
+            }
 	    if (retval == null) {
 		// we really need to create the file
 		try {
