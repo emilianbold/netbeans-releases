@@ -8,8 +8,8 @@ public class Class_A_A implements Runnable{
         int x = field;
     }
        
-    public void m(int param, final String abc, String... varargs) {
-        String x = abc;
+    public void m(int param, String... varargs ) {
+        String x = "ABC";
         String y = "ABC";
         int z = 12345;
     }
@@ -47,10 +47,11 @@ public class Class_A_A implements Runnable{
     
     public void usage() {
         new Class_A_A();        
-        m(1, "ABC","","");
+        m(1,"","");
         new Super().m1();
         new Sub().m1();
         y();
     
     }                                             
 }
+
