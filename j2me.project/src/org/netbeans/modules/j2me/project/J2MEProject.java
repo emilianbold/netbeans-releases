@@ -42,10 +42,7 @@
 
 package org.netbeans.modules.j2me.project;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import org.netbeans.api.annotations.common.NonNull;
@@ -55,6 +52,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.modules.j2me.project.ui.customizer.CustomizerProviderImpl;
+import org.netbeans.modules.j2me.project.ui.customizer.J2MECompositeCategoryProvider;
 import org.netbeans.modules.j2me.project.ui.customizer.J2MEProjectProperties;
 import org.netbeans.modules.java.api.common.Roots;
 import org.netbeans.modules.java.api.common.SourceRoots;
@@ -62,27 +60,25 @@ import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
 import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.java.api.common.project.BaseActionProvider;
+import org.netbeans.modules.java.api.common.project.ProjectConfigurations;
 import org.netbeans.modules.java.api.common.project.ProjectHooks;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.project.ui.LogicalViewProviders;
 import org.netbeans.modules.java.api.common.queries.QuerySupport;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
+import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ant.AntBuildExtenderFactory;
 import org.netbeans.spi.project.ant.AntBuildExtenderImplementation;
 import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.FilterPropertyProvider;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.PropertyProvider;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
@@ -131,12 +127,13 @@ public class J2MEProject implements Project {
     private final SourceRoots sourceRoots;
     private final SourceRoots testRoots;
 
+    @SuppressWarnings("LeakingThisInConstructor")
     public J2MEProject(@NonNull final AntProjectHelper helper) {
         Parameters.notNull("helper", helper);   //NOI18N
         this.helper = helper;
         this.updateHelper = new UpdateHelper(new J2MEProjectUpdates(helper), helper);
         this.auxCfg = helper.createAuxiliaryConfiguration();
-        this.eval = createPropertyEvaluator();
+        this.eval = ProjectConfigurations.createPropertyEvaluator(this, helper);
         this.refHelper = new ReferenceHelper(helper, auxCfg, eval);
         final AntBuildExtender buildExtender = AntBuildExtenderFactory.createAntExtender(
             new J2MEExtenderImplementation(),
@@ -296,6 +293,10 @@ public class J2MEProject implements Project {
                 buildExtender,
                 new BuildArtifacts(helper, eval),
                 new Templates(),
+                ProjectConfigurations.createConfigurationProviderBuilder(this, eval, updateHelper).
+                    addConfigurationsAffectActions(ActionProvider.COMMAND_RUN, ActionProvider.COMMAND_DEBUG).
+                    setCustomizerAction(newConfigCustomizerAction()).
+                    build(),
                 LookupMergerSupport.createClassPathProviderMerger(cpProvider),
                 LookupMergerSupport.createSFBLookupMerger(),
                 LookupMergerSupport.createJFBLookupMerger(),
@@ -307,26 +308,7 @@ public class J2MEProject implements Project {
         );
         return LookupProviderSupport.createCompositeLookup(base, EXTENSION_POINT);
     }
-
-    @NonNull
-    private PropertyEvaluator createPropertyEvaluator() {
-        final PropertyEvaluator baseEval1 = PropertyUtils.sequentialPropertyEvaluator(
-                helper.getStockPropertyPreprovider(),
-                helper.getPropertyProvider(ProjectProperties.PROP_PROJECT_CONFIGURATION_CONFIG));
-        final PropertyEvaluator baseEval2 = PropertyUtils.sequentialPropertyEvaluator(
-                helper.getStockPropertyPreprovider(),
-                helper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH));
-        return PropertyUtils.sequentialPropertyEvaluator(
-                helper.getStockPropertyPreprovider(),
-                helper.getPropertyProvider(ProjectProperties.PROP_PROJECT_CONFIGURATION_CONFIG),
-                new ConfigPropertyProvider(baseEval1, "nbproject/private/configs", helper), // NOI18N
-                helper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH),
-                helper.getProjectLibrariesPropertyProvider(),
-                PropertyUtils.userPropertiesProvider(baseEval2,
-                    "user.properties.file", FileUtil.toFile(getProjectDirectory())), // NOI18N
-                new ConfigPropertyProvider(baseEval1, "nbproject/configs", helper), // NOI18N
-                helper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH));
-    }
+    
 
     private ClassPathModifier.Callback newClassPathModifierCallback() {
         return new ClassPathModifier.Callback() {
@@ -350,6 +332,17 @@ public class J2MEProject implements Project {
         };
     }
 
+    @NonNull
+    private Runnable newConfigCustomizerAction() {
+        return new Runnable() {
+            @Override
+            public void run() {
+                J2MEProject.this.getLookup().lookup(CustomizerProviderImpl.class).
+                    showCustomizer(J2MECompositeCategoryProvider.RUN, null);
+            }
+        };
+    }
+
     private class J2MEExtenderImplementation implements AntBuildExtenderImplementation {
         //add targets here as required by the external plugins..
         @Override
@@ -361,36 +354,6 @@ public class J2MEProject implements Project {
         @Override
         public Project getOwningProject() {
             return J2MEProject.this;
-        }
-    }
-
-    private static final class ConfigPropertyProvider extends FilterPropertyProvider implements PropertyChangeListener {
-        private final PropertyEvaluator baseEval;
-        private final String prefix;
-        private final AntProjectHelper helper;
-
-        @SuppressWarnings("LeakingThisInConstructor")
-        public ConfigPropertyProvider(PropertyEvaluator baseEval, String prefix, AntProjectHelper helper) {
-            super(computeDelegate(baseEval, prefix, helper));
-            this.baseEval = baseEval;
-            this.prefix = prefix;
-            this.helper = helper;
-            baseEval.addPropertyChangeListener(this);
-        }
-
-        @Override
-        public void propertyChange(PropertyChangeEvent ev) {
-            if (ProjectProperties.PROP_PROJECT_CONFIGURATION_CONFIG.equals(ev.getPropertyName())) {
-                setDelegate(computeDelegate(baseEval, prefix, helper));
-            }
-        }
-        private static PropertyProvider computeDelegate(PropertyEvaluator baseEval, String prefix, AntProjectHelper helper) {
-            String config = baseEval.getProperty(ProjectProperties.PROP_PROJECT_CONFIGURATION_CONFIG);
-            if (config != null) {
-                return helper.getPropertyProvider(prefix + "/" + config + ".properties"); // NOI18N
-            } else {
-                return PropertyUtils.fixedPropertyProvider(Collections.<String,String>emptyMap());
-            }
         }
     }
 }

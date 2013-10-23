@@ -60,7 +60,7 @@ public class J2MECompositeCategoryProvider implements ProjectCustomizer.Composit
     static final String LIBRARIES = "Libraries";
     public static final String BUILD = "Build";
     private static final String PLATFORM = "Platform";
-    private static final String RUN = "Run";
+    public static final String RUN = "Run";
     private static final String APPLICATION_DESCRIPTOR = "Application Descriptor";
     private static final String OBFUSCATING = "Obfuscating";
     private static final String SIGNING = "Signing";
