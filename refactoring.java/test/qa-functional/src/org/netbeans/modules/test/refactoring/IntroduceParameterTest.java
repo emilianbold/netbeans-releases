@@ -114,16 +114,16 @@ public class IntroduceParameterTest extends ModifyingRefactoring {
 	public static Test suite(){
 
 		return JellyTestCase.emptyConfiguration().
-//				addTest(RenameTest.class, "testSimple_A_A").
+				addTest(RenameTest.class, "testSimple_A_A").
 				addTest(RenameTest.class, "testSimple_A_B").
-//				addTest(RenameTest.class, "testSimple_A_C").
-//				addTest(RenameTest.class, "testSimple_A_D").
-//                        
-//                                addTest(RenameTest.class, "testSimple_A_E").
-//				addTest(RenameTest.class, "testSimple_A_F").
-//				addTest(RenameTest.class, "testSimple_A_G").
-//				addTest(RenameTest.class, "testSimple_A_H").
-//                        
+				addTest(RenameTest.class, "testSimple_A_C").
+				addTest(RenameTest.class, "testSimple_A_D").
+                        
+                                addTest(RenameTest.class, "testSimple_A_E").
+				addTest(RenameTest.class, "testSimple_A_F").
+				addTest(RenameTest.class, "testSimple_A_G").
+				addTest(RenameTest.class, "testSimple_A_H").
+                        
 //                                addTest(RenameTest.class, "testSimple_A_I").
 //				addTest(RenameTest.class, "testSimple_A_J").
 //				addTest(RenameTest.class, "testSimple_A_K").
@@ -162,38 +162,38 @@ public class IntroduceParameterTest extends ModifyingRefactoring {
 				suite();
 	}
          
-//	public void testSimple_A_A(){
-//		performIntroduvceMethod(currentTest.testSimple_A_A);
-//	}
+	public void testSimple_A_A(){
+		performIntroduvceMethod(currentTest.testSimple_A_A);
+	}
         
         public void testSimple_A_B(){
 		performIntroduvceMethod(currentTest.testSimple_A_B);
 	}
                 
-//        public void testSimple_A_C(){
-//		performIntroduvceMethod(currentTest.testSimple_A_C);
-//	}
-//                        
-//        public void testSimple_A_D(){
-//		performIntroduvceMethod(currentTest.testSimple_A_D);
-//	}
-//        
-//        public void testSimple_A_E(){
-//		performIntroduvceMethod(currentTest.testSimple_A_E);
-//	}
-//        
-//        public void testSimple_A_F(){
-//		performIntroduvceMethod(currentTest.testSimple_A_F);
-//	}
-//                
-//        public void testSimple_A_G(){
-//		performIntroduvceMethod(currentTest.testSimple_A_G);
-//	}
-//                        
-//        public void testSimple_A_H(){
-//		performIntroduvceMethod(currentTest.testSimple_A_H);
-//	}
-//        
+        public void testSimple_A_C(){
+		performIntroduvceMethod(currentTest.testSimple_A_C);
+	}
+                        
+        public void testSimple_A_D(){
+		performIntroduvceMethod(currentTest.testSimple_A_D);
+	}
+        
+        public void testSimple_A_E(){
+		performIntroduvceMethod(currentTest.testSimple_A_E);
+	}
+        
+        public void testSimple_A_F(){
+		performIntroduvceMethod(currentTest.testSimple_A_F);
+	}
+                
+        public void testSimple_A_G(){
+		performIntroduvceMethod(currentTest.testSimple_A_G);
+	}
+                        
+        public void testSimple_A_H(){
+		performIntroduvceMethod(currentTest.testSimple_A_H);
+	}
+        
 //        public void testSimple_A_I(){
 //		performIntroduvceMethod(currentTest.testSimple_A_I);
 //	}
@@ -309,8 +309,17 @@ public class IntroduceParameterTest extends ModifyingRefactoring {
         private void performIntroduvceMethod(currentTest c){      
 //  "ClassA":           
 //            
-//                testSimple_A_A  - select(12,24,29);  "myParameter"; Declarefinal=false; ReplaceAllOccurences=false; GenerateJavadocForthisMethod=false; 
-//                testSimple_A_B  - select(12,24,29);  "myParameter"; Declarefinal=false; ReplaceAllOccurences=false; GenerateJavadocForthisMethod=false;
+//                testSimple_A_A  - select(12,24,29);  "myParameter"; Declarefinal=false; ReplaceAllOccurences=false; GenerateJavadocForthisMethod=false; UseExistingMethod; 
+//                testSimple_A_B  - select(12,24,29);  "myParameter"; Declarefinal=true;  ReplaceAllOccurences=false; GenerateJavadocForthisMethod=false; UseExistingMethod; 
+//                testSimple_A_C  - select(12,24,29);  "myParameter"; Declarefinal=false; ReplaceAllOccurences=true;  GenerateJavadocForthisMethod=false; UseExistingMethod; 
+//                testSimple_A_D  - select(12,24,29);  "myParameter"; Declarefinal=false; ReplaceAllOccurences=false; GenerateJavadocForthisMethod=true;  UseExistingMethod; 
+//  
+//  Illegal (vrarg):
+//                testSimple_A_E  - select(12,24,29);  "myParameter"; Declarefinal=false; ReplaceAllOccurences=false; GenerateJavadocForthisMethod=true;  UseExistingMethod; 
+//
+//                
+//            
+//            
             
             	IntroduceParameterOperator ipo = null;
                 ErrorOperator eo = null;
@@ -327,6 +336,10 @@ public class IntroduceParameterTest extends ModifyingRefactoring {
                     case testSimple_A_B: curClass = "Class_A_B"; break;
                     case testSimple_A_C: curClass = "Class_A_C"; break;
                     case testSimple_A_D: curClass = "Class_A_D"; break;
+                    case testSimple_A_E: curClass = "Class_A_E"; break;
+                    case testSimple_A_F: curClass = "Class_A_F"; break;
+                    case testSimple_A_G: curClass = "Class_A_G"; break;
+                    case testSimple_A_H: curClass = "Class_A_H"; break;
                 }
                 
                  // open source file
@@ -358,6 +371,10 @@ public class IntroduceParameterTest extends ModifyingRefactoring {
                     case testSimple_A_B:
                     case testSimple_A_C:
                     case testSimple_A_D:
+                    case testSimple_A_E:
+                    case testSimple_A_F:
+                    case testSimple_A_G:
+                    case testSimple_A_H:
                         editor.setCaretPosition(12, 1);
                         break;
                 }
@@ -368,6 +385,10 @@ public class IntroduceParameterTest extends ModifyingRefactoring {
                     case testSimple_A_B:
                     case testSimple_A_C:
                     case testSimple_A_D:
+                    case testSimple_A_E:
+                    case testSimple_A_F:
+                    case testSimple_A_G:
+                    case testSimple_A_H:
                         editor.select(12, 20, 24);
                         break;
                 }
@@ -391,10 +412,6 @@ public class IntroduceParameterTest extends ModifyingRefactoring {
                 
                 if(debugMode) new EventTool().waitNoEvent(2000);
                 
-                System.out.println("********************");
-                browse(ipo.getSource());
-                System.out.println("********************");
-                
                 // type new name
                 switch(c){
                     case nothing:
@@ -412,6 +429,7 @@ public class IntroduceParameterTest extends ModifyingRefactoring {
                  // select/deselect Declare Final
                 switch(c){
                     case testSimple_A_B:
+                    case testSimple_A_F:
                          // Declare Final = TRUE
                         if(!ipo.getDeclareFinal().isSelected()) ipo.getDeclareFinal().changeSelection(true);
                         break;
@@ -426,6 +444,7 @@ public class IntroduceParameterTest extends ModifyingRefactoring {
                 // select/deselect Replace All Occurences
                 switch(c){
                     case testSimple_A_C:
+                    case testSimple_A_G:
                          // Replace All Occurences = TRUE
                         if(!ipo.getReplaceAllOccurences().isSelected()) ipo.getReplaceAllOccurences().doClick();
                         break;
@@ -438,6 +457,7 @@ public class IntroduceParameterTest extends ModifyingRefactoring {
                 // select/deselect Generate Javadoc for this Method
                 switch(c){
                     case testSimple_A_D:
+                    case testSimple_A_H:
                          // Replace All Occurences = TRUE
                         if(!ipo.getGenerateJvadoc().isSelected()) ipo.getGenerateJvadoc().doClick();
                         break;
@@ -450,15 +470,19 @@ public class IntroduceParameterTest extends ModifyingRefactoring {
                 
                 // Create new Method and Delegate from Existing Method / Update Existing Methode
                 switch(c){
-                    case nothing:
+                    case testSimple_A_A:
+                    case testSimple_A_B:
+                    case testSimple_A_C:
+                    case testSimple_A_D:
+                        // Update Existing Methode
+                        ipo.getUpdateMethods().doClick();
+                        break;
+                    case testSimple_A_E:
+                    case testSimple_A_F:
+                    case testSimple_A_G:
+                    case testSimple_A_H:
                         // Create new Method and Delegate from Existing Method
                         ipo.getCreatenewMethod().doClick();
-                        break;
-                    default:
-                        // Update Existing Methode
-//                        ipo.getCreatenewMethod().doClick();
-//                        if(debugMode) new EventTool().waitNoEvent(1000);
-//                        ipo.getUpdateMethods().doClick();
                         break;
                 }
                 
