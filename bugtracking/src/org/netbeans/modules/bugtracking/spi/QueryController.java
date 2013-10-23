@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.bugtracking.spi;
 
+import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
 import org.openide.util.HelpCtx;
 
@@ -67,6 +68,16 @@ import org.openide.util.HelpCtx;
  */
 public interface QueryController {
 
+    /**
+     * The Issue UI contains unsaved changes.
+     */
+    public static String PROPERTY_QUERY_NOT_SAVED = "bugtracking.issue.changed";
+    
+    /**
+     * The Issue UI does not contain unsaved changes.
+     */
+    public static String PROPERTY_QUERY_SAVED = "bugtracking.issue.saved";
+    
     /**
      * The mode in which this controllers component is shown.
      * 
@@ -116,5 +127,34 @@ public interface QueryController {
      * Called when the component returned by this controller was closed.
      */
     public void closed();
+
+    /**
+     * This method is called when the general IDE Save button is pressed or when 
+     * Save was chosen on close of an Query TopComponent.
+     * 
+     * @return <code>true</code> in case the save worked, otherwise <code>false</code>
+     */
+    public boolean saveChanges();
+
+    /**
+     * This method is called when Discard was chosen on close of an Query TopComponent.
+     * 
+     * @return <code>true</code> in case the discard worked, otherwise <code>false</code>
+     */
+    public boolean discardUnsavedChanges();
+
+    /**
+     * Registers a PropertyChangeListener.
+     * 
+     * @param l a PropertyChangeListener
+     */
+    public void addPropertyChangeListener(PropertyChangeListener l);
+
+    /**
+     * Unregisters a PropertyChangeListener.
+     * 
+     * @param l a PropertyChangeListener
+     */
+    public void removePropertyChangeListener(PropertyChangeListener l);        
 
 }

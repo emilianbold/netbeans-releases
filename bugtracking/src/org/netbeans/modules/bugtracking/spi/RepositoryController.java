@@ -102,14 +102,14 @@ public interface RepositoryController {
     /**
      * Registers a ChangeListener.
      * 
-     * @param l
+     * @param l a ChangeListener
      */
     public void addChangeListener(ChangeListener l);
 
     /**
      * Unregisters a ChangeListener.
      * 
-     * @param l
+     * @param l a ChangeListener
      */
     public void removeChangeListener(ChangeListener l);
     

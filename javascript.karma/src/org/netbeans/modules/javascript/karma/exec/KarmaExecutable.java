@@ -44,33 +44,40 @@ package org.netbeans.modules.javascript.karma.exec;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.input.InputProcessor;
-import org.netbeans.api.extexecution.input.InputProcessors;
-import org.netbeans.api.extexecution.input.LineProcessor;
+import org.netbeans.api.extexecution.print.ConvertedLine;
+import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferencesValidator;
 import org.netbeans.modules.javascript.karma.ui.customizer.KarmaCustomizer;
 import org.netbeans.modules.javascript.karma.util.ExternalExecutable;
+import org.netbeans.modules.javascript.karma.util.FileUtils;
 import org.netbeans.modules.javascript.karma.util.ValidationResult;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
+import org.openide.windows.OutputEvent;
+import org.openide.windows.OutputListener;
 
 public final class KarmaExecutable {
 
     private static final Logger LOGGER = Logger.getLogger(KarmaExecutable.class.getName());
 
+    // XXX
+    private static final String KARMA_NETBEANS_CONFIG_FILE = "config/karma-netbeans.conf.js";
     private static final String START_COMMAND = "start";
     private static final String RUN_COMMAND = "run";
     private static final String PORT_PARAMETER = "--port";
@@ -105,11 +112,10 @@ public final class KarmaExecutable {
         "KarmaExecutable.start=Karma ({0})",
     })
     @CheckForNull
-    public Future<Integer> start(int port) {
+    public Future<Integer> start(int port, String configFile) {
         List<String> params = new ArrayList<>(4);
         params.add(START_COMMAND);
-        // XXX
-        params.add("config/karma-netbeans.conf.js");
+        params.add(KARMA_NETBEANS_CONFIG_FILE);
         params.add(PORT_PARAMETER);
         params.add(Integer.toString(port));
         final CountDownLatch countDownLatch = new CountDownLatch(1);
@@ -121,7 +127,7 @@ public final class KarmaExecutable {
         };
         Future<Integer> task = getExecutable(Bundle.KarmaExecutable_start(ProjectUtils.getInformation(project).getDisplayName()), getProjectDir())
                 .additionalParameters(params)
-                .run(getStartDescriptor(countDownTask), new ServerProcessorFactory(countDownTask));
+                .run(getStartDescriptor(configFile, countDownTask));
         assert task != null : karmaPath;
         try {
             countDownLatch.await(1, TimeUnit.MINUTES);
@@ -157,13 +163,13 @@ public final class KarmaExecutable {
                 .noOutput(false);
     }
 
-    private ExecutionDescriptor getStartDescriptor(Runnable postTask) {
+    private ExecutionDescriptor getStartDescriptor(String configFile, Runnable serverStartTask) {
         return new ExecutionDescriptor()
                 .frontWindow(false)
                 .frontWindowOnError(false)
                 .outLineBased(true)
                 .errLineBased(true)
-                .postExecution(postTask);
+                .outConvertorFactory(new ServerLineConvertorFactory(configFile, serverStartTask));
     }
 
     private ExecutionDescriptor getRunDescriptor() {
@@ -184,52 +190,113 @@ public final class KarmaExecutable {
 
     //~ Inner classes
 
-    private static final class ServerProcessorFactory implements ExecutionDescriptor.InputProcessorFactory {
+    private static final class ServerLineConvertorFactory implements ExecutionDescriptor.LineConvertorFactory {
 
+        private final String configFile;
         private final Runnable startFinishedTask;
 
 
-        public ServerProcessorFactory(@NullAllowed Runnable startFinishedTask) {
+        public ServerLineConvertorFactory(String configFile, Runnable startFinishedTask) {
+            assert configFile != null;
+            assert startFinishedTask != null;
+            this.configFile = configFile;
             this.startFinishedTask = startFinishedTask;
         }
 
         @Override
-        public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
-            return InputProcessors.bridge(new ServerLineProcessor(startFinishedTask));
+        public LineConvertor newLineConvertor() {
+            return new ServerLineConvertor(configFile, startFinishedTask);
         }
 
     }
 
-    private static final class ServerLineProcessor implements LineProcessor {
+    static final class ServerLineConvertor implements LineConvertor {
 
+        // XXX browser specific
+        // e.g.: (/home/gapon/NetBeansProjects/angular.js/src/auto/injector.js:6:12604)
+        static final Pattern FILE_PATTERN = Pattern.compile("\\((.+?):(\\d+):\\d+\\)"); // NOI18N
+
+        private final String configFile;
         private final Runnable startFinishedTask;
 
-        private volatile boolean startFinishedTaskRun = false;
+        private boolean firstLine = true;
+        private boolean startFinishedTaskRun = false;
 
 
-        public ServerLineProcessor(@NullAllowed Runnable startFinishedTask) {
+        public ServerLineConvertor(String configFile, Runnable startFinishedTask) {
+            assert configFile != null;
+            assert startFinishedTask != null;
+            this.configFile = configFile;
             this.startFinishedTask = startFinishedTask;
         }
 
+
         @Override
-        public void processLine(String line) {
+        public List<ConvertedLine> convert(String line) {
+            // info
+            if (firstLine
+                    && line.contains(KARMA_NETBEANS_CONFIG_FILE)) {
+                firstLine = false;
+                return Collections.singletonList(ConvertedLine.forText(
+                        line.replace(KARMA_NETBEANS_CONFIG_FILE, configFile), null));
+            }
+            // server start
+            // XXX wait for start of all browsers
             if (startFinishedTask != null
                     && !startFinishedTaskRun
                     && line.contains("Connected on socket")) { // NOI18N
                 startFinishedTask.run();
                 startFinishedTaskRun = true;
             }
-            if (line.startsWith("--netbeans[")) {
+            // test result
+            if (line.startsWith("$$netbeans ")) {
                 // XXX
+                //System.out.println("------- nb test: " + line);
+                return Collections.emptyList();
             }
+            // karma log
+            OutputListener outputListener;
+            Matcher matcher = FILE_PATTERN.matcher(line);
+            if (matcher.find()) {
+                outputListener = new FileOutputListener(matcher.group(1), Integer.valueOf(matcher.group(2)));
+            } else {
+                outputListener = null;
+            }
+            return Collections.singletonList(ConvertedLine.forText(line, outputListener));
+        }
+
+    }
+
+    private static final class FileOutputListener implements OutputListener {
+
+        final String file;
+        final int line;
+
+
+        public FileOutputListener(String file, int line) {
+            assert file != null;
+            this.file = file;
+            this.line = line;
         }
 
         @Override
-        public void reset() {
+        public void outputLineSelected(OutputEvent ev) {
+            // noop
         }
 
         @Override
-        public void close() {
+        public void outputLineAction(OutputEvent ev) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                @Override
+                public void run() {
+                    FileUtils.openFile(new File(file), line);
+                }
+            });
+        }
+
+        @Override
+        public void outputLineCleared(OutputEvent ev) {
+            // noop
         }
 
     }

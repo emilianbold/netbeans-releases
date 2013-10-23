@@ -42,23 +42,41 @@
 
 package org.netbeans.modules.bugtracking.spi;
 
+import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
 import org.openide.util.HelpCtx;
 
 /**
  * Provides access to an Issues UI.
+ * 
  * <p>
  * Every Issue is expected to provide at least some visual expected to. 
  * Typically this would be an Issue editor making it possible to create and 
  * modify issues.
  * </p>
+ * 
  * <p>
- * When viewing, creating or editing a new Issue, the UI is presented in an TopComponent in the editor area.
+ * When viewing, creating or editing a new Issue, the UI is presented in an 
+ * TopComponent in the editor area. Fire <code>PROPERTY_ISSUE_CHANGED</code> and 
+ * <code>PROPERTY_ISSUE_SAVED</code> to notify the Issue TopComponent about the 
+ * UI state. The <code>saveChanges()</code> and <code>discardUnsavedChanges()</code> 
+ * will be called accordingly.
  * </p>
+ * 
  * @author Tomas Stupka
  */
 public interface IssueController {
 
+    /**
+     * The Issue UI contains unsaved changes.
+     */
+    public static String PROPERTY_ISSUE_NOT_SAVED = "bugtracking.issue.changed";
+    
+    /**
+     * The Issue UI does not contain unsaved changes.
+     */
+    public static String PROPERTY_ISSUE_SAVED = "bugtracking.issue.saved";
+    
     /**
      * Returns a visual Issue component.
      * @return a visual component representing an Issue
@@ -81,4 +99,32 @@ public interface IssueController {
      */
     public void closed();
 
+    /**
+     * This method is called when the general IDE Save button is pressed or when 
+     * Save was chosen on close of an Issue TopComponent.
+     * 
+     * @return <code>true</code> in case the save worked, otherwise <code>false</code>
+     */
+    public boolean saveChanges();
+
+    /**
+     * This method is called when Discard was chosen on close of an Issue TopComponent.
+     * 
+     * @return <code>true</code> in case the discard worked, otherwise <code>false</code>
+     */
+    public boolean discardUnsavedChanges();
+
+    /**
+     * Registers a PropertyChangeListener.
+     * 
+     * @param l a PropertyChangeListener
+     */
+    public void addPropertyChangeListener(PropertyChangeListener l);
+
+    /**
+     * Unregisters a PropertyChangeListener.
+     * 
+     * @param l a PropertyChangeListener
+     */
+    public void removePropertyChangeListener(PropertyChangeListener l);    
 }

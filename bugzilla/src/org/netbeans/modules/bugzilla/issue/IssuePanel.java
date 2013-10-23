@@ -369,7 +369,7 @@ public class IssuePanel extends javax.swing.JPanel {
                     issue.markUserChange();
                 }
                 if (!isDirty) {
-                    unsavedFields.clear();
+                    clearUnsavedFields();
                 }
                 if (enableMap.isEmpty()) {
                     btnSaveChanges.setEnabled(isDirty);
@@ -378,6 +378,11 @@ public class IssuePanel extends javax.swing.JPanel {
                     enableMap.put(btnSaveChanges, isDirty);
                     enableMap.put(cancelButton, isModified || isDirty);
                 }
+                if(isDirty) { 
+                    issue.fireUnsaved();
+                } else {
+                    issue.fireSaved();
+            }
             }
         });
     }
@@ -1306,7 +1311,7 @@ public class IssuePanel extends javax.swing.JPanel {
             values.add(value.toString());
         }
         if (!issue.getFieldValues(field).equals(values)) {
-            unsavedFields.add(field.getKey());
+            addUnsavedField(field.getKey());
             issue.setFieldValues(field, values);
         }
     }
@@ -1326,7 +1331,7 @@ public class IssuePanel extends javax.swing.JPanel {
                 issue.setFieldValue(IssueField.RESOLUTION, ""); //NOI18N
             } else if (value.equals("RESOLVED")) { // NOI18N
                 issue.resolve(resolutionCombo.getSelectedItem().toString());
-                unsavedFields.add(IssueField.RESOLUTION.getKey());
+                addUnsavedField(IssueField.RESOLUTION.getKey());
                 issue.setFieldValue(IssueField.RESOLUTION, resolutionCombo.getSelectedItem().toString());
             } else if (value.equals("ASSIGNED")) { // NOI18N
                 issue.accept();
@@ -1340,7 +1345,7 @@ public class IssuePanel extends javax.swing.JPanel {
             if (value.equals("DUPLICATE")) {
                 issue.duplicate(duplicateField.getText().trim());
                 if (!duplicateField.getText().trim().equals(issue.getFieldValue(IssueField.DUPLICATE_ID))) {
-                    unsavedFields.add(IssueField.DUPLICATE_ID.getKey());
+                    addUnsavedField(IssueField.DUPLICATE_ID.getKey());
                     issue.setFieldValue(IssueField.DUPLICATE_ID, duplicateField.getText().trim());
                 }
             } else {
@@ -1349,13 +1354,13 @@ public class IssuePanel extends javax.swing.JPanel {
         } else if (field == IssueField.DUPLICATE_ID && "RESOLVED".equals(statusCombo.getSelectedItem())
                 && "DUPLICATE".equals(resolutionCombo.getSelectedItem())) {
             issue.duplicate(value);
-            unsavedFields.add(field.getKey());
+            addUnsavedField(field.getKey());
         } else if ((field == IssueField.ASSIGNED_TO) && !issue.isNew()) {
             issue.reassign(value);
-            unsavedFields.add(field.getKey());
+            addUnsavedField(field.getKey());
         }
         if (changed || !issue.getFieldValue(field).equals(value)) {
-            unsavedFields.add(field.getKey());
+            addUnsavedField(field.getKey());
             issue.setFieldValue(field, value);
         }
     }
@@ -3057,7 +3062,7 @@ public class IssuePanel extends javax.swing.JPanel {
         String removedCCs = getMissingCCs(oldCCs, newCCs);
         String addedCCs = getMissingCCs(newCCs, oldCCs);
 
-        unsavedFields.add(IssueField.CC.getKey());
+        addUnsavedField(IssueField.CC.getKey());
         issue.setFieldValues(IssueField.CC, new ArrayList<>(ccs(ccField.getText())));
         storeFieldValue(IssueField.REMOVECC, removedCCs);
         storeFieldValue(IssueField.NEWCC, addedCCs);
@@ -3410,30 +3415,39 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     }//GEN-LAST:event_submitButtonActionPerformed
 
     private void btnSaveChangesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveChangesActionPerformed
+        save();
+    }
+
+    void save() {
         skipReload = true;
         enableComponents(false);
         RP.post(new Runnable() {
             @Override
             public void run() {
-                boolean saved = false;
-                try {
-                    saved = issue.save();
-                } finally {
-                    final boolean fSaved = saved;
-                    EventQueue.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            unsavedFields.clear();
-                            enableComponents(true);
-                            btnSaveChanges.setEnabled(!fSaved);
-                            updateFieldStatuses();
-                            skipReload = false;
-                        }
-                    });
-                }
+                saveSynchronously();
             }
         });
     }//GEN-LAST:event_btnSaveChangesActionPerformed
+
+    boolean saveSynchronously() {
+        boolean saved = false;
+        try {
+            saved = issue.save();
+        } finally {
+            final boolean fSaved = saved;
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    clearUnsavedFields();
+                    enableComponents(true);
+                    btnSaveChanges.setEnabled(!fSaved);
+                    updateFieldStatuses();
+                    skipReload = false;
+                }
+            });
+        }
+        return saved;
+    }
 
     @NbBundle.Messages({
         "LBL_IssuePanel.cancelChanges.title=Cancel Local Edits?",
@@ -3445,6 +3459,10 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
                 Bundle.LBL_IssuePanel_cancelChanges_title(), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
             return;
         }
+        discard();
+    }
+
+    void discard() {
         skipReload = true;
         enableComponents(false);
         RP.post(new Runnable() {
@@ -3458,7 +3476,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
                     EventQueue.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            unsavedFields.clear();
+                            clearUnsavedFields();
                             enableComponents(true);
                             btnSaveChanges.setEnabled(!fCleared);
                             cancelButton.setEnabled(!fCleared);                            
@@ -3470,6 +3488,27 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
             }
         });
     }//GEN-LAST:event_cancelButtonActionPerformed
+
+    void clearUnsavedChanges() {
+        issue.clearUnsavedChanges();
+        clearUnsavedFields();
+    }
+    
+    private void clearUnsavedFields() {
+        boolean fire = !unsavedFields.isEmpty();
+        unsavedFields.clear();
+        if(fire) {
+            issue.fireSaved();
+        }        
+    }
+    
+    private void addUnsavedField(String fieldName) {
+        boolean fire = unsavedFields.isEmpty();
+        unsavedFields.add(fieldName);
+        if(fire) {
+            issue.fireUnsaved();
+        }
+    }
     
     @NbBundle.Messages({
         "LBL_IssuePanel.deleteTask.title=Delete New Task?",
@@ -3806,7 +3845,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
             void fieldModified () {
                 if (!(reloading || issue.isNew())) {
                     issue.setFieldValue(IssueField.COMMENT, addCommentArea.getText().trim());
-                    unsavedFields.add(IssueField.COMMENT.getKey());
+                    addUnsavedField(IssueField.COMMENT.getKey());
                     updateDecorations();
                 }
             }
@@ -3894,7 +3933,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
             public void stateChanged (ChangeEvent e) {
                 if (!reloading && attachmentsPanel.isVisible()) {
                     if (issue.setUnsubmittedAttachments(attachmentsPanel.getNewAttachments())) {
-                        unsavedFields.add(IssueField.NB_NEW_ATTACHMENTS.getKey());
+                        addUnsavedField(IssueField.NB_NEW_ATTACHMENTS.getKey());
                         updateAttachmentsStatus();
                     }
                 }
@@ -3948,7 +3987,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
             
         });
     }
-    
+
     private void setupCustomFieldsListeners () {
         // custom fields
         for (CustomFieldInfo field : customFields) {
@@ -4288,7 +4327,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
 
         void fieldModified () {
             if (!reloading && isEnabled() && storeValue()) {
-                unsavedFields.add(attributeName);
+                addUnsavedField(attributeName);
                 updateDecorations();
             }
         }
@@ -4319,7 +4358,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
 
         void fieldModified () {
             if (!reloading && isEnabled() && storeValue()) {
-                unsavedFields.add(attributeName);
+                addUnsavedField(attributeName);
                 updateDecorations();
             }
         }
