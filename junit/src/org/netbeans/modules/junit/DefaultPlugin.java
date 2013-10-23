@@ -1425,8 +1425,7 @@ public final class DefaultPlugin extends JUnitPlugin {
 
         final Collection<FileObject> testFolders = Utils.getTestFolders(project);
         if (testFolders.isEmpty()) {
-            LOG_JUNIT_VER.finest(" - no test folders found");           //NOI18N
-            throw new IllegalStateException();
+            LOG_JUNIT_VER.finest(" - no unit test folders found");           //NOI18N
         }
 
         final ClassPathProvider cpProvider
@@ -1448,7 +1447,7 @@ public final class DefaultPlugin extends JUnitPlugin {
             }
         }
 
-        LOG_JUNIT_VER.finest(" - no compile classpath for tests found");//NOI18N
+        LOG_JUNIT_VER.finest(" - no compile classpath for unit tests found");//NOI18N
         return null;
     }
 
