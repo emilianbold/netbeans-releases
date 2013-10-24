@@ -167,14 +167,15 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
         jLabelModel = new javax.swing.JLabel();
         jRadioButtonSuite = new javax.swing.JRadioButton();
         jRadioButtonLIBlet = new javax.swing.JRadioButton();
-        jTextFieldURL = new javax.swing.JTextField();
         scrollPane = new javax.swing.JScrollPane();
-        jLabelExpl = new javax.swing.JLabel();
         bRemove = new javax.swing.JButton();
-        jCheckBoxOverride = new javax.swing.JCheckBox();
         bEdit = new javax.swing.JButton();
         lTable = new javax.swing.JLabel();
         bAdd = new javax.swing.JButton();
+        jPanel2 = new javax.swing.JPanel();
+        jLabelExpl = new javax.swing.JLabel();
+        jTextFieldURL = new javax.swing.JTextField();
+        jCheckBoxOverride = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -184,7 +185,6 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(jLabelModel, gridBagConstraints);
 
         buttonGroupModel.add(jRadioButtonSuite);
@@ -198,7 +198,6 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         jPanel1.add(jRadioButtonSuite, gridBagConstraints);
 
@@ -213,48 +212,28 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         jPanel1.add(jRadioButtonLIBlet, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jPanel1, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(11, 5, 0, 0);
-        add(jTextFieldURL, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridheight = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(scrollPane, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelExpl, NbBundle.getMessage(J2MEAttributesPanel.class, "J2MEAttributesPanel.jLabelExpl.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 7;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
-        add(jLabelExpl, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(bRemove, org.openide.util.NbBundle.getMessage(J2MEAttributesPanel.class, "J2MEAttributesPanel.bRemove.text")); // NOI18N
         bRemove.addActionListener(new java.awt.event.ActionListener() {
@@ -263,20 +242,13 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(bRemove, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxOverride, NbBundle.getMessage(J2MEAttributesPanel.class, "J2MEAttributesPanel.jCheckBoxOverride.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(11, 5, 0, 0);
-        add(jCheckBoxOverride, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(bEdit, org.openide.util.NbBundle.getMessage(J2MEAttributesPanel.class, "J2MEAttributesPanel.bEdit.text")); // NOI18N
         bEdit.addActionListener(new java.awt.event.ActionListener() {
@@ -285,18 +257,20 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 0);
         add(bEdit, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(lTable, org.openide.util.NbBundle.getMessage(J2MEAttributesPanel.class, "J2MEAttributesPanel.lTable.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 4);
         add(lTable, gridBagConstraints);
 
@@ -307,11 +281,52 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 11, 0);
         add(bAdd, gridBagConstraints);
+
+        jPanel2.setLayout(new java.awt.GridBagLayout());
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelExpl, NbBundle.getMessage(J2MEAttributesPanel.class, "J2MEAttributesPanel.jLabelExpl.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+        jPanel2.add(jLabelExpl, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(11, 5, 0, 0);
+        jPanel2.add(jTextFieldURL, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxOverride, NbBundle.getMessage(J2MEAttributesPanel.class, "J2MEAttributesPanel.jCheckBoxOverride.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(11, 5, 0, 0);
+        jPanel2.add(jCheckBoxOverride, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 2.0;
+        add(jPanel2, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void bRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bRemoveActionPerformed
@@ -402,6 +417,7 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabelExpl;
     private javax.swing.JLabel jLabelModel;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JRadioButton jRadioButtonLIBlet;
     private javax.swing.JRadioButton jRadioButtonSuite;
     private javax.swing.JTextField jTextFieldURL;

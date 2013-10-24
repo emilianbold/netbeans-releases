@@ -53,14 +53,11 @@ import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.java.api.common.project.ui.LogicalViewProvider2;
 import org.netbeans.modules.java.api.common.project.ui.customizer.EditMediator;
-import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
@@ -180,19 +177,6 @@ public class J2MELibrarisPanel extends JPanel implements HelpCtx.Provider, ListD
         uiProperties.NO_DEPENDENCIES_MODEL.setMnemonic( jCheckBoxBuildSubprojects.getMnemonic() );
         jCheckBoxBuildSubprojects.setModel( uiProperties.NO_DEPENDENCIES_MODEL );                        
         librariesLocation.setDocument(uiProperties.SHARED_LIBRARIES_MODEL);
-        jComboBoxTarget.setModel(uiProperties.PLATFORM_MODEL);               
-        jComboBoxTarget.setRenderer(uiProperties.PLATFORM_LIST_RENDERER);
-        if (!UIManager.getLookAndFeel().getClass().getName().toUpperCase().contains("AQUA")) {  //NOI18N
-            //Not needed on Mac AQUA L&F also this causes an appearance problem on it
-            jComboBoxTarget.putClientProperty ("JComboBox.isTableCellEditor", Boolean.TRUE);    //NOI18N
-            jComboBoxTarget.addItemListener(new java.awt.event.ItemListener(){ 
-                @Override
-                public void itemStateChanged(java.awt.event.ItemEvent e){ 
-                    javax.swing.JComboBox combo = (javax.swing.JComboBox)e.getSource(); 
-                    combo.setPopupVisible(false); 
-                } 
-            });
-        }
         testBroken();
         if (J2MECompositeCategoryProvider.LIBRARIES.equals(subcat.getCategory())) {
             showSubCategory(subcat.getSubcategory());
@@ -358,9 +342,6 @@ public class J2MELibrarisPanel extends JPanel implements HelpCtx.Provider, ListD
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        jLabelTarget = new javax.swing.JLabel();
-        jComboBoxTarget = new javax.swing.JComboBox();
-        jButton1 = new javax.swing.JButton();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanelCompile = new javax.swing.JPanel();
         librariesJLabel1 = new javax.swing.JLabel();
@@ -422,18 +403,6 @@ public class J2MELibrarisPanel extends JPanel implements HelpCtx.Provider, ListD
         sharedLibrariesLabel = new javax.swing.JLabel();
         librariesLocation = new javax.swing.JTextField();
         librariesBrowse = new javax.swing.JButton();
-
-        jLabelTarget.setLabelFor(jComboBoxTarget);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelTarget, org.openide.util.NbBundle.getMessage(J2MELibrarisPanel.class, "LBL_CustomizeGeneral_Platform_JLabel")); // NOI18N
-
-        jComboBoxTarget.setMinimumSize(this.jComboBoxTarget.getPreferredSize());
-
-        org.openide.awt.Mnemonics.setLocalizedText(jButton1, org.openide.util.NbBundle.getMessage(J2MELibrarisPanel.class, "LBL_CustomizeGeneral_Platform_JButton")); // NOI18N
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                createNewPlatform(evt);
-            }
-        });
 
         jPanelCompile.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
         jPanelCompile.setMinimumSize(new java.awt.Dimension(410, 250));
@@ -1021,52 +990,34 @@ public class J2MELibrarisPanel extends JPanel implements HelpCtx.Provider, ListD
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(sharedLibrariesLabel)
-                    .addComponent(jLabelTarget))
+                .addComponent(sharedLibrariesLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(librariesLocation, javax.swing.GroupLayout.DEFAULT_SIZE, 587, Short.MAX_VALUE)
-                    .addComponent(jComboBoxTarget, 0, 587, Short.MAX_VALUE))
+                .addComponent(librariesLocation, javax.swing.GroupLayout.DEFAULT_SIZE, 587, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(librariesBrowse, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addComponent(librariesBrowse, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE))
             .addComponent(jCheckBoxBuildSubprojects, javax.swing.GroupLayout.DEFAULT_SIZE, 630, Short.MAX_VALUE)
             .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 630, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabelTarget)
-                    .addComponent(jButton1)
-                    .addComponent(jComboBoxTarget, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(0, 0, 0)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(sharedLibrariesLabel)
                     .addComponent(librariesBrowse)
                     .addComponent(librariesLocation, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 323, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 352, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jCheckBoxBuildSubprojects))
         );
 
-        jLabelTarget.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(J2MELibrarisPanel.class, "ACSD_CustomizerGeneral_jLabelTarget")); // NOI18N
-        jButton1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(J2MELibrarisPanel.class, "ACSD_CustomizerGeneral_jButton1")); // NOI18N
         jTabbedPane1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(J2MELibrarisPanel.class, "ACSN_CustomizerLibraries_JTabbedPane")); // NOI18N
         jTabbedPane1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(J2MELibrarisPanel.class, "ACSD_CustomizerLibraries_JTabbedPane")); // NOI18N
         jCheckBoxBuildSubprojects.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(J2MELibrarisPanel.class, "AD_CheckBoxBuildSubprojects")); // NOI18N
         librariesLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(J2MELibrarisPanel.class, "ACSD_librariesLocation")); // NOI18N
         librariesBrowse.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(J2MELibrarisPanel.class, "ACSD_librariesBrowse")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-
-    private void createNewPlatform(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createNewPlatform
-        Object selectedItem = this.jComboBoxTarget.getSelectedItem();
-        JavaPlatform jp = (selectedItem == null ? null : PlatformUiSupport.getPlatform(selectedItem));
-        PlatformsCustomizer.showCustomizer(jp);        
-    }//GEN-LAST:event_createNewPlatform
 
     private void librariesBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_librariesBrowseActionPerformed
         if (!isSharable) {
@@ -1124,7 +1075,6 @@ public class J2MELibrarisPanel extends JPanel implements HelpCtx.Provider, ListD
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
     private javax.swing.JButton jButtonAddArtifactC;
     private javax.swing.JButton jButtonAddArtifactCT;
     private javax.swing.JButton jButtonAddArtifactP;
@@ -1161,9 +1111,7 @@ public class J2MELibrarisPanel extends JPanel implements HelpCtx.Provider, ListD
     private javax.swing.JButton jButtonRemoveR;
     private javax.swing.JButton jButtonRemoveRT;
     private javax.swing.JCheckBox jCheckBoxBuildSubprojects;
-    private javax.swing.JComboBox jComboBoxTarget;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabelTarget;
     private javax.swing.JList jListCpC;
     private javax.swing.JList jListCpCT;
     private javax.swing.JList jListCpP;
