@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmCompoundClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
@@ -57,16 +58,18 @@ public class NavigatorChildren extends Children.SortedArray {
     private CsmCompoundClassifier container;
     private CsmFileModel model;
     private List<IndexOffsetNode> lineNumberIndex;
+    private final AtomicBoolean canceled;
 
-    public NavigatorChildren(CsmOffsetableDeclaration element, CsmFileModel model, List<IndexOffsetNode> lineNumberIndex) {
-        this(element, model, null, lineNumberIndex);
+    public NavigatorChildren(CsmOffsetableDeclaration element, CsmFileModel model, List<IndexOffsetNode> lineNumberIndex, AtomicBoolean canceled) {
+        this(element, model, null, lineNumberIndex, canceled);
     }
 
-    public NavigatorChildren(CsmOffsetableDeclaration element, CsmFileModel model, CsmCompoundClassifier container, List<IndexOffsetNode> lineNumberIndex) {
+    public NavigatorChildren(CsmOffsetableDeclaration element, CsmFileModel model, CsmCompoundClassifier container, List<IndexOffsetNode> lineNumberIndex, AtomicBoolean canceled) {
         this.element = element;
         this.container = container;
         this.model = model;
         this.lineNumberIndex = lineNumberIndex;
+        this.canceled = canceled;
         this.getNodes();
     }
 
@@ -85,14 +88,21 @@ public class NavigatorChildren extends Children.SortedArray {
             initEnum((CsmEnum) element, retValue);
         } else if (CsmKindUtilities.isNamespaceDefinition(element)) {
             CsmNamespaceDefinition ns = (CsmNamespaceDefinition) element;
-            for (CsmDeclaration decl : ns.getDeclarations()) {
-                CppDeclarationNode node = CppDeclarationNode.nodeFactory(decl, model, false, lineNumberIndex);
-                if (node != null) {
-                    retValue.add(node);
+            if (!canceled.get()) {
+                for (CsmDeclaration decl : ns.getDeclarations()) {
+                    if (canceled.get()) {
+                        break;
+                    }
+                    CppDeclarationNode node = CppDeclarationNode.nodeFactory(decl, model, false, lineNumberIndex, canceled);
+                    if (node != null) {
+                        retValue.add(node);
+                    }
                 }
             }
         }
-        Collections.sort(retValue);
+        if (!canceled.get()) {
+            Collections.sort(retValue);
+        }
         // CppDeclarationNode is Node
         @SuppressWarnings("unchecked")
         List<Node> ret = ((List)retValue);
@@ -100,14 +110,26 @@ public class NavigatorChildren extends Children.SortedArray {
     }
 
     private void initClassifier(CsmClass cls, List<CppDeclarationNode> retValue) {
+        if (canceled.get()) {
+            return;
+        }
         for (CsmMember member : cls.getMembers()) {
-            CppDeclarationNode node = CppDeclarationNode.nodeFactory(member, model, false, lineNumberIndex);
+            if (canceled.get()) {
+                return;
+            }
+            CppDeclarationNode node = CppDeclarationNode.nodeFactory(member, model, false, lineNumberIndex, canceled);
             if (node != null) {
                 retValue.add(node);
             }
         }
+        if (canceled.get()) {
+            return;
+        }
         for (CsmFriend friend : cls.getFriends()) {
-            CppDeclarationNode node = CppDeclarationNode.nodeFactory(friend, model, true, lineNumberIndex);
+            if (canceled.get()) {
+                return;
+            }
+            CppDeclarationNode node = CppDeclarationNode.nodeFactory(friend, model, true, lineNumberIndex, canceled);
             if (node != null) {
                 retValue.add(node);
             }
@@ -115,8 +137,14 @@ public class NavigatorChildren extends Children.SortedArray {
     }
 
     private void initEnum(CsmEnum cls, List<CppDeclarationNode> retValue) {
+        if (canceled.get()) {
+            return;
+        }
         for (CsmEnumerator en : cls.getEnumerators()) {
-            CppDeclarationNode node = CppDeclarationNode.nodeFactory(en, model, false, lineNumberIndex);
+            if (canceled.get()) {
+                return;
+            }
+            CppDeclarationNode node = CppDeclarationNode.nodeFactory(en, model, false, lineNumberIndex, canceled);
             if (node != null) {
                 retValue.add(node);
             }
