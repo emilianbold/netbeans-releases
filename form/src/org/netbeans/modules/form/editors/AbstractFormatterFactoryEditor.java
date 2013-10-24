@@ -340,11 +340,12 @@ public class AbstractFormatterFactoryEditor extends PropertyEditorSupport
     @Override
     public void setContext(FormModel formModel, FormProperty property) {
         this.property = property;
-        try {
-            updatePrePostCode(null, property.getValue());
-        } catch (Exception ex) {
-            Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
-        }
+        // [Why pre/post code was updated here? It breaks after loading - commented out to fix bug 237371.]
+//        try {
+//            updatePrePostCode(null, property.getValue());
+//        } catch (Exception ex) {
+//            Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
+//        }
     }
 
     /**
