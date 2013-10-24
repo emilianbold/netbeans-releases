@@ -455,7 +455,18 @@ public abstract class TooManyLinesHint extends HintRule implements CustomisableR
             int firstNonWhiteFwd = Utilities.getFirstNonWhiteFwd(baseDocument, searchOffset);
             int startLineOffset = Utilities.getLineOffset(baseDocument, firstNonWhiteFwd == -1 ? searchOffset : firstNonWhiteFwd);
             int endLineOffset = Utilities.getLineOffset(baseDocument, Utilities.getFirstNonWhiteBwd(baseDocument, block.getEndOffset()));
-            return endLineOffset - startLineOffset;
+            return countLinesBetweenLineOffsets(startLineOffset, endLineOffset);
+        }
+
+        private int countLinesBetweenLineOffsets(int startLineOffset, int endLineOffset) throws BadLocationException {
+            int result = 0;
+            for (int i = startLineOffset; i < endLineOffset; i++) {
+                int rowStartFromLineOffset = Utilities.getRowStartFromLineOffset(baseDocument, i);
+                if (!Utilities.isRowWhite(baseDocument, rowStartFromLineOffset)) {
+                    result++;
+                }
+            }
+            return result;
         }
 
         protected void addHint(String description, OffsetRange warningRange) {
