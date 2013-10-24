@@ -47,7 +47,7 @@ made subject to such option by the copyright holder.
 <filesystem>
     <folder name="J2EE">
         <folder name="DeploymentPlugins">
-            <folder name="JBoss4">
+            <folder name="WildFly">
                 <file name="Descriptor" url="nbdep.xml"/>
                 
                 <file name="Factory.instance">
