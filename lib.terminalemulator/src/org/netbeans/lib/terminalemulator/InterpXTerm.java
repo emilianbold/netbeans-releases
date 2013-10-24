@@ -59,7 +59,7 @@ class InterpXTerm extends InterpProtoANSIX {
 	    for (char c = '0'; c <= '9'; c++)
 		st_esc_lb_gt.setAction(c, st_esc_lb_gt, act_remember_digit);
 	    st_esc_lb_gt.setAction(';', st_esc_lb_gt, act_push_number);
-	    st_esc_lb_gt.setAction('T', st_base, new ACT_XTERM_T());
+	    st_esc_lb_gt.setAction('T', st_base, new ACT_XTERM_CAPITAL_T());
 	    st_esc_lb_gt.setAction('c', st_base, new ACT_XTERM_c());
 	    st_esc_lb_gt.setAction('m', st_base, new ACT_XTERM_m());
 	    st_esc_lb_gt.setAction('n', st_base, new ACT_XTERM_n());
@@ -70,7 +70,7 @@ class InterpXTerm extends InterpProtoANSIX {
 	    st_wait.setAction('\\', st_base, act_done_collect_escbs);
 	}
 
-	static final class ACT_XTERM_T implements Actor {
+	static final class ACT_XTERM_CAPITAL_T implements Actor {
             @Override
 	    public String action(AbstractInterp ai, char c) {
                 return "ACT_XTERM_T: UNIMPLEMENTED";  // NOI18N
