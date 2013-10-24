@@ -144,10 +144,6 @@ public class DashboardUtils {
             html = true;
         }
 
-        try {
-            activeText = XMLUtil.toElementContent(activeText);
-        } catch (CharConversionException ex) {
-        }
         activeText = replaceSubstitutes(activeText);
         if (task.isFinished()) {
             activeText = "<strike>" + activeText + "</strike>"; //NOI18N
@@ -197,13 +193,25 @@ public class DashboardUtils {
 
     private static String getTaskAnotatedText(String text, IssueStatusProvider.Status status, boolean hasFocus, boolean isHTML) {
         if (status == IssueStatusProvider.Status.INCOMING_NEW && !hasFocus) {
+            text = escapeXmlChars(text);
             text = "<html><font color=\"" + NEW_COLOR + "\">" + text + "</font></html>"; //NOI18N
         } else if (status == IssueStatusProvider.Status.INCOMING_MODIFIED && !hasFocus) {
+            text = escapeXmlChars(text);
             text = "<html><font color=\"" + mODIFIED_COLOR + "\">" + text + "</font></html>"; //NOI18N
         } else if (isHTML) {
+            text = escapeXmlChars(text);
             text = "<html>" + text + "</html>"; //NOI18N
         }
         return text;
+    }
+
+    private static String escapeXmlChars(String text) {
+        String result = text;
+        try {
+            result = XMLUtil.toElementContent(text);
+        } catch (CharConversionException ex) {
+        }
+        return result;
     }
 
     private static String getTaskDisplayName(IssueImpl task) {
