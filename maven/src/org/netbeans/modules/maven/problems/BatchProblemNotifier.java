@@ -53,7 +53,6 @@ import java.util.TreeMap;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
@@ -86,7 +85,6 @@ public class BatchProblemNotifier {
 
     public static void opened(NbMavenProjectImpl p) {
         ProblemReporterImpl pr = p.getProblemReporter();
-        pr.doIDEConfigChecks();
         Set<File> missingArtifacts = pr.getMissingArtifactFiles();
         if (!missingArtifacts.isEmpty()) {
             Set<File> files = new HashSet<File>();

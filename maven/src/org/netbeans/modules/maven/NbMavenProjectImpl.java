@@ -136,7 +136,6 @@ public final class NbMavenProjectImpl implements Project {
                 }
             }
             ACCESSOR.doFireReload(watcher);
-            problemReporter.doIDEConfigChecks();
         }
     });
     private final FileObject fileObject;
