@@ -45,6 +45,7 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ContinueTree;
 import com.sun.source.tree.DoWhileLoopTree;
+import com.sun.source.tree.EmptyStatementTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
@@ -754,6 +755,17 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
 
         return false;
     }
+
+    @Override
+    public Boolean visitEmptyStatement(EmptyStatementTree node, TreePath p) {
+        if (p == null) {
+            super.visitEmptyStatement(node, p);
+            return false;
+        }
+        return node.getKind() == p.getLeaf().getKind();
+    }
+    
+    
 
     public Boolean visitBlock(BlockTree node, TreePath p) {
         if (p == null) {
