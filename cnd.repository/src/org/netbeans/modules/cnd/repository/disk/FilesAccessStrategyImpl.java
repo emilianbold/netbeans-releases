@@ -202,11 +202,15 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
                 final PersistentFactory factory = key.getPersistentFactory();
                 assert factory != null;
                 long size = fis.size();
-                Persistent obj = fis.read(factory, 0, (int)size);
-                if (RepositoryStatistics.ENABLED) {
-                    RepositoryStatisticsImpl.getInstance().logDataRead(key, (int) size);
+                try {
+                    Persistent obj = fis.read(factory, 0, (int)size);
+                    if (RepositoryStatistics.ENABLED) {
+                        RepositoryStatisticsImpl.getInstance().logDataRead(key, (int) size);
+                    }
+                    return obj;
+                } catch(IllegalArgumentException e) {
+                    throw new IllegalArgumentException(e.getMessage()+". Key "+key.getClass().getName()); // NOI18N
                 }
-                return obj;
             }
         } finally {
             if (fis != null) {
