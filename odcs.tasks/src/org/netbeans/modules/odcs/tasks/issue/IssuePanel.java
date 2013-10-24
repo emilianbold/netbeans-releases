@@ -85,6 +85,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
@@ -203,7 +204,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private boolean noIteration = false;
     private boolean noTargetMilestione = false;
     private boolean noDuplicateId = false;
-    private final Set<IssueField> unsavedFields = new HashSet<IssueField>();
+    private final Set<IssueField> unsavedFields = new UnsavedFieldSet();
     private final Map<IssueField, String> fieldsConflict = new LinkedHashMap<IssueField, String>();
     private final Map<IssueField, String> fieldsIncoming = new LinkedHashMap<IssueField, String>();
     private final Map<IssueField, String> fieldsLocal = new LinkedHashMap<IssueField, String>();
@@ -276,6 +277,46 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             issue.closed();
         }
     }
+    
+    boolean saveChanges () {
+        skipReload = true;
+        enableComponents(false);
+        final AtomicBoolean retval = new AtomicBoolean(true);
+        Runnable outOfAWT = new Runnable() {
+            @Override
+            public void run () {
+                retval.set(false);
+                try {
+                    retval.set(issue.save());
+                } finally {
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            unsavedFields.clear();
+                            enableComponents(true);
+                            btnSaveChanges.setEnabled(!retval.get());
+                            updateFieldStatuses();
+                            skipReload = false;
+                        }
+                    });
+                }
+            }
+        };
+        if (EventQueue.isDispatchThread()) {
+            RP.post(outOfAWT);
+            return true;
+        } else {
+            outOfAWT.run();
+            return retval.get();
+        }
+    }
+
+    boolean discardUnsavedChanges () {
+        issue.clearUnsavedChanges();
+        unsavedFields.clear();
+        reloadForm(false);
+        return true;
+    }
 
     private void initSpellChecker () {
         Spellchecker.register(summaryField);
@@ -329,6 +370,12 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 } else {
                     enableMap.put(btnSaveChanges, isDirty);
                     enableMap.put(cancelButton, isModified);
+                }
+                
+                if (isDirty) {
+                    issue.fireUnsaved();
+                } else {
+                    issue.fireSaved();
                 }
             }
         });
@@ -2852,29 +2899,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }//GEN-LAST:event_headerFieldActionPerformed
 
     private void btnSaveChangesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveChangesActionPerformed
-        skipReload = true;
-        enableComponents(false);
-        RP.post(new Runnable() {
-            @Override
-            public void run() {
-                boolean saved = false;
-                try {
-                    saved = issue.save();
-                } finally {
-                    final boolean fSaved = saved;
-                    EventQueue.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            unsavedFields.clear();
-                            enableComponents(true);
-                            btnSaveChanges.setEnabled(!fSaved);
-                            updateFieldStatuses();
-                            skipReload = false;
-                        }
-                    });
-                }
-            }
-        });
+        saveChanges();
     }//GEN-LAST:event_btnSaveChangesActionPerformed
 
     @NbBundle.Messages({
@@ -3120,6 +3145,37 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 put(label, fields);
             }
             fields.put(field, tooltip);
+        }
+        
+    }
+    
+    private class UnsavedFieldSet extends HashSet<IssueField> {
+
+        @Override
+        public boolean add (IssueField value) {
+            boolean added = super.add(value);
+            if (added) {
+                issue.fireUnsaved();
+            }
+            return added;
+        }
+
+        @Override
+        public boolean remove (Object o) {
+            boolean removed = super.remove(o);
+            if (removed && isEmpty()) {
+                issue.fireSaved();
+            }
+            return removed;
+        }
+
+        @Override
+        public void clear () {
+            boolean fire = !isEmpty();
+            super.clear();
+            if (fire) {
+                issue.fireSaved();
+            }
         }
         
     }
