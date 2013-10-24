@@ -23,10 +23,11 @@ if [ -z "$jdkhome" ] ; then
     # read Java Preferences
     if [ -x "/usr/libexec/java_home" ]; then
         jdkhome=`/usr/libexec/java_home --version 1.7+`
+    fi
 
-    # JDK1.7
-    elif [ -f "/Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home/bin/java" ] ; then
-        jdkhome="/Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home"
+    # JRE
+    if [ -z "$jdkhome" ] && [ -d "/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home" ]; then
+        jdkhome="/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home"
     fi
 
 fi
