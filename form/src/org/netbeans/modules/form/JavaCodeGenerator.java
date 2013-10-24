@@ -440,10 +440,23 @@ class JavaCodeGenerator extends CodeGenerator {
                 null)
             {
                 @Override
+                public void setValue(Object value) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                    if (value instanceof String) {
+                        // [this would be better to do in the PropertyEditor, but we don't have our own here yet]
+                        String typeParams = ((String)value).trim();
+                        if (typeParams.length() > 0 && !typeParams.startsWith("<")) { // NOI18N
+                            typeParams = "<" + typeParams + ">"; // NOI18N
+                        }
+                        value = typeParams;
+                    }
+                    super.setValue(value);
+                }
+                
+                @Override
                 public void setTargetValue(Object value) {
                     if ((value != null) && !(value instanceof String))
                         throw new IllegalArgumentException();
-                    
+
                     // PENDING check for syntax of the value
                     
                     component.setAuxValue(AUX_TYPE_PARAMETERS, value);
