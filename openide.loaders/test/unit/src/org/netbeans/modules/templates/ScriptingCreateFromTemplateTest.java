@@ -40,6 +40,7 @@ import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import javax.script.ScriptEngine;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -100,14 +101,22 @@ public class ScriptingCreateFromTemplateTest extends NbTestCase {
         
         Charset targetEnc = FileEncodingQuery.getEncoding(instFO);
         assertNotNull("Template encoding is null", targetEnc);
-        assertEquals("Encoding in template doesn't match", targetEnc.name(), instFO.asText());
+        String instText = IndentEngineIntTest.stripNewLines(instFO.asText());
+        assertEquals("Encoding in template doesn't match", targetEnc.name(), instText);
     }
 
     public void testFreeFileExtension() throws Exception {
         FileObject root = FileUtil.createMemoryFileSystem().getRoot();
         FileObject template = FileUtil.createData(root, "simple.pl");
         OutputStream os = template.getOutputStream();
-        os.write("println('#!/usr/bin/perl'); print('# ');println(license);print('# ');print(name);print(' in ');println(nameAndExt);".getBytes());
+        ScriptEngine jsEngine = new javax.script.ScriptEngineManager().getEngineByExtension("js");
+        boolean isNashorn = (jsEngine != null && jsEngine.toString().indexOf("Nashorn") > 0);
+        if (isNashorn) {
+            // print() behaves like println() and println() does not exist:
+            os.write("print('#!/usr/bin/perl'); print('# '+license); print('# '+name+' in '+nameAndExt);".getBytes());
+        } else {
+            os.write("println('#!/usr/bin/perl'); print('# ');println(license);print('# ');print(name);print(' in ');println(nameAndExt);".getBytes());
+        }
         os.close();
         template.setAttribute("template", true);
         template.setAttribute(ScriptingCreateFromTemplateHandler.SCRIPT_ENGINE_ATTR, "js");
