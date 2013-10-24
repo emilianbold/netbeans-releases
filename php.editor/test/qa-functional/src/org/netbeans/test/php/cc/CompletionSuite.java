@@ -89,7 +89,7 @@ public class CompletionSuite {
                 "testCCNamespaceDiffFile",
                 "testCCClassNamespaceDiffFile")
                 .addTest(testCCPhpDoc.class, "automaticCommentGenerationOnFunction", "automaticCommentGenerationOnClassVariable")
-                .addTest(testCCReturnAnotation.class, "testReturnSelf", "testReturnStatic", "testReturnThis")
+                .addTest(testCCReturnAnotation.class, "CreateApplication", "CreatePHPSourceFile", "testReturnSelf", "testReturnStatic", "testReturnThis")
                 .addTest(testCCSorting.class, "CreateApplication", "Issue141866")
                 .addTest(testCCTraits.class, "CreateApplication",
                 "testPhp54TraitsSameFile",

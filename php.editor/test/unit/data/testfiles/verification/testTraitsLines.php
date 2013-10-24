@@ -37,6 +37,7 @@ trait TraitName {
         echo "line";
         echo "line";
         echo "line";
+        echo "line";
     }
 
 }
