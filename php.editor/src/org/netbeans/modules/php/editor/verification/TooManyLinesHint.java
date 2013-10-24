@@ -460,8 +460,8 @@ public abstract class TooManyLinesHint extends HintRule implements CustomisableR
 
         private int countLinesBetweenLineOffsets(int startLineOffset, int endLineOffset) throws BadLocationException {
             int result = 0;
-            for (int i = startLineOffset; i < endLineOffset; i++) {
-                int rowStartFromLineOffset = Utilities.getRowStartFromLineOffset(baseDocument, i);
+            for (int lineOffset = startLineOffset; lineOffset < endLineOffset; lineOffset++) {
+                int rowStartFromLineOffset = Utilities.getRowStartFromLineOffset(baseDocument, lineOffset);
                 if (!Utilities.isRowWhite(baseDocument, rowStartFromLineOffset)) {
                     result++;
                 }
