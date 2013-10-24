@@ -107,7 +107,7 @@ public abstract class BaseWizardIterator implements WizardDescriptor.BackgroundI
 
             AuxiliaryProperties properties = project.getLookup().lookup(AuxiliaryProperties.class);
 
-            if (platform.equals(JavaPlatformManager.getDefault().getDefaultPlatform())) {
+            if (platform == null || platform.equals(JavaPlatformManager.getDefault().getDefaultPlatform())) {
                 properties.put(Constants.HINT_JDK_PLATFORM, null, true);
             } else {
                 properties.put(Constants.HINT_JDK_PLATFORM, platform.getDisplayName(), true);

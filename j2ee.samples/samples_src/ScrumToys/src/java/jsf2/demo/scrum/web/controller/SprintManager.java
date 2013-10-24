@@ -166,7 +166,7 @@ public class SprintManager extends AbstractManager implements Serializable {
                         }
                     }
                 });
-                getProjectManager().getCurrentProject().removeSpring(sprint);
+                getProjectManager().getCurrentProject().removeSprint(sprint);
                 sprintList.remove(sprint);
             } catch (Exception e) {
                 getLogger(getClass()).log(Level.SEVERE, "Error on try to remove Sprint: " + currentSprint, e);
