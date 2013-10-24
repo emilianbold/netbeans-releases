@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.j2me.project.ui.customizer;
 
+import org.openide.util.NbBundle;
+
 /**
  *
  * @author Theofanis Oikonomou
@@ -50,12 +52,13 @@ public class J2MEApplicationDescriptorPanel extends javax.swing.JPanel {
     /**
      * Creates new form J2MEApplicationDescriptorPanel
      */
+    @NbBundle.Messages({"TAB_TITLE_ATTRIBUTES=Attributes","TAB_TITLE_MIDLETS=MIDlets","TAB_TITLE_PUSH_REGISTRY=Push Registry","TAB_TITLE_API_PERMISSIONS=API Permissions"})
     public J2MEApplicationDescriptorPanel(J2MEProjectProperties properties) {
         initComponents();
-        jTabbedPane1.add("Attributes", new J2MEAttributesPanel(properties));
-        jTabbedPane1.add("MIDlets", new J2MEMIDletsPanel(properties));
-        jTabbedPane1.add("Push Registry", new J2MEPushRegistryPanel(properties));
-        jTabbedPane1.add("APIPermissions ", new J2MEAPIPermissionsPanel(properties));
+        jTabbedPane1.add(Bundle.TAB_TITLE_ATTRIBUTES(), new J2MEAttributesPanel(properties));
+        jTabbedPane1.add(Bundle.TAB_TITLE_MIDLETS(), new J2MEMIDletsPanel(properties));
+        jTabbedPane1.add(Bundle.TAB_TITLE_PUSH_REGISTRY(), new J2MEPushRegistryPanel(properties));
+        jTabbedPane1.add(Bundle.TAB_TITLE_API_PERMISSIONS(), new J2MEAPIPermissionsPanel(properties));
     }
 
     /**
