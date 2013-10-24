@@ -506,7 +506,10 @@ public final class J2MEProjectProperties {
         }
 
         //PlatformAndDevicesPanel
-        projectProperties.put(ProjectProperties.PLATFORM_ACTIVE, ((JavaPlatform) J2ME_PLATFORM_MODEL.getSelectedItem()).getProperties().get(PLATFORM_ANT_NAME));
+        JavaPlatform selectedPlatform = (JavaPlatform) J2ME_PLATFORM_MODEL.getSelectedItem();
+        if (selectedPlatform != null) {
+            projectProperties.put(ProjectProperties.PLATFORM_ACTIVE, selectedPlatform.getProperties().get(PLATFORM_ANT_NAME));
+        }
 
         //Obfusation properties
         projectProperties.put(OBFUSCATION_LEVEL, String.valueOf(OBFUSCATION_LEVEL_MODEL.getValue()));

@@ -88,6 +88,7 @@ import org.netbeans.modules.j2me.project.ui.customizer.J2MEProjectProperties.Com
 import org.netbeans.modules.j2me.project.ui.customizer.J2MEProjectProperties.DataSource;
 import org.netbeans.modules.j2me.project.ui.customizer.J2MERunPanel;
 import org.netbeans.modules.j2me.project.wizard.J2MEProjectWizardIterator.WizardType;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
 import org.openide.DialogDisplayer;
@@ -164,6 +165,10 @@ public class PlatformDevicesPanel extends SettingsPanel {
         } else {
             props.refreshJ2MEPlatforms();
             platformsModel = props.J2ME_PLATFORM_MODEL;
+            if (platformsModel.getSize() == 0) {
+                String platformActive = props.getEvaluator().getProperty(ProjectProperties.PLATFORM_ACTIVE);
+                platformsModel = new DefaultComboBoxModel(new String[] {NbBundle.getMessage(PlatformDevicesPanel.class, "ERROR_MissingJ2MEPlatform", platformActive)}); //NOI18N
+            }
         }
         devicesModel = new DefaultComboBoxModel();
         configurationsGroup = J2MEProjectUtils.getConfigurationsButtonGroup();
@@ -214,7 +219,10 @@ public class PlatformDevicesPanel extends SettingsPanel {
         } else {
             boolean found = false;
             for (int i = 0; i < platformComboBox.getItemCount(); i++) {
-                J2MEPlatform platf = (J2MEPlatform) platformComboBox.getItemAt(i);
+                J2MEPlatform platf = platformComboBox.getItemAt(i) instanceof J2MEPlatform ? (J2MEPlatform) platformComboBox.getItemAt(i) : null;
+                if (platf == null) {
+                    continue;
+                }
                 if (platf.getDisplayName().equals(platform.getDisplayName())) {
                     platformComboBox.setSelectedIndex(i);
                     found = true;
@@ -763,7 +771,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
     }
 
     private J2MEPlatform getPlatform() {
-        return (J2MEPlatform) platformComboBox.getSelectedItem();
+        return platformComboBox.getSelectedItem() instanceof J2MEPlatform ? (J2MEPlatform) platformComboBox.getSelectedItem() : null;
     }
 
     private J2MEPlatform.Device getDevice() {
