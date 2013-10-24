@@ -55,10 +55,10 @@ import java.util.logging.Logger;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryQuery;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.Format;
 import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.PushOperation;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -282,7 +282,7 @@ class HookImpl {
                     config.getIssueInfoTemplate(),
                     config.getDefaultIssueInfoTemplate(),
                     supportedIssueInfoVariables);
-        if(BugtrackingUtil.show(p, NbBundle.getMessage(HookPanel.class, "LBL_FormatTitle"), NbBundle.getMessage(HookPanel.class, "LBL_OK"))) {  // NOI18N
+        if(HookUtils.show(p, NbBundle.getMessage(HookPanel.class, "LBL_FormatTitle"), NbBundle.getMessage(HookPanel.class, "LBL_OK"), new HelpCtx(panel.getClass()))) {  // NOI18N
             config.setRevisionTemplate(p.getIssueFormat());
             config.setIssueInfoTemplate(p.getCommitFormat());
         }

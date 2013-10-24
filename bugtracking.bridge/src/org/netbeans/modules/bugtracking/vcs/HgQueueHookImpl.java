@@ -56,13 +56,13 @@ import javax.swing.JPanel;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryQuery;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.Format;
 import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.PushOperation;
 import org.netbeans.modules.versioning.hooks.HgQueueHook;
 import org.netbeans.modules.versioning.hooks.HgQueueHookContext;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakSet;
@@ -327,7 +327,7 @@ public class HgQueueHookImpl extends HgQueueHook {
                             globalConfig.getIssueInfoTemplate(),
                             globalConfig.getDefaultIssueInfoTemplate(),
                             SUPPORTED_ISSUE_INFO_VARIABLES);
-                if(BugtrackingUtil.show(p, NbBundle.getMessage(HookPanel.class, "LBL_FormatTitle"), NbBundle.getMessage(HookPanel.class, "LBL_OK"))) {  // NOI18N
+                if(HookUtils.show(p, NbBundle.getMessage(HookPanel.class, "LBL_FormatTitle"), NbBundle.getMessage(HookPanel.class, "LBL_OK"), new HelpCtx(panel.getClass()))) {  // NOI18N
                     issueMessageTemplate = p.getIssueFormat();
                     globalConfig.setRevisionTemplate(p.getIssueFormat());
                     globalConfig.setIssueInfoTemplate(p.getCommitFormat());
