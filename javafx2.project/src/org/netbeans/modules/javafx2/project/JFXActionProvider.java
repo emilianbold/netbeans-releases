@@ -381,7 +381,7 @@ public class JFXActionProvider implements ActionProvider {
         
         String appClassName = eval.getProperty(FXinSwing ? ProjectProperties.MAIN_CLASS : JFXProjectProperties.MAIN_CLASS);
         Properties props = new Properties();
-        if (appClassName == null || !appClassNames.contains(appClassName)) {
+        if (!JFXProjectUtils.isFXPreloaderProject(prj) && (appClassName == null || !appClassNames.contains(appClassName))) {
             final JFXApplicationClassChooser panel = new JFXApplicationClassChooser(prj, eval);
             Object[] options = new Object[] {
                 okButton,
