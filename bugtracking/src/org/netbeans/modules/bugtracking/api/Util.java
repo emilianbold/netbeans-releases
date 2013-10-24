@@ -41,8 +41,12 @@
  */
 package org.netbeans.modules.bugtracking.api;
 
+import java.io.File;
+import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.IssueFinderUtils;
 
 /**
  *
@@ -62,6 +66,16 @@ public final class Util {
         IssueAction.openIssue(repository.getImpl(), issueId);
     }    
     
+    /**
+     * Opens an issue with the given Id. 
+     * 
+     * @param context
+     * @param issueId
+     */
+    public static void openIssue(File context, String issueId) {
+        BugtrackingUtil.openIssue(context, issueId);
+    }
+    
     /*
      * Creates a new, not yet saved and named query.  
      * 
@@ -72,12 +86,38 @@ public final class Util {
     }
 
     /**
-     * Creates a new, not yet submitted issue
+     * Creates a new, not yet submitted issue.
      * 
-     * @return 
+     * @param repository
      */
     public static void createNewIssue(Repository repository) {
         IssueAction.createIssue(repository.getImpl());
     }
+    
+    /**
+     * Returns the spans from the given text, which represent an potential Issue 
+     * reference.
+     * - e.g. "Issue #12345", "Bug #1432"
+     * 
+     * @param text
+     * @return 
+     */
+    public static int[] getIssueSpans(String text) {
+        return IssueFinderUtils.getIssueSpans(text);
+}
+    
+    /**
+     * 
+     * @param text
+     * @return 
+     */
+    public static String getIssueId(String text) {        
+        IssueFinder issueFinder = IssueFinderUtils.determineIssueFinder(text, 0, text.length());
+        if (issueFinder == null) {
+            return null;
+        }
+
+        return issueFinder.getIssueId(text);
+    }  
     
 }
