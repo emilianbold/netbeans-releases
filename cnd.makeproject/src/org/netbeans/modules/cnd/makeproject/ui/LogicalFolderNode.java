@@ -503,22 +503,33 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
                         null,
                         SystemAction.get(PropertiesFolderAction.class),};
         } else if (folder.isDiskFolder()) {
-            result = new Action[]{
-                        CommonProjectActions.newFileAction(),
-                        SystemAction.get(org.openide.actions.FindAction.class),
-                        null,
-                        SystemAction.get(CutAction.class),
-                        SystemAction.get(CopyAction.class),
-                        SystemAction.get(PasteAction.class),
-                        null,
-                        //                        new RefreshItemAction((LogicalViewChildren) getChildren(), folder, null),
-                        //                        null,
-                        SystemAction.get(DeleteAction.class),
-                        NodeActionFactory.createRenameAction(),
-                        null,
-                        SystemAction.get(FileSystemAction.class),
-                        null,
-                        SystemAction.get(PropertiesFolderAction.class),};
+            if (folder.isRemoved()) {
+                result = new Action[]{
+                            CommonProjectActions.newFileAction(),
+                            null,
+                            SystemAction.get(RemoveFolderAction.class),
+                            null,
+                            SystemAction.get(FileSystemAction.class),
+                            null,
+                            SystemAction.get(PropertiesFolderAction.class),};
+            } else {
+                result = new Action[]{
+                            CommonProjectActions.newFileAction(),
+                            SystemAction.get(org.openide.actions.FindAction.class),
+                            null,
+                            SystemAction.get(CutAction.class),
+                            SystemAction.get(CopyAction.class),
+                            SystemAction.get(PasteAction.class),
+                            null,
+                            //                        new RefreshItemAction((LogicalViewChildren) getChildren(), folder, null),
+                            //                        null,
+                            SystemAction.get(DeleteAction.class),
+                            NodeActionFactory.createRenameAction(),
+                            null,
+                            SystemAction.get(FileSystemAction.class),
+                            null,
+                            SystemAction.get(PropertiesFolderAction.class),};
+            }
         } else {
             result = new Action[]{
                         CommonProjectActions.newFileAction(),
