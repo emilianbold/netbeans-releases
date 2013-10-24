@@ -138,7 +138,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
         this.modifiable = modifiable;
         this.criteria = criteria;
         
-        issueTable = new IssueTable<ODCSQuery>(ODCSUtil.getRepository(repository), query, query.getColumnDescriptors());
+        issueTable = new IssueTable<>(ODCSUtil.getRepository(repository), query, query.getColumnDescriptors());
         setupRenderer(issueTable);
         panel = new QueryPanel(issueTable.getComponent());
 
@@ -270,7 +270,9 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
     public void setMode(QueryMode mode) {
         switch(mode) {
             case EDIT:
-                onModify();
+                if(query.isSaved()) {
+                    onModify();
+                }
                 break;            
             case VIEW:
                 onCancelChanges();
@@ -877,9 +879,9 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
     }
 
     private void populateProductDetails(RepositoryConfiguration rc) {
-        Set<com.tasktop.c2c.server.tasks.domain.Component> newComponents = new HashSet<com.tasktop.c2c.server.tasks.domain.Component>();
-        Set<Iteration> newIterations = new HashSet<Iteration>();
-        Set<Milestone> newMilestones = new HashSet<Milestone>();
+        Set<com.tasktop.c2c.server.tasks.domain.Component> newComponents = new HashSet<>();
+        Set<Iteration> newIterations = new HashSet<>();
+        Set<Milestone> newMilestones = new HashSet<>();
         
         // XXX why not product specific?
         newIterations.addAll(rc.getIterations());
@@ -934,7 +936,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
     }
 
     String getQueryString() {
-        String queryString = null;
+        String queryString;
         synchronized(CRITERIA_LOCK) {
             if(criteria != null && !parameters.parametersChanged()) {
                 return criteria.toQueryString();

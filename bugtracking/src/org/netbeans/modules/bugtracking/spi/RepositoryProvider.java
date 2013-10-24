@@ -91,7 +91,7 @@ public interface RepositoryProvider<R, Q, I> {
      * @param ids
      * @return
      */
-    public I[] getIssues(R r, String... ids);
+    public Collection<I> getIssues(R r, String... ids);
 
     /**
      * Removes this repository from its connector.

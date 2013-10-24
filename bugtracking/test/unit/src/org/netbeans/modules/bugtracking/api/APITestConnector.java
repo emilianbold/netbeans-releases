@@ -229,7 +229,7 @@ public class APITestConnector implements BugtrackingConnector {
         }
 
         @Override
-        public APITestIssue[] getIssues(APITestRepository r, String... ids) {
+        public Collection<APITestIssue> getIssues(APITestRepository r, String... ids) {
             return r.getIssues(ids);
         }
 
@@ -267,7 +267,7 @@ public class APITestConnector implements BugtrackingConnector {
     public static class APITestIssueProvider implements IssueProvider<APITestIssue> {
 
         @Override
-        public String[] getSubtasks(APITestIssue data) {
+        public Collection<String> getSubtasks(APITestIssue data) {
             return data.getSubtasks();
         }
 

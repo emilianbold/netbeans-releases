@@ -219,7 +219,7 @@ public class IssueTest extends NbTestCase {
     }
 
     private APITestIssue getAPIIssue() {
-        return getApiRepo().getIssues(new String[] {APITestIssue.ID_1})[0];
+        return getApiRepo().getIssues(new String[] {APITestIssue.ID_1}).iterator().next();
     }
     
     private Issue getIssue() {

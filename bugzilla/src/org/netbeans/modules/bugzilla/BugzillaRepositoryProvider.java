@@ -96,7 +96,7 @@ public class BugzillaRepositoryProvider extends TeamRepositoryProvider<BugzillaR
     }
 
     @Override
-    public BugzillaIssue[] getIssues(BugzillaRepository r, String... id) {
+    public Collection<BugzillaIssue> getIssues(BugzillaRepository r, String... id) {
         return r.getIssues(id);
     }
 

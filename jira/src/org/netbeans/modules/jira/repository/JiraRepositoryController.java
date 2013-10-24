@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.jira.repository;
 
-import com.atlassian.connector.eclipse.internal.jira.core.util.JiraUtil;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -217,6 +216,11 @@ public class JiraRepositoryController implements RepositoryController, DocumentL
             getHttpPassword());
     }
 
+    @Override
+    public void cancelChanges() {
+        
+    }
+    
     @Override
     public void populate() {
         taskRunner = new TaskRunner(NbBundle.getMessage(RepositoryPanel.class, "LBL_ReadingRepoData")) {  // NOI18N

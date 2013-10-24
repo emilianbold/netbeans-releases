@@ -219,6 +219,10 @@ public final class LocalTask extends AbstractLocalTask {
     }
 
     public void delete () {
+        fireSaved();
+        if (controller != null) {
+            controller.taskDeleted();
+        }
         deleteTask();
     }
 
@@ -297,6 +301,14 @@ public final class LocalTask extends AbstractLocalTask {
 
     private void fireDataChanged () {
         support.firePropertyChange(IssueProvider.EVENT_ISSUE_REFRESHED, null, null);
+    }
+
+    protected void fireUnsaved() {
+        support.firePropertyChange(IssueController.PROPERTY_ISSUE_NOT_SAVED, null, null);
+    }
+ 
+    protected void fireSaved() {
+        support.firePropertyChange(IssueController.PROPERTY_ISSUE_SAVED, null, null);
     }
 
     private boolean hasUnsavedAttributes () {
@@ -467,17 +479,32 @@ public final class LocalTask extends AbstractLocalTask {
     
     public void setTaskDueDate (Date date, boolean persistChange) {
         super.setDueDate(date, persistChange);
-        getTaskController().modelStateChanged(hasUnsavedChanges());
+        if (controller != null) {
+            controller.modelStateChanged(hasUnsavedChanges());
+            if (persistChange) {
+                controller.refreshViewData();
+            }
+        }
     }
     
     public void setTaskScheduleDate (IssueScheduleInfo date, boolean persistChange) {
         super.setScheduleDate(date, persistChange);
-        getTaskController().modelStateChanged(hasUnsavedChanges());
+        if (controller != null) {
+            controller.modelStateChanged(hasUnsavedChanges());
+            if (persistChange) {
+                controller.refreshViewData();
+            }
+        }
     }
     
     public void setTaskEstimate (int estimate, boolean persistChange) {
         super.setEstimate(estimate, persistChange);
-        getTaskController().modelStateChanged(hasUnsavedChanges());
+        if (controller != null) {
+            controller.modelStateChanged(hasUnsavedChanges());
+            if (persistChange) {
+                controller.refreshViewData();
+            }
+        }
     }
 
     public void addComment (String comment, boolean closeAsFixed) {

@@ -44,6 +44,8 @@ package org.netbeans.modules.localtasks;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.Collection;
+import java.util.Collections;
 import org.netbeans.modules.localtasks.task.LocalTask;
 import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
@@ -70,8 +72,8 @@ public class IssueProviderImpl implements IssueProvider<LocalTask> {
     }
 
     @Override
-    public String[] getSubtasks (LocalTask data) {
-        return new String[0];
+    public Collection<String> getSubtasks (LocalTask data) {
+        return Collections.emptyList();
     }
 
     @Override

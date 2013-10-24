@@ -105,7 +105,7 @@ public class RepositoryTest extends NbTestCase {
         APITestRepository apiRepo = getApiRepo();
         Repository repo = getRepo();
         String[] ids = new String[] {APITestIssue.ID_1, APITestIssue.ID_2};
-        assertEquals(apiRepo.getIssues(ids).length, repo.getIssues(ids).length);
+        assertEquals(apiRepo.getIssues(ids).size(), repo.getIssues(ids).length);
     }
     
 //    public void testSimpleSearch() {

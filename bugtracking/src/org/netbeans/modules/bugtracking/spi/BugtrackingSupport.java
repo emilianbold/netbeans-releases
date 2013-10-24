@@ -39,7 +39,6 @@ package org.netbeans.modules.bugtracking.spi;
 
 import java.awt.Image;
 import javax.swing.SwingUtilities;
-import javax.swing.text.JTextComponent;
 import org.netbeans.modules.bugtracking.*;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.tasks.DashboardTopComponent;

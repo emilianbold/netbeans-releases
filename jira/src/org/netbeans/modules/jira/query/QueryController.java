@@ -347,7 +347,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         if(values == null || values.length == 0) {
             return Collections.emptyList();
         }
-        List<T> l = new ArrayList<T>(values.length);
+        List<T> l = new ArrayList<>(values.length);
         for (Object o : values) {
             l.add((T) o);
         }
@@ -562,7 +562,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
 
     private void setSelected (JList list, Object[] selectedItems) {
         if(selectedItems != null) {
-            List<Integer> toSelect = new ArrayList<Integer>();
+            List<Integer> toSelect = new ArrayList<>();
             DefaultListModel model = (DefaultListModel) list.getModel();
             for (Object o : selectedItems) {
                 if(o == null) continue;
@@ -649,13 +649,15 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(JiraQuery.class);
+        return new HelpCtx("org.netbeans.modules.jira.query.JiraQuery"); // NOI18N
     }
 
     public void setMode(QueryMode mode) {
         switch(mode) {
             case EDIT:
-                onModify();
+                if(query.isSaved()) {
+                    onModify();
+                }
                 break;                        
             case VIEW:
                 onCancelChanges();
@@ -783,6 +785,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
 
     private void onSave(final boolean refresh) {
        Jira.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 String name = query.getDisplayName();
                 boolean firstTime = false;
@@ -1147,8 +1150,8 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
                         }
                     });
                 }
-                Set<Version> versions = new HashSet<Version>();
-                Set<Component> components = new HashSet<Component>();
+                Set<Version> versions = new HashSet<>();
+                Set<Component> components = new HashSet<>();
                 panel.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 try {
                     for (Project p : projects) {
@@ -1299,6 +1302,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         private void finnishQuery() {
             task = null;
             EventQueue.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     if(handle != null) {
                         handle.finish();

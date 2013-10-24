@@ -98,7 +98,7 @@ public class ODCSUtil {
     
     public static final DateFormat DATE_TIME_FORMAT_DEFAULT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); //NOI18N
     public static final String URL_FRAGMENT_TASK = "/task/"; //NOI18N
-    public static final String URL_FRAGMENT_QUERY = "/tasks/s/"; //NOI18N
+    public static final String URL_FRAGMENT_QUERY = "/tasks/"; //NOI18N
     private static final DateFormat[] dateFormats = new DateFormat[] { 
         DATE_TIME_FORMAT_DEFAULT,
         new SimpleDateFormat("yyyy-MM-dd HH:mm"), //NOI18N
