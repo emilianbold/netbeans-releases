@@ -72,6 +72,7 @@ import static java.util.logging.Level.FINEST;
 import org.netbeans.api.queries.VersioningQuery;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
+import org.netbeans.modules.bugtracking.api.IssueQuickSearch.Filter;
 import org.netbeans.modules.bugtracking.api.Repository;
 
 /**
@@ -94,11 +95,6 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
     static final String NO_REPOSITORIES = "no repositories";            //NOI18N
     static final String SELECT_REPOSITORY = "select";                   //NOI18N
     private Filter filter;
-
-    public enum Filter {
-        ATTACH_FILE,
-        ALL
-    }
     
     private static final Logger LOG = Logger.getLogger(RepositoryComboSupport.class.getName());
 

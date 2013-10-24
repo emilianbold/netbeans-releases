@@ -47,8 +47,6 @@
  */
 package org.netbeans.modules.localtasks.task;
 
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import javax.swing.GroupLayout;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
@@ -56,7 +54,6 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.IssueQuickSearch;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
 import org.openide.util.ChangeSupport;
 
 /**
@@ -64,7 +61,7 @@ import org.openide.util.ChangeSupport;
  * @author Tomas Stupka
  * @author Marian Petras
  */
-final class AddSubtaskPanel extends JPanel implements ItemListener, ChangeListener {
+final class AddSubtaskPanel extends JPanel implements ChangeListener {
 
     private final IssueQuickSearch qs;
     private Repository selectedRepository;
@@ -74,13 +71,10 @@ final class AddSubtaskPanel extends JPanel implements ItemListener, ChangeListen
         initComponents();
 
         support = new ChangeSupport(this);
-        qs = new IssueQuickSearch(this);
+        qs = IssueQuickSearch.create(this, null);
+        qs.setChangeListener(this);
         GroupLayout layout = (GroupLayout) getLayout();
         layout.replace(issuePanel, qs.getComponent());
-        issueLabel.setLabelFor(qs.getComponent());
-        repositoryComboBox.addItemListener(this);
-        enableFields();
-        RepositoryComboSupport.setup(this, repositoryComboBox, true);
     }
 
     Issue getIssue () {
@@ -89,17 +83,6 @@ final class AddSubtaskPanel extends JPanel implements ItemListener, ChangeListen
 
     Repository getSelectedRepository () {
         return selectedRepository;
-    }
-
-    private void enableFields () {
-        boolean repoSelected = isRepositorySelected();
-        issueLabel.setEnabled(repoSelected);
-        qs.enableFields(repoSelected);
-    }
-
-    private boolean isRepositorySelected () {
-        Object selectedItem = repositoryComboBox.getSelectedItem();
-        return selectedItem instanceof Repository;
     }
 
     /**
@@ -113,19 +96,10 @@ final class AddSubtaskPanel extends JPanel implements ItemListener, ChangeListen
 
         buttonGroup1 = new javax.swing.ButtonGroup();
         issuePanel = new javax.swing.JPanel();
-        repositoryLabel = new javax.swing.JLabel();
-        issueLabel = new javax.swing.JLabel();
 
         setFocusable(false);
 
         issuePanel.setLayout(new java.awt.BorderLayout());
-
-        repositoryLabel.setLabelFor(repositoryComboBox);
-        org.openide.awt.Mnemonics.setLocalizedText(repositoryLabel, org.openide.util.NbBundle.getMessage(AddSubtaskPanel.class, "AddSubtaskPanel.repositoryLabel.text")); // NOI18N
-        repositoryLabel.setToolTipText(org.openide.util.NbBundle.getMessage(AddSubtaskPanel.class, "AddSubtaskPanel.repositoryLabel.TTtext")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(issueLabel, org.openide.util.NbBundle.getMessage(AddSubtaskPanel.class, "AddSubtaskPanel.issueLabel.text")); // NOI18N
-        issueLabel.setToolTipText(org.openide.util.NbBundle.getMessage(AddSubtaskPanel.class, "AddSubtaskPanel.issueLabel.TTtext")); // NOI18N
 
         errorLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/localtasks/resources/error.gif"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(errorLabel, org.openide.util.NbBundle.getMessage(AddSubtaskPanel.class, "AddSubtaskPanel.errorLabel.text")); // NOI18N
@@ -136,76 +110,40 @@ final class AddSubtaskPanel extends JPanel implements ItemListener, ChangeListen
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(repositoryLabel)
-                            .addComponent(issueLabel))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(repositoryComboBox, 0, 503, Short.MAX_VALUE)
-                            .addComponent(issuePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(errorLabel)
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(issuePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(errorLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(repositoryLabel)
-                    .addComponent(repositoryComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(issuePanel, javax.swing.GroupLayout.PREFERRED_SIZE, 0, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(issueLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(issuePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(18, 18, 18)
                 .addComponent(errorLabel)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-
-        repositoryComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddSubtaskPanel.class, "AddSubtaskPanel.repositoryComboBox.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
     final javax.swing.JLabel errorLabel = new javax.swing.JLabel();
-    private javax.swing.JLabel issueLabel;
     private javax.swing.JPanel issuePanel;
-    final javax.swing.JComboBox repositoryComboBox = new javax.swing.JComboBox();
-    private javax.swing.JLabel repositoryLabel;
     // End of variables declaration//GEN-END:variables
-
-    @Override
-    public void itemStateChanged (ItemEvent e) {
-        enableFields();
-        if (e.getStateChange() == ItemEvent.SELECTED) {
-            Object item = e.getItem();
-            Repository repo = (item instanceof Repository) ? (Repository) item : null;
-            selectedRepository = repo;
-            if (repo != null) {
-                qs.setRepository(repo);
-            }
-        }
-    }
 
     @Override
     public void addNotify () {
         super.addNotify();
-        qs.addChangeListener(this);
     }
 
     @Override
     public void removeNotify () {
-        qs.removeChangeListener(this);
         super.removeNotify();
     }
 
     @Override
     public void stateChanged (ChangeEvent e) {
-        enableFields();
         support.fireChange();
     }
     

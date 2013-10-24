@@ -41,23 +41,58 @@
  */
 package org.netbeans.modules.bugtracking.api;
 
+import java.io.File;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
+import org.netbeans.modules.bugtracking.ui.search.QuickSearchPanel;
 
 /**
  *
  * @author Tomas Stupka
  */
 public final class IssueQuickSearch {
-    private final QuickSearchComboBar bar;
+    private final QuickSearchPanel panel;
+    
+    public enum Filter {
+        ATTACH_FILE,
+        ALL
+    }
     
     /**
-     * Constructor
+     * Factory method
+     * 
      * @param caller 
+     * @return  
      */
-    public IssueQuickSearch(JComponent caller) {
-        bar = new QuickSearchComboBar(caller);
+    public static IssueQuickSearch create(JComponent caller) {
+       return new IssueQuickSearch(caller, null, Filter.ALL);
+    }
+    
+    /**
+     * Factory method
+     * 
+     * @param caller 
+     * @param context 
+     * @return  
+     */
+    public static IssueQuickSearch create(JComponent caller, File context) {
+       return new IssueQuickSearch(caller, context, Filter.ALL);
+    }
+    
+    /**
+     * Factory method
+     * 
+     * @param caller 
+     * @param context 
+     * @param filter 
+     * @return  
+     */
+    public static IssueQuickSearch create(JComponent caller, File context, Filter filter) {
+       return new IssueQuickSearch(caller, context, filter);
+    }
+    
+    private IssueQuickSearch(JComponent caller, File context, Filter filter) {
+        panel = new QuickSearchPanel(caller, context, filter);
     }
     
     /**
@@ -66,7 +101,7 @@ public final class IssueQuickSearch {
      * @param repository 
      */
     public void setRepository(Repository repository) {
-        bar.setRepository(repository);
+        panel.setRepository(repository);
     }
     
     /**
@@ -74,7 +109,7 @@ public final class IssueQuickSearch {
      * @return 
      */
     public JComponent getComponent() {
-        return bar;
+        return panel;
     }
     
     /**
@@ -82,38 +117,38 @@ public final class IssueQuickSearch {
      * @return 
      */
     public Issue getIssue() {
-        return bar.getIssue();
+        return panel.getIssue();
     }
 
     /**
      * Register for notifications about changes in the issue combo bar
      * @param listener 
      */
-    public void addChangeListener(ChangeListener listener) {
-        bar.addChangeListener(listener);
+    public void setChangeListener(ChangeListener listener) {
+        panel.setChangeListener(listener);
     }
 
     /**
-     * Unregister from notifications about changes in the issue combo bar
-     * @param listener 
-     */
-    public void removeChangeListener(ChangeListener listener) {
-        bar.removeChangeListener(listener);
-    }
-
-    /**
-     * Enable or disable all fields in the quick search component
-     * @param b 
-     */
-    public void enableFields(boolean b) {
-        bar.enableFields(b);
-    }
-    
-    /** 
      * Select the given issue in the combo bar
      * @param issue 
      */
     public void setIssue(Issue issue) {
-        bar.setIssue(issue.getImpl());
+        panel.setIssue(issue.getImpl());
+    }
+
+    /**
+     * 
+     * @return 
+     */
+    public Repository getSelectedRepository() {
+        return panel.getSelectedRepository();
+    }
+
+    /**
+     * 
+     * @param enabled 
+     */
+    public void setEnabled(boolean enabled) {
+        panel.setEnabled(enabled);
     }
 }

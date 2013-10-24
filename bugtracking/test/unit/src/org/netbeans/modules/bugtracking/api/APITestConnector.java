@@ -68,9 +68,9 @@ import org.openide.util.Lookup;
  * @author tomas
  */
 @BugtrackingConnector.Registration (
-    id=APITestConnector.ID_CONNECTOR,
-    displayName=APITestConnector.ID_CONNECTOR,
-    tooltip=APITestConnector.ID_CONNECTOR)    
+    id = APITestConnector.ID_CONNECTOR,
+    displayName = APITestConnector.ID_CONNECTOR,
+    tooltip = APITestConnector.ID_CONNECTOR)    
 public class APITestConnector implements BugtrackingConnector {
     
     private static final BugtrackingSupport<APITestRepository, APITestQuery, APITestIssue> factory = 

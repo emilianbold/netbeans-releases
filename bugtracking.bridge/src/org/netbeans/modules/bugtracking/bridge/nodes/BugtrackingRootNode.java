@@ -49,6 +49,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
@@ -57,7 +58,6 @@ import javax.swing.Action;
 import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
-import org.netbeans.modules.bugtracking.util.RepositoryComparator;
 import org.openide.nodes.*;
 import org.openide.util.NbBundle;
 
@@ -160,4 +160,13 @@ public class BugtrackingRootNode extends AbstractNode {
         }
     }
 
+    private static class RepositoryComparator implements Comparator<Repository> {
+        @Override
+        public int compare(Repository r1, Repository r2) {
+            if(r1 == null && r2 == null) return 0;
+            if(r1 == null) return -1;
+            if(r2 == null) return 1;
+            return r1.getDisplayName().compareTo(r2.getDisplayName());
+        }
+    }
 }

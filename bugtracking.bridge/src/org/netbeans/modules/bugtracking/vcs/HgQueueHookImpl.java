@@ -55,14 +55,14 @@ import java.util.logging.Level;
 import javax.swing.JPanel;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.api.RepositoryQuery;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.util.OwnerUtils;
-import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
 import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.Format;
 import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.PushOperation;
 import org.netbeans.modules.versioning.hooks.HgQueueHook;
 import org.netbeans.modules.versioning.hooks.HgQueueHookContext;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakSet;
@@ -99,22 +99,10 @@ public class HgQueueHookImpl extends HgQueueHook {
 
     @Override
     public HgQueueHookContext beforePatchRefresh (HgQueueHookContext context) throws IOException {
-        Repository selectedRepository = getSelectedRepository();
         File[] files = context.getFiles();
         if(files.length == 0) {
-
-            if (selectedRepository != null) {
-                OwnerUtils.setLooseAssociation(selectedRepository, true);
-            }
-
             HookImpl.LOG.warning("calling beforePatchRefresh for zero files"); //NOI18N
             return null;
-        }
-
-        if (selectedRepository != null) {
-            OwnerUtils.setFirmAssociations(
-                    files,
-                    selectedRepository);
         }
         String msg = context.getMessage();
         File file = files[0];
@@ -225,7 +213,7 @@ public class HgQueueHookImpl extends HgQueueHook {
         File file = files[0];
         HookImpl.LOG.log(Level.FINE, "afterPatchFinish start for {0}", file);              // NOI18N
 
-        Repository repository = OwnerUtils.getRepository(file, true);
+        Repository repository = repository = RepositoryQuery.getInstance().getRepository(FileUtil.toFileObject(file), true); 
         if (repository == null) {
             HookImpl.LOG.log(Level.FINE, " no issue repository for {0}:{1}", new Object[] { op.getIssueID(), file }); //NOI18N
             return;
@@ -279,6 +267,7 @@ public class HgQueueHookImpl extends HgQueueHook {
         }
 
         panel = new HgQueueHookPanel(
+                        referenceFile,
                         globalConfig.getLink(),
                         globalConfig.getResolve(),
                         config.getAfterRefresh());
@@ -301,7 +290,7 @@ public class HgQueueHookImpl extends HgQueueHook {
                             Issue issue = null;
                             Repository repository = null;
                             try {
-                                repository = OwnerUtils.getRepository(referenceFile, false);
+                                repository = RepositoryQuery.getInstance().getRepository(FileUtil.toFileObject(referenceFile), false); 
                                 if (repository == null) {
                                     issue = null;
                                 } else {
@@ -327,11 +316,6 @@ public class HgQueueHookImpl extends HgQueueHook {
                     });
                 }
             }
-        }
-        if (referenceFile != null) {
-            RepositoryComboSupport.setup(panel, panel.repositoryComboBox, referenceFile);
-        } else {
-            RepositoryComboSupport.setup(panel, panel.repositoryComboBox, false);
         }
         panel.changeFormatButton.addActionListener(new ActionListener() {
             @Override
