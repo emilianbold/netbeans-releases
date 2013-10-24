@@ -442,20 +442,20 @@ public abstract class TooManyLinesHint extends HintRule implements CustomisableR
         private int countLinesUnderReadLock(Block block) {
             int result = 0;
             try {
-                int searchOffset = block.getStartOffset() + 1;
-                int firstNonWhiteFwd = Utilities.getFirstNonWhiteFwd(baseDocument, searchOffset);
-                int startLinePosition = Utilities.getLineOffset(
-                        baseDocument,
-                        firstNonWhiteFwd == -1 ? searchOffset : firstNonWhiteFwd);
-                int endLinePosition = Utilities.getLineOffset(
-                        baseDocument,
-                        Utilities.getFirstNonWhiteBwd(baseDocument, block.getEndOffset()));
-                result = endLinePosition - startLinePosition;
+                result = tryCountLines(block);
             } catch (BadLocationException ex) {
                 // see issue 227687 and #172881
                 LOGGER.log(Level.FINE, null, ex);
             }
             return result;
+        }
+
+        private int tryCountLines(Block block) throws BadLocationException {
+            int searchOffset = block.getStartOffset() + 1;
+            int firstNonWhiteFwd = Utilities.getFirstNonWhiteFwd(baseDocument, searchOffset);
+            int startLineOffset = Utilities.getLineOffset(baseDocument, firstNonWhiteFwd == -1 ? searchOffset : firstNonWhiteFwd);
+            int endLineOffset = Utilities.getLineOffset(baseDocument, Utilities.getFirstNonWhiteBwd(baseDocument, block.getEndOffset()));
+            return endLineOffset - startLineOffset;
         }
 
         protected void addHint(String description, OffsetRange warningRange) {
