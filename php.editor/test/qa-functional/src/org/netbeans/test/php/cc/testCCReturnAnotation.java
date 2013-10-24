@@ -61,7 +61,7 @@ import static org.netbeans.test.php.cc.testCC.TEST_PHP_NAME;
 
 /**
  *
- * @author michaelnazarov@netbeans.org
+ * @author mmolda@netbeans.org
  */
 public class testCCReturnAnotation extends cc {
 
@@ -73,7 +73,7 @@ public class testCCReturnAnotation extends cc {
 
     public static Test suite() {
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(testCC.class).addTest(
+                NbModuleSuite.createConfiguration(testCCReturnAnotation.class).addTest(
                 "CreateApplication",
                 "CreatePHPSourceFile",
                 "testReturnSelf",
@@ -105,8 +105,17 @@ public class testCCReturnAnotation extends cc {
         EditorOperator eoPHP = new EditorOperator("newEmptyPHP.php");
         eoPHP.setCaretPosition("*/\n", false);
         waitScanFinished();
-        TypeCode(eoPHP, "class Box {\npublic $var;\n\n/**\n* \n* @return self\n*/\n    public static function getBox() {\n" +
-                        "return;\n}\n}\n\nBox::getBox()->");
+        eoPHP.insert("\nclass Box {\n" +
+                    "    public $var;\n" +
+                    "    /**\n" +
+                    "     * @return self\n" +
+                    "     */\n" +
+                    "    public static function getBox() {\n" +
+                    "        \n" +
+                    "    }\n" +
+                    "}\n" +
+                    "\n" +
+                    "Box::getBox()->");
         eoPHP.typeKey(' ', InputEvent.CTRL_MASK);
 
         // Check code completion list
@@ -139,8 +148,17 @@ public class testCCReturnAnotation extends cc {
         EditorOperator eoPHP = new EditorOperator("newEmptyPHP.php");
         eoPHP.setCaretPosition("*/\n", false);
         waitScanFinished();
-        TypeCode(eoPHP, "class Box {\npublic $var;\n\n/**\n* \n* @return static\n*/\n    public static function getBox() {\n" +
-                        "return;\n}\n}\n\nBox::getBox()->");
+        eoPHP.insert("\nclass BoxB {\n" +
+                    "    public $var;\n" +
+                    "    /**\n" +
+                    "     * @return self\n" +
+                    "     */\n" +
+                    "    public static function getBox() {\n" +
+                    "        \n" +
+                    "    }\n" +
+                    "}\n" +
+                    "\n" +
+                    "BoxB::getBox()->");
         eoPHP.typeKey(' ', InputEvent.CTRL_MASK);
 
         // Check code completion list
@@ -173,8 +191,17 @@ public class testCCReturnAnotation extends cc {
         EditorOperator eoPHP = new EditorOperator("newEmptyPHP.php");
         eoPHP.setCaretPosition("*/\n", false);
         waitScanFinished();
-        TypeCode(eoPHP, "class Box {\npublic $var;\n\n/**\n* \n* @return this\n*/\n    public static function getBox() {\n" +
-                        "return;\n}\n}\n\nBox::getBox()->");
+        eoPHP.insert("\nclass BoxC {\n" +
+                    "    public $var;\n" +
+                    "    /**\n" +
+                    "     * @return self\n" +
+                    "     */\n" +
+                    "    public static function getBox() {\n" +
+                    "        \n" +
+                    "    }\n" +
+                    "}\n" +
+                    "\n" +
+                    "BoxC::getBox()->");
         eoPHP.typeKey(' ', InputEvent.CTRL_MASK);
 
         // Check code completion list
