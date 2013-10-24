@@ -78,9 +78,9 @@ import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils.Version;
  */
 public class JBDeploymentFactory implements DeploymentFactory {
 
-    public static final String URI_PREFIX = "jboss-deployer:"; // NOI18N
+    public static final String URI_PREFIX = "wildfly-deployer:"; // NOI18N
     
-    private static final String DISCONNECTED_URI = "jboss-deployer:http://localhost:8080&"; // NOI18N
+    private static final String DISCONNECTED_URI = URI_PREFIX + "http://localhost:8080&"; // NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(JBDeploymentFactory.class.getName());
 

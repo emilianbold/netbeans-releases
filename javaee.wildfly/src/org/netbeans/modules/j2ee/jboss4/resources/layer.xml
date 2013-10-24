@@ -51,7 +51,7 @@ made subject to such option by the copyright holder.
                 <file name="Descriptor" url="nbdep.xml"/>
                 
                 <file name="Factory.instance">
-                    <attr name="urlPattern" stringvalue="^jboss-deployer:.*$"/>
+                    <attr name="urlPattern" stringvalue="^wildfly-deployer:.*$"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory.create"/>
                     <attr name="delegate" methodvalue="org.netbeans.modules.j2ee.jboss4.JBDeploymentFactory.getInstance"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory"/>
