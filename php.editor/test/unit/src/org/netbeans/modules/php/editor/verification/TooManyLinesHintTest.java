@@ -93,6 +93,22 @@ public class TooManyLinesHintTest extends PHPHintsTestBase {
         checkHints(new FunctionLinesHintStub(5), "testIssue226425.php");
     }
 
+    public void testIssue237620_01() throws Exception {
+        checkHints(new FunctionLinesHintStub(10), "testIssue237620_01.php");
+    }
+
+    public void testIssue237620_02() throws Exception {
+        checkHints(new FunctionLinesHintStub(9), "testIssue237620_02.php");
+    }
+
+    public void testIssue237620_03() throws Exception {
+        checkHints(new ClassLinesHintStub(14), "testIssue237620_03.php");
+    }
+
+    public void testIssue237620_04() throws Exception {
+        checkHints(new ClassLinesHintStub(13), "testIssue237620_04.php");
+    }
+
     private static final class FunctionLinesHintStub extends FunctionLinesHint {
         private final int maxAllowedLines;
 
