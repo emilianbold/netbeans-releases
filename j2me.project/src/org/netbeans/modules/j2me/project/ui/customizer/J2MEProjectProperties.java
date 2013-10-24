@@ -41,7 +41,10 @@
  */
 package org.netbeans.modules.j2me.project.ui.customizer;
 
+import java.awt.Font;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -55,6 +58,7 @@ import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -63,22 +67,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.Vector;
 import java.util.concurrent.CopyOnWriteArrayList;
+import javax.swing.AbstractButton;
 import javax.swing.BoundedRangeModel;
+import javax.swing.ButtonGroup;
 import javax.swing.ButtonModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultBoundedRangeModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JToggleButton;
 import javax.swing.ListCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
@@ -87,6 +96,7 @@ import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2me.keystore.KeyStoreRepository;
 import org.netbeans.modules.j2me.project.J2MEProject;
+import org.netbeans.modules.j2me.project.J2MEProjectUtils;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
@@ -124,12 +134,15 @@ public final class J2MEProjectProperties {
     public static final String PLATFORM_ANT_NAME = "platform.ant.name";  //NOI18N
     public static final String PLATFORM_TYPE_J2ME = "j2me"; //NOI18N
     public static String PLATFORM_SDK = "platform.sdk"; //NOI18N
+    //J2MEObfuscatingPanel
     public static final String OBFUSCATION_CUSTOM = "obfuscation.custom"; //NOI18N
     public static final String OBFUSCATION_LEVEL = "obfuscation.level"; //NOI18N
+    //J2MERunPanel
     public static final String PROP_RUN_METHOD = "run.method"; //NOI18N
     public static final String PROP_USE_SECURITY_DOMAIN = "run.use.security.domain"; //NOI18N
     public static final String PROP_SECURITY_DOMAIN = "security.domain"; //NOI18N
     public static final String PROP_DEBUGGER_TIMEOUT = "debugger.timeout"; //NOI18N
+    //J2MESigningPanel
     public static final String PROP_SIGN_ENABLED = "sign.enabled"; //NOI18N
     public static final String PROP_SIGN_KEYSTORE = "sign.keystore"; //NOI18N
     public static final String PROP_SIGN_ALIAS = "sign.alias"; //NOI18N
@@ -147,8 +160,13 @@ public final class J2MEProjectProperties {
     public static final String MANIFEST_APIPERMISSIONS = "manifest.apipermissions"; //NOI18N
     //J2MEPushRegistryPanel
     public static final String MANIFEST_PUSHREGISTRY = "manifest.pushregistry"; //NOI18N
-    
-    
+    //PlatformDevicesPanel
+    public static final String PROP_PLATFORM_DEVICE="platform.device"; //NOI18N
+    public static final String PROP_PLATFORM_CONFIGURATION="platform.configuration"; //NOI18N
+    public static final String PROP_PLATFORM_PROFILE="platform.profile"; //NOI18N
+    public static final String PROP_PLATFORM_APIS="platform.apis"; //NOI18N
+
+
     // MODELS FOR VISUAL CONTROLS
     // CustomizerSources
     DefaultTableModel SOURCE_ROOTS_MODEL;
@@ -177,17 +195,23 @@ public final class J2MEProjectProperties {
     Document ADDITIONAL_OBFUSCATION_SETTINGS_MODEL;
     BoundedRangeModel OBFUSCATION_LEVEL_MODEL;
 
-    //CustomizerRun
-    Map<String, Map<String, String>> RUN_CONFIGS;
-    String activeConfig;
+    //J2MERunPanel and PlatformDevicesPanel
+    public Map<String, Map<String, String>> RUN_CONFIGS;
+    public String activeConfig;
     String[] SECURITY_DOMAINS;
+    public DefaultComboBoxModel CONFIGS_MODEL = new DefaultComboBoxModel(new String[] { "<default>" });
     private static final String[] CONFIG_AWARE_PROPERTIES = {
         ProjectProperties.APPLICATION_ARGS,
         PROP_RUN_METHOD,
         PROP_USE_SECURITY_DOMAIN,
         PROP_SECURITY_DOMAIN,
-        PROP_DEBUGGER_TIMEOUT
+        PROP_DEBUGGER_TIMEOUT,
+        PROP_PLATFORM_DEVICE,
+        PROP_PLATFORM_CONFIGURATION,
+        PROP_PLATFORM_PROFILE,
+        PROP_PLATFORM_APIS
     };
+    public ComboBoxModel J2ME_PLATFORM_MODEL;
 
     //J2ME Signing customizer
     JToggleButton.ToggleButtonModel SIGN_ENABLED_MODEL;
@@ -199,15 +223,15 @@ public final class J2MEProjectProperties {
     Document DEPLOYMENT_JARURL_MODEL;
     J2MEAttributesPanel.StorableTableModel ATTRIBUTES_TABLE_MODEL;
     String[] ATTRIBUTES_PROPERTY_NAMES = {MANIFEST_OTHERS, MANIFEST_JAD, MANIFEST_MANIFEST};
-    
+
     //J2MEMIDletsPanel
     J2MEMIDletsPanel.MIDletsTableModel MIDLETS_TABLE_MODEL;
     String[] MIDLETS_PROPERTY_NAMES = {MANIFEST_MIDLETS};
-    
+
     //J2MEAPIPermissionsPanel
     J2MEAPIPermissionsPanel.StorableTableModel API_PERMISSIONS_TABLE_MODEL;
     String[] API_PERMISSIONS_PROPERTY_NAMES = {MANIFEST_APIPERMISSIONS};
-    
+
     //J2MEPushRegistryPanel
     J2MEPushRegistryPanel.StorableTableModel PUSH_REGISTRY_TABLE_MODEL;
     String[] PUSH_REGISTRY_PROPERTY_NAMES = {MANIFEST_PUSHREGISTRY};
@@ -294,9 +318,13 @@ public final class J2MEProjectProperties {
         ADDITIONAL_OBFUSCATION_SETTINGS_MODEL = projectGroup.createStringDocument(getEvaluator(), OBFUSCATION_CUSTOM);
         OBFUSCATION_LEVEL_MODEL = ModelHelper.createSliderModel(getEvaluator(), OBFUSCATION_LEVEL, 0, 0, 9);
 
+        //J2MERunPanel
         RUN_CONFIGS = readRunConfigs();
         activeConfig = evaluator.getProperty("config");
         SECURITY_DOMAINS = readSecurityDomains();
+
+        //PlatformDevicesPanel
+        J2ME_PLATFORM_MODEL = ModelHelper.createComboBoxModel(evaluator, ProjectProperties.PLATFORM_ACTIVE, Arrays.asList(J2MEProjectUtils.readPlatforms()));
 
         // Signning customizer
         SIGN_ENABLED_MODEL = projectGroup.createToggleButtonModel(evaluator, PROP_SIGN_ENABLED);
@@ -317,13 +345,13 @@ public final class J2MEProjectProperties {
             }
         }
         ATTRIBUTES_TABLE_MODEL = new J2MEAttributesPanel.StorableTableModel(this);
-        
+
         //J2MEMIDletsPanel
         MIDLETS_TABLE_MODEL = new J2MEMIDletsPanel.MIDletsTableModel(this);
-        
+
         //J2MEAPIPermissionsPanel
         API_PERMISSIONS_TABLE_MODEL = new J2MEAPIPermissionsPanel.StorableTableModel(this);
-        
+
         //J2MEPushRegistryPanel
         PUSH_REGISTRY_TABLE_MODEL = new J2MEPushRegistryPanel.StorableTableModel(this);
 
@@ -373,7 +401,7 @@ public final class J2MEProjectProperties {
     private void storeProperties() throws IOException {
         // Store special properties
 
-        // Modify the project dependencies properly        
+        // Modify the project dependencies properly
         resolveProjectDependencies();
 
         // Encode all paths (this may change the project properties)
@@ -458,24 +486,27 @@ public final class J2MEProjectProperties {
         for (int i = 0; i < dataDelegates.length; i++) {
             projectProperties.put(ATTRIBUTES_PROPERTY_NAMES[i], encode(dataDelegates[i]));
         }
-        
+
         //J2MEMIDletsPanel
         dataDelegates = MIDLETS_TABLE_MODEL.getDataDelegates();
         for (int i = 0; i < dataDelegates.length; i++) {
             projectProperties.put(MIDLETS_PROPERTY_NAMES[i], encode(dataDelegates[i]));
         }
-        
+
         //J2MEAPIPermissionsPanel
         dataDelegates = API_PERMISSIONS_TABLE_MODEL.getDataDelegates();
         for (int i = 0; i < dataDelegates.length; i++) {
             projectProperties.put(API_PERMISSIONS_PROPERTY_NAMES[i], encode(dataDelegates[i]));
         }
-        
+
         //J2MEPushRegistryPanel
         dataDelegates = PUSH_REGISTRY_TABLE_MODEL.getDataDelegates();
         for (int i = 0; i < dataDelegates.length; i++) {
             projectProperties.put(PUSH_REGISTRY_PROPERTY_NAMES[i], encode(dataDelegates[i]));
         }
+
+        //PlatformAndDevicesPanel
+        projectProperties.put(ProjectProperties.PLATFORM_ACTIVE, ((JavaPlatform) J2ME_PLATFORM_MODEL.getSelectedItem()).getProperties().get(PLATFORM_ANT_NAME));
 
         //Obfusation properties
         projectProperties.put(OBFUSCATION_LEVEL, String.valueOf(OBFUSCATION_LEVEL_MODEL.getValue()));
@@ -494,7 +525,7 @@ public final class J2MEProjectProperties {
             }
         }
     }
-    
+
     Object decode(String raw) {
         try {
             if (raw == null) {
@@ -935,6 +966,10 @@ public final class J2MEProjectProperties {
         return ((KeyStoreRepository.KeyStoreBean) SIGN_KEYSTORE_MODEL.getSelectedItem()).aliasses();
     }
 
+    public void refreshJ2MEPlatforms() {
+        J2ME_PLATFORM_MODEL = ModelHelper.createComboBoxModel(project.evaluator(), ProjectProperties.PLATFORM_ACTIVE, Arrays.asList(J2MEProjectUtils.readPlatforms()));
+    }
+
     /**
      * Helper class for components models instantiation.
      */
@@ -975,9 +1010,188 @@ public final class J2MEProjectProperties {
                             break;
                         }
                     }
+                } else if (type.equals(J2MEPlatform.class)) {
+                    for (Object item : items) {
+                        if (value.equals((((JavaPlatform) item).getProperties().get(PLATFORM_ANT_NAME)))) {
+                            model.setSelectedItem(item);
+                            break;
+                        }
+                    }
                 }
             }
             return model;
+        }
+    }
+
+    public abstract static class DataSource {
+
+        private final String propName;
+        private final JComboBox<?> configCombo;
+        private final Map<String, Map<String, String>> configs;
+        private final JComponent label;
+        private Font basefont = null;
+        private Font boldfont = null;
+
+        public DataSource(
+                @NonNull final String propName,
+                @NullAllowed final JComponent label,
+                @NonNull final JComboBox<?> configCombo,
+                @NonNull final Map<String, Map<String, String>> configs) {
+            Parameters.notNull("propName", propName); //NOI18N
+            Parameters.notNull("configCombo", configCombo); //NOI18N
+            Parameters.notNull("configs", configs); //NOI18N
+            this.propName = propName;
+            this.configCombo = configCombo;
+            this.configs = configs;
+            this.label = label;
+            if (label != null) {
+                basefont = label.getFont();
+                boldfont = basefont.deriveFont(Font.BOLD);
+            }
+        }
+
+        public final String getPropertyName() {
+            return propName;
+        }
+
+        public final JComponent getLabel() {
+            return label;
+        }
+
+        public final void changed(@NullAllowed String value) {
+            String config = (String) configCombo.getSelectedItem();
+            if (config.length() == 0) {
+                config = null;
+            }
+            if (value != null && config != null && value.equals(configs.get(null).get(propName))) {
+                // default value, do not store as such
+                value = null;
+            }
+            configs.get(config).put(propName, value);
+            //updateFont(value);
+        }
+
+        public final void updateFont(@NullAllowed String value) {
+            String config = (String) configCombo.getSelectedItem();
+            if (config.length() == 0) {
+                config = null;
+            }
+            String def = configs.get(null).get(propName);
+            if (label != null) {
+                label.setFont(config != null && !Utilities.compareObjects(
+                        value != null ? value : "", def != null ? def : "") ? boldfont : basefont);
+            }
+        }
+
+        @CheckForNull
+        public final String getPropertyValue(
+                @NullAllowed String config,
+                @NonNull String key) {
+            final Map<String, String> m = configs.get(config);
+            String v = m.get(key);
+            if (v == null) {
+                // display default value
+                final Map<String, String> def = configs.get(null);
+                v = def.get(getPropertyName());
+            }
+            return v;
+        }
+
+        public abstract String getPropertyValue();
+
+        public abstract void update(@NullAllowed String activeConfig);
+    }
+
+    public static class ButtonGroupDataSource extends DataSource {
+
+        private final List<AbstractButton> options;
+
+        public ButtonGroupDataSource(
+                @NonNull final String propName,
+                @NonNull final ButtonGroup group,
+                @NonNull final JComboBox<?> configCombo,
+                @NonNull final Map<String, Map<String, String>> configs) {
+            super(propName, null, configCombo, configs);
+            Parameters.notNull("group", group); //NOI18N
+            options = Collections.list(group.getElements());
+            for (final AbstractButton button : options) {
+                button.addItemListener(new ItemListener() {
+                    @Override
+                    public void itemStateChanged(ItemEvent e) {
+                        if (button.isSelected()) {
+                            changed(getPropertyValue());
+                        }
+                    }
+                });
+            }
+        }
+
+        @Override
+        public final String getPropertyValue() {
+            for (AbstractButton button : options) {
+                if (button.isSelected()) {
+                    return button.getActionCommand();
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public void update(String activeConfig) {
+            String selectedOption = getPropertyValue(activeConfig, getPropertyName());
+            if (selectedOption != null) {
+                for (AbstractButton button : options) {
+                    if (selectedOption.equals(button.getActionCommand())) {
+                        button.setSelected(true);
+                    }
+                }
+            }
+        }
+    }
+
+    public static class ComboDataSource extends DataSource {
+
+        private final JComboBox<?> combo;
+
+        public ComboDataSource(
+                @NonNull final String propName,
+                @NonNull final JComboBox<J2MEPlatform.Device> combo,
+                @NonNull final JComboBox<?> configCombo,
+                @NonNull final Map<String, Map<String, String>> configs) {
+            super(propName, combo, configCombo, configs);
+            Parameters.notNull("combo", combo); //NOI18N
+            this.combo = combo;
+            this.combo.addItemListener(new ItemListener() {
+                @Override
+                public void itemStateChanged(ItemEvent e) {
+                    changed(getPropertyValue());
+                }
+            });
+        }
+
+        @Override
+        public final String getPropertyValue() {
+            return combo.getSelectedItem() != null ? combo.getSelectedItem().toString() : null;
+        }
+
+        @Override
+        public void update(String activeConfig) {
+            String currentValue = getPropertyValue(activeConfig, getPropertyName());
+            if (currentValue == null) {
+                currentValue = "";   //NOI18N
+            }
+            final ComboBoxModel<?> model = combo.getModel();
+
+            for (int i = 0; i < model.getSize(); i++) {
+                final Object itemAt = model.getElementAt(i);
+                if (currentValue.equals(itemAt.toString())) {
+                    combo.setSelectedItem(itemAt);
+                    return;
+                }
+            }
+            if (combo.getModel().getSize() != 0) {
+                combo.setSelectedIndex(0);
+            }
         }
     }
 }

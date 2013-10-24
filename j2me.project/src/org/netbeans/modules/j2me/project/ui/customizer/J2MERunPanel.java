@@ -42,7 +42,6 @@
 package org.netbeans.modules.j2me.project.ui.customizer;
 
 import java.awt.Component;
-import java.awt.Font;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.text.Collator;
@@ -51,29 +50,25 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JRadioButton;
 import javax.swing.JToggleButton;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.plaf.UIResource;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.j2me.project.ui.customizer.J2MEProjectProperties.ComboDataSource;
+import org.netbeans.modules.j2me.project.ui.customizer.J2MEProjectProperties.DataSource;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -92,7 +87,7 @@ public class J2MERunPanel extends javax.swing.JPanel {
         initComponents();
 
         standardRadio.setActionCommand("STANDARD"); // NOI18N
-        OTARadio.setActionCommand("OTA"); // NOI18N                
+        OTARadio.setActionCommand("OTA"); // NOI18N
 
         this.uiProperties = properties;
         configs = uiProperties.RUN_CONFIGS;
@@ -101,14 +96,14 @@ public class J2MERunPanel extends javax.swing.JPanel {
         data = new DataSource[]{
             new TextDataSource(ProjectProperties.APPLICATION_ARGS, labelCommandlineOptions, texfieldCmdOptions, configCombo, configs),
             new TextDataSource(J2MEProjectProperties.PROP_DEBUGGER_TIMEOUT, debugTimeoutLabel, debugTimeoutField, configCombo, configs),
-            new ToggleButtonDataSource(J2MEProjectProperties.PROP_RUN_METHOD, standardRadio, configCombo, configs),
-            new ToggleButtonDataSource(J2MEProjectProperties.PROP_RUN_METHOD, OTARadio, configCombo, configs),
-            new ToggleButtonDataSource(J2MEProjectProperties.PROP_USE_SECURITY_DOMAIN, jCheckBoxUseSecurity, configCombo, configs),
+            new J2MEProjectProperties.ButtonGroupDataSource(J2MEProjectProperties.PROP_RUN_METHOD, buttonGroupRun, configCombo, configs),
+            new CheckBoxDataSource(J2MEProjectProperties.PROP_USE_SECURITY_DOMAIN, jCheckBoxUseSecurity, configCombo, configs),
             new ComboDataSource(J2MEProjectProperties.PROP_SECURITY_DOMAIN, domainsCombo, configCombo, configs)
         };
 
         configChanged(uiProperties.activeConfig);
         configCombo.setRenderer(new ConfigListCellRenderer());
+        configCombo.setModel(uiProperties.CONFIGS_MODEL);
         domainsCombo.setEnabled(jCheckBoxUseSecurity.isSelected());
     }
 
@@ -349,8 +344,8 @@ public class J2MERunPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_jCheckBoxUseSecurityActionPerformed
 
     private void configChanged(String activeConfig) {
-        DefaultComboBoxModel model = new DefaultComboBoxModel();
-        model.addElement("");
+        uiProperties.CONFIGS_MODEL = new DefaultComboBoxModel();
+        uiProperties.CONFIGS_MODEL.addElement("");
         SortedSet<String> alphaConfigs = new TreeSet<>(new Comparator<String>() {
             Collator coll = Collator.getInstance();
 
@@ -372,9 +367,9 @@ public class J2MERunPanel extends javax.swing.JPanel {
             }
         }
         for (String c : alphaConfigs) {
-            model.addElement(c);
+            uiProperties.CONFIGS_MODEL.addElement(c);
         }
-        configCombo.setModel(model);
+        configCombo.setModel(uiProperties.CONFIGS_MODEL);
         configCombo.setSelectedItem(activeConfig != null ? activeConfig : "");
         Map<String, String> m = configs.get(activeConfig);
         if (m != null) {
@@ -440,6 +435,12 @@ public class J2MERunPanel extends javax.swing.JPanel {
         uiProperties.activeConfig = config;
     }
 
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        configChanged(uiProperties.activeConfig);
+    }
+
     private final class ConfigListCellRenderer extends JLabel implements ListCellRenderer, UIResource {
 
         public ConfigListCellRenderer() {
@@ -486,87 +487,11 @@ public class J2MERunPanel extends javax.swing.JPanel {
         }
     }
 
-    private abstract static class DataSource {
-
-        private final String propName;
-        private final JComponent label;
-        private final JComboBox<?> configCombo;
-        private final Map<String, Map<String, String>> configs;
-        private final Font basefont;
-        private final Font boldfont;
-
-        DataSource(
-                @NonNull final String propName,
-                @NonNull final JComponent label,
-                @NonNull final JComboBox<?> configCombo,
-                @NonNull final Map<String, Map<String, String>> configs) {
-            Parameters.notNull("propName", propName);   //NOI18N
-            Parameters.notNull("label", label);         //NOI18N
-            Parameters.notNull("configCombo", configCombo); //NOI18N
-            Parameters.notNull("configs", configs); //NOI18N
-            this.propName = propName;
-            this.label = label;
-            this.configCombo = configCombo;
-            this.configs = configs;
-            basefont = label.getFont();
-            boldfont = basefont.deriveFont(Font.BOLD);
-        }
-
-        final String getPropertyName() {
-            return propName;
-        }
-
-        final JComponent getLabel() {
-            return label;
-        }
-
-        final void changed(@NullAllowed String value) {
-            String config = (String) configCombo.getSelectedItem();
-            if (config.length() == 0) {
-                config = null;
-            }
-            if (value != null && config != null && value.equals(configs.get(null).get(propName))) {
-                // default value, do not store as such
-                value = null;
-            }
-            configs.get(config).put(propName, value);
-            //updateFont(value);
-        }
-
-        final void updateFont(@NullAllowed String value) {
-            String config = (String) configCombo.getSelectedItem();
-            if (config.length() == 0) {
-                config = null;
-            }
-            String def = configs.get(null).get(propName);
-            label.setFont(config != null && !Utilities.compareObjects(
-                    value != null ? value : "", def != null ? def : "") ? boldfont : basefont);
-        }
-
-        @CheckForNull
-        final String getPropertyValue(
-                @NullAllowed String config,
-                @NonNull String key) {
-            final Map<String, String> m = configs.get(config);
-            String v = m.get(key);
-            if (v == null) {
-                // display default value
-                final Map<String, String> def = configs.get(null);
-                v = def.get(getPropertyName());
-            }
-            return v;
-        }
-
-        abstract String getPropertyValue();
-
-        abstract void update(@NullAllowed String activeConfig);
-    }
-
     private static class TextDataSource extends DataSource {
 
         private final JTextComponent textComp;
 
-        TextDataSource(
+        public TextDataSource(
                 @NonNull final String propName,
                 @NonNull final JLabel label,
                 @NonNull final JTextComponent textComp,
@@ -593,108 +518,48 @@ public class J2MERunPanel extends javax.swing.JPanel {
         }
 
         @Override
-        String getPropertyValue() {
+        public String getPropertyValue() {
             return textComp.getText();
         }
 
         @Override
-        void update(@NullAllowed final String activeConfig) {
+        public void update(@NullAllowed final String activeConfig) {
             textComp.setText(getPropertyValue(activeConfig, getPropertyName()));
         }
     }
 
-    private static class ToggleButtonDataSource extends DataSource {
+    private static class CheckBoxDataSource extends DataSource {
 
-        private final JToggleButton toggleButton;
+        private final JToggleButton checkBox;
 
-        public ToggleButtonDataSource(@NonNull final String propName,
+        public CheckBoxDataSource(@NonNull final String propName,
                 @NonNull final JToggleButton toggleButton,
                 @NonNull final JComboBox<?> configCombo,
                 @NonNull final Map<String, Map<String, String>> configs) {
             super(propName, toggleButton, configCombo, configs);
             Parameters.notNull("toggleButton", toggleButton); //NOI18N
-            this.toggleButton = toggleButton;
+            this.checkBox = toggleButton;
             toggleButton.addItemListener(new ItemListener() {
                 @Override
                 public void itemStateChanged(ItemEvent e) {
-                    if (toggleButton instanceof JRadioButton && !toggleButton.isSelected()) {
-                        return;
-                    }
                     changed(readValue());
                 }
             });
         }
 
         @Override
-        String getPropertyValue() {
+        public String getPropertyValue() {
             return readValue();
         }
 
         @Override
-        void update(String activeConfig) {
+        public void update(String activeConfig) {
             String prop = getPropertyValue(activeConfig, getPropertyName());
-            if (toggleButton instanceof JCheckBox) {
-                toggleButton.setSelected(prop != null && Boolean.valueOf(prop));
-            } else if (toggleButton instanceof JRadioButton) {
-                if (prop == null || prop.isEmpty()) {
-                    prop = "STANDARD"; //NOI18N
-                }
-                toggleButton.setSelected(prop.equals(toggleButton.getActionCommand()));
-            }
+            checkBox.setSelected(prop != null && Boolean.valueOf(prop));
         }
 
         final String readValue() {
-            String value = ""; //NOI18N
-            if (toggleButton instanceof JRadioButton) {
-                value = toggleButton.isSelected() ? toggleButton.getActionCommand() : null; //NOI18N
-            } else if (toggleButton instanceof JCheckBox) {
-                value = String.valueOf(toggleButton.isSelected());
-            }
-            return value;
-        }
-    }
-
-    private static class ComboDataSource extends DataSource {
-
-        private final JComboBox<String> combo;
-
-        ComboDataSource(
-                @NonNull final String propName,
-                @NonNull final JComboBox<String> combo,
-                @NonNull final JComboBox<?> configCombo,
-                @NonNull final Map<String, Map<String, String>> configs) {
-            super(propName, combo, configCombo, configs);
-            Parameters.notNull("combo", combo); //NOI18N
-            this.combo = combo;
-            this.combo.addItemListener(new ItemListener() {
-                @Override
-                public void itemStateChanged(ItemEvent e) {
-                    changed(getPropertyValue());
-                }
-            });
-        }
-
-        @Override
-        final String getPropertyValue() {
-            return (String) combo.getSelectedItem();
-        }
-
-        @Override
-        void update(String activeConfig) {
-            String domainName = getPropertyValue(activeConfig, getPropertyName());
-            if (domainName == null) {
-                domainName = "";   //NOI18N
-            }
-            final ComboBoxModel<String> model = combo.getModel();
-
-            for (int i = 0; i < model.getSize(); i++) {
-                final String itemAt = model.getElementAt(i);
-                if (domainName.equals(itemAt)) {
-                    combo.setSelectedItem(itemAt);
-                    return;
-                }
-            }
-            combo.setSelectedIndex(0);
+            return String.valueOf(checkBox.isSelected());
         }
     }
 }

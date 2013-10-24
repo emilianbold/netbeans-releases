@@ -43,17 +43,26 @@
  */
 package org.netbeans.modules.j2me.project.wizard;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
@@ -61,16 +70,28 @@ import javax.swing.ButtonModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JRadioButton;
+import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
+import javax.swing.plaf.UIResource;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.modules.j2me.project.J2MEProjectUtils;
 import org.netbeans.modules.j2me.project.ui.customizer.J2MEProjectProperties;
+import org.netbeans.modules.j2me.project.ui.customizer.J2MEProjectProperties.ButtonGroupDataSource;
+import org.netbeans.modules.j2me.project.ui.customizer.J2MEProjectProperties.ComboDataSource;
+import org.netbeans.modules.j2me.project.ui.customizer.J2MEProjectProperties.DataSource;
+import org.netbeans.modules.j2me.project.ui.customizer.J2MERunPanel;
 import org.netbeans.modules.j2me.project.wizard.J2MEProjectWizardIterator.WizardType;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.modules.SpecificationVersion;
@@ -78,11 +99,12 @@ import org.openide.util.*;
 
 /**
  * @author Theofanis Oikonomou
+ * @author Roman Svitanic
  */
 public class PlatformDevicesPanel extends SettingsPanel {
-    
+
     private final WizardType type;
-    private PanelConfigureProject panel;
+    private final PanelConfigureProject panel;
     private ComboBoxModel platformsModel;
     private DefaultComboBoxModel devicesModel;
     private JavaPlatformChangeListener jpcl;
@@ -91,29 +113,58 @@ public class PlatformDevicesPanel extends SettingsPanel {
     private final HashMap<String, J2MEPlatform.J2MEProfile> name2profile = new HashMap<>();
     private int firstConfigurationWidth = -1;
     private ArrayList<JCheckBox> optionalPackages;
-    private J2MEProjectProperties props;    
+    private J2MEProjectProperties props;
+    private Map<String/*|null*/, Map<String, String/*|null*/>/*|null*/> configs;
+    private DataSource[] data;
 
     public PlatformDevicesPanel(J2MEProjectProperties properties) {
         this.props = properties;
         this.panel = null;
         this.type = null;
-        initialize();
+        initializeCustomizer();
     }
 
     PlatformDevicesPanel(PanelConfigureProject panel, WizardType type) {
         this.panel = panel;
         this.type = type;
-        initialize();
+        initializeWizard();
     }
 
-    private void initialize() {
-        preInitComponents();
+    private void initializeWizard() {
+        preInitComponents(true);
         initComponents();
         postInitComponents();
+        this.configs = null;
+        this.data = null;
+        configPanel.setVisible(false);
+        configLabel.setVisible(false);
+        configCombo.setVisible(false);
+        configSeparator.setVisible(false);
     }
 
-    private void preInitComponents() {
-        platformsModel = J2MEProjectUtils.createPlatformComboBoxModel();
+    private void initializeCustomizer() {
+        preInitComponents(false);
+        initComponents();
+        postInitComponents();
+        this.configs = props.RUN_CONFIGS;
+        configCombo.setRenderer(new ConfigListCellRenderer());
+        configCombo.setModel(props.CONFIGS_MODEL);
+        this.data = new DataSource[]{
+            new ComboDataSource(J2MEProjectProperties.PROP_PLATFORM_DEVICE, deviceComboBox, configCombo, configs),
+            new ButtonGroupDataSource(J2MEProjectProperties.PROP_PLATFORM_CONFIGURATION, configurationsGroup, configCombo, configs),
+            new ButtonGroupDataSource(J2MEProjectProperties.PROP_PLATFORM_PROFILE, profilesGroup, configCombo, configs),
+            new MultiCheckboxDataSource(J2MEProjectProperties.PROP_PLATFORM_APIS, optionalPackages, configCombo, configs)
+        };
+        configChanged(props.activeConfig);
+    }
+
+    private void preInitComponents(boolean wizard) {
+        if (wizard) {
+            platformsModel = J2MEProjectUtils.createPlatformComboBoxModel();
+        } else {
+            props.refreshJ2MEPlatforms();
+            platformsModel = props.J2ME_PLATFORM_MODEL;
+        }
         devicesModel = new DefaultComboBoxModel();
         configurationsGroup = J2MEProjectUtils.getConfigurationsButtonGroup();
         profilesGroup = J2MEProjectUtils.getProfilesButtonGroup();
@@ -126,7 +177,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
             jScrollPane1.setVisible(false);
         }
         initJdkPlatform();
-        initPlatformAndDevices();        
+        initPlatformAndDevices();
 
         jpcl = new JavaPlatformChangeListener();
         JavaPlatformManager.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(jpcl, JavaPlatformManager.getDefault()));
@@ -145,7 +196,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
         jdkComboBox.setModel(jdkCompoboxModel);
     }
 
-    private void initPlatformAndDevices() {        
+    private void initPlatformAndDevices() {
         J2MEPlatform platform = getPlatform();
         platformComboBox.setModel(platformsModel);
         // copied from CustomizerLibraries
@@ -241,6 +292,12 @@ public class PlatformDevicesPanel extends SettingsPanel {
         lblPlatform = new javax.swing.JLabel();
         platformComboBox = new javax.swing.JComboBox();
         btnManagePlatforms = new javax.swing.JButton();
+        configLabel = new javax.swing.JLabel();
+        configCombo = new javax.swing.JComboBox();
+        configPanel = new javax.swing.JPanel();
+        configNew = new javax.swing.JButton();
+        configDel = new javax.swing.JButton();
+        configSeparator = new javax.swing.JSeparator();
         lblDevice = new javax.swing.JLabel();
         deviceComboBox = new javax.swing.JComboBox();
         jSeparator1 = new javax.swing.JSeparator();
@@ -298,11 +355,72 @@ public class PlatformDevicesPanel extends SettingsPanel {
         btnManagePlatforms.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PlatformDevicesPanel.class, "ACSN_buttonManagePlatforms")); // NOI18N
         btnManagePlatforms.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PlatformDevicesPanel.class, "ACSD_buttonManagePlatforms")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(configLabel, java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2me/project/ui/customizer/Bundle").getString("J2MERunPanel.configLabel.text"), new Object[] {})); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
+        add(configLabel, gridBagConstraints);
+
+        configCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "<default>" }));
+        configCombo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                configComboActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        add(configCombo, gridBagConstraints);
+
+        configPanel.setLayout(new java.awt.GridBagLayout());
+
+        org.openide.awt.Mnemonics.setLocalizedText(configNew, java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2me/project/ui/customizer/Bundle").getString("J2MERunPanel.configNew.text"), new Object[] {})); // NOI18N
+        configNew.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                configNewActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 6, 2, 0);
+        configPanel.add(configNew, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(configDel, java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2me/project/ui/customizer/Bundle").getString("J2MERunPanel.configDel.text"), new Object[] {})); // NOI18N
+        configDel.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                configDelActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 6, 2, 0);
+        configPanel.add(configDel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_TRAILING;
+        add(configPanel, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 0);
+        add(configSeparator, gridBagConstraints);
+
         lblDevice.setLabelFor(deviceComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(lblDevice, org.openide.util.NbBundle.getMessage(PlatformDevicesPanel.class, "LBL_PanelOptions_Device_ComboBox")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(lblDevice, gridBagConstraints);
@@ -317,7 +435,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
@@ -334,7 +452,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
         org.openide.awt.Mnemonics.setLocalizedText(lblConfiguration, org.openide.util.NbBundle.getMessage(PlatformDevicesPanel.class, "LBL_PanelOptions_Configuration_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(lblConfiguration, gridBagConstraints);
@@ -344,7 +462,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
         configurationPanel.setLayout(new java.awt.GridLayout(1, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
@@ -356,7 +474,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
         org.openide.awt.Mnemonics.setLocalizedText(lblProfile, org.openide.util.NbBundle.getMessage(PlatformDevicesPanel.class, "LBL_PanelOptions_Profile_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 0);
         add(lblProfile, gridBagConstraints);
@@ -366,7 +484,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
         profilePanel.setLayout(new java.awt.GridLayout(1, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
@@ -377,7 +495,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
         org.openide.awt.Mnemonics.setLocalizedText(lblOptionalPackages, org.openide.util.NbBundle.getMessage(PlatformDevicesPanel.class, "J2MEPlatformPanel.lblOptionalPackages.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
@@ -388,7 +506,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -429,13 +547,111 @@ public class PlatformDevicesPanel extends SettingsPanel {
 
     private void btnManagePlatformsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnManagePlatformsActionPerformed
         PlatformsCustomizer.showCustomizer(getPlatform());
-        preInitComponents();
+        preInitComponents(configs == null); //if configs==null, then this panel is wizard, otherwise customizer
         initJdkPlatform();
         initPlatformAndDevices();
         if (panel != null) {
             panel.fireChangeEvent();
         }
     }//GEN-LAST:event_btnManagePlatformsActionPerformed
+
+    private void configComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configComboActionPerformed
+        String config = (String) configCombo.getSelectedItem();
+        if (config.length() == 0) {
+            config = null;
+        }
+        configChanged(config);
+        props.activeConfig = config;
+    }//GEN-LAST:event_configComboActionPerformed
+
+    private void configNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configNewActionPerformed
+        createNewConfiguration();
+    }//GEN-LAST:event_configNewActionPerformed
+
+    private void configDelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configDelActionPerformed
+        String config = (String) configCombo.getSelectedItem();
+        assert config != null;
+        configs.put(config, null);
+        configChanged(null);
+        props.activeConfig = null;
+    }//GEN-LAST:event_configDelActionPerformed
+
+    private void configChanged(String activeConfig) {
+        props.CONFIGS_MODEL = new DefaultComboBoxModel();
+        props.CONFIGS_MODEL.addElement("");
+        SortedSet<String> alphaConfigs = new TreeSet<>(new Comparator<String>() {
+            Collator coll = Collator.getInstance();
+
+            @Override
+            public int compare(String s1, String s2) {
+                return coll.compare(label(s1), label(s2));
+            }
+
+            private String label(String c) {
+                Map<String, String> m = configs.get(c);
+                String label = m.get("$label"); // NOI18N
+                return label != null ? label : c;
+            }
+        });
+        for (Map.Entry<String, Map<String, String>> entry : configs.entrySet()) {
+            String config = entry.getKey();
+            if (config != null && entry.getValue() != null) {
+                alphaConfigs.add(config);
+            }
+        }
+        for (String c : alphaConfigs) {
+            props.CONFIGS_MODEL.addElement(c);
+        }
+        configCombo.setModel(props.CONFIGS_MODEL);
+        configCombo.setSelectedItem(activeConfig != null ? activeConfig : "");
+        Map<String, String> m = configs.get(activeConfig);
+        if (m != null) {
+            for (DataSource ds : data) {
+                ds.update(activeConfig);
+            }
+        }
+        configDel.setEnabled(activeConfig != null);
+    }
+
+    private void createNewConfiguration() {
+        NotifyDescriptor.InputLine d = new NotifyDescriptor.InputLine(
+                NbBundle.getMessage(J2MERunPanel.class, "J2MERunPanel.input.prompt"), // NOI18N
+                NbBundle.getMessage(J2MERunPanel.class, "J2MERunPanel.input.title")); // NOI18N
+        if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.OK_OPTION) {
+            return;
+        }
+        String name = d.getInputText();
+        String config = name.replaceAll("[^a-zA-Z0-9_.-]", "_"); // NOI18N
+        if (config.trim().length() == 0) {
+            //#143764
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    NbBundle.getMessage(J2MERunPanel.class, "J2MERunPanel.input.empty", config), // NOI18N
+                    NotifyDescriptor.WARNING_MESSAGE));
+            return;
+
+        }
+        if (configs.get(config) != null) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    NbBundle.getMessage(J2MERunPanel.class, "J2MERunPanel.input.duplicate", config), // NOI18N
+                    NotifyDescriptor.WARNING_MESSAGE));
+            return;
+        }
+        Map<String, String> m = new HashMap<>();
+        if (!name.equals(config)) {
+            m.put("$label", name); // NOI18N
+        }
+        configs.put(config, m);
+        configChanged(config);
+        props.activeConfig = config;
+    }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        if (configs != null) {
+            configChanged(props.activeConfig);
+        }
+    }
 
     private synchronized void updateDevices() {
         boolean embedded = false;
@@ -446,40 +662,37 @@ public class PlatformDevicesPanel extends SettingsPanel {
         if (platform != null) {
             J2MEPlatform.Device select = null;
             final J2MEPlatform.Device devices[] = platform.getDevices();
-            for (int i = 0; i < devices.length; i++) {
-                final J2MEPlatform.J2MEProfile p[] = devices[i].getProfiles();
+            for (J2MEPlatform.Device device : devices) {
+                final J2MEPlatform.J2MEProfile[] p = device.getProfiles();
                 for (int j = 0; j < p.length; j++) {
                     if (!embedded || (p[j].isDefault() && J2MEPlatform.J2MEProfile.TYPE_PROFILE.equals(p[j].getType()))) {
-                        devicesModel.addElement(devices[i]);
-                        if (devices[i].getName().equals(deviceName)) {
-                            devicesModel.setSelectedItem(devices[i]);
+                        devicesModel.addElement(device);
+                        if (device.getName().equals(deviceName)) {
+                            devicesModel.setSelectedItem(device);
                         }
                         if (select == null) {
-                            select = devices[i];
+                            select = device;
                         }
                         j = p.length;
                     }
                 }
-
             }
-            if (embedded && select == null) { // NOI18N
-                // no NG embedded support in this SDK
-                for (int i = 0; i < devices.length; i++) {
-                    final J2MEPlatform.J2MEProfile p[] = devices[i].getProfiles();
+            if (embedded && select == null) {
+                for (J2MEPlatform.Device device : devices) {
+                    final J2MEPlatform.J2MEProfile[] p = device.getProfiles();
                     for (int j = 0; j < p.length; j++) {
                         if (p[j].isDefault() && J2MEPlatform.J2MEProfile.TYPE_PROFILE.equals(p[j].getType())
                                 && p[j].getName().equals("IMP")) {
-                            devicesModel.addElement(devices[i]);
-                            if (devices[i].getName().equals(deviceName)) {
-                                devicesModel.setSelectedItem(devices[i]);
+                            devicesModel.addElement(device);
+                            if (device.getName().equals(deviceName)) {
+                                devicesModel.setSelectedItem(device);
                             }
                             if (select == null) {
-                                select = devices[i];
+                                select = device;
                             }
                             j = p.length;
                         }
                     }
-
                 }
             }
             if (devicesModel.getSelectedItem() == null && select != null) {
@@ -496,13 +709,13 @@ public class PlatformDevicesPanel extends SettingsPanel {
         name2profile.clear();
         if (device != null) {
             final J2MEPlatform.J2MEProfile p[] = device.getProfiles();
-            for (int i = 0; i < p.length; i++) {
-                name2profile.put(p[i].toString(), p[i]);
-                if (p[i].isDefault()) {
-                    if (J2MEPlatform.J2MEProfile.TYPE_CONFIGURATION.equals(p[i].getType())) {
-                        defCfg = p[i].toString();
-                    } else if (J2MEPlatform.J2MEProfile.TYPE_PROFILE.equals(p[i].getType())) {
-                        defProf = p[i].toString();
+            for (J2MEPlatform.J2MEProfile p1 : p) {
+                name2profile.put(p1.toString(), p1);
+                if (p1.isDefault()) {
+                    if (J2MEPlatform.J2MEProfile.TYPE_CONFIGURATION.equals(p1.getType())) {
+                        defCfg = p1.toString();
+                    } else if (J2MEPlatform.J2MEProfile.TYPE_PROFILE.equals(p1.getType())) {
+                        defProf = p1.toString();
                     }
                 }
             }
@@ -517,13 +730,13 @@ public class PlatformDevicesPanel extends SettingsPanel {
         name2profile.clear();
         if (device != null) {
             final J2MEPlatform.J2MEProfile p[] = device.getProfiles();
-            for (int i = 0; i < p.length; i++) {
-                name2profile.put(p[i].toString(), p[i]);
-                if (p[i].isDefault()) {
-                    if (J2MEPlatform.J2MEProfile.TYPE_CONFIGURATION.equals(p[i].getType())) {
-                        defCfg = p[i].toString();
-                    } else if (J2MEPlatform.J2MEProfile.TYPE_PROFILE.equals(p[i].getType())) {
-                        defProf = p[i].toString();
+            for (J2MEPlatform.J2MEProfile p1 : p) {
+                name2profile.put(p1.toString(), p1);
+                if (p1.isDefault()) {
+                    if (J2MEPlatform.J2MEProfile.TYPE_CONFIGURATION.equals(p1.getType())) {
+                        defCfg = p1.toString();
+                    } else if (J2MEPlatform.J2MEProfile.TYPE_PROFILE.equals(p1.getType())) {
+                        defProf = p1.toString();
                     }
                 }
             }
@@ -566,7 +779,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
         final ButtonModel m = profilesGroup.getSelection();
         return m == null ? "" : m.getActionCommand();
     }
-    
+
     private JavaPlatform getJdkPlatform() {
         return PlatformUiSupport.getPlatform(jdkComboBox.getSelectedItem());
     }
@@ -695,7 +908,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
         getPreferences().put(J2MEProjectWizardIterator.CONFIGURATION, getConfiguration());
         getPreferences().put(J2MEProjectWizardIterator.PROFILE, getProfile());
     }
-    
+
     private String getOptionalAPI() {
         StringBuilder sb = new StringBuilder();
         for (JCheckBox cb : optionalPackages) {
@@ -714,6 +927,12 @@ public class PlatformDevicesPanel extends SettingsPanel {
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnManagePlatforms;
+    private javax.swing.JComboBox configCombo;
+    private javax.swing.JButton configDel;
+    private javax.swing.JLabel configLabel;
+    private javax.swing.JButton configNew;
+    private javax.swing.JPanel configPanel;
+    private javax.swing.JSeparator configSeparator;
     private javax.swing.JPanel configurationPanel;
     private javax.swing.JComboBox deviceComboBox;
     private javax.swing.JScrollPane jScrollPane1;
@@ -734,7 +953,113 @@ public class PlatformDevicesPanel extends SettingsPanel {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            PlatformDevicesPanel.this.panel.fireChangeEvent();
+            if (PlatformDevicesPanel.this.panel != null) {
+                PlatformDevicesPanel.this.panel.fireChangeEvent();
+            }
+        }
+    }
+
+    private final class ConfigListCellRenderer extends JLabel implements ListCellRenderer, UIResource {
+
+        public ConfigListCellRenderer() {
+            setOpaque(true);
+        }
+
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            // #93658: GTK needs name to render cell renderer "natively"
+            setName("ComboBox.listRenderer"); // NOI18N
+
+            String config = (String) value;
+            String label;
+            if (config == null) {
+                // uninitialized?
+                label = null;
+            } else if (config.length() > 0) {
+                Map<String, String> m = configs.get(config);
+                label = m != null ? m.get("$label") : /* temporary? */ null; // NOI18N
+                if (label == null) {
+                    label = config;
+                }
+            } else {
+                label = NbBundle.getBundle("org.netbeans.modules.java.j2seproject.Bundle").getString("J2SEConfigurationProvider.default.label"); // NOI18N
+            }
+            setText(label);
+
+            if (isSelected) {
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());
+            } else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+            }
+
+            return this;
+        }
+
+        // #93658: GTK needs name to render cell renderer "natively"
+        @Override
+        public String getName() {
+            String name = super.getName();
+            return name == null ? "ComboBox.renderer" : name;  // NOI18N
+        }
+    }
+
+    private static class MultiCheckboxDataSource extends DataSource {
+
+        private final List<JCheckBox> options;
+
+        MultiCheckboxDataSource(
+                @NonNull final String propName,
+                @NonNull final List<JCheckBox> options,
+                @NonNull final JComboBox<?> configCombo,
+                @NonNull final Map<String, Map<String, String>> configs) {
+            super(propName, null, configCombo, configs);
+            Parameters.notNull("options", options); //NOI18N
+            this.options = options;
+            for (JCheckBox box : options) {
+                box.addItemListener(new ItemListener() {
+                    @Override
+                    public void itemStateChanged(ItemEvent e) {
+                        changed(getPropertyValue());
+                    }
+                });
+            }
+        }
+
+        @Override
+        public final String getPropertyValue() {
+            final StringBuilder sb = new StringBuilder();
+            for (JCheckBox cb : options) {
+                if (cb.isSelected()) {
+                    if (sb.length() > 0) {
+                        sb.append(','); //NOI18N
+                    }
+                    sb.append(cb.getActionCommand());
+                }
+            }
+            return sb.toString();
+        }
+
+        @Override
+        public void update(String activeConfig) {
+            String selectedOptions = getPropertyValue(activeConfig, getPropertyName());
+            if (selectedOptions != null) {
+                String[] singleOptions = selectedOptions.split(","); //NOI18N
+                for (JCheckBox box : options) {
+                    box.setSelected(false);
+                    for (String option : singleOptions) {
+                        if (box.getActionCommand().equals(option)) {
+                            box.setSelected(true);
+                            break;
+                        }
+                    }
+                }
+            } else {
+                for (JCheckBox box : options) {
+                    box.setSelected(false);
+                }
+            }
         }
     }
 }
