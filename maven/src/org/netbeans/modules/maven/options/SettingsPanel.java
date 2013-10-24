@@ -341,6 +341,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        buttonGroup1 = new javax.swing.ButtonGroup();
         pnlCards = new javax.swing.JPanel();
         pnlExecution = new javax.swing.JPanel();
         lblCommandLine = new javax.swing.JLabel();
@@ -354,6 +355,10 @@ public class SettingsPanel extends javax.swing.JPanel {
         cbAlwaysShow = new javax.swing.JCheckBox();
         cbReuse = new javax.swing.JCheckBox();
         cbCollapseSuccessFolds = new javax.swing.JCheckBox();
+        lblOutputTab = new javax.swing.JLabel();
+        rbOutputTabName = new javax.swing.JRadioButton();
+        rbOutputTabId = new javax.swing.JRadioButton();
+        cbOutputTabShowConfig = new javax.swing.JCheckBox();
         pnlAppearance = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
@@ -406,6 +411,17 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(cbCollapseSuccessFolds, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.cbCollapseSuccessFolds.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(lblOutputTab, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblOutputTab.text")); // NOI18N
+
+        buttonGroup1.add(rbOutputTabName);
+        rbOutputTabName.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(rbOutputTabName, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.rbOutputTabName.text")); // NOI18N
+
+        buttonGroup1.add(rbOutputTabId);
+        org.openide.awt.Mnemonics.setLocalizedText(rbOutputTabId, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.rbOutputTabId.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(cbOutputTabShowConfig, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.cbOutputTabShowConfig.text")); // NOI18N
+
         javax.swing.GroupLayout pnlExecutionLayout = new javax.swing.GroupLayout(pnlExecution);
         pnlExecution.setLayout(pnlExecutionLayout);
         pnlExecutionLayout.setHorizontalGroup(
@@ -431,8 +447,17 @@ public class SettingsPanel extends javax.swing.JPanel {
                             .addComponent(cbAlwaysShow)
                             .addComponent(cbReuse)
                             .addComponent(cbSkipTests)
-                            .addComponent(cbCollapseSuccessFolds))
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                            .addComponent(cbCollapseSuccessFolds)
+                            .addGroup(pnlExecutionLayout.createSequentialGroup()
+                                .addComponent(lblOutputTab)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(pnlExecutionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(cbOutputTabShowConfig)
+                                    .addGroup(pnlExecutionLayout.createSequentialGroup()
+                                        .addComponent(rbOutputTabName)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(rbOutputTabId)))))
+                        .addGap(0, 120, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         pnlExecutionLayout.setVerticalGroup(
@@ -458,8 +483,15 @@ public class SettingsPanel extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cbAlwaysShow)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(pnlExecutionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblOutputTab)
+                    .addComponent(rbOutputTabName)
+                    .addComponent(rbOutputTabId))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cbOutputTabShowConfig)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(cbCollapseSuccessFolds)
-                .addContainerGap(47, Short.MAX_VALUE))
+                .addContainerGap(32, Short.MAX_VALUE))
         );
 
         pnlCards.add(pnlExecution, "execution");
@@ -745,8 +777,10 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JButton btnGoals;
     private javax.swing.JButton btnIndex;
     private javax.swing.JButton btnOptions;
+    private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JCheckBox cbAlwaysShow;
     private javax.swing.JCheckBox cbCollapseSuccessFolds;
+    private javax.swing.JCheckBox cbOutputTabShowConfig;
     private javax.swing.JComboBox cbProjectNodeNameMode;
     private javax.swing.JCheckBox cbReuse;
     private javax.swing.JCheckBox cbSkipTests;
@@ -768,6 +802,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JLabel lblIndex;
     private javax.swing.JLabel lblJavadoc;
     private javax.swing.JLabel lblOptions;
+    private javax.swing.JLabel lblOutputTab;
     private javax.swing.JLabel lblSource;
     private javax.swing.JList lstCategory;
     private javax.swing.JPanel pnlAppearance;
@@ -775,6 +810,8 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JPanel pnlDependencies;
     private javax.swing.JPanel pnlExecution;
     private javax.swing.JPanel pnlIndex;
+    private javax.swing.JRadioButton rbOutputTabId;
+    private javax.swing.JRadioButton rbOutputTabName;
     private javax.swing.JTextField txtOptions;
     private javax.swing.JTextField txtProjectNodeNameCustomPattern;
     // End of variables declaration//GEN-END:variables
@@ -888,6 +925,12 @@ public class SettingsPanel extends javax.swing.JPanel {
         cbAlwaysShow.setSelected(MavenSettings.getDefault().isAlwaysShowOutput());
         cbReuse.setSelected(MavenSettings.getDefault().isReuseOutputTabs());
         cbCollapseSuccessFolds.setSelected(MavenSettings.getDefault().isCollapseSuccessFolds());
+        cbOutputTabShowConfig.setSelected(MavenSettings.getDefault().isOutputTabShowConfig());
+        if (MavenSettings.OutputTabName.PROJECT_NAME.equals(MavenSettings.getDefault().getOutputTabName())) {
+            rbOutputTabName.setSelected(true);
+        } else {
+            rbOutputTabId.setSelected(true);
+        }
 
         final String pattern = MavenSettings.getDefault().getProjectNodeNamePattern();
         txtProjectNodeNameCustomPattern.setText("");
@@ -953,6 +996,9 @@ public class SettingsPanel extends javax.swing.JPanel {
         MavenSettings.getDefault().setAlwaysShowOutput(cbAlwaysShow.isSelected());
         MavenSettings.getDefault().setReuseOutputTabs(cbReuse.isSelected());
         MavenSettings.getDefault().setCollapseSuccessFolds(cbCollapseSuccessFolds.isSelected());
+        MavenSettings.getDefault().setOutputTabShowConfig(cbOutputTabShowConfig.isSelected());
+        MavenSettings.OutputTabName name = rbOutputTabName.isSelected() ? MavenSettings.OutputTabName.PROJECT_NAME : MavenSettings.OutputTabName.PROJECT_ID;
+        MavenSettings.getDefault().setOutputTabName(name);
         
         if (0 == cbProjectNodeNameMode.getSelectedIndex()) {
             //selected "default" entry

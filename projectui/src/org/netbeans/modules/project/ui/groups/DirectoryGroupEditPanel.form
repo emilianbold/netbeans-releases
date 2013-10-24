@@ -31,8 +31,12 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="folderField" alignment="0" pref="337" max="32767" attributes="0"/>
-                  <Component id="nameField" alignment="0" pref="337" max="32767" attributes="0"/>
+                  <Component id="nameField" pref="337" max="32767" attributes="0"/>
+                  <Group type="102" attributes="0">
+                      <Component id="folderField" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="directoryButton" min="-2" max="-2" attributes="0"/>
+                  </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -50,6 +54,7 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="folderLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="folderField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="directoryButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="32767" attributes="0"/>
           </Group>
@@ -98,9 +103,6 @@
       </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JTextField" name="folderField">
-      <Properties>
-        <Property name="editable" type="boolean" value="false"/>
-      </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/project/ui/groups/Bundle.properties" key="DirectoryGroupEditPanel.folderField.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -109,6 +111,16 @@
           <ResourceString bundle="org/netbeans/modules/project/ui/groups/Bundle.properties" key="DirectoryGroupEditPanel.folderField.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
+    </Component>
+    <Component class="javax.swing.JButton" name="directoryButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/project/ui/groups/Bundle.properties" key="DirectoryGroupEditPanel.directoryButton.text_2" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="directoryButtonActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

@@ -901,8 +901,19 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
     }
     
     public boolean discardLocalEdits () {
-        clearUnsavedChanges();
-        return cancelChanges();
+        final boolean retval[] = new boolean[1];
+        runWithModelLoaded(new Runnable() {
+            @Override
+            public void run () {
+                clearUnsavedChanges();
+                retval[0] = cancelChanges();
+                if (controller != null) {
+                    controller.modelStateChanged(hasUnsavedChanges(), hasLocalEdits());
+                    controller.refreshViewData(false);
+                }
+            }
+        });
+        return retval[0];
     }
 
     public String getPriorityID() {
@@ -1087,6 +1098,14 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
     
     private void fireStatusChanged() {
         support.firePropertyChange(IssueStatusProvider.EVENT_STATUS_CHANGED, null, null);
+    }
+
+    protected void fireUnsaved() {
+        support.firePropertyChange(IssueController.PROPERTY_ISSUE_NOT_SAVED, null, null);
+    }
+ 
+    protected void fireSaved() {
+        support.firePropertyChange(IssueController.PROPERTY_ISSUE_SAVED, null, null);
     }
 
     private boolean refresh(boolean afterSubmitRefresh) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache

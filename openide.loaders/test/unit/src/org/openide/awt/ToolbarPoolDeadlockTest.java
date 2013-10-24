@@ -132,6 +132,7 @@ public class ToolbarPoolDeadlockTest extends NbTestCase {
                 synchronized (this) {
                     notifyAll();
                 }
+                Thread.sleep(200);
                 EventQueue.invokeAndWait(this);
                 assertNotNull("My toolbars has been obtained", myTlbs);
             }
