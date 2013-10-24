@@ -43,11 +43,9 @@ package org.netbeans.modules.bugtracking;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import org.netbeans.modules.bugtracking.issuetable.IssueNode;
+import java.util.Collection;
 import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
-import org.openide.nodes.Node;
 
 /**
  *
@@ -55,7 +53,7 @@ import org.openide.nodes.Node;
  */
 public class TestIssueProvider implements IssueProvider<TestIssue> {
     @Override
-    public String[] getSubtasks(TestIssue data) {
+    public Collection<String> getSubtasks(TestIssue data) {
         return data.getSubtasks();
     }
 

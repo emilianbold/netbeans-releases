@@ -431,16 +431,12 @@ public class BugtrackingOwnerSupport {
                 = selectorBuilder.createDialogDescriptor(dialogTitle);
 
         Object selectedOption = DialogDisplayer.getDefault().notify(dialogDescriptor);
+        RepositoryImpl repository = selectorBuilder.getSelectedRepository();
         if (selectedOption == NotifyDescriptor.OK_OPTION) {
-            RepositoryImpl repository = selectorBuilder.getSelectedRepository();
-            try {
-                repository.applyChanges();
-            } catch (IOException ex) {
-                LOG.log(Level.SEVERE, null, ex);
-                repository = null;
-            }
+            repository.applyChanges();
             return repository;
         } else {
+            repository.cancelChanges();
             return null;
         }
     }

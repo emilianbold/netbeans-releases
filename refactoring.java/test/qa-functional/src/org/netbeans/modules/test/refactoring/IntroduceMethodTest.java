@@ -259,6 +259,8 @@ public class IntroduceMethodTest extends ModifyingRefactoring {
                     case testStaticMethod: editor.select(83); break;
                 }
                 
+                new EventTool().waitNoEvent(1000);
+                
                 // call Reafctor > Introduce method
                 switch(c){
                     default: new RefactorIntroduceMethodAction().performPopup(editor); break;

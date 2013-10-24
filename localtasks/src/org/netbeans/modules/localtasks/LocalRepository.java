@@ -101,7 +101,8 @@ public final class LocalRepository {
         fac = new BugtrackingSupport<>(new RepositoryProviderImpl(), new QueryProviderImpl(), new IssueProviderImpl());
         icon = ImageUtilities.loadImage(ICON_PATH, true);
         propertySuport = new PropertyChangeSupport(this);
-        repository = fac.createRepository(this, null, new IssueSchedulingProviderImpl(), null, null);
+        repository = fac.createRepository(this, new IssueStatusProviderImpl(), 
+                new IssueSchedulingProviderImpl(), null, null);
     }
 
     public Repository getRepository () {
@@ -216,7 +217,7 @@ public final class LocalRepository {
         }
     }
 
-    LocalTask[] getTasks (String[] ids) {
+    List<LocalTask> getTasks (String[] ids) {
         final List<LocalTask> ret = new ArrayList<>(ids.length);
         boolean queryNeedsRefresh = false;
         try {
@@ -245,7 +246,7 @@ public final class LocalRepository {
                 }
             });
         }
-        return ret.toArray(new LocalTask[ret.size()]);
+        return ret;
     }
 
     Collection<LocalTask> simpleSearch (String criteria) {

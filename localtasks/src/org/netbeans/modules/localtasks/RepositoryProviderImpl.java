@@ -68,7 +68,7 @@ public class RepositoryProviderImpl implements RepositoryProvider<LocalRepositor
     }
 
     @Override
-    public LocalTask[] getIssues (LocalRepository r, String... ids) {
+    public Collection<LocalTask> getIssues (LocalRepository r, String... ids) {
         return r.getTasks(ids);
     }
 

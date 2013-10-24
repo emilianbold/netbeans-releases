@@ -43,6 +43,7 @@ package org.netbeans.modules.bugtracking.spi;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.Collection;
 
 /**
  * Provides access to a bugtracking Issue.
@@ -89,7 +90,7 @@ public interface IssueProvider<I> {
      * @param i an implementation specific issue instance
      * @return id-s of subtasks for the given Issue
      */
-    public String[] getSubtasks(I i);
+    public Collection<String> getSubtasks(I i);
 
     /**
      * Returns this issues summary

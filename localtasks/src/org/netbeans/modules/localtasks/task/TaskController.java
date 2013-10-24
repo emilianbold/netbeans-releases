@@ -42,11 +42,14 @@
 
 package org.netbeans.modules.localtasks.task;
 
+import java.awt.Container;
 import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
+import org.openide.windows.TopComponent;
 
 /**
  *
@@ -116,21 +119,35 @@ final class TaskController implements IssueController {
 
     @Override
     public boolean saveChanges() {
-        return true;
+        return panel.saveChanges();
     }
 
     @Override
     public boolean discardUnsavedChanges() {
-        return true;
+        return panel.discardUnsavedChanges();
     }
 
     @Override
     public void addPropertyChangeListener(PropertyChangeListener l) {
-
+        task.addPropertyChangeListener(l);
     }
 
     @Override
     public void removePropertyChangeListener(PropertyChangeListener l) {
+        task.removePropertyChangeListener(l);
+    }
 
+    void taskDeleted () {
+        Mutex.EVENT.readAccess(new Mutex.Action<Void>() {
+
+            @Override
+            public Void run () {
+                Container tc = SwingUtilities.getAncestorOfClass(TopComponent.class, panel);
+                if (tc instanceof TopComponent) {
+                    ((TopComponent) tc).close();
+                }
+                return null;
+            }
+        });
     }
 }

@@ -329,7 +329,7 @@ public class BugzillaRepository {
         return c != null ? c.getPassword().toCharArray() : new char[0]; 
     }
 
-    public BugzillaIssue[] getIssues(final String... ids) {
+    public List<BugzillaIssue> getIssues(final String... ids) {
         final List<BugzillaIssue> ret = new LinkedList<BugzillaIssue>();
         try {
             MylynSupport supp = MylynSupport.getInstance();
@@ -360,7 +360,7 @@ public class BugzillaRepository {
         } catch (CoreException ex) {
             Bugzilla.LOG.log(Level.INFO, null, ex);
         }
-        return ret.toArray(new BugzillaIssue[ret.size()]);
+        return ret;
     }
     
     public BugzillaIssue getIssue(final String id) {

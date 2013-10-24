@@ -43,6 +43,7 @@
 package org.netbeans.modules.odcs.tasks.issue;
 
 import com.tasktop.c2c.server.tasks.domain.TaskStatus;
+import java.util.Collection;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import javax.swing.table.DefaultTableModel;
@@ -85,8 +86,8 @@ public class SubtaskTableModel extends DefaultTableModel {
     private static Object[][] data(ODCSIssue issue) {
         ODCSRepository repository = issue.getRepository();
         Cache cache = repository.getIssueCache();
-        String[] subtasks = issue.getSubtasks();
-        Object[][] data = new Object[subtasks.length][];
+        Collection<String> subtasks = issue.getSubtasks();
+        Object[][] data = new Object[subtasks.size()][];
         int count = 0;
         for (String id : subtasks) {
             ODCSIssue subTask = (ODCSIssue)cache.getIssue(id);
@@ -106,7 +107,7 @@ public class SubtaskTableModel extends DefaultTableModel {
                 ODCS.LOG.log(Level.WARNING, "no subtask returned for key {0}", id); // NOI18N
             }
         }
-        if(count < subtasks.length) {
+        if(count < subtasks.size()) {
             Object[][] ret = new Object[count][];
             System.arraycopy(data, 0, ret, 0, count);
             return ret;

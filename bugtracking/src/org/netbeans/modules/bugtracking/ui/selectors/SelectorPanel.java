@@ -59,25 +59,23 @@ import org.openide.util.NbBundle;
  */
 public class SelectorPanel {
 
-    private RepositorySelectorBuilder builder = new RepositorySelectorBuilder();
+    private final RepositorySelectorBuilder builder = new RepositorySelectorBuilder();
     private final String comboLabelText
             = NbBundle.getMessage(SelectorPanel.class,
                                   "SelectorPanel.connectorLabel.text"); //NOI18N
 
-    boolean open() {
-        String title = createOpenDescriptor();
+    boolean create() {
+        String title = createCreateDescriptor();
         DialogDescriptor dd = builder.createDialogDescriptor(title);
-        boolean ret = DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION;
-        return ret;
+        return DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION;
     }
 
     boolean edit(RepositoryImpl repository, String errorMessage) {
         DialogDescriptor dd = createEditDescriptor(repository, errorMessage);
-        boolean ret = DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION;
-        return ret;
+        return DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION;
     }
 
-    private String createOpenDescriptor() throws MissingResourceException {
+    private String createCreateDescriptor() throws MissingResourceException {
         String title = NbBundle.getMessage(SelectorPanel.class, "CTL_CreateTitle"); //NOI18N
         builder.setLabelText(comboLabelText);
         builder.setBugtrackingConnectorDisplayFormat("{0}"); //NOI18N

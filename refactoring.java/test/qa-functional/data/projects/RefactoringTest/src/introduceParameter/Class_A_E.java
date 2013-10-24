@@ -1,10 +1,10 @@
 package introduceParameter;
 
-public class Class_A_H implements Runnable{
+public class Class_A_E implements Runnable{
         
     private int field = 4;
     
-    public Class_A_H() {
+    public Class_A_E() {
         int x = field;
     }
        
@@ -46,7 +46,7 @@ public class Class_A_H implements Runnable{
     }
     
     public void usage() {
-        new Class_A_H();        
+        new Class_A_E();        
         m(1,"","");
         new Super().m1();
         new Sub().m1();

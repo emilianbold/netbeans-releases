@@ -46,11 +46,7 @@ package org.netbeans.api.debugger;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -58,7 +54,7 @@ import org.netbeans.spi.debugger.ContextProvider;
 
 /** Session visually represents one process or application. It should
  * be simple bean with properties like process ID, session name, etc.
- * All other functionality is deleagted to current debugger engine.
+ * All other functionality is delegated to current debugger engine.
  *
  * <p><br><table border="1" cellpadding="3" cellspacing="0" width="100%">
  * <tbody><tr bgcolor="#ccccff">
@@ -81,7 +77,7 @@ import org.netbeans.spi.debugger.ContextProvider;
  *    Each language corresponds to one 
  *    {@link org.netbeans.api.debugger.DebuggerEngine} 
  *    ({@link #getEngineForLanguage}). So, the current language
- *    defines current debuggger engine ({@link #getCurrentEngine})
+ *    defines current debugger engine ({@link #getCurrentEngine})
  *
  *    A support for a new debugger language can be added during a start of
  *    debugging only. See 
@@ -89,7 +85,7 @@ import org.netbeans.spi.debugger.ContextProvider;
  *    {@link org.netbeans.spi.debugger.DebuggerEngineProvider}
  *
  * <br><br>
- * <b>Support for aditional services:</b>
+ * <b>Support for additional services:</b>
  *    Session is final class. The standard method how to 
  *    extend its functionality is using lookup methods ({@link #lookup} and 
  *    {@link #lookupFirst}).
@@ -112,16 +108,16 @@ import org.netbeans.spi.debugger.ContextProvider;
  *
  * <br> 
  * </td></tr><tr><td align="left" valign="top" width="1%"><font size="+1">
- * <b>Clinents / Providers</b></font></td><td>
+ * <b>Clients / Providers</b></font></td><td>
  *
  * This class is final, so it does not have any external provider.
  * Debugger Core and UI modules are clients of this class.
  *
  * <br>
  * </td></tr><tr><td align="left" valign="top" width="1%"><font size="+1">
- * <b>Lifecycle</b></font></td><td>
+ * <b>Life-cycle</b></font></td><td>
  *
- * A new instance of Session class can be created and registerred to 
+ * A new instance of Session class can be created and registered to
  * {@link org.netbeans.api.debugger.DebuggerManager} during the process
  * of starting of debugging (see
  * {@link org.netbeans.api.debugger.DebuggerManager#startDebugging}).
@@ -151,16 +147,16 @@ public final class Session implements ContextProvider {
     
     // variables ...............................................................
     
-    private String              name;
-    private String              locationName;
+    private final String        name;
+    private final String        locationName;
     private DebuggerEngine      currentDebuggerEngine;
     private String              currentLanguage;
     private String[]            languages;
     private DebuggerEngine[]    engines;
-    private PropertyChangeSupport pcs;
+    private final PropertyChangeSupport pcs;
     private Lookup              lookup;
     Lookup                      privateLookup;
-    private Map<DebuggerEngine, Lookup> enginesLookups = new HashMap<DebuggerEngine, Lookup>();
+    private final Map<DebuggerEngine, Lookup> enginesLookups = new HashMap<DebuggerEngine, Lookup>();
 
     
     // initialization ..........................................................
@@ -266,16 +262,16 @@ public final class Session implements ContextProvider {
      * Returns one service of given type from given folder.
      *
      * @param service a type of service to look for
-     * @return ne service of given type
+     * @return the service of given type
      */
     public <T> T lookupFirst(String folder, Class<T> service) {
         return lookup.lookupFirst (folder, service);
     }
     
     /**
-     * Kills all registerred engines / languages. This utility method calls
+     * Kills all registered engines / languages. This utility method calls
      * <pre>postAction (DebuggerEngine.ACTION_KILL)</pre> method on all
-     * registerred DebuggerEngines.
+     * registered DebuggerEngines.
      */
     public void kill () {
         DebuggerEngine[] enginesToKill = engines;
@@ -286,9 +282,9 @@ public final class Session implements ContextProvider {
     }
 
     /**
-     * Return DebuggerEngine registerred for given language or null.
+     * Return DebuggerEngine registered for given language or null.
      *
-     * @return DebuggerEngine registerred for given language or null
+     * @return DebuggerEngine registered for given language or null
      */
     public synchronized DebuggerEngine getEngineForLanguage (String language) {
         int i, k = languages.length;
@@ -299,7 +295,7 @@ public final class Session implements ContextProvider {
     }
     
     /**
-     * Sets current language for this session. Language should be refisterred
+     * Sets current language for this session. Language should be registered
      * for this session.
      *
      * @param language current language
@@ -541,6 +537,7 @@ public final class Session implements ContextProvider {
      *
      * @return string representation of this session
      */
+    @Override
     public String toString () {
         return "" + getClass ().getName () + " " + getLocationName () + ":" +
             getName ();
