@@ -98,7 +98,7 @@ public class TooManyLinesHintTest extends PHPHintsTestBase {
     }
 
     public void testIssue237620_02() throws Exception {
-        checkHints(new FunctionLinesHintStub(9), "testIssue237620_02.php");
+        checkHints(new FunctionLinesHintStub(5), "testIssue237620_02.php");
     }
 
     public void testIssue237620_03() throws Exception {
@@ -106,7 +106,7 @@ public class TooManyLinesHintTest extends PHPHintsTestBase {
     }
 
     public void testIssue237620_04() throws Exception {
-        checkHints(new ClassLinesHintStub(13), "testIssue237620_04.php");
+        checkHints(new ClassLinesHintStub(9), "testIssue237620_04.php");
     }
 
     private static final class FunctionLinesHintStub extends FunctionLinesHint {

@@ -56,9 +56,11 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
@@ -419,12 +421,22 @@ public abstract class TooManyLinesHint extends HintRule implements CustomisableR
         private final BaseDocument baseDocument;
         private final FileObject fileObject;
         private final TooManyLinesHint linesHint;
+        private final List<OffsetRange> commentRanges;
 
         private CheckVisitor(TooManyLinesHint linesHint, FileObject fileObject, BaseDocument baseDocument) {
             this.linesHint = linesHint;
             this.fileObject = fileObject;
             this.baseDocument = baseDocument;
             this.hints = new ArrayList<>();
+            this.commentRanges = new ArrayList<>();
+        }
+
+        @Override
+        public void visit(Program node) {
+            for (Comment comment : node.getComments()) {
+                commentRanges.add(new OffsetRange(comment.getStartOffset(), comment.getEndOffset()));
+            }
+            super.visit(node);
         }
 
         protected int countLines(final Block block) {
@@ -462,8 +474,21 @@ public abstract class TooManyLinesHint extends HintRule implements CustomisableR
             int result = 0;
             for (int lineOffset = startLineOffset; lineOffset < endLineOffset; lineOffset++) {
                 int rowStartFromLineOffset = Utilities.getRowStartFromLineOffset(baseDocument, lineOffset);
-                if (!Utilities.isRowWhite(baseDocument, rowStartFromLineOffset)) {
+                if (!Utilities.isRowWhite(baseDocument, rowStartFromLineOffset) && !isJustCommentOnLine(rowStartFromLineOffset)) {
                     result++;
+                }
+            }
+            return result;
+        }
+
+        private boolean isJustCommentOnLine(int rowStartOffset) throws BadLocationException {
+            boolean result = false;
+            int rowFirstNonWhite = Utilities.getRowFirstNonWhite(baseDocument, rowStartOffset);
+            int rowLastNonWhite = Utilities.getRowLastNonWhite(baseDocument, rowStartOffset);
+            for (OffsetRange commentRange : commentRanges) {
+                if (commentRange.containsInclusive(rowFirstNonWhite) && commentRange.containsInclusive(rowLastNonWhite)) {
+                    result = true;
+                    break;
                 }
             }
             return result;
