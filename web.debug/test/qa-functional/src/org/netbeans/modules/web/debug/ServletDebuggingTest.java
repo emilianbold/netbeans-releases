@@ -133,14 +133,11 @@ public class ServletDebuggingTest extends J2eeTestCase {
 
     /** Debug project.
      * - debug project
-     * - close "Port Selection Notice" dialog
      * - wait until debugger is started
      */
     public void testDebugProject() {
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(SAMPLE_WEB_PROJECT_NAME);
         rootNode.performPopupActionNoBlock("Debug");
-        // close info message "Use 9009 to attach the debugger to the GlassFish Instance"
-        new NbDialogOperator("Port Selection Notice").close();
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
     }
     
