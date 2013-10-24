@@ -64,7 +64,7 @@ public final class TerminalSupport {
      * @param env 
      */
     public static void openTerminal(IOContainer ioContainer, String termTitle, ExecutionEnvironment env) {
-        TerminalSupportImpl.openTerminalImpl(ioContainer, termTitle, env, null, false);
+        TerminalSupportImpl.openTerminalImpl(ioContainer, termTitle, env, null, false, false);
     }
     
     /**
@@ -73,7 +73,7 @@ public final class TerminalSupport {
      * @param env 
      */
     public static void openTerminal(IOContainer ioContainer, String termTitle, ExecutionEnvironment env, String dir) {
-        TerminalSupportImpl.openTerminalImpl(ioContainer, termTitle, env, dir, false);
+        TerminalSupportImpl.openTerminalImpl(ioContainer, termTitle, env, dir, false, false);
     }
 
     /**
@@ -88,7 +88,7 @@ public final class TerminalSupport {
             instance.open();
             instance.requestActive();
             IOContainer ioContainer = instance.getIOContainer();
-            TerminalSupportImpl.openTerminalImpl(ioContainer, termTitle, env, dir, false);
+            TerminalSupportImpl.openTerminalImpl(ioContainer, termTitle, env, dir, false, false);
         } finally {
             instance.putClientProperty(TerminalContainerTopComponent.AUTO_OPEN_LOCAL_PROPERTY, prev);
         }

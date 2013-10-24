@@ -41,35 +41,42 @@
  */
 package org.netbeans.modules.bugtracking;
 
+import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import static java.lang.Character.isSpaceChar;
+import java.util.Date;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.team.spi.TeamIssueProvider;
 import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.IssueController;
+import org.netbeans.modules.bugtracking.spi.IssuePriorityInfo;
+import org.netbeans.modules.bugtracking.spi.IssuePriorityProvider;
+import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
+import org.netbeans.modules.bugtracking.spi.IssueSchedulingProvider;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
+import org.openide.util.ImageUtilities;
 
 /**
  *
  * @author Tomas Stupka
  */
-public final class IssueImpl<I> {
+public final class IssueImpl<R, I> {
     /** 
      * public for testing purposes
      */
     public static final int SHORT_DISP_NAME_LENGTH = 15;
     
     public static final String EVENT_ISSUE_REFRESHED = IssueProvider.EVENT_ISSUE_REFRESHED;
-    
+
     private Issue issue;
-    private final RepositoryImpl repo;
+    private final RepositoryImpl<R, ?, I> repo;
     private final IssueProvider<I> issueProvider;
     private final I data;
 
-    IssueImpl(RepositoryImpl repo, IssueProvider<I> issueProvider, I data) {
+    IssueImpl(RepositoryImpl<R, ?, I> repo, IssueProvider<I> issueProvider, I data) {
         this.issueProvider = issueProvider;
         this.data = data;
         this.repo = repo;
@@ -142,8 +149,8 @@ public final class IssueImpl<I> {
         return issueProvider.getTooltip(data);
     }
 
-    public void attachPatch(File file, String description) {
-        issueProvider.attachPatch(data, file, description);
+    public void attachFile(File file, String description, boolean isPatch) {
+        issueProvider.attachFile(data, file, description, isPatch);
     }
 
     public void addComment(String comment, boolean closeAsFixed) {
@@ -181,7 +188,7 @@ public final class IssueImpl<I> {
         }
     }
 
-    public BugtrackingController getController() {
+    public IssueController getController() {
         return issueProvider.getController(data);
     }    
     
@@ -190,15 +197,15 @@ public final class IssueImpl<I> {
     }
 
     public IssueStatusProvider.Status getStatus() {
-        IssueStatusProvider sp = issueProvider.getStatusProvider();
+        IssueStatusProvider<R, I> sp = repo.getStatusProvider();
         if(sp == null) {
-            return null;
-        }
+            return IssueStatusProvider.Status.SEEN;
+        } 
         return sp.getStatus(data);
     }
 
     public void addIssueStatusListener(PropertyChangeListener l) {
-        IssueStatusProvider sp = issueProvider.getStatusProvider();
+        IssueStatusProvider<R, I> sp = repo.getStatusProvider();
         if(sp == null) {
             return;
         }
@@ -206,7 +213,7 @@ public final class IssueImpl<I> {
     }
 
     public void removeIssueStatusListener(PropertyChangeListener l) {
-        IssueStatusProvider sp = issueProvider.getStatusProvider();
+        IssueStatusProvider<R, I> sp = repo.getStatusProvider();
         if(sp == null) {
             return;
         }
@@ -214,14 +221,84 @@ public final class IssueImpl<I> {
     }
 
     public void setSeen(boolean isUptodate) {
-        IssueStatusProvider sp = issueProvider.getStatusProvider();
+        IssueStatusProvider<R, I> sp = repo.getStatusProvider();
         if(sp == null) {
             return;
         }
-        sp.setSeen(data, isUptodate);
+        sp.setSeenIncoming(data, isUptodate);
     }
     
     public boolean submit () {
-        return issueProvider.submit(data);
+        IssueStatusProvider<R, I> sp = repo.getStatusProvider();
+        if(sp == null) {
+            return false;
+        }
+        return sp.submit(data);
     }
+
+    public void discardChanges() {
+        IssueStatusProvider<R, I> sp = repo.getStatusProvider();
+        if(sp == null) {
+            return;
+        }
+        sp.discardOutgoing(data);
+    }
+
+    public boolean hasSchedule() {
+        IssueSchedulingProvider<I> isp = repo.getSchedulingProvider();
+        return isp != null;
+    }
+    
+    
+    public void setDueDate(Date date) {
+        IssueSchedulingProvider<I> isp = repo.getSchedulingProvider();
+        assert isp != null : "do no call .setDueDate() if .hasSchedule() is false"; // NOI18N
+        if(isp != null) {
+            isp.setDueDate(data, date);
+        }
+    }
+
+    public void setSchedule(IssueScheduleInfo info) {
+        IssueSchedulingProvider<I> isp = repo.getSchedulingProvider();
+        assert isp != null : "do no call .setSchedule() if .hasSchedule() is false"; // NOI18N
+        if(isp != null) {
+            isp.setSchedule(data, info);
+        }
+    }
+
+    public void setEstimate(int hours) {
+        IssueSchedulingProvider<I> isp = repo.getSchedulingProvider();
+        assert isp != null : "do no call .setEstimate() if .hasSchedule() is false"; // NOI18N
+        if(isp != null) {
+            isp.setEstimate(data, hours);
+        }
+    }
+
+    public Date getDueDate() {
+        IssueSchedulingProvider<I> isp = repo.getSchedulingProvider();
+        return isp != null ? isp.getDueDate(data) : null;
+    }
+
+    public IssueScheduleInfo getSchedule() {
+        IssueSchedulingProvider<I> isp = repo.getSchedulingProvider();
+        return isp != null ? isp.getSchedule(data) : null;
+    }
+
+    public int getEstimate() {
+        IssueSchedulingProvider<I> isp = repo.getSchedulingProvider();
+        return isp != null ? isp.getEstimate(data) : null;
+    }
+    
+    public boolean providesPriority() {
+        return repo.getPriorityProvider() != null;
+    }
+    
+    public String getPriority() {
+        return repo.getPriorityName(data);
+    }
+    
+    public Image getPriorityIcon() {
+        return repo.getPriorityIcon(data);
+    }
+    
 }

@@ -75,13 +75,14 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
     private TreeLabel lblChanged;
     final Object LOCK = new Object();
     private TreeLabel lblSeparator;
+    private static final ImageIcon CATEGORY_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/category.png", true);
 
     public CategoryNode(Category category, boolean refresh) {
         this(category, true, refresh);
     }
 
     public CategoryNode(Category category, boolean opened, boolean refresh) {
-        super(refresh, opened, null, category.getName());
+        super(refresh, opened, null, category.getName(), CATEGORY_ICON);
         this.category = category;
     }
 
@@ -314,8 +315,9 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
         return -1;
     }
 
+    @Override
     ImageIcon getIcon() {
-        return ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/category.png", true);
+        return CATEGORY_ICON;
     }
 
     @Override

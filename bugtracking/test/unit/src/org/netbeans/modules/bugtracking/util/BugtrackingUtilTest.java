@@ -45,7 +45,6 @@ package org.netbeans.modules.bugtracking.util;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.netbeans.modules.bugtracking.TestIssue;
@@ -53,7 +52,6 @@ import org.netbeans.modules.bugtracking.TestKit;
 import org.netbeans.modules.bugtracking.TestQuery;
 import org.netbeans.modules.bugtracking.TestRepository;
 import org.netbeans.modules.bugtracking.spi.*;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -151,27 +149,6 @@ public class BugtrackingUtilTest {
         public RepositoryInfo getInfo() {
             return info;
         }
-        @Override
-        public Image getIcon() { throw new UnsupportedOperationException("Not supported yet."); }
-        @Override
-        public TestIssue[] getIssues(String[] id) { throw new UnsupportedOperationException("Not supported yet."); }
-        @Override
-        public void remove() { throw new UnsupportedOperationException("Not supported yet."); }
-        @Override
-        public RepositoryController getController() { throw new UnsupportedOperationException("Not supported yet."); }
-        @Override
-        public TestQuery createQuery() { throw new UnsupportedOperationException("Not supported yet."); }
-        @Override
-        public TestIssue createIssue() { throw new UnsupportedOperationException("Not supported yet."); }
-        @Override
-        public Collection<TestQuery> getQueries() { throw new UnsupportedOperationException("Not supported yet."); }
-        @Override
-        public Collection<TestIssue> simpleSearch(String criteria) { throw new UnsupportedOperationException("Not supported yet."); }
-        @Override
-        public void removePropertyChangeListener(PropertyChangeListener listener) { }
-        @Override
-        public void addPropertyChangeListener(PropertyChangeListener listener) {  }
-
     }
 
 }

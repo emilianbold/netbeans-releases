@@ -49,7 +49,7 @@ import org.netbeans.modules.bugtracking.api.Issue;
  *
  * @author Tomas Stupka
  */
-public class RecentIssue {
+public final class RecentIssue {
     private Issue issue;
     private long ts;
     public RecentIssue(Issue issue, long ts) {

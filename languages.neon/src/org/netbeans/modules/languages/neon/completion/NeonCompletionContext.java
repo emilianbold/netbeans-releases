@@ -46,7 +46,7 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.languages.neon.spi.completion.MethodCompletionProvider;
-import org.netbeans.modules.languages.neon.spi.completion.TypeCompletionProvider;
+import org.netbeans.modules.php.spi.templates.completion.CompletionProvider;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -91,10 +91,10 @@ public enum NeonCompletionContext {
     }
 
     protected void completeTypes(List<CompletionProposal> completionProposals, NeonCompletionProposal.CompletionRequest request) {
-        Collection<? extends TypeCompletionProvider> typeCompletionProviders = CompletionProviders.getTypeProviders();
+        Collection<? extends CompletionProvider> typeCompletionProviders = CompletionProviders.getTypeProviders();
         FileObject fileObject = request.parserResult.getSnapshot().getSource().getFileObject();
-        for (TypeCompletionProvider typeCompletionProvider : typeCompletionProviders) {
-            Set<String> types = typeCompletionProvider.complete(request.prefix, fileObject);
+        for (CompletionProvider typeCompletionProvider : typeCompletionProviders) {
+            Set<String> types = typeCompletionProvider.getItems(fileObject, request.prefix);
             for (String typeName : types) {
                 completionProposals.add(new NeonCompletionProposal.TypeCompletionProposal(NeonElement.Factory.createType(typeName), request));
             }

@@ -122,7 +122,6 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 /**
@@ -135,7 +134,7 @@ final class TaskPanel extends javax.swing.JPanel {
     private final Map<Component, Boolean> enableMap = new HashMap<>();
     private static final RequestProcessor RP = LocalRepository.getInstance().getRequestProcessor();
     private boolean skipReload;
-    private final Set<String> unsavedFields = new HashSet<>();
+    private final Set<String> unsavedFields = new UnsavedFieldSet();
     private boolean reloading;
     private boolean noSummary;
     private static final String ATTRIBUTE_PRIVATE_NOTES = "nb.private.notes"; //NOI18N
@@ -677,54 +676,11 @@ final class TaskPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
-        skipReload = true;
-        enableComponents(false);
-        RP.post(new Runnable() {
-            @Override
-            public void run () {
-                boolean saved = false;
-                try {
-                    saved = task.save();
-                } finally {
-                    final boolean fSaved = saved;
-                    EventQueue.invokeLater(new Runnable() {
-                        @Override
-                        public void run () {
-                            unsavedFields.clear();
-                            enableComponents(true);
-                            btnSave.setEnabled(!fSaved);
-                            skipReload = false;
-                            refreshViewData();
-                        }
-                    });
-                }
-            }
-        });
+        saveChanges();
     }//GEN-LAST:event_btnSaveActionPerformed
 
     private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
-        skipReload = true;
-        enableComponents(false);
-        RP.post(new Runnable() {
-            @Override
-            public void run () {
-                try {
-                    task.clearModifications();
-                } finally {
-                    EventQueue.invokeLater(new Runnable() {
-                        @Override
-                        public void run () {
-                            unsavedFields.clear();
-                            enableComponents(true);
-                            btnSave.setEnabled(false);
-                            btnCancel.setEnabled(false);
-                            skipReload = false;
-                            refreshViewData();
-                        }
-                    });
-                }
-            }
-        });
+        discardUnsavedChanges();
     }//GEN-LAST:event_btnCancelActionPerformed
 
     @NbBundle.Messages({
@@ -736,10 +692,6 @@ final class TaskPanel extends javax.swing.JPanel {
                 Bundle.MSG_IssuePanel_deleteTask_message(),
                 Bundle.LBL_IssuePanel_deleteTask_title(), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
             return;
-        }
-        Container tc = SwingUtilities.getAncestorOfClass(TopComponent.class, this);
-        if (tc instanceof TopComponent) {
-            ((TopComponent) tc).close();
         }
         RP.post(new Runnable() {
             @Override
@@ -975,6 +927,12 @@ final class TaskPanel extends javax.swing.JPanel {
                     enableMap.put(btnSave, dirty);
                     enableMap.put(btnCancel, dirty);
                 }
+                
+                if (dirty) {
+                    task.fireUnsaved();
+                } else {
+                    task.fireSaved();
+                }
             }
         });
     }
@@ -1021,7 +979,7 @@ final class TaskPanel extends javax.swing.JPanel {
         if (noSummary) {
             JLabel noSummaryLabel = new JLabel();
             noSummaryLabel.setText(Bundle.IssuePanel_noSummary());
-            String icon = "org/netbeans/modules/bugtracking/local/resources/error.gif"; //NOI18N
+            String icon = "org/netbeans/modules/localtasks/resources/error.gif"; //NOI18N
             noSummaryLabel.setIcon(new ImageIcon(ImageUtilities.loadImage(icon)));
             messagePanel.add(noSummaryLabel);
         }
@@ -1066,7 +1024,7 @@ final class TaskPanel extends javax.swing.JPanel {
 
             @Override
             protected boolean storeValue () {
-                task.setTaskDueDate(dueDatePicker.getDate());
+                task.setTaskDueDate(dueDatePicker.getDate(), false);
                 return true;
             }
         });
@@ -1081,7 +1039,7 @@ final class TaskPanel extends javax.swing.JPanel {
                     cal = Calendar.getInstance();
                     cal.setTime(date);
                 }
-                task.setTaskScheduleDate(cal == null ? null : new NbDateRange(cal));
+                task.setTaskScheduleDate(cal == null ? null : new NbDateRange(cal).toSchedulingInfo(), false);
                 return true;
             }
         });
@@ -1092,7 +1050,7 @@ final class TaskPanel extends javax.swing.JPanel {
             protected boolean storeValue () {
                 int value = ((Number) estimateField.getValue()).intValue();
                 if (value != task.getEstimate()) {
-                    task.setTaskEstimate(value);
+                    task.setTaskEstimate(value, false);
                     return true;
                 } else {
                     return false;
@@ -1199,6 +1157,70 @@ final class TaskPanel extends javax.swing.JPanel {
         attributesSection.setExpanded(!config.isEditorSectionCollapsed(task.getID(), SECTION_ATTRIBUTES, false));
         attachmentsSection.setExpanded(!config.isEditorSectionCollapsed(task.getID(), SECTION_ATTACHMENTS, true));
         referencesSection.setExpanded(!config.isEditorSectionCollapsed(task.getID(), SECTION_REFERENCES, true));
+    }
+
+    boolean saveChanges () {
+        skipReload = true;
+        enableComponents(false);
+        final boolean retval[] = new boolean[] { true };
+        Runnable outOfAWT = new Runnable() {
+            @Override
+            public void run () {
+                retval[0] = false;
+                try {
+                    retval[0] = task.save();
+                } finally {
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run () {
+                            unsavedFields.clear();
+                            enableComponents(true);
+                            btnSave.setEnabled(!retval[0]);
+                            skipReload = false;
+                            refreshViewData();
+                        }
+                    });
+                }
+            }
+        };
+        if (EventQueue.isDispatchThread()) {
+            RP.post(outOfAWT);
+            return true;
+        } else {
+            outOfAWT.run();
+            return retval[0];
+        }
+    }
+
+    boolean discardUnsavedChanges () {
+        skipReload = true;
+        enableComponents(false);
+        Runnable outOfAWT = new Runnable() {
+            @Override
+            public void run () {
+                try {
+                    task.clearModifications();
+                } finally {
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run () {
+                            unsavedFields.clear();
+                            enableComponents(true);
+                            btnSave.setEnabled(false);
+                            btnCancel.setEnabled(false);
+                            skipReload = false;
+                            refreshViewData();
+                        }
+                    });
+                }
+            }
+        };
+        if (EventQueue.isDispatchThread()) {
+            RP.post(outOfAWT);
+        } else {
+            outOfAWT.run();
+        }
+        return true;
     }
 
     private class SubTaskTableMouseListener extends MouseAdapter {
@@ -1425,5 +1447,36 @@ final class TaskPanel extends javax.swing.JPanel {
         }
 
         protected abstract boolean storeValue ();
+    }
+    
+    private class UnsavedFieldSet extends HashSet<String> {
+
+        @Override
+        public boolean add (String value) {
+            boolean added = super.add(value);
+            if (added) {
+                task.fireUnsaved();
+            }
+            return added;
+        }
+
+        @Override
+        public boolean remove (Object o) {
+            boolean removed = super.remove(o);
+            if (removed && isEmpty()) {
+                task.fireSaved();
+            }
+            return removed;
+        }
+
+        @Override
+        public void clear () {
+            boolean fire = !isEmpty();
+            super.clear();
+            if (fire) {
+                task.fireSaved();
+            }
+        }
+        
     }
 }

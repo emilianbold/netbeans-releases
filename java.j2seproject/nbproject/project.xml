@@ -55,7 +55,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>3</release-version>
-                        <specification-version>3.12</specification-version>
+                        <specification-version>3.73</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -142,7 +142,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>0-1</release-version>
-                        <specification-version>1.56</specification-version>
+                        <specification-version>1.64</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -460,6 +460,7 @@ made subject to such option by the copyright holder.
             <friend-packages>
                 <friend>org.netbeans.modules.hudsonfindbugs</friend>
                 <friend>org.netbeans.modules.java.j2sedeploy</friend>
+                <friend>org.netbeans.modules.java.j2seembedded</friend>
                 <friend>org.netbeans.modules.javafx2.project</friend>
                 <friend>org.netbeans.modules.javawebstart</friend>
                 <friend>org.netbeans.modules.swingapp</friend>

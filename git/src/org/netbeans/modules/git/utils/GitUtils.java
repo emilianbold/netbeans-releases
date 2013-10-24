@@ -42,8 +42,11 @@
 
 package org.netbeans.modules.git.utils;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.EventQueue;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
@@ -59,12 +62,16 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import javax.swing.DefaultListModel;
+import javax.swing.JList;
+import javax.swing.JPanel;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
@@ -91,6 +98,7 @@ import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.QuickSearch;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -279,6 +287,23 @@ public final class GitUtils {
 
     // cached not sharable files and folders
     private static final Map<File, Set<String>> notSharable = Collections.synchronizedMap(new HashMap<File, Set<String>>(5));
+
+    public static boolean isFromRepository (File repository, File file) {
+        Git git = Git.getInstance();
+        File fileRepository = git.getRepositoryRoot(file);
+        // the file is from the given repository if it is
+        
+        if (repository.equals(fileRepository)) {
+            // either normal file in the repository
+            return true;
+        } else if (file.equals(fileRepository) && repository.equals(git.getRepositoryRoot(file.getParentFile()))) {
+            // or a gitlink inside the repository
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
     private static void addNotSharable (File topFile, String ignoredPath) {
         synchronized (notSharable) {
             // get cached patterns
@@ -982,6 +1007,139 @@ public final class GitUtils {
                     }
                 }
             });
+        }
+    }
+    
+    public static <T> void attachQuickSearch (List<T> items, JPanel panel, JList listComponent,
+            DefaultListModel model, SearchCallback<T> searchCallback) {
+        final QuickSearchCallback callback = new QuickSearchCallback<T>(items, listComponent, model, searchCallback);
+        final QuickSearch qs = QuickSearch.attach(panel, BorderLayout.SOUTH, callback);
+        qs.setAlwaysShown(true);
+        listComponent.addKeyListener(new KeyListener() {
+
+            @Override
+            public void keyTyped (KeyEvent e) {
+                qs.processKeyEvent(e);
+            }
+
+            @Override
+            public void keyPressed (KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER
+                        || e.getKeyCode() == KeyEvent.VK_ESCAPE && !callback.quickSearchActive) {
+                    // leave events up to other components
+                } else {
+                    qs.processKeyEvent(e);
+                }
+            }
+
+            @Override
+            public void keyReleased (KeyEvent e) {
+                qs.processKeyEvent(e);
+            }
+        });
+    }
+
+    public static interface SearchCallback<T> {
+        
+        public boolean contains (T item, String needle);
+        
+    }
+    
+    private static class QuickSearchCallback<T> implements QuickSearch.Callback {
+            
+        private boolean quickSearchActive;
+        private int currentPosition = 0;
+        private final List<T> results;
+        private final List<T> items;
+        private final JList component;
+        private final DefaultListModel model;
+        private final SearchCallback<T> callback;
+
+        public QuickSearchCallback (List<T> items, JList component, DefaultListModel model, SearchCallback<T> callback) {
+            this.items = new ArrayList<T>(items);
+            results = new ArrayList<T>(items);
+            this.component = component;
+            this.model = model;
+            this.callback = callback;
+        }
+        
+        @Override
+        public void quickSearchUpdate (String searchText) {
+            quickSearchActive = true;
+            T selected = items.get(0);
+            if (currentPosition > -1) {
+                selected = results.get(currentPosition);
+            }
+            results.clear();
+            results.addAll(items);
+            if (!searchText.isEmpty()) {
+                for (ListIterator<T> it = results.listIterator(); it.hasNext(); ) {
+                    T item = it.next();
+                    if (!callback.contains(item, searchText)) {
+                        it.remove();
+                    }
+                }
+            }
+            currentPosition = results.indexOf(selected);
+            if (currentPosition == -1 && !results.isEmpty()) {
+                currentPosition = 0;
+            }
+            updateView();
+        }
+
+        @Override
+        public void showNextSelection (boolean forward) {
+            if (currentPosition != -1) {
+                currentPosition += forward ? 1 : -1;
+                if (currentPosition < 0) {
+                    currentPosition = results.size() - 1;
+                } else if (currentPosition == results.size()) {
+                    currentPosition = 0;
+                }
+                updateSelection();
+            }
+        }
+
+        @Override
+        public String findMaxPrefix (String prefix) {
+            return prefix;
+        }
+
+        @Override
+        public void quickSearchConfirmed () {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run () {
+                    component.requestFocusInWindow();
+                }
+            });
+        }
+
+        @Override
+        public void quickSearchCanceled () {
+            quickSearchUpdate("");
+            quickSearchActive = false;
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run () {
+                    component.requestFocusInWindow();
+                }
+            });
+        }
+
+        private void updateView () {
+            model.removeAllElements();
+            for (T r : results) {
+                model.addElement(r);
+            }
+            updateSelection();
+        }
+
+        private void updateSelection () {
+            if (currentPosition > -1 && currentPosition < results.size()) {
+                T rev = results.get(currentPosition);
+                component.setSelectedValue(rev, true);
+            }
         }
     }
 

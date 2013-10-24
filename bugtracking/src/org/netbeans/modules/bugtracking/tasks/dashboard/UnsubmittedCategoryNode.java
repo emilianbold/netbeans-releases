@@ -60,6 +60,7 @@ public class UnsubmittedCategoryNode extends CategoryNode implements Submitable 
 
     private final RepositoryImpl repository;
     private final PropertyChangeListener unsubmittedListener;
+    private static final ImageIcon UNSUBMITTED_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/category_unsubmitted.png", true);
 
     public UnsubmittedCategoryNode(Category category, RepositoryImpl repository, boolean refresh) {
         super(category, refresh);
@@ -70,7 +71,7 @@ public class UnsubmittedCategoryNode extends CategoryNode implements Submitable 
 
     @Override
     ImageIcon getIcon() {
-        return ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/category_unsubmitted.png", true);
+        return UNSUBMITTED_ICON;
     }
 
     @Override
@@ -104,7 +105,7 @@ public class UnsubmittedCategoryNode extends CategoryNode implements Submitable 
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(RepositoryImpl.EVENT_UNSUBMITTED_ISSUES_CHANGED)) {
                 UnsubmittedCategoryNode.this.updateContent();
-                DashboardViewer.getInstance().updateUnsubmittedCategory(UnsubmittedCategoryNode.this);
+                DashboardViewer.getInstance().updateCategoryNode(UnsubmittedCategoryNode.this);
             }
         }
     }

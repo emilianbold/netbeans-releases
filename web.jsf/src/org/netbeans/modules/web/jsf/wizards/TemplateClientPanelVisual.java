@@ -54,7 +54,10 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
@@ -73,7 +76,6 @@ import org.netbeans.modules.web.jsf.JsfConstants;
 import org.netbeans.modules.web.jsf.dialogs.BrowseFolders;
 import org.netbeans.modules.web.jsf.wizards.TemplateClientPanel.TemplateEntry;
 import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
-import org.netbeans.modules.web.jsfapi.api.NamespaceUtils;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -91,9 +93,11 @@ import org.openide.util.Parameters;
  */
 
 public class TemplateClientPanelVisual extends javax.swing.JPanel implements HelpCtx.Provider {
-    
+
+    private static final long serialVersionUID = 1L;
+
     private WizardDescriptor wizardDescriptor;
-    
+
     private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
 
     private final static String TAG_NAME = "ui:insert";    //NOI18N
@@ -120,6 +124,9 @@ public class TemplateClientPanelVisual extends javax.swing.JPanel implements Hel
         jlTemplate = new javax.swing.JLabel();
         jtfTemplate = new javax.swing.JTextField();
         jbBrowse = new javax.swing.JButton();
+        sectionsToGenerateLabel = new javax.swing.JLabel();
+        SectionsScrollPane = new javax.swing.JScrollPane();
+        sectionsTable = new javax.swing.JTable();
 
         bgRootTag.add(jrbHtml);
         jrbHtml.setSelected(true);
@@ -153,6 +160,13 @@ public class TemplateClientPanelVisual extends javax.swing.JPanel implements Hel
             }
         });
 
+        sectionsToGenerateLabel.setText(org.openide.util.NbBundle.getMessage(TemplateClientPanelVisual.class, "LBL_SectionsToGenerate")); // NOI18N
+
+        sectionsTable.setModel(getNoTemplateTableModel());
+        sectionsTable.setEnabled(false);
+        sectionsTable.setTableHeader(null);
+        SectionsScrollPane.setViewportView(sectionsTable);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -166,12 +180,16 @@ public class TemplateClientPanelVisual extends javax.swing.JPanel implements Hel
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jbBrowse))
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jlRootTag)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jrbComposition)
-                    .addComponent(jrbHtml, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(250, 250, 250))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jlRootTag)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jrbComposition)
+                            .addComponent(jrbHtml, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(sectionsToGenerateLabel))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addComponent(SectionsScrollPane)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -186,7 +204,10 @@ public class TemplateClientPanelVisual extends javax.swing.JPanel implements Hel
                     .addComponent(jrbHtml, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jrbComposition)
-                .addContainerGap(33, Short.MAX_VALUE))
+                .addGap(18, 18, 18)
+                .addComponent(sectionsToGenerateLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(SectionsScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 79, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     
@@ -248,7 +269,13 @@ public class TemplateClientPanelVisual extends javax.swing.JPanel implements Hel
 
     private SourceGroup[] getProjectDocumentSourceGroups() {
         Sources sources = ProjectUtils.getSources(Templates.getProject(wizardDescriptor));
-        SourceGroup[] sourceGroups = sources.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
+        SourceGroup[] docSourceGroups = sources.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
+        SourceGroup[] sourceGroups;
+        if (docSourceGroups.length == 0) {
+            sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        } else {
+            sourceGroups = docSourceGroups;
+        }
         return sourceGroups;
     }
 
@@ -370,7 +397,13 @@ public class TemplateClientPanelVisual extends javax.swing.JPanel implements Hel
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,        //NOI18N
                     NbBundle.getMessage(TemplateClientPanelVisual.class, message));
         }
-        return (message == null);
+
+        if (message == null) {
+            return true;
+        } else {
+            resetSectionsTable();
+            return false;
+        }
     }
 
     private void parseTemplateData(FileObject fo) {
@@ -378,10 +411,9 @@ public class TemplateClientPanelVisual extends javax.swing.JPanel implements Hel
         Source source = Source.create(fo);
         try {
             ParserManager.parse(Collections.singleton(source), new UserTask() {
-
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
-                    templateData = new LinkedHashSet<String>();
+                    templateData = new LinkedHashSet<>();
                     Result result = resultIterator.getParserResult(0);
                     if (result.getSnapshot().getMimeType().equals("text/html")) {
                         HtmlParserResult htmlResult = (HtmlParserResult)result;
@@ -409,6 +441,12 @@ public class TemplateClientPanelVisual extends javax.swing.JPanel implements Hel
             });
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
+        }
+
+        if (!templateData.isEmpty()) {
+            loadSectionsTable();
+        } else {
+            resetSectionsTable();
         }
     }
 
@@ -443,6 +481,20 @@ public class TemplateClientPanelVisual extends javax.swing.JPanel implements Hel
     
     public Collection<String> getTemplateData(){
         return templateData;
+    }
+
+    public Collection<String> getTemplateDataToGenerate() {
+        if (sectionsTable.getModel() instanceof SectionsTableModel) {
+            List<String> sections = new ArrayList<>();
+            for (int i = 0; i < sectionsTable.getRowCount(); i++) {
+                if ((Boolean) sectionsTable.getValueAt(i, 0)) {
+                    sections.add((String) sectionsTable.getValueAt(i, 1));
+                }
+            }
+            return sections;
+        } else {
+            return getTemplateData();
+        }
     }
 
     public TemplateEntry getTemplate() {
@@ -483,8 +535,45 @@ public class TemplateClientPanelVisual extends javax.swing.JPanel implements Hel
             ((ChangeListener)it.next()).stateChanged(ev);
         }
     }
+
+    @Messages({
+        "TemplateClientPanelVisual.lbl.select.valid.template=Select valid or non-empty template..."
+    })
+    private static TableModel getNoTemplateTableModel() {
+        TableModel model = new DefaultTableModel(1, 1);
+        model.setValueAt(Bundle.TemplateClientPanelVisual_lbl_select_valid_template(), 0, 0);
+        return model;
+    }
+
+    private void resetSectionsTable() {
+        sectionsTable.setEnabled(false);
+        sectionsTable.setModel(getNoTemplateTableModel());
+        sectionsTable.repaint();
+    }
+
+    private void loadSectionsTable() {
+        sectionsTable.setEnabled(true);
+
+        // Setup table model of the section's table
+        TableModel model = new SectionsTableModel(templateData.size(), 2);
+        int index = 0;
+        for (Iterator<String> it = templateData.iterator(); it.hasNext();) {
+            String section = it.next();
+            model.setValueAt(true, index, 0);
+            model.setValueAt(section, index, 1);
+            index++;
+        }
+        sectionsTable.setModel(model);
+
+        // Setup column widths
+        sectionsTable.getColumnModel().getColumn(0).setPreferredWidth(50);
+        sectionsTable.getColumnModel().getColumn(1).setPreferredWidth(300);
+
+        sectionsTable.repaint();
+    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JScrollPane SectionsScrollPane;
     private javax.swing.ButtonGroup bgRootTag;
     private javax.swing.JButton jbBrowse;
     private javax.swing.JLabel jlRootTag;
@@ -492,6 +581,31 @@ public class TemplateClientPanelVisual extends javax.swing.JPanel implements Hel
     private javax.swing.JRadioButton jrbComposition;
     private javax.swing.JRadioButton jrbHtml;
     private javax.swing.JTextField jtfTemplate;
+    private javax.swing.JTable sectionsTable;
+    private javax.swing.JLabel sectionsToGenerateLabel;
     // End of variables declaration//GEN-END:variables
+
+    private static class SectionsTableModel extends DefaultTableModel {
+        private static final long serialVersionUID = 1L;
+
+        public SectionsTableModel(int rowCount, int columnCount) {
+            super(rowCount, columnCount);
+        }
+
+        @Override
+        public Class<?> getColumnClass(int columnIndex) {
+            if (columnIndex == 0) {
+                return Boolean.class;
+            } else {
+                return super.getColumnClass(columnIndex);
+            }
+        }
+
+        @Override
+        public boolean isCellEditable(int row, int col) {
+            return (col == 0);
+        }
+
+    }
 
 }

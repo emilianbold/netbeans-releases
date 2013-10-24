@@ -46,7 +46,7 @@ package org.netbeans.spi.project.ui;
 
 /**
  * CustomizerProvider enhanced with ability to open customizer on given
- * category and/or subcategory.
+ * category or subcategory.
  * (Moved here from org.netbeans.modules.java.api.common, where it is deprecated)
  * 
  * @since 1.71
@@ -54,7 +54,9 @@ package org.netbeans.spi.project.ui;
 public interface CustomizerProvider2 extends CustomizerProvider {
 
     /**
-     * Show customizer and preselect a category.
+     * Show customizer and preselect a category or subcategory.
+     * @param preselectedCategory <b>category or subcategory</b> to be selected
+     * @param preselectedSubCategory <b>not used</b>
      */
     void showCustomizer(String preselectedCategory, String preselectedSubCategory);
 

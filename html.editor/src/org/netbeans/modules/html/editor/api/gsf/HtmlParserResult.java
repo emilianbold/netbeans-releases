@@ -43,6 +43,7 @@ package org.netbeans.modules.html.editor.api.gsf;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -70,6 +71,7 @@ import org.netbeans.modules.html.editor.lib.api.validation.ValidationContext;
 import org.netbeans.modules.html.editor.lib.api.validation.ValidationResult;
 import org.netbeans.modules.html.editor.lib.api.validation.ValidatorService;
 import org.netbeans.modules.html.editor.gsf.HtmlParserResultAccessor;
+import org.netbeans.modules.html.editor.lib.api.HtmlSource;
 import org.netbeans.modules.html.editor.lib.api.MaskedAreas;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.html.editor.lib.api.foreign.MaskingChSReader;
@@ -197,12 +199,19 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
         return result.getDeclaredNamespaces();
     }
 
+    private Collection<Node> getAllRoots() {
+        Collection<Node> allRoots = new ArrayList<>();
+        allRoots.add(root());
+        allRoots.addAll(roots().values());
+        allRoots.add(root(SyntaxAnalyzerResult.FILTERED_CODE_NAMESPACE));
+        allRoots.add(rootOfUndeclaredTagsParseTree());
+        
+        return allRoots;
+    }
+    
     public Node findBySemanticRange(int offset, boolean forward) {
-         //first try to find the leaf in html content
-        Node mostLeaf = ElementUtils.findBySemanticRange(root(), offset, forward);
-        //now search the non html trees
-        for (String uri : getNamespaces().keySet()) {
-            Node root = root(uri);
+        Node mostLeaf = null;
+        for (Node root : getAllRoots()) {
             Node leaf = ElementUtils.findBySemanticRange(root, offset, forward);
             if (leaf == null) {
                 continue;
@@ -220,11 +229,8 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
     }
     
     public Element findByPhysicalRange(int offset, boolean forward) {
-         //first try to find the leaf in html content
-        Element mostLeaf = ElementUtils.findByPhysicalRange(root(), offset, forward);
-        //now search the non html trees
-        for (String uri : getNamespaces().keySet()) {
-            Node root = root(uri);
+        Element mostLeaf = null;
+        for (Node root : getAllRoots()) {
             Element leaf = ElementUtils.findByPhysicalRange(root, offset, forward);
             if (leaf == null) {
                 continue;
@@ -282,7 +288,8 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
             if(validator == null) {
                 return Collections.emptyList();
             }
-            MaskedAreas maskedAreas = result.getMaskedAreas(SyntaxAnalyzerResult.FilteredContent.CUSTOM_TAGS);
+            HtmlSource source = new HtmlSource(getSnapshot());
+            MaskedAreas maskedAreas = result.getMaskedAreas(source, SyntaxAnalyzerResult.FilteredContent.CUSTOM_TAGS);
             CharSequence original = getSnapshot().getText().toString();
             MaskingChSReader masker = new MaskingChSReader(original, maskedAreas.positions(), maskedAreas.lens());
             

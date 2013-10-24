@@ -60,7 +60,6 @@ import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitTransportUpdate;
 import org.netbeans.libs.git.SearchCriteria;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
-import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
  *
@@ -274,7 +273,7 @@ public class MergeTest extends AbstractGitTestCase {
         assertEquals(logs[1].getRevision(), branchInfo.getRevision());
         assertEquals(logs[2].getRevision(), masterInfo.getRevision());
         String logFileContent[] = read(new File(workDir, ".git/logs/HEAD")).split("\\n");
-        assertEquals("merge new_branch: Merge made by resolve.", 
+        assertEquals("merge new_branch: Merge made by recursive.", 
                 logFileContent[logFileContent.length - 1].substring(logFileContent[logFileContent.length - 1].indexOf("merge new_branch")));
         
         client.reset("master~1", GitClient.ResetType.HARD, NULL_PROGRESS_MONITOR);
@@ -291,7 +290,7 @@ public class MergeTest extends AbstractGitTestCase {
         assertEquals(logs[1].getRevision(), branchInfo.getRevision());
         assertEquals(logs[2].getRevision(), masterInfo.getRevision());
         logFileContent = read(new File(workDir, ".git/logs/HEAD")).split("\\n");
-        assertEquals("merge " + branchInfo.getRevision() + ": Merge made by resolve.", logFileContent[logFileContent.length - 1].substring(logFileContent[logFileContent.length - 1].indexOf("merge ")));
+        assertEquals("merge " + branchInfo.getRevision() + ": Merge made by recursive.", logFileContent[logFileContent.length - 1].substring(logFileContent[logFileContent.length - 1].indexOf("merge ")));
     }
     
     public void testMergeFailOnLocalChanges () throws Exception {
@@ -344,5 +343,42 @@ public class MergeTest extends AbstractGitTestCase {
         GitMergeResult result = client.merge("origin/master", NULL_PROGRESS_MONITOR);
         assertEquals(MergeStatus.FAST_FORWARD, result.getMergeStatus());
         assertEquals(Arrays.asList(new String[] { ObjectId.zeroId().getName(), updates.get("origin/master").getNewObjectId() }), Arrays.asList(result.getMergedCommits()));
+    }
+    
+    public void testMergeCrissCross_232904 () throws Exception {
+        File f1 = new File(workDir, "f1");
+        File f2 = new File(workDir, "f2");
+        File f3 = new File(workDir, "f3");
+        write(f1, "initial content");
+        GitClient client = getClient(workDir);
+        File[] files = new File[] { f1, f2, f3 };
+        client.add(files, NULL_PROGRESS_MONITOR);
+        client.commit(files, "initial commit", null, null, NULL_PROGRESS_MONITOR);
+        
+        client.createBranch(BRANCH_NAME, "master", NULL_PROGRESS_MONITOR);
+        
+        // change on master
+        write(f1, Constants.MASTER);
+        client.add(files, NULL_PROGRESS_MONITOR);
+        client.commit(files, "master commit", null, null, NULL_PROGRESS_MONITOR);
+        GitRevisionInfo masterCommit = client.log("master", NULL_PROGRESS_MONITOR);
+        
+        // change on branch
+        client.checkoutRevision(BRANCH_NAME, true, NULL_PROGRESS_MONITOR);
+        write(f2, BRANCH_NAME);
+        client.add(files, NULL_PROGRESS_MONITOR);
+        client.commit(files, "branch commit", null, null, NULL_PROGRESS_MONITOR);
+        GitRevisionInfo branchCommit = client.log(BRANCH_NAME, NULL_PROGRESS_MONITOR);
+        
+        // merge last master commit (not merge) into branch
+        client.checkoutRevision(BRANCH_NAME, true, NULL_PROGRESS_MONITOR);
+        client.merge(masterCommit.getRevision(), NULL_PROGRESS_MONITOR);
+        
+        // merge last branch commit (not merge) into master
+        client.checkoutRevision(Constants.MASTER, true, NULL_PROGRESS_MONITOR);
+        client.merge(branchCommit.getRevision(), NULL_PROGRESS_MONITOR);
+        
+        client.checkoutRevision(Constants.MASTER, true, NULL_PROGRESS_MONITOR);
+        client.merge(BRANCH_NAME, NULL_PROGRESS_MONITOR);
     }
 }

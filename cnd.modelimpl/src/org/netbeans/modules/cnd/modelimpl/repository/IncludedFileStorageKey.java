@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.modelimpl.repository;
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
@@ -87,23 +88,17 @@ public final class IncludedFileStorageKey extends ProjectContainerKey {
     }
 
     @Override
-    public int hashCode() {
-        return 37*KeyObjectFactory.KEY_INCLUDED_FILE_STORAGE_KEY + (37*this.includedUnitIndex + super.hashCode());
+    public int hashCode(int unitID) {
+        return 19*includedUnitIndex + super.hashCode(unitID);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
+    public boolean equals(int unitThis, Key obj, int unitObject) {
+        if (!super.equals(unitThis, obj, unitObject)) {
             return false;
         }
         final IncludedFileStorageKey other = (IncludedFileStorageKey) obj;
-        if (this.includedUnitIndex != other.includedUnitIndex) {
-            return false;
-        }
-        return true;
+        return includedUnitIndex == other.includedUnitIndex;
     }
 
     @Override
@@ -122,7 +117,7 @@ public final class IncludedFileStorageKey extends ProjectContainerKey {
         if (level == 0) {
             return this.includedUnitIndex;
         } else if (level == 1) {
-            return KeyObjectFactory.KEY_INCLUDED_FILE_STORAGE_KEY;
+            return getHandler();
         }
         throw new IllegalArgumentException("invalid level " + level + " for " + this); // NOI18N
     }
@@ -133,7 +128,7 @@ public final class IncludedFileStorageKey extends ProjectContainerKey {
     }
 
     @Override
-    public final short getKindPresentation() {
-	return KeyObjectFactory.KEY_INCLUDED_FILE_STORAGE_KEY;
+    public short getHandler() {
+        return KeyObjectFactory.KEY_INCLUDED_FILE_STORAGE_KEY;
     }
 }

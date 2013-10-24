@@ -50,6 +50,7 @@ import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
 import org.openide.util.Lookup;
 
 /**
@@ -61,7 +62,7 @@ import org.openide.util.Lookup;
     displayName=DummyBugtrackingConnector.DISPLAY_NAME,
     tooltip=DummyBugtrackingConnector.TOOLTIP
 )    
-public class DummyBugtrackingConnector extends BugtrackingConnector {
+public class DummyBugtrackingConnector implements BugtrackingConnector {
     public static final String ID = "DummyBugtrackingConnector";
     public static final String DISPLAY_NAME = "Dummy bugtracking connector";
     public static final String TOOLTIP = "bugtracking connector created for testing purposes";
@@ -81,7 +82,11 @@ public class DummyBugtrackingConnector extends BugtrackingConnector {
     }
 
     public Repository createRepository(String repositoryName) {
-        RepositoryImpl newRepository = TestKit.getRepository(new DummyRepository(this, repositoryName));
+        return createRepository(repositoryName, true);
+    }
+    
+    public Repository createRepository(String repositoryName, boolean canAttach) {
+        RepositoryImpl newRepository = TestKit.getRepository(new DummyRepository(this, repositoryName, canAttach));
         storeRepository(newRepository);
         return newRepository.getRepository();
     }

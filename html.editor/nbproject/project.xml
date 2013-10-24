@@ -206,7 +206,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>3</release-version>
-                        <specification-version>3.18</specification-version>
+                        <specification-version>3.25</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -508,11 +508,12 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>com.ext4yii.editor</friend> <!--gevik@ext4yii.com-->
-                <friend>nl.truesoftware.blendsdk</friend> <!--gevik@ext4yii.com-->
+                <friend>com.ext4yii.editor</friend>
+                <friend>nl.truesoftware.blendsdk</friend>
                 <friend>org.netbeans.modules.css.visual</friend>
                 <friend>org.netbeans.modules.groovy.gsp</friend>
                 <friend>org.netbeans.modules.html.angular</friend>
+                <friend>org.netbeans.modules.html.custom</friend>
                 <friend>org.netbeans.modules.html.knockout</friend>
                 <friend>org.netbeans.modules.javascript.editing</friend>
                 <friend>org.netbeans.modules.javascript2.editor</friend>
@@ -529,6 +530,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.html.editor.api.completion</package>
                 <package>org.netbeans.modules.html.editor.api.gsf</package>
                 <package>org.netbeans.modules.html.editor.api.index</package>
+                <package>org.netbeans.modules.html.editor.spi</package>
                 <package>org.netbeans.modules.html.editor.spi.embedding</package>
             </friend-packages>
         </data>

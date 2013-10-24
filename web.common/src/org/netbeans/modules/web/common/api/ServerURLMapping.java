@@ -151,6 +151,10 @@ public final class ServerURLMapping {
         }
         if ("file".equals(serverURL.getProtocol())) { //NOI18N
             try {
+                if (serverURL.toURI().getQuery() != null) {
+                    // #236532 - strip down query part from the URL:
+                    serverURL = WebUtils.stringToUrl(WebUtils.urlToString(serverURL, true));
+                }
                 File f = FileUtil.normalizeFile(Utilities.toFile(serverURL.toURI()));
                 return FileUtil.toFileObject(f);
                 //FileObject fo = URLMapper.findFileObject(serverURL);

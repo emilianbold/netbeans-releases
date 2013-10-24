@@ -218,12 +218,12 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
         return ExecutionEnvironmentFactory.createNew(user, host, port);
     }
 
-    @Override
     /**
      * Returns a FileOblect referenced by the provided URI.
      * Strictly speaking this is not an URL, but rather a string returned by
      * one of the toURL() methods.
      */
+    @Override
     public FileObject urlToFileObject(String path) {
         DLightLibsCommonLogger.assertNonUiThreadOnce(Level.INFO);
 
@@ -269,11 +269,54 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     }
 
     @Override
+    public FileSystem urlToFileSystem(String path) {
+        DLightLibsCommonLogger.assertNonUiThreadOnce(Level.INFO);
+
+        if (!path.startsWith(RemoteFileURLStreamHandler.PROTOCOL_PREFIX)) {
+            return null;
+        }
+
+        String url = path.substring(RemoteFileURLStreamHandler.PROTOCOL_PREFIX.length());
+        if (url.startsWith("//")) { // NOI18N
+            url = url.substring(2);
+        }
+
+        int idx = url.indexOf(":/"); // NOI18N
+
+        String envPart;
+        if (idx < 0) {
+            envPart = url;
+        } else {
+            envPart = url.substring(0, idx);
+        }
+
+        ExecutionEnvironment env = null;
+        if (envPart.indexOf('@') < 0) {
+            // The magic below is about getting connected environment even
+            // when no user is specified ...
+            RemoteLogger.assertTrueInConsole(false, "Trying to access remote file system without user name"); // NOI18N
+            idx = envPart.lastIndexOf(':');
+            String host = (idx < 0) ? envPart : envPart.substring(0, idx);
+            env = RemoteFileSystemUtils.getExecutionEnvironment(host, 0);
+        }
+        if (env == null) {
+            env = ExecutionEnvironmentFactory.fromUniqueID(envPart);
+        }
+        if (env == null) {
+            throw new IllegalArgumentException("Invalid path: " + path); //NOI18N
+        }
+
+        RemoteFileSystem fs = RemoteFileSystemManager.getInstance().getFileSystem(env);
+        return fs;
+    }
+
+
     /**
      * Returns an URL-like string for the passed fileObject.
      * Later it could be passed to the urlToFileObject() method to get a 
      * FileObject. 
      */
+    @Override
     public String toURL(FileObject fileObject) {
         if (!(fileObject instanceof RemoteFileObject)) {
             return null;

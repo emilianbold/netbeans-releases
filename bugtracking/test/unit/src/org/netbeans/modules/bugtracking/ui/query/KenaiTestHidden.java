@@ -42,31 +42,8 @@
 
 package org.netbeans.modules.bugtracking.ui.query;
 
-import java.awt.Image;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Set;
 import java.util.logging.Level;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.bugtracking.LogHandler;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.team.spi.RepositoryUser;
-import org.netbeans.modules.bugtracking.cache.IssueCache;
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-import org.openide.windows.TopComponent;
 
 /**
  *

@@ -479,6 +479,10 @@ public class LogTest extends AbstractGitTestCase {
             RevCommit next = walk.next();
             assertNotNull(next);
             walk.reset();
+            SearchCriteria crit = new SearchCriteria();
+            crit.setMessage("ab");
+            GitRevisionInfo[] log = getClient(workDir).log(crit, NULL_PROGRESS_MONITOR);
+            assertEquals(1, log.length);
         }
 
         {
@@ -487,26 +491,36 @@ public class LogTest extends AbstractGitTestCase {
             RevCommit next = walk.next();
             assertNotNull(next);
             walk.reset();
+            SearchCriteria crit = new SearchCriteria();
+            crit.setMessage("bc");
+            GitRevisionInfo[] log = getClient(workDir).log(crit, NULL_PROGRESS_MONITOR);
+            assertEquals(1, log.length);
         }
 
         {
             walk.setRevFilter(AndRevFilter.create(RevFilter.ALL, MessageRevFilter.create("cd")));
             walk.markStart(c);
             RevCommit next = walk.next();
-            // when starts failing, the JGit bug is fixed: https://bugs.eclipse.org/bugs/show_bug.cgi?id=409144
-            // remove the WA in LogCommand
-            assertNull(next);
+            // JGit bug is fixed: https://bugs.eclipse.org/bugs/show_bug.cgi?id=409144
+            assertNotNull(next);
             walk.reset();
+            SearchCriteria crit = new SearchCriteria();
+            crit.setMessage("cd");
+            GitRevisionInfo[] log = getClient(workDir).log(crit, NULL_PROGRESS_MONITOR);
+            assertEquals(1, log.length);
         }
 
         {
             walk.setRevFilter(AndRevFilter.create(RevFilter.ALL, MessageRevFilter.create("abcd")));
             walk.markStart(c);
             RevCommit next = walk.next();
-            // when starts failing, the JGit bug is fixed: https://bugs.eclipse.org/bugs/show_bug.cgi?id=409144
-            // remove the WA in LogCommand
-            assertNull(next);
+            // JGit bug is fixed: https://bugs.eclipse.org/bugs/show_bug.cgi?id=409144
+            assertNotNull(next);
             walk.reset();
+            SearchCriteria crit = new SearchCriteria();
+            crit.setMessage("abcd");
+            GitRevisionInfo[] log = getClient(workDir).log(crit, NULL_PROGRESS_MONITOR);
+            assertEquals(1, log.length);
         }
     }
     

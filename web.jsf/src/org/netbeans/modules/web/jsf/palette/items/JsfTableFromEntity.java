@@ -73,7 +73,7 @@ public final class JsfTableFromEntity extends FromEntityBase implements ActiveEd
 
     @Override
     protected String getTemplate(String templatesStyle) {
-        return JsfTemplateUtils.getSnippetTemplatePath(templatesStyle, ManagedBeanCustomizer.TABLE_TEMPLATE);
+        return JsfTemplateUtils.getTemplatePath(JsfTemplateUtils.TemplateType.SNIPPETS, templatesStyle, ManagedBeanCustomizer.TABLE_TEMPLATE);
     }
 
 }

@@ -67,6 +67,8 @@ class FolderComparator extends DataFolder.SortMode {
     public static final int LAST_MODIFIED = 4;
     /** by folders, then size */
     public static final int SIZE = 5;
+    /** by extension, then name */
+    public static final int EXTENSIONS = 6;
 
 
     /** mode to use */
@@ -106,6 +108,8 @@ class FolderComparator extends DataFolder.SortMode {
             return compareLastModified(obj1, obj2);
         case SIZE:
             return compareSize(obj1, obj2);
+        case EXTENSIONS:
+            return compareExtensions(obj1, obj2);
         default:
             assert false : mode;
             return 0;
@@ -156,6 +160,29 @@ class FolderComparator extends DataFolder.SortMode {
 
         // otherwise compare by names
         return compareNames(o1, o2);
+    }
+
+    /** for sorting folders first and then by extensions and then by names */
+    private int compareExtensions(Object o1, Object o2) {
+        FileObject obj1 = findFileObject(o1);
+        FileObject obj2 = findFileObject(o2);
+
+        boolean folder1 = obj1.isFolder();
+        boolean folder2 = obj2.isFolder();
+
+        if (folder1 != folder2) {
+            return folder1 ? -1 : 1; // folders first
+        } else if (folder1) { // && folder2
+            return obj1.getNameExt().compareTo(obj2.getNameExt()); // by nameExt
+        } else {
+            String ext1 = obj1.getExt();
+            String ext2 = obj2.getExt();
+            if (ext1.equals(ext2)) { // same extensions
+                return obj1.getName().compareTo(obj2.getName()); // by name
+            } else { // different extensions
+                return ext1.compareTo(ext2); // by extension
+            }
+        }
     }
 
     /** for sorting data objects by their classes */

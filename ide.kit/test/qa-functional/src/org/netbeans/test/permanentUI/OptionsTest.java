@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -43,49 +43,44 @@ package org.netbeans.test.permanentUI;
 
 import java.awt.Component;
 import java.awt.Container;
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import javax.swing.JLabel;
 import javax.swing.JTabbedPane;
 import junit.framework.Test;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.OptionsOperator;
-import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.junit.Manager;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.permanentUI.utils.NbMenuItem;
+import org.netbeans.test.permanentUI.utils.ProjectContext;
 import org.netbeans.test.permanentUI.utils.Utilities;
 
 /**
  *
- * @author Lukas Hasik
+ * @author Lukas Hasik, Marian.Mirilovic@oracle.com
  */
-public class OptionsTest extends JellyTestCase {
-
-    public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
-                OptionsTest.class).clusters(".*").enableModules(".*");
-
-        conf.addTest("testOptionsCategories");
-        return conf.suite();
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        System.out.println("########  " + getName() + "  #######");
-
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
+public class OptionsTest extends PermUITestCase {
 
     public OptionsTest(String testName) {
         super(testName);
+    }
+
+    public static Test suite() {
+        return OptionsTest.emptyConfiguration().
+                addTest(OptionsTest.class, "testOptionsCategories").
+                clusters(".*").enableModules(".*").
+                suite();
+    }
+
+    @Override
+    public void initialize() throws IOException {
+        // do nothing
+    }
+    
+    @Override
+    public ProjectContext getContext() {
+        return ProjectContext.NONE;    
     }
 
     public void testOptionsCategories() {
@@ -94,11 +89,15 @@ public class OptionsTest extends JellyTestCase {
         Component optionsPanel = oo.findSubComponent(getCompChooser("org.netbeans.modules.options.OptionsPanel"));
         //we need container to be able to traverse inside   
         Container optionsContainer = ContainerOperator.findContainerUnder(optionsPanel);
-        ArrayList<Component> optionsCategories = Utilities.findComponentsInContainer(
+        ArrayList<Component> optionsCategories = new ArrayList<Component>();
+        optionsCategories.addAll(Utilities.findComponentsInContainer(
                 optionsContainer,
                 getCompChooser("org.netbeans.modules.options.OptionsPanel$CategoryButton"),
-                true);
-
+                true));
+        optionsCategories.addAll(Utilities.findComponentsInContainer(
+                optionsContainer,
+                getCompChooser("org.netbeans.modules.options.OptionsPanel$NimbusCategoryButton"),
+                true));
 
         NbMenuItem ideOptions = new NbMenuItem(getName());//let store it in NbMenuItem TODO: refactor to make it simplier
         ArrayList<NbMenuItem> categories = new ArrayList<NbMenuItem>();
@@ -125,58 +124,31 @@ public class OptionsTest extends JellyTestCase {
         miscCategory.setSubmenu(miscCategories);
 
         //load categories order from golden file
-        //ArrayList = categoriesOrderGolden
-        final String ideOptionsLogFile = getWorkDirPath() + File.separator + getName() + "_ide.txt";
-        PrintStream ideFile = null;
-        final String permuiOptionsLogsFile = getWorkDirPath() + File.separator + getName() + "_golden.txt";
-        PrintStream goldenFile = null;
-        final String diffFile = getWorkDirPath() + File.separator + getName() + ".diff";
-
+        LogFiles logFiles = new LogFiles();
+        PrintStream ideFileStream = null;
+        PrintStream goldenFileStream = null;
 
         try {
-            ideFile = new PrintStream(ideOptionsLogFile);
-            goldenFile = new PrintStream(permuiOptionsLogsFile);
-            
+            ideFileStream = logFiles.getIdeFileStream();
+            goldenFileStream = logFiles.getGoldenFileStream();
+
             //read the golden file
-            NbMenuItem goldenOptions = Utilities.parseSubTreeByLines(getOptionsGoldenFile());
+            NbMenuItem goldenOptions = Utilities.parseSubTreeByLines(getGoldenFile("options", "options-categories").getAbsolutePath());
             goldenOptions.setName(getName());
+
             //make a diff
-            Utilities.printMenuStructure(ideFile, ideOptions, "  ", 100);
-            Utilities.printMenuStructure(goldenFile, goldenOptions, "  ", 100);
-            Manager.getSystemDiff().diff(ideOptionsLogFile, permuiOptionsLogsFile, diffFile);
-            //assert
-            String message = Utilities.readFileToString(diffFile);
+            Utilities.printMenuStructure(ideFileStream, ideOptions, "  ", 100);
+            Utilities.printMenuStructure(goldenFileStream, goldenOptions, "  ", 100);
 
-            assertFile(message, permuiOptionsLogsFile, ideOptionsLogFile, diffFile);
+            Manager.getSystemDiff().diff(logFiles.pathToIdeLogFile, logFiles.pathToGoldenLogFile, logFiles.pathToDiffLogFile);
+            String message = Utilities.readFileToString(logFiles.pathToDiffLogFile);
+            assertFile(message, logFiles.pathToGoldenLogFile, logFiles.pathToIdeLogFile, logFiles.pathToDiffLogFile);
         } catch (IOException ex) {
-            ex.printStackTrace();
+            ex.printStackTrace(System.err);
+        } finally {
+            ideFileStream.close();
+            goldenFileStream.close();
         }
     }
 
-    private ComponentChooser getCompChooser(final String className) {
-        return new ComponentChooser() {
-
-            public boolean checkComponent(Component comp) {
-                return comp.getClass().getName().startsWith(className);
-            }
-
-            public String getDescription() {
-                return className;
-            }
-        };
-    }
-
-    /**
-     * constructs the relative path to the golden file to Options permanent UI spec
-     * @return
-     */
-    private String getOptionsGoldenFile() {
-        String dataDir = "";
-        try {
-            dataDir = getDataDir().getCanonicalPath();
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-        return dataDir + File.separator + "permanentUI" + File.separator + "options" + File.separator + "options-categories.txt";
-    }
 }

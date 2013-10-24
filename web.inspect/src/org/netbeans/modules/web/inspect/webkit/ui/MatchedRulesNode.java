@@ -103,6 +103,9 @@ public class MatchedRulesNode extends AbstractNode {
         Node currentNode = node;
         for (InheritedStyleEntry entry : matchedStyles.getInheritedRules()) {
             currentNode = currentNode.getParentNode();
+            if (currentNode == null) {
+                break; // Issue 235611
+            }
             for (Rule rule : entry.getMatchedRules()) {
                 if (Utilities.showInCSSStyles(rule) && containsInheritedProperties(rule)) {
                     nodes.add(createMatchedRuleNode(currentNode, rule, properties, false));

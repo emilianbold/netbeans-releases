@@ -43,12 +43,13 @@
 package org.netbeans.modules.odcs.tasks.issue;
 
 import com.tasktop.c2c.server.tasks.domain.TaskStatus;
+import java.util.Collection;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import javax.swing.table.DefaultTableModel;
-import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.odcs.tasks.ODCS;
 import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
+import org.netbeans.modules.odcs.tasks.repository.ODCSRepository.Cache;
 import org.openide.util.NbBundle;
 
 /**
@@ -84,9 +85,9 @@ public class SubtaskTableModel extends DefaultTableModel {
 
     private static Object[][] data(ODCSIssue issue) {
         ODCSRepository repository = issue.getRepository();
-        IssueCache cache = repository.getIssueCache();
-        String[] subtasks = issue.getSubtasks();
-        Object[][] data = new Object[subtasks.length][];
+        Cache cache = repository.getIssueCache();
+        Collection<String> subtasks = issue.getSubtasks();
+        Object[][] data = new Object[subtasks.size()][];
         int count = 0;
         for (String id : subtasks) {
             ODCSIssue subTask = (ODCSIssue)cache.getIssue(id);
@@ -106,7 +107,7 @@ public class SubtaskTableModel extends DefaultTableModel {
                 ODCS.LOG.log(Level.WARNING, "no subtask returned for key {0}", id); // NOI18N
             }
         }
-        if(count < subtasks.length) {
+        if(count < subtasks.size()) {
             Object[][] ret = new Object[count][];
             System.arraycopy(data, 0, ret, 0, count);
             return ret;

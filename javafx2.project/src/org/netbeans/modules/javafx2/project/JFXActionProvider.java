@@ -44,13 +44,20 @@ package org.netbeans.modules.javafx2.project;
 import java.awt.Dialog;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 import javax.swing.JButton;
@@ -65,6 +72,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.modules.java.j2seproject.api.J2SEBuildPropertiesProvider;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.javafx2.project.ui.JFXApplicationClassChooser;
 import org.netbeans.modules.javafx2.project.ui.JFXRunPanel;
@@ -94,6 +102,8 @@ import org.openide.util.TaskListener;
     service=ActionProvider.class,
     projectTypes={@LookupProvider.Registration.ProjectType(id="org-netbeans-modules-java-j2seproject",position=90)})
 public class JFXActionProvider implements ActionProvider {
+
+    private static final Logger LOG = Logger.getLogger(JFXActionProvider.class.getName());
 
     private final Project prj;
     private boolean isJSAvailable = true;
@@ -150,24 +160,32 @@ public class JFXActionProvider implements ActionProvider {
             if(props != null) {
                 final ActionProgress listener = ActionProgress.start(context);
                 try {
-                    String target;
-                    if(command.equalsIgnoreCase(COMMAND_BUILD) || command.equalsIgnoreCase(COMMAND_REBUILD)) {
-                        target = ACTIONS.get(command).concat(noScript); // NOI18N
-                    } else {
-                        if(runAs.equalsIgnoreCase(JFXProjectProperties.RunAsType.STANDALONE.getString())) {
-                            target = "jfxsa-".concat(ACTIONS.get(command)).concat(noScript); //NOI18N
+                    List<String> targets;
+                    final Map<String,List<String>> targetReplacements = loadTargetsFromConfig(prj);
+                    targets = targetReplacements.get(command);
+                    if (targets == null) {
+                        if(command.equalsIgnoreCase(COMMAND_BUILD) || command.equalsIgnoreCase(COMMAND_REBUILD)) {
+                            targets = Collections.singletonList(ACTIONS.get(command).concat(noScript)); // NOI18N
                         } else {
-                            if(runAs.equalsIgnoreCase(JFXProjectProperties.RunAsType.ASWEBSTART.getString())) {
-                                target = "jfxws-".concat(ACTIONS.get(command)).concat(noScript); //NOI18N
-                            } else { //JFXProjectProperties.RunAsType.INBROWSER
-                                target = "jfxbe-".concat(ACTIONS.get(command)).concat(noScript); //NOI18N
+                            if(runAs.equalsIgnoreCase(JFXProjectProperties.RunAsType.STANDALONE.getString())) {
+                                targets = Collections.singletonList("jfxsa-".concat(ACTIONS.get(command)).concat(noScript)); //NOI18N
+                            } else {
+                                if(runAs.equalsIgnoreCase(JFXProjectProperties.RunAsType.ASWEBSTART.getString())) {
+                                    targets = Collections.singletonList("jfxws-".concat(ACTIONS.get(command)).concat(noScript)); //NOI18N
+                                } else { //JFXProjectProperties.RunAsType.INBROWSER
+                                    targets = Collections.singletonList("jfxbe-".concat(ACTIONS.get(command)).concat(noScript)); //NOI18N
+                                }
                             }
                         }
                     }
 
                     collectStartupExtenderArgs(props, command, context);
-
-                    ActionUtils.runTarget(buildFo, new String[] {target}, props).addTaskListener(new TaskListener() {
+                    final Set<String> concealedProperties = collectAdditionalBuildProperties(props, command, context);
+                    ActionUtils.runTarget(
+                            buildFo,
+                            targets.toArray(new String[targets.size()]),
+                            props,
+                            concealedProperties).addTaskListener(new TaskListener() {
                         @Override public void taskFinished(Task task) {
                             listener.finished(((ExecutorTask) task).result() == 0);
                         }
@@ -202,6 +220,46 @@ public class JFXActionProvider implements ActionProvider {
         return buildScriptPath;
     }
 
+    @NonNull
+    private static HashMap<String,List<String>> loadTargetsFromConfig(
+            @NonNull final Project project) {
+        HashMap<String,List<String>> targets = new HashMap<>(6);
+        final J2SEPropertyEvaluator ep = project.getLookup().lookup(J2SEPropertyEvaluator.class);
+        final PropertyEvaluator evaluator = ep.evaluator();
+        String config = evaluator.getProperty(ProjectProperties.PROP_PROJECT_CONFIGURATION_CONFIG);
+        // load targets from shared config
+        FileObject propFO = project.getProjectDirectory().getFileObject("nbproject/configs/" + config + ".properties");
+        if (propFO == null) {
+            return targets;
+        }
+        Properties props = new Properties();
+        try (final InputStream is = propFO.getInputStream()) {
+            props.load(is);
+        } catch (IOException ex) {
+            LOG.warning(ex.getMessage());
+            return targets;
+        }
+        Enumeration<?> propNames = props.propertyNames();
+        while (propNames.hasMoreElements()) {
+            String propName = (String) propNames.nextElement();
+            if (propName.startsWith("$target.")) {
+                String tNameVal = props.getProperty(propName);
+                if (tNameVal != null && !tNameVal.equals("")) {
+                    String cmdNameKey = propName.substring("$target.".length());
+                    StringTokenizer stok = new StringTokenizer(tNameVal.trim(), " ");
+                    List<String> targetNames = new ArrayList<String>(3);
+                    while (stok.hasMoreTokens()) {
+                        targetNames.add(stok.nextToken());
+                    }
+                    targets.put(
+                        cmdNameKey,
+                        targetNames.isEmpty() ? null : targetNames);
+                }
+            }
+        }
+        return targets;
+    }
+
     @CheckForNull
     private FileObject findBuildXml () {
         final J2SEPropertyEvaluator ep = prj.getLookup().lookup(J2SEPropertyEvaluator.class);
@@ -222,6 +280,41 @@ public class JFXActionProvider implements ActionProvider {
         if (b.length() > 0) {
             p.put("run.jvmargs.ide", b.toString()); // NOI18N
         }
+    }
+
+    @NonNull
+    private Set<String> collectAdditionalBuildProperties(
+        @NonNull final Map<? super String, ? super String> p,
+        @NonNull final String command,
+        @NonNull final Lookup context) {
+        final Set<String> concealedProperties = new HashSet<>();
+        for (J2SEBuildPropertiesProvider pp : prj.getLookup().lookupAll(J2SEBuildPropertiesProvider.class)) {
+            final Map<String,String> contrib = pp.createAdditionalProperties(command, context);
+            assert contrib != null;
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(
+                    Level.FINE,
+                    "J2SEBuildPropertiesProvider: {0} added following build properties: {1}",   //NOI18N
+                    new Object[]{
+                        pp.getClass(),
+                        contrib
+                    });
+            }
+            p.putAll(contrib);
+            final Set<String> concealedContrib = pp.createConcealedProperties(command, context);
+            assert concealedContrib != null;
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(
+                    Level.FINE,
+                    "J2SEBuildPropertiesProvider: {0} added following concealed properties: {1}",   //NOI18N
+                    new Object[]{
+                        pp.getClass(),
+                        concealedContrib
+                    });
+            }
+            concealedProperties.addAll(concealedContrib);
+        }
+        return Collections.unmodifiableSet(concealedProperties);
     }
     
     private List<String> runJvmargsIde(String command, Lookup context) {

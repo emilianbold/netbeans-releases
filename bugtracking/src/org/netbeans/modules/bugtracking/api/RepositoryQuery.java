@@ -41,9 +41,14 @@
  */
 package org.netbeans.modules.bugtracking.api;
 
+import java.io.File;
 import java.util.Collection;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.spi.RepositoryQueryImplementation;
+import org.netbeans.modules.bugtracking.BugtrackingOwnerSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
 
@@ -69,17 +74,31 @@ public final class RepositoryQuery {
         }
         Collection<? extends RepositoryQueryImplementation> impls = getImplementations();
         for (RepositoryQueryImplementation repositoryOwnerQuery : impls) {
-            Repository repo = repositoryOwnerQuery.getRepository(fileObject, askIfUnknown);
-            if(repo != null) {
-                return repo;
+            String url = repositoryOwnerQuery.getRepositoryUrl(fileObject);
+            if(url != null) {
+                Collection<RepositoryImpl> repos = RepositoryRegistry.getInstance().getKnownRepositories(false);
+                for (RepositoryImpl r : repos) {
+                    if(r.getUrl().equals(url)) {
+                        return r.getRepository();
+                    }
+                }
             }
         }
-        return null;
+        return getRepositoryIntern(fileObject, askIfUnknown);
     }
 
     private Collection<? extends RepositoryQueryImplementation> getImplementations() {
         Collection<? extends RepositoryQueryImplementation> result = Lookup.getDefault().lookupAll(RepositoryQueryImplementation.class);
         return result;
+    }
+    
+    private Repository getRepositoryIntern(FileObject fileObject, boolean askIfUnknown) {
+        File file = FileUtil.toFile(fileObject);
+        if(file == null) {
+            return null;
+        }
+        RepositoryImpl impl = BugtrackingOwnerSupport.getInstance().getRepository(file, askIfUnknown);
+        return impl != null ? impl.getRepository() : null;
     }
     
 }

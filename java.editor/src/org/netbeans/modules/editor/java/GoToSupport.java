@@ -71,6 +71,8 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -87,7 +89,13 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.AbstractElementVisitor6;
 import javax.lang.model.util.ElementFilter;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+
+import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.lexer.JavadocTokenId;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -98,11 +106,13 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.api.java.source.ui.ElementJavadoc;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.progress.ProgressUtils;
+import org.netbeans.editor.ext.ToolTipSupport;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.lib.editor.util.StringEscapeUtils;
 import org.netbeans.modules.java.editor.javadoc.JavadocImports;
@@ -155,7 +165,7 @@ public class GoToSupport {
                     Context resolved = resolveContext(controller, doc, offset, goToSource);
 
                     if (resolved != null) {
-                        result[0] = computeTooltip(controller, resolved, type);
+                        result[0] = computeTooltip(controller, doc, resolved, type);
                     }
                 }
             });
@@ -394,7 +404,7 @@ public class GoToSupport {
         return new Context(classType, el);
     }
 
-    private static String computeTooltip(CompilationInfo controller, Context resolved, HyperlinkType type) {
+    private static String computeTooltip(final CompilationInfo controller, final Document doc, Context resolved, HyperlinkType type) {
         DisplayNameElementVisitor v = new DisplayNameElementVisitor(controller);
 
         if (resolved.resolved.getKind() == ElementKind.CONSTRUCTOR && resolved.classType != null && resolved.classType.getKind() == TypeKind.DECLARED) {
@@ -403,7 +413,53 @@ public class GoToSupport {
             v.visit(resolved.resolved, true);
         }
 
-        String result = v.result.toString();
+        String result = null;
+        try {
+            final ElementJavadoc jdoc = ElementJavadoc.create(controller, resolved.resolved);
+            Future<String> text = jdoc != null ? jdoc.getTextAsync() : null;
+            result = text != null ? text.get(1, TimeUnit.SECONDS) : null;
+            if (result != null) {
+                int idx = 0;
+                for (int i = 0; i < 3 && idx >= 0; i++) {
+                    idx = result.indexOf("<p>", idx + 1); //NOI18N
+                }
+                if (idx >= 0) {
+                    result = result.substring(0, idx + 3);
+                    result += "<a href='***'>more...</a>"; //NOI18N
+                }
+                idx = result.indexOf("<p id=\"not-found\">"); //NOI18N
+                if (idx >= 0) {
+                    result = result.substring(0, idx);
+                }
+                doc.putProperty("TooltipResolver.hyperlinkListener", new HyperlinkListener() { //NOI18N
+                    @Override
+                    public void hyperlinkUpdate(HyperlinkEvent e) {                    
+                        if (e != null && HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType())) {
+                            String desc = e.getDescription();
+                            if (desc != null) {
+                                ElementJavadoc link = "***".contentEquals(desc) ? jdoc : jdoc.resolveLink(desc); //NOI18N
+                                if (link != null) {
+                                    JTextComponent comp = EditorRegistry.lastFocusedComponent();
+                                    if (comp != null && comp.getDocument() == doc) {
+                                        ToolTipSupport tts = org.netbeans.editor.Utilities.getEditorUI(comp).getToolTipSupport();
+                                        if (tts != null) {
+                                            tts.setToolTipVisible(false);
+                                        }
+                                    }
+                                    JavaCompletionProvider.JavaCompletionQuery.outerDocumentation.set(new JavaCompletionDoc(link));
+                                    Completion.get().showDocumentation();
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        } catch (Exception ex) {}
+        
+        if (result == null) {
+            result = v.result.toString();
+        }
+        
         int overridableKind = overridableKind(resolved.resolved);
 
         if (overridableKind != (-1) && type != null) {

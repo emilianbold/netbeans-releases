@@ -118,7 +118,7 @@ public class ColoringStorageTest extends NbTestCase {
     }
     
     public void testAllLanguagesHighlights() {
-        ColoringStorage cs = new ColoringStorage(false);
+        ColoringStorage cs = new ColoringStorage(ColoringStorage.FAV_HIGHLIGHT);
         Map<String, AttributeSet> colorings = cs.load(MimePath.EMPTY, "MyProfileXyz", true); //NOI18N
         assertNotNull("Colorings map should not be null", colorings);
         assertEquals("Wrong number of colorings", 1, colorings.size());
@@ -129,7 +129,7 @@ public class ColoringStorageTest extends NbTestCase {
     }
     
     public void testAllLanguagesHighlights2() {
-        ColoringStorage cs = new ColoringStorage(false);
+        ColoringStorage cs = new ColoringStorage(ColoringStorage.FAV_HIGHLIGHT);
         Map<String, AttributeSet> colorings = cs.load(MimePath.EMPTY, "MyProfileXyz", false); //NOI18N
         assertNotNull("Colorings map should not be null", colorings);
         assertEquals("Wrong number of colorings", 1, colorings.size());
@@ -218,7 +218,7 @@ public class ColoringStorageTest extends NbTestCase {
     }
     
     public void testLegacyFilesWithNoDTD_Issue113137() {
-        ColoringStorage cs = new ColoringStorage(true);
+        ColoringStorage cs = new ColoringStorage(ColoringStorage.FAV_TOKEN);
         Map<String, AttributeSet> colorings = cs.load(MimePath.parse("text/x-legacy"), "NetBeans", false); //NOI18N
         assertNotNull("Colorings map should not be null", colorings);
         assertEquals("Wrong number of colorings", 2, colorings.size());

@@ -97,8 +97,13 @@ public class JiraRepositoryProvider extends TeamRepositoryProvider<JiraRepositor
     }
 
     @Override
-    public NbJiraIssue[] getIssues(JiraRepository r, String[] ids) {
+    public Collection<NbJiraIssue> getIssues(JiraRepository r, String[] ids) {
         return r.getIssues(ids);
+    }
+
+    @Override
+    public boolean canAttachFiles(JiraRepository r) {
+        return true;
     }
 
     @Override
@@ -111,11 +116,6 @@ public class JiraRepositoryProvider extends TeamRepositoryProvider<JiraRepositor
         r.addPropertyChangeListener(listener);
     }
 
-    @Override
-    public Collection<NbJiraIssue> getUnsubmittedIssues (JiraRepository r) {
-        return r.getUnsubmittedIssues();
-    }
-    
     /********************************************************************************
      * Kenai
      ********************************************************************************/
@@ -137,6 +137,11 @@ public class JiraRepositoryProvider extends TeamRepositoryProvider<JiraRepositor
         return repository instanceof KenaiRepository ? 
             ((KenaiRepository)repository).getKenaiProject() :
             null;
+    }
+
+    @Override
+    public NbJiraIssue createIssue(JiraRepository r, String summary, String description) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
 }

@@ -4,22 +4,20 @@ Show Changes            W
 Diff            >       D
 Add                     A
 Commit...               M
-Update...               U
-Revert Modifications    R
+Checkout >              K
+Revert Modifications... R
 Show Annotations        N
-Search History          H
-Conflicts       >       F
+Show History            H
+Resolve Conflicts >     F
 ===================
 Ignore          >       I
 Patches         >       P
 ===================
 Branch/Tag      >       B
-Queues          >       Q
 Remote          >       E
-Recover         >       V
+Revert/Recover  >       V
 ===================
-View...                 V
-Properties...           O
+Repository Browser      Y
 ===================
 Shelve Changes  >       S
 Disconnect...           O

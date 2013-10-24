@@ -274,14 +274,7 @@ public class ODCSBuilderAccessorTest {
      * Synchronize hudson instance.
      */
     private void syncHudsonInstance() {
-        ContextAwareAction syncAction = FileUtil.getConfigObject(
-                "org-netbeans-modules-hudson/Actions/instance/"
-                + "org-netbeans-modules-hudson-ui-actions-SynchronizeAction"
-                + ".shadow",
-                ContextAwareAction.class);
-        Action a = syncAction.createContextAwareInstance(
-                Lookups.fixed(hudsonInstance));
-        a.actionPerformed(new ActionEvent(this, 0, "sync")); // synchronize
+        hudsonInstance.synchronize(false);
     }
 
     /**

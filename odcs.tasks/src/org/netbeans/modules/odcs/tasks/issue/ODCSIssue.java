@@ -53,10 +53,11 @@ import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
@@ -75,7 +76,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskOperation;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.util.UIUtils;
@@ -140,7 +141,7 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
     private static final URL ICON_CONFLICT_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/odcs/tasks/resources/conflict.png"); //NOI18N
     private static final URL ICON_UNSUBMITTED_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/odcs/tasks/resources/unsubmitted.png"); //NOI18N
     private boolean loading;
-
+    
     public ODCSIssue(NbTask task, ODCSRepository repo) {
         super(task);
         this.repository = repo;
@@ -554,7 +555,7 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
     public void attachPatch(File file, String description) {
         // HACK for attaching hg bundles - they are NOT patches
         boolean isPatch = !file.getName().endsWith(".hg"); //NOI18N
-        addAttachment(file, null, description, null, isPatch);
+        addAttachment(file, description, description, null, isPatch);
     }
     
     void addAttachment (File file, final String comment, final String desc, String contentType, final boolean patch) {
@@ -651,11 +652,7 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
                         updateTooltip();
                         fireDataChanged();
                         String id = getID();
-                        try {
-                            repository.getIssueCache().setIssueData(id, ODCSIssue.this);
-                        } catch (IOException ex) {
-                            ODCS.LOG.log(Level.INFO, null, ex);
-                        }
+                        repository.getIssueCache().setIssue(id, ODCSIssue.this);
                         ODCS.LOG.log(Level.FINE, "created issue #{0}", id);
                     } else {
                         ODCS.LOG.log(Level.FINE, "submiting failed");
@@ -704,24 +701,24 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
         return updateModel() && refresh();
     }
 
-    public BugtrackingController getController() {
+    public IssueController getController() {
         if(controller == null) {
             controller = new ODCSIssueController(this);
         }
         return controller;
     }
 
-    public String[] getSubtasks() {
+    public Collection<String> getSubtasks() {
         String value = getRepositoryFieldValue(IssueField.SUBTASK);
         value = value != null ? value.trim() : ""; // NOI18N
         if("".equals(value)) { // NOI18N
-            return new String[0];
+            return Collections.emptyList();
         } else {
             String[] ret = value.split(","); // NOI18N
             for (int i = 0; i < ret.length; i++) {
                 ret[i] = ret[i].trim();
             }
-            return ret;
+            return Arrays.asList(ret);
         }
     }
     
@@ -731,7 +728,7 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
     }
 
     public boolean hasSubtasks() {
-        return getSubtasks().length > 0;
+        return getSubtasks().size() > 0;
     }
 
     public String getParentId() {
@@ -901,6 +898,26 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
 
     void delete () {
         deleteTask();
+    }
+    
+    public boolean discardLocalEdits () {
+        final boolean retval[] = new boolean[1];
+        runWithModelLoaded(new Runnable() {
+            @Override
+            public void run () {
+                clearUnsavedChanges();
+                retval[0] = cancelChanges();
+                if (controller != null) {
+                    controller.modelStateChanged(hasUnsavedChanges(), hasLocalEdits());
+                    controller.refreshViewData(false);
+                }
+            }
+        });
+        return retval[0];
+    }
+
+    public String getPriorityID() {
+        return getPriority().getId().toString();
     }
 
     private static class IssueFieldColumnDescriptor extends ColumnDescriptor<String> {
@@ -1081,6 +1098,14 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
     
     private void fireStatusChanged() {
         support.firePropertyChange(IssueStatusProvider.EVENT_STATUS_CHANGED, null, null);
+    }
+
+    protected void fireUnsaved() {
+        support.firePropertyChange(IssueController.PROPERTY_ISSUE_NOT_SAVED, null, null);
+    }
+ 
+    protected void fireSaved() {
+        support.firePropertyChange(IssueController.PROPERTY_ISSUE_SAVED, null, null);
     }
 
     private boolean refresh(boolean afterSubmitRefresh) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache

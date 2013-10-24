@@ -44,16 +44,17 @@ package org.netbeans.modules.localtasks;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.Collection;
+import java.util.Collections;
 import org.netbeans.modules.localtasks.task.LocalTask;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
+import org.netbeans.modules.bugtracking.spi.IssueController;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
 
 /**
  *
  * @author Ondrej Vrabec
  */
-public class IssueProviderImpl extends org.netbeans.modules.bugtracking.spi.IssueProvider<LocalTask> {
-    private IssueStatusProvider<LocalTask> statusProvider;
+public class IssueProviderImpl implements IssueProvider<LocalTask> {
 
     @Override
     public String getDisplayName (LocalTask data) {
@@ -71,8 +72,8 @@ public class IssueProviderImpl extends org.netbeans.modules.bugtracking.spi.Issu
     }
 
     @Override
-    public String[] getSubtasks (LocalTask data) {
-        return new String[0];
+    public Collection<String> getSubtasks (LocalTask data) {
+        return Collections.emptyList();
     }
 
     @Override
@@ -101,12 +102,12 @@ public class IssueProviderImpl extends org.netbeans.modules.bugtracking.spi.Issu
     }
 
     @Override
-    public void attachPatch (LocalTask data, File file, String description) {
+    public void attachFile (LocalTask data, File file, String description, boolean isPatch) {
         data.attachPatch(file, description);
     }
 
     @Override
-    public BugtrackingController getController (LocalTask data) {
+    public IssueController getController (LocalTask data) {
         return data.getController();
     }
 
@@ -118,31 +119,6 @@ public class IssueProviderImpl extends org.netbeans.modules.bugtracking.spi.Issu
     @Override
     public void removePropertyChangeListener (LocalTask data, PropertyChangeListener listener) {
         data.removePropertyChangeListener(listener);
-    }
-
-    @Override
-    public IssueStatusProvider getStatusProvider () {
-        if(statusProvider == null) {
-            statusProvider = new IssueStatusProvider<LocalTask>() {
-                @Override
-                public IssueStatusProvider.Status getStatus(LocalTask issue) {
-                    return Status.SEEN;
-                }
-                @Override
-                public void setSeen (LocalTask issue, boolean uptodate) {
-                    // and what should this suppose to do?
-                }
-                @Override
-                public void removePropertyChangeListener(LocalTask issue, PropertyChangeListener listener) {
-                    issue.removePropertyChangeListener(listener);
-                }
-                @Override
-                public void addPropertyChangeListener(LocalTask issue, PropertyChangeListener listener) {
-                    issue.addPropertyChangeListener(listener);
-                }
-            };
-        }
-        return statusProvider;
     }
     
 }

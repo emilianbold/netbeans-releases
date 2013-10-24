@@ -126,7 +126,8 @@ public class RepositoryInfo {
     }
 
     /**
-     * Do NOT call from EDT
+     * Can be called from EDT, but if no info is yet available it will be
+     * refreshed and initialized asynchronously
      * @param repositoryRoot existing repository root
      * @return null if repositoryRoot is not an existing git repository
      */
@@ -298,7 +299,7 @@ public class RepositoryInfo {
     }
 
     /**
-     * May be <code>null</code> if repository could not be initialized
+     * May be {@link GitBranch#NO_BRANCH_INSTANCE} if repository could not be initialized
      * @return 
      */
     public GitBranch getActiveBranch () {
@@ -370,13 +371,26 @@ public class RepositoryInfo {
             for (Map.Entry<String, GitBranch> e : oldBranches.entrySet()) {
                 GitBranch oldBranch = e.getValue();
                 GitBranch newBranch = newBranches.get(e.getKey());
-                if (!oldBranch.getId().equals(newBranch.getId())) {
+                if (!oldBranch.getId().equals(newBranch.getId())
+                        || !equalTracking(newBranch, oldBranch)) {
                     retval = false;
                     break;
                 }
             }
         }
         return retval;
+    }
+
+    private static boolean equalTracking (GitBranch newBranch, GitBranch oldBranch) {
+        GitBranch tracked1 = newBranch.getTrackedBranch();
+        GitBranch tracked2 = oldBranch.getTrackedBranch();
+        boolean equal = tracked1 == tracked2;
+        if (!equal) {
+            equal = tracked1 != null && tracked2 != null
+                    && tracked1.getName().equals(tracked2.getName())
+                    && tracked1.getId().equals(tracked2.getId());
+        }
+        return equal;
     }
 
     private static boolean equalsTags (Map<String, GitTag> oldTags, Map<String, GitTag> newTags) {

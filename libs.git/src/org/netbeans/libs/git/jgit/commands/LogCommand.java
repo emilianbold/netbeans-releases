@@ -55,9 +55,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.eclipse.jgit.diff.DiffConfig;
 import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.FollowFilter;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -65,7 +65,11 @@ import org.eclipse.jgit.revwalk.RevFlag;
 import org.eclipse.jgit.revwalk.RevSort;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.revwalk.filter.AndRevFilter;
+import org.eclipse.jgit.revwalk.filter.AuthorRevFilter;
 import org.eclipse.jgit.revwalk.filter.CommitTimeRevFilter;
+import org.eclipse.jgit.revwalk.filter.CommitterRevFilter;
+import org.eclipse.jgit.revwalk.filter.MessageRevFilter;
+import org.eclipse.jgit.revwalk.filter.OrRevFilter;
 import org.eclipse.jgit.revwalk.filter.RevFilter;
 import org.eclipse.jgit.treewalk.filter.AndTreeFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
@@ -75,7 +79,6 @@ import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitObjectType;
 import org.netbeans.libs.git.GitRevisionInfo;
-import org.netbeans.libs.git.GitUser;
 import org.netbeans.libs.git.SearchCriteria;
 import org.netbeans.libs.git.jgit.DelegatingGitProgressMonitor;
 import org.netbeans.libs.git.jgit.GitClassFactory;
@@ -128,6 +131,7 @@ public class LogCommand extends GitCommand {
             RevWalk fullWalk = new RevWalk(repository);
             Map<String, GitBranch> allBranches;
             Map<String, RevCommit> branchCommits;
+            DiffConfig diffConfig = repository.getConfig().get(DiffConfig.KEY);
             List<RevFlag> branchFlags;
             if (fetchBranchInfo) {
                 allBranches = Utils.getAllBranches(repository, getClassFactory(), new DelegatingGitProgressMonitor(monitor));
@@ -180,15 +184,12 @@ public class LogCommand extends GitCommand {
                         walk.markStart(markStartCommit(walk.lookupCommit(Utils.findCommit(repository, e.getValue().getId())), interestingFlag));
                     }
                 }
-                applyCriteria(walk, criteria, interestingFlag);
+                applyCriteria(walk, criteria, interestingFlag, diffConfig);
                 walk.sort(RevSort.TOPO);
                 walk.sort(RevSort.COMMIT_TIME_DESC, true);
                 int remaining = criteria.getLimit();
                 for (Iterator<RevCommit> it = walk.iterator(); it.hasNext() && !monitor.isCanceled() && remaining != 0;) {
                     RevCommit commit = it.next();
-                    if (!applyCriteriaAfter(criteria, commit)) {
-                        continue;
-                    }
                     addRevision(getClassFactory().createRevisionInfo(fullWalk.parseCommit(commit),
                             getAffectedBranches(commit, allBranches, branchFlags), repository));
                     --remaining;
@@ -231,13 +232,14 @@ public class LogCommand extends GitCommand {
         listener.notifyRevisionInfo(info);
     }
 
-    private void applyCriteria (RevWalk walk, SearchCriteria criteria, final RevFlag partOfResultFlag) {
+    private void applyCriteria (RevWalk walk, SearchCriteria criteria,
+            final RevFlag partOfResultFlag, DiffConfig diffConfig) {
         File[] files = criteria.getFiles();
         if (files.length > 0) {
             Collection<PathFilter> pathFilters = Utils.getPathFilters(getRepository().getWorkTree(), files);
             if (!pathFilters.isEmpty()) {
                 if (criteria.isFollow() && pathFilters.size() == 1) {
-                    walk.setTreeFilter(FollowFilter.create(pathFilters.iterator().next().getPath()));
+                    walk.setTreeFilter(FollowFilter.create(pathFilters.iterator().next().getPath(), diffConfig));
                 } else {
                     walk.setTreeFilter(AndTreeFilter.create(TreeFilter.ANY_DIFF, PathFilterGroup.create(pathFilters)));
                 }
@@ -268,14 +270,14 @@ public class LogCommand extends GitCommand {
             
         });
         
-//        String username = criteria.getUsername();
-//        if (username != null && !(username = username.trim()).isEmpty()) {
-//            filter = AndRevFilter.create(filter, OrRevFilter.create(CommitterRevFilter.create(username), AuthorRevFilter.create(username)));
-//        }
-//        String message = criteria.getMessage();
-//        if (message != null && !(message = message.trim()).isEmpty()) {
-//            filter = AndRevFilter.create(filter, MessageRevFilter.create(message));
-//        }
+        String username = criteria.getUsername();
+        if (username != null && !(username = username.trim()).isEmpty()) {
+            filter = AndRevFilter.create(filter, OrRevFilter.create(CommitterRevFilter.create(username), AuthorRevFilter.create(username)));
+        }
+        String message = criteria.getMessage();
+        if (message != null && !(message = message.trim()).isEmpty()) {
+            filter = AndRevFilter.create(filter, MessageRevFilter.create(message));
+        }
         Date from  = criteria.getFrom();
         Date to  = criteria.getTo();
         if (from != null && to != null) {
@@ -286,23 +288,6 @@ public class LogCommand extends GitCommand {
             filter = AndRevFilter.create(filter, CommitTimeRevFilter.before(to));
         }
         walk.setRevFilter(filter);
-    }
-
-    private boolean applyCriteriaAfter (SearchCriteria criteria, RevCommit commit) {
-        boolean apply = true;
-        String username = criteria.getUsername();
-        if (username != null && !(username = username.trim()).isEmpty()) {
-            apply = applyTo(commit.getAuthorIdent(), username) || applyTo(commit.getCommitterIdent(), username);
-        }
-        String message = criteria.getMessage();
-        if (message != null && !(message = message.trim()).isEmpty()) {
-            apply &= commit.getFullMessage().contains(message);
-        }
-        return apply;
-    }
-
-    private boolean applyTo (PersonIdent ident, String pattern) {
-        return ident != null && new GitUser(ident.getName(), ident.getEmailAddress()).toString().contains(pattern);
     }
 
     private RevCommit markStartCommit (RevCommit commit, RevFlag interestingFlag) {

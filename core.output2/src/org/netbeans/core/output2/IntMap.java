@@ -66,9 +66,9 @@ import org.openide.util.Exceptions;
  */
 final class IntMap {
     private int[] keys = new int[] { Integer.MAX_VALUE, Integer.MAX_VALUE, 
-        Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE};
+        Integer.MAX_VALUE, Integer.MAX_VALUE};
         
-    private Object[] vals = new Object[5];
+    private Object[] vals = new Object[4];
     private int last = -1;
     
     /** Creates a new instance of IntMap */

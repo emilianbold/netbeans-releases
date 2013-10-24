@@ -43,9 +43,9 @@ package org.netbeans.modules.bugtracking;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import java.util.Collection;
+import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
-import org.openide.nodes.Node;
 
 /**
  *
@@ -53,34 +53,68 @@ import org.openide.nodes.Node;
  */
 public abstract class TestIssue {
 
+    public abstract String getID();
+    
     public abstract String getDisplayName();
 
-    public abstract String getTooltip();
+    public void removePropertyChangeListener(PropertyChangeListener listener) { }
 
-    public abstract String getID();
+    public void addPropertyChangeListener(PropertyChangeListener listener) { }
+    
+    public String getTooltip() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public abstract String getSummary();
+    public String getSummary() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
+    public String getDescription() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public abstract boolean isNew();
+    public boolean isNew() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public abstract boolean refresh();
+    public boolean refresh() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public abstract void addComment(String comment, boolean closeAsFixed);
+    public void addComment(String comment, boolean closeAsFixed) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public abstract void attachPatch(File file, String description);
+    public void attachFile(File file, String description, boolean isPatch) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public abstract BugtrackingController getController();
+    public IssueController getController() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public abstract void removePropertyChangeListener(PropertyChangeListener listener);
+    public Collection<String> getSubtasks() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public abstract void addPropertyChangeListener(PropertyChangeListener listener);
+    public boolean isFinished() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public abstract String[] getSubtasks();
+    public IssueStatusProvider.Status getStatus() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public abstract boolean isFinished();
+    public void setSeen(boolean seen) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public abstract IssueStatusProvider.Status getStatus();
+    void discardOutgoing() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 
-    public abstract void setSeen(boolean seen);
+    boolean submit() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 
 }

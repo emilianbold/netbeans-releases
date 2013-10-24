@@ -73,6 +73,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -93,17 +94,14 @@ import javax.swing.text.Document;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
-import org.netbeans.modules.bugtracking.util.LogUtils;
 import org.netbeans.modules.bugtracking.util.OwnerUtils;
 import org.netbeans.modules.bugtracking.util.SaveQueryPanel;
 import org.netbeans.modules.bugtracking.util.SaveQueryPanel.QueryNameValidator;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
-import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
@@ -125,7 +123,7 @@ import org.openide.util.RequestProcessor.Task;
  *
  * @author Tomas Stupka
  */
-public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryController implements ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener {
+public class QueryController implements org.netbeans.modules.bugtracking.spi.QueryController, ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener {
     private QueryPanel panel;
 
     private RequestProcessor rp = new RequestProcessor("Jira query", 1, true);  // NOI18N
@@ -212,6 +210,11 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         }
     }
 
+    @Override
+    public boolean providesMode(QueryMode mode) {
+        return modifiable || mode != QueryMode.EDIT;
+    }
+    
     static boolean isNamedFilter(JiraFilter jiraFilter) {
         return jiraFilter instanceof NamedFilter;
     }
@@ -344,7 +347,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         if(values == null || values.length == 0) {
             return Collections.emptyList();
         }
-        List<T> l = new ArrayList<T>(values.length);
+        List<T> l = new ArrayList<>(values.length);
         for (Object o : values) {
             l.add((T) o);
         }
@@ -559,7 +562,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
 
     private void setSelected (JList list, Object[] selectedItems) {
         if(selectedItems != null) {
-            List<Integer> toSelect = new ArrayList<Integer>();
+            List<Integer> toSelect = new ArrayList<>();
             DefaultListModel model = (DefaultListModel) list.getModel();
             for (Object o : selectedItems) {
                 if(o == null) continue;
@@ -639,28 +642,26 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
     }
 
     @Override
-    public JComponent getComponent() {
+    public JComponent getComponent(QueryMode mode) {
+        setMode(mode);
         return panel;
     }
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(JiraQuery.class);
+        return new HelpCtx("org.netbeans.modules.jira.query.JiraQuery"); // NOI18N
     }
 
-    @Override
     public void setMode(QueryMode mode) {
         switch(mode) {
             case EDIT:
-                onModify();
+                if(query.isSaved()) {
+                    onModify();
+                }
                 break;                        
-            case SHOW_ALL:
+            case VIEW:
                 onCancelChanges();
                 selectFilter(issueTable.getAllFilter());
-                break;
-            case SHOW_NEW_OR_CHANGED:
-                onCancelChanges();
-                selectFilter(issueTable.getNewOrChangedFilter());
                 break;
             default: 
                 throw new IllegalStateException("Unsupported mode " + mode);
@@ -784,6 +785,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
 
     private void onSave(final boolean refresh) {
        Jira.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 String name = query.getDisplayName();
                 boolean firstTime = false;
@@ -1148,9 +1150,9 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
                         }
                     });
                 }
-                Set<Version> versions = new HashSet<Version>();
-                Set<Component> components = new HashSet<Component>();
-                getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                Set<Version> versions = new HashSet<>();
+                Set<Component> components = new HashSet<>();
+                panel.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 try {
                     for (Project p : projects) {
                         repository.getConfiguration().ensureProjectLoaded(p);
@@ -1176,7 +1178,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
                         }
                     }
                 } finally {
-                    getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                    panel.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     Version[] versionsArray = versions.toArray(new Version[versions.size()]);
                     Component[] componentsArray = components.toArray(new Component[components.size()]);
                     setProjectLists(versionsArray, componentsArray);
@@ -1249,6 +1251,26 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         }
     }
 
+    @Override
+    public boolean saveChanges() {
+        return true;
+    }
+
+    @Override
+    public boolean discardUnsavedChanges() {
+        return true;
+    }
+
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        
+    }
+
     private class QueryTask implements Runnable, Cancellable, QueryNotifyListener {
         private ProgressHandle handle;
         private int counter;
@@ -1280,6 +1302,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         private void finnishQuery() {
             task = null;
             EventQueue.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     if(handle != null) {
                         handle.finish();
@@ -1380,11 +1403,6 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         @Override
         public void notifyData(final NbJiraIssue issue) {
             issueTable.addNode(issue.getNode());
-            if(!query.contains(issue.getKey())) {
-                // XXX this is quite ugly - the query notifies an archoived issue
-                // but it doesn't "contain" it!
-                return;
-            }
             setIssueCount(++counter);
             if(counter == 1) {
                 EventQueue.invokeLater(new Runnable() {

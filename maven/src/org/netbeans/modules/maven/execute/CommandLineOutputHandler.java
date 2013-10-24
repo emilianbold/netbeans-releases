@@ -48,8 +48,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -121,6 +125,8 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
     private boolean inStackTrace = false;
     private boolean addMojoFold = false;
     private boolean addProjectFold = false;
+    private URL[] mavencoreurls;
+
     
     
 
@@ -194,6 +200,20 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
         if (currentTag != null) {
             CommandLineOutputHandler.this.processEnd(getEventId(SEC_MOJO_EXEC, currentTag), stdOut);
             currentTag = null;
+        }
+    }
+
+    private void mergeClasspath(ExecMojo exec, URL[] coreurls) {
+        if (coreurls != null) {
+            URL[] urls = exec.getClasspathURLs();
+            if (urls == null) {
+                exec.setClasspathURLs(coreurls);
+            } else {
+                List<URL> newones = new ArrayList<URL>();
+                newones.addAll(Arrays.asList(urls));
+                newones.addAll(Arrays.asList(coreurls));
+                exec.setClasspathURLs(newones.toArray(new URL[0]));
+            }
         }
     }
 
@@ -411,6 +431,7 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
                     //we are not at a real start, something restarted the build..
                     completeTreeAtEnd();
                 }
+                mavencoreurls = ((ExecSession)obj).getMnvcoreurls();
             }
             if (ExecutionEvent.Type.MojoStarted.equals(obj.type)) {
                 growTree(obj);
@@ -428,15 +449,17 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
                     currentTreeNode.collapseFold();
                 }
                 currentTreeNode.finishFold();
-                trimTree(obj);
                 ExecMojo exec = (ExecMojo) obj;
+                mergeClasspath(exec, mavencoreurls);
+                trimTree(exec);
                 String tag = goalPrefixFromArtifactId(exec.plugin.artifactId) + ":" + exec.goal;
                 CommandLineOutputHandler.this.processEnd(getEventId(SEC_MOJO_EXEC, tag), stdOut);
             }
             else if (ExecutionEvent.Type.MojoFailed.equals(obj.type)) {
                 currentTreeNode.finishFold();
-                trimTree(obj);
                 ExecMojo exec = (ExecMojo) obj;
+                mergeClasspath(exec, mavencoreurls);
+                trimTree(exec);
                 String tag = goalPrefixFromArtifactId(exec.plugin.artifactId) + ":" + exec.goal;
                 CommandLineOutputHandler.this.processFail(getEventId(SEC_MOJO_EXEC, tag), stdOut);
             }

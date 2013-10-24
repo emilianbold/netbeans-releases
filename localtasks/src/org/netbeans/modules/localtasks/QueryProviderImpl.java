@@ -46,12 +46,13 @@ import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import org.netbeans.modules.localtasks.task.LocalTask;
 import org.netbeans.modules.bugtracking.spi.QueryController;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 
 /**
  *
  * @author Ondrej Vrabec
  */
-public class QueryProviderImpl extends org.netbeans.modules.bugtracking.spi.QueryProvider<LocalQuery, LocalTask> {
+public class QueryProviderImpl implements QueryProvider<LocalQuery, LocalTask> {
 
     @Override
     public String getDisplayName (LocalQuery q) {
@@ -65,7 +66,7 @@ public class QueryProviderImpl extends org.netbeans.modules.bugtracking.spi.Quer
 
     @Override
     public QueryController getController (LocalQuery q) {
-        throw new UnsupportedOperationException("Not supported for Local Tasks");
+        return null;
     }
 
     @Override
@@ -74,18 +75,28 @@ public class QueryProviderImpl extends org.netbeans.modules.bugtracking.spi.Quer
     }
 
     @Override
+    public boolean canRemove(LocalQuery q) {
+        return false;
+    }
+    
+    @Override
     public void remove (LocalQuery q) {
-        throw new UnsupportedOperationException("Not supported for Local Tasks");
+        // NO OP
     }
 
+    @Override
+    public boolean canRename(LocalQuery q) {
+        return false;
+    }
+
+    @Override
+    public void rename(LocalQuery q, String displayName) {
+        // NO OP
+    }
+    
     @Override
     public Collection<LocalTask> getIssues (LocalQuery q) {
         return q.getIssues();
-    }
-
-    @Override
-    public boolean contains (LocalQuery q, String id) {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
@@ -102,5 +113,5 @@ public class QueryProviderImpl extends org.netbeans.modules.bugtracking.spi.Quer
     public void removePropertyChangeListener (LocalQuery q, PropertyChangeListener listener) {
         q.removePropertyChangeListener(listener);
     }
-    
+
 }

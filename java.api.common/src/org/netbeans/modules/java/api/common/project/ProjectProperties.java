@@ -126,6 +126,64 @@ public final class ProjectProperties {
     public static final String INCLUDES = "includes"; // NOI18N
     public static final String EXCLUDES = "excludes"; // NOI18N
 
+    //General
+    /**
+     * Name of the property holding the project sources encoding.
+     * @since 1.60
+     */
+    public static final String SOURCE_ENCODING="source.encoding"; // NOI18N
+    /**
+     * Name of the property holding the active project platform.
+     * @since 1.60
+     */
+    public static final String PLATFORM_ACTIVE = "platform.active"; //NOI18N
+    /**
+     * Name of the property holding the project main build script reference.
+     * @since 1.60
+     */
+    public static final String BUILD_SCRIPT ="buildfile";      //NOI18N
+    /**
+     * Name of the property holding the project license.
+     * @since 1.60
+     */
+    public static final String LICENSE_NAME = "project.license";
+    /**
+     * Name of the property holding the path to project license.
+     * @since 1.60
+     */
+    public static final String LICENSE_PATH = "project.licensePath";
+
+    //Build & Run
+    /**
+     * Name of the property disabling dependency tracking.
+     * @since 1.60
+     */
+    public static final String NO_DEPENDENCIES="no.dependencies"; // NOI18N
+    /**
+     * Name of the property holding the debug project classpath.
+     * @since 1.60
+     */
+    public static final String DEBUG_CLASSPATH = "debug.classpath"; //NOI18N
+    /**
+     * Name of the property holding the debug test classpath.
+     * @since 1.60
+     */
+    public static final String DEBUG_TEST_CLASSPATH = "debug.test.classpath"; // NOI18N
+    /**
+     * Name of the property holding the reference to folder where test results should be generated.
+     * @since 1.60
+     */
+    public static final String BUILD_TEST_RESULTS_DIR = "build.test.results.dir"; // NOI18N
+    /**
+     * Name of the property holding the reference to build generated sources.
+     * @since 1.60
+     */
+    public static final String BUILD_GENERATED_SOURCES_DIR = "build.generated.sources.dir"; //NOI18N
+    /**
+     * Name of the property holding the build excludes.
+     * @since 1.60
+     */
+    public static final String BUILD_CLASSES_EXCLUDES = "build.classes.excludes"; //NOI18N
     public static final String RUN_JVM_ARGS = "run.jvmargs"; // NOI18N
     static final String RUN_JVM_ARGS_IDE = "run.jvmargs.ide"; // NOI18N
     public static final String RUNTIME_ENCODING="runtime.encoding"; //NOI18N
@@ -138,6 +196,128 @@ public final class ProjectProperties {
     public static final String SYSTEM_PROPERTIES_TEST_PREFIX = "test-sys-prop."; // NOI18N
 
     public static final String PROP_PROJECT_CONFIGURATION_CONFIG = "config"; // NOI18N
+
+    //Javac
+    /**
+     * Name of the property holding the javac extra args.
+     * @since 1.60
+     */
+    public static final String JAVAC_COMPILERARGS = "javac.compilerargs"; //NOI18N
+    /**
+     * Name of the property holding the javac source.
+     * @since 1.60
+     */
+    public static final String JAVAC_SOURCE = "javac.source"; //NOI18N
+    /**
+     * Name of the property holding the javac target.
+     * @since 1.60
+     */
+    public static final String JAVAC_TARGET = "javac.target"; //NOI18N
+    /**
+     * Name of the property enabling javac deprecation.
+     * @since 1.60
+     */
+    public static final String JAVAC_DEPRECATION = "javac.deprecation"; //NOI18N
+    /**
+     * Name of the property holding the javac profile.
+     * @since 1.60
+     */
+    public static final String JAVAC_PROFILE = "javac.profile"; // NOI18N
+    /**
+     * Name of the property turning on javac debug info generation.
+     * @since 1.60
+     */
+    public static final String JAVAC_DEBUG = "javac.debug"; // NOI18N
+
+    //Jar
+    /**
+     * Name of the property holding the reference to built jar file.
+     * @since 1.60
+     */
+    public static final String DIST_JAR ="dist.jar";    //NOI18N
+    /**
+     * Name of the property holding the reference to distribution directory.
+     * @since 1.60
+     */
+    public static final String DIST_DIR ="dist.dir";    //NOI18N
+    /**
+     * Name of the property enabling jar compression.
+     * @since 1.60
+     */
+    public static final String JAR_COMPRESS = "jar.compress";   //NOI18N
+    /**
+     * Name of the property holding files excluded from jar file.
+     * @since 1.60
+     */
+    public static final String DIST_ARCHIVE_EXCLUDES = "dist.archive.excludes";   //NOI18N
+
+    //Javadoc
+    /**
+     * Name of property holding reference to folder where JavaDoc is genered.
+     * @since 1.60
+     */
+    public static final String DIST_JAVADOC_DIR = "dist.javadoc.dir"; // NOI18N
+    /**
+     * Name of property enabling JavaDoc for non public classes.
+     * @since 1.60
+     */
+    public static final String JAVADOC_PRIVATE="javadoc.private"; // NOI18N
+    /**
+     * Name of property disabling javadoc class hierarchy generation.
+     * @since 1.60
+     */
+    public static final String JAVADOC_NO_TREE="javadoc.notree"; // NOI18N
+    /**
+     * Name of property enabling creation of javadoc class and package usage pages.
+     * @since 1.60
+     */
+    public static final String JAVADOC_USE="javadoc.use"; // NOI18N
+    /**
+     * Name of property disabling creation of javadoc navigation bar.
+     * @since 1.60
+     */
+    public static final String JAVADOC_NO_NAVBAR="javadoc.nonavbar"; // NOI18N
+    /**
+     * Name of property disabling creation of javadoc index.
+     * @since 1.60
+     */
+    public static final String JAVADOC_NO_INDEX="javadoc.noindex"; // NOI18N
+    /**
+     * Name of property enabling of javadoc split index.
+     * @since 1.60
+     */
+    public static final String JAVADOC_SPLIT_INDEX="javadoc.splitindex"; // NOI18N
+    /**
+     * Name of property holding the javadoc author.
+     * @since 1.60
+     */
+    public static final String JAVADOC_AUTHOR="javadoc.author"; // NOI18N
+    /**
+     * Name of property holding the javadoc version.
+     * @since 1.60
+     */
+    public static final String JAVADOC_VERSION="javadoc.version"; // NOI18N
+    /**
+     * Name of property holding the javadoc window title.
+     * @since 1.60
+     */
+    public static final String JAVADOC_WINDOW_TITLE="javadoc.windowtitle"; // NOI18N
+    /**
+     * Name of property holding the javadoc encoding.
+     * @since 1.60
+     */
+    public static final String JAVADOC_ENCODING="javadoc.encoding"; // NOI18N
+    /**
+     * Name of property holding the javadoc additional parameters.
+     * @since 1.60
+     */
+    public static final String JAVADOC_ADDITIONALPARAM="javadoc.additionalparam"; // NOI18N
+    //Javadoc stored in the PRIVATE.PROPERTIES
+    /**
+     * Name of property enabling javadoc preview.
+     * @since 1.60
+     */
+    public static final String JAVADOC_PREVIEW="javadoc.preview"; // NOI18N
 
     /** @since org.netbeans.modules.java.j2seproject/1 1.12 */
     public static final String DO_DEPEND = "do.depend"; // NOI18N

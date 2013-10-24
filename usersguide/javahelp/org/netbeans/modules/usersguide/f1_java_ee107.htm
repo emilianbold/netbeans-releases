@@ -2,16 +2,16 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Web Service Attributes Editor: WSDL Customization: Ports</title>
+<title>Web Service Attributes Editor: WSDL Customization: External Binding Files</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="ID_PORT" name="ID_PORT"></a></p>
+<p><a id="ID_EXTERNAL_BINDING" name="ID_EXTERNAL_BINDING"></a></p>
 <!-- infolevel="all" infotype="General" --><a id="sthref692" name="sthref692"></a>
-<h1>Web Service Attributes Editor: WSDL Customization: Ports</h1>
+<h1>Web Service Attributes Editor: WSDL Customization: External Binding Files</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use the Ports section to customize the name of the Java method that is generated for obtaining the port (e.g., getXXXXPort). 
+<p>Use the External Binding Files section to add user-created customization files. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1866">
 <param name="text" value="<html><u>More</u></html>">
@@ -19,6 +19,7 @@
 <param name="textColor" value="blue">
 </object>
 </p>
+<p>This section is empty when none of the port types provide faults.</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
@@ -32,10 +33,18 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t103" headers="r1c1-t103">
-<p>Port Access Method</p>
+<p>Customization Files</p>
 </td>
 <td align="left" headers="r2c1-t103 r1c2-t103">
-<p>Deselect Use Default to specify the name of the method to be generated.</p>
+<p>This table displays a list of the customization files.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t103" headers="r1c1-t103">
+<p>Add</p>
+</td>
+<td align="left" headers="r3c1-t103 r1c2-t103">
+<p>Click Add to locate the customization file. When you add a JAXWS customization file the <code>wsdlLocation</code> attribute will automatically be changed to point to the correct location of the WSDL file in the project.</p>
 </td>
 </tr>
 </tbody>

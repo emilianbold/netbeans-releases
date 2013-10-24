@@ -111,6 +111,10 @@ public interface RunConfig {
     
     void addProperties(@NonNull Map<String, String> properties);  
     
+    void setInternalProperty(@NonNull String key, @NullAllowed Object value);
+    
+    @NonNull Map<? extends String, ? extends Object> getInternalProperties();
+    
     boolean isShowDebug();
     
     boolean isShowError();

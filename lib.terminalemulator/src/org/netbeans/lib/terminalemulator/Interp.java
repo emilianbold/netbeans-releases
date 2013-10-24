@@ -51,7 +51,23 @@
 
 package org.netbeans.lib.terminalemulator;
 
+import java.awt.event.KeyEvent;
+
 public interface Interp {
     public String name();
     public void processChar(char c);
+
+    /**
+     * Handle a function key.
+     * 'e' must be consumed if the Interp recognizes it and sends a sequence.
+     */
+    public void keyPressed(KeyEvent e);
+
+    /**
+     * Convert a terminal-specific character to the canonical curses ACS code.
+     * @return '\0' if no conversion took place.
+     */
+    public char mapACS(char inChar);
+
+    public void softReset();
 } 

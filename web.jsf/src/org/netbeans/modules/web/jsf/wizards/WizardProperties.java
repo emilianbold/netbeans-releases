@@ -45,6 +45,8 @@
 package org.netbeans.modules.web.jsf.wizards;
 
 public class WizardProperties {
+
+    /** Properties. */
     public static final String CONFIG_FILE = "ConfigFile"; // NOI18N
     public static final String DESCRIPTION = "Description"; // NOI18N
     public static final String NAME = "Name"; // NOI18N
@@ -56,4 +58,16 @@ public class WizardProperties {
     public static final String JAVA_PACKAGE_ROOT_FILE_OBJECT = "JavaPackageRootFileObject"; //NOI18N
     public static final String AJAXIFY_JSF_CRUD = "AjaxifyJsfCrud"; //NOI18N
     public static final String LOCALIZATION_BUNDLE_NAME = "localizationBundleName"; //NOI18N
+    public static final String TEMPLATE_STYLE = "templateStyle"; //NOI18N
+
+    /** Template files. */
+    public static final String VIEW_TEMPLATE = "view.ftl"; // NOI18N
+    public static final String LIST_TEMPLATE = "list.ftl"; // NOI18N
+    public static final String CREATE_TEMPLATE = "create.ftl"; // NOI18N
+    public static final String EDIT_TEMPLATE = "edit.ftl"; // NOI18N
+    public static final String CONTROLLER_TEMPLATE = "controller.ftl"; // NOI18N
+    public static final String PAGINATION_TEMPLATE = "PaginationHelper.ftl"; // NOI18N
+    public static final String UTIL_TEMPLATE = "JsfUtil.ftl"; // NOI18N
+    public static final String BUNDLE_TEMPLATE = "bundle.ftl"; // NOI18N
+    public static final String BASE_TEMPLATE = "template.ftl"; // NOI18N
 }

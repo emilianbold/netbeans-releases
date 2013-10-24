@@ -253,14 +253,18 @@ public class BugtrackingUtil {
         return cons;
     }
 
-    public static String scramble(String str) {
-        return Scrambler.getInstance().scramble(str);
-    }
-
-    public static String descramble(String str) {
-        return Scrambler.getInstance().descramble(str);
-    }
-
+    /**
+     * Facility method to obtain an already registered {@link Repository} instance.
+     * 
+     * @param connectorId
+     * @param repositoryId
+     * @return 
+     */
+    public static Repository getRepository(String connectorId, String repositoryId) {
+        RepositoryImpl impl = RepositoryRegistry.getInstance().getRepository(connectorId, repositoryId);
+        return impl != null ? impl.getRepository() : null;
+    }  
+ 
     public static String selectIssue(String message, Repository repository, JPanel caller, HelpCtx helpCtx) {
         QuickSearchComboBar bar = new QuickSearchComboBar(caller);
         bar.setRepository(repository);
@@ -354,12 +358,8 @@ public class BugtrackingUtil {
      * @return
      */
     public static char[] readPassword(String scrambledPassword, String keyPrefix, String user, String url) {
-        if (scrambledPassword != null && !scrambledPassword.equals("")) {                                    // NOI18N
-            return BugtrackingUtil.descramble(scrambledPassword).toCharArray();
-        } else {
-            char[] password = Keyring.read(getPasswordKey(keyPrefix, user, url));
-            return password != null ? password : new char[0];
-        }
+        char[] password = Keyring.read(getPasswordKey(keyPrefix, user, url));
+        return password != null ? password : new char[0];
     }
 
     public static RequestProcessor getParallelRP () {
@@ -390,10 +390,6 @@ public class BugtrackingUtil {
             }
         }
         return false;
-    }
-
-    public static void openQuery(final QueryImpl query, final RepositoryImpl repository, final boolean suggestedSelectionOnly) {
-        QueryAction.openQuery(query, repository, suggestedSelectionOnly);
     }
 
     public static void openIssue(File file, String issueId) {

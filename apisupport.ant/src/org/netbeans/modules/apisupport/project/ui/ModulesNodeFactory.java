@@ -70,6 +70,7 @@ import org.netbeans.modules.apisupport.project.api.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.modules.apisupport.project.ui.wizard.NewNbModuleWizardIterator;
+import org.netbeans.modules.project.ui.api.ProjectActionUtils;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
@@ -84,6 +85,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.CookieAction;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.lookup.Lookups;
@@ -368,6 +370,13 @@ public class ModulesNodeFactory implements NodeFactory {
             }
             StatusDisplayer.getDefault().setStatusText(getMessage("MSG_OpeningProjects"));
             OpenProjects.getDefault().open(projects, false);
+            if(projects.length > 0) {
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public @Override void run() {
+                        ProjectActionUtils.selectAndExpandProject(projects[0]);
+                    }
+                }, 500);
+            }
         }
 
         public String getName() {

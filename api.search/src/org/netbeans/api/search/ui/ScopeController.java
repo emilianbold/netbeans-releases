@@ -68,6 +68,7 @@ import org.openide.util.WeakListeners;
  *
  * @author jhavlin
  */
+@SuppressWarnings({"rawtypes", "unchecked"})
 public final class ScopeController extends ComponentController<JComboBox> {
 
     SearchScopeChangeListener searchScopeChangeListener;

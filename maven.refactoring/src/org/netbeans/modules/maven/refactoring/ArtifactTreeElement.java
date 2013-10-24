@@ -52,6 +52,7 @@ import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
+import org.netbeans.modules.maven.spi.IconResources;
 import org.netbeans.modules.maven.spi.nodes.NodeUtils;
 import org.netbeans.modules.refactoring.spi.ui.TreeElement;
 import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
@@ -88,7 +89,7 @@ class ArtifactTreeElement implements TreeElement {
             } catch (Exception x) {
                 LOG.log(Level.FINE, null, "could not check project icon for " + art);
             }
-            return ImageUtilities.loadImageIcon(NodeUtils.ICON_DEPENDENCY_JAR, true);
+            return ImageUtilities.loadImageIcon(IconResources.ICON_DEPENDENCY_JAR, true);
         } else if (!art.getArtifactId().isEmpty()) {
             // XXX should probably be moved into NodeUtils
             return ImageUtilities.loadImageIcon("org/netbeans/modules/maven/repository/ArtifactBadge.png", true);

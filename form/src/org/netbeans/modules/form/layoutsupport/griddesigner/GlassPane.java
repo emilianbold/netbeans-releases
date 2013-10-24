@@ -1345,6 +1345,9 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                     if (!selection.contains(focusedComponent)) {
                         setSelection(focusedComponent);
                     }
+                    if (e.isPopupTrigger()) { // Linux
+                        showPopupMenu(point);
+                    }
                 }
             }
             repaint();
@@ -1386,7 +1389,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                         if (!selection.contains(focusedComponent)) {
                             setSelection(focusedComponent);
                         }
-                        showPopupMenu(point);
+                        showPopupMenu(point); // Windows
                     }
                 } else if (leftMouseReleased && e.isShiftDown()) {
                     if (focusedComponent != null && !selection.contains(focusedComponent)) {

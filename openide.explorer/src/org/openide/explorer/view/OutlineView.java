@@ -67,6 +67,8 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 import java.beans.PropertyVetoException;
@@ -369,6 +371,18 @@ public class OutlineView extends JScrollPane {
 
         if (isTreeHScrollBar) {
             outline.getColumnModel().addColumnModelListener(listener);
+        }
+        if( ViewUtil.isAquaLaF ) {
+            addMouseWheelListener(new MouseWheelListener() {
+                @Override
+                public void mouseWheelMoved(MouseWheelEvent e) {
+                    if( e.isShiftDown() && !(e.isAltDown() || e.isAltGraphDown() || e.isControlDown() || e.isMetaDown()) ) {
+                        //on Mac horizontal scrolling sends MouseWheel events with Shift-down modifier
+                        if( horizontalWheelScroll( e ) )
+                            e.consume();
+                    }
+                }
+            });
         }
 
         final RequestProcessor.Task revalidatingTask = REVALIDATING_RP.create(new Runnable() {
@@ -1463,7 +1477,7 @@ public class OutlineView extends JScrollPane {
                 getActionMap().put("invokeCustomEditor", invokeCustomEditorAction);
             }
         }
-        
+
         private void removeDefaultCutCopyPaste(InputMap map) {
             putActionDelegate(map, KeyStroke.getKeyStroke("control C")); // NOI18N
             map.put(KeyStroke.getKeyStroke("control V"), "none"); // NOI18N
@@ -2720,4 +2734,75 @@ public class OutlineView extends JScrollPane {
         }
     }
     
+    private boolean horizontalWheelScroll( MouseWheelEvent e ) {
+        JScrollBar toScroll = hScrollBar;
+        if (null == toScroll || !toScroll.isVisible()) {
+            return false;
+        }
+        if (e.getWheelRotation() == 0) {
+            return false;
+        }
+        //copied from BasicScrollPaneUI.scrollByUnits
+        int direction = e.getWheelRotation() < 0 ? -1 : 1;
+        JViewport vp = getViewport();
+        if (vp == null) {
+            return false;
+        }
+        int units = Math.abs(e.getUnitsToScroll());
+
+        // When the scrolling speed is set to maximum, it's possible
+        // for a single wheel click to scroll by more units than
+        // will fit in the visible area.  This makes it
+        // hard/impossible to get to certain parts of the scrolling
+        // Component with the wheel.  To make for more accurate
+        // low-speed scrolling, we limit scrolling to the block
+        // increment if the wheel was only rotated one click.
+        boolean limitScroll = Math.abs(e.getWheelRotation()) == 1;
+
+        // This method is called from BasicScrollPaneUI to implement wheel
+        // scrolling, as well as from scrollByUnit().
+        int delta;
+        int limit = -1;
+        JScrollBar scrollbar = toScroll;
+        if (limitScroll) {
+            if (direction < 0) {
+                limit = scrollbar.getValue()
+                        - scrollbar.getBlockIncrement(direction);
+            } else {
+                limit = scrollbar.getValue()
+                        + scrollbar.getBlockIncrement(direction);
+            }
+        }
+
+        for (int i = 0; i < units; i++) {
+            if (direction > 0) {
+                delta = scrollbar.getUnitIncrement(direction);
+            } else {
+                delta = -scrollbar.getUnitIncrement(direction);
+            }
+
+            int oldValue = scrollbar.getValue();
+            int newValue = oldValue + delta;
+
+            // Check for overflow.
+            if (delta > 0 && newValue < oldValue) {
+                newValue = scrollbar.getMaximum();
+            } else if (delta < 0 && newValue > oldValue) {
+                newValue = scrollbar.getMinimum();
+            }
+            if (oldValue == newValue) {
+                break;
+            }
+
+            if (limitScroll && i > 0) {
+                assert limit != -1;
+                if ((direction < 0 && newValue < limit)
+                        || (direction > 0 && newValue > limit)) {
+                    break;
+                }
+            }
+            scrollbar.setValue(newValue);
+        }
+        return true;
+    }
 }

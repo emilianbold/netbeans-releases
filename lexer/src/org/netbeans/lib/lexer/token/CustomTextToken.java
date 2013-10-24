@@ -59,7 +59,10 @@ import org.netbeans.api.lexer.TokenId;
 
 public class CustomTextToken<T extends TokenId> extends TextToken<T> {
     
-    private final int length; // 28 bytes (24-super + 4)
+    private int length; // 28 bytes (24-super + 4)
+    
+    private static final int BIT_31 = 1 << 31;
+    private static final int MASK_31 = ~BIT_31;
     
     /**
      * @param id non-null identification of the token.
@@ -78,12 +81,23 @@ public class CustomTextToken<T extends TokenId> extends TextToken<T> {
 
     @Override
     public final int length() {
-        return length;
+        return length & MASK_31;
+    }
+    
+    @Override
+    public boolean isNoDefaultEmbedding() {
+        return (length & BIT_31) != 0;
+    }
+
+    @Override
+    public AbstractToken<T> markNoDefaultEmbedding() {
+        length |= BIT_31;
+        return null;
     }
     
     @Override
     protected String dumpInfoTokenType() {
         return "CusT"; // NOI18N "TextToken" or "FlyToken"
     }
-    
+
 }

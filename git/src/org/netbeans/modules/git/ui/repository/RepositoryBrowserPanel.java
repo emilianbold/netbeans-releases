@@ -90,13 +90,20 @@ import org.netbeans.modules.git.GitRepositories;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.branch.CreateBranchAction;
 import org.netbeans.modules.git.ui.branch.DeleteBranchAction;
+import org.netbeans.modules.git.ui.branch.SetTrackingAction;
 import org.netbeans.modules.git.ui.checkout.CheckoutRevisionAction;
 import org.netbeans.modules.git.ui.fetch.FetchAction;
+import org.netbeans.modules.git.ui.fetch.PullAction;
 import org.netbeans.modules.git.ui.merge.MergeRevisionAction;
+import org.netbeans.modules.git.ui.push.PushAction;
+import org.netbeans.modules.git.ui.push.PushMapping;
+import org.netbeans.modules.git.ui.push.PushToUpstreamAction;
 import org.netbeans.modules.git.ui.repository.remote.RemoveRemoteConfig;
 import org.netbeans.modules.git.ui.tag.CreateTagAction;
 import org.netbeans.modules.git.ui.tag.ManageTagsAction;
 import org.netbeans.modules.git.utils.GitUtils;
+import org.netbeans.modules.versioning.spi.VCSAnnotator;
+import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerManager.Provider;
@@ -572,9 +579,8 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
 
         @Override
         protected Action[] getPopupActions (boolean context) {
-            return new Action[] {
-                SystemAction.get(FetchAction.class)
-            };
+            VCSContext ctx = VCSContext.forNodes(new Node[] { this });
+            return Git.getInstance().getVCSAnnotator().getActions(ctx, VCSAnnotator.ActionDestination.PopupMenu);
         }
 
         @Override
@@ -693,7 +699,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
     
     private class BranchesTopChildren extends Children.Keys<BranchNodeType> implements PropertyChangeListener {
         private final File repository;
-        private java.util.Map<String, GitBranchInfo> branches = new TreeMap<String, GitBranchInfo>();
+        private final java.util.Map<String, GitBranchInfo> branches = new TreeMap<String, GitBranchInfo>();
         private BranchesNode local, remote;
 
         private BranchesTopChildren (File repository) {
@@ -775,7 +781,8 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                     GitBranch newBranchInfo = branches.get(e.getKey());
                     // do not refresh branches that don't change their active state or head id
                     if (newBranchInfo != null && (newBranchInfo.getId().equals(e.getValue().branch.getId()) 
-                            && newBranchInfo.isActive() == e.getValue().branch.isActive())) {
+                            && newBranchInfo.isActive() == e.getValue().branch.isActive()
+                            && equalTracking(newBranchInfo, e.getValue().branch))) {
                         branches.remove(e.getKey());
                     }
                 }
@@ -788,7 +795,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                         Boolean mergedStatus = null;
                         if (branchMergeWith != null) {
                             GitRevisionInfo commonAncestor = client.getCommonAncestor(new String[] { branchMergeWith, e.getValue().getId()}, GitUtils.NULL_PROGRESS_MONITOR);
-                            mergedStatus = commonAncestor.getRevision().equals(e.getValue().getId());
+                            mergedStatus = commonAncestor != null && commonAncestor.getRevision().equals(e.getValue().getId());
                         }
                         BranchesTopChildren.this.branches.put(e.getKey(), new GitBranchInfo(e.getValue(), mergedStatus));
                     }
@@ -806,6 +813,18 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             if (remote != null) {
                 remote.refresh();
             }
+        }
+
+        private boolean equalTracking (GitBranch newBranchInfo, GitBranch branch) {
+            GitBranch tracked1 = newBranchInfo.getTrackedBranch();
+            GitBranch tracked2 = branch.getTrackedBranch();
+            boolean equal = tracked1 == tracked2;
+            if (!equal) {
+                equal = tracked1 != null && tracked2 != null
+                        && tracked1.getName().equals(tracked2.getName())
+                        && tracked1.getId().equals(tracked2.getId());
+            }
+            return equal;
         }
 
         @Override
@@ -922,6 +941,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         private String lastTrackingMyId;
         private String lastTrackingOtherId;
         private final Boolean mergeStatus;
+        private final boolean remote;
 
         public BranchNode (File repository, GitBranchInfo branchInfo) {
             super(Children.LEAF, repository, Lookups.singleton(new Revision.BranchReference(branchInfo.branch)));
@@ -930,6 +950,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             mergeStatus = branchInfo.mergedStatus;
             branchId = branch.getId();
             trackedBranch = branch.getTrackedBranch();
+            remote = branch.isRemote();
             setIconBaseWithExtension("org/netbeans/modules/git/resources/icons/branch.png"); //NOI18N
             RepositoryInfo info = RepositoryInfo.getInstance(repository);
             if (info == null) {
@@ -999,6 +1020,9 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         }
 
         @Override
+        @NbBundle.Messages({
+            "LBL_SetTrackedBranchAction_PopupName=Setup Tracked Branch"
+        })
         protected Action[] getPopupActions (boolean context) {
             List<Action> actions = new LinkedList<Action>();
             if (currRepository != null && branchName != null) {
@@ -1064,6 +1088,15 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                         return !active;
                     }
                 });
+                if (!remote) {
+                    actions.add(new AbstractAction(Bundle.LBL_SetTrackedBranchAction_PopupName()) {
+                        @Override
+                        public void actionPerformed (ActionEvent e) {
+                            SystemAction.get(SetTrackingAction.class).setupTrackedBranch(currRepository, branchName,
+                                    trackedBranch == null ? null : trackedBranch.getName());
+                        }
+                    });
+                }
             }
             return actions.toArray(new Action[actions.size()]);
         }
@@ -1528,6 +1561,38 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                     action.fetch(repository, getLookup().lookup(GitRemoteConfig.class));
                 }
             });
+            actions.add(new AbstractAction(NbBundle.getMessage(PullAction.class, "LBL_PullAction_PopupName")) { //NOI18N
+                @Override
+                public void actionPerformed (ActionEvent e) {
+                    PullAction action = SystemAction.get(PullAction.class);
+                    GitBranch tracked = getTrackedBranch(RepositoryInfo.getInstance(currRepository));
+                    action.pull(currRepository, getLookup().lookup(GitRemoteConfig.class),
+                            tracked == null ? null : tracked.getName());
+                }
+            });
+            actions.add(null);
+            actions.add(new AbstractAction(NbBundle.getMessage(PushAction.class, "LBL_PushAction_PopupName")) { //NOI18N
+                @Override
+                public void actionPerformed (ActionEvent e) {
+                    PushAction action = SystemAction.get(PushAction.class);
+                    RepositoryInfo info = RepositoryInfo.getInstance(currRepository);
+                    GitBranch activeBranch = info.getActiveBranch();
+                    GitBranch tracked = getTrackedBranch(info);
+                    if (tracked != null) {
+                        GitRemoteConfig remote = getLookup().lookup(GitRemoteConfig.class);
+                        List<PushMapping> pushMappings = new LinkedList<PushMapping>();
+                        String remoteBranchName = PushToUpstreamAction.guessRemoteBranchName(
+                                remote.getFetchRefSpecs(), tracked.getName(), remote.getRemoteName());
+                        if (remoteBranchName != null) {
+                            pushMappings.add(new PushMapping.PushBranchMapping(remoteBranchName, tracked.getId(), activeBranch, false, false));
+                            action.push(currRepository, remote, pushMappings);
+                            return;
+                        }
+                    }
+                    action.push(currRepository);
+                }
+            });
+            actions.add(null);
             actions.add(new AbstractAction(NbBundle.getMessage(RepositoryBrowserPanel.class, "LBL_RepositoryPanel.RemoteNode.remove")) { //NOI18N
                 @Override
                 public void actionPerformed (ActionEvent e) {
@@ -1604,7 +1669,26 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         protected Action[] getPopupActions (boolean context) {
             List<Action> actions = new LinkedList<Action>();
             if (uri.push) {
-                // push action
+                actions.add(new AbstractAction(NbBundle.getMessage(PushAction.class, "LBL_PushAction_PopupName")) { //NOI18N
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        PushAction action = SystemAction.get(PushAction.class);
+                        RepositoryInfo info = RepositoryInfo.getInstance(currRepository);
+                        GitBranch activeBranch = info.getActiveBranch();
+                        GitBranch tracked = getTrackedBranch(info);
+                        if (tracked != null) {
+                            List<PushMapping> pushMappings = new LinkedList<PushMapping>();
+                            String remoteBranchName = PushToUpstreamAction.guessRemoteBranchName(
+                                    remote.getFetchRefSpecs(), tracked.getName(), remote.getRemoteName());
+                            if (remoteBranchName != null) {
+                                pushMappings.add(new PushMapping.PushBranchMapping(remoteBranchName, tracked.getId(), activeBranch, false, false));
+                                action.push(currRepository, uri.uri, pushMappings, remote.getFetchRefSpecs(), null);
+                                return;
+                            }
+                        }
+                        action.push(currRepository);
+                    }
+                });
             } else {
                 actions.add(new AbstractAction(NbBundle.getMessage(FetchAction.class, "LBL_FetchAction_PopupName")) { //NOI18N
                     @Override
@@ -1613,11 +1697,35 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                         action.fetch(currRepository, uri.uri, remote.getFetchRefSpecs(), null);
                     }
                 });
+                actions.add(new AbstractAction(NbBundle.getMessage(PullAction.class, "LBL_PullAction_PopupName")) { //NOI18N
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        PullAction action = SystemAction.get(PullAction.class);
+                        GitBranch tracked = getTrackedBranch(RepositoryInfo.getInstance(currRepository));
+                        action.pull(currRepository, uri.uri, remote.getFetchRefSpecs(),
+                                tracked == null ? null : tracked.getName(), null);
+                    }
+                });
             }
             return actions.toArray(new Action[actions.size()]);
         }
     }
     //</editor-fold>
+
+    private static GitBranch getTrackedBranch (RepositoryInfo info) {
+        GitBranch activeBranch = info.getActiveBranch();
+        if (activeBranch == null) {
+            return null;
+        }
+        GitBranch trackedBranch = activeBranch.getTrackedBranch();
+        if (trackedBranch == null) {
+            return null;
+        }
+        if (!trackedBranch.isRemote()) {
+            return null;
+        }
+        return trackedBranch;
+    }
     
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {

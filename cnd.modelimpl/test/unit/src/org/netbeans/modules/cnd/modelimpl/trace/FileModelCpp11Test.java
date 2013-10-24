@@ -101,4 +101,9 @@ public class FileModelCpp11Test extends TraceModelTestBase {
         // Bug 226562 - Template function dont recognise braces initializer
         performTest("bug226562.cpp");
     }    
+    
+    public void test236535() throws Exception {
+        // Bug 236535 - Cannot parse c++11 deleted definitions for conversion operators
+        performTest("bug236535.cpp");
+    }    
 }

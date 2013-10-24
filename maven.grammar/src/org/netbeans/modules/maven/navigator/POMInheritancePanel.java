@@ -55,8 +55,10 @@ import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.building.ModelBuildingException;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.netbeans.modules.maven.spi.IconResources;
 import org.netbeans.modules.maven.spi.nodes.NodeUtils;
 import org.openide.cookies.EditCookie;
 import org.openide.explorer.ExplorerManager;
@@ -81,11 +83,12 @@ import org.openide.util.RequestProcessor;
  * @author  mkleint
  */
 public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerManager.Provider, Runnable {
-    private transient ExplorerManager explorerManager = new ExplorerManager();
+
+    private final transient ExplorerManager explorerManager = new ExplorerManager();
     
-    private BeanTreeView treeView;
+    private final BeanTreeView treeView;
     private DataObject current;
-    private FileChangeAdapter adapter = new FileChangeAdapter(){
+    private final FileChangeAdapter adapter = new FileChangeAdapter(){
             @Override
             public void fileChanged(FileEvent fe) {
                 showWaitNode();
@@ -272,7 +275,7 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
     
     private static class POMNode extends AbstractNode {
         
-        private Image icon = ImageUtilities.loadImage("org/netbeans/modules/maven/navigator/Maven2Icon.gif"); // NOI18N
+        private Image icon = ImageUtilities.loadImage(IconResources.MAVEN_ICON); // NOI18N
         private boolean readonly = false;
         private final DataObject dobj;
         private POMNode(@NonNull File key, @NonNull Model mdl, @NonNull DataObject dobj, @NonNull String version) {

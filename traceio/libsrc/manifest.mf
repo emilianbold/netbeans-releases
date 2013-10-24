@@ -1,0 +1,3 @@
+Agent-Class: org.netbeans.lib.traceio.agent.TraceIO
+Can-Redefine-Classes: true
+Boot-Class-Path: tioagent.jar

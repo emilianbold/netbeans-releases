@@ -67,11 +67,15 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.api.project.ant.AntBuildExtender.Extension;
 import org.netbeans.modules.project.ant.AntBuildExtenderAccessor;
 import org.netbeans.modules.project.ant.UserQuestionHandler;
+import org.netbeans.spi.project.ant.GeneratedFilesInterceptor;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -404,6 +408,7 @@ public final class GeneratedFilesHelper {
                                     } finally {
                                         lock1.releaseLock();
                                     }
+                                    callInterceptors(dir, path);
                                 }
                             };
                             try {
@@ -822,6 +827,19 @@ public final class GeneratedFilesHelper {
             });
         } catch (MutexException e) {
             throw (IOException)e.getException();
+        }
+    }
+
+    private static void callInterceptors(
+            @NonNull final FileObject dir,
+            @NonNull final String path) {
+        final Project prj = FileOwnerQuery.getOwner(dir);
+        if (prj != null) {
+            final Iterable<? extends GeneratedFilesInterceptor> interceptors =
+                    prj.getLookup().lookupAll(GeneratedFilesInterceptor.class);
+            for (GeneratedFilesInterceptor interceptor : interceptors) {
+                interceptor.fileGenerated(prj, path);
+            }
         }
     }
     

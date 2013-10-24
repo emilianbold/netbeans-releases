@@ -158,6 +158,7 @@ public class RunCustomMavenAction extends AbstractAction implements ContextAware
     }
     
     public static void createActionDeclaration(String action, String displayName, String iconPath) throws IOException {
+        action = action.replace("/", ""); //#236336 slash is evil
         FileObject root = FileUtil.getConfigRoot();
         FileObject actions = root.getFileObject("Actions");
         if (actions == null) {

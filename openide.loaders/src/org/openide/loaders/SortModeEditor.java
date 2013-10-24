@@ -58,6 +58,7 @@ class SortModeEditor extends PropertyEditorSupport {
         DataFolder.SortMode.FOLDER_NAMES,
         DataFolder.SortMode.LAST_MODIFIED,
         DataFolder.SortMode.SIZE,
+        DataFolder.SortMode.EXTENSIONS
     };
 
     /** Names for modes. First is for displaying files */
@@ -68,6 +69,7 @@ class SortModeEditor extends PropertyEditorSupport {
         DataObject.getString ("VALUE_sort_folder_names"),
         DataObject.getString ("VALUE_sort_last_modified"),
         DataObject.getString ("VALUE_sort_size"),
+        DataObject.getString ("VALUE_sort_extensions")
     };
 
     /** @return names of the two possible modes */

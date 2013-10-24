@@ -1515,8 +1515,7 @@ public final class TreeUtilities {
      * @since 0.91
      */
     public boolean isCompileTimeConstantExpression(TreePath expression) {
-        Scope s = info.getTrees().getScope(expression);
-        TypeMirror attributeTree = attributeTree(expression.getLeaf(), s);
+        TypeMirror attributeTree = info.getTrees().getTypeMirror(expression);
         Type attributeTreeImpl = (Type) attributeTree;
 
         return attributeTreeImpl != null && attributeTreeImpl.constValue() != null;

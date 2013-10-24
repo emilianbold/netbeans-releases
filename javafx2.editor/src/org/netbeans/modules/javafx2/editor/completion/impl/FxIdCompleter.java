@@ -123,8 +123,8 @@ public class FxIdCompleter implements Completer, Completer.Factory {
         
         // check if the property is the fx:id
         String propName = ctx.getPropertyName();
-        String prefix = ctx.findNsPrefix(JavaFXEditorUtils.FXML_FX_NAMESPACE);
-        if (!(prefix + ":id").equals(propName)) {
+        String prefix = ctx.findFxmlNsPrefix();
+        if (prefix == null || !(prefix + ":id").equals(propName)) {
             return null;
         }
         // check that the controller is defined && resolved

@@ -47,6 +47,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedSourceVersion;
@@ -212,7 +213,7 @@ public class MIMEResolverProcessor extends LayerGeneratingProcessor {
     }
 
     private Set<String> unq(Collection collection) {
-        Set<String> s = new HashSet();
+        Set<String> s = new TreeSet();
         s.addAll(collection);
         return s;
     }

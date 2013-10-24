@@ -64,6 +64,7 @@ import javax.swing.event.ChangeListener;
 import org.apache.maven.model.Resource;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -105,15 +106,20 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
     public static final String NAME_TESTSOURCE = "2TestSourceRoot"; //NOI18N
     public static final String NAME_GENERATED_SOURCE = "6GeneratedSourceRoot"; //NOI18N
     public static final String NAME_GENERATED_TEST_SOURCE = "7GeneratedSourceRoot"; //NOI18N
+    private static final @StaticResource String OTHERS_BADGE = "org/netbeans/modules/maven/others-badge.png";
+    
     
     private final Project proj;
     private final ChangeSupport cs = new ChangeSupport(this);
     private final PropertyChangeListener pcl = new PropertyChangeListener() {
-        public @Override void propertyChange(PropertyChangeEvent event) {
+        public @Override void propertyChange(PropertyChangeEvent evt) {
             if (proj.getLookup().lookup(NbMavenProject.class).isUnloadable()) {
                 return; //let's just continue with the old value, stripping classpath for broken project and re-creating it later serves no greater good.
             }
-            checkChanges(true, true);
+             //explicitly listing both RESOURCE and PROJECT properties, it's unclear if both are required but since some other places call addWatchedPath but don't listen it's likely required
+            if (NbMavenProject.PROP_RESOURCE.equals(evt.getPropertyName()) || NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
+                checkChanges(true, true);
+            }
         }
     };
     
@@ -457,14 +463,14 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
     public static final class OtherGroup implements SourceGroup {
         
         private final FileObject rootFolder;
-        private File rootFile;
+        private final File rootFile;
         private final String name;
         private final String displayName;
         private final Icon icon;
         private final Icon openedIcon;
-        private NbMavenProjectImpl project;
-        private Resource resource;
-        private PropertyChangeSupport support = new PropertyChangeSupport(this);
+        private final NbMavenProjectImpl project;
+        private final Resource resource;
+        private final PropertyChangeSupport support = new PropertyChangeSupport(this);
         
         @Messages("SG_Root_not_defined=<Root not defined>")
         OtherGroup(NbMavenProjectImpl p, FileObject rootFold, String nm, String displayNm, boolean test) {
@@ -475,7 +481,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
                     test ? project.getOriginalMavenProject().getTestResources() :
                            project.getOriginalMavenProject().getResources());
             if (resource != null) {
-                Image badge = ImageUtilities.loadImage("org/netbeans/modules/maven/others-badge.png", true); //NOI18N
+                Image badge = ImageUtilities.loadImage(OTHERS_BADGE, true); //NOI18N
 //                ImageUtilities.addToolTipToImage(badge, "Resource root as defined in POM.");
                 icon = ImageUtilities.image2Icon(ImageUtilities.mergeImages(NodeUtils.getTreeFolderIcon(false), badge, 8, 8));
                 openedIcon = ImageUtilities.image2Icon(ImageUtilities.mergeImages(NodeUtils.getTreeFolderIcon(true), badge, 8, 8));

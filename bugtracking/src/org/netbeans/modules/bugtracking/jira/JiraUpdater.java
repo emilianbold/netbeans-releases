@@ -46,7 +46,6 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
@@ -219,18 +218,18 @@ public class JiraUpdater {
         return panel;
     }
     
-    private class JiraProxyConector extends BugtrackingConnector {
-        private BugtrackingFactory<Object, Object, Object> f = new BugtrackingFactory<Object, Object, Object>();
+    private class JiraProxyConector implements BugtrackingConnector {
+        private BugtrackingSupport<Object, Object, Object> f = new BugtrackingSupport<Object, Object, Object>(new JiraProxyRepositoryProvider(), null, null);
         @Override
         public Repository createRepository() {
-            return f.createRepository(f, new JiraProxyRepositoryProvider(), null, null);
+            return f.createRepository(f);
         }
         @Override
         public Repository createRepository(RepositoryInfo info) {
             throw new UnsupportedOperationException("Not supported yet.");      // NOI18N
         }
     }
-    private class JiraProxyRepositoryProvider extends RepositoryProvider<Object,Object,Object> {
+    private class JiraProxyRepositoryProvider implements RepositoryProvider<Object,Object,Object> {
         @Override
         public Image getIcon(Object r) {
             return null;
@@ -240,7 +239,7 @@ public class JiraUpdater {
             return null;
         }
         @Override
-        public Object[] getIssues(Object r, String... id) {
+        public Collection<Object> getIssues(Object r, String... id) {
             throw new UnsupportedOperationException("Not supported yet.");      // NOI18N
         }
         @Override
@@ -273,6 +272,14 @@ public class JiraUpdater {
         public void addPropertyChangeListener(Object r, PropertyChangeListener listener) {
             // do nothing
         }
+        @Override
+        public Object createIssue(Object r, String summary, String description) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+        @Override
+        public boolean canAttachFiles(Object r) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
     private class JiraProxyController implements RepositoryController {
@@ -292,11 +299,6 @@ public class JiraUpdater {
         public boolean isValid() {
             return false;
         }
-        @Override
-        public void applyChanges() throws IOException {
-
-        }
-
         private JPanel createControllerPanel() {
             JPanel controllerPanel = new JPanel();
 
@@ -336,19 +338,11 @@ public class JiraUpdater {
             return controllerPanel;
         }
 
-        @Override
-        public void populate() {}
-
-        @Override
-        public String getErrorMessage() {
-            return null;
-        }
-
-        @Override
-        public void addChangeListener(ChangeListener l) {}
-
-        @Override
-        public void removeChangeListener(ChangeListener l) {}
-
+        @Override public String getErrorMessage() { return null; }
+        @Override public void applyChanges() { }        
+        @Override public void cancelChanges() { }
+        @Override public void populate() {}
+        @Override public void addChangeListener(ChangeListener l) {}
+        @Override public void removeChangeListener(ChangeListener l) {}
     }
 }

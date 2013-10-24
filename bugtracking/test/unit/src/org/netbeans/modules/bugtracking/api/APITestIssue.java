@@ -44,13 +44,13 @@ package org.netbeans.modules.bugtracking.api;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
-import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.bugtracking.TestIssue;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.openide.util.HelpCtx;
 
 /**
@@ -75,17 +75,26 @@ public class APITestIssue extends TestIssue {
     String attachedPatchDesc;
     boolean idFinished;
     File attachedFile;
-    private BugtrackingController controller;
+    private IssueController controller;
     private final APITestRepository repo;
+    private String summary;
+    private String description;
+    private boolean isPatch;
 
     public APITestIssue(String id, APITestRepository repo) {
         this(id, repo, false);
     }
     
     public APITestIssue(String id, APITestRepository repo, boolean isNew) {
+        this(id, repo, isNew, id + SUMMARY_SUF, null);
+    }
+    
+    public APITestIssue(String id, APITestRepository repo, boolean isNew, String summary, String description) {
         this.id = id;
         this.isNew = isNew;
         this.repo = repo;
+        this.summary = summary;
+        this.description = description;
     }
     
     @Override
@@ -105,7 +114,12 @@ public class APITestIssue extends TestIssue {
 
     @Override
     public String getSummary() {
-        return id + SUMMARY_SUF;
+        return summary;
+    }
+    
+    @Override
+    public String getDescription() {
+        return description;
     }
 
     @Override
@@ -127,15 +141,16 @@ public class APITestIssue extends TestIssue {
     }
 
     @Override
-    public void attachPatch(File file, String description) {
-        attachedPatchDesc = description;
-        attachedFile = file;
+    public void attachFile(File file, String description, boolean isPatch) {
+        this.attachedPatchDesc = description;
+        this.attachedFile = file;
+        this.isPatch = isPatch;
     }
 
     @Override
-    public BugtrackingController getController() {
+    public IssueController getController() {
         if(controller == null) {
-            controller = new BugtrackingController() {
+            controller = new IssueController() {
                 @Override
                 public void opened() {
                     wasOpened = true;
@@ -149,8 +164,11 @@ public class APITestIssue extends TestIssue {
                     return panel;
                 }
                 @Override public HelpCtx getHelpCtx() { return null; }
-                @Override public boolean isValid() { return true; }
-                @Override public void applyChanges() throws IOException { }
+                @Override public void closed() { }
+                @Override public boolean saveChanges() { return true; }
+                @Override public boolean discardUnsavedChanges() { return true; }
+                @Override public void addPropertyChangeListener(PropertyChangeListener l) { }
+                @Override public void removePropertyChangeListener(PropertyChangeListener l) { }
             };
         }
         return controller;
@@ -168,8 +186,8 @@ public class APITestIssue extends TestIssue {
     }
 
     @Override
-    public String[] getSubtasks() {
-        return new String[] {APITestIssue.ID_SUB_3};
+    public Collection<String> getSubtasks() {
+        return Arrays.asList(new String[] {APITestIssue.ID_SUB_3});
     }
 
     @Override
@@ -177,14 +195,11 @@ public class APITestIssue extends TestIssue {
         return idFinished;
     }
 
-    @Override
-    public IssueStatusProvider.Status getStatus() {
+    void discardOutgoing() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    @Override
-    public void setSeen(boolean seen) {
+    boolean submit() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-
 }

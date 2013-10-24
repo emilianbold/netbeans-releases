@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import static junit.framework.Assert.assertTrue;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.bugtracking.TestIssue;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -85,6 +86,15 @@ public class RepositoryTest extends NbTestCase {
         assertEquals(APITestRepository.ICON, repo.getIcon());
     }
     
+    public void testCreateIssueSumDesc() {
+        APITestRepository apiRepo = getApiRepo();
+        final String summary = "testsum";
+        final String desc = "testdesc";
+        TestIssue issue = apiRepo.createIssue(summary, desc);
+        assertEquals(summary, issue.getSummary());
+        assertEquals(desc, issue.getDescription());
+    }
+    
     public void testGetQueries() {
         APITestRepository apiRepo = getApiRepo();
         Repository repo = getRepo();
@@ -95,7 +105,7 @@ public class RepositoryTest extends NbTestCase {
         APITestRepository apiRepo = getApiRepo();
         Repository repo = getRepo();
         String[] ids = new String[] {APITestIssue.ID_1, APITestIssue.ID_2};
-        assertEquals(apiRepo.getIssues(ids).length, repo.getIssues(ids).length);
+        assertEquals(apiRepo.getIssues(ids).size(), repo.getIssues(ids).length);
     }
     
 //    public void testSimpleSearch() {
@@ -108,6 +118,15 @@ public class RepositoryTest extends NbTestCase {
         Repository repo = getRepo();
         String[] ids = new String[] {APITestIssue.ID_1, APITestIssue.ID_2};
         assertEquals(true, repo.isMutable());
+    }
+    
+    public void testCanAttachFiles() {
+        Repository repo = getRepo();
+        
+        getApiRepo().canAttachFiles = false;
+        assertFalse(repo.canAttachFiles());
+        getApiRepo().canAttachFiles = true;
+        assertTrue(repo.canAttachFiles());
     }
     
     public void testQueryListChanged() {

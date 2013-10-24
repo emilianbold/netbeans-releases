@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.extbrowser;
 
+import java.awt.EventQueue;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -153,7 +154,8 @@ class NbDefaultUnixBrowserImpl extends ExtBrowserImpl {
     }
 
     @Override
-    protected void loadURLInBrowser(URL url) {
+    protected void loadURLInBrowserInternal(URL url) {
+        assert !EventQueue.isDispatchThread();
         if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
             ExtWebBrowser.getEM().log(Level.FINE, "" + System.currentTimeMillis() + "NbDeaultUnixBrowserImpl.setUrl: " + url); // NOI18N
         }

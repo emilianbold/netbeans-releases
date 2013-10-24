@@ -64,7 +64,7 @@ public class Utilities {
 
     private static boolean debug = false;
     /* it is used, when there is project name in menu structure. */
-    private static String projectName;
+    public static String projectName;
 
     /**
      * reads menus like http://wiki.netbeans.org/MainMenu
@@ -129,11 +129,6 @@ public class Utilities {
         }
 
         return parsedMenu;
-    }
-
-    public static NbMenuItem readSubmenuStructureFromFile(String filename, String projectName) throws IllegalStateException {
-        Utilities.projectName = new String(projectName);
-        return readSubmenuStructureFromFile(filename);
     }
 
     /**
@@ -292,11 +287,11 @@ public class Utilities {
      * @param filename
      * @return
      */
-    public static ArrayList<String> parseFileByLines(String filename) {
+    public static ArrayList<String> parseFileByLines(File filename) {
         ArrayList<String> textLines = new ArrayList<String>();
 
         try {
-            Scanner scanner = new Scanner(new File(filename));
+            Scanner scanner = new Scanner(filename);
             while (scanner.hasNextLine()) {
                 textLines.add(trimTextLine(scanner.nextLine()));
             }
@@ -307,11 +302,11 @@ public class Utilities {
         return textLines;
     }
 
-    public static ArrayList<String> parseFileByLinesLeaveSpaces(String filename) {
+    public static ArrayList<String> parseFileByLinesLeaveSpaces(File filename) {
         ArrayList<String> textLines = new ArrayList<String>();
 
         try {
-            Scanner scanner = new Scanner(new File(filename));
+            Scanner scanner = new Scanner(filename);
             while (scanner.hasNextLine()) {
                 String nextLine = scanner.nextLine();
                 int spaces = 0;
@@ -481,7 +476,7 @@ public class Utilities {
 
     public static String readFileToString(String filename) {
         if (!(new File(filename).exists())) {
-            return "file " + filename + " is empty";
+            return null;
         }
         FileInputStream fis = null;
         byte[] b = null;
@@ -496,13 +491,13 @@ public class Utilities {
             fis.read(b);
         } catch (IOException ex) {
             System.out.println("problems with diff file - nothing with the test");
-            ex.printStackTrace();
+            ex.printStackTrace(System.err);
         } finally {
             try {
                 fis.close();
             } catch (IOException ex) {
                 System.out.println("just closing the diff file - nothing with the test");
-                ex.printStackTrace();
+                ex.printStackTrace(System.err);
             }
         }
 
@@ -516,11 +511,12 @@ public class Utilities {
             if (components[i] != null) {
                 if (chooser.checkComponent(components[i])) {
                     results.add(components[i]);
+                    System.out.println("----------------- Added :" + components[i].toString());
                     //System.out.println("Added :"+components[i].toString());
                 }
                 if (recursive && components[i] instanceof Container) {
                     ArrayList<Component> aa = findComponentsInContainer((Container) components[i], chooser, recursive);
-                    //System.out.println("adding all " + aa);
+                    System.out.println("---------- adding all " + aa);
                     results.addAll(aa);
                 }
             }

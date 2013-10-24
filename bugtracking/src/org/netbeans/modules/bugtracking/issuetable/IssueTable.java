@@ -91,7 +91,11 @@ import javax.swing.UIManager;
 import javax.swing.event.TableColumnModelListener;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
-import org.netbeans.modules.bugtracking.*;
+import org.netbeans.modules.bugtracking.APIAccessor;
+import org.netbeans.modules.bugtracking.BugtrackingConfig;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.IssueImpl;
+import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
@@ -152,10 +156,6 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
     };
 
     public IssueTable(Repository repository, Q q, ColumnDescriptor[] descriptors) {
-        this(repository, q, descriptors, true);
-    }
-    
-    public IssueTable(Repository repository, Q q, ColumnDescriptor[] descriptors, boolean includeObsoletes) {
         assert q != null;
         assert descriptors != null;
         assert descriptors.length > 0;
@@ -166,7 +166,7 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
         this.query.addPropertyChangeListener(this);
         this.component = new JPanel();
         
-        initFilters(includeObsoletes);
+        initFilters();
 
         /* table */
         tableModel = new NodeTableModel();
@@ -435,14 +435,10 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
         return map;
     }
 
-    private void initFilters(boolean includeObsoletes) {
+    private void initFilters() {
         allFilter = Filter.getAllFilter(query);
         newOrChangedFilter = Filter.getNotSeenFilter(query);
-        if(includeObsoletes) {
-            filters = new Filter[]{allFilter, newOrChangedFilter, Filter.getObsoleteDateFilter(query), Filter.getAllButObsoleteDateFilter(query)};
-        } else {
-            filters = new Filter[]{allFilter, newOrChangedFilter};
-        }
+        filters = new Filter[]{allFilter, newOrChangedFilter};
         filter = allFilter;
     }
     

@@ -169,13 +169,13 @@ public class IssueTest extends NbTestCase {
         
         String desc = "desc";
         File file = new File("somefile");
-        issue.attachPatch(file, desc);
+        issue.attachFile(file, desc, false);
         assertEquals(desc, apiIssue.attachedPatchDesc);
         assertEquals(file, apiIssue.attachedFile);
         
         desc = "desc2";
         file = new File("somefile2");
-        issue.attachPatch(file, desc);
+        issue.attachFile(file, desc, false);
         assertEquals(desc, apiIssue.attachedPatchDesc);
         assertEquals(file, apiIssue.attachedFile);
     }
@@ -219,7 +219,7 @@ public class IssueTest extends NbTestCase {
     }
 
     private APITestIssue getAPIIssue() {
-        return getApiRepo().getIssues(new String[] {APITestIssue.ID_1})[0];
+        return getApiRepo().getIssues(new String[] {APITestIssue.ID_1}).iterator().next();
     }
     
     private Issue getIssue() {

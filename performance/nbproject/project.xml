@@ -137,7 +137,7 @@ made subject to such option by the copyright holder.
             </module-dependencies>
             <test-dependencies>
                 <test-type>
-                    <name>qa-functional</name>                    
+                    <name>qa-functional</name>
                     <test-dependency>
                         <code-name-base>org.netbeans.libs.junit4</code-name-base>
                         <compile-dependency/>
@@ -166,10 +166,6 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.jellytools.java</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.jellytools.enterprise</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
@@ -218,10 +214,6 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.libs.junit4</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.ide.ergonomics</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>

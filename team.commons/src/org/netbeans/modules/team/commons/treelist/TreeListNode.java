@@ -77,6 +77,7 @@ public abstract class TreeListNode extends ListNode {
     private RendererPanel renderer;
     private ChildrenLoader loader;
     private Type type;
+    private boolean indentChildren = true;
     private static RequestProcessor rp = new RequestProcessor("Tree List Node - Load Children", 5); // NOI18N
 
     protected static void post(Runnable run) {
@@ -207,6 +208,27 @@ public abstract class TreeListNode extends ListNode {
     protected void childrenLoadingTimedout() {
     }
 
+    /**
+     * Determines whether children of this node should be indented. Considered
+     * when calculating the nesting depth. By default true.
+     * @return true if the children should be indented (add one depth level),
+     *         false otherwise
+     */
+    public boolean getIndentChildren() {
+        return indentChildren;
+    }
+
+    /**
+     * Sets whether children of this node should be indented. By default this is
+     * true. Makes sense to set to false if this node is not painted in the list
+     * (likely root that is not displayed itself) and so should not add indent
+     * level (depth) to its children.
+     * @param indent whether to indent children nodes of this node
+     */
+    public void setIndentChildren(boolean indent) {
+        indentChildren = indent;
+    }
+
     public final void setListener(TreeListListener listener) {
         super.setListener(listener);
         this.listener = listener;
@@ -315,7 +337,7 @@ public abstract class TreeListNode extends ListNode {
         if (null == getParent()) {
             return 0;
         }
-        return getParent().getNestingDepth() + 1;
+        return getParent().getNestingDepth() + (getParent().getIndentChildren() ? 1 : 0);
     }
 
     private void startLoadingChildren() {

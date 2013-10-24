@@ -56,7 +56,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import javax.swing.JLabel;
-import org.netbeans.modules.bugtracking.*;
+import org.netbeans.modules.bugtracking.APIAccessor;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.DelegatingConnector;
+import org.netbeans.modules.bugtracking.IssueImpl;
+import org.netbeans.modules.bugtracking.QueryImpl;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
@@ -323,6 +329,13 @@ public class TeamUtil {
         return null;
     }
     
+    public static void addRepository(String connectorId, String repositoryId) {
+        RepositoryImpl impl = RepositoryRegistry.getInstance().getRepository(connectorId, repositoryId);
+        if(impl != null) {       
+            RepositoryRegistry.getInstance().addRepository(impl);
+        }
+    }
+    
     public static void addRepository(Repository repository) {
         RepositoryRegistry.getInstance().addRepository(APIAccessor.IMPL.getImpl(repository));
     }
@@ -364,11 +377,11 @@ public class TeamUtil {
         IssueAction.createIssue(APIAccessor.IMPL.getImpl(repo));
     }
 
-    public static void openNewQuery(Repository repository, final boolean suggestedSelectionOnly) {
-        QueryAction.openQuery(null, APIAccessor.IMPL.getImpl(repository), suggestedSelectionOnly);
+    public static void openNewQuery(Repository repository) {
+        QueryAction.createNewQueryForRepo(APIAccessor.IMPL.getImpl(repository));
     }
     
-    public static void openQuery(final Query query, Query.QueryMode mode, final boolean suggestedSelectionOnly) {
+    public static void openQuery(final Query query, final boolean suggestedSelectionOnly) {
         QueryImpl queryImpl = APIAccessor.IMPL.getImpl(query);
         DashboardTopComponent.findInstance().select(queryImpl, true);
     }

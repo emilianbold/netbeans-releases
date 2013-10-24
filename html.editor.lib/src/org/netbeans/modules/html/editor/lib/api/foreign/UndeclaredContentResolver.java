@@ -68,7 +68,7 @@ public interface UndeclaredContentResolver {
      * @param element
      * @return 
      */
-    public boolean isCustomTag(Named element);
+    public boolean isCustomTag(Named element, HtmlSource source);
    
     /**
      * Returns true if the given element's attribute is a custom attribute known to this resolver.
@@ -76,6 +76,6 @@ public interface UndeclaredContentResolver {
      * @param attribute
      * @return 
      */
-    public boolean isCustomAttribute(Attribute attribute);
+    public boolean isCustomAttribute(Attribute attribute, HtmlSource source);
 
 }

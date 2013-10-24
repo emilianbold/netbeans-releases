@@ -218,6 +218,7 @@ public abstract class Token<T extends TokenId> {
      * 
      * @return true if the token was removed from the token hierarchy
      *  or false if it's still present in the hierarchy.
+     *  Flyweight tokens always return true from this method.
      */
     public boolean isRemoved() {
         throw new UnsupportedOperationException("Not implemented.");

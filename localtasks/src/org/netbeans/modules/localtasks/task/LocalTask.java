@@ -61,13 +61,13 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttachmentMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugtracking.api.Issue;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.localtasks.LocalRepository;
 import org.netbeans.modules.localtasks.util.FileUtils;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
 import org.netbeans.modules.bugtracking.util.AttachmentsPanel;
 import org.netbeans.modules.bugtracking.util.AttachmentsPanel.AttachmentInfo;
-import org.netbeans.modules.mylyn.util.NbDateRange;
 import org.netbeans.modules.mylyn.util.NbTask;
 import org.netbeans.modules.mylyn.util.NbTaskDataModel;
 import org.netbeans.modules.mylyn.util.localtasks.AbstractLocalTask;
@@ -179,7 +179,7 @@ public final class LocalTask extends AbstractLocalTask {
         return false;
     }
 
-    public BugtrackingController getController () {
+    public IssueController getController () {
         return getTaskController();
     }
     
@@ -218,7 +218,11 @@ public final class LocalTask extends AbstractLocalTask {
         });
     }
 
-    void delete () {
+    public void delete () {
+        fireSaved();
+        if (controller != null) {
+            controller.taskDeleted();
+        }
         deleteTask();
     }
 
@@ -297,6 +301,14 @@ public final class LocalTask extends AbstractLocalTask {
 
     private void fireDataChanged () {
         support.firePropertyChange(IssueProvider.EVENT_ISSUE_REFRESHED, null, null);
+    }
+
+    protected void fireUnsaved() {
+        support.firePropertyChange(IssueController.PROPERTY_ISSUE_NOT_SAVED, null, null);
+    }
+ 
+    protected void fireSaved() {
+        support.firePropertyChange(IssueController.PROPERTY_ISSUE_SAVED, null, null);
     }
 
     private boolean hasUnsavedAttributes () {
@@ -465,19 +477,34 @@ public final class LocalTask extends AbstractLocalTask {
         getTaskController().modelStateChanged(true);
     }
     
-    void setTaskDueDate (Date date) {
-        super.setDueDate(date);
-        getTaskController().modelStateChanged(true);
+    public void setTaskDueDate (Date date, boolean persistChange) {
+        super.setDueDate(date, persistChange);
+        if (controller != null) {
+            controller.modelStateChanged(hasUnsavedChanges());
+            if (persistChange) {
+                controller.refreshViewData();
+            }
+        }
     }
     
-    void setTaskScheduleDate (NbDateRange date) {
-        super.setScheduleDate(date);
-        getTaskController().modelStateChanged(true);
+    public void setTaskScheduleDate (IssueScheduleInfo date, boolean persistChange) {
+        super.setScheduleDate(date, persistChange);
+        if (controller != null) {
+            controller.modelStateChanged(hasUnsavedChanges());
+            if (persistChange) {
+                controller.refreshViewData();
+            }
+        }
     }
     
-    void setTaskEstimate (int estimate) {
-        super.setEstimate(estimate);
-        getTaskController().modelStateChanged(true);
+    public void setTaskEstimate (int estimate, boolean persistChange) {
+        super.setEstimate(estimate, persistChange);
+        if (controller != null) {
+            controller.modelStateChanged(hasUnsavedChanges());
+            if (persistChange) {
+                controller.refreshViewData();
+            }
+        }
     }
 
     public void addComment (String comment, boolean closeAsFixed) {

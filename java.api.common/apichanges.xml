@@ -105,6 +105,139 @@ is the proper place.
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
+        <change id="ProjectConfigurations">
+            <api name="java-api-common"/>
+            <summary>Added <code>ProjectConfigurations</code> support for <code>ProjectConfiguration</code>s in Ant base project.</summary>
+            <version major="1" minor="64"/>
+            <date day="23" month="10" year="2013"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                   Added <code>ProjectConfigurations</code> support for <code>ProjectConfiguration</code>s in Ant base project.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.project" name="ProjectConfigurations"/>
+        </change>
+        <change id="LibrariesNode.Builder">
+            <api name="java-api-common"/>
+            <summary>Added <code>LibrariesNode.Builder</code> to create configured <code>LibrariesNode</code>.</summary>
+            <version major="1" minor="63"/>
+            <date day="22" month="10" year="2013"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added <code>LibrariesNode.Builder</code> to create configured <code>LibrariesNode</code>.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.project.ui" name="LibrariesNode"/>
+        </change>
+        <change id="LogicalViewProviders">
+            <api name="java-api-common"/>
+            <summary>Added <code>LogicalViewProviders</code> support to create default implementation of the <code>LogicalViewProvider2</code>.</summary>
+            <version major="1" minor="62"/>
+            <date day="17" month="10" year="2013"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added <code>LogicalViewProviders</code> support to create default implementation of the <code>LogicalViewProvider2</code>
+                    for Ant Based Project.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.project.ui" name="LogicalViewProviders"/>
+        </change>
+        <change id="ProjectHooks">
+            <api name="java-api-common"/>
+            <summary>Added <code>ProjectHooks</code> factory to create default implementation of the <code>ProjectOpenedHook</code> and the <code>ProjectXmlSavedHook}</code>.</summary>
+            <version major="1" minor="61"/>
+            <date day="15" month="10" year="2013"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added <code>ProjectHooks</code> factory to create default implementation of the <code>ProjectOpenedHook</code> and <code>ProjectXmlSavedHook</code>.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.project" name="ProjectHooks"/>
+        </change>
+        <change id="BaseActionProvider.CustomPlatformCallback">
+            <api name="java-api-common"/>
+            <summary>Added <code>BaseActionProvider.CustomPlatformCallback</code> to allow override active platform lookup.</summary>
+            <version major="1" minor="61"/>
+            <date day="10" month="10" year="2013"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added <code>BaseActionProvider.CustomPlatformCallback</code> to allow project types to override
+                    active project platform lookup. By default the <code>BaseActionProvider</code> uses the <code>ProjectProperties.PLATFORM_ACTIVE</code>
+                    property to search among j2se platforms.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.project" name="BaseActionProvider"/>
+        </change>
+        <change id="ProjectProperties">
+            <api name="java-api-common"/>
+            <summary>Extended <code>ProjectProperties</code> by additional common project properties</summary>
+            <version major="1" minor="60"/>
+            <date day="9" month="10" year="2013"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Extended <code>ProjectProperties</code> by additional common project properties used by shared queries and
+                    project generators.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.project" name="ProjectProperties"/>
+        </change>
+        <change id="BootClassPathImplementation-platform-type">
+            <api name="java-api-common"/>
+            <summary>Extended <code>BootClassPathImplementation</code> and <code>ClassPathProviderImpl</code> to support non j2se platforms</summary>
+            <version major="1" minor="59"/>
+            <date day="9" month="10" year="2013"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Extended <code>BootClassPathImplementation</code> and <code>ClassPathProviderImpl</code> to support non j2se platforms.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.classpath" name="ClassPathProviderImpl"/>
+            <class package="org.netbeans.modules.java.api.common.classpath" name="ClassPathSupportFactory"/>
+            <class package="org.netbeans.modules.java.api.common.util" name="CommonProjectUtils"/>
+        </change>
+        <change id="BaseActionProvider.Callback3">
+            <api name="java-api-common"/>
+            <summary>Added <code>BaseActionProvider.Callback3</code> with a method providing additional build properties.</summary>
+            <version major="1" minor="58"/>
+            <date day="24" month="9" year="2013"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added <code>BaseActionProvider.Callback3</code> interface with a method providing additional build properties.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.project" name="BaseActionProvider"/>
+        </change>
+        <change id="PlatformUiSupport.getProfile">
+            <api name="java-api-common"/>
+            <summary>Added getter for profile from profile model.</summary>
+            <version major="1" minor="57"/>
+            <date day="18" month="9" year="2013"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added utility method<code>PlatformUiSupport.getProfile</code>
+                    returning a <code>Profile</code> for a key obtained from profile model.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.ui" name="PlatformUiSupport"/>
+        </change>
         <change id="CustomizerProvider3">
             <api name="java-api-common"/>
             <summary>Enable programmatical closing of project customizer dialog.</summary>

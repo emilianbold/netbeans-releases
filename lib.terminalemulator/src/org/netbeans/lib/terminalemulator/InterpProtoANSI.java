@@ -45,7 +45,7 @@ package org.netbeans.lib.terminalemulator;
  * Stuff common to InterpANSI, InterpDtTerm and InterpXTerm.
  * @author ivan
  */
-public class InterpProtoANSI extends InterpDumb {
+class InterpProtoANSI extends InterpDumb {
 
     protected static class Ascii {
         public static final char ESC = 27;
@@ -56,9 +56,14 @@ public class InterpProtoANSI extends InterpDumb {
     protected static class InterpTypeProtoANSI extends InterpTypeDumb {
 	protected final Actor act_reset_number = new ACT_RESET_NUMBER();
 	protected final Actor act_remember_digit = new ACT_REMEMBER_DIGIT();
+        protected final Actor act_push_number = new ACT_PUSH_NUMBER();
+	protected final Actor act_remember1 = new ACT_REMEMBER1();
+	protected final Actor act_setg = new ACT_SETG();
 
 	protected final State st_esc = new State("esc");	// NOI18N
 	protected final State st_esc_lb = new State("esc_lb");	// NOI18N
+
+	protected final State st_esc_setg = new State("esc_setg");// NOI18N
 
 	protected InterpTypeProtoANSI() {
 	    st_base.setAction((char) 27, st_esc, new ACT_TO_ESC());
@@ -68,28 +73,100 @@ public class InterpProtoANSI extends InterpDumb {
 	    st_esc.setRegular(st_esc, act_regular);
 	    st_esc.setAction('M', st_base, new ACT_M());
 	    st_esc.setAction('c', st_base, new ACT_FULL_RESET());
+
+	    st_esc.setAction('n', st_base, new ACT_LS2());
+	    st_esc.setAction('o', st_base, new ACT_LS3());
+
+	    st_esc.setAction('(', st_esc_setg, act_remember1);
+	    st_esc.setAction(')', st_esc_setg, act_remember1);
+	    st_esc.setAction('*', st_esc_setg, act_remember1);
+	    st_esc.setAction('+', st_esc_setg, act_remember1);
+                st_esc_setg.setAction('B', st_base, act_setg);
+                st_esc_setg.setAction('0', st_base, act_setg);
+
 	    st_esc.setAction('[', st_esc_lb, act_reset_number);
 
 	    st_esc_lb.setRegular(st_esc_lb, act_regular);
 	    for (char c = '0'; c <= '9'; c++)
 		st_esc_lb.setAction(c, st_esc_lb, act_remember_digit);
-	    st_esc_lb.setAction(';', st_esc_lb, new ACT_PUSH_NUMBER());
+	    st_esc_lb.setAction(';', st_esc_lb, act_push_number);
 	    st_esc_lb.setAction('A', st_base, new ACT_UP());
-	    st_esc_lb.setAction('B', st_base, new ACT_DO());
+	    st_esc_lb.setAction('B', st_base, new ACT_CUD());
 	    st_esc_lb.setAction('C', st_base, new ACT_ND());
 	    st_esc_lb.setAction('D', st_base, new ACT_BC());
+	    st_esc_lb.setAction('G', st_base, new ACT_CHA());
 	    st_esc_lb.setAction('H', st_base, new ACT_HO());
+	    st_esc_lb.setAction('I', st_base, new ACT_CHT());
 	    st_esc_lb.setAction('J', st_base, new ACT_J());
 	    st_esc_lb.setAction('K', st_base, new ACT_K());
 	    st_esc_lb.setAction('L', st_base, new ACT_AL());
 	    st_esc_lb.setAction('M', st_base, new ACT_DL());
 	    st_esc_lb.setAction('P', st_base, new ACT_DC());
+	    st_esc_lb.setAction('X', st_base, new ACT_ECH());
+	    st_esc_lb.setAction('Z', st_base, new ACT_CBT());
 	    st_esc_lb.setAction('@', st_base, new ACT_IC());
+	    st_esc_lb.setAction('d', st_base, new ACT_VPA());
 	    st_esc_lb.setAction('h', st_base, new ACT_SM());
+	    st_esc_lb.setAction('l', st_base, new ACT_RM());
 	    st_esc_lb.setAction('m', st_base, new ACT_ATTR());
 	    st_esc_lb.setAction('n', st_base, new ACT_DSR());
 	    st_esc_lb.setAction('r', st_base, new ACT_MARGIN());
         }
+
+	static final class ACT_CHA implements Actor {
+	    @Override
+	    public String action(AbstractInterp ai, char c) {
+		if (ai.noNumber())
+		    ai.ops.op_cha(1);
+		else
+		    ai.ops.op_cha(ai.numberAt(0));
+		return null;
+	    }
+	}
+
+	static final class ACT_ECH implements Actor {
+	    @Override
+	    public String action(AbstractInterp ai, char c) {
+		if (ai.noNumber())
+		    ai.ops.op_ech(1);
+		else
+		    ai.ops.op_ech(ai.numberAt(0));
+		return null;
+	    }
+	}
+
+	static final class ACT_CBT implements Actor {
+	    @Override
+	    public String action(AbstractInterp ai, char c) {
+		if (ai.noNumber())
+		    ai.ops.op_cbt(1);
+		else
+		    ai.ops.op_cbt(ai.numberAt(0));
+		return null;
+	    }
+	}
+
+	static final class ACT_CHT implements Actor {
+	    @Override
+	    public String action(AbstractInterp ai, char c) {
+		if (ai.noNumber())
+		    ai.ops.op_cht(1);
+		else
+		    ai.ops.op_cht(ai.numberAt(0));
+		return null;
+	    }
+	}
+
+	static final class ACT_VPA implements Actor {
+	    @Override
+	    public String action(AbstractInterp ai, char c) {
+		if (ai.noNumber())
+		    ai.ops.op_vpa(1);
+		else
+		    ai.ops.op_vpa(ai.numberAt(0));
+		return null;
+	    }
+	}
 
 	static final class ACT_TO_ESC implements Actor {
 	    @Override
@@ -133,7 +210,7 @@ public class InterpProtoANSI extends InterpDumb {
 	static final class ACT_M implements Actor {
             @Override
 	    public String action(AbstractInterp ai, char c) {
-		ai.ops.op_up(1);
+		ai.ops.op_ri(1);
 		return null;
 	    }
 	}
@@ -142,6 +219,52 @@ public class InterpProtoANSI extends InterpDumb {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		ai.ops.op_full_reset();
+		return null;
+	    }
+	}
+
+	static final class ACT_LS2 implements Actor {
+	    @Override
+	    public String action(AbstractInterp ai, char c) {
+		ai.ops.op_selectGL(2);
+		return null;
+	    }
+	}
+
+	static final class ACT_LS3 implements Actor {
+	    @Override
+	    public String action(AbstractInterp ai, char c) {
+		ai.ops.op_selectGL(3);
+		return null;
+	    }
+	}
+
+	static final class ACT_REMEMBER1 implements Actor {
+	    @Override
+	    public String action(AbstractInterp ai, char c) {
+                InterpProtoANSI i = (InterpProtoANSI) ai;
+                i.rememberedChar = c;
+		return null;
+	    }
+	}
+
+	static final class ACT_SETG implements Actor {
+	    @Override
+	    public String action(AbstractInterp ai, char c) {
+                int gx = 0;
+                InterpProtoANSI i = (InterpProtoANSI) ai;
+                switch (i.rememberedChar) {
+                    case '(':           gx = 0;  break;
+                    case ')':           gx = 1;  break;
+                    case '*':           gx = 2;  break;
+                    case '+':           gx = 3;  break;
+                }
+                int fx = 0;
+                switch (c) {
+                    case 'B': fx = 0;   break;
+                    case '0': fx = 1;   break;
+                }
+                ai.ops.op_setG(gx, fx);
 		return null;
 	    }
 	}
@@ -159,20 +282,21 @@ public class InterpProtoANSI extends InterpDumb {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber())
-		    ai.ops.op_up(1);
+		    ai.ops.op_cuu(1);
 		else
-		    ai.ops.op_up(ai.numberAt(0));
+		    ai.ops.op_cuu(ai.numberAt(0));
 		return null;
 	    }
 	}
 
-	static final class ACT_DO implements Actor {
+	static final class ACT_CUD implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
+                // no scroll
 		if (ai.noNumber())
-		    ai.ops.op_do(1);
+		    ai.ops.op_cud(1);
 		else
-		    ai.ops.op_do(ai.numberAt(0));
+		    ai.ops.op_cud(ai.numberAt(0));
 		return null;
 	    }
 	}
@@ -215,14 +339,18 @@ public class InterpProtoANSI extends InterpDumb {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber()) {
-		    ai.ops.op_cd();
+		    ai.ops.op_ed(0);
 		} else {
-		    int count = ai.numberAt(0);
-		    if (count == 1) {
-			return "ACT J: count of 1 not supported";	// NOI18N
-		    } else if (count == 2) {
-			ai.ops.op_cl();
-		    } 
+		    final int code = ai.numberAt(0);
+                    switch (code) {
+                        case 0:
+                        case 1:
+                        case 2:
+                            ai.ops.op_ed(code);
+                            break;
+                        default:
+                            return "ACT J: count of > 2 not supported";	// NOI18N
+                    }
 		} 
 		return null;
 	    }
@@ -232,14 +360,18 @@ public class InterpProtoANSI extends InterpDumb {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber()) {
-		    ai.ops.op_ce();
+                    ai.ops.op_el(0);
 		} else {
-		    int count = ai.numberAt(0);
-		    if (count == 1) {
-			return "ACT K: count of 1 not supported";	// NOI18N
-		    } else if (count == 2) {
-			return "ACT K: count of 2 not supported";	// NOI18N
-		    } 
+                    final int code = ai.numberAt(0);
+                    switch (code) {
+                        case 0:
+                        case 1:
+                        case 2:
+                            ai.ops.op_el(code);
+                            break;
+                        default:
+                            return "ACT K: count of > 2 not supported";	// NOI18N
+                    }
 		} 
 		return null;
 	    }
@@ -302,6 +434,18 @@ public class InterpProtoANSI extends InterpDumb {
 	    }
 	}
 
+	static final class ACT_RM implements Actor {
+	    @Override
+	    public String action(AbstractInterp ai, char c) {
+		if (ai.noNumber())
+		    ai.ops.op_reset_mode(1);
+		else
+		    ai.ops.op_reset_mode(ai.numberAt(0));
+		return null;
+	    }
+	}
+
+
 	static final class ACT_ATTR implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
@@ -309,8 +453,11 @@ public class InterpProtoANSI extends InterpDumb {
 		if (ai.noNumber()) {
 		    ai.ops.op_attr(0);	// reset everything
 		} else {
-		    for (int n = 0; n <= ai.nNumbers(); n++)
-			ai.ops.op_attr(ai.numberAt(n));
+		    for (int n = 0; n <= ai.nNumbers(); n++) {
+                        final int attr = ai.numberAt(n);
+                        if (!((InterpProtoANSI) ai).dispatchAttr(ai, attr))
+                            return "ACT_ATTR: unrecognized attribute " + attr;  // NOI18N
+                    }
 		}
 		return null;
 	    }
@@ -346,6 +493,8 @@ public class InterpProtoANSI extends InterpDumb {
 
     private static final InterpTypeProtoANSI type_singleton = new InterpTypeProtoANSI();
 
+    private char rememberedChar;
+
     public InterpProtoANSI(Ops ops) {
 	super(ops, type_singleton);
 	this.type = type_singleton;
@@ -366,6 +515,16 @@ public class InterpProtoANSI extends InterpDumb {
     @Override
     public void reset() {
 	super.reset();
+    }
+
+    /**
+     * Process an attrib code in an Interp-specific manner.
+     * @param ai
+     * @param n The attribute code.
+     * @return Whether the attribute code is valid for the Interp.
+     */
+    protected boolean dispatchAttr(AbstractInterp ai, int n) {
+        return false;
     }
 
     private void setup() {

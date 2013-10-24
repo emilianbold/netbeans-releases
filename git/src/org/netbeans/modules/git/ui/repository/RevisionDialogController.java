@@ -42,13 +42,10 @@
 
 package org.netbeans.modules.git.ui.repository;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -57,7 +54,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -71,7 +67,7 @@ import javax.swing.event.ListSelectionListener;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
-import org.openide.awt.QuickSearch;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.openide.util.NbBundle;
 
 /**
@@ -106,11 +102,12 @@ public class RevisionDialogController implements ActionListener, DocumentListene
      * @param repository
      * @param roots
      * @param branches if this is an empty map, branches will be loaded in background
+     * @param defaultBranchName branch you want to select by default or <code>null</code> to preselect the current branch
      */
-    public RevisionDialogController (File repository, File[] roots, Map<String, GitBranch> branches) {
+    public RevisionDialogController (File repository, File[] roots, Map<String, GitBranch> branches, String defaultBranchName) {
         this(repository, roots);
         hideFields(new JComponent[] { panel.lblRevision, panel.revisionField, panel.btnSelectRevision });
-        setModel(branches);
+        setModel(branches, defaultBranchName);
     }
 
     private RevisionDialogController (File repository, File[] roots) {
@@ -249,9 +246,9 @@ public class RevisionDialogController implements ActionListener, DocumentListene
     @NbBundle.Messages({
         "MSG_RevisionDialog.selectBranch=Select Branch"
     })
-    private void setModel (Map<String, GitBranch> branches) {
+    private void setModel (Map<String, GitBranch> branches, String toSelectBranchName) {
         if (branches.isEmpty()) {
-            loadBranches();
+            loadBranches(toSelectBranchName);
             return;
         }
         final List<Revision> branchList = new ArrayList<Revision>(branches.size());
@@ -259,14 +256,17 @@ public class RevisionDialogController implements ActionListener, DocumentListene
         Revision activeBranch = null;
         for (Map.Entry<String, GitBranch> e : branches.entrySet()) {
             GitBranch branch = e.getValue();
+            Revision rev = null;
             if (branch.isRemote()) {
-                remoteBranchList.add(new Revision.BranchReference(branch));
+                rev = new Revision.BranchReference(branch);
+                remoteBranchList.add(rev);
             } else if (branch.getName() != GitBranch.NO_BRANCH) {
-                Revision rev = new Revision.BranchReference(branch);
+                rev = new Revision.BranchReference(branch);
                 branchList.add(rev);
-                if (branch.isActive()) {
-                    activeBranch = rev;
-                }
+            }
+            if (rev != null && (toSelectBranchName != null && toSelectBranchName.equals(branch.getName())
+                    || toSelectBranchName == null && branch.isActive())) {
+                activeBranch = rev;
             }
         }
         Comparator<Revision> comp = new Comparator<Revision>() {
@@ -302,7 +302,13 @@ public class RevisionDialogController implements ActionListener, DocumentListene
                 }
                 selectedBranchChanged();
                 if (!branchList.isEmpty()) {
-                    attachQuickSearch(branchList);
+                    GitUtils.<Revision>attachQuickSearch(branchList, panel.branchesPanel, panel.lstBranches, branchModel, new GitUtils.SearchCallback<Revision>() {
+
+                        @Override
+                        public boolean contains (Revision rev, String needle) {
+                            return rev.getRevision().contains(needle);
+                        }
+                    });
                 }
             }
         });
@@ -313,122 +319,11 @@ public class RevisionDialogController implements ActionListener, DocumentListene
         revisionString = activeBranch instanceof Revision ? ((Revision) activeBranch).getRevision() : Bundle.MSG_RevisionDialog_selectBranch();
         updateRevision();
     }
-    
-    private boolean quickSearchActive;
-    private void attachQuickSearch (final List<Revision> branchList) {
-        final QuickSearch qs = QuickSearch.attach(panel.branchesPanel, BorderLayout.SOUTH, new QuickSearch.Callback() {
-            
-            private int currentPosition = 0;
-            private final List<Revision> results = new ArrayList<Revision>(branchList);
-            
-            @Override
-            public void quickSearchUpdate (String searchText) {
-                quickSearchActive = true;
-                Revision selected = branchList.get(0);
-                if (currentPosition > -1) {
-                    selected = results.get(currentPosition);
-                }
-                results.clear();
-                results.addAll(branchList);
-                if (!searchText.isEmpty()) {
-                    for (ListIterator<Revision> it = results.listIterator(); it.hasNext(); ) {
-                        Revision rev = it.next();
-                        if (!rev.getRevision().contains(searchText)) {
-                            it.remove();
-                        }
-                    }
-                }
-                currentPosition = results.indexOf(selected);
-                if (currentPosition == -1 && !results.isEmpty()) {
-                    currentPosition = 0;
-                }
-                updateView();
-            }
-
-            @Override
-            public void showNextSelection (boolean forward) {
-                if (currentPosition != -1) {
-                    currentPosition += forward ? 1 : -1;
-                    if (currentPosition < 0) {
-                        currentPosition = results.size() - 1;
-                    } else if (currentPosition == results.size()) {
-                        currentPosition = 0;
-                    }
-                    updateSelection();
-                }
-            }
-
-            @Override
-            public String findMaxPrefix (String prefix) {
-                return prefix;
-            }
-
-            @Override
-            public void quickSearchConfirmed () {
-                EventQueue.invokeLater(new Runnable() {
-                    @Override
-                    public void run () {
-                        panel.lstBranches.requestFocusInWindow();
-                    }
-                });
-            }
-
-            @Override
-            public void quickSearchCanceled () {
-                quickSearchUpdate("");
-                quickSearchActive = false;
-                EventQueue.invokeLater(new Runnable() {
-                    @Override
-                    public void run () {
-                        panel.lstBranches.requestFocusInWindow();
-                    }
-                });
-            }
-
-            private void updateView () {
-                branchModel.removeAllElements();
-                for (Revision r : results) {
-                    branchModel.addElement(r);
-                }
-                updateSelection();
-            }
-
-            private void updateSelection () {
-                if (currentPosition > -1 && currentPosition < results.size()) {
-                    Revision rev = results.get(currentPosition);
-                    panel.lstBranches.setSelectedValue(rev, true);
-                }
-            }
-        });
-        qs.setAlwaysShown(true);
-        panel.lstBranches.addKeyListener(new KeyListener() {
-
-            @Override
-            public void keyTyped (KeyEvent e) {
-                qs.processKeyEvent(e);
-            }
-
-            @Override
-            public void keyPressed (KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_ENTER
-                        || e.getKeyCode() == KeyEvent.VK_ESCAPE && !quickSearchActive) {
-                    // leave events up to other components
-                } else {
-                    qs.processKeyEvent(e);
-                }
-            }
-
-            @Override
-            public void keyReleased (KeyEvent e) {
-                qs.processKeyEvent(e);
-            }
-        });
-    }
 
     @NbBundle.Messages({
         "RevisionDialogController.loadingBranches=Loading Branches..."
     })
-    private void loadBranches () {
+    private void loadBranches (final String defaultBranch) {
         DefaultListModel model = new DefaultListModel();
         model.addElement(Bundle.RevisionDialogController_loadingBranches());
         panel.lstBranches.setModel(model);
@@ -443,7 +338,7 @@ public class RevisionDialogController implements ActionListener, DocumentListene
                     @Override
                     public void run () {
                         panel.lstBranches.setEnabled(true);
-                        setModel(branches);
+                        setModel(branches, defaultBranch);
                     }
                 });
             }

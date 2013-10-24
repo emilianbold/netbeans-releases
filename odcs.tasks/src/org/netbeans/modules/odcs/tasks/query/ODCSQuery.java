@@ -60,7 +60,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
-import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.team.spi.TeamProject;
 import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
@@ -173,12 +172,6 @@ public abstract class ODCSQuery {
         return lastRefresh;
     }
 
-    public boolean contains(String id) {
-        synchronized(ISSUES_LOCK) {
-            return issues.contains(id);
-        }
-    }
-
     public Collection<ODCSIssue> getIssues() {
         List<String> ids;
         synchronized(ISSUES_LOCK) {
@@ -189,7 +182,7 @@ public abstract class ODCSQuery {
             ids.addAll(issues);
         }
         
-        IssueCache<ODCSIssue> cache = repository.getIssueCache();
+        ODCSRepository.Cache cache = repository.getIssueCache();
         List<ODCSIssue> ret = new ArrayList<ODCSIssue>();
         for (String id : ids) {
             ret.add(cache.getIssue(id));
@@ -250,7 +243,7 @@ public abstract class ODCSQuery {
         return name + " - " + repository.getDisplayName(); // NOI18N
     }
 
-    public final ODCSQueryController getController () {
+    public final synchronized ODCSQueryController getController () {
         if(controller == null) {
             controller = new ODCSQueryController(repository, this, getCriteria(), isModifiable());
         }
@@ -315,12 +308,6 @@ public abstract class ODCSQuery {
                         return;
                     }
 
-                    if(isSaved()) {
-                        synchronized(ISSUES_LOCK) {
-                            // store all issues you got
-                            repository.getIssueCache().storeQueryIssues(getDisplayName(), issues.toArray(new String[issues.size()]));
-                        }
-                    }
                 } catch (CoreException ex) {
                     ODCS.LOG.log(Level.INFO, null, ex);
                 } finally {
@@ -365,6 +352,10 @@ public abstract class ODCSQuery {
         if (cmd != null) {
             cmd.cancel();
         }
+    }
+
+    public boolean canRemove() {
+        return isModifiable();
     }
 
     private class QueryProgressListener implements SynchronizeQueryCommand.CommandProgressListener {

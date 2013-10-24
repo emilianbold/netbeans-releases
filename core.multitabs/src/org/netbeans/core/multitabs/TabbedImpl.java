@@ -76,7 +76,7 @@ public final class TabbedImpl extends AbstractTabbedImpl {
 
     private final TabContainer container;
     private final Controller controller;
-    private final TabDataModel tabModel;
+    private final DefaultTabDataModel tabModel;
     private ComponentConverter componentConverter = ComponentConverter.DEFAULT;
 
     public TabbedImpl( WinsysInfoForTabbedContainer winsysInfo, int orientation ) {
@@ -184,10 +184,7 @@ public final class TabbedImpl extends AbstractTabbedImpl {
 
     @Override
     public void setToolTipTextAt( int index, String toolTip ) {
-        TabData tabData = getTabModel().getTab(index);
-        if (tabData != null) {
-            getTabModel().setTab( index, new TabData( tabData.getUserObject(), tabData.getIcon(), tabData.getText(), toolTip) );
-        }
+        tabModel.setToolTipTextAt(index, toolTip);
     }
 
     @Override

@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.extbrowser;
 
+import java.awt.EventQueue;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -70,7 +71,9 @@ public class SimpleExtBrowserImpl extends ExtBrowserImpl {
     /** Given URL is displayed.
       *  Configured process is started to satisfy this request.
       */
-    protected void loadURLInBrowser(URL url) {
+    @Override
+    protected void loadURLInBrowserInternal(URL url) {
+        assert !EventQueue.isDispatchThread();
         if (url == null) {
             return;
         }

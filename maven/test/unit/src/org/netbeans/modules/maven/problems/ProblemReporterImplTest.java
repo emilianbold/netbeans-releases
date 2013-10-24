@@ -75,7 +75,7 @@ public class ProblemReporterImplTest extends NbTestCase { // #175472
         Project p = ProjectManager.getDefault().findProject(FileUtil.toFileObject(getWorkDir()));
         assertEquals("g:m:jar:0", p.getLookup().lookup(NbMavenProject.class).getMavenProject().getId());
         ProblemReporterImpl pr = getReporter(p);
-        pr.doIDEConfigChecks();
+//        pr.doIDEConfigChecks();
         waitForReports();
         assertFalse(pr.getReports().isEmpty());
         
@@ -96,7 +96,7 @@ public class ProblemReporterImplTest extends NbTestCase { // #175472
             "</project>");
         Project p = ProjectManager.getDefault().findProject(FileUtil.toFileObject(getWorkDir()));
         ProblemReporterImpl pr = getReporter(p);
-        pr.doIDEConfigChecks();
+//        pr.doIDEConfigChecks();
         waitForReports();
         assertFalse(pr.getReports().isEmpty());
         assertEquals(Collections.singleton(a2f(new DefaultArtifact("g", "plug", "0", null, "jar", null, new DefaultArtifactHandler("jar")))), pr.getMissingArtifactFiles());
@@ -109,7 +109,7 @@ public class ProblemReporterImplTest extends NbTestCase { // #175472
             "</project>");
         Project p = ProjectManager.getDefault().findProject(FileUtil.toFileObject(getWorkDir()));
         ProblemReporterImpl pr = getReporter(p);
-        pr.doIDEConfigChecks();
+//        pr.doIDEConfigChecks();
         waitForReports();
         assertFalse(pr.getReports().isEmpty());
         assertEquals(Collections.singleton(a2f(new DefaultArtifact("g", "b", "1.0-SNAPSHOT", "compile", "jar", null, new DefaultArtifactHandler("jar")))), pr.getMissingArtifactFiles());

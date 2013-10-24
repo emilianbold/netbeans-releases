@@ -183,10 +183,11 @@ public class SearchPanel extends JPanel implements FocusListener,
         setName(NbBundle.getMessage(SearchPanel.class,
                 "TEXT_TITLE_CUSTOMIZE"));           //NOI18N
 
+        String bundleKey = isSearchAndReplace()
+                ? "TEXT_BUTTON_SEARCH_CONTINUE" : "TEXT_BUTTON_SEARCH"; //NOI18N
         Mnemonics.setLocalizedText(okButton = new JButton(),
                 NbBundle.getMessage(
-                org.netbeans.modules.search.SearchPanel.class,
-                "TEXT_BUTTON_SEARCH"));     //NOI18N
+                org.netbeans.modules.search.SearchPanel.class, bundleKey));
 
         Mnemonics.setLocalizedText(cancelButton = new JButton(),
                 NbBundle.getMessage(
@@ -204,7 +205,10 @@ public class SearchPanel extends JPanel implements FocusListener,
             tabbedPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SearchPanel.class, "ACSN_Tabs")); // NOI18N
             tabbedPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchPanel.class, "ACSD_Tabs")); // NOI18N
         }
-        okButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchPanel.class, "ACS_TEXT_BUTTON_SEARCH")); // NOI18N
+        String descSearchContinue = NbBundle.getMessage(SearchPanel.class,
+                isSearchAndReplace() ? "ACS_TEXT_BUTTON_SEARCH_CONTINUE" : "ACS_TEXT_BUTTON_SEARCH"); // NOI18N
+        okButton.getAccessibleContext().setAccessibleDescription(descSearchContinue);
+        okButton.setToolTipText(descSearchContinue);
         cancelButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchPanel.class, "ACS_TEXT_BUTTON_CANCEL")); // NOI18N
         newTabCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchPanel.class, "ACS_TEXT_BUTTON_NEW_TAB")); //NOI18N
     }

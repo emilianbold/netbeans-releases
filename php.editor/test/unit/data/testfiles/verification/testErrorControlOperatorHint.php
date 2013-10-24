@@ -24,5 +24,7 @@ $dom = new DOMDocument();
 
 @mkdir(__DIR__);
 
+$ivString = @iconv('utf-8','cp1251','test');
+
 //END
 ?>

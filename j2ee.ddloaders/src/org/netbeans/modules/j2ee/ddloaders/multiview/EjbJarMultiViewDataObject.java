@@ -580,9 +580,9 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
     
     public void showElement(final Object element) {
         if (element instanceof Relationships || element instanceof EjbRelation) {
-            openView(2);
+            openView(4);
         } else {
-            openView(1);
+            openView(2);
         }
         Utils.runInAwtDispatchThread(new Runnable() {
             public void run() {

@@ -13,6 +13,7 @@ METHOD     codePointCount(int, int)        [PUBLIC]   int
 METHOD     collect()                                  Collection
 METHOD     collect(Closure)                           List
 METHOD     collect(Collection, Closure)               Collection
+METHOD     collectReplacements(Closure)               String
 METHOD     compareTo(String)               [PUBLIC]   int
 METHOD     compareTo(T)                    [PUBLIC]   int
 METHOD     compareToIgnoreCase(String)     [PUBLIC]   int

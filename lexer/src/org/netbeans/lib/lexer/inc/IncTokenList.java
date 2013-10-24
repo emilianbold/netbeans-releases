@@ -52,12 +52,11 @@ import org.netbeans.lib.lexer.LexerSpiPackageAccessor;
 import org.netbeans.lib.lexer.TextLexerInputOperation;
 import org.netbeans.lib.lexer.TokenList;
 import org.netbeans.lib.editor.util.FlyOffsetGapList;
-import org.netbeans.lib.lexer.EmbeddingContainer;
 import org.netbeans.lib.lexer.LexerInputOperation;
 import org.netbeans.lib.lexer.LexerUtilsConstants;
 import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.lib.lexer.EmbeddedTokenList;
 import org.netbeans.lib.lexer.TokenHierarchyOperation;
 import org.netbeans.lib.lexer.token.AbstractToken;
 import org.netbeans.lib.lexer.token.TextToken;
@@ -99,8 +98,7 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
     private int rootModCount;
 
     private LAState laState;
-    
-    
+
     public IncTokenList(TokenHierarchyOperation<?,T> tokenHierarchyOperation) {
         this.tokenHierarchyOperation = tokenHierarchyOperation;
         this.laState = LAState.empty();
@@ -128,6 +126,7 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
         }
     }
 
+    @Override
     public LanguagePath languagePath() {
         return languagePath;
     }
@@ -136,13 +135,15 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
         this.languagePath = languagePath;
     }
 
-    public synchronized int tokenCount() {
+    @Override
+    public int tokenCount() {
         if (lexerInputOperation != null) { // still lexing
             tokenOrEmbeddingImpl(Integer.MAX_VALUE);
         }
         return size();
     }
 
+    @Override
     public int tokenOffset(AbstractToken<T> token) {
         int rawOffset = token.rawOffset();
         return (rawOffset < offsetGapStart()
@@ -150,10 +151,12 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
                 : rawOffset - offsetGapLength());
     }
 
+    @Override
     public int tokenOffset(int index) {
         return elementOffset(index);
     }
     
+    @Override
     public int[] tokenIndex(int offset) {
         return LexerUtilsConstants.tokenIndexLazyTokenCreation(this, offset);
     }
@@ -162,7 +165,8 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
      * Get modification count for which this token list was last updated
      * (mainly its cached start offset).
      */
-    public synchronized int modCount() {
+    @Override
+    public int modCount() {
         return rootModCount;
     }
     
@@ -170,7 +174,8 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
         rootModCount++;
     }
     
-    public synchronized TokenOrEmbedding<T> tokenOrEmbedding(int index) {
+    @Override
+    public TokenOrEmbedding<T> tokenOrEmbedding(int index) {
         return tokenOrEmbeddingImpl(index);
     }
     
@@ -193,69 +198,84 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
         return (index < size()) ? get(index) : null;
     }
     
-    public synchronized AbstractToken<T> replaceFlyToken(
+    @Override
+    public AbstractToken<T> replaceFlyToken(
     int index, AbstractToken<T> flyToken, int offset) {
         TextToken<T> nonFlyToken = ((TextToken<T>)flyToken).createCopy(this, offset2Raw(offset));
         set(index, nonFlyToken);
         return nonFlyToken;
     }
 
-    public synchronized void wrapToken(int index, EmbeddingContainer<T> embeddingContainer) {
-        set(index, embeddingContainer);
+    @Override
+    public void setTokenOrEmbedding(int index, TokenOrEmbedding<T> t) {
+        set(index, t);
     }
 
+    @Override
     public InputAttributes inputAttributes() {
         return LexerSpiPackageAccessor.get().inputAttributes(tokenHierarchyOperation.mutableTextInput());
     }
     
+    @Override
     protected int elementRawOffset(TokenOrEmbedding<T> elem) {
         return elem.token().rawOffset();
     }
  
+    @Override
     protected void setElementRawOffset(TokenOrEmbedding<T> elem, int rawOffset) {
         elem.token().setRawOffset(rawOffset);
     }
     
+    @Override
     protected boolean isElementFlyweight(TokenOrEmbedding<T> elem) {
         // token wrapper always contains non-flyweight token
         return (elem.embedding() == null)
             && elem.token().isFlyweight();
     }
     
+    @Override
     protected int elementLength(TokenOrEmbedding<T> elem) {
         return elem.token().length();
     }
     
-    public TokenOrEmbedding<T> tokenOrEmbeddingUnsync(int index) {
+    @Override
+    public TokenOrEmbedding<T> tokenOrEmbeddingDirect(int index) {
         // Solely for token list updater or token hierarchy snapshots
         // having single-threaded exclusive write access
         return get(index);
     }
 
+    @Override
     public int lookahead(int index) {
         return laState.lookahead(index);
     }
 
+    @Override
     public Object state(int index) {
         return laState.state(index);
     }
 
+    @Override
     public int tokenCountCurrent() {
         return size();
     }
 
+    @Override
     public TokenList<?> rootTokenList() {
         return this;
     }
 
+    @Override
     public CharSequence inputSourceText() {
         return inputSourceText;
     }
 
+    @Override
     public TokenHierarchyOperation<?,?> tokenHierarchyOperation() {
         return tokenHierarchyOperation;
     }
     
+    @Override
     public LexerInputOperation<T> createLexerInputOperation(
     int tokenIndex, int relexOffset, Object relexState) {
         // Possibly release unfinished lexing - will be restarted in replaceTokens()
@@ -270,10 +290,12 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
                 relexOffset, inputSourceText.length());
     }
 
+    @Override
     public boolean isFullyLexed() {
         return (lexerInputOperation == null);
     }
 
+    @Override
     public void replaceTokens(TokenListChange<T> change, TokenHierarchyEventInfo eventInfo, boolean modInside) {
         int index = change.index();
         // Remove obsolete tokens (original offsets are retained)
@@ -293,15 +315,9 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
                 if (!token.isFlyweight()) {
                     updateElementOffsetRemove(token);
                     token.setTokenList(null);
-                    EmbeddingContainer<T> ec = tokenOrEmbedding.embedding();
-                    if (ec != null) {
-                        // Assert that the modCount of root token list (which should already be updated)
-                        // is already updated while the children embeddings were not "touched" and they still hold
-                        // before-mod mod counts because otherwise their offsets would not reflect
-                        // proper original values.
-                        assert (ec.cachedModCount() != rootModCount) : "ModCount=" + rootModCount + // NOI18N
-                                " already updated in child embedding."; // NOI18N
-                        ec.markRemoved(token.rawOffset());
+                    EmbeddedTokenList<T,?> etl = tokenOrEmbedding.embedding();
+                    if (etl != null) {
+                        etl.markRemovedChain(token.rawOffset());
                     }
                 }
             }
@@ -354,10 +370,12 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
         }
     }
     
+    @Override
     public boolean isContinuous() {
         return true;
     }
 
+    @Override
     public Set<T> skipTokenIds() {
         return null;
     }
@@ -367,16 +385,23 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
         return 0;
     }
 
+    @Override
     public int endOffset() {
         return (inputSourceText != null) ? inputSourceText.length() : 0;
     }
 
+    @Override
     public boolean isRemoved() {
         return false; // Should never become removed
     }
 
     public void setInputSourceText(CharSequence text) {
         this.inputSourceText = text;
+    }
+
+    @Override
+    public String dumpInfoType() {
+        return "ITL";
     }
 
     @Override

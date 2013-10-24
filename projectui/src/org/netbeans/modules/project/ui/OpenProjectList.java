@@ -511,6 +511,9 @@ public final class OpenProjectList {
                         log(Level.WARNING, "broken node for {0}", t);
                     }
                     log(Level.FINE, "property change notified {0}", p); // NOI18N
+                    ///same as in doOpenProject() but here for initially opened projects
+                    p.getProjectDirectory().addFileChangeListener(INSTANCE.deleteListener);
+                    p.getProjectDirectory().addFileChangeListener(INSTANCE.nbprojectDeleteListener);
                 } else {
                     // opened failed, remove main project if same.
                     if (lazyMainProject == p) {
@@ -1296,7 +1299,7 @@ public final class OpenProjectList {
             }
             openProjects.add(p);
             addModuleInfo(p);
-            
+            //initially opened projects need to have these listeners also added.
             p.getProjectDirectory().addFileChangeListener(deleteListener);
             p.getProjectDirectory().addFileChangeListener(nbprojectDeleteListener);
             
@@ -1872,7 +1875,7 @@ public final class OpenProjectList {
                 if (fRemove != null) {
                     //#108376 avoid deadlock in org.netbeans.modules.project.ui.ProjectUtilities$1.close(ProjectUtilities.java:106)
                     // alternatively removing the close() metod from synchronized block could help as well..
-                    SwingUtilities.invokeLater(new Runnable() {
+                    FILE_DELETED_RP.post(new Runnable() { //#236956 FILE_DELETED_RP instead of SwingUtilities.invokeLater
                             @Override
                         public void run () {
                             close(new Project[] {fRemove}, false);

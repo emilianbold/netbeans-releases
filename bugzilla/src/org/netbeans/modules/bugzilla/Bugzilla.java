@@ -42,9 +42,13 @@
 
 package org.netbeans.modules.bugzilla;
 
+import java.beans.PropertyChangeListener;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClientManager;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import java.net.MalformedURLException;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
 import java.util.logging.Logger;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -52,11 +56,14 @@ import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClient;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
 import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
-import org.netbeans.modules.bugtracking.spi.BugtrackingFactory;
-import org.netbeans.modules.bugtracking.util.UndoRedoSupport;
+import org.netbeans.modules.bugtracking.spi.BugtrackingSupport;
+import org.netbeans.modules.bugtracking.spi.IssuePriorityInfo;
+import org.netbeans.modules.bugtracking.spi.IssuePriorityProvider;
+import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
+import org.netbeans.modules.bugtracking.spi.IssueSchedulingProvider;
+import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
-import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.openide.util.RequestProcessor;
 
@@ -74,11 +81,14 @@ public class Bugzilla {
     private RequestProcessor rp;
     private BugzillaClientManager clientManager;
 
-    private BugtrackingFactory<BugzillaRepository, BugzillaQuery, BugzillaIssue> bf;
+    private BugtrackingSupport<BugzillaRepository, BugzillaQuery, BugzillaIssue> bf;
     private BugzillaIssueProvider bip;
     private BugzillaQueryProvider bqp;
     private BugzillaRepositoryProvider brp;
+    private IssueStatusProvider<BugzillaRepository, BugzillaIssue> sp;    
+    private IssuePriorityProvider<BugzillaIssue> pp;
     private IssueNode.ChangesProvider<BugzillaIssue> bcp;
+    private IssueSchedulingProvider<BugzillaIssue> schedulingProvider;
 
     private Bugzilla() {
         brc = MylynRepositoryConnectorProvider.getInstance().getConnector();
@@ -131,9 +141,9 @@ public class Bugzilla {
         return rp;
     }
     
-    public BugtrackingFactory<BugzillaRepository, BugzillaQuery, BugzillaIssue> getBugtrackingFactory() {
+    public BugtrackingSupport<BugzillaRepository, BugzillaQuery, BugzillaIssue> getBugtrackingFactory() {
         if(bf == null) {
-            bf = new BugtrackingFactory<BugzillaRepository, BugzillaQuery, BugzillaIssue>();
+            bf = new BugtrackingSupport<>(getRepositoryProvider(), getQueryProvider(), getIssueProvider());
         }    
         return bf;
     }
@@ -157,6 +167,103 @@ public class Bugzilla {
         return brp; 
     }
 
+    public IssueStatusProvider<BugzillaRepository, BugzillaIssue> getStatusProvider() {
+        if(sp == null) {
+            sp = new IssueStatusProvider<BugzillaRepository, BugzillaIssue>() {
+                @Override
+                public IssueStatusProvider.Status getStatus(BugzillaIssue issue) {
+                    return issue.getStatus();
+                }
+                @Override
+                public void setSeenIncoming(BugzillaIssue issue, boolean uptodate) {
+                    issue.setUpToDate(uptodate);
+                }
+                @Override
+                public void removePropertyChangeListener(BugzillaIssue issue, PropertyChangeListener listener) {
+                    issue.removePropertyChangeListener(listener);
+                }
+                @Override
+                public void addPropertyChangeListener(BugzillaIssue issue, PropertyChangeListener listener) {
+                    issue.addPropertyChangeListener(listener);
+                }
+                @Override
+                public Collection<BugzillaIssue> getUnsubmittedIssues(BugzillaRepository r) {
+                    return r.getUnsubmittedIssues();
+                }
+                @Override
+                public void discardOutgoing(BugzillaIssue i) {
+                    i.discardLocalEdits();
+                }
+                @Override
+                public boolean submit (BugzillaIssue data) {
+                    return data.submitAndRefresh();
+                }                
+            };
+        }
+        return sp;
+    }
+    
+    public IssuePriorityProvider<BugzillaIssue> createPriorityProvider(final BugzillaRepository repository) {
+        return new IssuePriorityProvider<BugzillaIssue>() {
+                private IssuePriorityInfo[] infos;
+                @Override
+                public String getPriorityID(BugzillaIssue i) {
+                    return i.getPriority();
+                }
+
+                @Override
+                public synchronized IssuePriorityInfo[] getPriorityInfos() {
+                    if(infos == null) {
+                        List<String> priorities = repository.getConfiguration().getPriorities();
+                        infos = new IssuePriorityInfo[priorities.size()];
+                        for (int i = 0; i < priorities.size(); i++) {
+                            String p = priorities.get(i);
+                            infos[i] = new IssuePriorityInfo(p, p);
+                        }
+                    }
+                    return infos;
+                }
+            };
+    }
+
+    public IssueSchedulingProvider<BugzillaIssue> getSchedulingProvider() {
+        if(schedulingProvider == null) {
+            schedulingProvider = new IssueSchedulingProvider<BugzillaIssue>() {
+
+                @Override
+                public void setDueDate (BugzillaIssue i, Date date) {
+                    i.setTaskDueDate(date, true);
+                }
+
+                @Override
+                public void setSchedule (BugzillaIssue i, IssueScheduleInfo date) {
+                    i.setTaskScheduleDate(date, true);
+                }
+
+                @Override
+                public void setEstimate (BugzillaIssue i, int hours) {
+                    i.setTaskEstimate(hours, true);
+                }
+
+                @Override
+                public Date getDueDate (BugzillaIssue i) {
+                    return i.getPersistentDueDate();
+                }
+
+                @Override
+                public IssueScheduleInfo getSchedule (BugzillaIssue i) {
+                    return i.getPersistentScheduleInfo();
+                }
+
+                @Override
+                public int getEstimate (BugzillaIssue i) {
+                    return i.getPersistentEstimate();
+                }
+            };
+        }
+        return schedulingProvider;
+    }
+
     public IssueNode.ChangesProvider<BugzillaIssue> getChangesProvider() {
         if(bcp == null) {
             bcp = new IssueNode.ChangesProvider<BugzillaIssue>() {
@@ -169,7 +276,4 @@ public class Bugzilla {
         return bcp;
     }
     
-    public UndoRedoSupport getUndoRedoSupport(BugzillaIssue issue) {
-        return getBugtrackingFactory().getUndoRedoSupport(BugzillaUtil.getRepository(issue.getRepository()), issue);
-    }
 }

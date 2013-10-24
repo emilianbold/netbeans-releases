@@ -52,18 +52,19 @@ import java.net.MalformedURLException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
+import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
-import org.netbeans.modules.bugtracking.cache.IssueCache;
+import org.netbeans.modules.bugtracking.spi.QueryController.QueryMode;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.openide.util.test.MockLookup;
-import static org.osgi.util.measurement.Unit.m;
 
 /**
  *
@@ -88,7 +89,6 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         BugtrackingUtil.getBugtrackingConnectors(); // ensure conector
         
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
-        cleanupStoredIssues();
     }
 
     public void testRefresh() throws MalformedURLException, CoreException, InterruptedException {
@@ -111,7 +111,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         assertEquals(1, is.size());
         assertTrue(nl.started);
         assertTrue(nl.finished);
-        List<BugzillaIssue> il = nl.getIssues(IssueCache.ISSUE_STATUS_ALL);
+        List<BugzillaIssue> il = nl.getIssues(STATUS_ALL);
         assertEquals(1, il.size());
         BugzillaIssue i = il.get(0);
         assertEquals(summary, i.getSummary());
@@ -121,7 +121,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         q.refresh(p, false);
         assertTrue(nl.started);
         assertTrue(nl.finished);
-        il = nl.getIssues(IssueCache.ISSUE_STATUS_ALL);
+        il = nl.getIssues(EnumSet.allOf(IssueStatusProvider.Status.class));
         assertEquals(1, il.size());
         i = il.get(0);
         assertEquals(summary, i.getSummary());
@@ -149,7 +149,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         q.refreshIntern(false);
         assertTrue(nl.started);
         assertTrue(nl.finished);
-        assertEquals(1, nl.getIssues(IssueCache.ISSUE_STATUS_ALL).size());
+        assertEquals(1, nl.getIssues(EnumSet.allOf(IssueStatusProvider.Status.class)).size());
         assertEquals(1, q.getIssues().size());
         BugzillaIssue i = q.getIssues().iterator().next();
         assertEquals(summary1, i.getSummary());
@@ -159,7 +159,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         q.refresh(p, false);
         assertTrue(nl.started);
         assertTrue(nl.finished);
-        assertEquals(1, nl.getIssues(IssueCache.ISSUE_STATUS_ALL).size());
+        assertEquals(1, nl.getIssues(STATUS_ALL).size());
         assertEquals(1, q.getIssues().size());
         i = q.getIssues().iterator().next();
         assertEquals(summary1, i.getSummary());
@@ -172,7 +172,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         bugzillaIssues = q.getIssues();
         assertTrue(nl.started);
         assertTrue(nl.finished);
-        assertEquals(2, nl.getIssues(IssueCache.ISSUE_STATUS_ALL).size());
+        assertEquals(2, nl.getIssues(STATUS_ALL).size());
         assertEquals(2, bugzillaIssues.size());
         List<String> summaries = new ArrayList<String>();
         List<String> ids = new ArrayList<String>();
@@ -203,6 +203,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
 //        assertEquals(id1, is.iterator().next().getID());
 //        assertEquals(summary1, is.iterator().next().getSummary());
     }
+    private static final EnumSet<IssueStatusProvider.Status> STATUS_ALL = EnumSet.allOf(IssueStatusProvider.Status.class);
 
     // XXX test obsolete status
 
@@ -264,7 +265,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
 
         assertTrue(nl.started);
         assertTrue(nl.finished);
-        List<BugzillaIssue> il = nl.getIssues(IssueCache.ISSUE_STATUS_ALL);
+        List<BugzillaIssue> il = nl.getIssues(STATUS_ALL);
         assertEquals(1, il.size());
         BugzillaIssue i = il.get(0);
         assertEquals(summary, i.getSummary());
@@ -323,7 +324,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
 
         assertTrue(nl.started);
         assertTrue(nl.finished);
-        List<BugzillaIssue> il = nl.getIssues(IssueCache.ISSUE_STATUS_ALL);
+        List<BugzillaIssue> il = nl.getIssues(STATUS_ALL);
         assertEquals(1, il.size());
         BugzillaIssue i = il.get(0);
         assertEquals(summary, i.getSummary());
@@ -385,17 +386,12 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
     }
 
     private void populate(QueryController c, String summary) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-        QueryPanel p = (QueryPanel) c.getComponent();
+        QueryPanel p = (QueryPanel) c.getComponent(QueryMode.EDIT);
         p.summaryTextField.setText(summary);
         p.productList.getSelectionModel().clearSelection(); // no product
         Field f = c.getClass().getDeclaredField("populated");
         f.setAccessible(true);
         f.set(c, true);
-    }
-
-    private void cleanupStoredIssues() throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, ClassNotFoundException, NoSuchMethodException, NoSuchMethodException, InstantiationException, InvocationTargetException {
-        QueryTestUtil.getRepository().getIssueCache().storeArchivedQueryIssues(QUERY_NAME, new String[0]);
-        QueryTestUtil.getRepository().getIssueCache().storeQueryIssues(QUERY_NAME, new String[0]);
     }
 
     private class QueryListener implements PropertyChangeListener {

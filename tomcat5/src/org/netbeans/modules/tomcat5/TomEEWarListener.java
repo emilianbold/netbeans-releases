@@ -99,12 +99,14 @@ public class TomEEWarListener implements FileChangeListener {
         File jar = TomcatFactory.getTomEEWebAppJar(tp.getCatalinaHome(), tp.getCatalinaBase());
         if (this.currentTomEEJar != jar && (this.currentTomEEJar == null || !this.currentTomEEJar.equals(jar))) {
             currentTomEEJar = jar;
-            refresh.refresh(TomcatFactory.getTomEEVersion(jar));
+            TomcatManager.TomEEVersion version = TomcatFactory.getTomEEVersion(jar);
+            TomcatManager.TomEEType type = version == null ? null : TomcatFactory.getTomEEType(jar.getParentFile());
+            refresh.refresh(version, type);
         }
     }
 
     public static interface RefreshHook {
-        void refresh(TomcatManager.TomEEVersion version);
+        void refresh(TomcatManager.TomEEVersion version, TomcatManager.TomEEType type);
     }
 
 }

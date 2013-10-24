@@ -59,7 +59,6 @@ import org.netbeans.modules.maven.spi.cos.AdditionalDestination;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
@@ -73,7 +72,7 @@ import org.openide.util.Exceptions;
 })
 public class CopyOnSave implements AdditionalDestination, J2eeModuleProvider.DeployOnSaveSupport {
 
-    private final List<ArtifactListener> listeners = new ArrayList<ArtifactListener>();
+    private final List<ArtifactListener> listeners = new ArrayList<>();
     private final Project project;
 
 

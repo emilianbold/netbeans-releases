@@ -72,6 +72,7 @@ import org.netbeans.modules.bugtracking.tasks.filter.DashboardFilter;
 import org.netbeans.modules.bugtracking.tasks.Category;
 import org.netbeans.modules.bugtracking.settings.DashboardSettings;
 import org.netbeans.modules.bugtracking.tasks.DashboardUtils;
+import org.netbeans.modules.bugtracking.tasks.RecentCategory;
 import org.netbeans.modules.bugtracking.tasks.UnsubmittedCategory;
 import org.netbeans.modules.bugtracking.tasks.filter.UnsubmittedCategoryFilter;
 import org.netbeans.modules.team.commons.treelist.ColorManager;
@@ -131,7 +132,7 @@ public final class DashboardViewer implements PropertyChangeListener {
     private Set<TreeListNode> expandedNodes;
     private boolean persistExpanded = true;
     private TreeListNode activeTaskNode;
-    static final Logger LOG = Logger.getLogger(DashboardViewer.class.getName());
+    public static final Logger LOG = Logger.getLogger(DashboardViewer.class.getName());
     private final ModelListener modelListener;
     private final UnsubmittedCategoryFilter unsubmittedCategoryFilter;
 
@@ -243,6 +244,13 @@ public final class DashboardViewer implements PropertyChangeListener {
             });
         } else if (evt.getPropertyName().equals(DashboardSettings.AUTO_SYNC_SETTINGS_CHANGED)) {
             DashboardRefresher.getInstance().setupDashboardRefresh();
+        } else if (evt.getPropertyName().equals(DashboardSettings.SORT_ATTRIBUTES_SETTINGS_CHANGED)) {
+            REQUEST_PROCESSOR.post(new Runnable() {
+                @Override
+                public void run() {
+                    updateContent(false);
+                }
+            });
         }
     }
 
@@ -474,7 +482,7 @@ public final class DashboardViewer implements PropertyChangeListener {
         }
         String title = NbBundle.getMessage(DashboardViewer.class, "LBL_DeleteCatTitle");
         String message = NbBundle.getMessage(DashboardViewer.class, "LBL_DeleteCatQuestion", names);
-        if (confirmDelete(title, message)) {
+        if (DashboardUtils.confirmDelete(title, message)) {
             synchronized (LOCK_CATEGORIES) {
                 for (CategoryNode categoryNode : toDelete) {
                     model.removeRoot(categoryNode);
@@ -628,7 +636,7 @@ public final class DashboardViewer implements PropertyChangeListener {
         }
         String title = NbBundle.getMessage(DashboardViewer.class, "LBL_RemoveRepoTitle");
         String message = NbBundle.getMessage(DashboardViewer.class, "LBL_RemoveQuestion", names);
-        if (confirmDelete(title, message)) {
+        if (DashboardUtils.confirmDelete(title, message)) {
             for (RepositoryNode repositoryNode : toRemove) {
                 synchronized (LOCK_REPOSITORIES) {
                     repositoryNodes.remove(repositoryNode);
@@ -670,7 +678,7 @@ public final class DashboardViewer implements PropertyChangeListener {
             REQUEST_PROCESSOR.post(new Runnable() {
                 @Override
                 public void run() {
-                    updateUnsubmittedCategory(mapRepositoryToUnsubmittedNode.get(repository));
+                    updateCategoryNode(mapRepositoryToUnsubmittedNode.get(repository));
                 }
             });
         }
@@ -687,7 +695,7 @@ public final class DashboardViewer implements PropertyChangeListener {
         }
         String title = NbBundle.getMessage(DashboardViewer.class, "LBL_DeleteQueryTitle");
         String message = NbBundle.getMessage(DashboardViewer.class, "LBL_DeleteQueryQuestion", names);
-        if (confirmDelete(title, message)) {
+        if (DashboardUtils.confirmDelete(title, message)) {
             for (QueryNode queryNode : toDelete) {
                 queryNode.getQuery().remove();
             }
@@ -899,7 +907,7 @@ public final class DashboardViewer implements PropertyChangeListener {
                     catNodes.add(new ClosedCategoryNode(new Category(categoryEntry.getCategoryName())));
                 }
             }
-
+            catNodes.add(getRecentCategoryNode());
             catNodes.addAll(loadUnsubmitedCategories());
 
             setCategories(catNodes);
@@ -907,6 +915,13 @@ public final class DashboardViewer implements PropertyChangeListener {
             LOG.log(Level.WARNING, "Categories loading failed due to: {0}", ex);
             showCategoriesError();
         }
+    }
+
+    private CategoryNode getRecentCategoryNode() {
+        Category recentCategory = new RecentCategory();
+        RecentCategoryNode recentCategoryNode = new RecentCategoryNode(recentCategory);
+        recentCategoryNode.updateContent();
+        return recentCategoryNode;
     }
 
     private List<CategoryNode> loadUnsubmitedCategories() {
@@ -942,7 +957,7 @@ public final class DashboardViewer implements PropertyChangeListener {
         }
     }
 
-    public void updateUnsubmittedCategory(final UnsubmittedCategoryNode node) {
+    public void updateCategoryNode(final CategoryNode node) {
         final boolean isInModel = model.getRootNodes().contains(node);
         final boolean categoryInFilter = isCategoryInFilter(node);
         if (categoryInFilter && !isInModel) {
@@ -1214,20 +1229,6 @@ public final class DashboardViewer implements PropertyChangeListener {
 
         treeList.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(Actions.DELETE_KEY, "org.netbeans.modules.tasks.ui.action.Action.UniversalDeleteAction"); //NOI18N
         treeList.getActionMap().put("org.netbeans.modules.tasks.ui.action.Action.UniversalDeleteAction", new Actions.UniversalDeleteAction());//NOI18N
-    }
-
-    private boolean confirmDelete(String title, String message) {
-        NotifyDescriptor nd = new NotifyDescriptor(
-                message,
-                title,
-                NotifyDescriptor.YES_NO_OPTION,
-                NotifyDescriptor.QUESTION_MESSAGE,
-                null,
-                NotifyDescriptor.YES_OPTION);
-        if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.YES_OPTION) {
-            return true;
-        }
-        return false;
     }
 
     private void handleSelection(TreeListNode node) {

@@ -268,7 +268,7 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
             final BrokenReferencesModel.ProblemReference reference = (BrokenReferencesModel.ProblemReference) value;
             if (!reference.resolved) {
                 description.setText(reference.problem.getDescription());                
-                fix.setEnabled(true);
+                fix.setEnabled(reference.problem.isResolvable());
                 javax.swing.SwingUtilities.invokeLater(new Runnable() {
                    public void run() {
                        jScrollPane2.getVerticalScrollBar().setValue(0);
@@ -279,7 +279,7 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
                 // Leave the button always enabled so that user can alter 
                 // resolved reference. Especially needed for automatically
                 // resolved JAR references.
-                fix.setEnabled(true);
+                fix.setEnabled(reference.problem.isResolvable());
             }
         } else {
             description.setText("");

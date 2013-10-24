@@ -163,6 +163,7 @@
                 <friend>org.netbeans.modules.hudson.tasklist</friend>
                 <friend>org.netbeans.modules.hudson.ui</friend>
                 <friend>org.netbeans.modules.odcs.hudson</friend>
+                <friend>oracle.jdevimpl.nbteam.ide</friend>
                 <package>org.netbeans.modules.hudson.api</package>
                 <package>org.netbeans.modules.hudson.api.ui</package>
                 <package>org.netbeans.modules.hudson.constants</package>

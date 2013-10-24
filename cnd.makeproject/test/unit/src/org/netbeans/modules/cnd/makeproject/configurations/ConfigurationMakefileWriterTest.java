@@ -160,7 +160,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         if (compilerSetold != null) {
             ToolchainSPIAccessor.remove(ExecutionEnvironmentFactory.getLocal(), compilerSetold);
         }
-        CompilerSet compilerSet = CompilerSetFactory.getCustomCompilerSet(folderBase.getAbsolutePath(), flavor, "MyCompilerSet");
+        CompilerSet compilerSet = CompilerSetFactory.getCustomCompilerSet(folderBase.getAbsolutePath(), flavor, "MyCompilerSet", ExecutionEnvironmentFactory.getLocal());
         ToolchainSPIAccessor.add(ExecutionEnvironmentFactory.getLocal(), compilerSet);
         conf.getCompilerSet().restore("MyCompilerSet|" + flavorName, 51);
         conf.getDevelopmentHost().setBuildPlatform(platform);
@@ -274,7 +274,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         if (compilerSetold != null) {
             ToolchainSPIAccessor.remove(ExecutionEnvironmentFactory.getLocal(), compilerSetold);
         }
-        CompilerSet compilerSet = CompilerSetFactory.getCustomCompilerSet(folderBase.getAbsolutePath(), flavor, "MyCompilerSet");
+        CompilerSet compilerSet = CompilerSetFactory.getCustomCompilerSet(folderBase.getAbsolutePath(), flavor, "MyCompilerSet", ExecutionEnvironmentFactory.getLocal());
         ToolchainSPIAccessor.add(ExecutionEnvironmentFactory.getLocal(), compilerSet);
         conf.getCompilerSet().restore("MyCompilerSet|" + flavorName, 51);
         conf.getDevelopmentHost().setBuildPlatform(platform);

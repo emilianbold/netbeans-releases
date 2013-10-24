@@ -50,12 +50,15 @@ import java.util.Set;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import org.netbeans.libs.git.GitBranch;
 import org.netbeans.modules.git.Annotator;
 import org.netbeans.modules.git.ui.branch.CreateBranchAction;
+import org.netbeans.modules.git.ui.branch.SetTrackingAction;
 import org.netbeans.modules.git.ui.checkout.AbstractCheckoutAction;
 import org.netbeans.modules.git.ui.checkout.SwitchBranchAction;
 import org.netbeans.modules.git.ui.merge.MergeRevisionAction;
 import org.netbeans.modules.git.ui.rebase.RebaseAction;
+import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.ui.tag.CreateTagAction;
 import org.netbeans.modules.git.ui.tag.ManageTagsAction;
 import org.netbeans.modules.git.utils.GitUtils;
@@ -107,6 +110,12 @@ public final class BranchMenu extends DynamicMenu {
             Actions.connect(item, action, false);
             menu.add(item);
             
+            item = new JMenuItem();
+            action = (Action) SystemAction.get(SetTrackingAction.class);
+            Utils.setAcceleratorBindings(Annotator.ACTIONS_PATH_PREFIX, action);
+            Actions.connect(item, action, false);
+            menu.add(item);
+            
             menu.addSeparator();
             item = new JMenuItem();
             action = (Action) SystemAction.get(CreateTagAction.class);
@@ -143,9 +152,14 @@ public final class BranchMenu extends DynamicMenu {
                     repositoryRoot = repositoryRoots.iterator().next();
                 }
                 if (repositoryRoot != null) {
+                    RepositoryInfo info = RepositoryInfo.getInstance(repositoryRoot);
+                    GitBranch branch = info.getActiveBranch();
                     List<String> recentlySwitched = Utils.getStringList(NbPreferences.forModule(BranchMenu.class), AbstractCheckoutAction.PREF_KEY_RECENT_BRANCHES + repositoryRoot.getAbsolutePath());
                     int index = 0;
                     for (String recentBranch : recentlySwitched) {
+                        if (recentBranch.equals(branch.getName())) {
+                            continue;
+                        }
                         menu.add(new SwitchBranchAction.KnownBranchAction(recentBranch, ctx));
                         if (++index > 2) {
                             break;
@@ -153,6 +167,8 @@ public final class BranchMenu extends DynamicMenu {
                     }
                 }
             }
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(SetTrackingAction.class), NbBundle.getMessage(SetTrackingAction.class, "LBL_SetTrackingAction_PopupName"), lkp)); //NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
             
             menu.addSeparator();
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(CreateTagAction.class), NbBundle.getMessage(CreateTagAction.class, "LBL_CreateTagAction_PopupName"), lkp)); //NOI18N

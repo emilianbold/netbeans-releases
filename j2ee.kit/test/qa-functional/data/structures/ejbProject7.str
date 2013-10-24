@@ -10,5 +10,4 @@ src/
 src/conf/
 src/java/
 src/conf/MANIFEST.MF
-src/conf/beans.xml
 build.xml

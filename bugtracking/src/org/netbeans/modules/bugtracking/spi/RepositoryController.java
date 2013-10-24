@@ -42,13 +42,20 @@
 
 package org.netbeans.modules.bugtracking.spi;
 
-import java.io.IOException;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.openide.util.HelpCtx;
 
 /**
- *
+ * Provides access to an Repository UI.
+ * <p>
+ * Every Repository is expected to provide an UI to create or change its attributes. 
+ * </p>
+ * <p>
+ * When creating or editing a new Repository instance, the UI is presented in a modal dialog 
+ * with the necessary Save button to trigger the {@link #applyChanges()} method.
+ * </p>
+ * 
  * @author Tomas Stupka
  */
 public interface RepositoryController {
@@ -73,31 +80,40 @@ public interface RepositoryController {
     public boolean isValid();
 
     /**
-     * Populate the controllers component
+     * Called when the Repository UI is about to be opened. 
+     * Populate the controllers component.
      */
     public void populate();
     
     /**
-     * Return an error message in case the controller isn't valid
-     * @return
+     * In case the controller isn't valid, then return an error message to be 
+     * shown in Repository dialog.
+     * 
+     * @return error message
      */
     public String getErrorMessage();
     
     /**
-     * Is called when the changes made in the
-     * controllers visual component are confirmed
+     * Is called when the "Save" button was pressed.
      */
-    public void applyChanges() throws IOException; 
+    public void applyChanges(); 
+    
+    /**
+     * Is called when the "Cancel" button was pressed.
+     */
+    public void cancelChanges(); 
 
     /**
-     * Registers a ChangeListener
-     * @param l
+     * Registers a ChangeListener.
+     * 
+     * @param l a ChangeListener
      */
     public void addChangeListener(ChangeListener l);
 
     /**
-     * Unregisters a ChangeListener
-     * @param l
+     * Unregisters a ChangeListener.
+     * 
+     * @param l a ChangeListener
      */
     public void removeChangeListener(ChangeListener l);
     

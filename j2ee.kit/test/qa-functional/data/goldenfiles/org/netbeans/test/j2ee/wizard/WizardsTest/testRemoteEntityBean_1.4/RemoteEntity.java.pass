@@ -1,7 +1,9 @@
 /*
+ * To change this license header, choose License Headers in Project Properties.
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
+
 package ejbs.entity.remote;
 
 import javax.ejb.CreateException;
@@ -87,4 +89,5 @@ public abstract class RemoteEntity implements EntityBean {
     public void ejbPostCreate(java.lang.Long key) {
         // TODO populate relationships here if appropriate
     }
+
 }

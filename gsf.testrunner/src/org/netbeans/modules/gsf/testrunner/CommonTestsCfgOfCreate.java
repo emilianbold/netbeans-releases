@@ -48,6 +48,7 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.File;
 import java.util.List;
 import java.util.*;
 import java.util.prefs.Preferences;
@@ -154,8 +155,12 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
     private static final int MSG_TYPE_MODIFIED_FILES = 3;
     /** layer index for a message about j2me project type */
     private static final int MSG_TYPE_J2ME_PROJECT = 4;
+    /** layer index for a message about updating a single test class */
+    private static final int MSG_TYPE_UPDATE_SINGLE_TEST_CLASS = 5;
+    /** layer index for a message about updating all test classes */
+    private static final int MSG_TYPE_UPDATE_ALL_TEST_CLASSES = 6;
     /** */
-    private MessageStack msgStack = new MessageStack(5);
+    private MessageStack msgStack = new MessageStack(7);
 
     private Collection<SourceGroup> createdSourceRoots = new ArrayList<SourceGroup>();
     
@@ -305,6 +310,32 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
         
         singleClass = dataObj.getPrimaryFile().isData();
         return !singleClass;
+    }
+
+    @NbBundle.Messages({"MSG_UPDATE_SINGLE_TEST_CLASS=The existing test class will be updated.",
+    "MSG_UPDATE_ALL_TEST_CLASSES=Any existing test classes will be updated."})
+    private void checkUpdatingExistingTestClass() {
+        if(tfClassName == null) {
+            setMessage(Bundle.MSG_UPDATE_ALL_TEST_CLASSES(), MSG_TYPE_UPDATE_ALL_TEST_CLASSES);
+        } else {
+            FileObject locationFO = getTargetFolder();
+            if (locationFO != null) {
+                String targetFolderPath = FileUtil.toFile(locationFO).getAbsolutePath();
+                String className = tfClassName.getText();
+                String packageName = className.substring(0, className.lastIndexOf('.'));
+                String fileName = className.substring(className.lastIndexOf('.')+ 1);
+                FileObject testFolderFO = FileUtil.toFileObject(new File(targetFolderPath.concat(File.separator).concat(packageName.replace(".", "/"))));
+                if(testFolderFO != null) {
+                    for(FileObject testClassFO : testFolderFO.getChildren()) {
+                        if(testClassFO.getName().equals(fileName)) {
+                            setMessage(Bundle.MSG_UPDATE_SINGLE_TEST_CLASS(), MSG_TYPE_UPDATE_SINGLE_TEST_CLASS);
+                            return;
+                        }
+                    }
+                }
+            }
+            setMessage(null, MSG_TYPE_UPDATE_SINGLE_TEST_CLASS);
+        }
     }
     
     /**
@@ -538,7 +569,7 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
         chkProtected.addItemListener(listener);
         chkPackage.addItemListener(listener);
     }
-    
+
     /**
      * Listener object that listens on state changes of some check-boxes.
      */
@@ -593,6 +624,7 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
             tfClassName.setCaretPosition(prefilledName.length());
         }
         setSelectedTestingFramework();
+        checkUpdatingExistingTestClass();
     }
     
     private void setSelectedTestingFramework() {

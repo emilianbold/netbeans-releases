@@ -107,7 +107,7 @@ public class DragAndDropFeedbackVisualizer {
         w.setSize( windowSize );
 
         NativeWindowSystem nws = NativeWindowSystem.getDefault();
-        if( nws.isWindowAlphaSupported() && prefs.getBoolean(WinSysPrefs.TRANSPARENCY_DRAGIMAGE, true) ) {
+        if( (nws.isUndecoratedWindowAlphaSupported()) && prefs.getBoolean(WinSysPrefs.TRANSPARENCY_DRAGIMAGE, true) ) {
             nws.setWindowAlpha( w, prefs.getFloat(WinSysPrefs.TRANSPARENCY_DRAGIMAGE_ALPHA, 0.7f) );
             Area mask;
             if( prefs.getBoolean(WinSysPrefs.DND_SMALLWINDOWS, true) ) {

@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.html.editor.hints;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
@@ -84,11 +85,17 @@ public abstract class HtmlValidatorRule extends HtmlRule {
             boolean valid = from >= 0 && from < snapshotLen;
             boolean isFirstHintForPosition = valid ? context.isFirstHintForPosition(from) : true;
             
+            List<HintFix> fixes = new ArrayList<>();
+            if(isFirstHintForPosition) {
+                fixes.addAll(context.getDefaultFixes());
+            }
+            fixes.addAll(getExtraHintFixes(e, context));
+            
             Hint h = new Hint(this,
                     getModifiedErrorMessage(e.getDescription()),
                     e.getFile(),
                     errorOffsetRange,
-                    isFirstHintForPosition ? context.getDefaultFixes() : Collections.<HintFix>emptyList(),
+                    fixes,
                     20);
 
             if (isEnabled) {
@@ -99,6 +106,10 @@ public abstract class HtmlValidatorRule extends HtmlRule {
 
 
         }
+    }
+    
+    protected List<HintFix> getExtraHintFixes(Error e, HtmlRuleContext context) {
+        return Collections.emptyList();
     }
     
     //adjusts the original validator error message according to the hint setting

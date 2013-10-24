@@ -45,7 +45,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FilenameFilter;
-import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.net.URI;
@@ -102,7 +101,6 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbCollections;
@@ -116,10 +114,6 @@ import org.openide.util.lookup.ProxyLookup;
  */
 public final class NbMavenProjectImpl implements Project {
 
-    //TODO remove
-    public static final String PROP_PROJECT = "MavenProject"; //NOI18N
-    //TODO remove
-    public static final String PROP_RESOURCE = "RESOURCES"; //NOI18N
 
     private static final Logger LOG = Logger.getLogger(NbMavenProjectImpl.class.getName());
     
@@ -142,7 +136,6 @@ public final class NbMavenProjectImpl implements Project {
                 }
             }
             ACCESSOR.doFireReload(watcher);
-            problemReporter.doIDEConfigChecks();
         }
     });
     private final FileObject fileObject;
@@ -556,7 +549,7 @@ public final class NbMavenProjectImpl implements Project {
                 if (kids != null && /* #190626 */kids.length > 0) {
                     uris.add(Utilities.toURI(root));
                 } else {
-                    watcher.addWatchedPath(Utilities.toURI(root));
+                    watcher.addWatchedPath(Utilities.toURI(root)); //TODO who reacts to this?
                 }
             }
         }
@@ -572,7 +565,7 @@ public final class NbMavenProjectImpl implements Project {
                         if (kids != null && kids.length > 0) {
                             uris.add(Utilities.toURI(root));
                         } else {
-                            watcher.addWatchedPath(Utilities.toURI(root));
+                            watcher.addWatchedPath(Utilities.toURI(root)); //TODO who reacts to this?
                         }
                     }
                 }
@@ -747,7 +740,7 @@ public final class NbMavenProjectImpl implements Project {
         }
 
         public @Override void propertyChange(PropertyChangeEvent evt) {
-            if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
+            if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
                 check();
             }
         }

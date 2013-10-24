@@ -60,7 +60,7 @@ public class ColorManager {
             : UIManager.getColor("Tree.textBackground"); //NOI18N
     private Color defaultForeground = UIManager.getColor("black"); //NOI18N
     private Color disabledColor = Color.gray;
-    private Color linkColor = Color.blue;
+    private Color linkColor = new Color(0x164B7B); // to match org.netbeans.modules.bugtracking.util.LinkButton
     private Color errorColor = new Color(153,0,0);
     private Color stableBuildColor = new Color(0,153,0);
     private Color unstableBuildColor = Color.yellow.darker().darker();

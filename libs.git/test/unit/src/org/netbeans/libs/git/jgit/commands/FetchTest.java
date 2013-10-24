@@ -52,9 +52,9 @@ import org.eclipse.jgit.api.TagCommand;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.RepositoryBuilder;
 import org.eclipse.jgit.revwalk.RevTag;
 import org.eclipse.jgit.revwalk.RevWalk;
-import org.eclipse.jgit.storage.file.FileRepository;
 import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.Transport;
@@ -268,7 +268,7 @@ public class FetchTest extends AbstractGitTestCase {
         assertEquals(0, branches.size());
         client.fetch("origin", NULL_PROGRESS_MONITOR);
         
-        Repository repo = new FileRepository(new File(otherWT, ".git"));
+        Repository repo = new RepositoryBuilder().setGitDir(new File(otherWT, ".git")).build();
         TagCommand cmd = new Git(repo).tag();
         cmd.setMessage("new tag message");
         cmd.setName("new.tag");

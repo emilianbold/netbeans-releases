@@ -51,7 +51,7 @@ import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
  *
  * @author Tomas Stupka
  */
-public class BugzillaQueryProvider extends TeamQueryProvider<BugzillaQuery, BugzillaIssue> {
+public class BugzillaQueryProvider implements TeamQueryProvider<BugzillaQuery, BugzillaIssue> {
 
     @Override
     public String getDisplayName(BugzillaQuery query) {
@@ -69,8 +69,23 @@ public class BugzillaQueryProvider extends TeamQueryProvider<BugzillaQuery, Bugz
     }
 
     @Override
+    public boolean canRemove(BugzillaQuery q) {
+        return q.canRemove();
+    }
+    
+    @Override
     public void remove(BugzillaQuery q) {
         q.remove();
+    }
+    
+    @Override
+    public boolean canRename(BugzillaQuery q) {
+        return true;
+    }
+
+    @Override
+    public void rename(BugzillaQuery q, String displayName) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
     @Override
@@ -94,11 +109,6 @@ public class BugzillaQueryProvider extends TeamQueryProvider<BugzillaQuery, Bugz
     }
 
     @Override
-    public boolean contains(BugzillaQuery query, String id) {
-        return query.contains(id);
-    }
-
-    @Override
     public void refresh(BugzillaQuery query) {
         query.getController().refresh(true);
     }
@@ -118,5 +128,4 @@ public class BugzillaQueryProvider extends TeamQueryProvider<BugzillaQuery, Bugz
         BugzillaRepository repository = query.getRepository();
         return query == ((KenaiRepository) repository).getMyIssuesQuery();
     }
-
 }

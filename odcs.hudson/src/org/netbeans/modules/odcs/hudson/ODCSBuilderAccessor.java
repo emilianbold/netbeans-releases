@@ -72,7 +72,7 @@ import org.netbeans.modules.hudson.api.HudsonInstance.Persistence;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonManager;
-import org.netbeans.modules.hudson.ui.api.UI;
+import org.netbeans.modules.hudson.api.Utilities;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.api.ODCSServer;
 import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
@@ -139,7 +139,7 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
         List<HudsonJobHandle> buildHandles =
                 new LinkedList<HudsonJobHandle>();
         BuildsListener bl = BuildsListener.create(hi, projectHandle);
-        Collection<HudsonJob> jobs = waitForJobs(hi);
+        Collection<HudsonJob> jobs = getProjectJobs(waitForJobs(hi), projectHandle);
         for (HudsonJob job : jobs) {
             buildHandles.add(new HudsonJobHandle(hi, job.getName(), job));
         }
@@ -147,6 +147,27 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
         CACHE.put(bl, new Object());
         return new LinkedList<JobHandle>(
                 onlyWatched ? bl.getWatchedJobHandles() : buildHandles);
+    }
+
+    /**
+     * Hudson instance from ODCS now returns jobs from all projects, while we need
+     * only jobs for one particular project, so we do additional filtering. This
+     * can be removed in future once/if the ODCS Hudson instance provides only the
+     * jobs for given project directly.
+     * @param allJobs
+     * @param projectHandle
+     * @return List of jobs for given project
+     */
+    private static List<HudsonJob> getProjectJobs(Collection<HudsonJob> allJobs, ProjectHandle projectHandle) {
+        String projectPrefix = projectHandle.getId() + "."; // NOI18N
+        List<HudsonJob> jobs = new ArrayList<HudsonJob>();
+        for (HudsonJob job : allJobs) {
+            String jobName = job.getName();
+            if (jobName != null && jobName.startsWith(projectPrefix)) {
+                jobs.add(job);
+            }
+        }
+        return jobs;
     }
 
     @Override
@@ -350,12 +371,11 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
         @Override
         public Action getDefaultAction() {
             String name = this.getStatus().name();
-            Icon icon = ODCSHudsonUtils.centerIcon(UI.getIcon(hudsonJob));
+            Icon icon = ODCSHudsonUtils.centerIcon(Utilities.getIcon(hudsonJob));
             return new AbstractAction(name, icon) {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    UI.selectNode(hudsonInstance.getUrl(),
-                            hudsonJob.getName());
+                    Utilities.showInUI(hudsonJob);
                 }
             };
         }
@@ -452,13 +472,11 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
 
         @Override
         public Action getDefaultAction() {
-            Icon icon = ODCSHudsonUtils.centerIcon(UI.getIcon(build));
+            Icon icon = ODCSHudsonUtils.centerIcon(Utilities.getIcon(build));
             return new AbstractAction(build.getDisplayName(), icon) {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    HudsonJob job = build.getJob();
-                    UI.selectNode(job.getInstance().getUrl(),
-                            job.getName(), Integer.toString(build.getNumber()));
+                    Utilities.showInUI(build);
                 }
             };
         }
@@ -611,7 +629,11 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
          * list of watched jobs. If the list has not been changed, return null.
          */
         private synchronized PairOfDifferentLists checkJobList() {
-            Collection<HudsonJob> jobs = instance.getJobs();
+            ProjectHandle ph = projectHandle.get();
+            if (ph == null) {
+                return null;
+            }
+            Collection<HudsonJob> jobs = getProjectJobs(instance.getJobs(), ph);
             List<HudsonJob> added = new LinkedList<HudsonJob>(); // new jobs
             boolean allFound = true; // jobs for all hanles have been found
             for (HudsonJob job : jobs) {

@@ -298,6 +298,8 @@ public final class SemanticEntitiesProvider {
         @ServiceProvider(service = SemanticEntity.class, position=200)
     })
     public static final class MacrosCodeProvider extends AbstractSemanticEntity {
+        /*package*/static final String NAME = "macros"; // NOI18N
+        
         private Map<String, AttributeSet> sysMacroColors= new HashMap<String, AttributeSet>();
         private Map<String, AttributeSet> userMacroColors= new HashMap<String, AttributeSet>();
         
@@ -306,7 +308,7 @@ public final class SemanticEntitiesProvider {
         }
         @Override
         public String getName() {
-            return "macros"; // NOI18N
+            return NAME;
         }
         @Override
         public String getDisplayName() {

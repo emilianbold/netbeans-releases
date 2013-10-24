@@ -44,11 +44,8 @@
 
 package org.netbeans.lib.lexer.test.join;
 
-import java.io.PrintStream;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.lib.lexer.TokenHierarchyOperation;
 import org.netbeans.lib.lexer.lang.TestJoinTopTokenId;
 import org.netbeans.lib.lexer.test.FixedTextDescriptor;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
@@ -56,7 +53,6 @@ import org.netbeans.lib.lexer.test.RandomCharDescriptor;
 import org.netbeans.lib.lexer.test.RandomModifyDescriptor;
 import org.netbeans.lib.lexer.test.RandomTextProvider;
 import org.netbeans.lib.lexer.test.TestRandomModify;
-import org.netbeans.spi.lexer.LexerInput;
 
 /**
  * Test join updating algorithm TokenListUpdater.updateJoined() by random document modifications.

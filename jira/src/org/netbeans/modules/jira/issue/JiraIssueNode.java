@@ -152,11 +152,7 @@ public class JiraIssueNode extends IssueNode<NbJiraIssue> {
         @Override
         public Object getValue(String attributeName) {
             if("sortkey".equals(attributeName)) {                               // NOI18N
-                try {
-                    return Integer.parseInt(getNbJiraIssue().getRepositoryFieldValue(IssueField.PRIORITY));
-                } catch (NumberFormatException nfex) {
-                    return null;
-                }
+                return getNbJiraIssue().getSortOrder();
             } else {
                 return super.getValue(attributeName);
             }

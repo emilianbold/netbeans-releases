@@ -67,11 +67,11 @@ import org.openide.util.lookup.InstanceContent;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static org.junit.Assert.*;
-import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.DelegatingConnector;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.dummies.DummyProjectServices;
+import org.netbeans.modules.bugtracking.util.RepositoryComboSupport.Filter;
 import static org.netbeans.modules.bugtracking.util.RepositoryComboSupport.LOADING_REPOSITORIES;
 import static org.netbeans.modules.bugtracking.util.RepositoryComboSupport.SELECT_REPOSITORY;
 import static org.netbeans.modules.bugtracking.util.RepositoryComboSupportTest.ThreadType.AWT;
@@ -162,7 +162,7 @@ public class RepositoryComboSupportTest {
         }
 
         protected void createRepository2() {
-            repository2 = connector.createRepository("beta");
+            repository2 = connector.createRepository("beta", false);
             repoNode2 = createDummyNode("node2", repository2);
         }
 
@@ -441,175 +441,46 @@ public class RepositoryComboSupportTest {
             }
         });
     }
-
-    /**
-     * Tests that the correct repository is preselected in the combo-box if
-     * there is one node selected and the node refers to some issue tracking
-     * repository.
-     */
-    @Test(timeout=10000)
-    public void testMoreReposMatchingNode() throws InterruptedException {
-        printTestName("testMoreReposMatchingNode");
-        runRepositoryComboTest(new AbstractRepositoryComboTezt() {
-            @Override
-            protected void setUpEnvironment() {
-                selectNodes(repoNode2);
-            }
-            @Override
-            RepositoryComboSupport setupComboSupport(JComboBox comboBox) {
-                return RepositoryComboSupport.setup(null, comboBox, false);
-            }
-            @Override
-            protected void scheduleTests(ProgressTester progressTester) {
-                super.scheduleTests(progressTester);
-                progressTester.scheduleResumingTest  (Progress.DISPLAYED_REPOS, AWT,
-                                                        new ComboBoxItemsTezt(
-                                                                SELECT_REPOSITORY,
-                                                                repository1,
-                                                                repository2,
-                                                                repository3),
-                                                        new SelectedItemtezt(
-                                                                SELECT_REPOSITORY));
-                progressTester.scheduleTest          (Progress.WILL_DETERMINE_DEFAULT_REPO, NON_AWT);
-                progressTester.scheduleTest          (Progress.DETERMINED_DEFAULT_REPO, NON_AWT);
-                progressTester.scheduleTest          (Progress.WILL_SCHEDULE_SELECTION_OF_DEFAULT_REPO, NON_AWT);
-                progressTester.scheduleSuspendingTest(Progress.SCHEDULED_SELECTION_OF_DEFAULT_REPO, NON_AWT);
-                progressTester.scheduleTest          (Progress.WILL_SELECT_DEFAULT_REPO, AWT);
-                progressTester.scheduleResumingTest  (Progress.SELECTED_DEFAULT_REPO, AWT,
-                                                        new ComboBoxItemsTezt(
-                                                                repository1,
-                                                                repository2,
-                                                                repository3),
-                                                        new SelectedItemtezt(
-                                                                repository2));
-            }
-        });
+    
+    @Test(timeout=100000)
+    public void testMoreReposOneNotAttachingFilesFilteredOut() throws InterruptedException {
+        testMoreReposAttachingFiles("testMoreReposOneNotAttachingFilesFilteredOut", true);
     }
-
-    /**
-     * Tests that the correct repository is preselected in the combo-box if
-     * there are multiple nodes selected but all the nodes refer to the same
-     * issue tracking repository.
-     */
-    @Test(timeout=10000)
-    public void testMoreReposMoreMatchingNodesSameRepo() throws InterruptedException {
-        printTestName("testMoreReposMoreMatchingNodesSameRepo");
-        runRepositoryComboTest(new AbstractRepositoryComboTezt() {
-            private Node repoNode2_2;
-            @Override
-            protected void createRepositories() {
-                super.createRepositories();
-                repoNode2_2 = createDummyNode("beta 2", repository2);
-            }
-            @Override
-            protected void setUpEnvironment() {
-                selectNodes(repoNode2);
-                selectNodes(repoNode2_2);
-            }
-            @Override
-            RepositoryComboSupport setupComboSupport(JComboBox comboBox) {
-                return RepositoryComboSupport.setup(null, comboBox, true);
-            }
-            @Override
-            protected void scheduleTests(ProgressTester progressTester) {
-                super.scheduleTests(progressTester);
-                progressTester.scheduleResumingTest  (Progress.DISPLAYED_REPOS, AWT,
-                                                        new ComboBoxItemsTezt(
-                                                                SELECT_REPOSITORY,
-                                                                repository1,
-                                                                repository2,
-                                                                repository3),
-                                                        new SelectedItemtezt(
-                                                                SELECT_REPOSITORY));
-                progressTester.scheduleTest          (Progress.WILL_DETERMINE_DEFAULT_REPO, NON_AWT);
-                progressTester.scheduleTest          (Progress.DETERMINED_DEFAULT_REPO, NON_AWT);
-                progressTester.scheduleTest          (Progress.WILL_SCHEDULE_SELECTION_OF_DEFAULT_REPO, NON_AWT);
-                progressTester.scheduleSuspendingTest(Progress.SCHEDULED_SELECTION_OF_DEFAULT_REPO, NON_AWT);
-                progressTester.scheduleTest          (Progress.WILL_SELECT_DEFAULT_REPO, AWT);
-                progressTester.scheduleResumingTest  (Progress.SELECTED_DEFAULT_REPO, AWT,
-                                                        new ComboBoxItemsTezt(
-                                                                repository1,
-                                                                repository2,
-                                                                repository3),
-                                                        new SelectedItemtezt(
-                                                                repository2));
-            }
-        });
+    
+    @Test(timeout=100000)
+    public void testMoreReposOneNotAttachingFilesNotFilteredOut() throws InterruptedException {
+        testMoreReposAttachingFiles("testMoreReposOneNotAttachingFilesNotFilteredOut", false);
     }
-
-    /**
-     * Tests that no repository is preselected in the combo-box if multiple
-     * nodes are selected and the nodes refer to several different issue
-     * tracking repositories.
-     */
-    @Test(timeout=10000)
-    public void testMoreReposMatchingNodesDifferentRepos() throws InterruptedException {
-        printTestName("testMoreReposMatchingNodesDifferentRepos");
+    
+    private void testMoreReposAttachingFiles(String testName, final boolean onlyCanAttach) throws InterruptedException {
+        printTestName(testName);
         runRepositoryComboTest(new AbstractRepositoryComboTezt() {
             @Override
             protected void setUpEnvironment() {
-                selectNodes(repoNode2, repoNode3);
+                selectNodes(node1);
             }
             @Override
             RepositoryComboSupport setupComboSupport(JComboBox comboBox) {
-                return RepositoryComboSupport.setup(null, comboBox, false);
+                return RepositoryComboSupport.setup(null, comboBox, onlyCanAttach ? Filter.ATTACH_FILE : Filter.ALL , true);
             }
             @Override
             protected void scheduleTests(ProgressTester progressTester) {
                 super.scheduleTests(progressTester);
                 progressTester.scheduleResumingTest  (Progress.DISPLAYED_REPOS, AWT,
-                                                        new ComboBoxItemsTezt(
-                                                                SELECT_REPOSITORY,
-                                                                repository1,
-                                                                repository2,
-                                                                repository3),
+                                                        onlyCanAttach ?  
+                                                            new ComboBoxItemsTezt(
+                                                                    SELECT_REPOSITORY,
+                                                                    repository1,
+                                                                    repository3) : 
+                                                            new ComboBoxItemsTezt(
+                                                                    SELECT_REPOSITORY,
+                                                                    repository1,
+                                                                    repository2,
+                                                                    repository3),
                                                         new SelectedItemtezt(
                                                                 SELECT_REPOSITORY));
                 progressTester.scheduleTest          (Progress.WILL_DETERMINE_DEFAULT_REPO, NON_AWT);
                 progressTester.scheduleTest          (Progress.DETERMINED_DEFAULT_REPO, NON_AWT);
-            }
-        });
-    }
-
-    /**
-     * Tests that no repository is preselected in the combo-box if multiple
-     * nodes are selected but not all of the nodes refer to the some repository.
-     */
-    @Test(timeout=10000)
-    public void testMoreReposMatchingNodesRepoAndNull() throws InterruptedException {
-        printTestName("testMoreReposMatchingNodesRepoAndNull");
-        runRepositoryComboTest(new AbstractRepositoryComboTezt() {
-            @Override
-            protected void setUpEnvironment() {
-                selectNodes(repoNode2, node3);
-            }
-            @Override
-            RepositoryComboSupport setupComboSupport(JComboBox comboBox) {
-                return RepositoryComboSupport.setup(null, comboBox, false);
-            }
-            @Override
-            protected void scheduleTests(ProgressTester progressTester) {
-                super.scheduleTests(progressTester);
-                progressTester.scheduleResumingTest  (Progress.DISPLAYED_REPOS, AWT,
-                                                        new ComboBoxItemsTezt(
-                                                                SELECT_REPOSITORY,
-                                                                repository1,
-                                                                repository2,
-                                                                repository3),
-                                                        new SelectedItemtezt(
-                                                                SELECT_REPOSITORY));
-                progressTester.scheduleTest          (Progress.WILL_DETERMINE_DEFAULT_REPO, NON_AWT);
-                progressTester.scheduleTest          (Progress.DETERMINED_DEFAULT_REPO, NON_AWT);
-                progressTester.scheduleTest          (Progress.WILL_SCHEDULE_SELECTION_OF_DEFAULT_REPO, NON_AWT);
-                progressTester.scheduleSuspendingTest(Progress.SCHEDULED_SELECTION_OF_DEFAULT_REPO, NON_AWT);
-                progressTester.scheduleTest          (Progress.WILL_SELECT_DEFAULT_REPO, AWT);
-                progressTester.scheduleResumingTest  (Progress.SELECTED_DEFAULT_REPO, AWT,
-                                                        new ComboBoxItemsTezt(
-                                                                repository1,
-                                                                repository2,
-                                                                repository3),
-                                                        new SelectedItemtezt(
-                                                                repository2));
             }
         });
     }
@@ -650,168 +521,6 @@ public class RepositoryComboSupportTest {
                                                                 SELECT_REPOSITORY));
             }
         });
-    }
-
-    /**
-     * Tests that the combo-box is filled and the default repository preselected
-     * in one shot if all information is available at the moment the AWT thread
-     * is about to display the list of available repositories.
-     */
-    @Test(timeout=10000)
-    public void testMoreReposMatchingNodeAwtRetarded() throws InterruptedException {
-        printTestName("testMoreReposMatchingNodeAwtRetarded");
-        runRepositoryComboTest(new AbstractRepositoryComboTezt() {
-            @Override
-            protected void setUpEnvironment() {
-                selectNodes(repoNode2);
-            }
-            @Override
-            RepositoryComboSupport setupComboSupport(JComboBox comboBox) {
-                return RepositoryComboSupport.setup(null, comboBox, false);
-            }
-            @Override
-            protected void scheduleTests(ProgressTester progressTester) {
-                progressTester.scheduleTest          (Progress.STARTED, AWT,
-                                                        new ComboBoxItemsTezt(
-                                                                LOADING_REPOSITORIES));
-                progressTester.scheduleTest          (Progress.WILL_LOAD_REPOS, NON_AWT);
-                progressTester.scheduleTest          (Progress.LOADED_REPOS, NON_AWT);
-                progressTester.scheduleTest          (Progress.WILL_SCHEDULE_DISPLAY_OF_REPOS, NON_AWT);
-                progressTester.scheduleSuspendingTest(Progress.WILL_DISPLAY_REPOS, AWT);
-                progressTester.scheduleTest          (Progress.SCHEDULED_DISPLAY_OF_REPOS, NON_AWT);
-                progressTester.scheduleTest          (Progress.WILL_DETERMINE_DEFAULT_REPO, NON_AWT);
-                progressTester.scheduleTest          (Progress.DETERMINED_DEFAULT_REPO, NON_AWT);
-                progressTester.scheduleTest          (Progress.WILL_SCHEDULE_SELECTION_OF_DEFAULT_REPO, NON_AWT);
-                progressTester.scheduleResumingTest  (Progress.SCHEDULED_SELECTION_OF_DEFAULT_REPO, NON_AWT);
-                progressTester.scheduleTest          (Progress.DISPLAYED_REPOS, AWT,
-                                                        new ComboBoxItemsTezt(
-                                                                repository1,
-                                                                repository2,
-                                                                repository3),
-                                                        new SelectedItemtezt(
-                                                                repository2));
-            }
-        });
-    }
-
-    /**
-     * Tests that the given repository is preselected in the combo-box if
-     * it is explicitly specified by the third argument of method
-     * {@code setup()}.
-     */
-    @Test(timeout=10000)
-    public void testDefaultRepoExplicitlySet() throws InterruptedException {
-        printTestName("testDefaultRepoExplicitlySet");
-        runRepositoryComboTest(new AbstractRepositoryComboTezt() {
-            @Override
-            RepositoryComboSupport setupComboSupport(JComboBox comboBox) {
-                return RepositoryComboSupport.setup(null, comboBox, repository2);
-            }
-            @Override
-            protected void scheduleTests(ProgressTester progressTester) {
-                super.scheduleTests(progressTester);
-                progressTester.scheduleResumingTest  (Progress.DISPLAYED_REPOS, AWT,
-                                                        new ComboBoxItemsTezt(
-                                                                repository1,
-                                                                repository2,
-                                                                repository3),
-                                                        new SelectedItemtezt(
-                                                                repository2));
-            }
-        });
-    }
-
-    /**
-     * Tests that an {@code IllegalArgumentException} is thrown
-     * if <em>null</em> {@code RepositoryProvider} is passed as the third argument
-     * of method {@code setup()}.
-     */
-    @Test(timeout=10000,expected=IllegalArgumentException.class)
-    public void testDefaultRepoExplicitlySetNull() throws InterruptedException {
-        RepositoryComboSupport.setup(null, new JComboBox(), (Repository) null);
-    }
-
-    /**
-     * Tests that the correct repository is preselected in the combo-box
-     * if a file is passed as the third argument of method {@code setup()}
-     * and the given file is associated with some repository.
-     */
-    @Test(timeout=10000)
-    public void testDefaultRepoByFile() throws InterruptedException {
-        runRepositoryComboTest(new AbstractRepositoryComboTezt() {
-            private File dummyFile = new File("dummy file");
-            @Override
-            protected void setUpEnvironment() {
-                getBugtrackingOwnerSupport().setAssociation(dummyFile, APIAccessor.IMPL.getImpl(repository2));
-            }
-            @Override
-            RepositoryComboSupport setupComboSupport(JComboBox comboBox) {
-                return RepositoryComboSupport.setup(null, comboBox, dummyFile);
-            }
-            @Override
-            protected void scheduleTests(ProgressTester progressTester) {
-                super.scheduleTests(progressTester);
-                progressTester.scheduleResumingTest  (Progress.DISPLAYED_REPOS, AWT,
-                                                        new ComboBoxItemsTezt(
-                                                                SELECT_REPOSITORY,
-                                                                repository1,
-                                                                repository2,
-                                                                repository3),
-                                                        new SelectedItemtezt(
-                                                                SELECT_REPOSITORY));
-                progressTester.scheduleTest          (Progress.WILL_DETERMINE_DEFAULT_REPO, NON_AWT);
-                progressTester.scheduleTest          (Progress.DETERMINED_DEFAULT_REPO, NON_AWT);
-                progressTester.scheduleTest          (Progress.WILL_SCHEDULE_SELECTION_OF_DEFAULT_REPO, NON_AWT);
-                progressTester.scheduleSuspendingTest(Progress.SCHEDULED_SELECTION_OF_DEFAULT_REPO, NON_AWT);
-                progressTester.scheduleTest          (Progress.WILL_SELECT_DEFAULT_REPO, AWT);
-                progressTester.scheduleResumingTest  (Progress.SELECTED_DEFAULT_REPO, AWT,
-                                                        new ComboBoxItemsTezt(
-                                                                repository1,
-                                                                repository2,
-                                                                repository3),
-                                                        new SelectedItemtezt(
-                                                                repository2));
-            }
-        });
-    }
-
-    /**
-     * Tests that the no repository is preselected in the combo-box
-     * if a file is passed as the third argument of method {@code setup()}
-     * but the given file is not associated with any repository.
-     */
-    @Test(timeout=10000)
-    public void testDefaultRepoByFileNotFound() throws InterruptedException {
-        runRepositoryComboTest(new AbstractRepositoryComboTezt() {
-            @Override
-            RepositoryComboSupport setupComboSupport(JComboBox comboBox) {
-                return RepositoryComboSupport.setup(null, comboBox, new File("dummy file name.dummy"));
-            }
-            @Override
-            protected void scheduleTests(ProgressTester progressTester) {
-                super.scheduleTests(progressTester);
-                progressTester.scheduleResumingTest  (Progress.DISPLAYED_REPOS, AWT,
-                                                        new ComboBoxItemsTezt(
-                                                                SELECT_REPOSITORY,
-                                                                repository1,
-                                                                repository2,
-                                                                repository3),
-                                                        new SelectedItemtezt(
-                                                                SELECT_REPOSITORY));
-                progressTester.scheduleTest          (Progress.WILL_DETERMINE_DEFAULT_REPO, NON_AWT);
-                progressTester.scheduleTest          (Progress.DETERMINED_DEFAULT_REPO, NON_AWT);
-            }
-        });
-    }
-
-    /**
-     * Tests that an {@code IllegalArgumentException} is thrown
-     * if <em>null</em> {@code File} is passed as the third argument of method
-     * {@code setup()}.
-     */
-    @Test(timeout=10000,expected=IllegalArgumentException.class)
-    public void testDefaultRepoByFileNull() throws InterruptedException {
-        RepositoryComboSupport.setup(null, new JComboBox(), (File) null);
     }
 
     private void printTestName(String testName) {

@@ -118,6 +118,11 @@ public class JsfSupportImpl implements JsfSupport {
                 return null;
             }
             ClassPath executeCP = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.EXECUTE);
+            // #236831 - prevent NPE; not sure what's causing it:
+            if (executeCP == null) {
+                LOG.log(Level.INFO, "project ''{0}'' does not have execution classpath; documentBase={1}", new Object[]{project, webModule.getDocumentBase()});
+                executeCP = ClassPath.EMPTY;
+            }
             ClassPath bootCP = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.BOOT);
             
             return new JsfSupportImpl(project, webModule, sourceCP, compileCP, executeCP, bootCP);

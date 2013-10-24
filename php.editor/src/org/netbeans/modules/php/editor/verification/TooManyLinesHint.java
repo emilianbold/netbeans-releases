@@ -88,7 +88,7 @@ public abstract class TooManyLinesHint extends HintRule implements CustomisableR
     public static class FunctionLinesHint extends TooManyLinesHint {
         private static final String HINT_ID = "Function.Lines.Hint"; //NOI18N
         private static final String MAX_ALLOWED_FUNCTION_LINES = "php.verification.max.allowed.function.lines"; //NOI18N
-        private static final int DEFAULT_MAX_ALLOWED_FUNCTION_LINES = 10;
+        private static final int DEFAULT_MAX_ALLOWED_FUNCTION_LINES = 20;
         private Preferences preferences;
 
         @Override
@@ -179,7 +179,7 @@ public abstract class TooManyLinesHint extends HintRule implements CustomisableR
     public static class ClassLinesHint extends TooManyLinesHint {
         private static final String HINT_ID = "Class.Lines.Hint"; //NOI18N
         private static final String MAX_ALLOWED_CLASS_LINES = "php.verification.max.allowed.class.lines"; //NOI18N
-        private static final int DEFAULT_MAX_ALLOWED_CLASS_LINES = 100;
+        private static final int DEFAULT_MAX_ALLOWED_CLASS_LINES = 200;
         private Preferences preferences;
 
         @Override
@@ -337,7 +337,7 @@ public abstract class TooManyLinesHint extends HintRule implements CustomisableR
     public static class TraitLinesHint extends TooManyLinesHint {
         private static final String HINT_ID = "Trait.Lines.Hint"; //NOI18N
         private static final String MAX_ALLOWED_TRAIT_LINES = "php.verification.max.allowed.trait.lines"; //NOI18N
-        private static final int DEFAULT_MAX_ALLOWED_TRAIT_LINES = 100;
+        private static final int DEFAULT_MAX_ALLOWED_TRAIT_LINES = 200;
         private Preferences preferences;
 
         @Override
