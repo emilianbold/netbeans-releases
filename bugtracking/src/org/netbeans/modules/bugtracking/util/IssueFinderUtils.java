@@ -131,16 +131,6 @@ public class IssueFinderUtils {
 
     }
 
-    public static String getIssueNumber(String text, int startOffset,
-                                                     int endOffset) {
-        IssueFinder issueFinder = determineIssueFinder(text, startOffset, endOffset);
-        if (issueFinder == null) {
-            return null;
-        }
-
-        return issueFinder.getIssueId(text.substring(endOffset, endOffset));
-    }
-
     public static IssueFinder determineIssueFinder(String text, int startOffset,
                                                                 int endOffset) {
         Collection<IssueFinder> issueFinders = getIssueFinders();
