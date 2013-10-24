@@ -45,6 +45,7 @@ package org.netbeans.modules.web.jsf.wizards;
 import java.awt.Component;
 import java.io.InputStream;
 import java.util.Collection;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -101,6 +102,11 @@ public class TemplateClientPanel implements WizardDescriptor.Panel, WizardDescri
     public Collection<String> getTemplateData(){
         getComponent();
         return component.getTemplateData();
+    }
+
+    public Collection<String> getTemplateDataToGenerate(){
+        getComponent();
+        return component.getTemplateDataToGenerate();
     }
     
     public TemplateEntry getTemplate(){

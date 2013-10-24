@@ -64,6 +64,7 @@ import org.netbeans.modules.web.jsf.JSFUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
 import org.netbeans.modules.web.jsf.wizards.TemplateClientPanel.TemplateEntry;
+import org.netbeans.modules.web.jsfapi.api.NamespaceUtils;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -110,13 +111,13 @@ public class TemplateClientIterator implements TemplateWizard.Iterator {
                 FileObject target = df.getPrimaryFile().createData(targetName, "xhtml");
                 TemplateEntry templateEntry = templateClientPanel.getTemplate();
                 String relativePath = getTemplatePath(target, templateEntry);
-                String definedTags = createDefineTags(templateClientPanel.getTemplateData(),
+                String definedTags = createDefineTags(templateClientPanel.getTemplateDataToGenerate(),
                         ((content.indexOf("<html") == -1)?1:3));    //NOI18N
 
                 Project project = Templates.getProject(wiz);
                 final JSFVersion jsfVersion = JSFVersion.forProject(project);
-                String namespaceLocation = jsfVersion != null && jsfVersion.isAtLeast(JSFVersion.JSF_2_2)
-                        ? "http://xmlns.jcp.org" : "http://java.sun.com"; // NOI18N
+                String namespaceLocation = (jsfVersion != null && jsfVersion.isAtLeast(JSFVersion.JSF_2_2))
+                        ? NamespaceUtils.JCP_ORG_LOCATION : NamespaceUtils.SUN_COM_LOCATION;
                 HashMap args = new HashMap();
                 args.put("TEMPLATE", relativePath); //NOI18N
                 args.put("DEFINE_TAGS", definedTags);   //NOI18N
