@@ -52,7 +52,8 @@ import org.netbeans.modules.bugtracking.util.OwnerUtils;
 import org.netbeans.modules.versioning.util.VCSBugtrackingAccessor;
 
 /**
- *
+ * Only for team needs
+ * 
  * @author Tomas Stupka
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.util.VCSBugtrackingAccessor.class)
@@ -75,6 +76,5 @@ public class VCSBugtrackingSupportImpl extends VCSBugtrackingAccessor {
         }
         OwnerUtils.setFirmAssociations(files, repo);
     }
-
 
 }
