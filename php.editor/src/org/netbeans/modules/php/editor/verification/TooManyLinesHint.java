@@ -427,8 +427,8 @@ public abstract class TooManyLinesHint extends HintRule implements CustomisableR
             this.linesHint = linesHint;
             this.fileObject = fileObject;
             this.baseDocument = baseDocument;
-            this.hints = new ArrayList<>();
-            this.commentRanges = new ArrayList<>();
+            hints = new ArrayList<>();
+            commentRanges = new ArrayList<>();
         }
 
         @Override
