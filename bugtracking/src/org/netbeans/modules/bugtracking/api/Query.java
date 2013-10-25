@@ -132,14 +132,6 @@ public final class Query {
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         impl.removePropertyChangeListener(listener);
     }
-
-    public void remove() {
-        impl.remove();
-    }
-
-    public boolean isSaved() {
-        return impl.isSaved();
-    }
     
     private List<Issue> toIssues(Collection<IssueImpl> c) {
         List<Issue> ret = new ArrayList<Issue>(c.size());
