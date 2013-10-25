@@ -97,13 +97,6 @@ public final class Query {
         impl.remove();
     }
     
-    /**
-     * @param query
-     */
-    public static void openNew(Repository repository) {
-        QueryAction.createNewQuery(repository.getImpl());
-    }
-    
     QueryImpl getImpl() {
         return impl;
     }

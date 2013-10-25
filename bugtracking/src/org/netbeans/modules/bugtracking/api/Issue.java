@@ -185,21 +185,6 @@ public final class Issue {
     }
 
     /**
-     * Opens the issue with the given id in the IDE. In case that id
-     * is null a new issue will be created.
-     *
-     * @param repository 
-     * @param issueId
-     */
-    public static void open(final Repository repository, final String issueId) {
-        if(issueId == null) {
-            IssueAction.createIssue(repository.getImpl());
-        } else {            
-            IssueAction.openIssue(repository.getImpl(), issueId);
-        }
-    }
-    
-    /**
      * Returns this Issues summary
      * 
      * @return this Issues summary
