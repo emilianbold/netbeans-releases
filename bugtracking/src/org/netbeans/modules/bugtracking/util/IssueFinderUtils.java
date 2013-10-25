@@ -131,6 +131,14 @@ public class IssueFinderUtils {
 
     }
 
+    public static String getIssueId(String issueHyperlinkText) {        
+        IssueFinder issueFinder = determineIssueFinder(issueHyperlinkText, 0, issueHyperlinkText.length());
+        if (issueFinder == null) {
+            return null;
+        }
+        return issueFinder.getIssueId(issueHyperlinkText);
+    }  
+    
     public static IssueFinder determineIssueFinder(String text, int startOffset,
                                                                 int endOffset) {
         Collection<IssueFinder> issueFinders = getIssueFinders();

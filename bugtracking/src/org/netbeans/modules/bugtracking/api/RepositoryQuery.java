@@ -75,7 +75,7 @@ public final class RepositoryQuery {
      * 
      * @param fileObject the file
      * @param askIfUnknown if <code>true</code> and no repository was found,
-     * than a repository picker is opened in a modal dialog.
+     * than a modal Repository picker dialog will be presented.  
      * 
      * @return a Repository
      */
