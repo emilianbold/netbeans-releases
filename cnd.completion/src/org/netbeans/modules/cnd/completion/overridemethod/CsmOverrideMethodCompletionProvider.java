@@ -186,6 +186,8 @@ public class CsmOverrideMethodCompletionProvider implements CompletionProvider {
                                     if (CsmKindUtilities.isClass(member)) {
                                         decl = member;
                                         continue loop;
+                                    } else {
+                                        return null;
                                     }
                                 }
                             }
