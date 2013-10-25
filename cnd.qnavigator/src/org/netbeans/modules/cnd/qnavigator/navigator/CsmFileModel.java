@@ -48,8 +48,8 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.services.CsmStandaloneFileProvider;
-import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 
 /**
@@ -63,6 +63,7 @@ public class CsmFileModel {
     private final CsmFileFilter filter;
     private final Action[] actions;
     private FileObject fileObject;
+    private DataObject cdo;
     private boolean isStandalone;
     private Project unopenedProject;
 
@@ -88,6 +89,10 @@ public class CsmFileModel {
         return fileObject;
     }
 
+    public DataObject getDataObject(){
+        return cdo;
+    }
+
     public boolean isStandalone(){
         return isStandalone;
     }
@@ -104,10 +109,11 @@ public class CsmFileModel {
         lineNumberIndex.add(new IndexOffsetNode(node, 0, 0));
     }
 
-    public PreBuildModel buildPreModel(CsmFile csmFile, AtomicBoolean canceled) {
+    public PreBuildModel buildPreModel(DataObject cdo, FileObject fo, CsmFile csmFile, AtomicBoolean canceled) {
         boolean oldValue = isStandalone;
+        this.fileObject = fo;
+        this.cdo = cdo;
         isStandalone = CsmStandaloneFileProvider.getDefault().isStandalone(csmFile);
-        fileObject = CsmUtilities.getFileObject(csmFile);
         PreBuildModel preBuildModel = new PreBuildModel(oldValue != isStandalone);
         unopenedProject = null;
         if (csmFile != null && csmFile.isValid()) {

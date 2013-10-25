@@ -156,6 +156,7 @@ public final class NavigatorComponent implements NavigatorPanel, LookupListener 
     
     private void setNewContent(final DataObject cdo) {
         final NavigatorPanelUI ui = getPanelUI();
+        ui.setDataObject(cdo);
         ui.showWaitNode();
     }
     

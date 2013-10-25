@@ -149,6 +149,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
         this.weight = getObjectWeight();
         ic.add(element);
         ic.add(model.getFileObject());
+        ic.add(model.getDataObject());
         this.ic = ic;
     }
 

@@ -118,13 +118,12 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
     public void run(CndParserResult result, SchedulerEvent event) {
         final Document doc = result.getSnapshot().getSource().getDocument(false);
         final FileObject fileObject = result.getSnapshot().getSource().getFileObject();
-        Collection<CsmFile> csmFiles = result.getCsmFiles();
-        if (csmFiles.size() == 1 && doc != null) {
+        final CsmFile file = result.getCsmFile();
+        if (file != null && doc != null) {
             if (event instanceof CursorMovedSchedulerEvent) {
                 clearHint(doc, fileObject);
                 CursorMovedSchedulerEvent cursorEvent = (CursorMovedSchedulerEvent) event;
                 int caretOffset = cursorEvent.getCaretOffset();
-                final CsmFile file = csmFiles.iterator().next();
                 JTextComponent comp = EditorRegistry.lastFocusedComponent();
                 int selectionStart = caretOffset;
                 int selectionEnd = caretOffset;
