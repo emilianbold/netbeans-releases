@@ -852,15 +852,6 @@ public class Term extends JComponent implements Accessible {
 	    System.out.println("\tcontained = " + keystroke_set.contains(ks));	// NOI18N
 	}
         
-        // Check the keymap
-        if (keymap != null) {
-            Action action = keymap.getAction(ks);
-            if (action != null) {
-                if (allowedActions == null || allowedActions.contains(action.getClass().getName())) {
-                    return false;
-                }
-            }
-        }
 
         if (keystroke_set == null || !keystroke_set.contains(ks)) {
             e.consume();
@@ -1811,12 +1802,24 @@ public class Term extends JComponent implements Accessible {
                 charTyped(c, e);
             }
 
-	    @Override
+	           @Override
             public void keyPressed(KeyEvent e) {
-                if (debugKeys())
+                if (debugKeys()) {
                     System.out.printf("keyPressed %2d %s\n", e.getKeyCode(), KeyEvent.getKeyText(e.getKeyCode())); // NOI18N
+                }
+                KeyStroke ks = KeyStroke.getKeyStrokeForEvent(e);
 
-                // Let Interp's have a first go at special keys
+                // At first check the keymap (higher priority)
+                if (keymap != null) {
+                    Action action = keymap.getAction(ks);
+                    if (action != null) {
+                        if (allowedActions == null || allowedActions.contains(action.getClass().getName())) {
+                            return;
+                        }
+                    }
+                }
+
+                // Then let Interp's have go at special keys
                 interp.keyPressed(e);
                 if (e.isConsumed()) {
                     passOn = false;
