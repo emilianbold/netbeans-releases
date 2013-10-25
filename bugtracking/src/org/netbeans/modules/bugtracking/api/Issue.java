@@ -84,7 +84,7 @@ public final class Issue {
     /**
      * issue data were refreshed
      */
-    public static final String EVENT_ISSUE_REFRESHED = IssueProvider.EVENT_ISSUE_REFRESHED;
+    public static final String EVENT_ISSUE_DATA_CHANGED = IssueImpl.EVENT_ISSUE_DATA_CHANGED;
     
     /**
      * status has changed 

@@ -59,7 +59,7 @@ import java.util.Collection;
 public interface RepositoryProvider<R, Q, I> {
 
     /**
-     * A query from this repository was saved or removed
+     * A query from this repository was saved or removed.
      */
     public final static String EVENT_QUERY_LIST_CHANGED = "bugtracking.repository.queries.changed"; // NOI18N
     

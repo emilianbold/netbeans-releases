@@ -438,7 +438,7 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
      * Notify listeners on this issue that its data were changed
      */
     protected void fireDataChanged() {
-        support.firePropertyChange(IssueProvider.EVENT_ISSUE_REFRESHED, null, null);
+        support.firePropertyChange(IssueProvider.EVENT_ISSUE_DATA_CHANGED, null, null);
     }
     
     private void fireStatusChanged() {

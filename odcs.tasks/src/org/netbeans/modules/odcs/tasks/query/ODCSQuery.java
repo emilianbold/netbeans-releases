@@ -267,7 +267,7 @@ public abstract class ODCSQuery {
     }
 
     private void fireQueryIssuesChanged() {
-        support.firePropertyChange(QueryProvider.EVENT_QUERY_ISSUES_CHANGED, null, null);
+        support.firePropertyChange(QueryProvider.EVENT_QUERY_REFRESHED, null, null);
     }  
 
     public void refresh() {

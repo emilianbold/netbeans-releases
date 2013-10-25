@@ -60,9 +60,9 @@ public final class Query {
     /**
      * queries issue list was changed
      */
-    public final static String EVENT_QUERY_ISSUES_CHANGED = QueryProvider.EVENT_QUERY_ISSUES_CHANGED;
+    public final static String EVENT_QUERY_REFRESHED = QueryProvider.EVENT_QUERY_REFRESHED;
     
-    private QueryImpl impl;
+    private final QueryImpl impl;
 
     Query(QueryImpl impl) {
         this.impl = impl;
