@@ -41,6 +41,10 @@
  */
 package org.netbeans.api.debugger.jpda;
 
+import com.sun.jdi.ClassType;
+import com.sun.jdi.IntegerValue;
+import com.sun.jdi.StringReference;
+import com.sun.jdi.Value;
 import java.awt.Color;
 import java.awt.Point;
 import java.beans.FeatureDescriptor;
@@ -58,6 +62,7 @@ import java.util.Map;
 import junit.framework.Test;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
 import org.openide.util.Exceptions;
 
 /**
@@ -221,6 +226,43 @@ public class MirrorValuesTest extends NbTestCase {
             support.doFinish ();
         }
         
+    }
+    
+    public void testTargetMirrors() throws Exception {
+        try {
+            Utils.BreakPositions bp = Utils.getBreakPositions(System.getProperty ("test.dir.src") + 
+                    "org/netbeans/api/debugger/jpda/testapps/MirrorValuesApp.java");
+            LineBreakpoint lb = bp.getLineBreakpoints().get(0);
+            dm.addBreakpoint (lb);
+            
+            support = JPDASupport.attach (CLASS_NAME);
+
+            support.waitState (JPDADebugger.STATE_STOPPED);  // breakpoint hit
+            
+            JPDADebugger debugger = support.getDebugger();
+            
+            Variable mirrorVar = debugger.createMirrorVar("Test");
+            Value v = ((JDIVariable) mirrorVar).getJDIValue();
+            assertTrue("Value "+v+" should be a String", v instanceof StringReference);
+            assertEquals("Test", ((StringReference) v).value());
+            
+            Point p = new Point(-1, 1);
+            mirrorVar = debugger.createMirrorVar(p);
+            Object mp = mirrorVar.createMirrorObject();
+            assertTrue("Correct point was created: "+mp, p.equals(mp));
+            
+            mirrorVar = debugger.createMirrorVar(1);
+            v = ((JDIVariable) mirrorVar).getJDIValue();
+            assertTrue("Value "+v+" should be an Integer object.",
+                       (v.type() instanceof ClassType) && Integer.class.getName().equals(((ClassType) v.type()).name()));
+            
+            mirrorVar = debugger.createMirrorVar(1, true);
+            v = ((JDIVariable) mirrorVar).getJDIValue();
+            assertTrue("Value "+v+" should be an int.", v instanceof IntegerValue);
+            assertEquals(((IntegerValue) v).value(), 1);
+        } finally {
+            support.doFinish ();
+        }
     }
     
     private static boolean compareArrays(Object arr1, Object arr2) {

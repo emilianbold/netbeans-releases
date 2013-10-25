@@ -102,38 +102,42 @@ public class SortAttributePanel extends javax.swing.JPanel {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         buttonGroup1 = new javax.swing.ButtonGroup();
         comboAttributes = new javax.swing.JComboBox();
         rbAscending = new javax.swing.JRadioButton();
         rbDescending = new javax.swing.JRadioButton();
 
+        setLayout(new java.awt.GridBagLayout());
+
         comboAttributes.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 0.3;
+        gridBagConstraints.insets = new java.awt.Insets(1, 0, 0, 0);
+        add(comboAttributes, gridBagConstraints);
 
         buttonGroup1.add(rbAscending);
         org.openide.awt.Mnemonics.setLocalizedText(rbAscending, NbBundle.getMessage(SortAttributePanel.class, "SortAttributePanel.rbAscending.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 18, 0, 0);
+        add(rbAscending, gridBagConstraints);
 
         buttonGroup1.add(rbDescending);
         org.openide.awt.Mnemonics.setLocalizedText(rbDescending, NbBundle.getMessage(SortAttributePanel.class, "SortAttributePanel.rbDescending.text")); // NOI18N
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(comboAttributes, 0, 204, Short.MAX_VALUE)
-                .addGap(18, 18, 18)
-                .addComponent(rbAscending)
-                .addGap(18, 18, 18)
-                .addComponent(rbDescending, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                .addComponent(comboAttributes, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addComponent(rbAscending)
-                .addComponent(rbDescending))
-        );
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 18, 0, 0);
+        add(rbDescending, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
 

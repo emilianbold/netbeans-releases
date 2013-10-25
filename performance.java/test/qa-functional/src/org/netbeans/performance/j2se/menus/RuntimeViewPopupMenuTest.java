@@ -41,64 +41,49 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se.menus;
 
-import org.netbeans.jellytools.Bundle;
+import junit.framework.Test;
+import static org.netbeans.jellytools.JellyTestCase.emptyConfiguration;
+import org.netbeans.jellytools.RuntimeTabOperator;
+import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.modules.performance.utilities.ValidatePopupMenuOnNodes;
 import org.netbeans.performance.j2se.setup.J2SESetup;
 
-import org.netbeans.jellytools.RuntimeTabOperator;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
-
 /**
- * Test of popup menu on nodes in Runtime View
- * @author  juhrik@netbeans.org, mmirilovic@netbeans.org
+ * Test of popup menu on Servers node in Services View
+ *
+ * @author juhrik@netbeans.org, mmirilovic@netbeans.org
  */
-
-
-public class RuntimeViewPopupMenuTest extends ValidatePopupMenuOnNodes{
+public class RuntimeViewPopupMenuTest extends ValidatePopupMenuOnNodes {
 
     private static RuntimeTabOperator runtimeTab;
-    private final String SERVER_REGISTRY = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.Bundle", "SERVER_REGISTRY_NODE");
-    private final String TOMCAT = Bundle.getStringTrimmed("org.netbeans.modules.tomcat5.Bundle","LBL_TomcatFactory");
-    
-    /** Creates a new instance of RuntimeViewPopupMenu */
+
+    /**
+     * Creates a new instance of RuntimeViewPopupMenu
+     *
+     * @param testName test name
+     */
     public RuntimeViewPopupMenuTest(String testName) {
         super(testName);
     }
-    
-    /** Creates a new instance of RuntimeViewPopupMenu */
+
+    /**
+     * Creates a new instance of RuntimeViewPopupMenu
+     *
+     * @param testName test name
+     * @param performanceDataName data name
+     */
     public RuntimeViewPopupMenuTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
     }
-    
-    
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(RuntimeViewPopupMenuTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+
+    public static Test suite() {
+        return emptyConfiguration().addTest(J2SESetup.class, "testCloseMemoryToolbar").addTest(RuntimeViewPopupMenuTest.class).suite();
     }
-    public void testServerRegistryPopupMenuRuntime(){
-        testMenu(SERVER_REGISTRY);
-    }
-    
-    public void testTomcatPopupMenuRuntime(){
-        testMenu(SERVER_REGISTRY + "|Tomcat");
-    }
-    
-    private void testMenu(String path){
-        runtimeTab = new RuntimeTabOperator();
-        dataObjectNode = new Node(runtimeTab.getRootNode(), path);
+
+    public void testServerRegistryPopupMenuRuntime() {
+        dataObjectNode = new Node(new RuntimeTabOperator().getRootNode(), "Servers");
         doMeasurement();
     }
-
-    @Override
-    public void shutdown(){
-    } 
-
 }

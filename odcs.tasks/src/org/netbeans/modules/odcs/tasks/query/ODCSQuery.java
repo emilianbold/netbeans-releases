@@ -243,7 +243,7 @@ public abstract class ODCSQuery {
         return name + " - " + repository.getDisplayName(); // NOI18N
     }
 
-    public final ODCSQueryController getController () {
+    public final synchronized ODCSQueryController getController () {
         if(controller == null) {
             controller = new ODCSQueryController(repository, this, getCriteria(), isModifiable());
         }

@@ -111,22 +111,22 @@ public class ODCSIssueController implements IssueController {
 
     @Override
     public boolean saveChanges() {
-        return true;
+        return panel.saveChanges();
     }
 
     @Override
     public boolean discardUnsavedChanges() {
-        return true;
+        return panel.discardUnsavedChanges();
     }
 
     @Override
     public void addPropertyChangeListener(PropertyChangeListener l) {
-        
+        panel.getIssue().addPropertyChangeListener(l);
     }
 
     @Override
     public void removePropertyChangeListener(PropertyChangeListener l) {
-        
+        panel.getIssue().removePropertyChangeListener(l);
     }
 
 }
