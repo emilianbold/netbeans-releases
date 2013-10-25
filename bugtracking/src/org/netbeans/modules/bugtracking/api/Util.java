@@ -42,6 +42,7 @@
 package org.netbeans.modules.bugtracking.api;
 
 import java.io.File;
+import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
@@ -95,6 +96,30 @@ public final class Util {
     }
     
     /**
+     * Creates a new {@link Issue} instance prefilled with 
+     * the given summary and description.
+     * 
+     * @param repository
+     * @param summary
+     * @param description
+     * @return 
+     */
+    public static Issue createIssue(Repository repository, String summary, String description) {
+        IssueImpl issueImpl = repository.getImpl().createNewIssue(summary, description);
+        return issueImpl.getIssue();
+    }
+    
+    /**
+     * Opens a modal edit repository dialog.<br>
+     * Blocks until the dialog isn't closed.
+     * 
+     * @param repository the repository to be edited
+     */
+    public static void edit(Repository repository) { 
+        BugtrackingUtil.editRepository(repository);
+    }
+    
+    /**
      * Returns the spans from the given text, which represent an potential Issue 
      * reference.
      * - e.g. "Issue #12345", "Bug #1432"
@@ -104,7 +129,7 @@ public final class Util {
      */
     public static int[] getIssueSpans(String text) {
         return IssueFinderUtils.getIssueSpans(text);
-}
+    }
     
     /**
      * 
@@ -116,7 +141,6 @@ public final class Util {
         if (issueFinder == null) {
             return null;
         }
-
         return issueFinder.getIssueId(text);
     }  
     

@@ -55,24 +55,21 @@ import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 
 /**
- *
+ * Represents a bugtracking Repository.
+ * 
  * @author Tomas Stupka
  */
 public final class Repository {
+    
     /**
-     * A query from this repository was saved or removed
+     * A query from this repository was saved or removed.
      */
     public final static String EVENT_QUERY_LIST_CHANGED = RepositoryProvider.EVENT_QUERY_LIST_CHANGED;
 
     /**
      * RepositoryProvider's attributes have changed, e.g. name, url, etc.
-     * Old and new value are maps of changed doubles: attribute-name / attribute-value.
-     * Old value can be null in case the repository is created.
      */
     public final static String EVENT_ATTRIBUTES_CHANGED = RepositoryImpl.EVENT_ATTRIBUTES_CHANGED;
-
-    public static final String ATTRIBUTE_URL = RepositoryImpl.ATTRIBUTE_URL;
-    public static final String ATTRIBUTE_DISPLAY_NAME = RepositoryImpl.ATTRIBUTE_DISPLAY_NAME;
 
     private final static Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.Repository"); // NOI18N
     
@@ -90,51 +87,52 @@ public final class Repository {
     }
 
     /**
-     * Returns the icon for this repository
+     * Returns the icon for this repository.
      * 
-     * @return 
+     * @return the icon
      */
     public Image getIcon() {
         return impl.getIcon();
     }
 
     /**
-     * Returns the display name for this repository
-     * @return 
+     * Returns the display name for this repository.
+     * 
+     * @return the display name
      */
     public String getDisplayName() {
         return impl.getDisplayName();
     }
 
     /**
-     * Returns the tooltip describing this repository
+     * Returns the tooltip describing this repository.
      * 
-     * @return 
+     * @return the tooltip
      */
     public String getTooltip() {
         return impl.getTooltip();
     }
 
     /**
-     * Returns a unique id assotiated with this repository
+     * Returns a unique id associated with this repository.
      * 
-     * @return 
+     * @return id
      */
     public String getId() {
         return impl.getId();
     }
 
     /**
-     * Returns this repository url
+     * Returns this repositories url.
      * 
-     * @return 
+     * @return url
      */
     public String getUrl() {
         return impl.getUrl();
     }
 
     /**
-     * Returns a list of all saved queries for this repository
+     * Returns a list of all saved queries for this repository.
      * 
      * @return 
      */
@@ -166,24 +164,15 @@ public final class Repository {
         return impl.canAttachFiles();
     }
     
-    
     /**
-     * Removes this repository
+     * Removes this repository.
      */
     public void remove() {
         impl.remove();
     }
     
     /**
-     * Opens the modal edit repository dialog.<br>
-     * Blocks until the dialog isn't closed. 
-     */
-    public void edit() { 
-        BugtrackingUtil.editRepository(this);
-    }    
-
-    /**
-     * Registers a PropertyChangeListener 
+     * Registers a PropertyChangeListener.
      * 
      * @param listener 
      */
@@ -192,7 +181,7 @@ public final class Repository {
     }
     
     /**
-     * Unregisters a PropertyChangeListener 
+     * Unregisters a PropertyChangeListener. 
      * 
      * @param listener 
      */
@@ -213,19 +202,6 @@ public final class Repository {
             ret.add(issueImpl.getIssue());
         }
         return ret.toArray(new Issue[ret.size()]);
-    }
-    
-    /**
-     * Creates a new {@ link Issue} instance prefilled with 
-     * the given summary and description.
-     * 
-     * @param summary
-     * @param description
-     * @return 
-     */
-    public Issue createIssue(String summary, String description) {
-        IssueImpl issueImpl = impl.createNewIssue(summary, description);
-        return issueImpl.getIssue();
     }
     
     <R, Q, I> RepositoryImpl<R, Q, I> getImpl() {
