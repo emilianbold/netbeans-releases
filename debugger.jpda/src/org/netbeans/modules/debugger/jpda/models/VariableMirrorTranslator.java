@@ -108,11 +108,13 @@ import sun.reflect.ReflectionFactory;
  *
  * @author Martin Entlicher
  */
-class VariableMirrorTranslator {
+public class VariableMirrorTranslator {
     
     private static final Logger logger = Logger.getLogger(VariableMirrorTranslator.class.getName());
     
     private static final Object NO_MIRROR = new String("NO_MIRROR");
+    
+    private VariableMirrorTranslator() {}
     
     static Object createMirrorObject(Value value) {
         return createMirrorObject(value, new HashMap<Value, Object>());
@@ -398,25 +400,45 @@ class VariableMirrorTranslator {
         return ret;
     }
     
-    static Value createValueFromMirror(Object mirror, boolean isObject, JPDADebuggerImpl debugger)
-                                       throws InvalidObjectException, InternalExceptionWrapper,
-                                              VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper,
-                                              InvalidTypeException, ClassNotLoadedException,
-                                              ClassNotPreparedExceptionWrapper, IllegalArgumentExceptionWrapper {
+    private static boolean willInvokeMethods(boolean isObject, Class clazz) {
+        return isObject &&
+               !clazz.isPrimitive() &&
+               !String.class.equals(clazz);
+    }
+    
+    public static Value createValueFromMirror(Object mirror, boolean isObject, JPDADebuggerImpl debugger)
+                                             throws InvalidObjectException, InternalExceptionWrapper,
+                                                    VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper,
+                                                    InvalidTypeException, ClassNotLoadedException,
+                                                    ClassNotPreparedExceptionWrapper, IllegalArgumentExceptionWrapper {
         VirtualMachine vm = debugger.getVirtualMachine();
-        JPDAThreadImpl currentThread = (JPDAThreadImpl) debugger.getCurrentThread();
-        if (currentThread == null) {
-            throw new InvalidObjectException
-                    (NbBundle.getMessage(JPDADebuggerImpl.class, "MSG_NoCurrentContext"));
+        Class clazz = mirror.getClass();
+        JPDAThreadImpl currentThread;
+        Lock lock;
+        if (willInvokeMethods(isObject, clazz)) {
+            currentThread = (JPDAThreadImpl) debugger.getCurrentThread();
+            if (currentThread == null) {
+                throw new InvalidObjectException
+                        (NbBundle.getMessage(JPDADebuggerImpl.class, "MSG_NoCurrentContext"));
+            }
+            lock = currentThread.accessLock.writeLock();
+            lock.lock();
+        } else {
+            currentThread = null;
+            lock = null;
         }
-        Lock lock = currentThread.accessLock.writeLock();
-        lock.lock();
         boolean invoking = false;
         try {
-            currentThread.notifyMethodInvoking();
-            invoking = true;
+            ThreadReference threadReference;
+            if (currentThread != null) {
+                threadReference = currentThread.getThreadReference();
+                currentThread.notifyMethodInvoking();
+                invoking = true;
+            } else {
+                threadReference = null;
+            }
             
-            return createValueFromMirror(mirror, mirror.getClass(), isObject, vm, currentThread.getThreadReference());
+            return createValueFromMirror(mirror, clazz, isObject, vm, threadReference);
             
         } catch (IncompatibleThreadStateException ex) {
             InvalidObjectException ioex = new InvalidObjectException(ex.getLocalizedMessage());
@@ -434,7 +456,9 @@ class VariableMirrorTranslator {
             if (invoking) {
                 currentThread.notifyMethodInvokeDone();
             }
-            lock.unlock();
+            if (lock != null) {
+                lock.unlock();
+            }
         }
     }
     
@@ -471,7 +495,9 @@ class VariableMirrorTranslator {
             }
             throw new InvalidObjectException("Unknown primitive type "+clazz);
         } else {
-            if (clazz.isArray()) {
+            if (String.class.equals(clazz)) {
+                return vm.mirrorOf((String) mirror);
+            } else if (clazz.isArray()) {
                 //Class ct = clazz.getComponentType();
                 int l = Array.getLength(mirror);
                 String typeName = clazz.getCanonicalName();

@@ -857,6 +857,24 @@ These are mainly class and thread filters and hit counts.
         <issue number="228894"/>
     </change>
 
+    <change>
+        <api name="JPDADebuggerAPI"/>
+        <summary>Add a way to create mirror objects in the target VM and execute static methods.</summary>
+        <version major="2" minor="47"/>
+        <date day="24" month="10" year="2013"/>
+        <author login="mentlicher"/>
+        <compatibility addition="yes" source="compatible" binary="compatible"/>
+        <description>
+            createMirrorVar() methods are introduced in JPDADebugger class. They
+            create a mirror object in the target virtual machine.
+            <p/>
+            Similar to invokeMethod() method on ObjectVariable, invokeMethod()
+            is introduced on JPDAClassType for invocation of static methods.
+        </description>
+        <class package="org.netbeans.api.debugger.jpda" name="JPDADebugger" />
+        <class package="org.netbeans.api.debugger.jpda" name="JPDAClassType" />
+        <issue number="237233"/>
+    </change>
 
 </changes>
 

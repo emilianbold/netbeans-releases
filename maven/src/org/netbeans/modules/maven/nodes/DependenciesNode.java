@@ -366,9 +366,9 @@ public class DependenciesNode extends AbstractNode {
                             }
                             if (nds[i] instanceof DependencyNode) {
                                 DependencyNode nd = (DependencyNode)nds[i];
-                                if (javadoc && !nd.hasJavadocInRepository()) {
+                                if (javadoc && !nd.data.hasJavadocInRepository()) {
                                     nd.downloadJavadocSources(contribs[i], javadoc);
-                                } else if (!javadoc && !nd.hasSourceInRepository()) {
+                                } else if (!javadoc && !nd.data.hasSourceInRepository()) {
                                     nd.downloadJavadocSources(contribs[i], javadoc);
                                 } else {
                                     contribs[i].finish();

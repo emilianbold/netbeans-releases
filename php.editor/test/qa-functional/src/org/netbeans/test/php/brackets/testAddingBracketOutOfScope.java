@@ -113,6 +113,7 @@ public class testAddingBracketOutOfScope extends brackets {
         TypeCode(eoPHP, "{ \n");
         Sleep(1000);
         CheckResult(eoPHP, "}", 1);
-
+        
+        endTest();
     }
 }

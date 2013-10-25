@@ -65,6 +65,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import static org.netbeans.modules.maven.Bundle.*;
 import org.netbeans.modules.maven.api.Constants;
@@ -328,11 +329,11 @@ public class ActionProviderImpl implements ActionProvider {
     }
 
     @Messages({
-        "# {0} - artifactId", "TXT_Run=Run {0}",
-        "# {0} - artifactId", "TXT_Debug=Debug {0}",
-        "# {0} - artifactId", "TXT_Profile=Profile {0}",
-        "# {0} - artifactId", "TXT_Test=Test {0}",
-        "# {0} - artifactId", "TXT_Build=Build {0}"
+        "# {0} - artifactId", "TXT_Run=Run ({0})",
+        "# {0} - artifactId", "TXT_Debug=Debug ({0})",
+        "# {0} - artifactId", "TXT_Profile=Profile ({0})",
+        "# {0} - artifactId", "TXT_Test=Test ({0})",
+        "# {0} - artifactId", "TXT_Build=Build ({0})"
     })
     private void setupTaskName(String action, RunConfig config, Lookup lkp) {
         assert config instanceof BeanRunConfig;
@@ -342,15 +343,20 @@ public class ActionProviderImpl implements ActionProvider {
         NbMavenProject prj = bc.getProject().getLookup().lookup(NbMavenProject.class);
         //#118926 prevent NPE, how come the dobj is null?
         String dobjName = dobj != null ? dobj.getName() : ""; //NOI18N
-
+        String prjLabel = MavenSettings.OutputTabName.PROJECT_NAME.equals(MavenSettings.getDefault().getOutputTabName()) 
+                ? ProjectUtils.getInformation(proj).getDisplayName()
+                : prj.getMavenProject().getArtifactId();
+        if (MavenSettings.getDefault().isOutputTabShowConfig()) {
+            prjLabel = prjLabel + ", " + bc.getProject().getLookup().lookup(M2ConfigProvider.class).getActiveConfiguration().getDisplayName();
+        }
         if (ActionProvider.COMMAND_RUN.equals(action)) {
-            title = TXT_Run(prj.getMavenProject().getArtifactId());
+            title = TXT_Run(prjLabel);
         } else if (ActionProvider.COMMAND_DEBUG.equals(action)) {
-            title = TXT_Debug(prj.getMavenProject().getArtifactId());
+            title = TXT_Debug(prjLabel);
         } else if (ActionProvider.COMMAND_PROFILE.equals(action)) {
-            title = TXT_Profile(prj.getMavenProject().getArtifactId());
+            title = TXT_Profile(prjLabel);
         } else if (ActionProvider.COMMAND_TEST.equals(action)) {
-            title = TXT_Test(prj.getMavenProject().getArtifactId());
+            title = TXT_Test(prjLabel);
         } else if (action.startsWith(ActionProvider.COMMAND_RUN_SINGLE)) {
             title = TXT_Run(dobjName);
         } else if (action.startsWith(ActionProvider.COMMAND_DEBUG_SINGLE) || ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(action)) {
@@ -360,9 +366,10 @@ public class ActionProviderImpl implements ActionProvider {
         } else if (ActionProvider.COMMAND_TEST_SINGLE.equals(action)) {
             title = TXT_Test(dobjName);
         } else {
-            title = TXT_Build(prj.getMavenProject().getArtifactId());
+            title = TXT_Build(prjLabel);
         }
         bc.setTaskDisplayName(title);
+        bc.setExecutionName(title);
     }
 
     @Override

@@ -303,7 +303,7 @@ public class ManageGroupsPanel extends javax.swing.JPanel implements PropertyCha
     @Messages({"ManageGroupsPanel.wrn_remove_selected_groups_msg=Are you sure to remove selected groups?",
             "ManageGroupsPanel.wrn_remove_selected_groups_title=Confirm remove groups"})
     private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
-        NotifyDescriptor d = new NotifyDescriptor.Confirmation(Bundle.ManageGroupsPanel_wrn_remove_selected_groups_msg(), Bundle.ManageGroupsPanel_wrn_remove_selected_groups_title(), NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE);
+        NotifyDescriptor d = new NotifyDescriptor.Confirmation(Bundle.ManageGroupsPanel_wrn_remove_selected_groups_msg(), Bundle.ManageGroupsPanel_wrn_remove_selected_groups_title(), NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE);
         if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION) {
             removeGroups(Arrays.asList(getSelectedGroups()));
         }
@@ -312,7 +312,7 @@ public class ManageGroupsPanel extends javax.swing.JPanel implements PropertyCha
     @Messages({"ManageGroupsPanel.wrn_remove_all_groups_msg=Are you sure to remove all groups?",
             "ManageGroupsPanel.wrn_remove_all_groups_title=Confirm remove all groups"})
     private void removeAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeAllButtonActionPerformed
-        NotifyDescriptor d = new NotifyDescriptor.Confirmation(Bundle.ManageGroupsPanel_wrn_remove_all_groups_msg(), Bundle.ManageGroupsPanel_wrn_remove_all_groups_title(), NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE);
+        NotifyDescriptor d = new NotifyDescriptor.Confirmation(Bundle.ManageGroupsPanel_wrn_remove_all_groups_msg(), Bundle.ManageGroupsPanel_wrn_remove_all_groups_title(), NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE);
         if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION) {
             removeGroups(Group.allGroups());
         }

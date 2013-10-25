@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.project.ui.groups;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.CompositeCategoryProvider.Registration;
@@ -63,11 +65,19 @@ public class GroupMainCategory implements ProjectCustomizer.CompositeCategoryPro
     }
 
     @Override
-    public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
+    public JComponent createComponent(final ProjectCustomizer.Category category, Lookup context) {
         Group grp = context.lookup(Group.class);
         assert grp != null;
         
-        GroupEditPanel panel = grp.createPropertiesPanel();
+        final GroupEditPanel panel = grp.createPropertiesPanel();
+        panel.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (GroupEditPanel.PROP_READY.equals(evt.getPropertyName())) {
+                    category.setValid(panel.isReady());
+                }
+            }
+        });
         panel.setCategory(category);
         return panel;
     }

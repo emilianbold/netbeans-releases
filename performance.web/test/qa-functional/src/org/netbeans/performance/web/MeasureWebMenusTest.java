@@ -66,7 +66,6 @@ public class MeasureWebMenusTest {
         suite.addTest(JellyTestCase.emptyConfiguration().reuseUserDir(true)
                 .addTest(WebSetup.class)
                 .addTest(WebProjectsNodesViewPopupMenuTest.class)
-                .addTest(WebRuntimeViewPopupMenuTest.class)
                 .suite());
         return suite;
     }

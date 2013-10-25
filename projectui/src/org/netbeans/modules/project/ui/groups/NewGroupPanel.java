@@ -74,7 +74,7 @@ import org.openide.util.NbBundle.Messages;
 public class NewGroupPanel extends JPanel {
 
     public static final String PROP_READY = "ready"; // NOI18N
-    private static final int MAX_NAME = 50;
+    static final int MAX_NAME = 50;
 
     public NewGroupPanel() {
         initComponents();

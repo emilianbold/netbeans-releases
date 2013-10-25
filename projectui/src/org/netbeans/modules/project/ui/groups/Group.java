@@ -570,7 +570,7 @@ public abstract class Group {
         "# {0} - count", "Group.progress_closing=Closing {0} old projects",
         "# {0} - count", "Group.progress_opening=Opening {0} new projects"
     })
-    private static void open(final Group g, String oldGroupName, boolean isNewGroup, Preferences noneGroupPref) {
+    static void open(final Group g, String oldGroupName, boolean isNewGroup, Preferences noneGroupPref) {
         EventQueue.invokeLater(new Runnable() {
             @Override public void run() {
                 ProjectTab.findDefault(ProjectTab.ID_LOGICAL).setGroup(g);
@@ -755,7 +755,11 @@ public abstract class Group {
     }
     
     private void notifyListeners(Object object, String property, String oldValue, String newValue) {
-        for (PropertyChangeListener listener : listeners) {
+        ArrayList<PropertyChangeListener> changes = new ArrayList<PropertyChangeListener>();
+        synchronized (listeners) {
+            changes.addAll(listeners);
+        }
+        for (PropertyChangeListener listener : changes) {
           listener.propertyChange(new PropertyChangeEvent(object, property, oldValue, newValue));
         }
     }

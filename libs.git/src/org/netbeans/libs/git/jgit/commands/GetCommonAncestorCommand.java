@@ -81,7 +81,7 @@ public class GetCommonAncestorCommand extends GitCommand {
         try {
             if (revisions.length == 0) {
                 revision = null;
-            } if (revisions.length == 1) {
+            } else if (revisions.length == 1) {
                 revision = getClassFactory().createRevisionInfo(Utils.findCommit(repository, revisions[0]), repository);
             } else {
                 // it would be great if JGit exposed RecursiveMerger.getBaseCommit as public

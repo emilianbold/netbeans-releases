@@ -51,6 +51,7 @@ import com.sun.jdi.request.EventRequest;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.InvalidObjectException;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -591,6 +592,32 @@ public abstract class JPDADebugger {
      */
     public List<JPDAClassType> getClassesByName(String name) {
         return Collections.emptyList();
+    }
+    
+    /**
+     * Create a mirror object in the target virtual machine
+     * 
+     * @param obj the object to create the mirror from
+     * @return variable containing the mirror value
+     * @throws InvalidObjectException when the mirror operation fails
+     * @since 2.47
+     */
+    public Variable createMirrorVar(Object obj) throws InvalidObjectException {
+        return createMirrorVar(obj, false);
+    }
+    
+    /**
+     * Create a mirror object in the target virtual machine
+     * 
+     * @param obj the object to create the mirror from
+     * @param isPrimitive when <code>true</code> and the object is an encapsulation
+     *                    of a primitive value, then primitive mirror is created.
+     * @return variable containing the mirror value
+     * @throws InvalidObjectException when the mirror operation fails
+     * @since 2.47
+     */
+    public Variable createMirrorVar(Object obj, boolean isPrimitive) throws InvalidObjectException {
+        throw new InvalidObjectException("Object "+obj+" not supported");
     }
     
     /**

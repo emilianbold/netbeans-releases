@@ -45,8 +45,17 @@
 package org.netbeans.modules.project.ui.groups;
 
 import java.io.File;
+import java.util.prefs.Preferences;
+import javax.swing.JFileChooser;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import static org.netbeans.modules.project.ui.groups.Group.KEY_PATH;
+import static org.netbeans.modules.project.ui.groups.Group.NODE;
+import static org.netbeans.modules.project.ui.groups.GroupEditPanel.PROP_READY;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.RequestProcessor;
 
 /**
  * Panel to configure state of an existing directory-based group.
@@ -59,7 +68,17 @@ public class DirectoryGroupEditPanel extends GroupEditPanel {
     public DirectoryGroupEditPanel(DirectoryGroup g) {
         this.g = g;
         initComponents();
+        DocumentListener l = new DocumentListener() {
+            @Override public void insertUpdate(DocumentEvent e) {
+                firePropertyChange(PROP_READY, null, null);
+            }
+            @Override public void removeUpdate(DocumentEvent e) {
+                firePropertyChange(PROP_READY, null, null);
+            }
+            @Override public void changedUpdate(DocumentEvent e) {}
+        };
         nameField.setText(g.getName());
+        nameField.getDocument().addDocumentListener(l);
         FileObject dir = g.getDirectory();
         if (dir != null) {
             File d = FileUtil.toFile(dir);
@@ -67,14 +86,33 @@ public class DirectoryGroupEditPanel extends GroupEditPanel {
                 folderField.setText(d.getAbsolutePath());
             }
         }
-        startPerformingNameChecks(nameField, g.getName());
+        folderField.getDocument().addDocumentListener(l);
     }
 
     @Override
     public void applyChanges() {
         g.setName(nameField.getText().trim());
+        updateDirectory();
     }
 
+    private void updateDirectory() {
+        String s = folderField.getText();
+        if (s != null && s.length() > 0) {
+            FileObject dir = FileUtil.toFileObject(FileUtil.normalizeFile(new File(s)));
+            String path = dir.toURL().toExternalForm();
+            Preferences pref = NODE.node(g.id);
+            pref.put(KEY_PATH, path);
+            if(Group.getActiveGroup().equals(g)) {
+                RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Group.open(g, null, false, null);
+                    }
+                });
+            }
+        }
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -87,6 +125,7 @@ public class DirectoryGroupEditPanel extends GroupEditPanel {
         nameField = new javax.swing.JTextField();
         folderLabel = new javax.swing.JLabel();
         folderField = new javax.swing.JTextField();
+        directoryButton = new javax.swing.JButton();
 
         nameLabel.setLabelFor(nameField);
         org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(DirectoryGroupEditPanel.class, "DirectoryGroupEditPanel.nameLabel.text")); // NOI18N
@@ -94,7 +133,12 @@ public class DirectoryGroupEditPanel extends GroupEditPanel {
         folderLabel.setLabelFor(folderField);
         org.openide.awt.Mnemonics.setLocalizedText(folderLabel, org.openide.util.NbBundle.getMessage(DirectoryGroupEditPanel.class, "DirectoryGroupEditPanel.folderLabel.text")); // NOI18N
 
-        folderField.setEditable(false);
+        org.openide.awt.Mnemonics.setLocalizedText(directoryButton, org.openide.util.NbBundle.getMessage(DirectoryGroupEditPanel.class, "DirectoryGroupEditPanel.directoryButton.text_2")); // NOI18N
+        directoryButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                directoryButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -107,8 +151,11 @@ public class DirectoryGroupEditPanel extends GroupEditPanel {
                     .addComponent(folderLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(folderField, javax.swing.GroupLayout.DEFAULT_SIZE, 337, Short.MAX_VALUE)
-                    .addComponent(nameField, javax.swing.GroupLayout.DEFAULT_SIZE, 337, Short.MAX_VALUE))
+                    .addComponent(nameField, javax.swing.GroupLayout.DEFAULT_SIZE, 337, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(folderField)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(directoryButton)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -121,7 +168,8 @@ public class DirectoryGroupEditPanel extends GroupEditPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(folderLabel)
-                    .addComponent(folderField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(folderField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(directoryButton))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -136,11 +184,42 @@ public class DirectoryGroupEditPanel extends GroupEditPanel {
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DirectoryGroupEditPanel.class, "DirectoryGroupEditPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
+    private void directoryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_directoryButtonActionPerformed
+        JFileChooser chooser = new JFileChooser();
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setMultiSelectionEnabled(false);
+        File start = ProjectChooser.getProjectsFolder();
+        if (folderField.getText() != null && folderField.getText().trim().length() > 0) {
+            start = new File(folderField.getText().trim());
+        }
+        chooser.setCurrentDirectory(start);
+        if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File f = chooser.getSelectedFile();
+            if (f != null) {
+                folderField.setText(f.getAbsolutePath());
+            }
+        }
+    }//GEN-LAST:event_directoryButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton directoryButton;
     private javax.swing.JTextField folderField;
     private javax.swing.JLabel folderLabel;
     private javax.swing.JTextField nameField;
     private javax.swing.JLabel nameLabel;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public boolean isReady() {
+        if(!doCheckExistingGroups(nameField, g)) {
+            return false;
+        }
+        String s = folderField.getText();
+        if (s != null) {
+            return new File(s.trim()).isDirectory();
+        } else {
+            return false;
+        }
+    }
 
 }

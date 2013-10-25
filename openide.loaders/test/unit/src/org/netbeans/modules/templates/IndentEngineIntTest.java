@@ -107,8 +107,12 @@ public class IndentEngineIntTest extends NbTestCase {
         assertEquals("Created with right name", "complex.txt", n.getName());
         
         String exp = ">lmth/<>1h/<radzaN>1h<>lmth<";
-        assertEquals(exp, readFile(n.getPrimaryFile()));
+        assertEquals(exp, stripNewLines(readFile(n.getPrimaryFile())));
         
+    }
+    
+    static String stripNewLines(String str) {
+        return str.replace("\n", "").replace("\r", "");
     }
     
     private static String readFile(FileObject fo) throws IOException {

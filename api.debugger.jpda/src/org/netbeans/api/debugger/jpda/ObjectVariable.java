@@ -49,7 +49,7 @@ import java.util.List;
 
 /**
  * Represents instance of some object in debugged JVM. This interface can
- * be optionally inplemented by a implementation of {@link LocalVariable} or
+ * be optionally implemented by a implementation of {@link LocalVariable} or
  * {@link Field} interfaces.
  *
  * <pre style="background-color: rgb(255, 255, 102);">
@@ -73,6 +73,7 @@ public interface ObjectVariable extends Variable {
      * its value.
      *
      * @return toString () value of this instance
+     * @throws InvalidExpressionException in case of execution problems
      */
     public abstract String getToStringValue () throws InvalidExpressionException;
     
@@ -82,9 +83,11 @@ public interface ObjectVariable extends Variable {
      *
      * @param methodName a name of method to be called
      * @param signature a signature of method to be called
-     * @param arguments a arguments to be used
+     * @param arguments arguments to be used
      *
      * @return value of given method call on this instance
+     * @throws NoSuchMethodException when the method does not exist
+     * @throws InvalidExpressionException in case of execution problems
      */
     public abstract Variable invokeMethod (
         String methodName,

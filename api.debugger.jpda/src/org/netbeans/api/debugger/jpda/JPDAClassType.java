@@ -99,6 +99,25 @@ public interface JPDAClassType extends VariableType {
     List<Field> staticFields();
     
     /**
+     * Calls given static method in debugged JVM on this class and returns
+     * its value.
+     *
+     * @param methodName a name of method to be called
+     * @param signature a signature of method to be called
+     * @param arguments arguments to be used
+     *
+     * @return value of given method call on this instance
+     * @throws NoSuchMethodException when the method does not exist
+     * @throws InvalidExpressionException in case of execution problems
+     * @since 2.47
+     */
+    public abstract Variable invokeMethod (
+        String methodName,
+        String signature,
+        Variable[] arguments
+    ) throws NoSuchMethodException, InvalidExpressionException;
+
+    /**
      * Retrieves the number of instances this class.
      * Use {@link JPDADebugger#canGetInstanceInfo} to determine if this operation is supported.
      * @return the number of instances.
