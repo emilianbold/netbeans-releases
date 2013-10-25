@@ -46,20 +46,20 @@ import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.composer.commands.Composer;
 import org.openide.util.NbBundle;
 
-public class InstallAction extends BaseComposerAction {
+public class InstallNoDevAction extends BaseComposerAction {
 
     private static final long serialVersionUID = 8974514465465464L;
 
 
-    @NbBundle.Messages("InstallAction.name=Install")
+    @NbBundle.Messages("InstallNoDevAction.name=Install (no-dev)")
     @Override
     protected String getName() {
-        return Bundle.InstallAction_name();
+        return Bundle.InstallNoDevAction_name();
     }
 
     @Override
     protected void runCommand(PhpModule phpModule) throws InvalidPhpExecutableException {
-        Composer.getDefault().install(phpModule);
+        Composer.getDefault().installNoDev(phpModule);
     }
 
 }
