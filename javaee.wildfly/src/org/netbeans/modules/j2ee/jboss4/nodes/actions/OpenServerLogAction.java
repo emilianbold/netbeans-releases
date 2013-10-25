@@ -47,7 +47,7 @@ package org.netbeans.modules.j2ee.jboss4.nodes.actions;
 import java.io.File;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
-import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
+import org.netbeans.modules.j2ee.jboss4.WildFlyDeploymentManager;
 import org.netbeans.modules.j2ee.jboss4.ide.JBOutputSupport;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginProperties;
 import org.netbeans.modules.j2ee.jboss4.nodes.JBManagerNode;
@@ -78,7 +78,7 @@ public class OpenServerLogAction extends NodeAction {
                 continue;
             }
             
-            JBDeploymentManager dm = ((JBManagerNode)node).getDeploymentManager();
+            WildFlyDeploymentManager dm = ((JBManagerNode)node).getDeploymentManager();
             InputOutput io = UISupport.getServerIO(dm.getUrl());
             if (io != null) {
                 io.select();

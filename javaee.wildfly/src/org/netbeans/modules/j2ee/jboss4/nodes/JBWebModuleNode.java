@@ -54,6 +54,7 @@ import org.netbeans.modules.j2ee.jboss4.nodes.actions.OpenURLActionCookie;
 import org.netbeans.modules.j2ee.jboss4.nodes.actions.UndeployModuleAction;
 import org.netbeans.modules.j2ee.jboss4.nodes.actions.UndeployModuleCookieImpl;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
 
@@ -64,19 +65,14 @@ import org.openide.util.actions.SystemAction;
  */
 public class JBWebModuleNode extends AbstractNode {
 
-    private final JBAbilitiesSupport abilitiesSupport;
-
     private final String url;
 
     public JBWebModuleNode(String fileName, Lookup lookup, String url) {
-        super(new JBServletsChildren(fileName, lookup));
+        super(Children.LEAF);
         setDisplayName(fileName.substring(0, fileName.lastIndexOf('.')));
-        this.abilitiesSupport = new JBAbilitiesSupport(lookup);
         this.url = url;
-        if (abilitiesSupport.isRemoteManagementSupported()) {
-            // we cannot find out the .war name w/o the management support, thus we cannot enable the Undeploy action
-            getCookieSet().add(new UndeployModuleCookieImpl(fileName, ModuleType.WAR, lookup));
-        }
+        // we cannot find out the .war name w/o the management support, thus we cannot enable the Undeploy action
+        getCookieSet().add(new UndeployModuleCookieImpl(fileName, ModuleType.WAR, lookup));
         
         if (url != null) {
             getCookieSet().add(new OpenURLActionCookieImpl(url));
@@ -89,25 +85,17 @@ public class JBWebModuleNode extends AbstractNode {
                 SystemAction.get(OpenURLAction.class)
             };
         } else {
-            if (abilitiesSupport.isRemoteManagementSupported()) {
-                if (url != null) {
-                    return new SystemAction[] {
-                        SystemAction.get(OpenURLAction.class),
-                        SystemAction.get(UndeployModuleAction.class)
-                    };
-                } else {
-                    return new SystemAction[] {
-                        SystemAction.get(UndeployModuleAction.class)
-                    };
-                }
-            } else if (url != null) {
-                // we cannot find out the .war name w/o the management support, thus we cannot enable the Undeploy action
+            if (url != null) {
                 return new SystemAction[] {
                     SystemAction.get(OpenURLAction.class),
+                    SystemAction.get(UndeployModuleAction.class)
+                };
+            } else {
+                return new SystemAction[] {
+                    SystemAction.get(UndeployModuleAction.class)
                 };
             }
         }
-        return new SystemAction[]{};
     }
     
     public Image getIcon(int type) {

@@ -49,14 +49,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.enterprise.deploy.shared.ModuleType;
-import javax.enterprise.deploy.spi.Target;
-import javax.enterprise.deploy.spi.TargetModuleID;
-import javax.enterprise.deploy.spi.exceptions.TargetException;
-import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
 import org.netbeans.modules.j2ee.jboss4.nodes.actions.Refreshable;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -98,43 +92,8 @@ public class JBWebApplicationsChildren extends JBAsyncChildren implements Refres
         public void run() {
 
             try {
-                final JBDeploymentManager dm = (JBDeploymentManager) lookup.lookup(JBDeploymentManager.class);
-                dm.invokeLocalAction(new Callable<Void>() {
-
-                    @Override
-                    public Void call() {
-                        try {
-                            Target[] targets = dm.getTargets();
-                            ModuleType moduleType = ModuleType.WAR;
-
-                            //Get all deployed WAR files.
-                            TargetModuleID[] modules = dm.getAvailableModules(moduleType, targets);
-                            // Module list may be null if nothing is deployed.
-                            if (modules != null) {
-                                //String url = "http://" + dm.getHost() + ":" + dm.getPort();
-                                for (int intModule = 0; intModule < modules.length; intModule++) {
-                                    String name = modules[intModule].getModuleID();
-                                    if (name.endsWith(".war")) { // NOI18N
-                                        name = name.substring(0, name.lastIndexOf(".war")); // NOI18N
-                                    }
-                                    if ("".equals(name)) { // NOI18N
-                                        name = "ROOT"; // NOI18N // consistent with JBoss4
-                                    }
-                                    if (SYSTEM_WEB_APPLICATIONS.contains(name)) { // Excluding it. It's system package
-                                        continue;
-                                    }
-                                    name += ".war"; // NOI18N
-                                    keys.add(new JBWebModuleNode(name, lookup,  null));
-                                }
-                            }
-                        } catch (TargetException ex) {
-                            LOGGER.log(Level.INFO, null, ex);
-                        } catch (IllegalStateException ex) {
-                            LOGGER.log(Level.INFO, null, ex);
-                        }
-                        return null;
-                    }
-                });
+                // XXX add JBWebModuleNode(s) to keys, ignoring system apps
+                // XXX WILDFLY IMPLEMENT
             } catch (Exception ex) {
                 LOGGER.log(Level.INFO, null, ex);
             }

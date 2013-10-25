@@ -44,26 +44,12 @@
 
 package org.netbeans.modules.j2ee.jboss4.nodes;
 
-import java.lang.reflect.Method;
-import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.enterprise.deploy.shared.ModuleType;
-import javax.enterprise.deploy.spi.Target;
-import javax.enterprise.deploy.spi.TargetModuleID;
-import javax.enterprise.deploy.spi.exceptions.TargetException;
-import javax.management.MBeanServerConnection;
-import javax.management.ObjectInstance;
-import javax.management.ObjectName;
-import javax.management.QueryExp;
-import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
-import org.netbeans.modules.j2ee.jboss4.JBRemoteAction;
-import org.netbeans.modules.j2ee.jboss4.JBoss5ProfileServiceProxy;
 import org.netbeans.modules.j2ee.jboss4.nodes.actions.Refreshable;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -96,31 +82,8 @@ public class JBEjbModulesChildren extends JBAsyncChildren implements Refreshable
         @Override
         public void run() {
             try {
-                final JBDeploymentManager dm = (JBDeploymentManager) lookup.lookup(JBDeploymentManager.class);
-                dm.invokeLocalAction(new Callable<Void>() {
-
-                    @Override
-                    public Void call() {
-                        try {
-                            Target[] targets = dm.getTargets();
-                            ModuleType moduleType = ModuleType.EJB;
-
-                            //Get all deployed EAR files.
-                            TargetModuleID[] modules = dm.getAvailableModules(moduleType, targets);
-                            // Module list may be null if nothing is deployed.
-                            if (modules != null) {
-                                for (int intModule = 0; intModule < modules.length; intModule++) {
-                                    keys.add(new JBEjbModuleNode(modules[intModule].getModuleID(), lookup)); // TODO: how to check ejb3?
-                                }
-                            }
-                        } catch (TargetException ex) {
-                            Exceptions.printStackTrace(ex);
-                        } catch (IllegalStateException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                        return null;
-                    }
-                });
+                // XXX add JBEjbModuleNode(s) to keys
+                // XXX WILDFLY IMPLEMENT
             } catch (Exception ex) {
                 LOGGER.log(Level.INFO, null, ex);
             }

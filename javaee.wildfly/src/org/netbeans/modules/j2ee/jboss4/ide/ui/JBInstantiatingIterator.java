@@ -59,7 +59,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceCreationException;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.j2ee.jboss4.JBDeploymentFactory;
+import org.netbeans.modules.j2ee.jboss4.WildFlyDeploymentFactory;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
@@ -147,7 +147,7 @@ public class JBInstantiatingIterator implements WizardDescriptor.InstantiatingIt
         
         String displayName =  (String)wizard.getProperty(PROP_DISPLAY_NAME);
         JBPluginUtils.Version version = JBPluginUtils.getServerVersion(new File(installLocation));
-        String url = JBDeploymentFactory.URI_PREFIX;
+        String url = WildFlyDeploymentFactory.URI_PREFIX;
         if(version != null && "7".equals(version.getMajorNumber())){
             url += "//"+host + ":" + port+"?targetType=as7";    // NOI18N
         } else {

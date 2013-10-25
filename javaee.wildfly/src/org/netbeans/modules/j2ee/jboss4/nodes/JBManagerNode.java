@@ -1,4 +1,4 @@
-/*
+ /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
@@ -43,14 +43,11 @@
  */
 package org.netbeans.modules.j2ee.jboss4.nodes;
 
-import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.jboss4.customizer.CustomizerDataSupport;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginProperties;
 import org.netbeans.modules.j2ee.jboss4.nodes.actions.OpenServerLogAction;
 import org.netbeans.modules.j2ee.jboss4.nodes.actions.ShowAdminToolAction;
-import org.netbeans.modules.j2ee.jboss4.nodes.actions.ShowJMXConsoleAction;
-import org.openide.nodes.*;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -60,8 +57,14 @@ import org.netbeans.modules.j2ee.jboss4.customizer.Customizer;
 import org.netbeans.modules.j2ee.jboss4.ide.JBJ2eePlatformFactory;
 import java.awt.Component;
 import javax.swing.Action;
+import org.netbeans.modules.j2ee.jboss4.WildFlyDeploymentManager;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils.Version;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.nodes.PropertySupport;
+import org.openide.nodes.Sheet;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -70,13 +73,12 @@ import org.openide.util.actions.SystemAction;
  */
 public class JBManagerNode extends AbstractNode implements Node.Cookie {
     
-    private Lookup lookup;
+    private final Lookup lookup;
     private static final String ADMIN_URL = "/web-console/"; //NOI18N
     private static final String ADMIN_URL_60 = "/admin-console/"; //NOI18N
     private static final String ADMIN_URL_70 = "/console"; //NOI18N
     private static final String JMX_CONSOLE_URL = "/jmx-console/"; //NOI18N
     private static final String HTTP_HEADER = "http://";
-    private volatile Boolean isJB7x;
     
     public JBManagerNode(Children children, Lookup lookup) {
         super(children);
@@ -98,7 +100,7 @@ public class JBManagerNode extends AbstractNode implements Node.Cookie {
     }
     
     public String  getAdminURL() {
-        Version version = getDeploymentManager().getProperties().getServerVersion();
+        Version version = getDeploymentManager().getServerVersion();
         if (version != null && JBPluginUtils.JBOSS_7_0_0.compareTo(version) <= 0) {
             return HTTP_HEADER+getDeploymentManager().getHost()+":"+getDeploymentManager().getPort()+ ADMIN_URL_70;
         } else if (version != null && JBPluginUtils.JBOSS_6_0_0.compareTo(version) <= 0) {
@@ -112,15 +114,10 @@ public class JBManagerNode extends AbstractNode implements Node.Cookie {
     }
     
     public Action[] getActions(boolean context) {
-        Action[]  newActions = new Action[isJB7x() ? 3 : 4] ;
+        Action[]  newActions = new Action[3] ;
         newActions[0]= null;
         newActions[1]= (SystemAction.get(ShowAdminToolAction.class));
-        if (isJB7x()) {
-            newActions[2]= (SystemAction.get(OpenServerLogAction.class));            
-        } else {
-            newActions[2]= (SystemAction.get(ShowJMXConsoleAction.class));
-            newActions[3]= (SystemAction.get(OpenServerLogAction.class));
-        }
+        newActions[2]= (SystemAction.get(OpenServerLogAction.class));
         return newActions;
     }
     
@@ -207,21 +204,10 @@ public class JBManagerNode extends AbstractNode implements Node.Cookie {
         
         return sheet;
     }
-    
-    private boolean isJB7x() {
-        if (isJB7x == null) {
-            Version version = getDeploymentManager().getProperties().getServerVersion();
-            isJB7x = version != null && JBPluginUtils.JBOSS_7_0_0.compareTo(version) <= 0;
-        }
-        return isJB7x;
-    }
         
     public Image getIcon(int type) {
         if (type == BeanInfo.ICON_COLOR_16x16) {
-            if (isJB7x()) {
-                return ImageUtilities.loadImage("org/netbeans/modules/j2ee/jboss4/resources/as7_16x16.png"); // NOI18N
-            }
-            return ImageUtilities.loadImage("org/netbeans/modules/j2ee/jboss4/resources/16x16.gif"); // NOI18N
+            return ImageUtilities.loadImage("org/netbeans/modules/j2ee/jboss4/resources/as7_16x16.png"); // NOI18N
         }
         return super.getIcon(type);
     }
@@ -237,7 +223,7 @@ public class JBManagerNode extends AbstractNode implements Node.Cookie {
         return  HTTP_HEADER + host + ":" + port + "/"; // NOI18N
     }
     
-    public JBDeploymentManager getDeploymentManager() {
-        return ((JBDeploymentManager) lookup.lookup(JBDeploymentManager.class));
+    public WildFlyDeploymentManager getDeploymentManager() {
+        return ((WildFlyDeploymentManager) lookup.lookup(WildFlyDeploymentManager.class));
     }
 }

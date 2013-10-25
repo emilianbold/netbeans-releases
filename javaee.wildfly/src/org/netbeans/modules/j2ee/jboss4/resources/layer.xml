@@ -53,7 +53,7 @@ made subject to such option by the copyright holder.
                 <file name="Factory.instance">
                     <attr name="urlPattern" stringvalue="^wildfly-deployer:.*$"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory.create"/>
-                    <attr name="delegate" methodvalue="org.netbeans.modules.j2ee.jboss4.JBDeploymentFactory.getInstance"/>
+                    <attr name="delegate" methodvalue="org.netbeans.modules.j2ee.jboss4.WildFlyDeploymentFactory.getInstance"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory"/>
                     <attr name="instanceOf" stringvalue="javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
                 </file>
@@ -72,7 +72,7 @@ made subject to such option by the copyright holder.
                 </file>
                 <file name="OptionalFactory.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyOptionalFactory.create"/>
-                    <attr name="delegate" newvalue="org.netbeans.modules.j2ee.jboss4.ide.JBOptionalDeploymentManagerFactory"/>
+                    <attr name="delegate" newvalue="org.netbeans.modules.j2ee.jboss4.ide.WildFlyOptionalDeploymentManagerFactory"/>
                     <attr name="noInitializationFinish" boolvalue="true"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory"/>
                     <attr name="displayName" bundlevalue="org.netbeans.modules.j2ee.jboss4.Bundle#SERVER_NAME"/>

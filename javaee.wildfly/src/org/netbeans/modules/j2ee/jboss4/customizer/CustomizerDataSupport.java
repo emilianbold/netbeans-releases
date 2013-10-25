@@ -61,7 +61,7 @@ import javax.swing.text.PlainDocument;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
-import org.netbeans.modules.j2ee.jboss4.util.JBProperties;
+import org.netbeans.modules.j2ee.jboss4.util.WildFlyProperties;
 import org.openide.util.Exceptions;
 
 
@@ -88,12 +88,12 @@ public class CustomizerDataSupport {
     private boolean sourceModelFlag;
     private boolean javadocModelFlag;
     
-    private JBProperties properties;
+    private WildFlyProperties properties;
     
     /**
      * Creates a new instance of CustomizerDataSupport 
      */
-    public CustomizerDataSupport(JBProperties properties) {
+    public CustomizerDataSupport(WildFlyProperties properties) {
         this.properties = properties;
         init();
     }
@@ -165,7 +165,7 @@ public class CustomizerDataSupport {
         if (curJvm != null) {
             curPlatformName = curJvm.getName();
         } else {
-            curPlatformName = (String)properties.getJavaPlatform().getProperties().get(JBProperties.PLAT_PROP_ANT_NAME);
+            curPlatformName = (String)properties.getJavaPlatform().getProperties().get(WildFlyProperties.PLAT_PROP_ANT_NAME);
         }
 
         jvmModel.removeAllElements();
@@ -334,7 +334,7 @@ public class CustomizerDataSupport {
         }
         
         public String getName() {
-            return (String)platform.getProperties().get(JBProperties.PLAT_PROP_ANT_NAME);
+            return (String)platform.getProperties().get(WildFlyProperties.PLAT_PROP_ANT_NAME);
         }
         
         public String toString() {

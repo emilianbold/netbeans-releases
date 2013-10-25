@@ -48,8 +48,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.shared.ModuleType;
@@ -59,17 +57,12 @@ import javax.management.MBeanException;
 import javax.management.MBeanServerConnection;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
-import javax.management.QueryExp;
 import javax.management.ReflectionException;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
-import org.netbeans.modules.j2ee.jboss4.JBRemoteAction;
-import org.netbeans.modules.j2ee.jboss4.JBoss5ProfileServiceProxy;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
@@ -124,64 +117,6 @@ public class Util {
             }
             return method;
         }
-    }
-
-    /**
-     * Checks if the Jboss installation has installed remote management package
-     *
-     * @return is remote management supported
-     */
-    public static boolean isRemoteManagementSupported(Lookup lookup) {
-        JBDeploymentManager dm = lookup.lookup(JBDeploymentManager.class);
-        if (dm == null) {
-            return false;
-        }
-        try {
-            dm.invokeRemoteAction(new JBRemoteAction<Boolean>() {
-
-                @Override
-                public Boolean action(MBeanServerConnection connection, JBoss5ProfileServiceProxy profileService) throws Exception {
-                    // FIXME is this refletion needed
-                    ObjectName searchPattern = new ObjectName("jboss.management.local:*");
-                    Method method = connection.getClass().getMethod("queryMBeans", new Class[]{ObjectName.class, QueryExp.class});
-                    method = fixJava4071957(method);
-                    Set managedObj = (Set) method.invoke(connection, new Object[]{searchPattern, null});
-
-                    return !managedObj.isEmpty();
-                }
-            });
-        } catch (ExecutionException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-        }
-
-        return true;
-    }
-
-    /**
-     * Checks if the specified object is deployed in JBoss Application Server
-     *
-     * @return if specified object is deployed
-     */
-    public static boolean isObjectDeployed(JBDeploymentManager dm, final ObjectName searchPattern) {
-        try {
-            dm.invokeRemoteAction(new JBRemoteAction<Boolean>() {
-
-                @Override
-                public Boolean action(MBeanServerConnection connection, JBoss5ProfileServiceProxy profileService) throws Exception {
-                    // FIXME is this reflection really needed
-                    Method method = connection.getClass().getMethod("queryMBeans", new Class[] {ObjectName.class, QueryExp.class});
-                    method = fixJava4071957(method);
-                    Set managedObj = (Set) method.invoke(connection, new Object[] {searchPattern, null});
-
-                    return managedObj.size() > 0;
-                }
-
-            });
-        } catch (ExecutionException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-        }
-
-        return false;
     }
 
     /**

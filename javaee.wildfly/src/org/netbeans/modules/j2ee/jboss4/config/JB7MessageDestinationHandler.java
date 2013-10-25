@@ -60,7 +60,7 @@ public class JB7MessageDestinationHandler extends DefaultHandler {
 
     private boolean isDestination;
 
-    private List<String> jndiNames = new ArrayList<String>();
+    private final List<String> jndiNames = new ArrayList<String>();
 
     public List<JBossMessageDestination> getMessageDestinations() {
         return messageDestinations;

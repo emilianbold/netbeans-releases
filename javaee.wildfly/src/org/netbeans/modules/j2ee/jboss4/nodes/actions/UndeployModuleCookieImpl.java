@@ -48,14 +48,10 @@ import java.io.File;
 import javax.enterprise.deploy.shared.ModuleType;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
+import org.netbeans.modules.j2ee.jboss4.WildFlyDeploymentManager;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginProperties;
-import org.netbeans.modules.j2ee.jboss4.nodes.JBAbilitiesSupport;
-import org.netbeans.modules.j2ee.jboss4.nodes.Util;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -73,9 +69,12 @@ public class UndeployModuleCookieImpl implements UndeployModuleCookie {
 
     private static final RequestProcessor PROCESSOR = new RequestProcessor ("JBoss undeploy", 1); // NOI18N
 
-    private String fileName;
-    private Lookup lookup;
-    private ModuleType type;
+    private final String fileName;
+
+    private final Lookup lookup;
+
+    private final ModuleType type;
+
     private boolean isRunning;
 
     public UndeployModuleCookieImpl(String fileName, Lookup lookup) {
@@ -87,20 +86,20 @@ public class UndeployModuleCookieImpl implements UndeployModuleCookie {
         this.fileName = fileName;
         this.type = type;
         this.isRunning = false;
-    }    
-    
+    }
+
     public Task undeploy() {
-        final JBDeploymentManager dm = (JBDeploymentManager) lookup.lookup(JBDeploymentManager.class);
+        final WildFlyDeploymentManager dm = (WildFlyDeploymentManager) lookup.lookup(WildFlyDeploymentManager.class);
         final String nameWoExt = fileName.substring(0, fileName.lastIndexOf('.'));
         final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(UndeployModuleCookieImpl.class,
                 "LBL_UndeployProgress", nameWoExt));
-        
+
         Runnable r = new Runnable() {
             public void run() {
                 isRunning = true;
                 String deployDir = dm.getInstanceProperties().getProperty(JBPluginProperties.PROPERTY_DEPLOY_DIR);
                 File file = new File(deployDir, fileName);
-                
+
                 if (file.exists() && file.canWrite()) {
                     // FIXME we can use JMX to check/udeploy deployed apps
                     // jboss.as:deployment=WarName.war
@@ -145,18 +144,18 @@ public class UndeployModuleCookieImpl implements UndeployModuleCookie {
                         }
                     }
                 }
-                
+
                 handle.finish();
                 isRunning = false;
             }
         };
-        
+
         handle.start();
         return PROCESSOR.post(r);
     }
-    
+
     public boolean isRunning() {
         return isRunning;
     }
-    
+
 }

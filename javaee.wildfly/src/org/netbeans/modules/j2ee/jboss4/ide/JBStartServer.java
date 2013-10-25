@@ -43,13 +43,10 @@
  */
 package org.netbeans.modules.j2ee.jboss4.ide;
 
-import java.net.URISyntaxException;
 import java.util.Collections;
-import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginProperties;
 import java.io.IOException;
 import java.io.File;
-import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
 import javax.enterprise.deploy.shared.ActionType;
@@ -60,7 +57,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.openide.util.RequestProcessor;
 import java.util.Vector;
-import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.DeploymentManager;
@@ -72,14 +68,8 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
 import javax.enterprise.deploy.spi.status.ClientConfiguration;
 import javax.enterprise.deploy.spi.status.DeploymentStatus;
-import javax.management.MBeanServerConnection;
-import org.netbeans.modules.j2ee.jboss4.JBRemoteAction;
-import org.netbeans.modules.j2ee.jboss4.JBoss5ProfileServiceProxy;
-import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
-import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils.Version;
+import org.netbeans.modules.j2ee.jboss4.WildFlyDeploymentManager;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.j2ee.jboss4.nodes.Util;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -100,28 +90,25 @@ public class JBStartServer extends StartServer implements ProgressObject{
 
     private MODE mode;
     
-    private final JBDeploymentManager dm;
+    private final WildFlyDeploymentManager dm;
 
-    private static Set<String> isDebugModeUri = Collections.synchronizedSet(
+    private static final Set<String> IS_DEBUG_MODE_URI = Collections.synchronizedSet(
             new HashSet<String>(AVERAGE_SERVER_INSTANCES));
     
     public JBStartServer(DeploymentManager dm) {
-        if (!(dm instanceof JBDeploymentManager)) {
-            throw new IllegalArgumentException("Not an instance of JBDeploymentManager"); // NOI18N
-        }
-        this.dm = (JBDeploymentManager) dm;
+        this.dm = (WildFlyDeploymentManager) dm;
     }
     
     private void addDebugModeUri() {
-        isDebugModeUri.add(dm.getUrl());
+        IS_DEBUG_MODE_URI.add(dm.getUrl());
     }
     
     private void removeDebugModeUri() {
-        isDebugModeUri.remove(dm.getUrl());
+        IS_DEBUG_MODE_URI.remove(dm.getUrl());
     }
     
     private boolean existsDebugModeUri() {
-        return isDebugModeUri.contains(dm.getUrl());
+        return IS_DEBUG_MODE_URI.contains(dm.getUrl());
     }
     
     public ProgressObject startDebugging(Target target) {
@@ -250,55 +237,8 @@ public class JBStartServer extends StartServer implements ProgressObject{
                 }
 
                 final String localCheckingServerDir = checkingServerDir;
-                try {
-                    dm.invokeRemoteAction(new JBRemoteAction<Void>() {
-
-                        @Override
-                        public Void action(MBeanServerConnection connection, JBoss5ProfileServiceProxy profileService) throws Exception {
-                            Object serverName = null;
-                            Object serverHome = null;
-                            if (dm.getProperties().isVersion(JBPluginUtils.JBOSS_7_0_0)) {
-                                serverHome = Util.getMBeanParameter(connection, "baseDir", "jboss.as:core-service=server-environment"); //NOI18N
-                                serverName = Util.getMBeanParameter(connection, "launchType", "jboss.as:core-service=server-environment"); //NOI18N
-                                if (serverName != null) {
-                                    serverName = serverName.toString().toLowerCase();
-                                }
-                            } else {
-                                serverName = Util.getMBeanParameter(connection, "ServerName", "jboss.system:type=ServerConfig"); //NOI18N
-                                serverHome = Util.getMBeanParameter(connection, "ServerHomeLocation", "jboss.system:type=ServerConfig"); //NOI18N
-                                boolean isJBoss6 = serverHome != null;
-                                if (!isJBoss6) {
-                                    serverHome = Util.getMBeanParameter(connection, "ServerHomeDir", "jboss.system:type=ServerConfig"); //NOI18N
-                                }
-                                try {
-                                    if (serverHome != null) {
-                                        if (isJBoss6) {
-                                            serverHome = new File(((URL) serverHome).toURI()).getAbsolutePath();
-                                        } else {
-                                            serverHome = ((File) serverHome).getAbsolutePath();
-                                        }
-                                    }
-                                } catch (URISyntaxException use) {
-                                    LOGGER.log(Level.WARNING, "error getting file from URI: " + serverHome, use); //NOI18N
-                                }
-                            }
-
-                            if (serverName == null || serverHome == null) {
-                                result = false;
-                                return null;
-                            }
-                            if (checkingConfigName.equals(serverName) 
-                                    && (localCheckingServerDir.equals(serverHome)
-                                        || localCheckingServerDir.equals(new File(serverHome.toString()).getCanonicalPath()))) {
-                                result = true;
-                            }
-                            return null;
-                        }
-
-                    });
-                } catch (ExecutionException ex) {
-                    LOGGER.log(Level.FINE, null, ex);
-                }
+                // XXX WILDFLY IMPLEMENT
+                // XXX set result to true if running
 
             }
         };

@@ -63,7 +63,7 @@ import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.j2ee.jboss4.JBDeploymentFactory;
+import org.netbeans.modules.j2ee.jboss4.WildFlyDeploymentFactory;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBInstantiatingIterator;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginProperties;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
@@ -363,7 +363,7 @@ public class JBoss4TestSuite extends NbTestCase {
 
     private boolean isProjectDeployed(ModuleType mt, String name, InstanceProperties ip) {
         try {
-            ClassLoader loader = JBDeploymentFactory.createJBClassLoader(
+            ClassLoader loader = WildFlyDeploymentFactory.createWildFlyClassLoader(
                     ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR),
                     ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR));
 

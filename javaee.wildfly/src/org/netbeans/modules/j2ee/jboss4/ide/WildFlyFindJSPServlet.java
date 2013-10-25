@@ -47,18 +47,18 @@ package org.netbeans.modules.j2ee.jboss4.ide;
 import java.io.File;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
+import org.netbeans.modules.j2ee.jboss4.WildFlyDeploymentManager;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginProperties;
 
 /**
  *
  * @author Libor Kotouc
  */
-public class JBFindJSPServlet implements FindJSPServlet {
+public class WildFlyFindJSPServlet implements FindJSPServlet {
     
-    JBDeploymentManager dm;
+    private final WildFlyDeploymentManager dm;
     
-    public JBFindJSPServlet(JBDeploymentManager manager) {
+    public WildFlyFindJSPServlet(WildFlyDeploymentManager manager) {
         dm = manager;
     }
 

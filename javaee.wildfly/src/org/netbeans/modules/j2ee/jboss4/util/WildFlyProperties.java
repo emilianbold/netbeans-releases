@@ -65,7 +65,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
+import org.netbeans.modules.j2ee.jboss4.WildFlyDeploymentManager;
 import org.netbeans.modules.j2ee.jboss4.customizer.CustomizerSupport;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginProperties;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
@@ -79,7 +79,7 @@ import org.openide.util.NbCollections;
  *
  * @author sherold
  */
-public class JBProperties {
+public class WildFlyProperties {
 
     /** Java platform property which is used as a java platform ID */
     public static final String PLAT_PROP_ANT_NAME = "platform.ant.name"; //NOI18N
@@ -103,7 +103,7 @@ public class JBProperties {
     private static final boolean DEF_VALUE_PROXY_ENABLED = true;
 
     private final InstanceProperties ip;
-    private final JBDeploymentManager manager;
+    private final WildFlyDeploymentManager manager;
 
     // credentials initialized with default values
     private String username = "admin"; // NOI18N
@@ -112,12 +112,12 @@ public class JBProperties {
     /** timestamp of the jmx-console-users.properties file when it was parsed for the last time */
     private long updateCredentialsTimestamp;
 
-    private static final Logger LOGGER = Logger.getLogger(JBProperties.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(WildFlyProperties.class.getName());
 
     private final Version version;
 
     /** Creates a new instance of JBProperties */
-    public JBProperties(JBDeploymentManager manager) {
+    public WildFlyProperties(WildFlyDeploymentManager manager) {
         this.manager = manager;
         ip = manager.getInstanceProperties();
         version = JBPluginUtils.getServerVersion(new File(ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR)));
@@ -296,7 +296,8 @@ public class JBProperties {
 
     public void setSources(List<URL> path) {
         ip.setProperty(PROP_SOURCES, CustomizerSupport.buildPath(path));
-        manager.getJBPlatform().notifyLibrariesChanged();
+        // XXX WILDFLY IMPLEMENT
+        //manager.getJBPlatform().notifyLibrariesChanged();
     }
 
     public List<URL> getJavadocs() {
@@ -314,7 +315,8 @@ public class JBProperties {
 
     public void setJavadocs(List<URL> path) {
         ip.setProperty(PROP_JAVADOCS, CustomizerSupport.buildPath(path));
-        manager.getJBPlatform().notifyLibrariesChanged();
+        // XXX WILDFLY IMPLEMENT
+        //manager.getJBPlatform().notifyLibrariesChanged();
     }
 
     public synchronized String getUsername() {

@@ -95,103 +95,48 @@ public final class JBossDatasourceManager implements DatasourceManager {
     private final FileObject serverDir;
     
     private final FileObject deployDir;
-
-    private final boolean isAs7;
     
-    public JBossDatasourceManager(String serverUrl, boolean isAs7) {
+    public JBossDatasourceManager(String serverUrl) {
         InstanceProperties ip = InstanceProperties.getInstanceProperties(serverUrl);
         String deployDirPath = ip.getProperty(JBPluginProperties.PROPERTY_DEPLOY_DIR);
         deployDir = FileUtil.toFileObject(new File(deployDirPath));
         String serverDirPath = ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR);
         serverDir = FileUtil.toFileObject(new File(serverDirPath));
-        this.isAs7 = isAs7;
     }
     
     @Override
     public Set<Datasource> getDatasources() throws ConfigurationException {
         Set<Datasource> datasources = new HashSet<Datasource>();
-        if (isAs7) {
-            FileObject config = serverDir.getFileObject("configuration/standalone.xml");
-            if (config == null) {
-                config = serverDir.getFileObject("configuration/domain.xml");
-            }
-            if (config == null || !config.isData()) {
-                LOGGER.log(Level.WARNING, NbBundle.getMessage(JBossDatasourceManager.class, "ERR_WRONG_CONFIG_FILE"));
-                return datasources;
-            }
+        FileObject config = serverDir.getFileObject("configuration/standalone.xml");
+        if (config == null) {
+            config = serverDir.getFileObject("configuration/domain.xml");
+        }
+        if (config == null || !config.isData()) {
+            LOGGER.log(Level.WARNING, NbBundle.getMessage(JBossDatasourceManager.class, "ERR_WRONG_CONFIG_FILE"));
+            return datasources;
+        }
+        try {
+            SAXParserFactory factory = SAXParserFactory.newInstance();
+            SAXParser parser = factory.newSAXParser();
+            JB7DatasourceHandler handler = new JB7DatasourceHandler();
+            InputStream is = new BufferedInputStream(config.getInputStream());
             try {
-                SAXParserFactory factory = SAXParserFactory.newInstance();
-                SAXParser parser = factory.newSAXParser();
-                JB7DatasourceHandler handler = new JB7DatasourceHandler();
-                InputStream is = new BufferedInputStream(config.getInputStream());
-                try {
-                    parser.parse(is, handler);
-                } finally {
-                    is.close();
-                }
-                datasources.addAll(handler.getDatasources());
-            } catch (IOException ex) {
-                LOGGER.log(Level.WARNING,
-                        NbBundle.getMessage(JBossDatasourceManager.class, "ERR_WRONG_CONFIG_FILE"), ex);
-            } catch (SAXException ex) {
-                LOGGER.log(Level.WARNING,
-                        NbBundle.getMessage(JBossDatasourceManager.class, "ERR_WRONG_CONFIG_FILE"), ex);
-            } catch (ParserConfigurationException ex) {
-                LOGGER.log(Level.WARNING,
-                        NbBundle.getMessage(JBossDatasourceManager.class, "ERR_WRONG_CONFIG_FILE"), ex);
+                parser.parse(is, handler);
+            } finally {
+                is.close();
             }
-
-            return datasources;
+            datasources.addAll(handler.getDatasources());
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING,
+                    NbBundle.getMessage(JBossDatasourceManager.class, "ERR_WRONG_CONFIG_FILE"), ex);
+        } catch (SAXException ex) {
+            LOGGER.log(Level.WARNING,
+                    NbBundle.getMessage(JBossDatasourceManager.class, "ERR_WRONG_CONFIG_FILE"), ex);
+        } catch (ParserConfigurationException ex) {
+            LOGGER.log(Level.WARNING,
+                    NbBundle.getMessage(JBossDatasourceManager.class, "ERR_WRONG_CONFIG_FILE"), ex);
         }
 
-        if (deployDir == null || !deployDir.isValid() || !deployDir.isFolder() || !deployDir.canRead()) {
-            LOGGER.log(Level.WARNING, NbBundle.getMessage(JBossDatasourceManager.class, "ERR_WRONG_DEPLOY_DIR"));
-            return datasources;
-        }
-        
-        Enumeration files = deployDir.getChildren(true);
-        List<FileObject> confs = new LinkedList<FileObject>();
-        while (files.hasMoreElements()) { // searching for config files with DS
-            FileObject file = (FileObject) files.nextElement();
-            if (!file.isFolder() && file.getNameExt().endsWith(DSdotXML) && file.canRead())
-                confs.add(file);
-        }
-        
-        if (confs.size() == 0) // nowhere to search
-            return datasources;
-
-        for (Iterator it = confs.iterator(); it.hasNext();) {
-            FileObject dsFO = (FileObject)it.next();
-            File dsFile = FileUtil.toFile(dsFO);
-            try {
-                Datasources ds = null;
-                try {
-                    ds = Datasources.createGraph(dsFile);
-                } catch (RuntimeException re) {
-                    // most likely not a data source (e.g. jms-ds.xml in JBoss 5.x)
-                    String msg = NbBundle.getMessage(JBossDatasourceManager.class, "MSG_NotParseableDatasources", dsFile.getAbsolutePath());
-                    Logger.getLogger("global").log(Level.INFO, msg);
-                    continue;
-                }
-                LocalTxDatasource[] ltxds = ds.getLocalTxDatasource();
-                for (int i = 0; i < ltxds.length; i++) {
-                    if (ltxds[i].getJndiName().length() > 0) {
-                        datasources.add(new JBossDatasource(ltxds[i].getJndiName(),
-                                                            ltxds[i].getConnectionUrl(),
-                                                            ltxds[i].getUserName(),
-                                                            ltxds[i].getPassword(),
-                                                            ltxds[i].getDriverClass()));
-                    }
-                }
-            } catch (IOException ioe) {
-                String msg = NbBundle.getMessage(JBossDatasourceManager.class, "MSG_CannotReadDatasources", dsFile.getAbsolutePath());
-                throw new ConfigurationException(msg, ioe);
-            } catch (RuntimeException re) {
-                String msg = NbBundle.getMessage(JBossDatasourceManager.class, "MSG_NotParseableDatasources", dsFile.getAbsolutePath());
-                throw new ConfigurationException(msg, re);
-            }
-        }
-        
         return datasources;
     }
 

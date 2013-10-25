@@ -66,10 +66,10 @@ import org.netbeans.api.extexecution.startup.StartupExtender;
 import org.netbeans.modules.j2ee.deployment.plugins.api.CommonServerBridge;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
-import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
+import org.netbeans.modules.j2ee.jboss4.WildFlyDeploymentManager;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginProperties;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
-import org.netbeans.modules.j2ee.jboss4.util.JBProperties;
+import org.netbeans.modules.j2ee.jboss4.util.WildFlyProperties;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -125,11 +125,11 @@ class JBStartRunnable implements Runnable {
 
     private static final Logger LOGGER = Logger.getLogger(JBStartRunnable.class.getName());
 
-    private JBDeploymentManager dm;
+    private WildFlyDeploymentManager dm;
     private String instanceName;
     private JBStartServer startServer;
 
-    JBStartRunnable(JBDeploymentManager dm, JBStartServer startServer) {
+    JBStartRunnable(WildFlyDeploymentManager dm, JBStartServer startServer) {
         this.dm = dm;
         this.instanceName = dm.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
         this.startServer = startServer;
@@ -157,7 +157,7 @@ class JBStartRunnable implements Runnable {
 
     private String[] createEnvironment(final InstanceProperties ip) {
         
-        JBProperties properties = dm.getProperties();
+        WildFlyProperties properties = dm.getProperties();
 
         // set the JAVA_OPTS value
         String javaOpts = properties.getJavaOpts();
@@ -551,7 +551,7 @@ class JBStartRunnable implements Runnable {
         }
         
         private boolean runFileNeedChange( String[] envp ){
-            JBProperties properties = dm.getProperties();
+            WildFlyProperties properties = dm.getProperties();
             if (properties.isVersion(JBPluginUtils.JBOSS_7_0_0)) {
                 return false;
             }

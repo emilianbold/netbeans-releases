@@ -76,40 +76,40 @@ import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils.Version;
  *
  * @author Petr Hejl
  */
-public class JBDeploymentFactory implements DeploymentFactory {
+public class WildFlyDeploymentFactory implements DeploymentFactory {
 
     public static final String URI_PREFIX = "wildfly-deployer:"; // NOI18N
     
     private static final String DISCONNECTED_URI = URI_PREFIX + "http://localhost:8080&"; // NOI18N
 
-    private static final Logger LOGGER = Logger.getLogger(JBDeploymentFactory.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(WildFlyDeploymentFactory.class.getName());
 
     /**
      * Mapping of a instance properties to a deployment factory.
-     * <i>GuardedBy(JBDeploymentFactory.class)</i>
+     * <i>GuardedBy(WildFlyDeploymentFactory.class)</i>
      */
     private final Map<InstanceProperties, DeploymentFactory> factoryCache =
             new WeakHashMap<InstanceProperties, DeploymentFactory>();
 
     /**
      * Mapping of a instance properties to a deployment manager.
-     * <i>GuardedBy(JBDeploymentFactory.class)</i>
+     * <i>GuardedBy(WildFlyDeploymentFactory.class)</i>
      */
-    private final Map<InstanceProperties, JBDeploymentManager> managerCache =
-            new WeakHashMap<InstanceProperties, JBDeploymentManager>();
+    private final Map<InstanceProperties, WildFlyDeploymentManager> managerCache =
+            new WeakHashMap<InstanceProperties, WildFlyDeploymentManager>();
 
-    private final Map<InstanceProperties, JBDeploymentFactory.JBClassLoader> classLoaderCache =
-            new WeakHashMap<InstanceProperties, JBDeploymentFactory.JBClassLoader>();
+    private final Map<InstanceProperties, WildFlyDeploymentFactory.WildFlyClassLoader> classLoaderCache =
+            new WeakHashMap<InstanceProperties, WildFlyDeploymentFactory.WildFlyClassLoader>();
 
-    private static JBDeploymentFactory instance;
+    private static WildFlyDeploymentFactory instance;
 
-    private JBDeploymentFactory() {
+    private WildFlyDeploymentFactory() {
         super();
     }
 
-    public static synchronized JBDeploymentFactory getInstance() {
+    public static synchronized WildFlyDeploymentFactory getInstance() {
         if (instance == null) {
-            instance = new JBDeploymentFactory();
+            instance = new WildFlyDeploymentFactory();
             DeploymentFactoryManager.getInstance().registerDeploymentFactory(instance);
 
         }
@@ -117,9 +117,9 @@ public class JBDeploymentFactory implements DeploymentFactory {
         return instance;
     }
 
-    public static class JBClassLoader extends URLClassLoader {
+    public static class WildFlyClassLoader extends URLClassLoader {
 
-        public JBClassLoader(URL[] urls, ClassLoader parent) throws MalformedURLException, RuntimeException {
+        public WildFlyClassLoader(URL[] urls, ClassLoader parent) throws MalformedURLException, RuntimeException {
             super(urls, parent);
         }
 
@@ -139,15 +139,15 @@ public class JBDeploymentFactory implements DeploymentFactory {
        }
     }
 
-    public synchronized JBClassLoader getJBClassLoader(InstanceProperties ip) {
-        JBClassLoader cl = classLoaderCache.get(ip);
+    public synchronized WildFlyClassLoader getWildFlyClassLoader(InstanceProperties ip) {
+        WildFlyClassLoader cl = classLoaderCache.get(ip);
         if (cl == null) {
             DeploymentFactory factory = factoryCache.get(ip);
             if (factory != null) {
-                cl = (JBClassLoader) factory.getClass().getClassLoader();
+                cl = (WildFlyClassLoader) factory.getClass().getClassLoader();
             }
             if (cl == null) {
-                cl = createJBClassLoader(ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR),
+                cl = createWildFlyClassLoader(ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR),
                             ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR));
             }
             classLoaderCache.put(ip, cl);
@@ -155,7 +155,7 @@ public class JBDeploymentFactory implements DeploymentFactory {
         return cl;
     }
 
-    public static JBClassLoader createJBClassLoader(String serverRoot, String domainRoot) {
+    public static WildFlyClassLoader createWildFlyClassLoader(String serverRoot, String domainRoot) {
         try {
 
             Version jbossVersion = JBPluginUtils.getServerVersion(new File (serverRoot));
@@ -183,34 +183,31 @@ public class JBDeploymentFactory implements DeploymentFactory {
                 urlList.add(domFile.toURI().toURL());
             }
 
-            if (jbossVersion != null && "8".equals(jbossVersion.getMajorNumber())) {
-                File org = new File(serverRoot, JBPluginUtils.getModulesBase(serverRoot) + "org");
-                File jboss = new File(org, "jboss");
-                File as = new File(jboss, "as");
-                
-                if (domFile != null && domFile.exists()) {
-                    urlList.add(domFile.toURI().toURL());
-                }
-                
-                urlList.add(new File(serverRoot, "jboss-modules.jar").toURI().toURL());
-                urlList.add(new File(serverRoot, "bin"+sep+"client"+sep+"jboss-client.jar").toURI().toURL());
+            File org = new File(serverRoot, JBPluginUtils.getModulesBase(serverRoot) + "org");
+            File jboss = new File(org, "jboss");
+            File as = new File(jboss, "as");
 
-                addUrl(urlList, jboss, "logging" + sep + "main", Pattern.compile("jboss-logging-.*.jar"));
-                addUrl(urlList, jboss, "threads" + sep + "main", Pattern.compile("jboss-threads-.*.jar"));
-                addUrl(urlList, jboss, "remoting3" + sep + "main", Pattern.compile("jboss-remoting-.*.jar"));
-                addUrl(urlList, jboss, "xnio" + sep + "main", Pattern.compile("xnio-api-.*.jar"));
-                addUrl(urlList, jboss, "xnio" + sep + "nio" + sep + "main", Pattern.compile("xnio-nio-.*.jar"));
-                addUrl(urlList, jboss, "dmr" + sep + "main", Pattern.compile("jboss-dmr-.*.jar"));
-                addUrl(urlList, jboss, "msc" + sep + "main", Pattern.compile("jboss-msc-.*.jar"));
-                addUrl(urlList, jboss, "common-core" + sep + "main", Pattern.compile("jboss-common-core-.*.jar"));
-                addUrl(urlList, as, "ee" + sep + "deployment" + sep + "main", Pattern.compile("jboss-as-ee-deployment-.*.jar"));
-                addUrl(urlList, as, "naming" + sep + "main", Pattern.compile("jboss-as-naming-.*.jar"));
-                addUrl(urlList, as, "controller-client" + sep + "main", Pattern.compile("jboss-as-controller-client-.*.jar"));
-                addUrl(urlList, as, "protocol" + sep + "main", Pattern.compile("jboss-as-protocol-.*.jar"));
-
+            if (domFile != null && domFile.exists()) {
+                urlList.add(domFile.toURI().toURL());
             }
 
-            JBClassLoader loader = new JBClassLoader(urlList.toArray(new URL[] {}), JBDeploymentFactory.class.getClassLoader());
+            urlList.add(new File(serverRoot, "jboss-modules.jar").toURI().toURL());
+            urlList.add(new File(serverRoot, "bin"+sep+"client"+sep+"jboss-client.jar").toURI().toURL());
+
+            addUrl(urlList, jboss, "logging" + sep + "main", Pattern.compile("jboss-logging-.*.jar"));
+            addUrl(urlList, jboss, "threads" + sep + "main", Pattern.compile("jboss-threads-.*.jar"));
+            addUrl(urlList, jboss, "remoting3" + sep + "main", Pattern.compile("jboss-remoting-.*.jar"));
+            addUrl(urlList, jboss, "xnio" + sep + "main", Pattern.compile("xnio-api-.*.jar"));
+            addUrl(urlList, jboss, "xnio" + sep + "nio" + sep + "main", Pattern.compile("xnio-nio-.*.jar"));
+            addUrl(urlList, jboss, "dmr" + sep + "main", Pattern.compile("jboss-dmr-.*.jar"));
+            addUrl(urlList, jboss, "msc" + sep + "main", Pattern.compile("jboss-msc-.*.jar"));
+            addUrl(urlList, jboss, "common-core" + sep + "main", Pattern.compile("jboss-common-core-.*.jar"));
+            addUrl(urlList, as, "ee" + sep + "deployment" + sep + "main", Pattern.compile("jboss-as-ee-deployment-.*.jar"));
+            addUrl(urlList, as, "naming" + sep + "main", Pattern.compile("jboss-as-naming-.*.jar"));
+            addUrl(urlList, as, "controller-client" + sep + "main", Pattern.compile("jboss-as-controller-client-.*.jar"));
+            addUrl(urlList, as, "protocol" + sep + "main", Pattern.compile("jboss-as-protocol-.*.jar"));
+
+            WildFlyClassLoader loader = new WildFlyClassLoader(urlList.toArray(new URL[] {}), WildFlyDeploymentFactory.class.getClassLoader());
             return loader;
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, null, e);
@@ -250,13 +247,13 @@ public class JBDeploymentFactory implements DeploymentFactory {
     @Override
     public DeploymentManager getDeploymentManager(String uri, String uname, String passwd) throws DeploymentManagerCreationException {
         if (!handlesURI(uri)) {
-            throw new DeploymentManagerCreationException(NbBundle.getMessage(JBDeploymentFactory.class, "MSG_INVALID_URI", uri)); // NOI18N
+            throw new DeploymentManagerCreationException(NbBundle.getMessage(WildFlyDeploymentFactory.class, "MSG_INVALID_URI", uri)); // NOI18N
         }
 
-        synchronized (JBDeploymentFactory.class) {
+        synchronized (WildFlyDeploymentFactory.class) {
             InstanceProperties ip = InstanceProperties.getInstanceProperties(uri);
             if (ip != null) {
-                JBDeploymentManager dm = managerCache.get(ip);
+                WildFlyDeploymentManager dm = managerCache.get(ip);
                 if (dm != null) {
                     return dm;
                 }
@@ -265,7 +262,7 @@ public class JBDeploymentFactory implements DeploymentFactory {
             try {
                 DeploymentFactory df = getFactory(uri);
                 if (df == null) {
-                    throw new DeploymentManagerCreationException(NbBundle.getMessage(JBDeploymentFactory.class, "MSG_ERROR_CREATING_DM", uri)); // NOI18N
+                    throw new DeploymentManagerCreationException(NbBundle.getMessage(WildFlyDeploymentFactory.class, "MSG_ERROR_CREATING_DM", uri)); // NOI18N
                 }
 
                 String jbURI = uri;
@@ -288,7 +285,7 @@ public class JBDeploymentFactory implements DeploymentFactory {
                     jbURI = jbURI + "&serverHost=" // NOI18N
                             + (ip != null ? ip.getProperty(JBPluginProperties.PROPERTY_HOST) : "localhost"); // NOI18N
                 }
-                JBDeploymentManager dm = new JBDeploymentManager(df, uri, jbURI, uname, passwd);
+                WildFlyDeploymentManager dm = new WildFlyDeploymentManager(df, uri, jbURI, uname, passwd);
                 if (ip != null) {
                     managerCache.put(ip, dm);
                 }
@@ -304,7 +301,7 @@ public class JBDeploymentFactory implements DeploymentFactory {
     @Override
     public DeploymentManager getDisconnectedDeploymentManager(String uri) throws DeploymentManagerCreationException {
         if (!handlesURI(uri)) {
-            throw new DeploymentManagerCreationException(NbBundle.getMessage(JBDeploymentFactory.class, "MSG_INVALID_URI", uri)); // NOI18N
+            throw new DeploymentManagerCreationException(NbBundle.getMessage(WildFlyDeploymentFactory.class, "MSG_INVALID_URI", uri)); // NOI18N
         }
 
         try {
@@ -327,7 +324,7 @@ public class JBDeploymentFactory implements DeploymentFactory {
                 }
             }
             
-            return new JBDeploymentManager(null, uri, null, null, null);
+            return new WildFlyDeploymentManager(null, uri, null, null, null);
         } catch (NoClassDefFoundError e) {
             DeploymentManagerCreationException dmce = new DeploymentManagerCreationException("Classpath is incomplete"); // NOI18N
             dmce.initCause(e);
@@ -336,11 +333,11 @@ public class JBDeploymentFactory implements DeploymentFactory {
     }
 
     public String getProductVersion() {
-        return NbBundle.getMessage (JBDeploymentFactory.class, "LBL_JBossFactoryVersion");
+        return NbBundle.getMessage (WildFlyDeploymentFactory.class, "LBL_JBossFactoryVersion");
     }
 
     public String getDisplayName() {
-        return NbBundle.getMessage(JBDeploymentFactory.class, "SERVER_NAME"); // NOI18N
+        return NbBundle.getMessage(WildFlyDeploymentFactory.class, "SERVER_NAME"); // NOI18N
     }
 
     private DeploymentFactory getFactory(String instanceURL) {
@@ -367,22 +364,23 @@ public class JBDeploymentFactory implements DeploymentFactory {
             }
 
             InstanceProperties ip = InstanceProperties.getInstanceProperties(instanceURL);
-            synchronized (JBDeploymentFactory.class) {
+            synchronized (WildFlyDeploymentFactory.class) {
                 if (ip != null) {
                     jbossFactory = (DeploymentFactory) factoryCache.get(ip);
                 }
                 if (jbossFactory == null) {
-                    Version version = JBPluginUtils.getServerVersion(new File(jbossRoot));
-                    URLClassLoader loader = (ip != null) ? getJBClassLoader(ip) : createJBClassLoader(jbossRoot, domainRoot);
-                    if(version!= null && "7".equals(version.getMajorNumber())) {
-                        Class<?> c = loader.loadClass("org.jboss.as.ee.deployment.spi.factories.DeploymentFactoryImpl");
-                        c.getMethod("register").invoke(null);
-                        jbossFactory = (DeploymentFactory) c.newInstance();//NOI18N
-                    } else {
-                        jbossFactory = (DeploymentFactory) loader.loadClass("org.jboss.deployment.spi.factories.DeploymentFactoryImpl").newInstance();//NOI18N
-                    }
+//                    Version version = JBPluginUtils.getServerVersion(new File(jbossRoot));
+//                    URLClassLoader loader = (ip != null) ? getWildFlyClassLoader(ip) : createWildFlyClassLoader(jbossRoot, domainRoot);
+//                    if(version!= null && "7".equals(version.getMajorNumber())) {
+//                        Class<?> c = loader.loadClass("org.jboss.as.ee.deployment.spi.factories.DeploymentFactoryImpl");
+//                        c.getMethod("register").invoke(null);
+//                        jbossFactory = (DeploymentFactory) c.newInstance();//NOI18N
+//                    } else {
+//                        jbossFactory = (DeploymentFactory) loader.loadClass("org.jboss.deployment.spi.factories.DeploymentFactoryImpl").newInstance();//NOI18N
+//                    }
 
-
+                    // XXX is this ok ?
+                    jbossFactory = this;
                     if (ip != null) {
                         factoryCache.put(ip, jbossFactory);
                     }

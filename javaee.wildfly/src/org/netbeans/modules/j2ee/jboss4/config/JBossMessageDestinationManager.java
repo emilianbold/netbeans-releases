@@ -87,38 +87,35 @@ public final class JBossMessageDestinationManager implements MessageDestinationD
     @Override
     public Set<MessageDestination> getMessageDestinations() throws ConfigurationException {
         Set<MessageDestination> messageDestinations = new HashSet<MessageDestination>();
-        if (isAs7) {
-            FileObject config = serverDir.getFileObject("configuration/standalone.xml");
-            if (config == null) {
-                config = serverDir.getFileObject("configuration/domain.xml");
-            }
-            if (config == null || !config.isData()) {
-                LOGGER.log(Level.WARNING, NbBundle.getMessage(JBossDatasourceManager.class, "ERR_WRONG_JMS_CONFIG_FILE"));
-                return messageDestinations;
-            }
-            try {
-                SAXParserFactory factory = SAXParserFactory.newInstance();
-                SAXParser parser = factory.newSAXParser();
-                JB7MessageDestinationHandler handler = new JB7MessageDestinationHandler();
-                InputStream is = new BufferedInputStream(config.getInputStream());
-                try {
-                    parser.parse(is, handler);
-                } finally {
-                    is.close();
-                }
-                messageDestinations.addAll(handler.getMessageDestinations());
-            } catch (IOException ex) {
-                LOGGER.log(Level.WARNING,
-                        NbBundle.getMessage(JBossDatasourceManager.class, "ERR_WRONG_JMS_CONFIG_FILE"), ex);
-            } catch (SAXException ex) {
-                LOGGER.log(Level.WARNING,
-                        NbBundle.getMessage(JBossDatasourceManager.class, "ERR_WRONG_JMS_CONFIG_FILE"), ex);
-            } catch (ParserConfigurationException ex) {
-                LOGGER.log(Level.WARNING,
-                        NbBundle.getMessage(JBossDatasourceManager.class, "ERR_WRONG_JMS_CONFIG_FILE"), ex);
-            }
 
+        FileObject config = serverDir.getFileObject("configuration/standalone.xml");
+        if (config == null) {
+            config = serverDir.getFileObject("configuration/domain.xml");
+        }
+        if (config == null || !config.isData()) {
+            LOGGER.log(Level.WARNING, NbBundle.getMessage(JBossDatasourceManager.class, "ERR_WRONG_JMS_CONFIG_FILE"));
             return messageDestinations;
+        }
+        try {
+            SAXParserFactory factory = SAXParserFactory.newInstance();
+            SAXParser parser = factory.newSAXParser();
+            JB7MessageDestinationHandler handler = new JB7MessageDestinationHandler();
+            InputStream is = new BufferedInputStream(config.getInputStream());
+            try {
+                parser.parse(is, handler);
+            } finally {
+                is.close();
+            }
+            messageDestinations.addAll(handler.getMessageDestinations());
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING,
+                    NbBundle.getMessage(JBossDatasourceManager.class, "ERR_WRONG_JMS_CONFIG_FILE"), ex);
+        } catch (SAXException ex) {
+            LOGGER.log(Level.WARNING,
+                    NbBundle.getMessage(JBossDatasourceManager.class, "ERR_WRONG_JMS_CONFIG_FILE"), ex);
+        } catch (ParserConfigurationException ex) {
+            LOGGER.log(Level.WARNING,
+                    NbBundle.getMessage(JBossDatasourceManager.class, "ERR_WRONG_JMS_CONFIG_FILE"), ex);
         }
 
         return messageDestinations;
