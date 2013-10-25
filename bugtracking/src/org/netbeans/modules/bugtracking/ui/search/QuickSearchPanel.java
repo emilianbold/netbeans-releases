@@ -59,7 +59,7 @@ import org.netbeans.modules.bugtracking.BugtrackingOwnerSupport;
 import static org.netbeans.modules.bugtracking.BugtrackingOwnerSupport.ContextType.MAIN_PROJECT_ONLY;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.api.Issue;
-import org.netbeans.modules.bugtracking.api.IssueQuickSearch.Filter;
+import org.netbeans.modules.bugtracking.api.IssueQuickSearch.RepositoryFilter;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
@@ -74,7 +74,7 @@ public class QuickSearchPanel extends javax.swing.JPanel implements ItemListener
     private final File referenceFile;
     private final JButton newButton;
     
-    public QuickSearchPanel(JComponent caller, File referenceFile, Filter filter) {
+    public QuickSearchPanel(File referenceFile, RepositoryFilter filter) {
         initComponents();
         
         newButton = createNewRepoButton();
@@ -87,14 +87,14 @@ public class QuickSearchPanel extends javax.swing.JPanel implements ItemListener
         });
         this.referenceFile = referenceFile;
         
-        qs = new QuickSearchComboBar(caller);
+        qs = new QuickSearchComboBar(this);
         issuePanel.add(qs, BorderLayout.NORTH);
         issueLabel.setLabelFor(qs);
         
         if (referenceFile != null) {
-            RepositoryComboSupport.setup(this, repositoryComboBox, Filter.ATTACH_FILE, referenceFile);
+            RepositoryComboSupport.setup(this, repositoryComboBox, filter, referenceFile);
         } else {
-            RepositoryComboSupport.setup(this, repositoryComboBox, Filter.ATTACH_FILE, false);
+            RepositoryComboSupport.setup(this, repositoryComboBox, filter, false);
         }
         repositoryComboBox.addItemListener(this);
     }

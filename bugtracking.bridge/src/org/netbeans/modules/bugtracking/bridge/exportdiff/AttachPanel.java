@@ -58,7 +58,7 @@ public class AttachPanel extends javax.swing.JPanel implements ChangeListener {
     
     public AttachPanel(ChangeListener issueListener, File referenceFile) {
         initComponents();
-        qs = IssueQuickSearch.create(this, referenceFile);
+        qs = IssueQuickSearch.create(referenceFile);
         qs.setEnabled(false);
         qs.setChangeListener(issueListener);
         qs.setChangeListener(this);

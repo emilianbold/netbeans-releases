@@ -47,57 +47,78 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.bugtracking.ui.search.QuickSearchPanel;
 
 /**
- *
+ * Provides a UI Component to pick issues. 
+ * 
+ * <p>
+ * The component given by {@link #getComponent()} contains:
+ * <ul>
+ *   <li>a combo box containing all known repositories. 
+ *   <li>a button to create a new repository
+ *   <li>a field to type some text into - to find Issues either by id or summary.
+ * </ul>
+ * </p>
+ * 
  * @author Tomas Stupka
  */
 public final class IssueQuickSearch {
     private final QuickSearchPanel panel;
     
-    public enum Filter {
+    private IssueQuickSearch(File context, RepositoryFilter filter) {
+        panel = new QuickSearchPanel(context, filter);
+    }
+    
+    /**
+     * Determines what kind of repositories should be shown in the repositories combo box.
+     */
+    public enum RepositoryFilter {
+        /**
+         * Show only repositories which provide the attach file functionality.
+         */
         ATTACH_FILE,
+        /**
+         * Show all Repositories.
+         */
         ALL
     }
     
     /**
-     * Factory method
+     * Creates an IssueQuickSearch providing all repositories and none of them preselected.
      * 
-     * @param caller 
      * @return  
      */
-    public static IssueQuickSearch create(JComponent caller) {
-       return new IssueQuickSearch(caller, null, Filter.ALL);
+    public static IssueQuickSearch create() {
+       return new IssueQuickSearch(null, RepositoryFilter.ALL);
     }
     
     /**
-     * Factory method
+     * Creates an IssueQuickSearch providing all repositories, where one might 
+     * be preselected determined by the given file - e.g. a file from the same VCS
+     * repository was used to pick an Issue in some previous session.
      * 
-     * @param caller 
-     * @param context 
-     * @return  
+     * @param context a file to give a hint about a repository to preselect
+     * @return IssueQuickSearch
      */
-    public static IssueQuickSearch create(JComponent caller, File context) {
-       return new IssueQuickSearch(caller, context, Filter.ALL);
+    public static IssueQuickSearch create(File context) {
+       return new IssueQuickSearch(context, RepositoryFilter.ALL);
     }
     
     /**
-     * Factory method
+     * Creates an IssueQuickSearch providing a filtered list of repositories, where one might 
+     * be preselected determined by the given file - e.g. a file from the same VCS
+     * repository was used to pick an Issue in some previous session.
      * 
-     * @param caller 
-     * @param context 
-     * @param filter 
-     * @return  
+     * @param context a file to give a hint about a repository to preselect
+     * @param filter what kind of repositories should be provided
+     * @return IssueQuickSearch
      */
-    public static IssueQuickSearch create(JComponent caller, File context, Filter filter) {
-       return new IssueQuickSearch(caller, context, filter);
-    }
-    
-    private IssueQuickSearch(JComponent caller, File context, Filter filter) {
-        panel = new QuickSearchPanel(caller, context, filter);
+    public static IssueQuickSearch create(File context, RepositoryFilter filter) {
+       return new IssueQuickSearch(context, filter);
     }
     
     /**
      * Sets the repository for which issues should be made available in 
-     * the issue combo bar
+     * the issue combo bar.
+     * 
      * @param repository 
      */
     public void setRepository(Repository repository) {
@@ -105,15 +126,17 @@ public final class IssueQuickSearch {
     }
     
     /**
-     * Returns the quick search component
-     * @return 
+     * Returns the IssueQuickSearch component.
+     * 
+     * @return the IssueQuickSearch component
      */
     public JComponent getComponent() {
         return panel;
     }
     
     /**
-     * Returns the issue selected in the issue combo bar or null if none selected
+     * Returns the issue selected in the issue combo bar or null if none selected.
+     * 
      * @return 
      */
     public Issue getIssue() {
@@ -121,7 +144,9 @@ public final class IssueQuickSearch {
     }
 
     /**
-     * Register for notifications about changes in the issue combo bar
+     * Register for notifications about changes in the issue combo bar. 
+     * Fires each time an Issue is either selected or deselected.
+     * 
      * @param listener 
      */
     public void setChangeListener(ChangeListener listener) {
@@ -129,7 +154,8 @@ public final class IssueQuickSearch {
     }
 
     /**
-     * Select the given issue in the combo bar
+     * Select the given issue in the combo bar.
+     * 
      * @param issue 
      */
     public void setIssue(Issue issue) {
@@ -137,6 +163,7 @@ public final class IssueQuickSearch {
     }
 
     /**
+     * Returns the selected repository.
      * 
      * @return 
      */
@@ -145,6 +172,7 @@ public final class IssueQuickSearch {
     }
 
     /**
+     * Sets whether or not this component is enabled.
      * 
      * @param enabled 
      */

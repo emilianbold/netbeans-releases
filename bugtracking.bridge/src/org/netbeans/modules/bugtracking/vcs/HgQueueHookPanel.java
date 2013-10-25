@@ -100,7 +100,7 @@ public class HgQueueHookPanel extends VerticallyNonResizingPanel implements Chan
         initComponents();
         this.fieldValues = new FieldValues();
 
-        qs = IssueQuickSearch.create(this, context);
+        qs = IssueQuickSearch.create(context);
         qs.setChangeListener(this);
         qs.setEnabled(true);
         issuePanel.add(qs.getComponent(), BorderLayout.NORTH);

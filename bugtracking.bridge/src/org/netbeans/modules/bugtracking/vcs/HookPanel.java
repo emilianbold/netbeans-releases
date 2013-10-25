@@ -100,7 +100,7 @@ public class HookPanel extends VerticallyNonResizingPanel implements ChangeListe
         initComponents();
         this.fieldValues = new FieldValues();
 
-        qs = IssueQuickSearch.create(this, context);
+        qs = IssueQuickSearch.create(context);
         qs.setChangeListener(this);
         qs.setEnabled(true);
         issuePanel.add(qs.getComponent(), BorderLayout.NORTH);

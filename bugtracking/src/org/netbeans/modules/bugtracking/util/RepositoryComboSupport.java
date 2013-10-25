@@ -72,7 +72,7 @@ import static java.util.logging.Level.FINEST;
 import org.netbeans.api.queries.VersioningQuery;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
-import org.netbeans.modules.bugtracking.api.IssueQuickSearch.Filter;
+import org.netbeans.modules.bugtracking.api.IssueQuickSearch.RepositoryFilter;
 import org.netbeans.modules.bugtracking.api.Repository;
 
 /**
@@ -94,7 +94,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
     static final String LOADING_REPOSITORIES = "loading";               //NOI18N
     static final String NO_REPOSITORIES = "no repositories";            //NOI18N
     static final String SELECT_REPOSITORY = "select";                   //NOI18N
-    private Filter filter;
+    private RepositoryFilter filter;
     
     private static final Logger LOG = Logger.getLogger(RepositoryComboSupport.class.getName());
 
@@ -124,7 +124,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
      * @return
      */
     public static RepositoryComboSupport setup(JComponent component, JComboBox comboBox, boolean selectRepoIfSingle) {
-        return setup(component, comboBox, Filter.ALL, selectRepoIfSingle);
+        return setup(component, comboBox, RepositoryFilter.ALL, selectRepoIfSingle);
     }
 
     /**
@@ -138,7 +138,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
      * @return
      */
     public static RepositoryComboSupport setup(JComponent component, JComboBox comboBox, Repository defaultRepo) {
-        return setup(component, comboBox, Filter.ALL, defaultRepo);
+        return setup(component, comboBox, RepositoryFilter.ALL, defaultRepo);
     }
     
 /**
@@ -152,7 +152,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
      * @return
      */
     public static RepositoryComboSupport setup(JComponent component, JComboBox comboBox, File referenceFile) {
-        return setup(component, comboBox, Filter.ALL, referenceFile);
+        return setup(component, comboBox, RepositoryFilter.ALL, referenceFile);
     }
     
     /**
@@ -167,7 +167,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
      *                        otherwise no repository is selected in the combo
      * @return
      */
-    public static RepositoryComboSupport setup(JComponent component, JComboBox comboBox, Filter mode, boolean selectRepoIfSingle) {
+    public static RepositoryComboSupport setup(JComponent component, JComboBox comboBox, RepositoryFilter mode, boolean selectRepoIfSingle) {
         RepositoryComboSupport repositoryComboSupport
                 = new RepositoryComboSupport(comboBox, (Repository) null,
                                                        (File) null,
@@ -190,7 +190,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
      * @param defaultRepo the repository to be selected
      * @return
      */
-    public static RepositoryComboSupport setup(JComponent component, JComboBox comboBox, Filter mode, Repository defaultRepo) {
+    public static RepositoryComboSupport setup(JComponent component, JComboBox comboBox, RepositoryFilter mode, Repository defaultRepo) {
         if (defaultRepo == null) {
             throw new IllegalArgumentException("default repository must be specified"); //NOI18N
         }
@@ -216,7 +216,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
      * @param referenceFile file associated with a repository
      * @return
      */
-    public static RepositoryComboSupport setup(JComponent component, JComboBox comboBox, Filter filter, File referenceFile) {
+    public static RepositoryComboSupport setup(JComponent component, JComboBox comboBox, RepositoryFilter filter, File referenceFile) {
         if (referenceFile == null) {
             throw new IllegalArgumentException("reference file must be specified"); //NOI18N
         }
@@ -675,8 +675,8 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         for (RepositoryImpl impl : repoImpls) {
             boolean hidden = hideLocalRepository && BugtrackingManager.isLocalConnectorID(impl.getConnectorId());
             if ( !hidden && 
-                 ( filter == Filter.ALL || 
-                 ( filter == Filter.ATTACH_FILE && impl.canAttachFiles()))) 
+                 ( filter == RepositoryFilter.ALL || 
+                 ( filter == RepositoryFilter.ATTACH_FILE && impl.canAttachFiles()))) 
             {
                 repos.add(impl.getRepository());
             }
