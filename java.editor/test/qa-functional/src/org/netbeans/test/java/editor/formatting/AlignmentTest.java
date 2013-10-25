@@ -197,7 +197,7 @@ public class AlignmentTest extends FormattingOptionsTest {
         }
     }
 
-    public void testTermaryOperatorsAlignment() {
+    public void testTernaryOperatorsAlignment() {
         try {
             AlignmentOperator operator = FormattingOptionsOperator.invoke(true).getAlignmentOperator();
             operator.getAlignmentTernaryOperators().changeSelection(true);
