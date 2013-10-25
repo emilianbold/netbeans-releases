@@ -54,12 +54,15 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.web.beans.CdiUtil;
 import org.netbeans.modules.web.jsf.hints.JsfHintsContext;
-import org.netbeans.modules.web.jsf.hints.JsfHintsRule;
 import org.netbeans.modules.web.jsf.hints.JsfHintsUtils;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.Severity;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
+import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -67,23 +70,31 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class FlowScopedBeanWithoutCdi implements JsfHintsRule {
+@Hint(displayName = "#FlowScopedBeanWithoutCdi.display.name",
+        description = "#FlowScopedBeanWithoutCdi.err",
+        id = "o.n.m.web.jsf.hints.FlowScopedBeanWithoutCdi",
+        category = "javaee/jsf",
+        enabled = true,
+        suppressWarnings = "FlowScopedBeanWithoutCdi")
+@NbBundle.Messages({
+    "FlowScopedBeanWithoutCdi.display.name=@FlowScoped bean in the non-CDI capable project",
+    "FlowScopedBeanWithoutCdi.err=@FlowScoped bean in the non-CDI capable project"
+})
+public class FlowScopedBeanWithoutCdi {
 
     private static final String FLOW_SCOPED = "javax.faces.flow.FlowScoped"; //NOI18N
 
-    @Messages({
-        "FlowScopedBeanWithoutCdi.lbl.flow.scoped.without.cdi=@FlowScoped bean in the non-CDI capable project"
-    })
-    @Override
-    public Collection<ErrorDescription> check(JsfHintsContext ctx) {
-        CompilationInfo info = ctx.getCompilationInfo();
-        List<ErrorDescription> hints = new ArrayList<>();
+    @TriggerTreeKind(Tree.Kind.CLASS)
+    public static Collection<ErrorDescription> run(HintContext hintContext) {
+        List<ErrorDescription> problems = new ArrayList<>();
+        final JsfHintsContext ctx = JsfHintsUtils.getOrCacheContext(hintContext);
 
         Project project = ctx.getProject();
         if (project == null) {
-            return hints;
+            return problems;
         }
 
+        CompilationInfo info = ctx.getCompilationInfo();
         for (TypeElement typeElement : info.getTopLevelElements()) {
             for (AnnotationMirror annotationMirror : typeElement.getAnnotationMirrors()) {
                 if (FLOW_SCOPED.equals(annotationMirror.getAnnotationType().toString())) {
@@ -91,17 +102,17 @@ public class FlowScopedBeanWithoutCdi implements JsfHintsRule {
                     CdiUtil cdiUtil = project.getLookup().lookup(CdiUtil.class);
                     if (cdiUtil == null || !cdiUtil.isCdiEnabled()) {
                         Tree tree = info.getTrees().getTree(typeElement, annotationMirror);
-                        hints.add(JsfHintsUtils.createProblem(
+                        problems.add(JsfHintsUtils.createProblem(
                                 tree,
                                 info,
-                                Bundle.FlowScopedBeanWithoutCdi_lbl_flow_scoped_without_cdi(),
+                                Bundle.FlowScopedBeanWithoutCdi_display_name(),
                                 Severity.WARNING,
                                 Arrays.<Fix>asList(new FixCdiAvailability(project))));
                     }
                 }
             }
         }
-        return hints;
+        return problems;
     }
 
     /**
