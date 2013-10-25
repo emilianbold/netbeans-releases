@@ -51,17 +51,17 @@ import java.awt.event.ItemListener;
 import java.io.File;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingOwnerSupport;
 import static org.netbeans.modules.bugtracking.BugtrackingOwnerSupport.ContextType.MAIN_PROJECT_ONLY;
 import org.netbeans.modules.bugtracking.IssueImpl;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.IssueQuickSearch.RepositoryFilter;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.api.RepositoryManager;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
 
 /**
@@ -201,7 +201,6 @@ public class QuickSearchPanel extends javax.swing.JPanel implements ItemListener
         repositoryComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QuickSearchPanel.class, "QuickSearchPanel.repositoryComboBox.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel issueLabel;
     private javax.swing.JPanel issuePanel;
@@ -213,10 +212,11 @@ public class QuickSearchPanel extends javax.swing.JPanel implements ItemListener
     // End of variables declaration//GEN-END:variables
 
     private void onNewRepo() {
-        Repository repo = RepositoryManager.getInstance().createRepository();
-        if(repo == null) {
+        RepositoryImpl repoImpl = BugtrackingUtil.createRepository();
+        if(repoImpl == null) {
             return;
         }
+        Repository repo = repoImpl.getRepository();
         repositoryComboBox.addItem(repo);
         repositoryComboBox.setSelectedItem(repo);
     }

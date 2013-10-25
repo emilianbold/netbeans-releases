@@ -54,7 +54,7 @@ import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 
 /**
- * Providing access to registered {@link Repository}-s and related functionality.
+ * Manages registered {@link Repository}-s and related functionality.
  * 
  * @author Tomas Stupka
  */
@@ -84,6 +84,7 @@ public final class RepositoryManager {
     
     /**
      * Returns the only existing <code>RepositoryManager</code> instance.
+     * 
      * @return a RepositoryManager
      */
     public static synchronized RepositoryManager getInstance() {
@@ -113,9 +114,9 @@ public final class RepositoryManager {
     
     /**
      * Returns all registered repositories, including those which are
-     * currently opened in a logged in team severs dashboards.
+     * currently opened in a logged in team sever dashboard.
      * 
-     * @return 
+     * @return all known repositories
      */
     public Collection<Repository> getRepositories() {
         LinkedList<Repository> ret = new LinkedList<Repository>();
@@ -125,7 +126,7 @@ public final class RepositoryManager {
     
     /**
      * Returns all registered repositories for a connector with the given id, 
-     * including those which are currently opened in a logged in team severs dashboards.
+     * including those which are currently opened in a logged in team sever dashboard.
      * 
      * @param connectorId
      * @return 
@@ -135,17 +136,6 @@ public final class RepositoryManager {
         ret.addAll(TeamUtil.getRepositories(connectorId, false, true));
         ret.addAll(toRepositories(registry.getRepositories(connectorId)));
         return ret;
-    }
-    
-    /**
-     * Opens the modal create repository dialog and eventually returns a repository.<br>
-     * Blocks until the dialog isn't closed. 
-     * 
-     * @return a repository in case it was properly specified n the ui, otherwise null
-     */
-    public Repository createRepository() {
-        RepositoryImpl repoImpl = BugtrackingUtil.createRepository(false);
-        return repoImpl != null ? repoImpl.getRepository() : null;
     }
     
     private Collection<Repository> toRepositories(Collection<RepositoryImpl> impls) {

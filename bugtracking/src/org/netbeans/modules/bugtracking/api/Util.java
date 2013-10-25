@@ -43,6 +43,7 @@ package org.netbeans.modules.bugtracking.api;
 
 import java.io.File;
 import org.netbeans.modules.bugtracking.IssueImpl;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
@@ -107,6 +108,17 @@ public final class Util {
     public static Issue createIssue(Repository repository, String summary, String description) {
         IssueImpl issueImpl = repository.getImpl().createNewIssue(summary, description);
         return issueImpl.getIssue();
+    }
+    
+    /**
+     * Opens a modal create repository dialog and eventually returns a repository.<br>
+     * Blocks until the dialog isn't closed. 
+     * 
+     * @return a repository in case it was properly specified, otherwise null
+     */
+    public static Repository createRepository() {
+        RepositoryImpl repoImpl = BugtrackingUtil.createRepository(false);
+        return repoImpl != null ? repoImpl.getRepository() : null;
     }
     
     /**

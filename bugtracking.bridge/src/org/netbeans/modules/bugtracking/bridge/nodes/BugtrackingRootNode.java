@@ -58,6 +58,7 @@ import javax.swing.Action;
 import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
+import org.netbeans.modules.bugtracking.api.Util;
 import org.openide.nodes.*;
 import org.openide.util.NbBundle;
 
@@ -67,8 +68,6 @@ import org.openide.util.NbBundle;
  * @author Tomas Stupka
  */
 public class BugtrackingRootNode extends AbstractNode {
-    
-    private static final Logger LOG = Logger.getLogger(BugtrackingRootNode.class.getName());
     
     private static final String BUGTRACKING_NODE_NAME = "bugtracking";                                       // NOI18N
     private static final String ICON_BASE = "org/netbeans/modules/bugtracking/ui/resources/bugtracking.png"; // NOI18N
@@ -113,9 +112,9 @@ public class BugtrackingRootNode extends AbstractNode {
     public Action[] getActions(boolean context) {
         return new Action[] {
             new AbstractAction(NbBundle.getMessage(BugtrackingRootNode.class, "LBL_CreateRepository")) { // NOI18N
-            @Override
+                @Override
                 public void actionPerformed(ActionEvent e) {
-                    RepositoryManager.getInstance().createRepository();
+                    Util.createRepository();
                 }
             }
         };
