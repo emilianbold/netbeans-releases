@@ -53,7 +53,16 @@ import org.openide.util.Lookup;
 
 
 /**
- *
+ * Find a bugtracking repository given by a file managed in the IDE.
+ * 
+ * <p>
+ * This is done based on:
+ * <ul>
+ * <li> The IDE keeps track in what context bugtracking related operations were done 
+ * - e.g. when closing an issue during a VCS commit.</li>
+ * <li> Other systems might provide information about bugtracking repositories - e.g. Maven</li>
+ * </p>
+ * 
  * @author Tomas Stupka
  */
 public final class RepositoryQuery {
@@ -61,18 +70,21 @@ public final class RepositoryQuery {
     
     private RepositoryQuery() {};
     
-    public static synchronized RepositoryQuery getInstance() {
-        if(instance == null) {
-            instance = new RepositoryQuery();
-        }
-        return instance;
-    }
-    
-    public Repository getRepository(FileObject fileObject, boolean askIfUnknown) {
+    /**
+     * Determines a Repository by the given file. 
+     * 
+     * @param fileObject the file
+     * @param askIfUnknown if <code>true</code> and no repository was found,
+     * than a repository picker is opened in a modal dialog.
+     * 
+     * @return a Repository
+     */
+    public static Repository getRepository(FileObject fileObject, boolean askIfUnknown) {
         if(fileObject == null) {
             return null;
         }
-        Collection<? extends RepositoryQueryImplementation> impls = getImplementations();
+        RepositoryQuery rq = getInstance();
+        Collection<? extends RepositoryQueryImplementation> impls = rq.getImplementations();
         for (RepositoryQueryImplementation repositoryOwnerQuery : impls) {
             String url = repositoryOwnerQuery.getRepositoryUrl(fileObject);
             if(url != null) {
@@ -84,9 +96,20 @@ public final class RepositoryQuery {
                 }
             }
         }
-        return getRepositoryIntern(fileObject, askIfUnknown);
+        return rq.getRepositoryIntern(fileObject, askIfUnknown);
     }
 
+    /**
+     * 
+     * @return 
+     */
+    private static synchronized RepositoryQuery getInstance() {
+        if(instance == null) {
+            instance = new RepositoryQuery();
+        }
+        return instance;
+    }
+    
     private Collection<? extends RepositoryQueryImplementation> getImplementations() {
         Collection<? extends RepositoryQueryImplementation> result = Lookup.getDefault().lookupAll(RepositoryQueryImplementation.class);
         return result;
