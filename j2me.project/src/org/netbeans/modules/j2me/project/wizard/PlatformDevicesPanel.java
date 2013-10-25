@@ -47,8 +47,6 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
@@ -117,6 +115,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
     private J2MEProjectProperties props;
     private Map<String/*|null*/, Map<String, String/*|null*/>/*|null*/> configs;
     private DataSource[] data;
+    private boolean wizard;
 
     public PlatformDevicesPanel(J2MEProjectProperties properties) {
         this.props = properties;
@@ -132,7 +131,8 @@ public class PlatformDevicesPanel extends SettingsPanel {
     }
 
     private void initializeWizard() {
-        preInitComponents(true);
+        this.wizard = true;
+        preInitComponents();
         initComponents();
         postInitComponents();
         this.configs = null;
@@ -144,7 +144,8 @@ public class PlatformDevicesPanel extends SettingsPanel {
     }
 
     private void initializeCustomizer() {
-        preInitComponents(false);
+        this.wizard = false;
+        preInitComponents();
         initComponents();
         postInitComponents();
         this.configs = props.RUN_CONFIGS;
@@ -159,7 +160,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
         configChanged(props.activeConfig);
     }
 
-    private void preInitComponents(boolean wizard) {
+    private void preInitComponents() {
         if (wizard) {
             platformsModel = J2MEProjectUtils.createPlatformComboBoxModel();
         } else {
@@ -167,7 +168,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
             platformsModel = props.J2ME_PLATFORM_MODEL;
             if (platformsModel.getSize() == 0) {
                 String platformActive = props.getEvaluator().getProperty(ProjectProperties.PLATFORM_ACTIVE);
-                platformsModel = new DefaultComboBoxModel(new String[] {NbBundle.getMessage(PlatformDevicesPanel.class, "ERROR_MissingJ2MEPlatform", platformActive)}); //NOI18N
+                platformsModel = new DefaultComboBoxModel(new String[]{NbBundle.getMessage(PlatformDevicesPanel.class, "ERROR_MissingJ2MEPlatform", platformActive)}); //NOI18N
             }
         }
         devicesModel = new DefaultComboBoxModel();
@@ -263,28 +264,9 @@ public class PlatformDevicesPanel extends SettingsPanel {
     }
 
     private void initOptionalPackages() {
-        String platformApis = null;
-        if(props != null) {
-            platformApis = props.getEvaluator().getProperty(J2MEProjectProperties.PLATFORM_APIS);
-        }
-        if(platformApis == null) {
-            platformApis = "";
-        }
         optionalPackagesPanel.removeAll();
         for (JCheckBox cb : optionalPackages) {
-            if(platformApis.contains(cb.getActionCommand())) {
-                cb.setSelected(true);
-            }
             optionalPackagesPanel.add(cb, new GridBagConstraints(0, GridBagConstraints.RELATIVE, GridBagConstraints.REMAINDER, 1, 1.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
-        }
-        ActionListener actionListener = new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                props.putAdditionalProperty(J2MEProjectProperties.PLATFORM_APIS, getOptionalAPI());
-            }
-        };
-        for (JCheckBox cb : optionalPackages) {
-            cb.addActionListener(actionListener);
         }
     }
 
@@ -555,7 +537,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
 
     private void btnManagePlatformsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnManagePlatformsActionPerformed
         PlatformsCustomizer.showCustomizer(getPlatform());
-        preInitComponents(configs == null); //if configs==null, then this panel is wizard, otherwise customizer
+        preInitComponents();
         initJdkPlatform();
         initPlatformAndDevices();
         if (panel != null) {
@@ -1053,14 +1035,11 @@ public class PlatformDevicesPanel extends SettingsPanel {
         public void update(String activeConfig) {
             String selectedOptions = getPropertyValue(activeConfig, getPropertyName());
             if (selectedOptions != null) {
-                String[] singleOptions = selectedOptions.split(","); //NOI18N
                 for (JCheckBox box : options) {
-                    box.setSelected(false);
-                    for (String option : singleOptions) {
-                        if (box.getActionCommand().equals(option)) {
-                            box.setSelected(true);
-                            break;
-                        }
+                    if (selectedOptions.contains(box.getActionCommand())) {
+                        box.setSelected(true);
+                    } else {
+                        box.setSelected(false);
                     }
                 }
             } else {
