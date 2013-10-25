@@ -41,26 +41,22 @@
  */
 package org.netbeans.modules.cnd.qnavigator.navigator;
 
-import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.model.tasks.CndParserResult;
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -74,43 +70,44 @@ public class NavigatorNodeFactoryTask extends ParserResultTask<CndParserResult> 
 
     @Override
     public void run(CndParserResult result, SchedulerEvent event) {
-        try {
-            canceled = new AtomicBoolean(false);
-            final URI uri = result.getSnapshot().getSource().getFileObject().toURI();
-            final DataObject dobj = DataObject.find(CndFileUtils.urlToFileObject(uri.getPath()));
-            final Collection<CsmFile> translationUnits = result.getCsmFiles();
-            final NavigatorComponent navigator = NavigatorComponent.getInstance();
-            if (navigator == null) {
-                return;
-            }
-            CsmFile csmFile = null;
-            if (translationUnits != null && !translationUnits.isEmpty()) {
-                csmFile = translationUnits.iterator().next();
-            }
-            final NavigatorPanelUI panelUI = navigator.getPanelUI();
-            final NavigatorContent content = panelUI.getContent();
-            if (csmFile != null) {
-                NavigatorModel oldModel = content.getModel();
-                if (oldModel != null) {
-                    DataObject oldDobj = oldModel.getDataObject();
-                    CsmFile oldCsmFile = oldModel.getCsmFile();
-                    if (dobj.equals(oldDobj) && csmFile.equals(oldCsmFile)) {
+        canceled = new AtomicBoolean(false);
+        final NavigatorComponent navigator = NavigatorComponent.getInstance();
+        if (navigator == null) {
+            return;
+        }
+        final NavigatorPanelUI panelUI = navigator.getPanelUI();
+        final NavigatorContent content = panelUI.getContent();
+        final DataObject cdo = content.getDataObject();
+        if (cdo == null) {
+            return;
+        }
+        FileObject fo = result.getSnapshot().getSource().getFileObject();
+        if (fo == null) {
+            return;
+        }
+        String mimeType = result.getSnapshot().getMimePath().getPath();
+        CsmFile csmFile = result.getCsmFile();
+        if (csmFile != null) {
+            NavigatorModel oldModel = content.getModel();
+            if (oldModel != null) {
+                DataObject oldCdo = oldModel.getDataObject();
+                CsmFile oldCsmFile = oldModel.getCsmFile();
+                if (oldCsmFile != null && oldCsmFile.isValid()) {
+                    if (cdo.equals(oldCdo) && csmFile.equals(oldCsmFile) && csmFile.isValid()) {
                         oldModel.update(canceled, false);
                         return;
                     }
                 }
-                final NavigatorModel model = new NavigatorModel(dobj, panelUI, navigator, dobj.getPrimaryFile().getMIMEType(), csmFile);
-                if (!canceled.get()) {
-                    content.setModel(model);
-                    model.update(canceled, true);
-                }
-            } else {
-                final NavigatorModel model = new NavigatorModel(dobj, panelUI, navigator, dobj.getPrimaryFile().getMIMEType(), csmFile);
+            }
+            final NavigatorModel model = new NavigatorModel(cdo, fo, panelUI, navigator, mimeType, csmFile);
+            if (!canceled.get()) {
                 content.setModel(model);
                 model.update(canceled, true);
             }
-        } catch (DataObjectNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
+        } else {
+            final NavigatorModel model = new NavigatorModel(cdo, fo, panelUI, navigator, mimeType, csmFile);
+            content.setModel(model);
+            model.update(canceled, true);
         }
     }
 
