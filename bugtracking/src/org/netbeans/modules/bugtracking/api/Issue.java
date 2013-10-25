@@ -264,7 +264,7 @@ public final class Issue {
     }
     
     /**
-     * The Repository this issue comes from.
+     * The Repository this Issue comes from.
      * 
      * @return repository
      */

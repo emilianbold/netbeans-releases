@@ -147,7 +147,7 @@ public interface RepositoryProvider<R, Q, I> {
     public I createIssue(R r, String summary, String description);
     
     /**
-     * Returns all named queries. 
+     * Returns all named (already saved) queries. 
      * 
      * @param r an implementation specific repository
      * @return collection of queries

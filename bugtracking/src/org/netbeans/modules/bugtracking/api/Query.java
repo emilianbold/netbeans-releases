@@ -52,59 +52,95 @@ import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 
 /**
- *
+ * Represents a bugtracking Query.
+ * 
  * @author Tomas Stupka
  */
 public final class Query {
     
     /**
-     * queries issue list was changed
+     * Fired after the Query was refreshed. 
      */
     public final static String EVENT_QUERY_REFRESHED = QueryProvider.EVENT_QUERY_REFRESHED;
     
     private final QueryImpl impl;
 
+    /**
+     * C'tor
+     * @param impl 
+     */
     Query(QueryImpl impl) {
         this.impl = impl;
     }
 
+    /**
+     * Returns the tooltip text describing this Query.
+     * 
+     * @return the tooltip
+     */
     public String getTooltip() {
         return impl.getTooltip();
     }
 
-    public Collection<Issue> getIssues() {
-        List<Issue> ret = toIssues(impl.getIssues());
-        return ret;
-    }
-
+    /**
+     * Returns this Queries display name. 
+     * 
+     * @return display name
+     */
     public String getDisplayName() {
         return impl.getDisplayName();
     }
+    
+    /**
+     * The Issues returned by this Query.
+     * @return 
+     */
+    public Collection<Issue> getIssues() {
+        return toIssues(impl.getIssues());
+    }
 
+    /**
+     * Refreshes this query.
+     */
+    public void refresh() {
+        impl.refresh();
+    }
+
+    /**
+     * Returns the Repository this Query belongs to.
+     * 
+     * @return repository
+     */
+    public Repository getRepository() {
+        return impl.getRepositoryImpl().getRepository();
+    }
+    
+    /**
+     * Registers a PropertyChangeListener.
+     * 
+     * @param listener 
+     */
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         impl.addPropertyChangeListener(listener);
     }
 
+    /**
+     * Unregisters a PropertyChangeListener.
+     * 
+     * @param listener 
+     */
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         impl.removePropertyChangeListener(listener);
-    }
-
-    public void refresh() {
-        impl.refresh();
     }
 
     public void remove() {
         impl.remove();
     }
+
+    public boolean isSaved() {
+        return impl.isSaved();
+    }
     
-    QueryImpl getImpl() {
-        return impl;
-    }
-
-    public Repository getRepository() {
-        return impl.getRepositoryImpl().getRepository();
-    }
-
     private List<Issue> toIssues(Collection<IssueImpl> c) {
         List<Issue> ret = new ArrayList<Issue>(c.size());
         for (IssueImpl i : c) {
@@ -112,9 +148,9 @@ public final class Query {
         }
         return ret;
     }
-
-    public boolean isSaved() {
-        return impl.isSaved();
+    
+    QueryImpl getImpl() {
+        return impl;
     }
     
 }
