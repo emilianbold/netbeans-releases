@@ -50,17 +50,20 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.web.beans.CdiUtil;
 import org.netbeans.modules.web.jsf.hints.JsfHintsContext;
 import org.netbeans.modules.web.jsf.hints.JsfHintsRule;
 import org.netbeans.modules.web.jsf.hints.JsfHintsUtils;
+import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.util.NbBundle.Messages;
 
 /**
- * Checks @FlowScoped bean in non-CDI project.
+ * Checks FlowScoped bean in non-CDI project.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
@@ -74,7 +77,7 @@ public class FlowScopedBeanWithoutCdi implements JsfHintsRule {
     @Override
     public Collection<ErrorDescription> check(JsfHintsContext ctx) {
         CompilationInfo info = ctx.getCompilationInfo();
-        List<ErrorDescription> hints = new ArrayList<ErrorDescription>();
+        List<ErrorDescription> hints = new ArrayList<>();
 
         Project project = ctx.getProject();
         if (project == null) {
@@ -101,4 +104,34 @@ public class FlowScopedBeanWithoutCdi implements JsfHintsRule {
         return hints;
     }
 
+    /**
+     * Fix for enabling CDI in the project.
+     */
+    private static class FixCdiAvailability implements Fix {
+
+        private final Project project;
+
+        public FixCdiAvailability(Project project) {
+            this.project = project;
+        }
+
+        @Messages({
+            "# {0} - project display name",
+            "FixCdiAvailability.lbl.enable.cdi=Enable CDI in project {0}"
+        })
+        @Override
+        public String getText() {
+            ProjectInformation information = ProjectUtils.getInformation(project);
+            return Bundle.FixCdiAvailability_lbl_enable_cdi(information.getDisplayName());
+        }
+
+        @Override
+        public ChangeInfo implement() throws Exception {
+            CdiUtil cdiUtil = project.getLookup().lookup(CdiUtil.class);
+            if (cdiUtil != null) {
+                cdiUtil.enableCdi();
+            }
+            return null;
+        }
+    }
 }
