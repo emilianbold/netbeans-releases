@@ -132,7 +132,6 @@ import org.netbeans.modules.bugtracking.team.spi.TeamProject;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
-import org.netbeans.modules.bugtracking.util.OwnerUtils;
 import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.mylyn.util.WikiPanel;
 import org.netbeans.modules.mylyn.util.WikiUtils;
@@ -2808,12 +2807,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 }
             }
         });
-        if (isNew) {
-            ODCSRepository repository = issue.getRepository();
-            if (repository != null) {
-                OwnerUtils.setLooseAssociation(ODCSUtil.getRepository(repository), false);
-            }
-        }
     }//GEN-LAST:event_submitButtonActionPerformed
 
     @NbBundle.Messages({

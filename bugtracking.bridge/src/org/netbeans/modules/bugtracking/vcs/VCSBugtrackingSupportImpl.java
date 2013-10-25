@@ -48,7 +48,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
-import org.netbeans.modules.bugtracking.util.OwnerUtils;
 import org.netbeans.modules.versioning.util.VCSBugtrackingAccessor;
 
 /**
@@ -76,7 +75,7 @@ public class VCSBugtrackingSupportImpl extends VCSBugtrackingAccessor {
             LOG.log(Level.WARNING, "No issue tracker available for the given vcs url {0}", url);         // NOI18N
             return;
         }
-        OwnerUtils.setFirmAssociations(files, repo);
+        TeamUtil.setFirmAssociations(files, repo);
     }
 
 }

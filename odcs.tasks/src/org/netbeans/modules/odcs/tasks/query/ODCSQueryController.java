@@ -1130,8 +1130,6 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
             issueTable.started();
             counter = 0;
             setIssueCount(counter);
-            // XXX move to API
-            OwnerUtils.setLooseAssociation(ODCSUtil.getRepository(getRepository()), false);                 
         }
 
         @Override

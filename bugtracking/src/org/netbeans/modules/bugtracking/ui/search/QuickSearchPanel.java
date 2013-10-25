@@ -54,12 +54,14 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.bugtracking.APIAccessor;
+import org.netbeans.modules.bugtracking.BugtrackingOwnerSupport;
+import static org.netbeans.modules.bugtracking.BugtrackingOwnerSupport.ContextType.MAIN_PROJECT_ONLY;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.IssueQuickSearch.Filter;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
-import org.netbeans.modules.bugtracking.util.OwnerUtils;
 import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
 
 /**
@@ -102,17 +104,17 @@ public class QuickSearchPanel extends javax.swing.JPanel implements ItemListener
         Repository selectedRepository = getSelectedRepository();
         if(issue != null && selectedRepository != null) {
             if(referenceFile != null) {
-                // Some issue was picked and we have a file in relation 
-                // to which it was done (e.g. commit hook). Lets save the 
+                // Some issue was picked by the user and we have a file in relation 
+                // to which it was done (e.g. from a commit hook). Lets save the 
                 // assotiation between the file and the repository as it
-                // can be used next time to preselect a repo ...
-                OwnerUtils.setFirmAssociations(new File[] { referenceFile }, selectedRepository);
+                // can be used next time to preselect a repository ...
+                BugtrackingOwnerSupport.getInstance().setFirmAssociations(new File[] { referenceFile }, APIAccessor.IMPL.getImpl(selectedRepository));
             } else {
-                // Some issue was picked and we have no file context.
+                // Some issue was picked but we have no file context.
                 // Still, some nodes (eventually leading to a file) might be currently 
                 // selected in the IDE and indicationg on what the user was currently 
                 // working on. Lets save at least that weaker assiociation ...
-                OwnerUtils.setLooseAssociation(selectedRepository, true);
+                 BugtrackingOwnerSupport.getInstance().setLooseAssociation(MAIN_PROJECT_ONLY, APIAccessor.IMPL.getImpl(selectedRepository));
             }
         }
         return issue;
