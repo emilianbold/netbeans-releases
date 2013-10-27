@@ -1098,12 +1098,14 @@ public class HintTest {
          * @param golden 
          */
         private void assertSameOutput(String result, String golden) throws Exception {
-            if (Boolean.getBoolean("org.netbeans.test.hints.strictOutputCompare")) {
+            Language lng = Language.find("text/x-java");
+            if (lng == null || Boolean.getBoolean("org.netbeans.test.hints.strictOutputCompare")) {
                 assertEquals("The output code does not match the expected code.", reduceWhitespaces(golden), 
                         reduceWhitespaces(result));
+                return;
             }
-            TokenHierarchy h1 = TokenHierarchy.create(result, Language.find("text/x-java"));
-            TokenHierarchy h2 = TokenHierarchy.create(golden, Language.find("text/x-java"));
+            TokenHierarchy h1 = TokenHierarchy.create(result, lng);
+            TokenHierarchy h2 = TokenHierarchy.create(golden, lng);
             TokenSequence s1 = h1.tokenSequence();
             TokenSequence s2 = h2.tokenSequence();
             while (s2.moveNext()) {
