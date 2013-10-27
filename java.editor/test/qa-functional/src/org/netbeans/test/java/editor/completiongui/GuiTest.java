@@ -161,7 +161,7 @@ public class GuiTest extends EditorTestCase {
     }
     
     public void testKeyWord() {
-        String pattern  = ".*protected.*";
+        String pattern  = ".*private.*";
         performCodeCompletion("TestSimpleCase","p", 12, 2, pattern, false);
     }
     

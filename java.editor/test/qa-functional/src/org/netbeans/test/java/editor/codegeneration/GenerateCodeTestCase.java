@@ -77,15 +77,19 @@ public class GenerateCodeTestCase extends EditorTestCase {
         super.tearDown();
     }
 
-    protected void waitAndCompare(String expected) {
-        waitMaxMilisForValue(1500, new EditorValueResolver(expected), Boolean.TRUE);
-        if (!editor.getText().contains(expected)) {
-            System.out.println("Text pattern:");
-            System.out.println(expected);
-            System.out.println("-------------------");
-            System.out.println(editor.getText());
-        }
-        assertTrue("Expected code is not inserted", editor.getText().contains(expected));
+    protected void waitAndCompare(String... expected) {
+        for (String string : expected) {
+            waitMaxMilisForValue(1500, new EditorValueResolver(string), Boolean.TRUE);
+            if (!editor.getText().contains(string)) {
+                System.out.println("Text pattern:");
+                System.out.println(string);
+                System.out.println("-------------------");
+                System.out.println(editor.getText());
+            } else {
+                return;
+            }            
+        }        
+        fail("Expected code is not inserted");
     }
 
     protected void waitAndCompareRegexp(String regexp) {
