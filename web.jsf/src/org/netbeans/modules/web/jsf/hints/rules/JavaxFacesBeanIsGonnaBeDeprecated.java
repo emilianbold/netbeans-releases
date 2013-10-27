@@ -51,30 +51,40 @@ import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.web.jsf.hints.JsfHintsContext;
-import org.netbeans.modules.web.jsf.hints.JsfHintsRule;
 import org.netbeans.modules.web.jsf.hints.JsfHintsUtils;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.Severity;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.openide.util.NbBundle;
 
 /**
- *
+ * Checks usage of the deprecated package javax.faces.bean.
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class JavaxFacesBeanIsGonnaBeDeprecated implements JsfHintsRule {
+@Hint(displayName = "#JavaxFacesBeanIsGonnaBeDeprecated.display.name",
+        description = "#JavaxFacesBeanIsGonnaBeDeprecated.err",
+        id = "o.n.m.web.jsf.hints.JavaxFacesBeanIsGonnaBeDeprecated",
+        category = "javaee/jsf",
+        enabled = true,
+        suppressWarnings = "JavaxFacesBeanIsGonnaBeDeprecated")
+@NbBundle.Messages({
+    "JavaxFacesBeanIsGonnaBeDeprecated.display.name=Classes of javax.faces.bean are gonna be deprecated",
+    "JavaxFacesBeanIsGonnaBeDeprecated.err=Annotations from the package javax.faces.bean will be deprecated in the next JSF version. CDI and Java EE ones are recommended instead."
+})
+public class JavaxFacesBeanIsGonnaBeDeprecated {
 
     private static final String JAVAX_FACES_BEAN = "javax.faces.bean"; //NOI18N
 
-    @NbBundle.Messages({
-        "JavaxFacesBeanIsGonnaBeDeprecated.lbl.package.will.be.deprecated=Annotations from the package javax.faces.bean"
-            + " will be deprecated in the next JSF version. CDI ones are recommended instead."
-    })
-    @Override
-    public Collection<ErrorDescription> check(JsfHintsContext ctx) {
-        List<ErrorDescription> hints = new ArrayList<ErrorDescription>();
+    @TriggerTreeKind(Tree.Kind.CLASS)
+    public static Collection<ErrorDescription> run(HintContext hintContext) {
+        List<ErrorDescription> problems = new ArrayList<>();
+        final JsfHintsContext ctx = JsfHintsUtils.getOrCacheContext(hintContext);
+
         if (ctx.getJsfVersion() == null || !ctx.getJsfVersion().isAtLeast(JSFVersion.JSF_2_2)) {
-            return hints;
+            return problems;
         }
 
         CompilationInfo info = ctx.getCompilationInfo();
@@ -83,16 +93,16 @@ public class JavaxFacesBeanIsGonnaBeDeprecated implements JsfHintsRule {
                 if (annotationMirror.getAnnotationType().toString().startsWith(JAVAX_FACES_BEAN)) {
                     // it's javax.faces.bean annotation
                     Tree tree = info.getTrees().getTree(typeElement, annotationMirror);
-                    hints.add(JsfHintsUtils.createProblem(
+                    problems.add(JsfHintsUtils.createProblem(
                             tree,
                             info,
-                            Bundle.JavaxFacesBeanIsGonnaBeDeprecated_lbl_package_will_be_deprecated(),
+                            Bundle.JavaxFacesBeanIsGonnaBeDeprecated_display_name(),
                             Severity.HINT,
                             Arrays.<Fix>asList()));
                 }
             }
         }
-        return hints;
+        return problems;
     }
 
 }
