@@ -77,7 +77,7 @@ public class AssignResultToVariableTest extends TreeRuleTestBase {
                        111 - 25,
                        "0:86-0:86:hint:Assign Return Value To New Variable",
                        "FixImpl",
-                       "package test; public class Test {public void t() {java.util.List<String> l = null;String get = l.get(0); }}");
+                       "package test; public class Test {public void t() {java.util.List<String> l = null; String get = l.get(0); }}");
     }
 
     public void testApplyHintGenericType2() throws Exception {
@@ -86,7 +86,7 @@ public class AssignResultToVariableTest extends TreeRuleTestBase {
                        121 - 25,
                        "0:96-0:96:hint:Assign Return Value To New Variable",
                        "FixImpl",
-                       "package test; public class Test {public void t() {java.util.List<? extends String> l = null;String get = l.get(0); }}");
+                       "package test; public class Test {public void t() {java.util.List<? extends String> l = null; String get = l.get(0); }}");
     }
 
     public void testApplyHintGenericType3() throws Exception {
@@ -139,7 +139,7 @@ public class AssignResultToVariableTest extends TreeRuleTestBase {
                        "package test; public class Test {public void t() { new Te|st(); } private static class Test {} }",
                        "0:57-0:57:hint:Assign Return Value To New Variable",
                        "FixImpl",
-                       "package test; public class Test {public void t() {Test test = new Test(); } private static class Test {} }");
+                       "package test; public class Test {public void t() { Test test = new Test(); } private static class Test {} }");
     }
 
     public void testNewClass2() throws Exception {
@@ -147,7 +147,7 @@ public class AssignResultToVariableTest extends TreeRuleTestBase {
                        "package test; public class Test {public void t() { new te|st(); } private static class test {} }",
                        "0:57-0:57:hint:Assign Return Value To New Variable",
                        "FixImpl",
-                       "package test; public class Test {public void t() {test test = new test(); } private static class test {} }");
+                       "package test; public class Test {public void t() { test test = new test(); } private static class test {} }");
     }
 
     public void testNewClass133825a() throws Exception {
@@ -155,7 +155,7 @@ public class AssignResultToVariableTest extends TreeRuleTestBase {
                        "package test; public class Test {public void t() { new Te|st<String>(); } private static class Test<T> {}}",
                        "0:57-0:57:hint:Assign Return Value To New Variable",
                        "FixImpl",
-                       "package test; public class Test {public void t() {Test<String> test = new Test<String>(); } private static class Test<T> {}}");
+                       "package test; public class Test {public void t() { Test<String> test = new Test<String>(); } private static class Test<T> {}}");
     }
 
     public void testNewClass133825b() throws Exception {
@@ -163,7 +163,7 @@ public class AssignResultToVariableTest extends TreeRuleTestBase {
                        "package test; public class Test {public void t() { new Test.In|ner(); } private static class Inner {} }",
                        "0:62-0:62:hint:Assign Return Value To New Variable",
                        "FixImpl",
-                       "package test; public class Test {public void t() {Inner inner = new Test.Inner(); } private static class Inner {} }");
+                       "package test; public class Test {public void t() { Inner inner = new Test.Inner(); } private static class Inner {} }");
     }
 
     public void testAnonymousClass138223() throws Exception {
@@ -171,7 +171,7 @@ public class AssignResultToVariableTest extends TreeRuleTestBase {
                 "package test; public class Test {public void t() { new Run|nable() { public void run() { } }; } }",
                 "0:58-0:58:hint:Assign Return Value To New Variable",
                 "FixImpl",
-                "package test; public class Test {public void t() {Runnable runnable = new Runnable() { public void run() { } }; } }");
+                "package test; public class Test {public void t() { Runnable runnable = new Runnable() { public void run() { } }; } }");
     }
 
     public void testForgiving1() throws Exception {
@@ -266,7 +266,7 @@ public class AssignResultToVariableTest extends TreeRuleTestBase {
                        "package test; public class Test {public void t() { new Run|nable() { public void run() { } } } }",
                        "0:58-0:58:hint:Assign Return Value To New Variable",
                        "FixImpl",
-                       "package test; public class Test {public void t() {Runnable runnable = new Runnable() { public void run() { } }; } }");
+                       "package test; public class Test {public void t() { Runnable runnable = new Runnable() { public void run() { } }; } }");
     }
 
     public void testAddSemicolon2() throws Exception {
@@ -274,7 +274,7 @@ public class AssignResultToVariableTest extends TreeRuleTestBase {
                        "package test; public class Test {public void t() {java.util.List<String> l = null; l.ge|t(0) }}",
                        "0:87-0:87:hint:Assign Return Value To New Variable",
                        "FixImpl",
-                       "package test; public class Test {public void t() {java.util.List<String> l = null;String get = l.get(0); }}");
+                       "package test; public class Test {public void t() {java.util.List<String> l = null; String get = l.get(0); }}");
     }
 
     public void test197050() throws Exception {
