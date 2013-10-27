@@ -81,7 +81,11 @@ public class CreateConstructorTest extends GenerateCodeTestCase {
                     "    public testSimpleCase(ThreadGroup group, Runnable target) {\n" +
                     "        super(group, target);\n" +
                     "    }\n";
-            waitAndCompare(expected);
+            String expected2 = "" +
+                    "    public testSimpleCase(ThreadGroup tg, Runnable r) {\n" +
+                    "        super(tg, r);\n" +
+                    "    }\n";
+            waitAndCompare(expected, expected2);
         } finally {
             editor.close(false);
         }
@@ -124,11 +128,16 @@ public class CreateConstructorTest extends GenerateCodeTestCase {
             jto.selectRow(2);
             gco.btOK().push();
             String expected = "" +
-                    "    public testSimpleCase(ThreadGroup group, Runnable target, String name, long stackSize, double c) {\n" +
+                    "    public testSimpleCase(double c, ThreadGroup group, Runnable target, String name, long stackSize) {\n" +
                     "        super(group, target, name, stackSize);\n" +
                     "        this.c = c;\n" +
                     "    }\n";
-            waitAndCompare(expected);
+            String expected2 = "" +
+                    "    public testSimpleCase(double c, ThreadGroup tg, Runnable r, String string, long l) {\n" +
+                    "        super(tg, r, string, l);\n" +
+                    "        this.c = c;\n" +
+                    "    }\n";
+            waitAndCompare(expected, expected2);
         } finally {
             editor.close(false);
         }
@@ -153,7 +162,11 @@ public class CreateConstructorTest extends GenerateCodeTestCase {
                     "    public testSimpleCase(ThreadGroup group, Runnable target, String name, long stackSize) {\n" +
                     "        super(group, target, name, stackSize);\n" +
                     "    }\n";
-            waitAndCompare(expected);
+            String expected2 = "" +
+                    "    public testSimpleCase(ThreadGroup tg, Runnable r, String string, long l) {\n" +
+                    "        super(tg, r, string, l);\n" +
+                    "    }\n";
+            waitAndCompare(expected, expected2);
         } finally {
             editor.close(false);
         }

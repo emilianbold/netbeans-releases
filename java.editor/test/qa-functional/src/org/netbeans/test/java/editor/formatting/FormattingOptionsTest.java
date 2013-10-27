@@ -65,12 +65,13 @@ public class FormattingOptionsTest extends EditorTestCase {
     }
 
     public static Test suite() {
-        return NbModuleSuite.createConfiguration(FormattingOptionsTest.class)
+        return NbModuleSuite.createConfiguration(GeneralFormattingOptionsTest.class)
                 .addTest(GeneralFormattingOptionsTest.class)
                 .addTest(JavaTabsAndIndentsTest.class)
                 .addTest(AlignmentTest.class)
                 .enableModules(".*")
-                .clusters(".*").suite();
+                .clusters(".*")
+                .suite();
     }
 
     @Override
