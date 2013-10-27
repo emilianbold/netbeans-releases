@@ -351,6 +351,12 @@ public class CasualDiff {
     }
 
     public int endPos(JCTree t) {
+        // compensate for FieldGroupTree, see issue #237574
+        if (t instanceof FieldGroupTree) {
+            FieldGroupTree fgt = (FieldGroupTree)t;
+            VariableTree vt = fgt.getVariables().get(fgt.getVariables().size() - 1);
+            return TreeInfo.getEndPos((JCTree)vt, oldTopLevel.endPositions);
+        }
         return TreeInfo.getEndPos(t, oldTopLevel.endPositions);
         }
 
@@ -3169,6 +3175,7 @@ public class CasualDiff {
         if (!matcher.match()) {
             return localPointer;
         }
+        Queue<JCTree> deletedItems = new LinkedList<JCTree>(); // deleted items
         JCTree lastdel = null; // last deleted element
         ResultItem<JCTree>[] result = matcher.getResult();
 
@@ -3223,7 +3230,8 @@ public class CasualDiff {
                 case MODIFY: {
                     lastGroup = group;
                     int[] bounds = estimator.getPositions(i);
-                    bounds[0] = Math.min(bounds[0], getCommentCorrectedOldPos(oldList.get(i)));
+                    // replace from the actual start, leaving whitespace, currently defined only for MemberEstimator
+                    bounds[0] = Math.min(bounds.length > 4 ? bounds[4] : bounds[0], getCommentCorrectedOldPos(oldList.get(i)));
                     copyTo(localPointer, bounds[0], printer);
                     localPointer = diffTree(oldList.get(i), item.element, bounds);
                     lastdel = null;
@@ -3264,38 +3272,61 @@ public class CasualDiff {
                             }
                         }
                     }
+                    JCTree ld = null;
+//                    if (deletedItems != null && !deletedItems.isEmpty()) {
+//                        ld = deletedItems.poll();
+//                    }
                     if (!found) {
                         if (lastdel != null) {
                             boolean wasInFieldGroup = false;
+                            // PENDING - should it be tested also in the loop of *all* deleted items ? Originally both the 
+                            // FieldGroup and others only cared about the lastdel Tree.
                             if(lastdel instanceof FieldGroupTree) {
                                 FieldGroupTree fieldGroupTree = (FieldGroupTree) lastdel;
                                 for (JCVariableDecl var : fieldGroupTree.getVariables()) {
                                     if(treesMatch(item.element, var, false)) {
+                                        ld = lastdel;
                                         wasInFieldGroup = true;
                                         oldTrees.remove(item.element);
                                         break;
                                     }
                                 }
                             }
-                            if(wasInFieldGroup || treesMatch(item.element, lastdel, false)) {
+                            boolean match = wasInFieldGroup;
+                            for (Iterator<JCTree> it = deletedItems.iterator(); !match && it.hasNext(); ) {
+                                ld = it.next();
+                                if (match = treesMatch(item.element, ld, false)) {
+                                    it.remove();
+                                }
+                            }
+//                            while (!match && (ld = deletedItems.poll()) != null) {
+//                                match = treesMatch(item.element, ld, false);
+//                            }
+                            if(match) {
                                 VeryPretty oldPrinter = this.printer;
                                 int old = oldPrinter.indent();
                                 this.printer = new VeryPretty(diffContext, diffContext.style, tree2Tag, tree2Doc, tag2Span, origText, oldPrinter.toString().length() + oldPrinter.getInitialOffset());//XXX
                                 this.printer.reset(old);
                                 this.printer.oldTrees = oldTrees;
-                                int index = oldList.indexOf(lastdel);
+                                int index = oldList.indexOf(ld);
                                 int[] poss = estimator.getPositions(index);
                                 //TODO: should the original text between the return position of the following method and poss[1] be copied into the new text?
-                                localPointer = Math.max(localPointer - 1, diffTree(lastdel, item.element, poss));
+                                int diffTo = diffTree(ld, item.element, poss);
+                                copyTo(diffTo, poss[1]);
+                                localPointer = Math.max(localPointer, poss[1]);
                                 printer.print(this.printer.toString());
                                 printer.reindentRegions.addAll(this.printer.reindentRegions);
                                 this.printer = oldPrinter;
                                 this.printer.undent(old);
-                                lastdel = null;
+                                if (deletedItems.isEmpty()) {
+                                    lastdel = null;
+                                }
                                 break;
                             }
                         }
                         if (LineInsertionType.BEFORE == estimator.lineInsertType()) printer.newline();
+                        // PENDING: although item.element may be among oldTrees, its surrounding whitespaces are not used
+                        // at all
                         printer.print(item.element);
                         if (LineInsertionType.AFTER == estimator.lineInsertType()) printer.newline();
                     }
@@ -3306,10 +3337,14 @@ public class CasualDiff {
                     if (localPointer < pos[0] && lastdel == null) {
                         copyTo(localPointer, pos[0], printer);
                     }
+                    if (lastdel == null) {
+                        deletedItems.clear();
+                    }
                     lastdel = oldList.get(i);
-                    ++i;
-                    CommentSet ch = comments.getComments(lastdel);
+                    deletedItems.add( lastdel );
+                    CommentSet ch = comments.getComments(oldList.get(i));
                     localPointer = Math.max(pos[1], Math.max(commentEnd(ch, CommentSet.RelativePosition.INLINE), commentEnd(ch, CommentSet.RelativePosition.TRAILING)));
+                    ++i;
                     break;
                 }
                 case NOCHANGE: {

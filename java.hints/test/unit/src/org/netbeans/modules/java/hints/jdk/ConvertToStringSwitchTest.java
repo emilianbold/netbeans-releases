@@ -75,7 +75,7 @@ public class ConvertToStringSwitchTest extends NbTestCase {
                 .findWarning("0:91-0:93:verifier:Convert to switch")
                 .applyFix("FIX_ConvertToStringSwitch")
                 .assertCompilable()
-                .assertOutput("package test;public class Test { public void test() { String g = null;switch (g) { case \"j\": System.err.println(1); break; case \"k\": System.err.println(2); break; case \"l\": System.err.println(3); break; } }}");
+                .assertOutput("package test;public class Test { public void test() { String g = null; switch (g) { case \"j\": System.err.println(1); break; case \"k\": System.err.println(2); break; case \"l\": System.err.println(3); break; } }}");
     }
 
     public void testSimpleFlow() throws Exception {
@@ -175,7 +175,7 @@ public class ConvertToStringSwitchTest extends NbTestCase {
                 .findWarning("0:91-0:93:verifier:Convert to switch")
                 .applyFix("FIX_ConvertToStringSwitch")
                 .assertCompilable()
-                .assertOutput("package test;public class Test { public void test() { String g = null;switch (g) { case \"j\": case \"m\": System.err.println(1); break; case \"k\": System.err.println(2); break; case \"l\": case \"n\": System.err.println(3); break; default: System.err.println(4); return; } }}");
+                .assertOutput("package test;public class Test { public void test() { String g = null; switch (g) { case \"j\": case \"m\": System.err.println(1); break; case \"k\": System.err.println(2); break; case \"l\": case \"n\": System.err.println(3); break; default: System.err.println(4); return; } }}");
     }
 
     public void testStringEqualsObject() throws Exception {
