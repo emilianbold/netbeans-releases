@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.api.RepositoryException;
+import org.netbeans.modules.cnd.repository.impl.spi.UnitsConverter;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
@@ -275,7 +276,14 @@ public final class RepositoryUtils {
         }
         return myRepositoryListenerProxy;
     }
-
+    
+    public static int clientToLayer(UnitsConverter unitsConverter, int clientUnitID) {
+        if (unitsConverter == null) {
+            return clientUnitID;
+        }
+        return unitsConverter.clientToLayer(clientUnitID);
+    }  
+    
     public static void shutdown() {
         // we intentionally do not unregister listener here since it will be automatically
         // unregistered as soon as shutdown (which is async.) finishes

@@ -47,6 +47,7 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
+import org.netbeans.modules.cnd.repository.impl.spi.UnitsConverter;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
@@ -149,11 +150,11 @@ import org.openide.util.CharSequences;
     }
 
     @Override
-    public boolean equals(int unitThis, Key obj, int unitObject) {
-        if (!super.equals(unitThis, obj, unitObject)) {
+    public boolean equals(UnitsConverter unitsConverter, Key object) {
+        if (!super.equals(unitsConverter, object)) {
             return false;
         }
-        OffsetableKey other = (OffsetableKey) obj;
+        OffsetableKey other = (OffsetableKey) object;
         assert CharSequences.isCompact(name);
         assert CharSequences.isCompact(other.name);
         return this.startOffset == other.startOffset &&
@@ -164,16 +165,31 @@ import org.openide.util.CharSequences;
     }
 
     @Override
-    public int hashCode(int unitID) {
-        return 59*name.hashCode() + 19*startOffset + super.hashCode(unitID);
+    public int hashCode(UnitsConverter unitsConverter) {
+        return 59*name.hashCode() + 19*startOffset + super.hashCode(unitsConverter);
     }
-
+    
     @Override
     public int hashCode() {
         if (hashCode == 0) {
-            hashCode = hashCode(getUnitId());
+            hashCode = 59*name.hashCode() + 19*startOffset + super.hashCode();
         }
         return hashCode;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!super.equals(obj)) {
+            return false;
+        }
+        OffsetableKey other = (OffsetableKey) obj;
+        assert CharSequences.isCompact(name);
+        assert CharSequences.isCompact(other.name);
+        return this.startOffset == other.startOffset &&
+                ((this.endOffset == other.endOffset) || 
+                 (this.endOffset == KeyUtilities.NON_INITIALIZED || other.endOffset == KeyUtilities.NON_INITIALIZED)) &&
+                this.getHandler() == other.getHandler() &&
+                this.name.equals(other.name);
     }
 
     @Override

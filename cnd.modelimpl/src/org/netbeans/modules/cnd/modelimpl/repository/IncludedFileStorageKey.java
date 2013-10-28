@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.modelimpl.repository;
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.repository.impl.spi.UnitsConverter;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
@@ -88,17 +89,31 @@ public final class IncludedFileStorageKey extends ProjectContainerKey {
     }
 
     @Override
-    public int hashCode(int unitID) {
-        return 19*includedUnitIndex + super.hashCode(unitID);
+    public int hashCode() {
+        return 19*includedUnitIndex + super.hashCode();
     }
 
     @Override
-    public boolean equals(int unitThis, Key obj, int unitObject) {
-        if (!super.equals(unitThis, obj, unitObject)) {
+    public boolean equals(Object obj) {
+        if (!super.equals(obj)) {
             return false;
         }
         final IncludedFileStorageKey other = (IncludedFileStorageKey) obj;
-        return includedUnitIndex == other.includedUnitIndex;
+        return this.includedUnitIndex == other.includedUnitIndex;
+    }
+        
+    @Override
+    public int hashCode(UnitsConverter unitsConverter) {
+        return 19*RepositoryUtils.clientToLayer(unitsConverter, includedUnitIndex) + super.hashCode(unitsConverter);
+    }
+
+    @Override
+    public boolean equals(UnitsConverter unitsConverter, Key object) {
+        if (!super.equals(unitsConverter, object)) {
+            return false;
+        }
+        final IncludedFileStorageKey other = (IncludedFileStorageKey) object;
+        return RepositoryUtils.clientToLayer(unitsConverter, includedUnitIndex) == RepositoryUtils.clientToLayer(unitsConverter, other.includedUnitIndex);
     }
 
     @Override
