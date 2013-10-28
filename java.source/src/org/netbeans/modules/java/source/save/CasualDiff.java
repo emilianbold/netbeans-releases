@@ -3689,7 +3689,11 @@ public class CasualDiff {
             localpointer = getOldPos(oldT.name, doc);
             copyTo(elementBounds[0], localpointer);
         }
-        localpointer = diffDocTree(doc, oldT.name, newT.name, new int[] {localpointer, endPos(oldT.name, doc)});
+        int nameEnd = endPos(oldT.name, doc);
+        localpointer = diffDocTree(doc, oldT.name, newT.name, new int[] {localpointer, nameEnd});
+        if(localpointer < nameEnd) {
+            copyTo(localpointer, localpointer = nameEnd);
+        }
         if(oldT.isTypeParameter) {
             localpointer++;
         }

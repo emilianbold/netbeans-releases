@@ -75,6 +75,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TestUtilities;
@@ -1477,6 +1478,83 @@ public class DoctreeTest extends GeneratorTestBase {
                                 ParamTree newTree = make.Param(true, make.DocIdentifier("B"), Collections.singletonList(make.Text("b")));
                                 wc.rewrite(mt, node, newTree);
                                 return null;
+                            }
+                        };
+                        scanner.scan(docTree, null);
+                        return super.visitMethod(mt, p);
+                    }
+                }.scan(wc.getCompilationUnit(), null);
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testChangeTypeParam2() throws Exception { // #237448
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+                "package hierbas.del.litoral;\n"
+                + "\n"
+                + "public class Test {\n"
+                + "\n"
+                + "    /**\n"
+                + "     * Test method.\n"
+                + "     * @param <A> a\n"
+                + "     * \n"
+                + "     */\n"
+                + "    private String test() {\n"
+                + "        return null;\n"
+                + "    }\n"
+                + "}\n");
+        String golden =
+                "package hierbas.del.litoral;\n"
+                + "\n"
+                + "public class Test {\n"
+                + "\n"
+                + "    /**\n"
+                + "     * Test method.\n"
+                + "     * @param <A> b\n"
+                + "     * \n"
+                + "     */\n"
+                + "    private String test() {\n"
+                + "        return null;\n"
+                + "    }\n"
+                + "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            @Override
+            public void run(final WorkingCopy wc) throws IOException {
+                wc.toPhase(JavaSource.Phase.RESOLVED);
+                final TreeMaker make = wc.getTreeMaker();
+                final DocTrees trees = wc.getDocTrees();
+                new TreePathScanner<Void, Void>() {
+                    @Override
+                    public Void visitMethod(final MethodTree mt, Void p) {
+                        DocCommentTree docTree = trees.getDocCommentTree(getCurrentPath());
+                        DocTreeScanner<Void, Void> scanner = new DocTreeScanner<Void, Void>() {
+
+                            AtomicBoolean inParam = new AtomicBoolean(false);
+                            
+                            @Override
+                            public Void visitParam(ParamTree node, Void p) {
+                                inParam.set(true);
+                                super.visitParam(node, p);
+                                inParam.set(false);
+                                return null;
+                            }
+
+                            @Override
+                            public Void visitText(TextTree node, Void p) {
+                                if(inParam.get()) {
+                                    TextTree newTree = make.Text("b");
+                                    wc.rewrite(mt, node, newTree);
+                                    return null;
+                                } else {
+                                    return super.visitText(node, p);
+                                }
                             }
                         };
                         scanner.scan(docTree, null);
