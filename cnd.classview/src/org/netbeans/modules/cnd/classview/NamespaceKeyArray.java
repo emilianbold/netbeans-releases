@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.classview.model.CVUtil;
 import org.netbeans.modules.cnd.classview.model.ClassNode;
@@ -119,6 +120,7 @@ public class NamespaceKeyArray extends HostKeyArray implements UpdatebleHost, Cs
     protected java.util.Map<PersistentKey,SortedName> getMembers() {
         java.util.Map<PersistentKey,SortedName> res = new HashMap<PersistentKey,SortedName>();
         try {
+            CsmCacheManager.enter();
             CsmNamespace namespace = getNamespace();
             if (namespace != null) {
                 for (CsmNamespace ns : namespace.getNestedNamespaces()) {
@@ -163,6 +165,8 @@ public class NamespaceKeyArray extends HostKeyArray implements UpdatebleHost, Cs
             ex.printStackTrace();
         } catch (Exception ex){
             ex.printStackTrace();
+        } finally {
+            CsmCacheManager.leave();
         }
         return res;
     }
