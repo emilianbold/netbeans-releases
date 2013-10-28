@@ -41,8 +41,10 @@
  */
 package org.netbeans.modules.cnd.discovery.api;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -112,23 +114,26 @@ public abstract class QtInfoProvider {
                     FileObject qtMakeFile = RemoteFileUtil.getFileObject(projectDir, MakeConfiguration.NBPROJECT_FOLDER + "/qt-" + conf.getName() + ".mk"); //NOI18N
                     Project project = ProjectManager.getDefault().findProject(projectDir);
                     if (project != null && qtMakeFile != null && qtMakeFile.isValid()) {
-                        for (String str : qtMakeFile.asLines()) {
-                            String[] lines = str.split("="); //NOI18N
-                            if (lines.length == 2) {
-                                String key = lines[0].trim();
-                                vars.put(lines[0].trim(), lines[1].trim());
-                                if (key.equals(CXXFLAGS)) {
-                                    Artifacts artifacts = new Artifacts();
-                                    DiscoveryUtils.gatherCompilerLine(getActualVarValue(vars, CXXFLAGS), DiscoveryUtils.LogOrigin.BuildLog, artifacts, new ProjectBridge(project), true);
-                                    List<String> result = new ArrayList<>(artifacts.userMacros.size());
-                                    for (Map.Entry<String, String> pair : artifacts.userMacros.entrySet()) {
-                                        if (pair.getValue() == null) {
-                                            result.add(pair.getKey());
-                                        } else {
-                                            result.add(pair.getKey() + "=" + pair.getValue()); //NOI18N
+                        try (BufferedReader reader = new BufferedReader(new InputStreamReader(qtMakeFile.getInputStream()))) {
+                            String str;
+                            while ((str = reader.readLine()) != null) {
+                                String[] lines = str.split("="); //NOI18N
+                                if (lines.length == 2) {
+                                    String key = lines[0].trim();
+                                    vars.put(lines[0].trim(), lines[1].trim());
+                                    if (key.equals(CXXFLAGS)) {
+                                        Artifacts artifacts = new Artifacts();
+                                        DiscoveryUtils.gatherCompilerLine(getActualVarValue(vars, CXXFLAGS), DiscoveryUtils.LogOrigin.BuildLog, artifacts, new ProjectBridge(project), true);
+                                        List<String> result = new ArrayList<>(artifacts.userMacros.size());
+                                        for (Map.Entry<String, String> pair : artifacts.userMacros.entrySet()) {
+                                            if (pair.getValue() == null) {
+                                                result.add(pair.getKey());
+                                            } else {
+                                                result.add(pair.getKey() + "=" + pair.getValue()); //NOI18N
+                                            }
                                         }
+                                        return result;
                                     }
-                                    return result;
                                 }
                             }
                         }
