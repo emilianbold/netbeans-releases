@@ -208,7 +208,11 @@ public class ImmutableDocTreeTranslator extends ImmutableTreeTranslator implemen
         LiteralTree value = tree;
         TextTree body = (TextTree) translate(tree.getBody());
         if (body != tree.getBody()) {
-            value = make.Literal(body);
+            if(tree.getKind() == DocTree.Kind.CODE) {
+                value = make.Code(body);
+            } else {
+                value = make.Literal(body);
+            }
         }
         return value;
     }
