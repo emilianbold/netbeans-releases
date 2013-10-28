@@ -143,15 +143,18 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
                     if (CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, selectionStart)[0] == 
                         CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, selectionEnd)[0] &&
                         isExpressionSelection(doc, selectionStart, selectionEnd)) {
-                        try {
-                            final String text = doc.getText(selectionStart, selectionEnd-selectionStart);
-                            if(text.length() > 0) {
-                                CsmOffsetable csmOffsetable = new CsmOffsetableImpl(file, selectionStart, selectionEnd, text);
-                                if (isApplicableExpression(csmOffsetable, doc)) {
-                                    createExpressionHint(res.statementInBody, csmOffsetable, doc, comp, fileObject);
+                        if (!(res.container.getStartOffset() == selectionStart &&
+                            res.container.getEndOffset() == selectionEnd)) {
+                            try {
+                                final String text = doc.getText(selectionStart, selectionEnd-selectionStart);
+                                if(text.length() > 0) {
+                                    CsmOffsetable csmOffsetable = new CsmOffsetableImpl(file, selectionStart, selectionEnd, text);
+                                    if (isApplicableExpression(csmOffsetable, doc)) {
+                                        createExpressionHint(res.statementInBody, csmOffsetable, doc, comp, fileObject);
+                                    }
                                 }
+                            } catch (BadLocationException ex) {
                             }
-                        } catch (BadLocationException ex) {
                         }
                     }
                 }
