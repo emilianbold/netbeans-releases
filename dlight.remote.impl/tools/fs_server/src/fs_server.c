@@ -101,7 +101,17 @@ static const char* decode_long(const char* text, long* result) {
 }
 
 static bool is_prohibited(const char* abspath) {
-    return strcmp("/proc", abspath) == 0 || strcmp("/dev", abspath) == 0;
+    if (strcmp("/proc", abspath) == 0) {
+        return true;
+    } else if(strcmp("/dev", abspath) == 0) {
+        return true;
+    }
+    #if linux
+    if (strcmp("/run", abspath) == 0) {
+        return true;
+    }
+    #endif
+    return false;
 }
 
 /** 
