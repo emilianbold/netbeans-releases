@@ -41,77 +41,86 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se.dialogs;
 
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.j2se.setup.J2SESetup;
-
+import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2se.setup.J2SESetup;
+
 
 /**
  * Test of ToDo Window
  *
- * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
+ * @author anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
 public class ToDoWindowTest extends PerformanceTestCase {
 
     private String MENU, TITLE;
-    
 
-    /** Creates a new instance of ToDoWindow */
+    /**
+     * Creates a new instance of ToDoWindow
+     *
+     * @param testName test name
+     */
     public ToDoWindowTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
-    
-    /** Creates a new instance of ToDoWindow */
+
+    /**
+     * Creates a new instance of ToDoWindow
+     *
+     * @param testName test name
+     * @param performanceDataName data name
+     */
     public ToDoWindowTest(String testName, String performanceDataName) {
-        super(testName,performanceDataName);
+        super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(ToDoWindowTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(J2SESetup.class, "testCloseMemoryToolbar")
+                .addTest(ToDoWindowTest.class)
+                .suite();
     }
 
     public void testToDoWindow() {
         doMeasurement();
-    }    
-    
-    @Override
-    public void initialize() {
-        MENU = Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle","Menu/Window") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.tasklist.ui.Bundle","CTL_TaskListAction");
-        TITLE = Bundle.getStringTrimmed("org.netbeans.modules.tasklist.ui.Bundle","CTL_TaskListTopComponent");
-        repaintManager().addRegionFilter(repaintManager().IGNORE_STATUS_LINE_FILTER);
-    }    
-    
-    public void prepare() {
-    }
-    
-    public ComponentOperator open() {
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenu(MENU,"|");
-        return new TopComponentOperator(TITLE);
-    }
-    
-    @Override
-    public void close() {
-        if(testedComponentOperator!=null && testedComponentOperator.isShowing())
-            ((TopComponentOperator)testedComponentOperator).close();
     }
 
+    @Override
+    public void initialize() {
+        MENU = Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle", "Menu/Window") + "|Action Items";
+        TITLE = "Action Items";
+        repaintManager().addRegionFilter(LoggingRepaintManager.IGNORE_STATUS_LINE_FILTER);
+    }
+
+    @Override
+    public void prepare() {
+    }
+
+    @Override
+    public ComponentOperator open() {
+        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenu(MENU, "|");
+        return new TopComponentOperator(TITLE);
+    }
+
+    @Override
+    public void close() {
+        if (testedComponentOperator != null && testedComponentOperator.isShowing()) {
+            ((TopComponentOperator) testedComponentOperator).close();
+        }
+    }
+
+    @Override
     public void shutdown() {
         repaintManager().resetRegionFilters();
     }
-
 }
