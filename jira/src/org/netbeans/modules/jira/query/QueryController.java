@@ -822,7 +822,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         return SaveQueryPanel.show(v, new HelpCtx("org.netbeans.modules.jira.query.savePanel")); // NOI18N
     }
 
-    private void save(String name, boolean firstTime) {
+    void save(String name, boolean firstTime) {
         query.setName(name);
         repository.saveQuery(query);
         query.setSaved(true); // XXX
