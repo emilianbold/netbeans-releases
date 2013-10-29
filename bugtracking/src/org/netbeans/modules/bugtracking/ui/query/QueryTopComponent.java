@@ -363,9 +363,7 @@ public final class QueryTopComponent extends TopComponent
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals(QueryProvider.EVENT_QUERY_SAVED)) {
-            setSaved();
-        } else if(evt.getPropertyName().equals(QueryProvider.EVENT_QUERY_REMOVED)) {
+        if(evt.getPropertyName().equals(QueryProvider.EVENT_QUERY_REMOVED)) {
             if(query != null && query.isData(evt.getSource())) {
                 // removed
                 closeInAwt();
@@ -402,17 +400,17 @@ public final class QueryTopComponent extends TopComponent
                     }
                 }
             });
-        } else if(evt.getPropertyName().equals(IssueController.PROPERTY_ISSUE_CHANGED)) {
+        } else if(evt.getPropertyName().equals(QueryController.PROPERTY_QUERY_CHANGED)) {
             if (getLookup().lookup(QuerySavable.class) == null) {
                 instanceContent.add(new QuerySavable(this));
                 setNameAndTooltip();
-        }
-        } else if(evt.getPropertyName().equals(IssueController.PROPERTY_ISSUE_SAVED)) {
+            }
+        } else if(evt.getPropertyName().equals(QueryController.PROPERTY_QUERY_SAVED)) {
             QuerySavable savable = getSavable();
             if(savable != null) {
                 savable.destroy();
                 setNameAndTooltip();
-    }
+            }
         }
     }
 

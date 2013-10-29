@@ -397,11 +397,12 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
     private class QueryListener implements PropertyChangeListener {
         int saved = 0;
         int removed = 0;
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if(evt.getPropertyName().equals(QueryProvider.EVENT_QUERY_REMOVED)) {
                 removed++;
             }
-            if(evt.getPropertyName().equals(QueryProvider.EVENT_QUERY_SAVED)) {
+            if(evt.getPropertyName().equals(QueryController.PROPERTY_QUERY_CHANGED)) {
                 saved++;
             }
         }

@@ -116,10 +116,6 @@ public class BugzillaQuery {
         support.removePropertyChangeListener(listener);
     }
 
-    private void fireQuerySaved() {
-        support.firePropertyChange(QueryProvider.EVENT_QUERY_SAVED, null, null);
-    }
-
     private void fireQueryRemoved() {
         support.firePropertyChange(QueryProvider.EVENT_QUERY_REMOVED, null, null);
     }
@@ -309,7 +305,6 @@ public class BugzillaQuery {
             info = null;
         }
         this.saved = saved;
-        fireQuerySaved();
     }
 
     public boolean isSaved() {

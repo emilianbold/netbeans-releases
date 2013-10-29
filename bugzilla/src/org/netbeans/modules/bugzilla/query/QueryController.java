@@ -623,10 +623,13 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         }
         assert name != null;
         Bugzilla.LOG.log(Level.FINE, "saving query '{0}'", new Object[]{name});
+        
         query.setName(name);
         saveQuery();
-        query.setSaved(true); // XXX
+        query.setSaved(true); 
         setAsSaved();
+        fireSaved();
+        
         if (!query.wasRun()) {
             Bugzilla.LOG.log(Level.FINE, "refreshing query '{0}' after save", new Object[]{name});
             onRefresh();
@@ -1038,9 +1041,6 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
                 if (isChanged()) {
                     panel.saveChangesButton.setEnabled(true);
                     fireUnsaved();
-                } else {
-                    panel.saveChangesButton.setEnabled(false);
-                    fireSaved();
                 }                
             }
         });
@@ -1092,11 +1092,11 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
     }
 
     private void fireUnsaved() {
-        support.firePropertyChange(IssueController.PROPERTY_ISSUE_CHANGED, null, null);
+        support.firePropertyChange(QueryController.PROPERTY_QUERY_CHANGED, null, null);
     }
  
     private void fireSaved() {
-        support.firePropertyChange(IssueController.PROPERTY_ISSUE_SAVED, null, null);
+        support.firePropertyChange(QueryController.PROPERTY_QUERY_SAVED, null, null);
     }
     
     private class QueryTask implements Runnable, Cancellable, QueryNotifyListener {
