@@ -27,13 +27,13 @@ build: .build-post-$(CONF)
 
 .build-post-nbexec: .build-impl nbexecexe.cpp nbexecloader.h utilsfuncs.cpp nbexec_exe.rc
 	windres.exe -Ocoff nbexec_exe.rc nbexec_exe.res
-	g++ -s -mno-cygwin -DNBEXEC_DLL=\"nbexec.dll\" nbexecexe.cpp utilsfuncs.cpp nbexec_exe.res -o nbexec.exe
+	g++ -s -mno-cygwin -Wl,--nxcompat -Wl,--dynamicbase -DNBEXEC_DLL=\"nbexec.dll\" nbexecexe.cpp utilsfuncs.cpp nbexec_exe.res -o nbexec.exe
 	cp nbexec.exe ../../../nbbuild/netbeans/platform/lib/
 	cp nbexec.dll ../../../nbbuild/netbeans/platform/lib/
 	
 .build-post-nbexec64: .build-impl nbexecexe.cpp nbexecloader.h utilsfuncs.cpp nbexec_exe.rc
 	x86_64-w64-mingw32-windres.exe -Ocoff nbexec_exe.rc nbexec_exe64.res 
-	x86_64-w64-mingw32-g++.exe -m64 -s -mno-cygwin -DNBEXEC_DLL=\"nbexec64.dll\" -static-libgcc -static-libstdc++ nbexecexe.cpp utilsfuncs.cpp nbexec_exe64.res -o nbexec64.exe 
+	x86_64-w64-mingw32-g++.exe -m64 -s -mno-cygwin -Wl,--nxcompat -Wl,--dynamicbase -DNBEXEC_DLL=\"nbexec64.dll\" -static-libgcc -static-libstdc++ nbexecexe.cpp utilsfuncs.cpp nbexec_exe64.res -o nbexec64.exe 
 	cp nbexec64.exe ../../../nbbuild/netbeans/platform/lib/
 	cp nbexec64.dll ../../../nbbuild/netbeans/platform/lib/
 
