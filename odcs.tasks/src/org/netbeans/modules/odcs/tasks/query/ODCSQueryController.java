@@ -60,6 +60,7 @@ import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.ParseException;
@@ -574,6 +575,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
             enableFields(false);
             if(query.save(name)) {
                 setAsSaved();
+                fireSaved();
                 if (!query.wasRun()) {
                     ODCS.LOG.log(Level.FINE, "refreshing query '{0}' after save", new Object[]{name});
                     onRefresh();
@@ -970,14 +972,19 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
         return true;
     }
 
+    private void fireSaved() {
+        support.firePropertyChange(PROPERTY_QUERY_SAVED, null, null);
+    }
+    
+    private final PropertyChangeSupport support = new PropertyChangeSupport(this);
     @Override
     public void addPropertyChangeListener(PropertyChangeListener l) {
-
+        support.addPropertyChangeListener(l);
     }
 
     @Override
     public void removePropertyChangeListener(PropertyChangeListener l) {
-
+        support.removePropertyChangeListener(l);
     }
 
     private class QueryTask implements Runnable, Cancellable, QueryNotifyListener {

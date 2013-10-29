@@ -98,7 +98,7 @@ import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
+import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.openide.awt.MouseUtils;
 import org.openide.explorer.view.TreeTableView;
@@ -113,11 +113,11 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
 
     private NodeTableModel  tableModel;
     private JTable          table;
-    private JPanel     component;
+    private final JPanel     component;
 
-    private TableSorter     sorter;
+    private final TableSorter     sorter;
 
-    private QueryImpl query;
+    private final QueryImpl query;
     private ColumnDescriptor[] descriptors;
 
     private Filter allFilter;
@@ -126,7 +126,7 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
     private Filter[] filters;
     private Set<IssueNode> nodes = new HashSet<IssueNode>();
 
-    private QueryTableHeaderRenderer queryTableHeaderRenderer;
+    private final QueryTableHeaderRenderer queryTableHeaderRenderer;
 
     private Task storeColumnsTask;
     private final StoreColumnsHandler storeColumnsWidthHandler;
@@ -165,8 +165,7 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
         this.isSaved = isSaved;
         
         this.descriptors = descriptors;
-        this.query.addPropertyChangeListener(this);
-        this.component = new JPanel();
+        this.component = new TablePanel();
         
         initFilters();
 
@@ -350,7 +349,7 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals(QueryProvider.EVENT_QUERY_SAVED)) {
+        if(evt.getPropertyName().equals(QueryController.PROPERTY_QUERY_SAVED)) {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
@@ -886,5 +885,22 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
         }
     };
 
+    private class TablePanel extends JPanel {
+
+        @Override
+        public void addNotify() {
+            query.getController().removePropertyChangeListener(IssueTable.this);
+            query.getController().addPropertyChangeListener(IssueTable.this);
+            super.addNotify(); 
+        }
+        
+        @Override
+        public void removeNotify() {
+            query.getController().removePropertyChangeListener(IssueTable.this);
+            super.addNotify(); 
+        }
+        
+    }
+    
 }
 

@@ -56,17 +56,12 @@ import java.util.Collection;
 public interface QueryProvider<Q, I> {
 
     /**
-     * queries issue list was changed
+     * Fired when a queries list of issue was changed.
      */
     public final static String EVENT_QUERY_REFRESHED = "bugtracking.query.refreshed";   // NOI18N
 
     /**
-     * query was saved
-     */
-    public final static String EVENT_QUERY_SAVED   = "bugtracking.query.saved";       // NOI18N
-
-    /**
-     * query was removed
+     * Fired when a query was removed.
      */
     public final static String EVENT_QUERY_REMOVED = "bugtracking.query.removed";     // NOI18N
 

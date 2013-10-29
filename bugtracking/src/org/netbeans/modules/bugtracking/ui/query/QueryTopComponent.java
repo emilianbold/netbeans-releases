@@ -406,6 +406,7 @@ public final class QueryTopComponent extends TopComponent
                 setNameAndTooltip();
             }
         } else if(evt.getPropertyName().equals(QueryController.PROPERTY_QUERY_SAVED)) {
+            setSaved();
             QuerySavable savable = getSavable();
             if(savable != null) {
                 savable.destroy();

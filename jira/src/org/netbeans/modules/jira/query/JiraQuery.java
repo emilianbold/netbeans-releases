@@ -127,11 +127,6 @@ public class JiraQuery {
         support.removePropertyChangeListener(listener);
     }
 
-    // XXX does this has to be protected
-    public void fireQuerySaved() {
-        support.firePropertyChange(QueryProvider.EVENT_QUERY_SAVED, null, null);
-    }
-
     protected void fireQueryRemoved() {
         support.firePropertyChange(QueryProvider.EVENT_QUERY_REMOVED, null, null);
     }
@@ -316,7 +311,6 @@ public class JiraQuery {
 
     public void setSaved(boolean saved) {
         this.saved = saved;
-        fireQuerySaved();
     }
 
     public boolean isSaved() {

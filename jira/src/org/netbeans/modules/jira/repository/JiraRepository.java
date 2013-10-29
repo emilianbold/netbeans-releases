@@ -387,7 +387,7 @@ public class JiraRepository {
                 for (NamedFilter nf : filters) {
                     JiraQuery q = new JiraQuery(nf.getName(), this, nf);
                     ret.add(q);
-                    q.fireQuerySaved();
+                    q.getController().fireSaved();
                 }
             }
         }

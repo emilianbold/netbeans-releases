@@ -258,10 +258,6 @@ public abstract class ODCSQuery {
         support.removePropertyChangeListener(listener);
     }
 
-    public void fireQuerySaved() {
-        support.firePropertyChange(QueryProvider.EVENT_QUERY_SAVED, null, null);
-    }
-
     protected void fireQueryRemoved() {
         support.firePropertyChange(QueryProvider.EVENT_QUERY_REMOVED, null, null);
     }
@@ -512,7 +508,6 @@ public abstract class ODCSQuery {
             }
             setSaved(name); 
             getRepository().saveQuery(this);
-            fireQuerySaved();            
             return true;
         }        
 
