@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,31 +37,24 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.cnd.debug;
-
+package org.netbeans.modules.cnd.repository.impl.spi;
 /**
  *
- * @author Vladimir Voskresensky
+ * @author akrasny
  */
-public interface CndTraceFlags {
-    public static final boolean TRACE_SLICE_DISTIBUTIONS = DebugUtils.getBoolean("cnd.slice.trace", false); // NOI18N
+public interface UnitsConverter {
 
-    public static final boolean LANGUAGE_FLAVOR_CPP11 = DebugUtils.getBoolean("cnd.language.flavor.cpp11", false); // NOI18N
+    /**
+     * Converts unit ID from original one (i.e. 100001 gotten from a key) to
+     * correspondent unit ID in this layer.
+     */
+    int clientToLayer(int clientUnitID);
 
-    // use of weak refs instead of soft to allow quicker GC
-    public static final boolean WEAK_REFS_HOLDERS = DebugUtils.getBoolean("cnd.weak.refs", false); // NOI18N
-    
-    // use L1 cache in FileUtils
-    public static final boolean L1_CACHE_FILE_UTILS = DebugUtils.getBoolean("cnd.l1.cache.file.utils", true); // NOI18N
-
-    public static final boolean TEXT_INDEX = DebugUtils.getBoolean("cnd.model.text.index", true); // NOI18N
-    
-    public static final boolean USE_INDEXING_API = DebugUtils.getBoolean("cnd.use.indexing.api", true); // NOI18N
-  
-    public static final boolean USE_CSM_CACHE = DebugUtils.getBoolean("cnd.use.csm.cache", true); // NOI18N;
-
-    public static final boolean TRACE_CSM_CACHE = DebugUtils.getBoolean("cnd.trace.csm.cache", false); // NOI18N;
+    /**
+     * Converts unit ID from this layer to the one that will be returned to a
+     * client
+     */
+    int layerToClient(int unitIDInLayer);
 }
