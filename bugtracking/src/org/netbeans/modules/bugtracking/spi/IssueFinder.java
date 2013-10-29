@@ -49,6 +49,7 @@ package org.netbeans.modules.bugtracking.spi;
  * <p>
  * Note that an implementation of this interface is not mandatory for a 
  * NetBeans bugtracking plugin. 
+ * </p>
  * 
  * @author Tomas Stupka
  * @author Marian Petras
