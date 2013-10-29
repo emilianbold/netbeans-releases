@@ -134,11 +134,11 @@ static fs_entry* create_fs_entry(fs_entry *entry2clone) {
     fs_entry *entry = malloc(sz);
     entry->name_len = entry2clone->name_len;
     entry->name = entry->data;
-    strncpy(entry->data, entry2clone->name, entry->name_len);
-    entry->data[entry->name_len] = 0;
+    strncpy(entry->name, entry2clone->name, entry->name_len);
+    entry->name[entry->name_len] = 0;
     entry->link_len = entry2clone->link_len;
     if (entry->link_len) {
-        entry->link = entry->data + entry->link_len + 1;
+        entry->link = entry->data + entry->name_len + 1;
         strncpy((char*)entry->link, entry2clone->link, entry->link_len);
         entry->link[entry->link_len] = 0;
     } else {
@@ -197,7 +197,7 @@ static void read_entries_from_cache(array/*<fs_entry>*/ *entries, const char* ca
 }
 
 static bool visit_dir_entries(const char* path, 
-        bool (*visitor) (char* name, struct stat *st, char* link, const char* abspath)) {
+        bool (*visitor) (char* name, struct stat *st, char* link, const char* abspath, void *data), void *data) {
     DIR *d = d = opendir(path);
     if (d) {
         union {
@@ -236,7 +236,7 @@ static bool visit_dir_entries(const char* path,
                         link[sz] = 0;
                     }
                 }
-                if (!visitor(entry->d_name, &stat_buf, link, abspath)) {
+                if (!visitor(entry->d_name, &stat_buf, link, abspath, data)) {
                     break;
                 }
             } else {
@@ -253,24 +253,25 @@ static bool visit_dir_entries(const char* path,
     }
 }
 
+static bool fs_entry_creating_visitor(char* name, struct stat *stat_buf, char* link, const char* abspath, void *data) {
+    fs_entry tmp;
+    tmp.name_len = strlen(name);
+    tmp.name = name;
+    tmp.uid = stat_buf->st_uid;
+    tmp.gid = stat_buf->st_gid;
+    tmp.mode = stat_buf->st_mode;
+    tmp.size = stat_buf->st_size;
+    tmp.mtime = stat_buf->st_mtime;
+    bool is_link = S_ISLNK(stat_buf->st_mode);
+    tmp.link_len = is_link ? strlen(link) : 0;
+    tmp.link = is_link ? link : "";
+    array_add((array*)data, create_fs_entry(&tmp));
+    return true;
+}
+
 static void read_entries_from_dir(array/*<fs_entry>*/ *entries, const char* path) {
     array_init(entries, 100);
-    bool visitor(char* name, struct stat *stat_buf, char* link, const char* abspath) {
-        fs_entry tmp;
-        tmp.name_len = strlen(name);
-        tmp.name = name;
-        tmp.uid = stat_buf->st_uid;
-        tmp.gid = stat_buf->st_gid;
-        tmp.mode = stat_buf->st_mode;
-        tmp.size = stat_buf->st_size;
-        tmp.mtime = stat_buf->st_mtime;
-        bool is_link = S_ISLNK(stat_buf->st_mode);
-        tmp.link_len = is_link ? strlen(link) : 0;
-        tmp.link = is_link ? link : "";
-        array_add(entries, create_fs_entry(&tmp));
-        return true;
-    }
-    visit_dir_entries(path, visitor);
+    visit_dir_entries(path, fs_entry_creating_visitor, entries);
     array_truncate(entries);
 }
 
@@ -429,6 +430,13 @@ static void process_request(fs_request* request) {
     //fflush(stderr);
 }
 
+static int entry_comparator(const void *element1, const void *element2) {
+    const fs_entry *e1 = *((fs_entry**) element1);
+    const fs_entry *e2 = *((fs_entry**) element2);
+    int res = strcmp(e1->name, e2->name);
+    return res;
+}
+
 static bool refresh_visitor(const char* path, int index, const char* cache) {
     if (strcmp(path, "/") == 0 || 
             strcmp(path, "/home") == 0 || 
@@ -445,14 +453,7 @@ static bool refresh_visitor(const char* path, int index, const char* cache) {
     array/*<fs_entry>*/ new_entries;
     read_entries_from_cache(&old_entries, cache, path);
     read_entries_from_dir(&new_entries, path);
-    
-    int entry_comparator(const void *element1, const void *element2) {
-        const fs_entry *e1 = *((fs_entry**) element1);
-        const fs_entry *e2 = *((fs_entry**) element2);
-        int res = strcmp(e1->name, e2->name);
-        return res;
-    }
-   
+
     array_qsort(&old_entries, entry_comparator);
     array_qsort(&new_entries, entry_comparator);
     
@@ -519,7 +520,7 @@ static bool refresh_visitor(const char* path, int index, const char* cache) {
     if (differs) {
         trace("refresh manager: sending notification for %s\n", path);
         // trailing '\n' already there, added by form_entry_response
-        fprintf(stdout, "%c 0 %d %s\n", FS_RSP_CHANGE, strlen(path), path);
+        fprintf(stdout, "%c 0 %li %s\n", FS_RSP_CHANGE, (long) strlen(path), path);
         fflush(stdout);
     }     
     array_free(&old_entries);
