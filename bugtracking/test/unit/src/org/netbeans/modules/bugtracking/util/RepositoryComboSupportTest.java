@@ -69,9 +69,9 @@ import static java.lang.Boolean.TRUE;
 import static org.junit.Assert.*;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.DelegatingConnector;
+import org.netbeans.modules.bugtracking.api.IssueQuickSearch.RepositoryFilter;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.dummies.DummyProjectServices;
-import org.netbeans.modules.bugtracking.util.RepositoryComboSupport.Filter;
 import static org.netbeans.modules.bugtracking.util.RepositoryComboSupport.LOADING_REPOSITORIES;
 import static org.netbeans.modules.bugtracking.util.RepositoryComboSupport.SELECT_REPOSITORY;
 import static org.netbeans.modules.bugtracking.util.RepositoryComboSupportTest.ThreadType.AWT;
@@ -461,7 +461,7 @@ public class RepositoryComboSupportTest {
             }
             @Override
             RepositoryComboSupport setupComboSupport(JComboBox comboBox) {
-                return RepositoryComboSupport.setup(null, comboBox, onlyCanAttach ? Filter.ATTACH_FILE : Filter.ALL , true);
+                return RepositoryComboSupport.setup(null, comboBox, onlyCanAttach ? RepositoryFilter.ATTACH_FILE : RepositoryFilter.ALL , true);
             }
             @Override
             protected void scheduleTests(ProgressTester progressTester) {

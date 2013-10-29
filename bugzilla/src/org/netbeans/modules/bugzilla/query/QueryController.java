@@ -85,7 +85,6 @@ import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
 import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.util.OwnerUtils;
 import org.netbeans.modules.bugtracking.util.SaveQueryPanel.QueryNameValidator;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
@@ -1277,8 +1276,6 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
                 notifiedIssues.clear();
             }
             setIssueCount(counter);
-            // XXX move to API
-            OwnerUtils.setLooseAssociation(BugzillaUtil.getRepository(getRepository()), false);                 
         }
 
         @Override

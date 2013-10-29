@@ -310,7 +310,7 @@ public class TaskNode extends TaskContainerNode implements Comparable<TaskNode>,
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName().equals(IssueImpl.EVENT_ISSUE_REFRESHED)
+            if (evt.getPropertyName().equals(IssueImpl.EVENT_ISSUE_DATA_CHANGED)
                     || IssueStatusProvider.EVENT_STATUS_CHANGED.equals(evt.getPropertyName())) {
                 fireContentChanged();
                 if (lblName != null) {

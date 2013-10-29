@@ -88,7 +88,7 @@ public class RepositoryQueryTest extends NbTestCase {
         
         assertNotNull(fo);
         
-        Repository r = RepositoryQuery.getInstance().getRepository(fo, false);
+        Repository r = RepositoryQuery.getRepository(fo, false);
         assertNotNull(r);
         assertEquals(repo, r);
     }
@@ -101,12 +101,12 @@ public class RepositoryQueryTest extends NbTestCase {
         
         FileObject noRepoFO = FileUtil.toFileObject(noRepoFile);
         assertNotNull(noRepoFO);
-        Repository r = RepositoryQuery.getInstance().getRepository(noRepoFO, false);
+        Repository r = RepositoryQuery.getRepository(noRepoFO, false);
         assertNull(r);
         
         FileObject assocFO = FileUtil.toFileObject(assocFile);
         assertNotNull(assocFO);
-        r = RepositoryQuery.getInstance().getRepository(assocFO, false);
+        r = RepositoryQuery.getRepository(assocFO, false);
         assertNotNull(r);
         assertEquals(getRepo(), r);
     }

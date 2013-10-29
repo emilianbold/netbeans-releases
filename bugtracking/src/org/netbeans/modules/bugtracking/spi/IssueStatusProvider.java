@@ -122,7 +122,7 @@ import org.netbeans.modules.bugtracking.api.Issue;
 public interface IssueStatusProvider<R, I> {
 
     /**
-     * Determines the {@link Issue} status.
+     * Determines an Issue status.
      */
     public enum Status {
         /**

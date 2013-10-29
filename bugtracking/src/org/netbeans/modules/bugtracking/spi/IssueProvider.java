@@ -54,9 +54,9 @@ import java.util.Collection;
 public interface IssueProvider<I> {
 
     /**
-     * Issue data were refreshed
+     * Issue data were changed. Fire this to notify e.g. Issue nodes in Tasks Dashboard.
      */
-    public static final String EVENT_ISSUE_REFRESHED = "issue.data_changed"; // NOI18N
+    public static final String EVENT_ISSUE_DATA_CHANGED = "issue.data_changed"; // NOI18N
 
     /**
      * Returns this issues display name. 

@@ -129,7 +129,6 @@ import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.util.AttachmentsPanel;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugtracking.util.NBBugzillaUtils;
-import org.netbeans.modules.bugtracking.util.OwnerUtils;
 import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
@@ -378,11 +377,13 @@ public class IssuePanel extends javax.swing.JPanel {
                     enableMap.put(btnSaveChanges, isDirty);
                     enableMap.put(cancelButton, isModified || isDirty);
                 }
-                if(isDirty) { 
-                    issue.fireUnsaved();
-                } else {
-                    issue.fireSaved();
-            }
+                if (!initializingNewTask) {
+                    if(isDirty) { 
+                        issue.fireUnsaved();
+                    } else {
+                        issue.fireSaved();
+                    }
+                }
             }
         });
     }
@@ -3406,12 +3407,6 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
                 }
             }
         });
-        if (isNew) {
-            BugzillaRepository repository = issue.getRepository();
-            if (repository != null) {
-                OwnerUtils.setLooseAssociation(BugzillaUtil.getRepository(repository), false);
-            }
-        }
     }//GEN-LAST:event_submitButtonActionPerformed
 
     private void btnSaveChangesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveChangesActionPerformed

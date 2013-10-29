@@ -114,7 +114,7 @@ class QueryHandleImpl extends QueryHandle implements QueryDescriptor, ActionList
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals(Query.EVENT_QUERY_ISSUES_CHANGED)) {
+        if(evt.getPropertyName().equals(Query.EVENT_QUERY_REFRESHED)) {
             registerIssues();
             changeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_QUERY_RESULT, null, getQueryResults())); // XXX add result handles
         } else if(evt.getPropertyName().equals(IssueStatusProvider.EVENT_STATUS_CHANGED)) {

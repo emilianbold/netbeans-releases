@@ -46,7 +46,6 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.LogUtils;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.NbPreferences;

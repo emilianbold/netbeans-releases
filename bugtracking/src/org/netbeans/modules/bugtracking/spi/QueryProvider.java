@@ -58,7 +58,7 @@ public interface QueryProvider<Q, I> {
     /**
      * queries issue list was changed
      */
-    public final static String EVENT_QUERY_ISSUES_CHANGED = "bugtracking.query.issues_changed";   // NOI18N
+    public final static String EVENT_QUERY_REFRESHED = "bugtracking.query.refreshed";   // NOI18N
 
     /**
      * query was saved

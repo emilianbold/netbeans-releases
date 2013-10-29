@@ -49,58 +49,66 @@ import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 
 /**
- *
+ * Represents a bugtracking Issue.
+ * 
  * @author Tomas Stupka
  */
 public final class Issue {
     
+    /**
+     * Represents an Issue Status.
+     */
     public enum Status {
         /**
-         * the user hasn't seen this issue yet
+         * The Issue appeared for the first time on the client and the user hasn't seen it yet.
          */
         INCOMING_NEW,
         /**
-         * the issue was modified since the issue was seen the last time
+         * The Issue was modified (remotely) and the user hasn't seen it yet.
          */
         INCOMING_MODIFIED,
         /**
-         * the issue is new on client and haven't been submited yet
+         * The Issue is new on client and haven't been submited yet.
          */
         OUTGOING_NEW,
         /**
-         * there are outgoing changes in the issue
+         * There are outgoing changes in the Issue.
          */
         OUTGOING_MODIFIED,
         /**
-         * there are incoming and outgoing changes at one
+         * There are incoming and outgoing changes at once.
          */
         CONFLICT,        
         /**
-         * the user has seen the issue and there haven't been any changes since then
+         * The user has seen the incoming changes and there haven't been any other incoming changes since then.
          */
         SEEN
     }
     
     /**
-     * issue data were refreshed
+     * Fired when Issue data have changed.
      */
-    public static final String EVENT_ISSUE_REFRESHED = IssueProvider.EVENT_ISSUE_REFRESHED;
+    public static final String EVENT_ISSUE_DATA_CHANGED = IssueImpl.EVENT_ISSUE_DATA_CHANGED;
     
     /**
-     * status has changed 
+     * Fired when Issue Status has changed.
      */
     public static final String EVENT_STATUS_CHANGED = IssueStatusProvider.EVENT_STATUS_CHANGED;
     
     private final IssueImpl impl;
 
+    /**
+     * C'tor
+     * @param impl 
+     */
     Issue(IssueImpl impl) {
         this.impl = impl;
     }
 
     /**
-     * Returns the issue id
+     * Returns the issue id.
      * 
-     * @return 
+     * @return the id
      */
     public String getID() {
         return impl.getID();
@@ -109,14 +117,15 @@ public final class Issue {
     /**
      * Returns the tooltip text describing the issue.
      * 
-     * @return 
+     * @return the tooltip
      */
     public String getTooltip() {
         return impl.getTooltip();
     }
 
     /**
-     * Registers a PropertyChangeListener
+     * Registers a PropertyChangeListener.
+     * 
      * @param listener 
      */
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -124,7 +133,8 @@ public final class Issue {
     }
     
     /**
-     * Unregisters a PropertyChangeListener
+     * Unregisters a PropertyChangeListener.
+     * 
      * @param listener 
      */
     public void removePropertyChangeListener(PropertyChangeListener listener) {
@@ -132,9 +142,10 @@ public final class Issue {
     }
 
     /**
-     * Refresh the issues state from the remote repository
+     * Refresh the issues state from the remote repository.
      * 
-     * @return 
+     * @return <code>true</code> in case the Issue was successfully refreshed, 
+     * otherwise <code>false</code>
      */
     public boolean refresh() {
         return impl.refresh();
@@ -143,7 +154,7 @@ public final class Issue {
     /**
      * Returns the issues display name. Typicaly this should be the issue id and summary.
      * 
-     * @return 
+     * @return display name
      */
     public String getDisplayName() {
         return impl.getDisplayName();
@@ -159,7 +170,7 @@ public final class Issue {
      * was longer then {@value #SHORT_DISP_NAME_LENGTH}), then an ellipsis
      * is appended to the end of the trimmed display name.
      *
-     * @return  short variant of the display name
+     * @return short variant of the display name
      * @see #getDisplayName
      */
     public String getShortenedDisplayName() {
@@ -167,44 +178,36 @@ public final class Issue {
     }    
 
     /**
-     * Opens this issue in the IDE
+     * Opens this issue in the IDE.
      */
     public void open() {
         impl.open();
     }
 
     /**
-     * Opens the issue with the given issueId in the IDE. In case that issueId
-     * is null a new issue will be created.
-     *
-     * @param repository
-     * @param issueId
-     */
-    public static void open(final Repository repository, final String issueId) {
-        if(issueId == null) {
-            IssueAction.createIssue(repository.getImpl());
-        } else {            
-            IssueAction.openIssue(repository.getImpl(), issueId);
-        }
-    }
-
-    IssueImpl getImpl() {
-        return impl;
-    }
-
-    /**
-     * Returns this issues summary
+     * Returns this Issues summary
      * 
-     * @return 
+     * @return this Issues summary
      */
     public String getSummary() {
         return impl.getSummary();
     }
 
+    /**
+     * Determines whether this issue is finished/closed.
+     * 
+     * @return <code>true<code> in case this Issue is finished, otherwise <code>false</code>
+     */
     public boolean isFinished() {
         return impl.isFinished();
     }
     
+    /**
+     * Determines this Issue status. Note that a particular bugtracking 
+     * implementation doesn't have to necessarily handle all status values.
+     * 
+     * @return status
+     */
     public Status getStatus() {
         IssueStatusProvider.Status status = impl.getStatus();
         if(status == null) {
@@ -230,6 +233,17 @@ public final class Issue {
     }
     
     /**
+     * Determines whether it is possible to attach files to this Issue.
+     * 
+     * @return <code>true<code> in case it is possible to attach files to 
+     * this Issue, otherwise <code>false</code>
+     */
+    public boolean canAttachFiles() {
+        return impl.getRepositoryImpl().canAttachFiles();
+    }
+    
+    /**
+     * Attaches a file to the issue. 
      * 
      * @param file
      * @param description 
@@ -239,12 +253,27 @@ public final class Issue {
         impl.attachFile(file, description, isPatch);
     }
     
-    public void addComment(String msg, boolean closeAsFixed) {
-        impl.addComment(msg, closeAsFixed);
+    /**
+     * Adds a comment to the Issue and closes it eventually.
+     * 
+     * @param comment the comment
+     * @param close <code>true<code> in case this issue should be closed.
+     */
+    public void addComment(String comment, boolean close) {
+        impl.addComment(comment, close);
     }
     
+    /**
+     * The Repository this Issue comes from.
+     * 
+     * @return repository
+     */
     public Repository getRepository() {
         return impl.getRepositoryImpl().getRepository();
+    }
+    
+    IssueImpl getImpl() {
+        return impl;
     }
 
 }

@@ -51,6 +51,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.team.spi.RecentIssue;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.kenai.api.KenaiProject;
@@ -91,11 +92,16 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
         final ProgressHandle handle = ProgressHandleFactory.createHandle(LBL_GETTING_REPO());
         handle.start();
         RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run() {
                 final Repository repo = TeamUtil.getRepository(TeamProjectImpl.getInstance(project));
                 handle.finish();
                 try {
-                    Issue.open(repo, issueID);
+                    if(issueID != null) {
+                        Util.openIssue(repo, issueID);
+                    } else {
+                        Util.createNewIssue(repo);
+                    }
                 } catch (NullPointerException e) {
                     //
                 }

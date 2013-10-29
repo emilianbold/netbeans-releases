@@ -41,19 +41,13 @@
  */
 package org.netbeans.modules.bugtracking.util;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.modules.bugtracking.APIAccessor;
-import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 
 /**
  *

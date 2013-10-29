@@ -57,7 +57,7 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
  */
 public final class QueryImpl<Q, I>  {
     
-    public final static String EVENT_QUERY_ISSUES_CHANGED = QueryProvider.EVENT_QUERY_ISSUES_CHANGED;
+    public final static String EVENT_QUERY_REFRESHED = QueryProvider.EVENT_QUERY_REFRESHED;
     public final static String EVENT_QUERY_REMOVED = QueryProvider.EVENT_QUERY_REMOVED;
     public final static String EVENT_QUERY_SAVED = QueryProvider.EVENT_QUERY_SAVED;
     
