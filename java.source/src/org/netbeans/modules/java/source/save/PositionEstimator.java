@@ -460,13 +460,13 @@ public abstract class PositionEstimator {
                             int indexOf = token.text().toString().indexOf('\n');
                             if (indexOf > -1) {
                                 localResult = seq.offset() + indexOf + 1;
-                            }
+                            } 
                             break;
                         case LINE_COMMENT:
                             previousEnd = seq.offset() + token.text().length();
                             break;
                     }
-                    if (localResult > 0) {
+                    if (localResult >= 0) {
                         previousEnd = localResult;
                         break;
                     }
@@ -911,7 +911,7 @@ public abstract class PositionEstimator {
             append = new ArrayList<String>(size);
             SourcePositions positions = diffContext.trees.getSourcePositions();
             CompilationUnitTree compilationUnit = diffContext.origUnit;
-            
+            boolean first = true;
             for (Tree item : oldL) {
                 int treeStart = (int) positions.getStartPosition(compilationUnit, item);
                 int treeEnd = (int) positions.getEndPosition(compilationUnit, item);
@@ -956,13 +956,27 @@ public abstract class PositionEstimator {
                 }
                 int previousEnd = seq.offset();
                 Token<JavaTokenId> token;
+                // preceding whitespace is joined with the statement as follows:
+                // 1/ if the preceding whitespace contains a newline, all whitespace following the newline
+                // is assigned to the statement.
+                // 2/ on the 1st line in the file all preceding whitespace is assigned
+                // 3/ if consecutive commands are separated by more than 1 WS char, all except the last one is
+                // assigned to the preceding command; the single whitespace is joined with the next command.
+                // 4/ all immediately following whitespace up to the newline are assigned to the command
+                // (3) is important if commands are torn apart; each of them will be separated by WS
+                int wsOnlyStart = -1;
+                // localResult will receive start of non-whitespace part of the statment (either statement, or comment)
+                int localResult = -1;
                 while (nonRelevant.contains((token = seq.token()).id())) {
-                    int localResult = -1;
                     switch (token.id()) {
                         case WHITESPACE:
                             int indexOf = token.text().toString().indexOf('\n');
                             if (indexOf > -1) {
                                 localResult = seq.offset() + indexOf + 1;
+                            } else if (first || previousEnd == 0) {
+                                wsOnlyStart = previousEnd;
+                            } else if (token.length() > 1) {
+                                wsOnlyStart = seq.offset() + token.length() - 1;
                             }
                             break;
                         case LINE_COMMENT:
@@ -977,8 +991,18 @@ public abstract class PositionEstimator {
                     }
                     if (!seq.moveNext()) break;
                 }
+                if (localResult == -1) {
+                    // fallback in case the statement is preceded just by whitespace. Its position will extend,
+                    // and localResult will point at the statement text
+                    if (wsOnlyStart >= 0) {
+                        previousEnd = wsOnlyStart;
+                    }
+                    localResult = seq.offset();
+                }
+                first = false;
                 if (minimalLeftPosition != (-1) && minimalLeftPosition > previousEnd) {
                     previousEnd = minimalLeftPosition;
+                    localResult = minimalLeftPosition;
                 }
                 seq.move(treeEnd);
                 int wideEnd = treeEnd;
@@ -999,6 +1023,12 @@ public abstract class PositionEstimator {
                                     } else {
                                         commentEndPos.add(Pair.of(commentEndPos.getLast().first(), seq.offset() + indexOf + 1));
                                     }
+                                } else if (t.length() > 1) {
+                                    wideEnd = seq.offset() + t.length() - 1;
+                                } else {
+                                    // whitespace does not extend to the end of line; join the trailing whitespace with
+                                    // the statement.
+                                    wideEnd = seq.offset() + t.length();
                                 }
                             }
                             newlines += numberOfNL(t);
@@ -1039,7 +1069,7 @@ public abstract class PositionEstimator {
                 }
                 if (wideEnd < treeEnd) wideEnd = treeEnd;
                 if (minimalLeftPosition < wideEnd) minimalLeftPosition = wideEnd;
-                data.add(new int[] { previousEnd, wideEnd, previousEnd, appendInsertPos });
+                data.add(new int[] { previousEnd, wideEnd, previousEnd, appendInsertPos, localResult });
                 append.add(itemAppend);
             }
             initialized = true;
@@ -1069,7 +1099,7 @@ public abstract class PositionEstimator {
             if (data.isEmpty()) {
                 return -1;
             } else {
-                int pos = (index == data.size() ? data.get(index-1)[1] : data.get(index)[0]);
+                int pos = (index == data.size() ? data.get(index-1)[1] : data.get(index)[4]);
                 return moveBelowGuarded(pos);
             }
         }

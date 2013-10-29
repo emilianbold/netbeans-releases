@@ -50,6 +50,7 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.StatementTree;
@@ -85,6 +86,8 @@ public class IfTest extends GeneratorTestBase {
 //        suite.addTest(new IfTest("testModifyingIf"));
 //        suite.addTest(new IfTest("test158463a"));
 //        suite.addTest(new IfTest("test158463b"));
+//        suite.addTest(new IfTest("test158154OneIf"));
+//        suite.addTest(new IfTest("test158154TwoIfs"));
         return suite;
     }
 
@@ -473,6 +476,103 @@ public class IfTest extends GeneratorTestBase {
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
+        assertEquals(golden, res);
+    }
+
+    public void test158154OneIf() throws Exception {
+        String source = "class Test {\n"
+                + "    void m1(boolean b) {\n"
+                + "        if (b) ; else System.out.println(\"hi\");\n"
+                + "    }\n"
+                + "}";
+        String golden = "class Test {\n"
+                + "    void m1(boolean b) {\n"
+                + "        if (!(b)) System.out.println(\"hi\");\n"
+                + "    }\n"
+                + "}";
+        testFile = new File(getWorkDir(), "Test.java");
+
+        TestUtilities.copyStringToFile(testFile, source);
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(WorkingCopy copy) throws Exception {
+                if (copy.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+                    return;
+                }
+
+                TreeMaker make = copy.getTreeMaker();
+                ClassTree clazz = (ClassTree) copy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                BlockTree block = method.getBody();
+                IfTree original = (IfTree) block.getStatements().get(0);
+
+                IfTree modified = make.If(
+                        make.Parenthesized(
+                        make.Unary(Kind.LOGICAL_COMPLEMENT, original.getCondition())),
+                        original.getElseStatement(), null);
+                copy.rewrite(original, modified);
+            }
+        };
+
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.out.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void test158154TwoIfs() throws Exception {
+        String source = "class Test {\n"
+                + "    void m1(boolean b) {\n"
+                + "        if (b) ; else System.out.println(\"first hi\");\n"
+                + "        if (b) ; else System.out.println(\"second hi\");\n"
+                + "        System.out.println();\n"
+                + "    }\n"
+                + "}";
+        String golden = "class Test {\n"
+                + "    void m1(boolean b) {\n"
+                + "        if (!(b)) System.out.println(\"first hi\");\n"
+                + "        if (!(b)) System.out.println(\"second hi\");\n"
+                + "        System.err.println();\n"
+                + "    }\n"
+                + "}";
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, source);
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(WorkingCopy copy) throws Exception {
+                if (copy.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+                    return;
+                }
+
+                TreeMaker make = copy.getTreeMaker();
+                ClassTree clazz = (ClassTree) copy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                BlockTree block = method.getBody();
+                IfTree originalA = (IfTree) block.getStatements().get(0);
+                IfTree originalB = (IfTree) block.getStatements().get(1);
+                IfTree modifiedA = make.If(
+                        make.Parenthesized(
+                        make.Unary(Kind.LOGICAL_COMPLEMENT, originalA.getCondition())),
+                        originalA.getElseStatement(), null);
+                copy.rewrite(originalA, modifiedA);
+                IfTree modifiedB = make.If(
+                        make.Parenthesized(
+                        make.Unary(Kind.LOGICAL_COMPLEMENT, originalB.getCondition())),
+                        originalB.getElseStatement(), null);
+                copy.rewrite(originalB, modifiedB);
+                
+                Tree originalC = block.getStatements().get(2);
+                Tree modifiedC = make.ExpressionStatement(make.MethodInvocation(
+                        Collections.<ExpressionTree>emptyList(), 
+                            make.MemberSelect(
+                                make.MemberSelect(make.QualIdent("java.lang.System"), "err"), 
+                                "println"), Collections.<ExpressionTree>emptyList()));
+                copy.rewrite(originalC, modifiedC);
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.out.println(res);
         assertEquals(golden, res);
     }
 
