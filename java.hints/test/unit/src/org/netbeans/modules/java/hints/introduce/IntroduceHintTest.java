@@ -179,7 +179,7 @@ public class IntroduceHintTest extends NbTestCase {
     }
 
     public void test121420() throws Exception {
-        performFixTest("package test; import java.util.ArrayList; public class Test {public void test() { |new ArrayList<String>()|; }}", "package test; import java.util.ArrayList; public class Test {public void test() {ArrayList<String> arrayList = new ArrayList<String>(); }}", new DialogDisplayerImpl(null, false, false, true), 5, 0);
+        performFixTest("package test; import java.util.ArrayList; public class Test {public void test() { |new ArrayList<String>()|; }}", "package test; import java.util.ArrayList; public class Test {public void test() { ArrayList<String> arrayList = new ArrayList<String>(); }}", new DialogDisplayerImpl(null, false, false, true), 5, 0);
     }
 
     public void test142424() throws Exception {
@@ -192,7 +192,7 @@ public class IntroduceHintTest extends NbTestCase {
     public void testFix1() throws Exception {
         performFixTest("package test; public class Test {public void test() {int y = 3; int x = y + 9;}}",
                        72, 77,
-                       "package test; public class Test {public void test() {int y = 3;int name = y + 9; int x = name;}}",
+                       "package test; public class Test {public void test() {int y = 3; int name = y + 9; int x = name;}}",
                        new DialogDisplayerImpl(null, false, false, true),
                        4, 0);
     }
@@ -200,7 +200,7 @@ public class IntroduceHintTest extends NbTestCase {
     public void testFix2() throws Exception {
         performFixTest("package test; public class Test {public void test() {int y = 3; int x = y + 9;}}",
                        72, 77,
-                       "package test; public class Test {public void test() {int y = 3;int nueName = y + 9; int x = nueName;}}",
+                       "package test; public class Test {public void test() {int y = 3; int nueName = y + 9; int x = nueName;}}",
                        new DialogDisplayerImpl("nueName", false, false, true),
                        4, 0);
     }
@@ -208,7 +208,7 @@ public class IntroduceHintTest extends NbTestCase {
     public void testFix3() throws Exception {
         performFixTest("package test; public class Test {public void test() {int y = 3; int x = y + 9; x = y + 9;}}",
                        72, 77,
-                       "package test; public class Test {public void test() {int y = 3;int name = y + 9; int x = name; x = y + 9;}}",
+                       "package test; public class Test {public void test() {int y = 3; int name = y + 9; int x = name; x = y + 9;}}",
                        new DialogDisplayerImpl(null, false, false, true),
                        4, 0);
     }
@@ -216,7 +216,7 @@ public class IntroduceHintTest extends NbTestCase {
     public void testFix4() throws Exception {
         performFixTest("package test; public class Test {public void test() {int y = 3; int x = y + 9; x = y + 9;}}",
                        72, 77,
-                       "package test; public class Test {public void test() {int y = 3;int name = y + 9; int x = name; x = name;}}",
+                       "package test; public class Test {public void test() {int y = 3; int name = y + 9; int x = name; x = name;}}",
                        new DialogDisplayerImpl(null, true, false, true),
                        4, 0);
     }
@@ -224,7 +224,7 @@ public class IntroduceHintTest extends NbTestCase {
     public void testFix5() throws Exception {
         performFixTest("package test; public class Test {public void test() {int y = 3; int x = y + 9; x = y + 9;}}",
                        108 - 25, 113 - 25,
-                       "package test; public class Test {public void test() {int y = 3;int name = y + 9; int x = name; x = name;}}",
+                       "package test; public class Test {public void test() {int y = 3; int name = y + 9; int x = name; x = name;}}",
                        new DialogDisplayerImpl(null, true, false, true),
                        4, 0);
     }
@@ -232,7 +232,7 @@ public class IntroduceHintTest extends NbTestCase {
     public void testFix6() throws Exception {
         performFixTest("package test; public class Test {public void test() {int y = 3; int x = y + 9; x = y + 9;}}",
                        108 - 25, 113 - 25,
-                       "package test; public class Test {public void test() {int y = 3;final int name = y + 9; int x = name; x = name;}}",
+                       "package test; public class Test {public void test() {int y = 3; final int name = y + 9; int x = name; x = name;}}",
                        new DialogDisplayerImpl(null, true, true, true),
                        4, 0);
     }
@@ -240,7 +240,7 @@ public class IntroduceHintTest extends NbTestCase {
     public void testFix7() throws Exception {
         performFixTest("package test; public class Test {public void test() {int y = 3; if (true) y = y + 9; y = y + 9;}}",
                        103 - 25, 108 - 25,
-                       "package test; public class Test {public void test() {int y = 3;int name = y + 9; if (true) y = name; y = y + 9;}}",
+                       "package test; public class Test {public void test() {int y = 3; int name = y + 9; if (true) y = name; y = y + 9;}}",
                        new DialogDisplayerImpl(null, false, false, true),
                        4, 0);
     }
@@ -248,7 +248,7 @@ public class IntroduceHintTest extends NbTestCase {
     public void testFix8() throws Exception {
         performFixTest("package test; public class Test {public void test() {int y = 3; if (true) y = y + 9; y = y + 9;}}",
                        114 - 25, 119 - 25,
-                       "package test; public class Test {public void test() {int y = 3;int name = y + 9; if (true) y = name; y = name;}}",
+                       "package test; public class Test {public void test() {int y = 3; int name = y + 9; if (true) y = name; y = name;}}",
                        new DialogDisplayerImpl(null, true, false, true),
                        4, 0);
     }
@@ -278,14 +278,14 @@ public class IntroduceHintTest extends NbTestCase {
 
     public void testFix12() throws Exception {
         performFixTest("package test; import java.util.List; public class Test {public void test1() {List<? extends CharSequence> l = null; CharSequence c = |l.get(0)|;} }",
-                       "package test; import java.util.List; public class Test {public void test1() {List<? extends CharSequence> l = null;CharSequence name = l.get(0); CharSequence c = name;} }",
+                       "package test; import java.util.List; public class Test {public void test1() {List<? extends CharSequence> l = null; CharSequence name = l.get(0); CharSequence c = name;} }",
                        new DialogDisplayerImpl("name", true, false, true),
                        4, 0);
     }
 
     public void testFix126460() throws Exception {
         performFixTest("package test; import java.util.List; public class Test {public void test1() {List<String> l = null; assert |l.get(0)| == null;} }",
-                       "package test; import java.util.List; public class Test {public void test1() {List<String> l = null;String name = l.get(0); assert name == null;} }",
+                       "package test; import java.util.List; public class Test {public void test1() {List<String> l = null; String name = l.get(0); assert name == null;} }",
                        new DialogDisplayerImpl("name", true, false, true),
                        4, 0);
     }
@@ -687,7 +687,7 @@ public class IntroduceHintTest extends NbTestCase {
 
     public void testFix22() throws Exception {
         performFixTest("package test; import java.util.List; public class Test {public void test1() {List<? extends CharSequence> l = null; CharSequence c = |l.get(0)|;} }",
-                       "package test; import java.util.List; public class Test { private CharSequence name; public void test1() {List<? extends CharSequence> l = null;name = l.get(0); CharSequence c = name;} }",
+                       "package test; import java.util.List; public class Test { private CharSequence name; public void test1() {List<? extends CharSequence> l = null; name = l.get(0); CharSequence c = name;} }",
                        new DialogDisplayerImpl2("name", IntroduceFieldPanel.INIT_METHOD, false, EnumSet
                 .<Modifier>of(Modifier.PRIVATE), false, true),
                        4, 1);
@@ -810,7 +810,7 @@ public class IntroduceHintTest extends NbTestCase {
     public void testIntroduceMethodFix2() throws Exception {
         performFixTest("package test; public class Test {public void test() {int y = 3 + 4; int z = y + 4;}}",
                        93 - 25, 107 - 25,
-                       "package test; public class Test {public void test() {int y = 3 + 4;name(y); } private void name(int y) { int z = y + 4; } }",
+                       "package test; public class Test {public void test() {int y = 3 + 4; name(y); } private void name(int y) { int z = y + 4; } }",
                        new DialogDisplayerImpl3("name", null, true),
                        2, 1);
     }
@@ -840,7 +840,7 @@ public class IntroduceHintTest extends NbTestCase {
     public void testIntroduceMethodFix6() throws Exception {
         performFixTest("package test; import java.io.IOException; public class Test {public void test() throws IOException {int y = 3 + 4; throw new IOException();}}",
                        140 - 25, 164 - 25,
-                       "package test; import java.io.IOException; public class Test {public void test() throws IOException {int y = 3 + 4;name(); } private void name() throws IOException { throw new IOException(); } }",
+                       "package test; import java.io.IOException; public class Test {public void test() throws IOException {int y = 3 + 4; name(); } private void name() throws IOException { throw new IOException(); } }",
                        new DialogDisplayerImpl3("name", null, true));
     }
 
@@ -889,7 +889,7 @@ public class IntroduceHintTest extends NbTestCase {
 
     public void testIntroduceMethodPosition() throws Exception {
         performFixTest("package test; public class Test {public void foo() { int i = 1; } public void foo1() {}}", 78 - 25, 88 - 25,
-                       "package test; public class Test {public void foo() {name(); } public void foo1() {} private void name() { int i = 1; } }",
+                       "package test; public class Test {public void foo() { name(); } public void foo1() {} private void name() { int i = 1; } }",
                        new DialogDisplayerImpl3("name", null, true),
                        3, 2);
     }

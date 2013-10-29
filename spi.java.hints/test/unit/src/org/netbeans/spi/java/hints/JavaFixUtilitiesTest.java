@@ -430,7 +430,7 @@ public class JavaFixUtilitiesTest extends TestBase {
                            "try { } catch $catches$ => try { new Object(); } catch $catches$",
                            "package test;\n" +
                            "public class Test {\n" +
-                           "    { try {      new Object();\n } catch {NullPointerException ex} { } }\n" +
+                           "    {  try {      new Object();\n } catch {NullPointerException ex} { } }\n" +
 		           "}\n");
     }
 
