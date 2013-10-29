@@ -117,3 +117,11 @@ char *replace_first(char *s, char c, char replacement) {
     return s;
 }
 
+FILE* fopen600(const char* path) {
+    int fd = open(path, O_WRONLY | O_EXCL | O_CREAT, 0600);
+    if (fd == -1) {
+        return NULL;
+    } else {
+        return fdopen(fd, "w");
+    }
+}

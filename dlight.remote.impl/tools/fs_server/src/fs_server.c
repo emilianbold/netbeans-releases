@@ -344,7 +344,7 @@ static void response_ls(int request_id, const char* path, bool recursive, int ne
     if (d) {
         if (persistence) {
             const char *cache = dirtab_get_cache(path);
-            f = fopen(cache, "w");
+            f = fopen600(cache);
             if (!f) {
                 report_error("error opening file %s: %s\n", cache, strerror(errno));
             }

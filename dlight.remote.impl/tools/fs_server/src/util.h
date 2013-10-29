@@ -9,6 +9,8 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <dirent.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #ifdef	__cplusplus
 extern "C" {
@@ -34,6 +36,9 @@ void stopwatch_start();
 void stopwatch_stop(const char* message);
 
 char *replace_first(char *s, char c, char replacement);
+
+/** opens a file in write-only exclusive mode with O_CREAT flag and mode 600 */
+FILE* fopen600(const char* path);
 
 #ifdef	__cplusplus
 }
