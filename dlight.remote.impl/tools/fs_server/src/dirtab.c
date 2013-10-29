@@ -183,7 +183,7 @@ static bool load_table() {
 }
 
 static bool flush_impl() {
-    FILE *f = fopen(dirtab_file_path, "w");
+    FILE *f = fopen600(dirtab_file_path);
     if (!f){
         report_error("error opening %s for writing: %s\n", dirtab_file_path, strerror(errno));
         return false;

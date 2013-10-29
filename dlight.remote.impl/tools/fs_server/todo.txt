@@ -8,13 +8,10 @@ Unsorted
 High 
 ----
 
-- Refresh 1) isn't finished 2) it ignores some  dirs
-
 - non-ASCII file names
 
 - it seems access rights aren't passed properly. Check this.
 
-- decode_decimal should take long 
 
 Medium
 ------
@@ -99,20 +96,3 @@ Checks
 - check assertions and replace with more gentle checks?
 
 - check that all mutexes are freed when exiting a function 
-
-
-Fixed 
------
-
-- use multi-threading (on both sides)
-
-- filter /dev?
-
-- fs_server does not start until readDir is called
-
-java.lang.AssertionError
-        at org.netbeans.modules.remote.impl.fs.DirectoryReaderFS.readEntries(DirectoryReaderFS.java:240)
-
-java.lang.StringIndexOutOfBoundsException: String index out of range: 8
-        at java.lang.String.charAt(String.java:658)
-
