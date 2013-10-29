@@ -129,7 +129,7 @@ import org.openide.util.Utilities;
  * @author Tomas Zezula
  */
 public final class J2MEProjectProperties {
-    
+
     public static final String PLATFORM_ANT_NAME = "platform.ant.name";  //NOI18N
     public static final String PLATFORM_TYPE_J2ME = "j2me"; //NOI18N
     public static String PLATFORM_SDK = "platform.sdk"; //NOI18N
@@ -160,10 +160,11 @@ public final class J2MEProjectProperties {
     //J2MEPushRegistryPanel
     public static final String MANIFEST_PUSHREGISTRY = "manifest.pushregistry"; //NOI18N
     //PlatformDevicesPanel
-    public static final String PROP_PLATFORM_DEVICE="platform.device"; //NOI18N
-    public static final String PROP_PLATFORM_CONFIGURATION="platform.configuration"; //NOI18N
-    public static final String PROP_PLATFORM_PROFILE="platform.profile"; //NOI18N
-    public static final String PROP_PLATFORM_APIS="platform.apis"; //NOI18N
+    public static final String PROP_PLATFORM_DEVICE = "platform.device"; //NOI18N
+    public static final String PROP_PLATFORM_CONFIGURATION = "platform.configuration"; //NOI18N
+    public static final String PROP_PLATFORM_PROFILE = "platform.profile"; //NOI18N
+    public static final String PROP_PLATFORM_APIS = "platform.apis"; //NOI18N
+    public static final String PROP_PLATFORM_SDK = "platform.sdk"; //NOI18N
 
 
     // MODELS FOR VISUAL CONTROLS
@@ -211,6 +212,7 @@ public final class J2MEProjectProperties {
         PROP_PLATFORM_APIS
     };
     public ComboBoxModel J2ME_PLATFORM_MODEL;
+    public ComboBoxModel JDK_PLATOFRM_MODEL;
 
     //J2ME Signing customizer
     JToggleButton.ToggleButtonModel SIGN_ENABLED_MODEL;
@@ -324,6 +326,7 @@ public final class J2MEProjectProperties {
 
         //PlatformDevicesPanel
         J2ME_PLATFORM_MODEL = ModelHelper.createComboBoxModel(evaluator, ProjectProperties.PLATFORM_ACTIVE, Arrays.asList(J2MEProjectUtils.readPlatforms()));
+        JDK_PLATOFRM_MODEL = loadJdkPlatforms();
 
         // Signning customizer
         SIGN_ENABLED_MODEL = projectGroup.createToggleButtonModel(evaluator, PROP_SIGN_ENABLED);
@@ -508,6 +511,10 @@ public final class J2MEProjectProperties {
         JavaPlatform selectedPlatform = (JavaPlatform) J2ME_PLATFORM_MODEL.getSelectedItem();
         if (selectedPlatform != null) {
             projectProperties.put(ProjectProperties.PLATFORM_ACTIVE, selectedPlatform.getProperties().get(PLATFORM_ANT_NAME));
+        }
+        JavaPlatform selectedJdkPlatform = PlatformUiSupport.getPlatform(JDK_PLATOFRM_MODEL.getSelectedItem());
+        if (selectedJdkPlatform != null) {
+            projectProperties.put(PROP_PLATFORM_SDK, selectedJdkPlatform.getProperties().get(PLATFORM_ANT_NAME));
         }
 
         //Obfusation properties
@@ -968,8 +975,23 @@ public final class J2MEProjectProperties {
         return ((KeyStoreRepository.KeyStoreBean) SIGN_KEYSTORE_MODEL.getSelectedItem()).aliasses();
     }
 
-    public void refreshJ2MEPlatforms() {
+    public void reloadJ2MEPlatforms() {
         J2ME_PLATFORM_MODEL = ModelHelper.createComboBoxModel(project.evaluator(), ProjectProperties.PLATFORM_ACTIVE, Arrays.asList(J2MEProjectUtils.readPlatforms()));
+    }
+
+    public ComboBoxModel loadJdkPlatforms() {
+        ComboBoxModel model = J2MEProjectUtils.createJDKPlatformComboBoxModel();
+        String platformActive = project.evaluator().getProperty(PROP_PLATFORM_SDK);
+        if (platformActive != null) {
+            for (int i = 0; i < model.getSize(); i++) {
+                JavaPlatform jp = PlatformUiSupport.getPlatform(model.getElementAt(i));
+                if (platformActive.equals(jp.getProperties().get(PLATFORM_ANT_NAME))) {
+                    model.setSelectedItem(model.getElementAt(i));
+                    break;
+                }
+            }
+        }
+        return model;
     }
 
     /**

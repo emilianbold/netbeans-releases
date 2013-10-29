@@ -164,7 +164,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
         if (wizard) {
             platformsModel = J2MEProjectUtils.createPlatformComboBoxModel();
         } else {
-            props.refreshJ2MEPlatforms();
+            props.reloadJ2MEPlatforms();
             platformsModel = props.J2ME_PLATFORM_MODEL;
             if (platformsModel.getSize() == 0) {
                 String platformActive = props.getEvaluator().getProperty(ProjectProperties.PLATFORM_ACTIVE);
@@ -191,7 +191,16 @@ public class PlatformDevicesPanel extends SettingsPanel {
 
     private void initJdkPlatform() {
         jdkComboBox.setRenderer(J2MEProjectUtils.createJDKPlatformListCellRenderer());
-        ComboBoxModel jdkCompoboxModel = J2MEProjectUtils.createJDKPlatformComboBoxModel();
+        ComboBoxModel jdkCompoboxModel = null;
+        if (wizard) {
+            jdkCompoboxModel = J2MEProjectUtils.createJDKPlatformComboBoxModel();
+        } else {
+            jdkCompoboxModel = props.JDK_PLATOFRM_MODEL;
+            if (jdkCompoboxModel.getSize() == 1) {
+                // workaround for selecting first available suitable platform instead of default_platform if default_platform is JDK 1.7
+                jdkCompoboxModel.setSelectedItem(jdkCompoboxModel.getElementAt(0));
+            }
+        }
 //        if (jdkCompoboxModel.getSize() == 1) {
 //            //If the only element in model is Default J2SE 1.7 Platform, do not use it
 //            final JavaPlatform javaPlatform = PlatformUiSupport.getPlatform(jdkCompoboxModel.getSelectedItem());
@@ -263,10 +272,20 @@ public class PlatformDevicesPanel extends SettingsPanel {
         }
     }
 
+    private boolean reloadOptionalPackages = true;
+
     private void initOptionalPackages() {
-        optionalPackagesPanel.removeAll();
-        for (JCheckBox cb : optionalPackages) {
-            optionalPackagesPanel.add(cb, new GridBagConstraints(0, GridBagConstraints.RELATIVE, GridBagConstraints.REMAINDER, 1, 1.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+        if (reloadOptionalPackages) {
+            optionalPackagesPanel.removeAll();
+            for (JCheckBox cb : optionalPackages) {
+                optionalPackagesPanel.add(cb, new GridBagConstraints(0, GridBagConstraints.RELATIVE, GridBagConstraints.REMAINDER, 1, 1.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+            }
+            reloadOptionalPackages = false;
+        }
+        if (!wizard && (platformComboBox.getSelectedItem() == null || !(platformComboBox.getItemAt(0) instanceof J2MEPlatform))) {
+            optionalPackagesPanel.setVisible(false);
+        } else {
+            optionalPackagesPanel.setVisible(true);
         }
     }
 
