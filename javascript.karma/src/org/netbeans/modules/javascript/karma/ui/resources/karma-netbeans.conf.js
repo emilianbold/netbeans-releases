@@ -92,7 +92,7 @@ module.exports = function(config) {
 
     <#if coverage>
     config.preprocessors = config.preprocessors || {};
-    var projectWebRootLength = '${projectWebRoot}'.length() + fileSeparator.length();
+    var projectWebRootLength = '${projectWebRoot}'.length + fileSeparator.length;
     for (var i = 0; i < config.files.length; ++i) {
         var file = config.files[i];
         if (file.substr(0, projectWebRootLength) === '${projectWebRoot}' + fileSeparator) {
