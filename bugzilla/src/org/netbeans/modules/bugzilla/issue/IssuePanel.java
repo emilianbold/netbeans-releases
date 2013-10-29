@@ -378,11 +378,13 @@ public class IssuePanel extends javax.swing.JPanel {
                     enableMap.put(btnSaveChanges, isDirty);
                     enableMap.put(cancelButton, isModified || isDirty);
                 }
-                if(isDirty) { 
-                    issue.fireUnsaved();
-                } else {
-                    issue.fireSaved();
-            }
+                if (!initializingNewTask) {
+                    if(isDirty) { 
+                        issue.fireUnsaved();
+                    } else {
+                        issue.fireSaved();
+                    }
+                }
             }
         });
     }
