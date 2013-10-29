@@ -132,7 +132,7 @@ public class MissingReturnStatementTest extends ErrorHintsTestBase {
                        "        List<String> result; |}\n" +
                        "}\n",
                        "FIX_AddReturnStatement",
-                       "package test; import java.util.Collection; import java.util.List; public class Test { public static Collection<String> join(String[] arr1, String[] arr2) { List<String> result;return null; } } ");
+                       "package test; import java.util.Collection; import java.util.List; public class Test { public static Collection<String> join(String[] arr1, String[] arr2) { List<String> result; return null; } } ");
     }
     
     @Override
