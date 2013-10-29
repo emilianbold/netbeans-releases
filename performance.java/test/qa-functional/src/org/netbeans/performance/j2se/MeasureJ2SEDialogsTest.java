@@ -85,7 +85,6 @@ import org.netbeans.performance.j2se.dialogs.RuntimeWindowTest;
 import org.netbeans.performance.j2se.dialogs.SelectProfilingTaskDialogTest;
 import org.netbeans.performance.j2se.dialogs.TemplateManagerTest;
 import org.netbeans.performance.j2se.dialogs.ToDoWindowTest;
-import org.netbeans.performance.j2se.dialogs.VersioningWindowTest;
 import org.netbeans.performance.j2se.setup.J2SESetup;
 
 /**
@@ -143,7 +142,6 @@ public class MeasureJ2SEDialogsTest {
                 .addTest(SelectProfilingTaskDialogTest.class)
                 .addTest(TemplateManagerTest.class)
                 .addTest(ToDoWindowTest.class)
-                .addTest(VersioningWindowTest.class)
                 .suite());
         return suite;
     }
