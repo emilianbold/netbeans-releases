@@ -610,7 +610,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                     }
                 }
             });
-        } else if(evt.getPropertyName().equals(IssueController.PROPERTY_ISSUE_NOT_SAVED)) {
+        } else if(evt.getPropertyName().equals(IssueController.PROPERTY_ISSUE_CHANGED)) {
             if (getLookup().lookup(IssueSavable.class) == null) {
                 instanceContent.add(new IssueSavable(IssueTopComponent.this));
                 setNameAndTooltip();

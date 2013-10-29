@@ -402,7 +402,7 @@ public final class QueryTopComponent extends TopComponent
                     }
                 }
             });
-        } else if(evt.getPropertyName().equals(IssueController.PROPERTY_ISSUE_NOT_SAVED)) {
+        } else if(evt.getPropertyName().equals(IssueController.PROPERTY_ISSUE_CHANGED)) {
             if (getLookup().lookup(QuerySavable.class) == null) {
                 instanceContent.add(new QuerySavable(this));
                 setNameAndTooltip();

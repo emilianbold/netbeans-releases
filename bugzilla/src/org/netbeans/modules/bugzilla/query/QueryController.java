@@ -1092,7 +1092,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
     }
 
     private void fireUnsaved() {
-        support.firePropertyChange(IssueController.PROPERTY_ISSUE_NOT_SAVED, null, null);
+        support.firePropertyChange(IssueController.PROPERTY_ISSUE_CHANGED, null, null);
     }
  
     private void fireSaved() {
