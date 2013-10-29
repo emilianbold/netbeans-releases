@@ -66,8 +66,8 @@ CF_FreeBSD-x86_64 = $(CF_COMMON) -D_GNU_SOURCE -m64
 
 LF_Windows-x86    = --static-libgcc
 LF_Windows-x86_64 = --static-libgcc
-LF_Linux-x86      = $(LF_COMMON) -lpthread
-LF_Linux-x86_64   = $(LF_COMMON) -lpthread
+LF_Linux-x86      = $(LF_COMMON)
+LF_Linux-x86_64   = $(LF_COMMON)
 
 CFLAGS=$(CF_$(CONF))
 LDFLAGS=$(LF_$(CONF)) -lpthread
@@ -84,7 +84,7 @@ include $(ROOT_DIR)/make/Makefile.$(MAKEFILE)
 
 $(EXEC): $(DIST_DIR) $(OBJS)
 	@$(LINE) -
-	$(LINK.c) -o $@ $(OBJS)
+	$(LINK.c) -o $@ $(OBJS) -lpthread
 
 $(OBJ_DIRS) $(DIST_DIR):
 	$(MKDIR) $@
