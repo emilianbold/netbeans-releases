@@ -998,7 +998,7 @@ public class ConfigurationMakefileWriter {
                         
                         command += fromLinker + " "; // NOI18N
                         if (conf.getDependencyChecking().getValue() && compiler.getDependencyGenerationOption().length() > 0) {
-                            command = "${RM} $@.d\n\t" + command + compiler.getDependencyGenerationOption() + " "; // NOI18N
+                            command = "${RM} \"$@.d\"\n\t" + command + compiler.getDependencyGenerationOption() + " "; // NOI18N
                         }
                         if (items[i].hasHeaderOrSourceExtension(false, false)) {
                             String flags = compiler.getDescriptor().getPrecompiledHeaderFlags();
@@ -1120,7 +1120,7 @@ public class ConfigurationMakefileWriter {
                                 }
                                 
                                 if (conf.getDependencyChecking().getValue() && compiler.getDependencyGenerationOption().length() > 0) {
-                                    command = "${RM} $@.d\n\t" + command + compiler.getDependencyGenerationOption() + " "; // NOI18N
+                                    command = "${RM} \"$@.d\"\n\t" + command + compiler.getDependencyGenerationOption() + " "; // NOI18N
                                 }
                                 if (items[i].hasHeaderOrSourceExtension(false, false)) {
                                     String flags = compiler.getDescriptor().getPrecompiledHeaderFlags();
@@ -1262,7 +1262,7 @@ public class ConfigurationMakefileWriter {
                         
                         command += fromLinker + " -Dmain=__nomain "; // NOI18N
                         if (conf.getDependencyChecking().getValue() && compiler.getDependencyGenerationOption().length() > 0) {
-                            command = "${RM} $@.d;\\\n\t    " + command + compiler.getDependencyGenerationOption() + " "; // NOI18N
+                            command = "${RM} \"$@.d\";\\\n\t    " + command + compiler.getDependencyGenerationOption() + " "; // NOI18N
                         }
                         if (items[i].hasHeaderOrSourceExtension(false, false)) {
                             String flags = compiler.getDescriptor().getPrecompiledHeaderFlags();

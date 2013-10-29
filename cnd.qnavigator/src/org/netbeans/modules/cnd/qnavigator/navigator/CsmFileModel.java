@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -103,7 +104,7 @@ public class CsmFileModel {
         lineNumberIndex.add(new IndexOffsetNode(node, 0, 0));
     }
 
-    public PreBuildModel buildPreModel(CsmFile csmFile) {
+    public PreBuildModel buildPreModel(CsmFile csmFile, AtomicBoolean canceled) {
         boolean oldValue = isStandalone;
         isStandalone = CsmStandaloneFileProvider.getDefault().isStandalone(csmFile);
         fileObject = CsmUtilities.getFileObject(csmFile);
@@ -111,44 +112,64 @@ public class CsmFileModel {
         unopenedProject = null;
         if (csmFile != null && csmFile.isValid()) {
             if (isStandalone) {
-                CppDeclarationNode node = CppDeclarationNode.nodeFactory(csmFile, this, false, lineNumberIndex);
+                CppDeclarationNode node = CppDeclarationNode.nodeFactory(csmFile, this, false, lineNumberIndex, canceled);
                 if (node != null) {
                     preBuildModel.newList.add(node);
                 }
                 unopenedProject = FileOwnerQuery.getOwner(fileObject);
             }
             if (filter.isApplicableInclude()) {
-                for (CsmInclude element : csmFile.getIncludes()) {
-                    CppDeclarationNode node = CppDeclarationNode.nodeFactory((CsmObject) element, this, false, preBuildModel.newLineNumberIndex);
-                    if (node != null) {
-                        preBuildModel.newList.add(node);
+                if (!canceled.get()) {
+                    for (CsmInclude element : csmFile.getIncludes()) {
+                        if (canceled.get()) {
+                            break;
+                        }
+                        CppDeclarationNode node = CppDeclarationNode.nodeFactory((CsmObject) element, this, false, preBuildModel.newLineNumberIndex, canceled);
+                        if (node != null) {
+                            preBuildModel.newList.add(node);
+                        }
                     }
                 }
             }
             if (filter.isApplicableMacro()) {
-                for (CsmMacro element : csmFile.getMacros()) {
-                    CppDeclarationNode node = CppDeclarationNode.nodeFactory((CsmObject) element, this, false, preBuildModel.newLineNumberIndex);
-                    if (node != null) {
-                        preBuildModel.newList.add(node);
+                if (!canceled.get()) {
+                    for (CsmMacro element : csmFile.getMacros()) {
+                        if (canceled.get()) {
+                            break;
+                        }
+                        CppDeclarationNode node = CppDeclarationNode.nodeFactory((CsmObject) element, this, false, preBuildModel.newLineNumberIndex, canceled);
+                        if (node != null) {
+                            preBuildModel.newList.add(node);
+                        }
                     }
                 }
-                for (CsmErrorDirective element : csmFile.getErrors()) {
-                    CppDeclarationNode node = CppDeclarationNode.nodeFactory((CsmObject) element, this, false, preBuildModel.newLineNumberIndex);
-                    if (node != null) {
-                        preBuildModel.newList.add(node);
+                if (!canceled.get()) {
+                    for (CsmErrorDirective element : csmFile.getErrors()) {
+                        if (canceled.get()) {
+                            break;
+                        }
+                        CppDeclarationNode node = CppDeclarationNode.nodeFactory((CsmObject) element, this, false, preBuildModel.newLineNumberIndex, canceled);
+                        if (node != null) {
+                            preBuildModel.newList.add(node);
+                        }
                     }
-                }                
+                }
             }
-            for (CsmOffsetableDeclaration element : csmFile.getDeclarations()) {
-                if (filter.isApplicable(element)) {
-                    CppDeclarationNode node = CppDeclarationNode.nodeFactory((CsmObject) element, this, false, preBuildModel.newLineNumberIndex);
-                    if (node != null) {
-                        preBuildModel.newList.add(node);
+            if (!canceled.get()) {
+                for (CsmOffsetableDeclaration element : csmFile.getDeclarations()) {
+                    if (canceled.get()) {
+                        break;
+                    }
+                    if (filter.isApplicable(element)) {
+                        CppDeclarationNode node = CppDeclarationNode.nodeFactory((CsmObject) element, this, false, preBuildModel.newLineNumberIndex, canceled);
+                        if (node != null) {
+                            preBuildModel.newList.add(node);
+                        }
                     }
                 }
             }
         }
-        if (csmFile != null &&  csmFile.isValid()) {
+        if (csmFile != null &&  csmFile.isValid() && !canceled.get()) {
             Collections.<CppDeclarationNode>sort(preBuildModel.newList);
             Collections.<IndexOffsetNode>sort(preBuildModel.newLineNumberIndex);
         }
