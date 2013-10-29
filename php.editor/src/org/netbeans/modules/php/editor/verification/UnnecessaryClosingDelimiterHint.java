@@ -205,7 +205,7 @@ public class UnnecessaryClosingDelimiterHint extends HintRule {
     }
 
     @Override
-    @NbBundle.Messages("UnnecessaryClosingDelimiterHintDesc=It is a good practise to don't use closing PHP delimiter "
+    @NbBundle.Messages("UnnecessaryClosingDelimiterHintDesc=It is a good practise to omit closing PHP delimiter "
             + "at the end of file. It's just a source of \"Headers already sent\" errors.")
     public String getDescription() {
         return Bundle.UnnecessaryClosingDelimiterHintDesc();
