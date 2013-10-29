@@ -66,7 +66,6 @@ public final class LatteSyntax {
             "capture", //NOI18N
             "cache", //NOI18N
             "syntax", //NOI18N
-            "_", //NOI18N
             "form", //NOI18N
             "label", //NOI18N
             "snippet" //NOI18N
@@ -81,7 +80,7 @@ public final class LatteSyntax {
     public static final Map<String, Set<String>> RELATED_MACROS = new HashMap<String, Set<String>>() {
         {
             put("if", new HashSet<>(Arrays.asList("else", "elseif"))); //NOI18N
-            put("ifset", new HashSet<>(Arrays.asList("elseifset"))); //NOI18N
+            put("ifset", new HashSet<>(Arrays.asList("else", "elseifset"))); //NOI18N
         }
     };
 

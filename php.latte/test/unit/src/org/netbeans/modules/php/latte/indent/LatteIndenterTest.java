@@ -83,4 +83,16 @@ public class LatteIndenterTest extends LatteIndenterTestBase {
         indent("shortedBlockMacro");
     }
 
+    public void testIssue237326_01() throws Exception {
+        indent("testIssue237326_01");
+    }
+
+    public void testIssue237326_02() throws Exception {
+        indent("testIssue237326_02");
+    }
+
+    public void testIssue237326_03() throws Exception {
+        indent("testIssue237326_03");
+    }
+
 }
