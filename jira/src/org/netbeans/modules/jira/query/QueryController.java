@@ -159,7 +159,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         this.modifiable = modifiable;
         this.jiraFilter = jiraFilter;
 
-        issueTable = new IssueTable(JiraUtils.getRepository(repository), query, query.getColumnDescriptors());
+        issueTable = new IssueTable(JiraUtils.getRepository(repository), query, query.getColumnDescriptors(), query.isSaved());
         setupRenderer(issueTable);
         panel = new QueryPanel(issueTable.getComponent(), this, isNamedFilter(jiraFilter));
         panel.projectList.addListSelectionListener(this);

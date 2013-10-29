@@ -112,12 +112,18 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
         if( null == unevenLineColor )
             unevenLineColor = new Color(0xf3f6fd);
     }
+    private boolean isSaved;
 
-    public QueryTableCellRenderer(Query query, IssueTable issueTable) {
+    public QueryTableCellRenderer(Query query, IssueTable issueTable, boolean isSaved) {
         this.query = APIAccessor.IMPL.getImpl(query);
         this.issueTable = issueTable;
+        this.isSaved = isSaved;
     }
 
+    void setSaved(boolean saved) {
+        isSaved = saved;
+    }
+    
     private static MessageFormat getFormat (String key, Color c) {
         String format = NbBundle.getMessage(IssueTable.class, key,
                 new Object[] { UIUtils.getColorString(c), "{0}" }); //NOI18N
@@ -129,7 +135,7 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
 
         JLabel renderer = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         renderer.setIcon(null);
-        if(!query.isSaved()) {
+        if(!isSaved) {
             TableCellStyle style = getDefaultCellStyle(table, issueTable, (IssueProperty) value, isSelected, row);
             setStyleProperties(renderer, style);
             return renderer;

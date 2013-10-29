@@ -155,11 +155,6 @@ public class APITestConnector implements BugtrackingConnector {
         }
 
         @Override
-        public boolean isSaved(APITestQuery q) {
-            return q.isSaved();
-        }
-
-        @Override
         public Collection<APITestIssue> getIssues(APITestQuery q) {
             return q.getIssues();
         }

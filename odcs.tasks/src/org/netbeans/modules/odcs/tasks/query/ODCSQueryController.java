@@ -138,7 +138,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
         this.modifiable = modifiable;
         this.criteria = criteria;
         
-        issueTable = new IssueTable<>(ODCSUtil.getRepository(repository), query, query.getColumnDescriptors());
+        issueTable = new IssueTable<>(ODCSUtil.getRepository(repository), query, query.getColumnDescriptors(), query.isSaved());
         setupRenderer(issueTable);
         panel = new QueryPanel(issueTable.getComponent());
 

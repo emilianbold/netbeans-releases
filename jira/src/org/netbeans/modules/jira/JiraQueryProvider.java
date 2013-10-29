@@ -70,11 +70,6 @@ public class JiraQueryProvider implements TeamQueryProvider<JiraQuery, NbJiraIss
     }
 
     @Override
-    public boolean isSaved(JiraQuery query) {
-        return query.isSaved();
-    }
-
-    @Override
     public boolean canRemove(JiraQuery q) {
         return q.canRemove();
     }

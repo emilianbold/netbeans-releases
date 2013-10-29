@@ -197,7 +197,7 @@ public final class QueryTopComponent extends TopComponent
         addQueryComponent(c);
     }
     
-    void init(QueryImpl query, RepositoryImpl defaultRepository, File context, boolean suggestedSelectionOnly, QueryController.QueryMode mode) {
+    void init(QueryImpl query, RepositoryImpl defaultRepository, File context, boolean suggestedSelectionOnly, QueryController.QueryMode mode, boolean isNew) {
         this.query = query;
         this.context = context;
         this.mode = mode;
@@ -210,7 +210,7 @@ public final class QueryTopComponent extends TopComponent
         }
 
         if (query != null) {
-            if(query.isSaved()) {
+            if(!isNew) {
                 setSaved();
             } else {
                 if(!suggestedSelectionOnly) {

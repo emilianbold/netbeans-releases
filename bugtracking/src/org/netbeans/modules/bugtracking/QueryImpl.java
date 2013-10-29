@@ -122,10 +122,6 @@ public final class QueryImpl<Q, I>  {
         QueryAction.openQuery(this, repository, mode);
     }
     
-    public boolean isSaved() {
-        return queryProvider.isSaved(data);
-    }
-
     public boolean canRemove() {
         return queryProvider.canRemove(data);
     }

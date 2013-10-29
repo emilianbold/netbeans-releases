@@ -92,13 +92,6 @@ public interface QueryProvider<Q, I> {
     public QueryController getController(Q q);
 
     /**
-     * Returns true if query is saved
-     * @param q the implementation specific query type
-     * @return
-     */
-    public boolean isSaved(Q q);
-
-    /**
      * Determines whether it is possible to remove the given Query.
      * 
      * @param q 
