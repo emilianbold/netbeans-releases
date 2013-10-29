@@ -209,8 +209,9 @@ static bool visit_dir_entries(const char* path,
             char b[MAXNAMLEN];
         } entry_buf;
         entry_buf.d.d_reclen = MAXNAMLEN + sizeof (struct dirent);
-        char *abspath = malloc(PATH_MAX);
-        char *link = malloc(PATH_MAX);
+        int buf_size = PATH_MAX;
+        char *abspath = malloc(buf_size);
+        char *link = malloc(buf_size);
         // TODO: error processing (malloc() can return null)
         int base_len = strlen(path);
         strcpy(abspath, path);
@@ -232,7 +233,7 @@ static bool visit_dir_entries(const char* path,
             if (lstat(abspath, &stat_buf) == 0) {
                 bool is_link = S_ISLNK(stat_buf.st_mode);
                 if (is_link) {
-                    ssize_t sz = readlink(abspath, link, sizeof link);
+                    ssize_t sz = readlink(abspath, link, buf_size);
                     if (sz == -1) {
                         report_error("error performing readlink for %s: %s\n", abspath, strerror(errno));
                         strcpy(link, "?");
