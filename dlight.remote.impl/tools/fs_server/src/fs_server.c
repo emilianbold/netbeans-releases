@@ -531,7 +531,7 @@ static void *refresh_loop(void *data) {
     trace("refresh manager started; sleep interval is %d\n", refresh_sleep);
     int pass = 0;
     while (dirtab_is_empty()) { //TODO: replace with notification?
-        sleep(refresh_sleep);
+        sleep(refresh_sleep ? refresh_sleep : 2);
     }
     while (true) {
         pass++;
@@ -540,7 +540,9 @@ static void *refresh_loop(void *data) {
         stopwatch_start();
         dirtab_visit(refresh_visitor);
         stopwatch_stop("refresh cycle");
-        sleep(refresh_sleep);
+        if (refresh_sleep) {
+            sleep(refresh_sleep);
+        }
     }
     trace("refresh manager stopped\n");
     return NULL;
@@ -652,10 +654,8 @@ void process_options(int argc, char* argv[]) {
             case 'r':
                 refresh  = true;
                 new_refresh_sleep = atoi(optarg);
-                if (new_refresh_sleep > 0) {
+                if (new_refresh_sleep >= 0) {
                     refresh_sleep = new_refresh_sleep;
-                } else {
-                    refresh = false;
                 }
                 break;
             case 'p':
