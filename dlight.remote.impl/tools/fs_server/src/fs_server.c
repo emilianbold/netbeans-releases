@@ -100,6 +100,10 @@ static const char* decode_long(const char* text, long* result) {
     return NULL;
 }
 
+static bool is_prohibited(const char* abspath) {
+    return strcmp("/proc", abspath) == 0 || strcmp("/dev", abspath) == 0;
+}
+
 /** 
  * Decodes in-place fs_raw_request into fs_request
  */
@@ -307,6 +311,12 @@ static bool form_entry_response(char* buf, const int buf_size, const char *abspa
 }
 
 static void response_ls(int request_id, const char* path, bool recursive, int nesting_level) {
+
+    if (is_prohibited(path)) {
+        trace("ls: skipping %s\n", path);
+        return;
+    }
+    
     DIR *d = NULL;
     FILE *f = NULL;
     struct dirent *entry;
@@ -438,12 +448,7 @@ static int entry_comparator(const void *element1, const void *element2) {
 }
 
 static bool refresh_visitor(const char* path, int index, const char* cache) {
-    if (strcmp(path, "/") == 0 || 
-            strcmp(path, "/home") == 0 || 
-            strcmp(path, "/net") == 0 || 
-            strcmp(path, "/ws") == 0 || 
-            strcmp(path, "/proc") == 0 || 
-            strcmp(path, "/dev") == 0) {        
+    if (is_prohibited(path)) {
         trace("refresh manager: skipping %s\n", path);
         return true;
     }
