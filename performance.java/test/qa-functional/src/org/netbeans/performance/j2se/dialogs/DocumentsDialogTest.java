@@ -41,14 +41,12 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se.dialogs;
 
+import junit.framework.Test;
 import org.netbeans.jellytools.DocumentsDialogOperator;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.j2se.setup.J2SESetup;
@@ -56,70 +54,79 @@ import org.netbeans.performance.j2se.setup.J2SESetup;
 /**
  * Test of Documents dialog
  *
- * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
+ * @author anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
 public class DocumentsDialogTest extends PerformanceTestCase {
 
     private static EditorOperator editor;
 
-    /** Creates a new instance of DocumentsDialog */
+    /**
+     * Creates a new instance of DocumentsDialog
+     *
+     * @param testName test name
+     */
     public DocumentsDialogTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
-    
-    /** Creates a new instance of DocumentsDialog */
+
+    /**
+     * Creates a new instance of DocumentsDialog
+     *
+     * @param testName test name
+     * @param performanceDataName data name
+     */
     public DocumentsDialogTest(String testName, String performanceDataName) {
-        super(testName,performanceDataName);
+        super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.createConfiguration(J2SESetup.class)
-                .addTest(DocumentsDialogTest.class)
-                .enableModules(".*").clusters("ide|java|apisupport").suite());
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration().
+                addTest(J2SESetup.class).
+                addTest(DocumentsDialogTest.class)
+                .suite();
     }
 
     public void testDocumentsDialog() {
         doMeasurement();
     }
-    
+
     @Override
-    public void initialize(){
+    public void initialize() {
         CommonUtilities.openFiles("PerformanceTestFoldersData", getTenSelectedFiles());
     }
-    
+
+    @Override
     public void prepare() {
-        editor = new EditorOperator("OptionsTest.java");
-   }
-    
+        editor = new EditorOperator("SampleJavaClass000.java");
+    }
+
+    @Override
     public ComponentOperator open() {
         editor.pushKey(java.awt.event.KeyEvent.VK_F4, java.awt.event.KeyEvent.SHIFT_MASK);
         return new DocumentsDialogOperator();
     }
 
     @Override
-    public void shutdown(){
+    public void shutdown() {
         EditorOperator.closeDiscardAll();
     }
-    
-    private static String[][] getTenSelectedFiles(){
+
+    private static String[][] getTenSelectedFiles() {
         String[][] files_path = {
-            {"folders.javaFolder100","AboutDialogTest.java"},
-            {"folders.javaFolder100","AttachDialogTest.java"},
-            {"folders.javaFolder100","CreateTestsDialogTest.java"},
-            {"folders.javaFolder100","DeleteFileDialogTest.java"},
-            {"folders.javaFolder100","FilesWindowTest.java"},
-            {"folders.javaFolder50","ServerManagerTest.java"},
-            {"folders.javaFolder50","RuntimeWindowTest.java"},
-            {"folders.javaFolder50","PluginManagerTest.java"},
-            {"folders.javaFolder50","OptionsTest.java"},
-            {"folders.javaFolder50","ProfilerWindowsTest.java"},
-            {"folders.javaFolder50","NewFileDialogTest.java"}
+            {"folders.javaFolder100", "SampleJavaClass000.java"},
+            {"folders.javaFolder100", "SampleJavaClass001.java"},
+            {"folders.javaFolder100", "SampleJavaClass002.java"},
+            {"folders.javaFolder100", "SampleJavaClass003.java"},
+            {"folders.javaFolder100", "SampleJavaClass004.java"},
+            {"folders.javaFolder50", "SampleJavaClass000.java"},
+            {"folders.javaFolder50", "SampleJavaClass001.java"},
+            {"folders.javaFolder50", "SampleJavaClass002.java"},
+            {"folders.javaFolder50", "SampleJavaClass003.java"},
+            {"folders.javaFolder50", "SampleJavaClass004.java"},
+            {"folders.javaFolder50", "SampleJavaClass005.java"}
         };
         return files_path;
     }
-    
 }
