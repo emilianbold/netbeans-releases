@@ -382,12 +382,7 @@ public abstract class BaseActionProvider implements ActionProvider {
 
     @NonNull
     public static String getBuildXmlName (final Project project, PropertyEvaluator evaluator) {
-        assert project != null;
-        String buildScriptPath = evaluator.getProperty(BUILD_SCRIPT);
-        if (buildScriptPath == null) {
-            buildScriptPath = GeneratedFilesHelper.BUILD_XML_PATH;
-        }
-        return buildScriptPath;
+        return CommonProjectUtils.getBuildXmlName(evaluator, null);
     }
 
     public static FileObject getBuildXml (final Project project, PropertyEvaluator evaluator) {
