@@ -50,7 +50,7 @@ module.exports = function(config) {
     // base path
     if (config.basePath) {
         if (config.basePath.substr(0, 1) === '/' // unix
-                || config.basePath.substr(1, 1) === ':') { // windows
+                || config.basePath.substr(1, 2) === ':\\') { // windows
             // absolute path, do nothing
         } else {
             config.basePath = '${projectWebRoot}' + fileSeparator + config.basePath;
