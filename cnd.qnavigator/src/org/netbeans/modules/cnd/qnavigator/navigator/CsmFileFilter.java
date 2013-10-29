@@ -170,17 +170,17 @@ public class CsmFileFilter {
         this.expandAll.setSelected(expandAll);
     }
 
-    private BooleanFilter showForwardClassDeclarations = new BooleanFilter("ShowForwardClassDeclarations", true); // NOI18N
-    private BooleanFilter showForwardFunctionDeclarations = new BooleanFilter("ShowForwardFunctionDeclarations", false); // NOI18N
-    private BooleanFilter showInclude = new BooleanFilter("ShowInclude", false); // NOI18N
-    private BooleanFilter showMacro = new BooleanFilter("ShowMacro", true); // NOI18N;
-    private BooleanFilter showTypedef = new BooleanFilter("ShowTypedef", true); // NOI18N
-    private BooleanFilter showVariable = new BooleanFilter("ShowVariable", true); // NOI18N
-    private BooleanFilter showField = new BooleanFilter("ShowField", true); // NOI18N
-    private BooleanFilter showUsing = new BooleanFilter("ShowUsing", false); // NOI18N
+    private final BooleanFilter showForwardClassDeclarations = new BooleanFilter("ShowForwardClassDeclarations", true); // NOI18N
+    private final BooleanFilter showForwardFunctionDeclarations = new BooleanFilter("ShowForwardFunctionDeclarations", false); // NOI18N
+    private final BooleanFilter showInclude = new BooleanFilter("ShowInclude", false); // NOI18N
+    private final BooleanFilter showMacro = new BooleanFilter("ShowMacro", true); // NOI18N;
+    private final BooleanFilter showTypedef = new BooleanFilter("ShowTypedef", true); // NOI18N
+    private final BooleanFilter showVariable = new BooleanFilter("ShowVariable", true); // NOI18N
+    private final BooleanFilter showField = new BooleanFilter("ShowField", true); // NOI18N
+    private final BooleanFilter showUsing = new BooleanFilter("ShowUsing", false); // NOI18N
     private SortMode sortByName = SortMode.Name;
-    private BooleanFilter groupByKind = new BooleanFilter("groupByKind", false); // NOI18N
-    private BooleanFilter expandAll = new BooleanFilter("expandAll", false); // NOI18N
+    private final BooleanFilter groupByKind = new BooleanFilter("groupByKind", false); // NOI18N
+    private final BooleanFilter expandAll = new BooleanFilter("expandAll", false); // NOI18N
 
     public enum SortMode { Name, Offset }
 
