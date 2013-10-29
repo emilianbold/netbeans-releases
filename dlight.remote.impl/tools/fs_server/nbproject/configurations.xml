@@ -213,6 +213,7 @@
         <cTool>
           <preprocessorList>
             <Elem>SOLARIS</Elem>
+            <Elem>_POSIX_PTHREAD_SEMANTICS</Elem>
             <Elem>__EXTENSIONS__</Elem>
           </preprocessorList>
         </cTool>
@@ -228,13 +229,9 @@
       </folder>
       <item path="src/array.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="src/array.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/dirtab.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/fs_common.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/fs_server.c" ex="false" tool="0" flavor2="9">
         <cTool>
@@ -363,7 +360,7 @@
     </conf>
     <conf name="Solaris-SPARC" type="0">
       <toolsSet>
-        <compilerSet>GNU|GNU</compilerSet>
+        <compilerSet>OracleSolarisStudio|OracleSolarisStudio</compilerSet>
         <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
