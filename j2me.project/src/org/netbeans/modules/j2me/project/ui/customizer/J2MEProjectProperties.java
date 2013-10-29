@@ -155,6 +155,8 @@ public final class J2MEProjectProperties {
     public static final String PLATFORM_PROFILE = "platform.profile"; //NOI18N
     //J2MEMIDletsPanel
     public static final String MANIFEST_MIDLETS = "manifest.midlets"; //NOI18N
+    public static final String DIST_JAD = "dist.jad";   //NOI18N
+    public static final String DIST_JAR_FILE = "dist.jar.file"; //NOI18N
     //J2MEAPIPermissionsPanel
     public static final String MANIFEST_APIPERMISSIONS = "manifest.apipermissions"; //NOI18N
     //J2MEPushRegistryPanel

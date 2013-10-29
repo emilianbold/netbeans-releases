@@ -129,9 +129,7 @@ public class J2MEProjectWizardIterator implements WizardDescriptor.ProgressInsta
             librariesDefinition += SharableLibrariesUtils.DEFAULT_LIBRARIES_FILENAME;
         }
         // put J2ME-specific project properties
-        Map<String, String> props = new HashMap<>();
-        props.put("dist.jad", name + ".jad"); //NOI18N
-        props.put("dist.jar.file", name + ".jar"); //NOI18N
+        Map<String, String> props = new HashMap<>();        
         props.put("run.method", "STANDARD"); //NOI18N
         props.put("debug.timeout", "30000"); //NOI18N
         props.put("security.domain", ""); //NOI18N

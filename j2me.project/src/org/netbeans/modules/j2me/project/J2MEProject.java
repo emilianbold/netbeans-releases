@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.j2me.project;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -49,6 +50,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.modules.j2me.project.ui.customizer.CustomizerProviderImpl;
@@ -59,9 +61,9 @@ import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
 import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
-import org.netbeans.modules.java.api.common.project.BaseActionProvider;
 import org.netbeans.modules.java.api.common.project.ProjectConfigurations;
 import org.netbeans.modules.java.api.common.project.ProjectHooks;
+import org.netbeans.modules.java.api.common.project.ProjectOperations;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.project.ui.LogicalViewProviders;
 import org.netbeans.modules.java.api.common.queries.QuerySupport;
@@ -82,8 +84,12 @@ import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.lookup.Lookups;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 /**
  *
@@ -132,7 +138,8 @@ public class J2MEProject implements Project {
     public J2MEProject(@NonNull final AntProjectHelper helper) {
         Parameters.notNull("helper", helper);   //NOI18N
         this.helper = helper;
-        this.updateHelper = new UpdateHelper(new J2MEProjectUpdates(helper), helper);
+        final J2MEProjectUpdates updates = new J2MEProjectUpdates(helper);
+        this.updateHelper = new UpdateHelper(updates, helper);
         this.auxCfg = helper.createAuxiliaryConfiguration();
         this.eval = ProjectConfigurations.createPropertyEvaluator(this, helper);
         this.refHelper = new ReferenceHelper(helper, auxCfg, eval);
@@ -149,7 +156,7 @@ public class J2MEProject implements Project {
                 testRoots).
             setPlatformType(J2MEProjectProperties.PLATFORM_TYPE_J2ME).
             build();
-        this.lkp = createLookup(buildExtender);
+        this.lkp = createLookup(buildExtender, newProjectOperationsCallback(this, updates));
     }
 
     @Override
@@ -199,6 +206,31 @@ public class J2MEProject implements Project {
         return cpProvider;
     }
 
+    private void setName(@NonNull final String name) {
+        Parameters.notNull("name", name);   //NOI18N
+        ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+            @Override
+            public Void run() {
+                final Element data = updateHelper.getPrimaryConfigurationData(true);
+                NodeList nl = data.getElementsByTagNameNS(PROJECT_CONFIGURATION_NAMESPACE, "name"); //NOI18N
+                Element nameEl;
+                if (nl.getLength() == 1) {
+                    nameEl = (Element) nl.item(0);
+                    NodeList deadKids = nameEl.getChildNodes();
+                    while (deadKids.getLength() > 0) {
+                        nameEl.removeChild(deadKids.item(0));
+                    }
+                } else {
+                    nameEl = data.getOwnerDocument().createElementNS(PROJECT_CONFIGURATION_NAMESPACE, "name");  //NOI18N
+                    data.insertBefore(nameEl, /* OK if null */data.getChildNodes().item(0));
+                }
+                nameEl.appendChild(data.getOwnerDocument().createTextNode(name));
+                updateHelper.putPrimaryConfigurationData(data, true);
+                return null;
+            }
+        });
+    }
+
     @NonNull
     private SourceRoots createRoots(final boolean tests) {
         return SourceRoots.create(
@@ -212,7 +244,9 @@ public class J2MEProject implements Project {
     }
 
     @NonNull
-    private Lookup createLookup(@NonNull final AntBuildExtender buildExtender) {
+    private Lookup createLookup(
+            @NonNull final AntBuildExtender buildExtender,
+            @NonNull final ProjectOperations.Callback opsCallback) {
         Parameters.notNull("buildExtender", buildExtender); //NOI18N
         final FileEncodingQueryImplementation encodingQuery =
                 QuerySupport.createFileEncodingQuery(eval, ProjectProperties.SOURCE_ENCODING);
@@ -266,10 +300,9 @@ public class J2MEProject implements Project {
                         ProjectProperties.ANNOTATION_PROCESSING_PROCESSOR_OPTIONS),
                 QuerySupport.createFileBuiltQuery(helper, eval, sourceRoots, testRoots),
                 QuerySupport.createTemplateAttributesProvider(helper, encodingQuery),
-                ProjectHooks.createProjectXmlSavedHookBuilder(updateHelper, genFilesHelper).
+                ProjectHooks.createProjectXmlSavedHookBuilder(eval, updateHelper, genFilesHelper).
                         setBuildImplTemplate(J2MEProject.class.getResource("resources/build-impl.xsl")).    //NOI18N
                         setBuildTemplate(J2MEProject.class.getResource("resources/build.xsl")). //NOI18N
-                        setBuildXmlName(BaseActionProvider.getBuildXmlName(this, eval)).
                         setOverrideModifiedBuildImplPredicate(new Callable<Boolean>() {
                             @Override
                             public Boolean call() throws Exception {
@@ -284,8 +317,13 @@ public class J2MEProject implements Project {
                         addClassPathType(ClassPath.SOURCE).
                         setBuildImplTemplate(J2MEProject.class.getResource("resources/build-impl.xsl")).    //NOI18N
                         setBuildTemplate(J2MEProject.class.getResource("resources/build.xsl")). //NOI18N
-                        setBuildXmlName(BaseActionProvider.getBuildXmlName(this, eval)).
                         build()),
+                ProjectOperations.createBuilder(this, eval, updateHelper, refHelper, sourceRoots, testRoots).
+                        addDataFiles("manifest.mf").    //NOI18N
+                        addUpdatedNameProperty(J2MEProjectProperties.DIST_JAR_FILE, "{0}.jar", true).    //NOI18N
+                        addUpdatedNameProperty(J2MEProjectProperties.DIST_JAD, "{0}.jad", true).    //NOI18N
+                        setCallback(opsCallback).
+                        build(),
                 new CustomizerProviderImpl(this),
                 LogicalViewProviders.createBuilder(this, eval, EXTENSION_FOLDER).
                         build(),
@@ -342,6 +380,34 @@ public class J2MEProject implements Project {
             public void run() {
                 J2MEProject.this.getLookup().lookup(CustomizerProviderImpl.class).
                     showCustomizer(J2MECompositeCategoryProvider.RUN, null);
+            }
+        };
+    }
+
+    @NonNull
+    private static ProjectOperations.Callback newProjectOperationsCallback(
+        @NonNull final J2MEProject project,
+        @NonNull final J2MEProjectUpdates updates) {
+        Parameters.notNull("project", project); //NOI18N
+        Parameters.notNull("updates", updates); //NOI18N
+        return new ProjectOperations.Callback() {
+            @Override
+            public void beforeOperation(@NonNull final ProjectOperations.Callback.Operation operation) {
+            }
+
+            @Override
+            @SuppressWarnings("fallthrough")
+            public void afterOperation(
+                    @NonNull final ProjectOperations.Callback.Operation operation,
+                    @NonNull final String newName,
+                    @NonNull final Pair<File, Project> oldProject) {
+                switch (operation) {
+                    case COPY:
+                        updates.setTransparentUpdate(true);
+                    case MOVE:
+                    case RENAME:
+                        project.setName(newName);
+                }
             }
         };
     }

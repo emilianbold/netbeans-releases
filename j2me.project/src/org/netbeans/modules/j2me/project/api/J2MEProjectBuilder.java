@@ -449,8 +449,11 @@ public final class J2MEProjectBuilder {
         h.putPrimaryConfigurationData(data, true);
         //Dist folder
         ep.setProperty(ProjectProperties.DIST_DIR, distFolder != null ? distFolder : "dist"); // NOI18N
+        final String antProjectName = PropertyUtils.getUsablePropertyName(name);
+        ep.put(J2MEProjectProperties.DIST_JAD, antProjectName + ".jad"); //NOI18N                
+        ep.setProperty(J2MEProjectProperties.DIST_JAR_FILE, antProjectName + ".jar"); //NOI18N
         ep.setComment(ProjectProperties.DIST_DIR, new String[] {"# " + NbBundle.getMessage(J2MEProjectBuilder.class, "COMMENT_dist.dir")}, false); // NOI18N
-        ep.setProperty(ProjectProperties.DIST_JAR, "${"+ProjectProperties.DIST_DIR+"}/" + PropertyUtils.getUsablePropertyName(name) + ".jar"); // NOI18N
+        ep.setProperty(ProjectProperties.DIST_JAR, "${"+ProjectProperties.DIST_DIR+"}/${"+J2MEProjectProperties.DIST_JAR_FILE+"}"); // NOI18N
         //Classpaths
         ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, compileClassPath); // NOI18N
         ep.setProperty(ProjectProperties.JAVAC_PROCESSORPATH, new String[] {"${"+ProjectProperties.JAVAC_CLASSPATH+"}"}); // NOI18N

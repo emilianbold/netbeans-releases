@@ -57,6 +57,7 @@ import org.w3c.dom.Element;
 class J2MEProjectUpdates implements UpdateImplementation {
 
     private final AntProjectHelper helper;
+    private volatile boolean silentUpdate;
 
     J2MEProjectUpdates(@NonNull final AntProjectHelper helper) {
         Parameters.notNull("helper", helper);   //NOI18N
@@ -86,6 +87,10 @@ class J2MEProjectUpdates implements UpdateImplementation {
     @Override
     public EditableProperties getUpdatedProjectProperties() {
         return helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+    }
+
+    void setTransparentUpdate(final boolean transparentUpdate) {
+        this.silentUpdate = transparentUpdate;
     }
 
 }
