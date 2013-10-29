@@ -170,8 +170,6 @@ public class BugzillaQuery {
                     // keeps all issues we will retrieve from the server
                     // - those matching the query criteria
                     // - and the obsolete ones
-                    Set<String> queryIssues = new HashSet<String>();
-
                     issues.clear();
                     if(isSaved()) {
                         if(!wasRun() && !issues.isEmpty()) {
