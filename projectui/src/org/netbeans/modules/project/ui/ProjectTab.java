@@ -869,10 +869,12 @@ public class ProjectTab extends TopComponent
         }
         
         private void collapseNodes(Node node, ProjectTab tab) {
-            if ( tab.btv.isExpanded(node) && node.getChildren().getNodesCount() != 0 ) {
+            if (  node.getChildren().getNodesCount() != 0 ) {
                 for ( Node nodeIter : node.getChildren().getNodes() ) {
-                    collapseNodes(nodeIter, tab);
-                    tab.btv.collapseNode(nodeIter);
+                    if( tab.btv.isExpanded(nodeIter) ) {
+                        collapseNodes(nodeIter, tab);
+                        tab.btv.collapseNode(nodeIter);
+                    }
                 }
             }
         }
