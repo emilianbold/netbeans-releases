@@ -230,6 +230,7 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
 
         descriptionPanel.setEditable(false);
         descriptionPanel.setContentType(org.openide.util.NbBundle.getMessage(AnalysisResultTopComponent.class, "AnalysisResultTopComponent.descriptionPanel.contentType")); // NOI18N
+        descriptionPanel.putClientProperty(javax.swing.JTextPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
         jScrollPane1.setViewportView(descriptionPanel);
 
         jSplitPane1.setRightComponent(jScrollPane1);
