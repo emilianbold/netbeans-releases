@@ -59,8 +59,8 @@ public interface IssuePriorityProvider<I> {
      * to match with exactly one {@link IssuePriorityInfo#getID()} which was 
      * returned via {@link #getPriorityInfos}.
      * 
-     * @param i
-     * @return
+     * @param i an implementation specific issue instance
+     * @return the priority ID
      * @see IssuePriorityInfo
      */
     public String getPriorityID(I i);
@@ -68,10 +68,14 @@ public interface IssuePriorityProvider<I> {
     /**
      * Provides information about Issue Priorities given by a 
      * remote server. The order in the returned array also determines the rank 
-     * of a particular item, where the item with the lowest index stands for 
+     * of a particular priority, where the PriorityInfo with the lowest index stands for 
      * the highest Priority and so on.
+     * <p>
+     * For example a default Bugzilla setup would return an array of five PriorityInfo-s, 
+     * where the first would be P1, the second P2, etc.
+     * </p>
      * 
-     * @return 
+     * @return priority infos
      * @see IssuePriorityInfo
      */
     public IssuePriorityInfo[] getPriorityInfos();
