@@ -1603,10 +1603,6 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="submitButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="separatorLabel5" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="btnSaveChanges" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
                       <Component id="separatorLabel6" min="-2" pref="2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="cancelButton" min="-2" max="-2" attributes="0"/>
@@ -1628,12 +1624,10 @@
                           <Component id="showInBrowserButton" linkSize="6" alignment="2" max="32767" attributes="0"/>
                           <Component id="separatorLabel4" alignment="2" max="32767" attributes="0"/>
                           <Component id="submitButton" alignment="2" max="32767" attributes="0"/>
-                          <Component id="btnSaveChanges" alignment="2" min="-2" max="-2" attributes="0"/>
                           <Component id="cancelButton" alignment="2" min="-2" max="-2" attributes="0"/>
                           <Component id="separatorLabel6" alignment="2" max="32767" attributes="0"/>
                           <Component id="btnDeleteTask" alignment="2" min="-2" max="-2" attributes="0"/>
                           <Component id="separatorDismissButton" alignment="2" max="32767" attributes="0"/>
-                          <Component id="separatorLabel5" alignment="2" max="32767" attributes="0"/>
                       </Group>
                   </Group>
               </Group>
@@ -1657,20 +1651,6 @@
                   </Border>
                 </Property>
               </Properties>
-            </Component>
-            <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="btnSaveChanges">
-              <Properties>
-                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.btnSaveChanges.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                </Property>
-                <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.btnSaveChanges.TTtext" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                </Property>
-                <Property name="enabled" type="boolean" value="false"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnSaveChangesActionPerformed"/>
-              </Events>
             </Component>
             <Component class="javax.swing.JLabel" name="separatorLabel3">
               <Properties>
@@ -1760,15 +1740,6 @@
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnDeleteTaskActionPerformed"/>
               </Events>
-            </Component>
-            <Component class="javax.swing.JLabel" name="separatorLabel5">
-              <Properties>
-                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-                  <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
-                    <LineBorder/>
-                  </Border>
-                </Property>
-              </Properties>
             </Component>
           </SubComponents>
         </Container>

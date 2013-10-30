@@ -11,7 +11,7 @@ Close All Projects
 Open File...               O
 Open Recent File       >   F
 ========================
-Project Group          >   u
+Project Groups...          u
 Project Properties         t   - Project Properties (project-name)
 ========================
 Import Project         >   I

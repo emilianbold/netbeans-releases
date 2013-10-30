@@ -371,10 +371,8 @@ public class IssuePanel extends javax.swing.JPanel {
                     clearUnsavedFields();
                 }
                 if (enableMap.isEmpty()) {
-                    btnSaveChanges.setEnabled(isDirty);
                     cancelButton.setEnabled(isModified || isDirty);
                 } else {
-                    enableMap.put(btnSaveChanges, isDirty);
                     enableMap.put(cancelButton, isModified || isDirty);
                 }
                 if (!initializingNewTask) {
@@ -1881,7 +1879,6 @@ public class IssuePanel extends javax.swing.JPanel {
         buttonsPanel = new javax.swing.JPanel();
         separatorLabel4 = new javax.swing.JLabel();
         separatorLabel6 = new javax.swing.JLabel();
-        btnSaveChanges = new org.netbeans.modules.bugtracking.util.LinkButton();
         separatorLabel3 = new javax.swing.JLabel();
         separatorDismissButton = new javax.swing.JLabel();
         refreshButton = new org.netbeans.modules.bugtracking.util.LinkButton();
@@ -1889,7 +1886,6 @@ public class IssuePanel extends javax.swing.JPanel {
         showInBrowserButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         submitButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         btnDeleteTask = new org.netbeans.modules.bugtracking.util.LinkButton();
-        separatorLabel5 = new javax.swing.JLabel();
         mainScrollPane = new javax.swing.JScrollPane();
         mainPanel = new javax.swing.JPanel();
         attributesSection = new org.netbeans.modules.bugtracking.util.CollapsibleSectionPanel();
@@ -2629,11 +2625,6 @@ public class IssuePanel extends javax.swing.JPanel {
 
         separatorLabel6.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
-        org.openide.awt.Mnemonics.setLocalizedText(btnSaveChanges, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.btnSaveChanges.text")); // NOI18N
-        btnSaveChanges.setToolTipText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.btnSaveChanges.TTtext")); // NOI18N
-        btnSaveChanges.setEnabled(false);
-        btnSaveChanges.addActionListener(formListener);
-
         separatorLabel3.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
         separatorDismissButton.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
@@ -2655,8 +2646,6 @@ public class IssuePanel extends javax.swing.JPanel {
         btnDeleteTask.setToolTipText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.btnDeleteTask.TTtext")); // NOI18N
         btnDeleteTask.addActionListener(formListener);
 
-        separatorLabel5.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-
         javax.swing.GroupLayout buttonsPanelLayout = new javax.swing.GroupLayout(buttonsPanel);
         buttonsPanel.setLayout(buttonsPanelLayout);
         buttonsPanelLayout.setHorizontalGroup(
@@ -2672,10 +2661,6 @@ public class IssuePanel extends javax.swing.JPanel {
                 .addComponent(separatorLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 2, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(submitButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(separatorLabel5)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnSaveChanges, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(separatorLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 2, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -2696,12 +2681,10 @@ public class IssuePanel extends javax.swing.JPanel {
                     .addComponent(showInBrowserButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(separatorLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(submitButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btnSaveChanges, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(cancelButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(separatorLabel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btnDeleteTask, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(separatorDismissButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(separatorLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addComponent(separatorDismissButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
 
         buttonsPanelLayout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {refreshButton, separatorLabel3, showInBrowserButton});
@@ -2830,10 +2813,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private class FormListener implements java.awt.event.ActionListener, java.awt.event.FocusListener {
         FormListener() {}
         public void actionPerformed(java.awt.event.ActionEvent evt) {
-            if (evt.getSource() == btnSaveChanges) {
-                IssuePanel.this.btnSaveChangesActionPerformed(evt);
-            }
-            else if (evt.getSource() == refreshButton) {
+            if (evt.getSource() == refreshButton) {
                 IssuePanel.this.refreshButtonActionPerformed(evt);
             }
             else if (evt.getSource() == cancelButton) {
@@ -3409,21 +3389,6 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         });
     }//GEN-LAST:event_submitButtonActionPerformed
 
-    private void btnSaveChangesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveChangesActionPerformed
-        save();
-    }
-
-    void save() {
-        skipReload = true;
-        enableComponents(false);
-        RP.post(new Runnable() {
-            @Override
-            public void run() {
-                saveSynchronously();
-            }
-        });
-    }//GEN-LAST:event_btnSaveChangesActionPerformed
-
     boolean saveSynchronously() {
         boolean saved = false;
         try {
@@ -3435,7 +3400,6 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
                 public void run() {
                     clearUnsavedFields();
                     enableComponents(true);
-                    btnSaveChanges.setEnabled(!fSaved);
                     updateFieldStatuses();
                     skipReload = false;
                 }
@@ -3473,7 +3437,6 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
                         public void run() {
                             clearUnsavedFields();
                             enableComponents(true);
-                            btnSaveChanges.setEnabled(!fCleared);
                             cancelButton.setEnabled(!fCleared);                            
                             skipReload = false;
                             reloadForm(true);
@@ -3549,7 +3512,6 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     private javax.swing.JLabel blocksLabel;
     private javax.swing.JLabel blocksWarning;
     private org.netbeans.modules.bugtracking.util.LinkButton btnDeleteTask;
-    private org.netbeans.modules.bugtracking.util.LinkButton btnSaveChanges;
     private javax.swing.JPanel buttonsPanel;
     private org.netbeans.modules.bugtracking.util.LinkButton cancelButton;
     private javax.swing.JTextField ccField;
@@ -3649,7 +3611,6 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     private javax.swing.JLabel separatorDismissButton;
     private javax.swing.JLabel separatorLabel3;
     private javax.swing.JLabel separatorLabel4;
-    private javax.swing.JLabel separatorLabel5;
     private javax.swing.JLabel separatorLabel6;
     private javax.swing.JComboBox severityCombo;
     private org.netbeans.modules.bugtracking.util.LinkButton showInBrowserButton;

@@ -100,6 +100,7 @@ public class ExportZIP extends JPanel {
 
     private static final RequestProcessor RP = new RequestProcessor(ExportZIP.class);
     private static final Logger LOG = Logger.getLogger(ExportZIP.class.getName());
+    private static final int BUFFER_SIZE = 1024;
 
     @ActionID(category="Project", id="org.netbeans.modules.project.ui.zip.export")
     @ActionRegistration(iconInMenu=false, displayName="#CTL_ExportZIPAction")
@@ -256,21 +257,23 @@ public class ExportZIP extends JPanel {
             ze.setCrc(0);
             zos.putNextEntry(ze);
         } else {
-            ByteArrayOutputStream content = new ByteArrayOutputStream((int) f.length());
             InputStream is = new FileInputStream(f);
-            try {
-                FileUtil.copy(is, content);
-            } finally {
-                is.close();
-            }
             ze.setMethod(ZipEntry.DEFLATED);
             ze.setSize(f.length());
             CRC32 crc = new CRC32();
-            byte[] data = content.toByteArray();
-            crc.update(data);
+            try {
+                copyStreams(is, null, crc);
+            } finally {
+                is.close();
+            }
             ze.setCrc(crc.getValue());
             zos.putNextEntry(ze);
-            zos.write(data);
+            InputStream zis = new FileInputStream(f);
+            try {
+                copyStreams(zis, zos, null);
+            } finally {
+                zis.close();
+            }
         }
     }
 
@@ -377,7 +380,26 @@ public class ExportZIP extends JPanel {
         }
         firePropertyChange("validity", null, null);
     }
-
+    
+    private static void copyStreams(InputStream in, OutputStream out, CRC32 crc32) {
+        if ( out == null && crc32 == null ) {
+            return;
+        }
+        try {
+	    byte[] buffer = new byte[BUFFER_SIZE];
+            int read = 0;
+            while ((read = in.read(buffer)) != -1) {
+                if ( out != null ) {
+                    out.write(buffer, 0, read);
+                } else {
+                    crc32.update(buffer, 0, read);
+                }
+            }
+	} catch(IOException e) {
+	
+        }
+    }
+   
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {

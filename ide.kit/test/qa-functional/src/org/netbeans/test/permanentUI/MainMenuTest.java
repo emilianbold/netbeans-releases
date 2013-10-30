@@ -78,7 +78,7 @@ public class MainMenuTest extends MainMenuTestCase {
                 addTest(MainMenuTest.class, "testWindowMenu").
                 addTest(MainMenuTest.class, "testProfileMenu").
                 // here you test sub-menus in each menu.
-                addTest(MainMenuTest.class, "testFile_ProjectGroupSubMenu").
+                // no more submenu since 8.0 addTest(MainMenuTest.class, "testFile_ProjectGroupSubMenu").
                 addTest(MainMenuTest.class, "testFile_ImportProjectSubMenu").
                 addTest(MainMenuTest.class, "testFile_ExportProjectSubMenu").
                 addTest(MainMenuTest.class, "testNavigate_InspectSubMenu").
@@ -169,9 +169,11 @@ public class MainMenuTest extends MainMenuTestCase {
         oneMenuTest("Profile");
     }
 
-    public void testFile_ProjectGroupSubMenu() {
+/** No more submenu since 8.
+ * public void testFile_ProjectGroupSubMenu() {
         oneSubMenuTest("File|Project Group", false);
     }
+    */
 
     public void testFile_ImportProjectSubMenu() {
         oneSubMenuTest("File|Import Project", true);
