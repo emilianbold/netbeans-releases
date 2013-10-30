@@ -531,7 +531,8 @@ public class PullAction extends ContextAction {
                 + "nothing",
             "MSG_PullAction.progress.merging=Merging heads",
             "MSG_PullAction.progress.finishing=Refreshing file statuses",
-            "MSG_PullAction.progress.updating=Updating to branch's tip"
+            "MSG_PullAction.progress.updating=Updating to branch's tip",
+            "# {0} - branch name", "MSG_PullAction.progress.updatingBranch=Updating to tip of branch \"{0}\""
         })
         private void handlePulledChangesets (List<String> list) throws HgException {
             OutputLogger logger = supp.getLogger();
@@ -556,8 +557,18 @@ public class PullAction extends ContextAction {
                     askForMerge(parents);
                     warnMoreHeads = false;
                 } else if (updateNeeded) {
-                    supp.setDisplayName(Bundle.MSG_PullAction_progress_updating());
-                    list = HgCommand.doUpdateAll(root, false, null);
+                    String currentBranch = null;
+                    try {
+                        currentBranch = HgCommand.getBranch(root);
+                    } catch (HgException ex) {
+                        Mercurial.LOG.log(Level.FINE, null, ex);
+                    }
+                    if (currentBranch == null) {
+                        supp.setDisplayName(Bundle.MSG_PullAction_progress_updating());
+                    } else {
+                        supp.setDisplayName(Bundle.MSG_PullAction_progress_updatingBranch(currentBranch));
+                    }
+                    list = HgCommand.doUpdateAll(root, false, currentBranch);
                     logger.output(list);
                 }
             }
