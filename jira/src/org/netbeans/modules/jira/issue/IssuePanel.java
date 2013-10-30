@@ -132,7 +132,6 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.issuetable.TableSorter;
 import org.netbeans.modules.bugtracking.team.spi.RepositoryUser;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.util.LinkButton;
@@ -152,6 +151,7 @@ import org.netbeans.modules.jira.util.TypeRenderer;
 import org.netbeans.modules.mylyn.util.AbstractNbTaskWrapper;
 import org.netbeans.modules.spellchecker.api.Spellchecker;
 import org.openide.awt.HtmlBrowser;
+import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -2372,7 +2372,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private void resolveIssueButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resolveIssueButtonActionPerformed
         ResolveIssuePanel panel = new ResolveIssuePanel(issue);
         String title = NbBundle.getMessage(IssuePanel.class, "IssuePanel.resolveIssueButton.text"); // NOI18N
-        if (BugtrackingUtil.show(panel, title, title)) {
+        if (JiraUtils.show(panel, title, title, new HelpCtx(panel.getClass()))) {
             String pattern = NbBundle.getMessage(IssuePanel.class, "IssuePanel.resolveIssueMessage"); // NOI18N
             String message = MessageFormat.format(pattern, issue.getKey());
             final Resolution resolution = panel.getSelectedResolution();
@@ -2393,7 +2393,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         final Resolution newResolution;
         if ((resolution == null) || resolution.trim().equals("")) { // NOI18N
             String title = NbBundle.getMessage(IssuePanel.class, "IssuePanel.closeIssueButton.text"); // NOI18N
-            if (BugtrackingUtil.show(panel, title, title)) {
+            if (JiraUtils.show(panel, title, title, new HelpCtx(panel.getClass()))) {
                 newResolution = panel.getSelectedResolution();
             } else {
                 newResolution = null;
