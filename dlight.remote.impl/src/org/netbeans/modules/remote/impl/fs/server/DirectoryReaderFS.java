@@ -123,7 +123,7 @@ public class DirectoryReaderFS implements DirectoryReader {
     
     public void warmapImpl(String path) throws IOException, InterruptedException {
         if (path.isEmpty()) {
-            path = "/";
+            path = "/"; // NOI18N
         }
         FSSRequest request = new FSSRequest(FSSRequestKind.RECURSE, path);
         List<String> paths = new ArrayList<String>();
@@ -180,7 +180,7 @@ public class DirectoryReaderFS implements DirectoryReader {
     @Override
     public List<DirEntry> readDirectory(String path) throws IOException, InterruptedException, CancellationException, ExecutionException {
         if (path.isEmpty()) {
-            path = "/";
+            path = "/"; // NOI18N
         }
         synchronized (cacheLock) {
             List<DirEntry> entries = cache.get(path);
