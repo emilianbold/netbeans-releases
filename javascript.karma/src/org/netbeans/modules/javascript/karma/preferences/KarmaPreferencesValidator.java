@@ -58,8 +58,8 @@ public final class KarmaPreferencesValidator {
     }
 
     public KarmaPreferencesValidator validate(Project project) {
-        validateKarma(KarmaPreferences.getInstance().getKarma(project));
-        validateConfig(KarmaPreferences.getInstance().getConfig(project));
+        validateKarma(KarmaPreferences.getKarma(project));
+        validateConfig(KarmaPreferences.getConfig(project));
         return this;
     }
 

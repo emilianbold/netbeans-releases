@@ -87,7 +87,7 @@ public final class KarmaExecutable {
     private KarmaExecutable(Project project) {
         assert project != null;
         this.project = project;
-        karmaPath = KarmaPreferences.getInstance().getKarma(project);
+        karmaPath = KarmaPreferences.getKarma(project);
         assert karmaPath != null;
     }
 

@@ -215,7 +215,7 @@ public final class KarmaServer {
     }
 
     private String getProjectConfigFile() {
-        return KarmaPreferences.getInstance().getConfig(project);
+        return KarmaPreferences.getConfig(project);
     }
 
     private File getNetBeansKarmaReporter() {
