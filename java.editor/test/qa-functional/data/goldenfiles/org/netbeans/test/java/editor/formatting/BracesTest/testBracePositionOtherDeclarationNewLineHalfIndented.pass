@@ -10,11 +10,13 @@ package general;
  */
 public class BracesPosition {
 
-    {
-    }
+    
+      {
+      }
 
-    static {
-    }
+    static
+      {
+      }
 
     public void m() {
         new Runnable() {
@@ -23,26 +25,33 @@ public class BracesPosition {
                 throw new UnsupportedOperationException("Not supported yet.");
             }
         };
-        {
-        }
+          {
+          }
 
-        synchronized (this) {
-            for (int i = 0; i < 10; i++) {
-            }
-        }
-        String[] arr = new String[]{
+        synchronized (this)
+          {
+            for (int i = 0; i < 10; i++)
+              {
+              }
+          }
+        String[] arr = new String[]
+          {
             "", ""
-        };
+          };
 
         int a = 1;
-        switch (a) {
+        switch (a)
+          {
             case 1:
 
-        }
-        if (a == 1) {
-        } else if (a == 2) {
-        } else {
+          }
+        if (a == 1)
+          {
+          } else if (a == 2)
+          {
+          } else
+          {
 
-        }
+          }
     }
 }

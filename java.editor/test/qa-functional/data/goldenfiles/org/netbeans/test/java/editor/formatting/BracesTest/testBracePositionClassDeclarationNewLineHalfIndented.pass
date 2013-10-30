@@ -8,7 +8,8 @@ package general;
  *
  * @author jp159440
  */
-public class BracesPosition {
+public class BracesPosition
+  {
 
     {
     }
@@ -17,12 +18,13 @@ public class BracesPosition {
     }
 
     public void m() {
-        new Runnable() {
+        new Runnable()
+          {
 
             public void run() {
                 throw new UnsupportedOperationException("Not supported yet.");
             }
-        };
+          };
         {
         }
 
@@ -45,4 +47,4 @@ public class BracesPosition {
 
         }
     }
-}
+  }
