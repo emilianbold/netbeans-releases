@@ -58,6 +58,7 @@ import java.util.logging.Level;
 import javax.swing.JLabel;
 import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.DelegatingConnector;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.QueryImpl;
@@ -404,6 +405,10 @@ public class TeamUtil {
         return ret;
     }
 
+    public static void setFirmAssociations(File[] files, Repository repository) {
+        BugtrackingOwnerSupport.getInstance().setFirmAssociations(files, APIAccessor.IMPL.getImpl(repository));
+    }
+    
     public static void addCacheListener(Issue issue, PropertyChangeListener l) {
         APIAccessor.IMPL.getImpl(issue).addIssueStatusListener(l);
     }

@@ -10,6 +10,7 @@ CND_PLATFORM=Cygwin64-Windows
 CND_CONF=nbexec64
 CND_DISTDIR=dist
 CND_BUILDDIR=build
+CND_DLIB_EXT=dll
 NBTMPDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}/tmp-packaging
 TMPDIRNAME=tmp-packaging
 OUTPUT_PATH=nbexec64.dll

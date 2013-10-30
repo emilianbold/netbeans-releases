@@ -48,6 +48,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConnector;
@@ -77,7 +78,11 @@ public class NBBugzillaUtils {
             Bugzilla.LOG.warning("No bugzilla repository available for netbeans.org"); // NOI18N
             return;
         }
-        Issue.open(nbRepo, issueID);
+        if(issueID != null) {
+            Util.openIssue(nbRepo, issueID);
+        } else {
+            Util.createNewIssue(nbRepo);
+        }
     }
 
     public static void reportAnIssue() {
@@ -88,7 +93,7 @@ public class NBBugzillaUtils {
                 if(!checkLogin(repo)) {
                     return;
                 }
-                Issue.open(NBRepositorySupport.getInstance().getNBRepository(), null);
+                Util.createNewIssue(NBRepositorySupport.getInstance().getNBRepository());
             }
         });
     }

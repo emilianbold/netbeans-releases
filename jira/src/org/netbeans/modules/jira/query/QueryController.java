@@ -97,7 +97,6 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
-import org.netbeans.modules.bugtracking.util.OwnerUtils;
 import org.netbeans.modules.bugtracking.util.SaveQueryPanel;
 import org.netbeans.modules.bugtracking.util.SaveQueryPanel.QueryNameValidator;
 import org.netbeans.modules.jira.Jira;
@@ -1419,9 +1418,6 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
             issueTable.started();
             counter = 0;
             setIssueCount(counter);
-            
-            // XXX move to API
-            OwnerUtils.setLooseAssociation(JiraUtils.getRepository(repository), false);                             
         }
 
         @Override

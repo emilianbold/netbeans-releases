@@ -63,6 +63,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
+import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
@@ -105,7 +106,7 @@ public final class ProjectHooks {
      * @param eval the project {@link PropertyEvaluator}
      * @param updateHelper the project {@link UpdateHelper}
      * @param genFilesHelper the project {@link GeneratedFilesHelper}
-     * @param cpProviderImpl the proejct {@link ClassPathProviderImpl}
+     * @param cpProviderImpl the project {@link ClassPathProviderImpl}
      * @return a new {@link ProjectOpenedHookBuilder}
      */
     @NonNull
@@ -120,15 +121,17 @@ public final class ProjectHooks {
 
     /**
      * Creates a new {@link ProjectXmlSavedHookBuilder}.
+     * @param eval the project {@link PropertyEvaluator}
      * @param updateHelper the project {@link UpdateHelper}
      * @param genFilesHelper the project {@link GeneratedFilesHelper}
      * @return a new {@link ProjectXmlSavedHookBuilder}
      */
     @NonNull
     public static ProjectXmlSavedHookBuilder createProjectXmlSavedHookBuilder(
+        @NonNull final PropertyEvaluator eval,
         @NonNull final UpdateHelper updateHelper,
         @NonNull final GeneratedFilesHelper genFilesHelper) {
-        return new ProjectXmlSavedHookBuilder(updateHelper, genFilesHelper);
+        return new ProjectXmlSavedHookBuilder(eval, updateHelper, genFilesHelper);
     }
 
     /**
@@ -146,7 +149,7 @@ public final class ProjectHooks {
         private final List<Runnable> postOpen = new LinkedList<Runnable>();
         private final List<Runnable> preClose = new LinkedList<Runnable>();
         private final List<Runnable> postClose = new LinkedList<Runnable>();
-        private String buildXmlName = GeneratedFilesHelper.BUILD_XML_PATH;
+        private String buildScriptProperty = ProjectProperties.BUILD_SCRIPT;
         private URL buildTemplate;
         private URL buildImplTemplate;
         
@@ -255,15 +258,15 @@ public final class ProjectHooks {
         }
 
         /**
-         * Sets the name of main build script.
-         * When unset the default name is {@link GeneratedFilesHelper#BUILD_XML_PATH}.
-         * @param buildXmlName the name of main build script
-         * @return the {@link ProjectOpenedHookBuilder}
-         */
+         * Sets the name of property referencing the project build script.
+         * If not set the {@link ProjectProperties#BUILD_SCRIPT} is used.
+         * @param propertyName the name of property holding the name of project's build script.
+         * @return the {@link ProjectOperationsBuilder}
+         */       
         @NonNull
-        public ProjectOpenedHookBuilder setBuildXmlName(@NonNull final String buildXmlName) {
-            Parameters.notNull("buildXmlName", buildXmlName); //NOI18N
-            this.buildXmlName = buildXmlName;
+        public ProjectOpenedHookBuilder setBuildScriptProperty(@NonNull final String propertyName) {
+            Parameters.notNull("propertyName", propertyName); //NOI18N
+            this.buildScriptProperty = propertyName;
             return this;
         }
 
@@ -286,7 +289,7 @@ public final class ProjectHooks {
                 postClose,                
                 buildImplTemplate,
                 buildTemplate,
-                buildXmlName);
+                buildScriptProperty);
         }
         
         
@@ -298,20 +301,24 @@ public final class ProjectHooks {
      */
     public static final class ProjectXmlSavedHookBuilder {
 
+        private final PropertyEvaluator eval;
         private final UpdateHelper updateHelper;
         private final GeneratedFilesHelper genFilesHelper;
         private final List<Runnable> preActions = new LinkedList<Runnable>();
         private final List<Runnable> postActions = new LinkedList<Runnable>();
-        private String buildXmlName = GeneratedFilesHelper.BUILD_XML_PATH;
+        private String buildScriptProperty = ProjectProperties.BUILD_SCRIPT;
         private URL buildImplTemplate;
         private URL buildTemplate;
         private Callable<Boolean> overridePredicate;
         
         private ProjectXmlSavedHookBuilder(
+            @NonNull final PropertyEvaluator eval,
             @NonNull final UpdateHelper updateHelper,
             @NonNull final GeneratedFilesHelper genFilesHelper) {
+            Parameters.notNull("eval", eval);   //NOI18N
             Parameters.notNull("updateHelper", updateHelper);   //NOI18N
             Parameters.notNull("genFilesHelper", genFilesHelper);   //NOI18N
+            this.eval = eval;
             this.updateHelper = updateHelper;
             this.genFilesHelper = genFilesHelper;
         }
@@ -365,15 +372,15 @@ public final class ProjectHooks {
         }
 
         /**
-         * Sets the name of main build script.
-         * When unset the default name is {@link GeneratedFilesHelper#BUILD_XML_PATH}.
-         * @param buildXmlName the name of main build script
-         * @return the {@link ProjectXmlSavedHookBuilder}
+         * Sets the name of property referencing the project build script.
+         * If not set the {@link ProjectProperties#BUILD_SCRIPT} is used.
+         * @param propertyName the name of property holding the name of project's build script.
+         * @return the {@link ProjectOperationsBuilder}
          */
         @NonNull
-        public ProjectXmlSavedHookBuilder setBuildXmlName(@NonNull final String buildXmlName) {
-            Parameters.notNull("buildXmlName", buildXmlName); //NOI18N
-            this.buildXmlName = buildXmlName;
+        public ProjectXmlSavedHookBuilder setBuildScriptProperty(@NonNull final String propertyName) {
+            Parameters.notNull("propertyName", propertyName); //NOI18N
+            this.buildScriptProperty = propertyName;
             return this;
         }
 
@@ -397,13 +404,14 @@ public final class ProjectHooks {
         @NonNull
         public ProjectXmlSavedHook build () {
             return new ProjectXmlSavedHookImpl(
+                eval,
                 updateHelper,
                 genFilesHelper,
                 preActions,
                 postActions,
                 buildImplTemplate,
                 buildTemplate,
-                buildXmlName,
+                buildScriptProperty,
                 overridePredicate);
         }
 
@@ -428,7 +436,7 @@ public final class ProjectHooks {
         private final List<? extends Runnable> postOpen;
         private final URL buildTemplate;
         private final URL buildImplTemplate;
-        private final String buildXmlName;
+        private final String buildScriptProperty;
 
         ProjectOpenedHookImpl(
             @NonNull final Project project,
@@ -443,7 +451,7 @@ public final class ProjectHooks {
             @NonNull final List<? extends Runnable> postClose,
             @NullAllowed final URL buildImplTemplate,
             @NullAllowed final URL buildTemplate,
-            @NonNull final String buildXmlName) {
+            @NonNull final String buildScriptProperty) {
             Parameters.notNull("project", project); //NOI18N
             Parameters.notNull("eval", eval);       //NOI18
             Parameters.notNull("updateHelper", updateHelper);   //NOI18N
@@ -454,7 +462,7 @@ public final class ProjectHooks {
             Parameters.notNull("postOpen", postOpen);               //NOI18N
             Parameters.notNull("preClose", preClose);               //NOI18N
             Parameters.notNull("postClose", postClose);             //NOI18N            
-            Parameters.notNull("buildXmlName", buildXmlName);   //NOI18N
+            Parameters.notNull("buildScriptProperty", buildScriptProperty);   //NOI18N
             this.project = project;
             this.eval = eval;
             this.updateHelper = updateHelper;
@@ -467,7 +475,7 @@ public final class ProjectHooks {
             this.postClose = postClose;
             this.buildImplTemplate = buildImplTemplate;
             this.buildTemplate = buildTemplate;
-            this.buildXmlName = buildXmlName;
+            this.buildScriptProperty = buildScriptProperty;
         }
 
         @Override
@@ -489,7 +497,7 @@ public final class ProjectHooks {
                             }
                             if (buildTemplate != null) {
                                 genFilesHelper.refreshBuildScript(
-                                    buildXmlName,
+                                    CommonProjectUtils.getBuildXmlName(eval, buildScriptProperty),
                                     buildTemplate,
                                     true);
                             }
@@ -630,36 +638,40 @@ public final class ProjectHooks {
 
     private static final class ProjectXmlSavedHookImpl extends ProjectXmlSavedHook {
 
+        private final PropertyEvaluator eval;
         private final UpdateHelper updateHelper;
         private final GeneratedFilesHelper genFilesHelper;
         private final List<? extends Runnable> preActions;
         private final List<? extends Runnable> postActions;
         private final URL buildImplTemplate;
         private final URL buildTemplate;
-        private final String buildXmlName;
+        private final String buildScriptProperty;
         private final Callable<Boolean> overridePredicate;
 
         ProjectXmlSavedHookImpl(
+            @NonNull final PropertyEvaluator eval,
             @NonNull final UpdateHelper updateHelper,
             @NonNull final GeneratedFilesHelper genFilesHelper,
             @NonNull final List<? extends Runnable> preActions,
             @NonNull final List<? extends Runnable> postActions,
             @NullAllowed final URL buildImplTemplate,
             @NullAllowed final URL buildTemplate,
-            @NonNull final String buildXmlName,
+            @NonNull final String buildScriptProperty,
             @NullAllowed final Callable<Boolean> overridePredicate) {
+            Parameters.notNull("eval", eval);   //NOI18N
             Parameters.notNull("updateHelper", updateHelper);   //NOI18N
             Parameters.notNull("genFilesHelper", genFilesHelper);   //NOI18N
             Parameters.notNull("preActions", preActions);       //NOI18N
             Parameters.notNull("postActions", postActions);     //NOI18N
-            Parameters.notNull("buildXmlName", buildXmlName);
+            Parameters.notNull("buildScriptProperty", buildScriptProperty); //NOI18N
+            this.eval = eval;
             this.updateHelper = updateHelper;
             this.genFilesHelper = genFilesHelper;
             this.preActions = preActions;
             this.postActions = postActions;
             this.buildImplTemplate = buildImplTemplate;
             this.buildTemplate = buildTemplate;
-            this.buildXmlName = buildXmlName;
+            this.buildScriptProperty = buildScriptProperty;
             this.overridePredicate = overridePredicate;
         }
 
@@ -709,7 +721,7 @@ public final class ProjectHooks {
                             }
                             if (buildTemplate != null) {
                                 genFilesHelper.refreshBuildScript(
-                                    buildXmlName,
+                                    CommonProjectUtils.getBuildXmlName(eval, buildScriptProperty),
                                     buildTemplate,
                                     false);
                             }

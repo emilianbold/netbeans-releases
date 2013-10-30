@@ -300,7 +300,7 @@ public final class LocalTask extends AbstractLocalTask {
     }
 
     private void fireDataChanged () {
-        support.firePropertyChange(IssueProvider.EVENT_ISSUE_REFRESHED, null, null);
+        support.firePropertyChange(IssueProvider.EVENT_ISSUE_DATA_CHANGED, null, null);
     }
 
     protected void fireUnsaved() {

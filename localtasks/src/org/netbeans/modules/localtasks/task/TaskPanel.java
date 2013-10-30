@@ -104,6 +104,7 @@ import javax.swing.text.NumberFormatter;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
+import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.issuetable.TableSorter;
 import org.netbeans.modules.localtasks.LocalRepository;
 import org.netbeans.modules.localtasks.task.LocalTask.Attachment;
@@ -1254,7 +1255,7 @@ final class TaskPanel extends javax.swing.JPanel {
                         public void run () {
                             for (Repository r : RepositoryManager.getInstance().getRepositories()) {
                                 if (repositoryId.equals(r.getId())) {
-                                    Issue.open(r, taskId);
+                                    Util.openIssue(r, taskId);
                                     break;
                                 }
                             }

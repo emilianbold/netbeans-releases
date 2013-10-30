@@ -1635,7 +1635,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
 
         @Override
         public Action getPreferredAction() {
-            return new DefAction(true, getLookup());
+            return super.getPreferredAction();
         }
 
         @Override

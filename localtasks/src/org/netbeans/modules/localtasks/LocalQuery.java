@@ -99,7 +99,7 @@ public final class LocalQuery {
     }
 
     void fireTasksChanged () {
-        support.firePropertyChange(QueryProviderImpl.EVENT_QUERY_ISSUES_CHANGED, null, null);
+        support.firePropertyChange(QueryProviderImpl.EVENT_QUERY_REFRESHED, null, null);
     }
 
     void addPropertyChangeListener (PropertyChangeListener listener) {
