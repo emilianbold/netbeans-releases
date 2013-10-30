@@ -11,16 +11,22 @@ package general;
 public class BracesGeneration {
 
     public void generate(boolean a) {
-        if (a) System.out.println("");       
-        while (a) System.out.println("");        
-        do System.out.println(""); while (a);
-        for (; a;) System.out.println("");
+        if (a)
+            System.out.println("");
+        while (a) {
+            System.out.println("");
+        }
+        do {
+            System.out.println("");
+        } while (a);
+        for (; a;) {
+            System.out.println("");
+        }
     }
 
     public void eliminate(boolean a) {
-        if (a) {
+        if (a)
             System.out.println("");
-        }
         while (a) {
             System.out.println("");
         }

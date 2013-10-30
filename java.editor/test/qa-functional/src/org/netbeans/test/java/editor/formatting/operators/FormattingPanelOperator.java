@@ -45,6 +45,7 @@ import java.awt.Component;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.*;
 
 /**
@@ -87,6 +88,8 @@ public abstract class FormattingPanelOperator extends Operator {
             defaultValues.put(key, ((JTextFieldOperator) operator).getText());
         } else if (operator instanceof JCheckBoxOperator) {
             defaultValues.put(key, ((JCheckBoxOperator) operator).isSelected());
+        } else if (operator instanceof JComboBoxOperator) {
+            defaultValues.put(key, ((JComboBoxOperator) operator).getSelectedItem());
         } else {
             throw new IllegalArgumentException("Unknown type of operator " + operator.getClass().getName());
         }
@@ -103,6 +106,8 @@ public abstract class FormattingPanelOperator extends Operator {
             ((JTextFieldOperator) operator).setText((String) value);
         } else if (operator instanceof JCheckBoxOperator) {
             ((JCheckBoxOperator) operator).changeSelectionNoBlock((Boolean) value);
+        } else if (operator instanceof JComboBoxOperator) {
+            ((JComboBoxOperator) operator).selectItem(value.toString());
         } else {
             throw new IllegalArgumentException("Unknown type of operator " + operator.getClass().getName());
         }        
@@ -120,9 +125,9 @@ public abstract class FormattingPanelOperator extends Operator {
         if(!modified) return;
         switchToPanel();
         for (OperatorGetter operatorGetter : getAllOperatorGetters()) {
-            restoreDefaultsValues(operatorGetter);
-            
+            restoreDefaultsValues(operatorGetter);            
         }        
+        new EventTool().waitNoEvent(500);  //Timeout to propagate UI changes correctly
         restoreMode = false;
     }    
     

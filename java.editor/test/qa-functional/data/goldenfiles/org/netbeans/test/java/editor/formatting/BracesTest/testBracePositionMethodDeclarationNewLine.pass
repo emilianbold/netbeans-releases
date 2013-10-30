@@ -16,10 +16,12 @@ public class BracesPosition {
     static {
     }
 
-    public void m() {
+    public void m()
+    {
         new Runnable() {
 
-            public void run() {
+            public void run()
+            {
                 throw new UnsupportedOperationException("Not supported yet.");
             }
         };
