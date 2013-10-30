@@ -41,63 +41,71 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se.dialogs;
 
+import junit.framework.Test;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.j2se.setup.J2SESetup;
 
 /**
  * Test of Delete File Dialog
  *
- * @author  mmirilovic@netbeans.org
+ * @author mmirilovic@netbeans.org
  */
 public class DeleteFileDialogTest extends PerformanceTestCase {
 
     private static Node testNode;
     private String TITLE;
 
-    /** Creates a new instance of RefactorRenameDialog */
+    /**
+     * Creates a new instance of RefactorRenameDialog
+     *
+     * @param testName test name
+     */
     public DeleteFileDialogTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
-    
-    /** Creates a new instance of RefactorRenameDialog */
+
+    /**
+     * Creates a new instance of RefactorRenameDialog
+     *
+     * @param testName test name
+     * @param performanceDataName data name
+     */
     public DeleteFileDialogTest(String testName, String performanceDataName) {
-        super(testName,performanceDataName);
+        super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.createConfiguration(J2SESetup.class)
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(J2SESetup.class)
                 .addTest(DeleteFileDialogTest.class)
-                .enableModules(".*").clusters("ide|java|apisupport").suite());
-        return suite;
+                .suite();
     }
 
     public void testDeleteFileDialog() {
         doMeasurement();
     }
-    
+
     @Override
     public void initialize() {
         TITLE = "Delete";
-        testNode = new Node(new SourcePackagesNode("PerformanceTestData"),"org.netbeans.test.performance|Class.java");
+        testNode = new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|Class.java");
     }
-    
+
+    @Override
     public void prepare() {
         // do nothing
     }
-    
+
+    @Override
     public ComponentOperator open() {
         // invoke Delete from the popup menu
         new DeleteAction().performShortcut(testNode);
@@ -106,8 +114,8 @@ public class DeleteFileDialogTest extends PerformanceTestCase {
 
     @Override
     public void close() {
-        if(testedComponentOperator!=null && testedComponentOperator.isShowing())
-            ((NbDialogOperator)testedComponentOperator).cancel();
+        if (testedComponentOperator != null && testedComponentOperator.isShowing()) {
+            ((NbDialogOperator) testedComponentOperator).cancel();
+        }
     }
-    
 }
