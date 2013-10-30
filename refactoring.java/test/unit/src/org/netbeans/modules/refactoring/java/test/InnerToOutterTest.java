@@ -457,7 +457,7 @@ public class InnerToOutterTest extends RefactoringTestBase {
         performInnerToOuterTest("outer");
         verifyContent(src,
                       new File("t/Inner.java", "/* * Refactoring License */ package t; /** * * @author junit */ class Inner { private final A outer; Inner(final A outer) { this.outer = outer; } } "),
-                      new File("t/A.java", "package t; public class A { public void t() { A t = new A(); Inner inner = new Inner(t); }}"));
+                      new File("t/A.java", "package t; public class A { public void t() { A t = new A(); Inner inner = new Inner(t); } }"));
     }
     
     public void test206086() throws Exception {
