@@ -849,9 +849,13 @@ public final class CompletionSupport implements DocumentListener {
         return true;
     }
 
-    public static boolean needShowCompletionOnText(JTextComponent target, String typedText) throws BadLocationException {
+    public static boolean needShowCompletionOnTextLite(JTextComponent target, String typedText) {
         char typedChar = typedText.charAt(typedText.length() - 1);
-        if (typedChar == ' ' || typedChar == '>' || typedChar == ':' || typedChar == '.' || typedChar == '*') {
+        return typedChar == ' ' || typedChar == '>' || typedChar == ':' || typedChar == '.' || typedChar == '*';
+    }
+    
+    public static boolean needShowCompletionOnText(JTextComponent target, String typedText) throws BadLocationException {
+        if (needShowCompletionOnTextLite(target, typedText)) {
             int dotPos = target.getCaret().getDot();
             Document doc = target.getDocument();
             TokenSequence<TokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, dotPos, true, true);
