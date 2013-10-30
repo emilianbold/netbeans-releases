@@ -70,6 +70,7 @@ public class QmakeConfiguration implements Cloneable {
     private static final String OPENGL = "opengl"; // NOI18N
     private static final String PHONON = "phonon"; // NOI18N
     private static final String QT3SUPPORT = "qt3support"; // NOI18N
+    private static final String PRINTSUPPORT = "printsupport"; // NOI18N
     private static final String SQL = "sql"; // NOI18N
     private static final String SVG = "svg"; // NOI18N
     private static final String WEBKIT = "webkit"; // NOI18N
@@ -90,6 +91,7 @@ public class QmakeConfiguration implements Cloneable {
     private BooleanConfiguration openglEnabled;
     private BooleanConfiguration phononEnabled;
     private BooleanConfiguration qt3SupportEnabled;
+    private BooleanConfiguration printSupportEnabled;
     private BooleanConfiguration sqlEnabled;
     private BooleanConfiguration svgEnabled;
     private BooleanConfiguration webkitEnabled;
@@ -117,6 +119,7 @@ public class QmakeConfiguration implements Cloneable {
         openglEnabled = new BooleanConfiguration(false);
         phononEnabled = new BooleanConfiguration(false);
         qt3SupportEnabled = new BooleanConfiguration(false);
+        printSupportEnabled = new BooleanConfiguration(false);
         sqlEnabled = new BooleanConfiguration(false);
         svgEnabled = new BooleanConfiguration(false);
         xmlEnabled = new BooleanConfiguration(false);
@@ -152,6 +155,7 @@ public class QmakeConfiguration implements Cloneable {
         modules.put(new BooleanNodeProp(openglEnabled, true, "QtOpengl", getString("QtOpenglTxt"), getString("QtOpenglHint"))); // NOI18N
         modules.put(new BooleanNodeProp(phononEnabled, true, "QtPhonon", getString("QtPhononTxt"), getString("QtPhononHint"))); // NOI18N
         modules.put(new BooleanNodeProp(qt3SupportEnabled, true, "Qt3Support", getString("Qt3SupportTxt"), getString("Qt3SupportHint"))); // NOI18N
+        modules.put(new BooleanNodeProp(printSupportEnabled, true, "QtPrintSupport", getString("QtPrintSupportTxt"), getString("QtPrintSupportHint"))); // NOI18N
         modules.put(new BooleanNodeProp(sqlEnabled, true, "QtSql", getString("QtSqlTxt"), getString("QtSqlHint"))); // NOI18N
         modules.put(new BooleanNodeProp(svgEnabled, true, "QtSvg", getString("QtSvgTxt"), getString("QtSvgHint"))); // NOI18N
         modules.put(new BooleanNodeProp(xmlEnabled, true, "QtXml", getString("QtXmlTxt"), getString("QtXmlHint"))); // NOI18N
@@ -280,6 +284,9 @@ public class QmakeConfiguration implements Cloneable {
         if (isQt3SupportEnabled().getValue()) {
             append(buf, QT3SUPPORT);
         }
+        if (isPrintSupportEnabled().getValue()) {
+            append(buf, PRINTSUPPORT);
+        }
         if (isSqlEnabled().getValue()) {
             append(buf, SQL);
         }
@@ -303,6 +310,7 @@ public class QmakeConfiguration implements Cloneable {
         isOpenglEnabled().setValue(false);
         isPhononEnabled().setValue(false);
         isQt3SupportEnabled().setValue(false);
+        isPrintSupportEnabled().setValue(false);
         isSqlEnabled().setValue(false);
         isSvgEnabled().setValue(false);
         isXmlEnabled().setValue(false);
@@ -324,6 +332,8 @@ public class QmakeConfiguration implements Cloneable {
                 isPhononEnabled().setValue(true);
             } else if (t.equals(QT3SUPPORT)) {
                 isQt3SupportEnabled().setValue(true);
+            } else if (t.equals(PRINTSUPPORT)) {
+                isPrintSupportEnabled().setValue(true);
             } else if (t.equals(SQL)) {
                 isSqlEnabled().setValue(true);
             } else if (t.equals(SVG)) {
@@ -392,6 +402,14 @@ public class QmakeConfiguration implements Cloneable {
 
     private void setQt3SupportEnabled(BooleanConfiguration val) {
         this.qt3SupportEnabled = val;
+    }
+    
+    public BooleanConfiguration isPrintSupportEnabled() {
+        return printSupportEnabled;
+    }
+
+    private void setPrintSupportEnabled(BooleanConfiguration val) {
+        this.printSupportEnabled = val;
     }
 
     public BooleanConfiguration isSqlEnabled() {
@@ -478,6 +496,7 @@ public class QmakeConfiguration implements Cloneable {
         isOpenglEnabled().assign(other.isOpenglEnabled());
         isPhononEnabled().assign(other.isPhononEnabled());
         isQt3SupportEnabled().assign(other.isQt3SupportEnabled());
+        isPrintSupportEnabled().assign(other.isPrintSupportEnabled());
         isSqlEnabled().assign(other.isSqlEnabled());
         isSvgEnabled().assign(other.isSvgEnabled());
         isXmlEnabled().assign(other.isXmlEnabled());
@@ -503,6 +522,7 @@ public class QmakeConfiguration implements Cloneable {
             clone.setNetworkEnabled(isNetworkEnabled().clone());
             clone.setOpenglEnabled(isOpenglEnabled().clone());
             clone.setPhononEnabled(isPhononEnabled().clone());
+            clone.setPrintSupportEnabled(isPrintSupportEnabled().clone());
             clone.setQt3SupportEnabled(isQt3SupportEnabled().clone());
             clone.setSqlEnabled(isSqlEnabled().clone());
             clone.setSvgEnabled(isSvgEnabled().clone());
