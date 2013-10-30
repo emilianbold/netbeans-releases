@@ -41,88 +41,108 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se.dialogs;
 
-import org.netbeans.performance.j2se.setup.J2SESetup;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.OptionsOperator;
-import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.PluginsOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JTabbedPaneOperator;
-import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jellytools.WizardOperator;
-import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2se.setup.J2SESetup;
 
 /**
  * Test of Proxy Configuration.
  *
- * @author  mmirilovic@netbeans.org
+ * @author mmirilovic@netbeans.org
  */
 public class ProxyConfigurationTest extends PerformanceTestCase {
 
     private JButtonOperator openProxyButton;
-    protected String BUTTON, TAB;
-    private WizardOperator wizard;
-    protected String BUNDLE, MENU, TITLE;
-    
- 
-    /** Creates a new instance of ProxyConfiguration */
+    protected String BUTTON;
+    private PluginsOperator pluginsOper;
+
+    /**
+     * Creates a new instance of ProxyConfiguration
+     *
+     * @param testName test name
+     */
     public ProxyConfigurationTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
-    
-    /** Creates a new instance of ProxyConfiguration */
+
+    /**
+     * Creates a new instance of ProxyConfiguration
+     *
+     * @param testName test name
+     * @param performanceDataName data name
+     */
     public ProxyConfigurationTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(ProxyConfigurationTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(J2SESetup.class, "testCloseMemoryToolbar")
+                .addTest(ProxyConfigurationTest.class)
+                .suite();
     }
-    
+
     public void testProxyConfiguration() {
         doMeasurement();
     }
-    
+
     @Override
     public void initialize() {
-        String BUNDLE2 =  "org.netbeans.modules.autoupdate.ui.Bundle";
-        TAB = Bundle.getStringTrimmed(BUNDLE2,"SettingsTab_displayName");
-        BUTTON = Bundle.getStringTrimmed(BUNDLE2,"SettingsTab.bProxy.text");
-        BUNDLE = "org.netbeans.modules.autoupdate.ui.actions.Bundle";
-        MENU = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle","Menu/Tools") + "|" + Bundle.getStringTrimmed(BUNDLE,"PluginManagerAction_Name");
-        TITLE = Bundle.getStringTrimmed(BUNDLE,"PluginManager_Panel_Name");
+        repaintManager().addRegionFilter(new LoggingRepaintManager.RegionFilter() {
+
+            @Override
+            public boolean accept(JComponent c) {
+                String className = c.getClass().getName();
+                if ("javax.swing.JButton".equals(className) && "Proxy Settings".equals(((JButton)c).getText())) {
+                    return false;
+                }
+                return !"javax.swing.JProgressBar".equals(c.getClass().getName());
+            }
+
+            @Override
+            public String getFilterName() {
+                return "Ignore search field cursor and Proxy Settings button animation";
+            }
+        });
+        BUTTON = Bundle.getStringTrimmed("org.netbeans.modules.autoupdate.ui.Bundle", "SettingsTab.bProxy.text");
+        pluginsOper = PluginsOperator.invoke();
+        pluginsOper.selectSettings();
     }
-    
-    public void prepare(){
-        MainWindowOperator.getDefault().menuBar().pushMenu(MENU, "|");
-        wizard =new WizardOperator(TITLE);
-        new JTabbedPaneOperator(wizard, 0).selectPage(TAB);
-        openProxyButton = new JButtonOperator(wizard, BUTTON);
+
+    @Override
+    public void prepare() {
+        openProxyButton = new JButtonOperator(pluginsOper, BUTTON);
     }
-    
-    public ComponentOperator open(){
+
+    @Override
+    public ComponentOperator open() {
         openProxyButton.pushNoBlock();
-        return new OptionsOperator();
+        return new NbDialogOperator("Options");
     }
 
     @Override
     public void close() {
-        if(testedComponentOperator!=null && testedComponentOperator.isShowing())
-            ((OptionsOperator) testedComponentOperator).close();
-        if(wizard!=null && wizard.isShowing())
-            wizard.close();
+        if (testedComponentOperator != null && testedComponentOperator.isShowing()) {
+            ((NbDialogOperator) testedComponentOperator).close();
+        }
     }
     
+    @Override
+    public void shutdown() {
+        if (pluginsOper != null && pluginsOper.isShowing()) {
+            pluginsOper.close();
+        }
+    }
 }
