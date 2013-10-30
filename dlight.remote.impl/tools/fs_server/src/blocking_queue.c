@@ -7,9 +7,12 @@
 
 /** Initializes list. A list must be initialized before use */
 void blocking_queue_init(blocking_queue *q) {
-    queue_init(&q->q);
     pthread_mutex_init(&q->mutex, NULL);
     pthread_cond_init(&q->cond, NULL);
+    mutex_lock(&q->mutex);
+    queue_init(&q->q);
+    q->shut_down = false;
+    mutex_unlock(&q->mutex);
 }
 
 /** gets the amunt of elements in the list */
@@ -37,9 +40,20 @@ void* blocking_queue_poll(blocking_queue *q) {
             mutex_unlock(&q->mutex);
             return result;
         } else {
+            if (q->shut_down) {
+                mutex_unlock(&q->mutex);
+                return NULL;
+            }
             pthread_cond_wait(&q->cond, &q->mutex);
             mutex_unlock(&q->mutex);
         }
     }
+}
+
+void blocking_queue_shutdown(blocking_queue *q) {
+    mutex_lock(&q->mutex);
+    q->shut_down = true;
+    pthread_cond_broadcast(&q->cond);
+    mutex_unlock(&q->mutex);    
 }
 

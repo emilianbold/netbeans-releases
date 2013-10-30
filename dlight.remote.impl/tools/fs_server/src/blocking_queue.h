@@ -12,6 +12,7 @@ typedef struct blocking_queue {
     queue q;
     pthread_mutex_t mutex;
     pthread_cond_t cond;
+    bool shut_down;
 } blocking_queue;
 
 /** Initializes list. A list must be initialized before use */
@@ -25,6 +26,9 @@ void blocking_queue_add(blocking_queue *q, void* data);
 
 /** removes and returns element from the list's head */
 void* blocking_queue_poll(blocking_queue *q);
+
+/** shuts the queue down - after that blocking_queue_poll returns null on empty queue without waiting */
+void blocking_queue_shutdown(blocking_queue *q);
 
 
 #ifdef	__cplusplus
