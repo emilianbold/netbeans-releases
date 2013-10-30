@@ -607,7 +607,6 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
             @Override
             public void run() {
                 if(saveSynchronously(refresh)) return;
-                BugtrackingUtil.openTasksDashboard();
             }
        });
     }

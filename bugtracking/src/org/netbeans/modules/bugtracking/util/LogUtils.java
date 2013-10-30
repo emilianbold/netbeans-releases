@@ -224,6 +224,16 @@ public final class LogUtils {
         return id;
     }
 
+    public static String getPasswordLog(char[] psswd) {
+        if(psswd == null) {
+            return ""; // NOI18N
+        }
+        if("true".equals(System.getProperty("org.netbeans.modules.bugtracking.logPasswords", "false"))) { // NOI18N
+            return new String(psswd); 
+        }
+        return "******"; // NOI18N
+    }    
+    
     /**
      * Logs bugtracking events
      *

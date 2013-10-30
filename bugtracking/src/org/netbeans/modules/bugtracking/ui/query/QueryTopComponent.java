@@ -96,6 +96,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Cancellable;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.AbstractLookup;
@@ -418,6 +419,9 @@ public final class QueryTopComponent extends TopComponent
                 setNameAndTooltip();
             }
         } else if(evt.getPropertyName().equals(QueryController.PROPERTY_QUERY_SAVED)) {
+            if(!isSaved()) {
+                openDashboard();                
+            }
             setSaved();
             QuerySavable savable = getSavable();
             if(savable != null) {
@@ -425,6 +429,21 @@ public final class QueryTopComponent extends TopComponent
                 setNameAndTooltip();
             }
         }
+    }
+
+    private void openDashboard() {
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run() {
+                TopComponent tc = WindowManager.getDefault().findTopComponent("DashboardTopComponent"); // NOI18N
+                if (tc == null) {
+                    BugtrackingManager.LOG.fine("No Tasks Dashboard found"); // NOI18N
+                    return;
+                }
+                tc.open();
+                tc.requestActive();
+            }
+        });
     }
 
     private QuerySavable getSavable() {

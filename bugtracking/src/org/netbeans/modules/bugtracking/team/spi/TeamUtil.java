@@ -54,6 +54,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import javax.swing.JLabel;
 import org.netbeans.modules.bugtracking.APIAccessor;
@@ -72,6 +73,7 @@ import org.netbeans.modules.bugtracking.team.spi.TeamBugtrackingConnector.Bugtra
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.tasks.DashboardTopComponent;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
+import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.nodes.Node;
@@ -388,7 +390,7 @@ public class TeamUtil {
     }
 
     public static Collection<Issue> getRecentIssues(Repository repo) {
-        Collection<IssueImpl> c = BugtrackingUtil.getRecentIssues(APIAccessor.IMPL.getImpl(repo));
+        Collection<IssueImpl> c = BugtrackingManager.getInstance().getRecentIssues(APIAccessor.IMPL.getImpl(repo));
         List<Issue> ret = new ArrayList<Issue>(c.size());
         for (IssueImpl impl : c) {
             ret.add(impl.getIssue());
@@ -418,11 +420,11 @@ public class TeamUtil {
     }
 
     public static boolean isOpen(Issue issue) {
-        return BugtrackingUtil.isOpened(APIAccessor.IMPL.getImpl(issue));
+        return isOpened(APIAccessor.IMPL.getImpl(issue));
     }
     
     public static boolean isShowing(Issue issue) {
-        return BugtrackingUtil.isOpened(APIAccessor.IMPL.getImpl(issue));
+        return isOpened(APIAccessor.IMPL.getImpl(issue));
     }
 
     public static boolean notifyJiraDownload(String projectUrl) {
@@ -432,4 +434,18 @@ public class TeamUtil {
     public static void downloadAndInstallJira() {
         JiraUpdater.getInstance().downloadAndInstall();
     }
+    
+    public static Map<String, List<RecentIssue>> getAllRecentIssues() {
+        return BugtrackingManager.getInstance().getAllRecentIssues();
+    }
+
+    /**
+     * Determines if the gives issue is opened in the editor area
+     * @param issue
+     * @return true in case the given issue is opened in the editor are, otherwise false
+     */
+    private static boolean isOpened(IssueImpl issue) {
+        IssueTopComponent tc = IssueTopComponent.find(issue, false);
+        return tc != null ? tc.isOpened() : false;
+    }    
 }
