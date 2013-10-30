@@ -40,8 +40,9 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.util;
+package org.netbeans.modules.bugtracking.ui.repository;
 
+import org.netbeans.modules.bugtracking.ui.repository.RepositoryComboSupport;
 import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
@@ -60,7 +61,7 @@ import org.netbeans.modules.bugtracking.kenai.DummyKenaiRepositories;
 import org.netbeans.modules.bugtracking.dummies.DummyNode;
 import org.netbeans.modules.bugtracking.dummies.DummyTopComponentRegistry;
 import org.netbeans.modules.bugtracking.dummies.DummyWindowManager;
-import org.netbeans.modules.bugtracking.util.RepositoryComboSupport.Progress;
+import org.netbeans.modules.bugtracking.ui.repository.RepositoryComboSupport.Progress;
 import org.openide.nodes.Node;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -72,10 +73,10 @@ import org.netbeans.modules.bugtracking.DelegatingConnector;
 import org.netbeans.modules.bugtracking.api.IssueQuickSearch.RepositoryFilter;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.dummies.DummyProjectServices;
-import static org.netbeans.modules.bugtracking.util.RepositoryComboSupport.LOADING_REPOSITORIES;
-import static org.netbeans.modules.bugtracking.util.RepositoryComboSupport.SELECT_REPOSITORY;
-import static org.netbeans.modules.bugtracking.util.RepositoryComboSupportTest.ThreadType.AWT;
-import static org.netbeans.modules.bugtracking.util.RepositoryComboSupportTest.ThreadType.NON_AWT;
+import static org.netbeans.modules.bugtracking.ui.repository.RepositoryComboSupport.LOADING_REPOSITORIES;
+import static org.netbeans.modules.bugtracking.ui.repository.RepositoryComboSupport.SELECT_REPOSITORY;
+import static org.netbeans.modules.bugtracking.ui.repository.RepositoryComboSupportTest.ThreadType.AWT;
+import static org.netbeans.modules.bugtracking.ui.repository.RepositoryComboSupportTest.ThreadType.NON_AWT;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;

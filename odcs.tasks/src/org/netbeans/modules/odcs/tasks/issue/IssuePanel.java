@@ -127,10 +127,11 @@ import javax.swing.text.DefaultCaret;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.api.IssueQuickSearch;
 import org.netbeans.modules.bugtracking.issuetable.TableSorter;
 import org.netbeans.modules.bugtracking.team.spi.TeamProject;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.mylyn.util.WikiPanel;
@@ -1199,21 +1200,21 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     };
 
     private void findIssue(JTextField fld, String msg, String helpCtx, boolean append) {
-        String newIssueID = BugtrackingUtil.selectIssue(
+        Issue i = IssueQuickSearch.selectIssue(
             NbBundle.getMessage(IssuePanel.class, msg), 
             ODCSUtil.getRepository(issue.getRepository()),
             this,
             new HelpCtx(helpCtx));
-        if (newIssueID != null) {
+        if (i != null) {
             if(append) {
                 StringBuilder sb = new StringBuilder();
                 if (!fld.getText().trim().equals("")) {                         // NOI18N
                     sb.append(fld.getText()).append(',').append(' ');           // NOI18N
                 }
-                sb.append(newIssueID);
+                sb.append(i.getID());
                 fld.setText(sb.toString());                
             } else {
-                fld.setText(newIssueID);
+                fld.setText(i.getID());
             }
         }
     }

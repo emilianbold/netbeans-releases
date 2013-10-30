@@ -62,7 +62,7 @@ import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.IssueQuickSearch.RepositoryFilter;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
+import org.netbeans.modules.bugtracking.ui.repository.RepositoryComboSupport;
 
 /**
  *

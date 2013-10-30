@@ -203,7 +203,7 @@ public class TextUtils {
         return sb.toString();
     }
 
-/**
+    /**
      * Encodes URL by encoding to %XX escape sequences.
      *
      * @param url url to decode

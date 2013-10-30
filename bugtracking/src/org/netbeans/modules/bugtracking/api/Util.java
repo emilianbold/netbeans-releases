@@ -76,7 +76,7 @@ public final class Util {
      * @param issueId issue id
      */
     public static void openIssue(File context, String issueId) {
-        BugtrackingUtil.openIssue(context, issueId);
+        IssueAction.openIssue(context, issueId);
     }
     
     /**

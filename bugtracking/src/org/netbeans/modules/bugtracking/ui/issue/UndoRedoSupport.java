@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.util;
+package org.netbeans.modules.bugtracking.ui.issue;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;

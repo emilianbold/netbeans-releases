@@ -56,7 +56,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.openide.modules.Places;
 
 /**

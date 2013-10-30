@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,22 +37,37 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.bugtracking.util;
 
-import java.util.Comparator;
-import org.netbeans.modules.bugtracking.RepositoryImpl;
+package org.netbeans.modules.bugtracking.team.spi;
+
+import java.awt.Component;
+import java.text.MessageFormat;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JList;
+import org.netbeans.modules.bugtracking.team.spi.RepositoryUser;
+import org.openide.util.NbBundle;
 
 /**
+ * Renderer of <code>RepositoryUser</code>.
  *
- * @author Tomas Stupka
+ * @author Jan Stola
  */
-public class RepositoryImplComparator implements Comparator<RepositoryImpl> {
-    public int compare(RepositoryImpl r1, RepositoryImpl r2) {
-        if(r1 == null && r2 == null) return 0;
-        if(r1 == null) return -1;
-        if(r2 == null) return 1;
-        return r1.getDisplayName().compareTo(r2.getDisplayName());
+public final class RepositoryUserRenderer extends DefaultListCellRenderer {
+    private String pattern;
+    
+    public RepositoryUserRenderer() {
+        pattern = NbBundle.getMessage(RepositoryUserRenderer.class, "RepositoryUserRenderer.format"); // NOI18N
     }
+
+    @Override
+    public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        if (value instanceof RepositoryUser) {
+            RepositoryUser user = (RepositoryUser)value;
+            value = MessageFormat.format(pattern, user.getFullName(), user.getUserName());
+        }
+        return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+    }
+
 }

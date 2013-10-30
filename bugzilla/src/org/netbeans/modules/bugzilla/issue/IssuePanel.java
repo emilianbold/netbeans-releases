@@ -120,15 +120,17 @@ import javax.swing.text.NumberFormatter;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.api.IssueQuickSearch;
 import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.team.spi.RepositoryUser;
-import org.netbeans.modules.bugtracking.util.RepositoryUserRenderer;
+import org.netbeans.modules.bugtracking.team.spi.RepositoryUserRenderer;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.util.AttachmentsPanel;
 import org.netbeans.modules.bugtracking.util.LinkButton;
-import org.netbeans.modules.bugtracking.util.NBBugzillaUtils;
+import org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils;
 import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
@@ -3123,12 +3125,13 @@ public class IssuePanel extends javax.swing.JPanel {
     }//GEN-LAST:event_keywordsButtonActionPerformed
 
     private void blocksButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_blocksButtonActionPerformed
-        String newIssueID = BugtrackingUtil.selectIssue(
+        Issue i = IssueQuickSearch.selectIssue(
                 NbBundle.getMessage(IssuePanel.class, "IssuePanel.blocksButton.message"), // NOI18N
                 BugzillaUtil.getRepository(issue.getRepository()),
                 this,
                 new HelpCtx("org.netbeans.modules.bugzilla.blocksChooser")); // NOI18N
-        if (newIssueID != null) {
+        if (i != null) {
+            String newIssueID = i.getID();
             StringBuilder sb = new StringBuilder();
             if (!blocksField.getText().trim().equals("")) { // NOI18N
                 sb.append(blocksField.getText()).append(',').append(' ');
@@ -3139,12 +3142,13 @@ public class IssuePanel extends javax.swing.JPanel {
     }//GEN-LAST:event_blocksButtonActionPerformed
 
     private void dependsOnButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dependsOnButtonActionPerformed
-        String newIssueID = BugtrackingUtil.selectIssue(
+        Issue i = IssueQuickSearch.selectIssue(
                 NbBundle.getMessage(IssuePanel.class, "IssuePanel.dependsOnButton.message"), // NOI18N
                 BugzillaUtil.getRepository(issue.getRepository()),
                 this,
                 new HelpCtx("org.netbeans.modules.bugzilla.dependsOnChooser")); // NOI18N
-        if (newIssueID != null) {
+        if (i != null) {
+            String newIssueID = i.getID();
             StringBuilder sb = new StringBuilder();
             if (!dependsField.getText().trim().equals("")) { // NOI18N
                 sb.append(dependsField.getText()).append(',').append(' ');
@@ -3235,12 +3239,13 @@ public class IssuePanel extends javax.swing.JPanel {
     }
     
     private void duplicateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_duplicateButtonActionPerformed
-        String newIssueID = BugtrackingUtil.selectIssue(
+        Issue i = IssueQuickSearch.selectIssue(
                 NbBundle.getMessage(IssuePanel.class, "IssuePanel.duplicateButton.message"), //NOI18N
                 BugzillaUtil.getRepository(issue.getRepository()),
                 this,
                 new HelpCtx("org.netbeans.modules.bugzilla.duplicateChooser")); // NOI18N
-        if (newIssueID != null) {
+        if (i != null) {
+            String newIssueID = i.getID();
             duplicateField.setText(newIssueID);
         }
     }//GEN-LAST:event_duplicateButtonActionPerformed
