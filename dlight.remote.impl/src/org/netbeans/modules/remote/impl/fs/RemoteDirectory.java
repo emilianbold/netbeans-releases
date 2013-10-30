@@ -503,7 +503,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
     @Override
     public void setAttribute(String attrName, Object value) throws IOException {
-        if (attrName.equals("warmup")) {
+        if (attrName.equals("warmup")) { // NOI18N
             DirectoryReaderFS fsReader = DirectoryReaderFS.getInstance(getExecutionEnvironment());
             if (fsReader != null) {
                 fsReader.warmap(getPath());

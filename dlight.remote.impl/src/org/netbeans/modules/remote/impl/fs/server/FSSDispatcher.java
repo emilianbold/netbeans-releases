@@ -83,7 +83,7 @@ import org.openide.util.RequestProcessor;
     private final Object requestLock = new Object();
     
     private static final String SERVER_PATH = System.getProperty("remote.fs_server.path");
-    public static final int REFRESH_INTERVAL = Integer.getInteger("remote.fs_server.refresh", 0);
+    public static final int REFRESH_INTERVAL = Integer.getInteger("remote.fs_server.refresh", 2); // NOI18N
     public static final boolean VERBOSE = Boolean.getBoolean("remote.fs_server.verbose");
 
     // Actually this RP should have only 2 tasks: one reads error, another stdout;
@@ -98,7 +98,7 @@ import org.openide.util.RequestProcessor;
 
     public FSSDispatcher(ExecutionEnvironment env) {
         this.env = env;
-        traceName = "fs_server[" + env + ']';
+        traceName = "fs_server[" + env + ']'; // NOI18N
     }
     
     public static FSSDispatcher getInstance(ExecutionEnvironment env) {
@@ -129,7 +129,7 @@ import org.openide.util.RequestProcessor;
         public void run() {
             String oldThreadName = Thread.currentThread().getName();
             try {
-                Thread.currentThread().setName("fs_server dispatcher for " + env);
+                Thread.currentThread().setName("fs_server dispatcher for " + env); // NOI18N
                 FsServer server = getServer();
                 if (server == null) {
                     RemoteLogger.warning("Can not launch file system server on {0}", env);
@@ -184,7 +184,7 @@ import org.openide.util.RequestProcessor;
         FSSResponse response = new FSSResponse(request);
         synchronized (responseLock) {
             RemoteLogger.assertNull(responses.get(request.getId()),
-                    "response should be null for id {0}", request.getId());
+                    "response should be null for id {0}", request.getId()); // NOI18N
             responses.put(request.getId(), response);
         }
         FsServer srv = getOrCreateServer();
@@ -193,7 +193,7 @@ import org.openide.util.RequestProcessor;
     }
     
     /*package*/ static void sendRequest(PrintWriter writer, FSSRequest request) {
-        writer.printf("%c %d %d %s\n", request.getKind().getChar(), 
+        writer.printf("%c %d %d %s\n", request.getKind().getChar(), // NOI18N
                 request.getId(), request.getPath().length(), request.getPath());
         writer.flush();        
     }
@@ -230,7 +230,7 @@ import org.openide.util.RequestProcessor;
         public void run() {
             String oldThreadName = Thread.currentThread().getName();
             try {
-                Thread.currentThread().setName("fs_server error reader for " + env);
+                Thread.currentThread().setName("fs_server error reader for " + env); // NOI18N
                 BufferedReader reader = ProcessUtils.getReader(inputStream, true);
                 try {
                     String line;
@@ -262,8 +262,8 @@ import org.openide.util.RequestProcessor;
             NativeProcessBuilder processBuilder = NativeProcessBuilder.newProcessBuilder(env);
             processBuilder.setExecutable(SERVER_PATH);
             String[] args = VERBOSE ? 
-                    new String[] { "-t", "4", "-p", "-r", "" + REFRESH_INTERVAL, "-v" } :
-                    new String[] { "-t", "4", "-p", "-r", "" + REFRESH_INTERVAL };
+                    new String[] { "-t", "4", "-p", "-r", "" + REFRESH_INTERVAL, "-v" } : // NOI18N
+                    new String[] { "-t", "4", "-p", "-r", "" + REFRESH_INTERVAL }; // NOI18N
             processBuilder.setArguments(args);
             process = processBuilder.call();
             writer = new PrintWriter(process.getOutputStream());

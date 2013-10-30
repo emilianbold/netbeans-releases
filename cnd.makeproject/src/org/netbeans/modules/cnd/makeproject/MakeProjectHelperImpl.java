@@ -179,7 +179,7 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
     private MakeProjectHelperImpl(FileObject dir, Document projectXml, ProjectState state, MakeProjectTypeImpl type) {
         this.dir = dir;
         try {
-            dir.setAttribute("warmup", Boolean.TRUE);
+            dir.setAttribute("warmup", Boolean.TRUE); // NOI18N
         } catch (IOException ex) {
            ex.printStackTrace(System.err);
         }
