@@ -91,7 +91,7 @@ public final class KarmaNodeFactory implements NodeFactory {
 
         private final Project project;
         private final ChangeSupport changeSupport = new ChangeSupport(this);
-        private final PreferenceChangeListener preferenceChangeListener = WeakListeners.create(PreferenceChangeListener.class, this, null);
+        private final PreferenceChangeListener preferenceChangeListener = WeakListeners.create(PreferenceChangeListener.class, this, KarmaPreferences.class);
 
 
         KarmaChildrenList(Project project) {
