@@ -58,7 +58,6 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 public final class QueryImpl<Q, I>  {
     
     public final static String EVENT_QUERY_REFRESHED = QueryProvider.EVENT_QUERY_REFRESHED;
-    public final static String EVENT_QUERY_REMOVED = QueryProvider.EVENT_QUERY_REMOVED;
     
     private final RepositoryImpl repository;
     private final QueryProvider<Q, I> queryProvider;
@@ -80,7 +79,7 @@ public final class QueryImpl<Q, I>  {
         return query;
     }
 
-    public RepositoryImpl getRepositoryImpl() {
+    public RepositoryImpl<?, Q, I> getRepositoryImpl() {
         return repository;
     }
     

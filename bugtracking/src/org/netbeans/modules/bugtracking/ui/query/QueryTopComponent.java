@@ -257,11 +257,13 @@ public final class QueryTopComponent extends TopComponent
     private void registerListeners() {
         query.addPropertyChangeListener(this);
         query.getController().addPropertyChangeListener(this);
+        query.getRepositoryImpl().addPropertyChangeListener(this);
     }
     
     private void unregisterListeners() {
         query.removePropertyChangeListener(this);
         query.getController().removePropertyChangeListener(this);
+        query.getRepositoryImpl().removePropertyChangeListener(this);
     }
 
     private QueryController getController(QueryImpl query) {
@@ -363,10 +365,20 @@ public final class QueryTopComponent extends TopComponent
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals(QueryProvider.EVENT_QUERY_REMOVED)) {
-            if(query != null && query.isData(evt.getSource())) {
-                // removed
-                closeInAwt();
+        if(evt.getPropertyName().equals(RepositoryImpl.EVENT_QUERY_LIST_CHANGED)) {
+            // only saved queries can be removed
+            if(query != null && isSaved()) {
+                Collection<QueryImpl> queries = query.getRepositoryImpl().getQueries();
+                boolean stillExists = false;
+                for (QueryImpl q : queries) {
+                    if(q.getDisplayName().equals(query.getDisplayName())) {
+                        stillExists = true;
+                        break;
+                    }    
+                }
+                if(!stillExists) {
+                    closeInAwt();
+                }
             }
         } else if(evt.getPropertyName().equals(RepositoryRegistry.EVENT_REPOSITORIES_CHANGED)) {
             if(query != null) {
@@ -637,6 +649,10 @@ public final class QueryTopComponent extends TopComponent
                 setNameAndTooltip();
             }
         });
+    }
+    
+    private boolean isSaved() {
+        return !headerPanel.isVisible();
     }
 
     @Override

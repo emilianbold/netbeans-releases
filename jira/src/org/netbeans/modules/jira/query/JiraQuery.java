@@ -127,10 +127,6 @@ public class JiraQuery {
         support.removePropertyChangeListener(listener);
     }
 
-    protected void fireQueryRemoved() {
-        support.firePropertyChange(QueryProvider.EVENT_QUERY_REMOVED, null, null);
-    }
-
     protected void fireQueryIssuesChanged() {
         support.firePropertyChange(QueryProvider.EVENT_QUERY_REFRESHED, null, null);
     }  
@@ -291,7 +287,6 @@ public class JiraQuery {
             return;
         }
         repository.removeQuery(this);
-        fireQueryRemoved();
     }
 
     public Status getIssueStatus(String key) {
