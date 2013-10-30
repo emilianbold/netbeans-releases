@@ -162,11 +162,12 @@ public final class J2MEProjectProperties {
     //J2MEPushRegistryPanel
     public static final String MANIFEST_PUSHREGISTRY = "manifest.pushregistry"; //NOI18N
     //PlatformDevicesPanel
+    public static final String PROP_PLATFORM_TYPE = "platform.type"; //NOI18N
     public static final String PROP_PLATFORM_DEVICE = "platform.device"; //NOI18N
     public static final String PROP_PLATFORM_CONFIGURATION = "platform.configuration"; //NOI18N
     public static final String PROP_PLATFORM_PROFILE = "platform.profile"; //NOI18N
     public static final String PROP_PLATFORM_APIS = "platform.apis"; //NOI18N
-    public static final String PROP_PLATFORM_SDK = "platform.sdk"; //NOI18N
+    public static final String PROP_PLATFORM_BOOTCLASSPATH = "platform.bootclasspath"; //NOI18N
 
 
     // MODELS FOR VISUAL CONTROLS
@@ -197,11 +198,10 @@ public final class J2MEProjectProperties {
     Document ADDITIONAL_OBFUSCATION_SETTINGS_MODEL;
     BoundedRangeModel OBFUSCATION_LEVEL_MODEL;
 
-    //J2MERunPanel and PlatformDevicesPanel
+    //Configurations-related fields
     public Map<String, Map<String, String>> RUN_CONFIGS;
     public String activeConfig;
-    String[] SECURITY_DOMAINS;
-    public DefaultComboBoxModel CONFIGS_MODEL = new DefaultComboBoxModel(new String[] { "<default>" });
+    public DefaultComboBoxModel CONFIGS_MODEL = new DefaultComboBoxModel(new String[]{"<default>"});
     private static final String[] CONFIG_AWARE_PROPERTIES = {
         ProjectProperties.APPLICATION_ARGS,
         PROP_RUN_METHOD,
@@ -211,10 +211,17 @@ public final class J2MEProjectProperties {
         PROP_PLATFORM_DEVICE,
         PROP_PLATFORM_CONFIGURATION,
         PROP_PLATFORM_PROFILE,
-        PROP_PLATFORM_APIS
+        PROP_PLATFORM_APIS,
+        PROP_PLATFORM_BOOTCLASSPATH
     };
+
+    //J2MERunPanel
+    String[] SECURITY_DOMAINS;
+
+    //PlatformDevicesPanel
     public ComboBoxModel J2ME_PLATFORM_MODEL;
     public ComboBoxModel JDK_PLATOFRM_MODEL;
+    private HashMap<String, J2MEPlatform.J2MEProfile> name2ProfileMap;
 
     //J2ME Signing customizer
     JToggleButton.ToggleButtonModel SIGN_ENABLED_MODEL;
@@ -329,6 +336,7 @@ public final class J2MEProjectProperties {
         //PlatformDevicesPanel
         J2ME_PLATFORM_MODEL = ModelHelper.createComboBoxModel(evaluator, ProjectProperties.PLATFORM_ACTIVE, Arrays.asList(J2MEProjectUtils.readPlatforms()));
         JDK_PLATOFRM_MODEL = loadJdkPlatforms();
+        name2ProfileMap = J2MEProjectUtils.getNameToProfileMap();
 
         // Signning customizer
         SIGN_ENABLED_MODEL = projectGroup.createToggleButtonModel(evaluator, PROP_SIGN_ENABLED);
@@ -441,6 +449,31 @@ public final class J2MEProjectProperties {
             projectProperties.remove(PROP_SIGN_ALIAS);
         }
 
+        //Compute Bootclasspath
+        for (Map.Entry<String, Map<String, String>> configEntry : RUN_CONFIGS.entrySet()) {
+            Map<String, String> config = configEntry.getValue();
+            String platformConfiguration = config.get(PROP_PLATFORM_CONFIGURATION) != null ? config.get(PROP_PLATFORM_CONFIGURATION) : RUN_CONFIGS.get(null).get(PROP_PLATFORM_CONFIGURATION);
+            String platformProfile = config.get(PROP_PLATFORM_PROFILE) != null ? config.get(PROP_PLATFORM_PROFILE) : RUN_CONFIGS.get(null).get(PROP_PLATFORM_PROFILE);
+            String platformApis = config.get(PROP_PLATFORM_APIS) != null ? config.get(PROP_PLATFORM_APIS) : RUN_CONFIGS.get(null).get(PROP_PLATFORM_APIS);
+            StringBuilder sbBootCP = new StringBuilder();
+            sbBootCP.append(name2ProfileMap.get(platformConfiguration).getClassPath());
+            sbBootCP.append(":").append(name2ProfileMap.get(platformProfile).getClassPath()); //NOI18N
+            if (platformApis != null) {
+                String[] optionalPackages = platformApis.split(","); //NOI18N
+                for (String pkg : optionalPackages) {
+                    J2MEPlatform.J2MEProfile profile = name2ProfileMap.get(pkg);
+                    if (profile != null) {
+                        sbBootCP.append(":").append(profile.getClassPath()); //NOI18N
+                    }
+                }
+            }
+            if (configEntry.getKey() == null || !sbBootCP.toString().equals(RUN_CONFIGS.get(null).get(PROP_PLATFORM_BOOTCLASSPATH))) {
+                config.put(PROP_PLATFORM_BOOTCLASSPATH, sbBootCP.toString());
+            } else {
+                config.put(PROP_PLATFORM_BOOTCLASSPATH, null);
+            }
+        }
+
         //Store run configs
         storeRunConfigs(RUN_CONFIGS, projectProperties, privateProperties);
         EditableProperties ep = project.getUpdateHelper().getProperties("nbproject/private/config.properties");
@@ -513,10 +546,11 @@ public final class J2MEProjectProperties {
         JavaPlatform selectedPlatform = (JavaPlatform) J2ME_PLATFORM_MODEL.getSelectedItem();
         if (selectedPlatform != null) {
             projectProperties.put(ProjectProperties.PLATFORM_ACTIVE, selectedPlatform.getProperties().get(PLATFORM_ANT_NAME));
+            projectProperties.put(PROP_PLATFORM_TYPE, ((J2MEPlatform) selectedPlatform).getType());
         }
         JavaPlatform selectedJdkPlatform = PlatformUiSupport.getPlatform(JDK_PLATOFRM_MODEL.getSelectedItem());
         if (selectedJdkPlatform != null) {
-            projectProperties.put(PROP_PLATFORM_SDK, selectedJdkPlatform.getProperties().get(PLATFORM_ANT_NAME));
+            projectProperties.put(PLATFORM_SDK, selectedJdkPlatform.getProperties().get(PLATFORM_ANT_NAME));
         }
 
         //Obfusation properties
@@ -983,7 +1017,7 @@ public final class J2MEProjectProperties {
 
     public ComboBoxModel loadJdkPlatforms() {
         ComboBoxModel model = J2MEProjectUtils.createJDKPlatformComboBoxModel();
-        String platformActive = project.evaluator().getProperty(PROP_PLATFORM_SDK);
+        String platformActive = project.evaluator().getProperty(PLATFORM_SDK);
         if (platformActive != null) {
             for (int i = 0; i < model.getSize(); i++) {
                 JavaPlatform jp = PlatformUiSupport.getPlatform(model.getElementAt(i));

@@ -88,6 +88,13 @@ public class J2MEProjectUtils {
         return optionalPackages;
     }
 
+    public static HashMap<String, J2MEPlatform.J2MEProfile> getNameToProfileMap() {
+        if (name2profileAll == null || name2profileAll.isEmpty()) {
+            readPlatforms();
+        }
+        return name2profileAll;
+    }
+
     public static JavaPlatform[] readPlatforms() {
         configurationsGroup = new ButtonGroup();
         profilesGroup = new ButtonGroup();
@@ -111,6 +118,7 @@ public class J2MEProjectUtils {
                 for (Profile profile : profiles) {
                     if (profile instanceof J2MEPlatform.J2MEProfile) {
                         J2MEPlatform.J2MEProfile p = (J2MEPlatform.J2MEProfile) profile;
+                        name2profileAll.put(p.toString(), p);
                         switch (p.getType()) {
                             case J2MEPlatform.J2MEProfile.TYPE_CONFIGURATION:
                                 p = takeBetter(p, cfg.remove(p));
@@ -123,7 +131,6 @@ public class J2MEProjectUtils {
                             case J2MEPlatform.J2MEProfile.TYPE_OPTIONAL:
                                 p = takeBetter(p, opt.remove(p));
                                 opt.put(p, p);
-                                name2profileAll.put(p.toString(), p);
                                 break;
                         }
                     }

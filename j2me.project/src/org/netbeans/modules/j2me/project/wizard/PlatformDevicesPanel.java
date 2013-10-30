@@ -911,6 +911,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
         d.putProperty(J2MEProjectWizardIterator.PROFILE, getProfile());
         d.putProperty(J2MEProjectWizardIterator.JDK_PLATFORM, jdkComboBox.getSelectedIndex() == -1 ? "" : getJdkPlatform()); //This is enough to store in wizard iterator
         d.putProperty(J2MEProjectWizardIterator.OPTIONAL_API, getOptionalAPI()); //This is enough to store in wizard iterator
+        d.putProperty(J2MEProjectWizardIterator.PLATFORM_BOOTCLASSPATH, getBootClasspath()); //This is enough to store in wizard iterator
 
         getPreferences().put(J2MEProjectWizardIterator.PLATFORM, platformComboBox.getSelectedIndex() == -1 ? "" : getPlatform().getName());
         getPreferences().put(J2MEProjectWizardIterator.DEVICE, deviceComboBox.getSelectedIndex() == -1 ? "" : getDevice().getName());
@@ -929,6 +930,20 @@ public class PlatformDevicesPanel extends SettingsPanel {
             }
         }
         return sb.toString();
+    }
+
+    private String getBootClasspath() {
+        StringBuilder sbBootCP = new StringBuilder();
+        sbBootCP.append(name2profile.get(getConfiguration()).getClassPath());
+        sbBootCP.append(":").append(name2profile.get(getProfile()).getClassPath()); //NOI18N
+        String[] optionalPkgs = getOptionalAPI().split(","); //NOI18N
+        for (String pkg : optionalPkgs) {
+            J2MEPlatform.J2MEProfile profile = name2profile.get(pkg);
+            if (profile != null) {
+                sbBootCP.append(":").append(profile.getClassPath()); //NOI18N
+            }
+        }
+        return sbBootCP.toString();
     }
 
     protected final Preferences getPreferences() {

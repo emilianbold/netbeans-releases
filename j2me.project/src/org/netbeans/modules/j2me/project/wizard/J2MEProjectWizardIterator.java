@@ -57,6 +57,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.j2me.project.api.J2MEProjectBuilder;
+import org.netbeans.modules.j2me.project.ui.customizer.J2MEProjectProperties;
 import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -85,6 +86,7 @@ public class J2MEProjectWizardIterator implements WizardDescriptor.ProgressInsta
     static final String CONFIGURATION = "config"; //NOI18N
     static final String PROFILE = "profile"; //NOI18N
     static final String OPTIONAL_API = "optionalApi"; //NOI18N
+    static final String PLATFORM_BOOTCLASSPATH = "bootclasspath"; //NOI18N
     private static final long serialVersionUID = 1L;
     private WizardType type;
 
@@ -122,6 +124,7 @@ public class J2MEProjectWizardIterator implements WizardDescriptor.ProgressInsta
         String device = (String) wiz.getProperty(DEVICE);
         JavaPlatform jdk = (JavaPlatform) wiz.getProperty(JDK_PLATFORM);
         String optionalApi = (String) wiz.getProperty(OPTIONAL_API);
+        String bootclasspath = (String) wiz.getProperty(PLATFORM_BOOTCLASSPATH);
         if (librariesDefinition != null) {
             if (!librariesDefinition.endsWith(File.separator)) {
                 librariesDefinition += File.separatorChar;
@@ -129,15 +132,16 @@ public class J2MEProjectWizardIterator implements WizardDescriptor.ProgressInsta
             librariesDefinition += SharableLibrariesUtils.DEFAULT_LIBRARIES_FILENAME;
         }
         // put J2ME-specific project properties
-        Map<String, String> props = new HashMap<>();        
-        props.put("run.method", "STANDARD"); //NOI18N
-        props.put("debug.timeout", "30000"); //NOI18N
-        props.put("security.domain", ""); //NOI18N
-        props.put("platform.configuration", configuration); //NOI18N
-        props.put("platform.profile", profile); //NOI18N
-        props.put("platform.type", ((J2MEPlatform) platform).getType()); //NOI18N
-        props.put("platform.device", device); //NOI18N
-        props.put("platform.apis", optionalApi); //NOI18N
+        Map<String, String> props = new HashMap<>();
+        props.put(J2MEProjectProperties.PROP_RUN_METHOD, "STANDARD"); //NOI18N
+        props.put(J2MEProjectProperties.PROP_DEBUGGER_TIMEOUT, "30000"); //NOI18N
+        props.put(J2MEProjectProperties.PROP_SECURITY_DOMAIN, ""); //NOI18N
+        props.put(J2MEProjectProperties.PROP_PLATFORM_CONFIGURATION, configuration);
+        props.put(J2MEProjectProperties.PROP_PLATFORM_PROFILE, profile);
+        props.put(J2MEProjectProperties.PROP_PLATFORM_TYPE, ((J2MEPlatform) platform).getType());
+        props.put(J2MEProjectProperties.PROP_PLATFORM_DEVICE, device);
+        props.put(J2MEProjectProperties.PROP_PLATFORM_APIS, optionalApi);
+        props.put(J2MEProjectProperties.PROP_PLATFORM_BOOTCLASSPATH, bootclasspath);
         if (midletClass != null && !midletClass.isEmpty()) {
             props.put("manifest.midlets", "MIDlet-1: " + name + ", , " + midletClass + "\n"); //NOI18N
             props.put("manifest.others", "MIDlet-Vendor: Test\nMIDlet-Name: " + name + "\nMIDlet-Version: 1.0\n"); //NOI18N
@@ -231,14 +235,15 @@ public class J2MEProjectWizardIterator implements WizardDescriptor.ProgressInsta
         if (this.wiz != null) {
             this.wiz.putProperty("projdir", null); //NOI18N
             this.wiz.putProperty("name", null); //NOI18N
-            this.wiz.putProperty(MIDLET_CLASS, null); //NOI18N
-            this.wiz.putProperty(SHARED_LIBRARIES, null); //NOI18N
-            this.wiz.putProperty(JDK_PLATFORM, null); //NOI18N
-            this.wiz.putProperty(PLATFORM, null); //NOI18N
-            this.wiz.putProperty(DEVICE, null); //NOI18N
-            this.wiz.putProperty(CONFIGURATION, null); //NOI18N
-            this.wiz.putProperty(PROFILE, null); //NOI18N
-            this.wiz.putProperty(OPTIONAL_API, null); //NOI18N
+            this.wiz.putProperty(MIDLET_CLASS, null);
+            this.wiz.putProperty(SHARED_LIBRARIES, null);
+            this.wiz.putProperty(JDK_PLATFORM, null);
+            this.wiz.putProperty(PLATFORM, null);
+            this.wiz.putProperty(DEVICE, null);
+            this.wiz.putProperty(CONFIGURATION, null);
+            this.wiz.putProperty(PROFILE, null);
+            this.wiz.putProperty(OPTIONAL_API, null);
+            this.wiz.putProperty(PLATFORM_BOOTCLASSPATH, null);
             switch (type) {
                 case EXISTING:
                     this.wiz.putProperty("sourceRoot", null); //NOI18N
