@@ -52,6 +52,30 @@ typedef struct fs_entry {
     char data[];
 } fs_entry;
 
+static struct {
+    pthread_mutex_t mutex;
+    bool proceed;
+} state;
+
+static bool state_get_proceed() {    
+    bool proceed;
+    mutex_lock(&state.mutex);
+    proceed = state.proceed;
+    mutex_unlock(&state.mutex);    
+    return proceed;
+}
+
+static void state_set_proceed(bool proceed) {
+    mutex_lock(&state.mutex);
+    state.proceed = proceed;
+    mutex_unlock(&state.mutex);    
+}
+
+static void state_init() {
+    pthread_mutex_init(&state.mutex, NULL);
+    state_set_proceed(true);
+}
+
 static const char* decode_int(const char* text, int* result) {
     *result = 0;
     const char* p = text;
@@ -550,7 +574,7 @@ static void *refresh_loop(void *data) {
     while (dirtab_is_empty()) { //TODO: replace with notification?
         sleep(refresh_sleep ? refresh_sleep : 2);
     }
-    while (true) {
+    while (state_get_proceed()) {
         pass++;
         trace("refresh manager, pass %d\n", pass);
         dirtab_flush(); // TODO: find the appropriate place
@@ -574,6 +598,10 @@ static void *rp_loop(void *data) {
             trace("thread[%d] request #%d sz=%d kind=%c len=%d path=%s\n", 
                     thread_num, request->id, request->size, request->kind, request->len, request->path);
             process_request(request);
+        } else {
+            if (!state_get_proceed()) {
+                break;
+            }
         }
     }
     trace("Thread #%d done\n", thread_num);
@@ -649,7 +677,14 @@ static void main_loop() {
                 process_request(request);
             }
        }
-    }    
+    }
+    state_set_proceed(false);
+    blocking_queue_shutdown(&req_queue);
+    trace("Shutting down. Joining threads...\n");
+    for (int i = 0; i < rp_thread_count; i++) {
+        trace("Shutting down. Joining thread #%i [%ui]\n", i, rp_threads[i]);
+        pthread_join(rp_threads[i], NULL);
+    }
 }
 
 static void usage(char* argv[]) {
@@ -712,6 +747,7 @@ static bool print_visitor(const char* path, int index, const char* cache) {
 
 int main(int argc, char* argv[]) {
     process_options(argc, argv);
+    state_init();
     dirtab_init();
     if (get_trace() && ! dirtab_is_empty()) {
         trace("loaded dirtab:\n");
