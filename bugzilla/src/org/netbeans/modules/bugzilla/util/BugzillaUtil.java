@@ -53,8 +53,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils;
 import org.netbeans.modules.bugtracking.util.SimpleIssueFinder;
 import org.netbeans.modules.bugzilla.Bugzilla;
@@ -188,7 +188,7 @@ public class BugzillaUtil {
     }
 
     public static Repository getRepository(BugzillaRepository bugzillaRepository) {
-        Repository repository = BugtrackingUtil.getRepository(BugzillaConnector.ID, bugzillaRepository.getID());
+        Repository repository = RepositoryManager.getInstance().getRepository(BugzillaConnector.ID, bugzillaRepository.getID());
         if(repository == null) {
             repository = createRepository(bugzillaRepository);
         }

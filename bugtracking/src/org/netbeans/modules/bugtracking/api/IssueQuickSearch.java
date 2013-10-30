@@ -41,10 +41,28 @@
  */
 package org.netbeans.modules.bugtracking.api;
 
+import java.awt.Dimension;
 import java.io.File;
+import java.util.ResourceBundle;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.LayoutStyle;
+import javax.swing.SwingConstants;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
 import org.netbeans.modules.bugtracking.ui.search.QuickSearchPanel;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.awt.Mnemonics;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  * Provides a UI Component to pick issues. 
@@ -116,6 +134,20 @@ public final class IssueQuickSearch {
     }
     
     /**
+     * Opens a modal dialog to search after Issues from the given repository. 
+     * The dialog presents a field to type some text into - to find Issues either by id or summary.
+     * 
+     * @param message a message to displayed together with the combo box - e.g. Select task that this task depends on.
+     * @param repository the repository from which is the Issue to be found
+     * @param caller caller component
+     * @param helpCtx a help context or null if none
+     * @return an Issue instance or null if none was selected.
+     */
+    public static Issue selectIssue(String message, Repository repository, JPanel caller, HelpCtx helpCtx) {
+        return QuickSearchComboBar.selectIssue(message, repository, caller, helpCtx);
+    }
+    
+    /**
      * Sets the repository for which issues should be made available in 
      * the issue combo bar.
      * 
@@ -137,7 +169,7 @@ public final class IssueQuickSearch {
     /**
      * Returns the issue selected in the issue combo bar or null if none selected.
      * 
-     * @return 
+     * @return an Issue instance or null if none was selected.
      */
     public Issue getIssue() {
         return panel.getIssue();

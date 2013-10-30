@@ -42,24 +42,16 @@
 
 package org.netbeans.modules.bugtracking.util;
 
-import java.awt.Dimension;
 import java.io.File;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.MissingResourceException;
-import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.LayoutStyle;
-import javax.swing.SwingConstants;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.DateFormatter;
 import javax.swing.text.DefaultFormatterFactory;
@@ -68,28 +60,21 @@ import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.DelegatingConnector;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
-import org.netbeans.modules.bugtracking.RepositoryRegistry;
-import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
 import org.netbeans.modules.bugtracking.ui.selectors.RepositorySelector;
 import org.netbeans.modules.team.ide.spi.IDEServices;
 import org.netbeans.modules.team.ide.spi.ProjectServices;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 
 /**
  *
@@ -276,69 +261,6 @@ public class BugtrackingUtil {
             support.removeChangeListener(listener);
         }
 
-    }
-    
-    /**
-     * Facility method to obtain an already registered {@link Repository} instance.
-     * 
-     * @param connectorId
-     * @param repositoryId
-     * @return 
-     */
-    // XXX NOI
-    public static Repository getRepository(String connectorId, String repositoryId) {
-        RepositoryImpl impl = RepositoryRegistry.getInstance().getRepository(connectorId, repositoryId);
-        return impl != null ? impl.getRepository() : null;
-    }  
- 
-    // XXX NOI
-    public static String selectIssue(String message, Repository repository, JPanel caller, HelpCtx helpCtx) {
-        QuickSearchComboBar bar = new QuickSearchComboBar(caller);
-        bar.setRepository(repository);
-        bar.setAlignmentX(0f);
-        bar.setMaximumSize(new Dimension(Short.MAX_VALUE, bar.getPreferredSize().height));
-        JPanel panel = new JPanel();
-        BoxLayout layout = new BoxLayout(panel, BoxLayout.PAGE_AXIS);
-        panel.setLayout(layout);
-        JLabel label = new JLabel();
-        Mnemonics.setLocalizedText(label, message);
-        panel.add(label);
-        label.setLabelFor(bar.getIssueComponent());
-        LayoutStyle layoutStyle = LayoutStyle.getInstance();
-        int gap = layoutStyle.getPreferredGap(label, bar, LayoutStyle.ComponentPlacement.RELATED, SwingConstants.SOUTH, panel);
-        panel.add(Box.createVerticalStrut(gap));
-        panel.add(bar);
-        panel.add(Box.createVerticalStrut(gap));
-        ResourceBundle bundle = NbBundle.getBundle(BugtrackingUtil.class);
-        JLabel hintLabel = new JLabel(bundle.getString("MSG_SelectIssueHint")); // NOI18N
-        hintLabel.setEnabled(false);
-        panel.add(hintLabel);
-        panel.add(Box.createVerticalStrut(80));
-        panel.setBorder(BorderFactory.createEmptyBorder(
-                layoutStyle.getContainerGap(panel, SwingConstants.NORTH, null),
-                layoutStyle.getContainerGap(panel, SwingConstants.WEST, null),
-                0,
-                layoutStyle.getContainerGap(panel, SwingConstants.EAST, null)));
-        panel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_IssueSelector"));
-        Issue issue = null;
-        JButton ok = new JButton(bundle.getString("LBL_Select")); // NOI18N
-        ok.getAccessibleContext().setAccessibleDescription(ok.getText());
-        JButton cancel = new JButton(bundle.getString("LBL_Cancel")); // NOI18N
-        cancel.getAccessibleContext().setAccessibleDescription(cancel.getText());
-        DialogDescriptor descriptor = new DialogDescriptor(
-                panel,
-                bundle.getString("LBL_Issues"), // NOI18N
-                true,
-                NotifyDescriptor.OK_CANCEL_OPTION,
-                ok,
-                null);
-        descriptor.setOptions(new Object [] {ok, cancel});
-        descriptor.setHelpCtx(helpCtx);
-        DialogDisplayer.getDefault().createDialog(descriptor).setVisible(true);
-        if (descriptor.getValue() == ok) {
-            issue = bar.getIssue();
-        }
-        return issue != null ? issue.getID() : null;
     }
     
     /**
