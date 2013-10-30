@@ -1,2 +1,2 @@
 Ignore      >   Ignore           I
-                Exclude from Commit     C
+                Exclude From Commit     C
