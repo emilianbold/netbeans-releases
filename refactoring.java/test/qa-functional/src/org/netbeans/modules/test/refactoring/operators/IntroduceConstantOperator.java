@@ -56,7 +56,7 @@ public class IntroduceConstantOperator extends IntroduceOperator {
 
     public JCheckBoxOperator getAlsoReplace() {
         if (alsoReplace == null) {
-            alsoReplace = new JCheckBoxOperator(this, 0);
+            alsoReplace = new JCheckBoxOperator(this, 1);
         }
         return alsoReplace;
     }
