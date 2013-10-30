@@ -477,6 +477,7 @@ public final class Terminal extends JComponent {
         term.setHighlightColor(termOptions.getSelectionBackground());
         term.setHistorySize(termOptions.getHistorySize());
         term.setTabSize(termOptions.getTabSize());
+	term.setSelectByWordDelimiters(termOptions.getSelectByWordDelimiters());
 
         term.setClickToType(termOptions.getClickToType());
         term.setScrollOnInput(termOptions.getScrollOnInput());

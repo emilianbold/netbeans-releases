@@ -48,7 +48,6 @@
  * "WordDelineator.java"
  * WordDelineator.java 1.6 01/07/26
  */
-
 package org.netbeans.lib.terminalemulator;
 
 /*
@@ -60,53 +59,63 @@ package org.netbeans.lib.terminalemulator;
  * findRight() and assigning an object of the resulting class via
  * Term.setWordDelineator().
  */
-
 public class WordDelineator {
+
+    private String delimiters = new String();
+
     /**
      * Return the <i>character equivalence class</i> of 'c'.
-     *<p>
-     * This is used by findLeft() and findRight() which operate such that
-     * a <i>word</i> is bounded by a change in character class.
-     *<p>
+     * <p>
+     * This is used by findLeft() and findRight() which operate such that a
+     * <i>word</i> is bounded by a change in character class.
+     * <p>
      * A character equivalence class is characterised by a number, any number,
      * that is different from numbers for other character classes. For example,
-     * this implementation, which is used as the default WordDelineator for
-     * Term returns 1 for spaces and 0 for everything else.
+     * this implementation, which is used as the default WordDelineator for Term
+     * returns 1 for spaces, 2 for delimiters defined by user in
+     * {@link org.netbeans.lib.terminalemulator.support.TermOptions} and 0 for
+     * everything else.
      */
     protected int charClass(char c) {
-	if (Character.isWhitespace(c))
-	    return 1;
-	else
-	    return 0;
+        if (Character.isWhitespace(c)) {
+            return 1;
+        } else if (delimiters.indexOf(c) >= 0) {
+            return 2;
+        } else {
+            return 0;
+        }
+    }
+
+    protected void setWordDelimiters(String delimiters) {
+        this.delimiters = delimiters;
     }
 
     /**
      * Return index of char at the beginning of the word.
      */
     protected int findLeft(StringBuffer buf, int start) {
-	int cclass = charClass(buf.charAt(start));
+        int cclass = charClass(buf.charAt(start));
 
-	// go left until a character of differing class is found
-	int lx = start;
-	while (lx > 0 && charClass(buf.charAt(lx-1)) == cclass) {
-	    lx--;
-	}
-	return lx;
-    } 
+        // go left until a character of differing class is found
+        int lx = start;
+        while (lx > 0 && charClass(buf.charAt(lx - 1)) == cclass) {
+            lx--;
+        }
+        return lx;
+    }
 
     /**
      * Return index of char past the word.
      */
     protected int findRight(StringBuffer buf, int start) {
-	int cclass = charClass(buf.charAt(start));
+        int cclass = charClass(buf.charAt(start));
 
-	// go right until a character of a differing class is found.
-	int rx = start;
-	while (rx < buf.length() && charClass(buf.charAt(rx)) == cclass) {
-	    rx++;
-	}
-	rx--;
-	return rx;
-    } 
+        // go right until a character of a differing class is found.
+        int rx = start;
+        while (rx < buf.length() && charClass(buf.charAt(rx)) == cclass) {
+            rx++;
+        }
+        rx--;
+        return rx;
+    }
 }
-

@@ -90,6 +90,7 @@ public final class TermOptions {
         selectionBackground = getDefaultSelectionBackground();
 	historySize = 5000;
 	tabSize = 8;
+        selectByWordDelimiters = "!$^*();<>\\[]{}|";    //NOI18N
 	clickToType = true;
 	scrollOnInput = true;
 	scrollOnOutput = true;
@@ -159,6 +160,7 @@ public final class TermOptions {
 	this.foreground = that.foreground;
 	this.background = that.background;
 	this.selectionBackground = that.selectionBackground;
+        this.selectByWordDelimiters = that.selectByWordDelimiters;
 	this.clickToType = that.clickToType;
 	this.scrollOnInput = that.scrollOnInput;
 	this.scrollOnOutput = that.scrollOnOutput;
@@ -189,6 +191,9 @@ public final class TermOptions {
 
 	tabSize = prefs.getInt(PREFIX + PROP_TAB_SIZE, tabSize);
 	historySize = prefs.getInt(PREFIX + PROP_HISTORY_SIZE, historySize);
+        
+        selectByWordDelimiters = prefs.get(PREFIX + PROP_SELECT_BY_WORD_DELIMITERS, 
+                                                selectByWordDelimiters);
 
 	int foregroundRGB = prefs.getInt(PREFIX + PROP_FOREGROUND,
 					 foreground.getRGB());
@@ -232,6 +237,7 @@ public final class TermOptions {
 	prefs.putInt(PREFIX + PROP_BACKGROUND, background.getRGB());
 	prefs.putInt(PREFIX + PROP_SELECTION_BACKGROUND,
 		     selectionBackground.getRGB());
+        prefs.put(PREFIX + PROP_SELECT_BY_WORD_DELIMITERS, selectByWordDelimiters);
 	prefs.putBoolean(PREFIX + PROP_CLICK_TO_TYPE, clickToType);
 	prefs.putBoolean(PREFIX + PROP_SCROLL_ON_INPUT, scrollOnInput);
 	prefs.putBoolean(PREFIX + PROP_SCROLL_ON_OUTPUT, scrollOnOutput);
@@ -358,7 +364,23 @@ public final class TermOptions {
 	this.tabSize = tabSize;
         markDirty();
     } 
+    
+    /*
+     * Select-by-word-delimiters property
+     */
+    public static final String PROP_SELECT_BY_WORD_DELIMITERS = "selectByWordDelimiters";   // NOI18N
+    
+    private String selectByWordDelimiters;
 
+    public String getSelectByWordDelimiters() {
+        return selectByWordDelimiters;
+    }
+
+    public void setSelectByWordDelimiters(String selectByWordDelimiters) {
+        this.selectByWordDelimiters = selectByWordDelimiters;
+        markDirty();
+    }
+    
     /*
      * Click-to-type property.
      */
