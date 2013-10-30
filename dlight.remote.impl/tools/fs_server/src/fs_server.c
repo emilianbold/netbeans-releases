@@ -698,6 +698,7 @@ static void main_loop() {
     }
     state_set_proceed(false);
     blocking_queue_shutdown(&req_queue);
+    trace("Max. requests queue size: %d\n", blocking_queue_max_size(&req_queue));
     trace("Shutting down. Joining threads...\n");
     for (int i = 0; i < rp_thread_count; i++) {
         trace("Shutting down. Joining thread #%i [%ui]\n", i, rp_threads[i]);
