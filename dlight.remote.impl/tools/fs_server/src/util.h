@@ -19,6 +19,10 @@ extern "C" {
 void set_trace(bool on_off);
 bool get_trace();
 
+void log_print(const char *format, ...);
+void log_open(const char* path);
+void log_close();
+
 void report_error(const char *format, ...);
 void trace(const char *format, ...);
 void soft_assert(int condition, char* format, ...);

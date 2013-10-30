@@ -48,10 +48,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ConnectException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
@@ -85,6 +87,7 @@ import org.openide.util.RequestProcessor;
     private static final String SERVER_PATH = System.getProperty("remote.fs_server.path");
     public static final int REFRESH_INTERVAL = Integer.getInteger("remote.fs_server.refresh", 2); // NOI18N
     public static final boolean VERBOSE = Boolean.getBoolean("remote.fs_server.verbose");
+    public static final boolean LOG = Boolean.getBoolean("remote.fs_server.log");
 
     // Actually this RP should have only 2 tasks: one reads error, another stdout;
     // but in the case of, say, connection failure and reconnect, old task can still be alive,
@@ -261,10 +264,19 @@ import org.openide.util.RequestProcessor;
         public FsServer() throws IOException {
             NativeProcessBuilder processBuilder = NativeProcessBuilder.newProcessBuilder(env);
             processBuilder.setExecutable(SERVER_PATH);
-            String[] args = VERBOSE ? 
-                    new String[] { "-t", "4", "-p", "-r", "" + REFRESH_INTERVAL, "-v" } : // NOI18N
-                    new String[] { "-t", "4", "-p", "-r", "" + REFRESH_INTERVAL }; // NOI18N
-            processBuilder.setArguments(args);
+            List<String> args = new ArrayList<String>();
+            args.add("-t");
+            args.add("4");
+            args.add("-p");
+            args.add("-r");
+            args.add("" + REFRESH_INTERVAL);
+            if (VERBOSE) {
+                args.add("-v");
+            }
+            if (LOG) {
+                args.add("-l");
+            }
+            processBuilder.setArguments(args.toArray(new String[args.size()]));
             process = processBuilder.call();
             writer = new PrintWriter(process.getOutputStream());
             reader = new BufferedReader(new InputStreamReader(process.getInputStream()));

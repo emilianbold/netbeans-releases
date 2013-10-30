@@ -32,6 +32,7 @@ static pthread_t refresh_thread;
 
 static blocking_queue req_queue;
 
+static bool log_flag = false;
 static bool persistence = false;
 static bool refresh = false;
 static int refresh_sleep = 1;
@@ -663,6 +664,7 @@ static void main_loop() {
     char req_buffer[256 + PATH_MAX];
     while(fgets(raw_req_buffer, sizeof raw_req_buffer, stdin)) {
         trace("raw request: %s", raw_req_buffer); // no LF since buffer ends it anyhow 
+        log_print(raw_req_buffer);
         fs_request* request = decode_request(raw_req_buffer, (fs_request*) req_buffer);
         trace("decoded request #%d sz=%d kind=%c len=%d path=%s\n", request->id, request->size, request->kind, request->len, request->path);
         if (request) {
@@ -695,13 +697,14 @@ static void usage(char* argv[]) {
             "   -p persisnence\n"
             "   -r nsec  set refresh ON and sets refresh interval in seconds\n"
             "   -v verbose: print trace messages\n"
+            "   -l log: log all requests into log file\n"
             , prog_name ? prog_name : argv[0], rp_thread_count);
 }
 
 void process_options(int argc, char* argv[]) {
     int opt;
     int new_thread_count, new_refresh_sleep;
-    while ((opt = getopt(argc, argv, "r:pvt:")) != -1) {
+    while ((opt = getopt(argc, argv, "r:pvt:l")) != -1) {
         switch (opt) {
             case 'r':
                 refresh  = true;
@@ -709,6 +712,9 @@ void process_options(int argc, char* argv[]) {
                 if (new_refresh_sleep >= 0) {
                     refresh_sleep = new_refresh_sleep;
                 }
+                break;
+            case 'l':
+                log_flag = true;
                 break;
             case 'p':
                 persistence  = true;
@@ -759,9 +765,18 @@ int main(int argc, char* argv[]) {
         exit(FAILED_CHDIR);
     }
     lock_or_unloock(true);
+    if (log_flag) {
+       log_open("log") ;
+       log_print("\n---------- ");
+       for (int i = 0; i < argc; i++) {
+           log_print("%s ", argv[i]);
+       }
+       log_print("\n");
+    }
     main_loop();
     if (!dirtab_flush()) {
         report_error("error storing dirtab\n");
     }
+    log_close();
     return 0;
 }
