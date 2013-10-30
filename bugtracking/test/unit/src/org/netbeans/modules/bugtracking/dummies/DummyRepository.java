@@ -49,7 +49,7 @@ import javax.imageio.ImageIO;
 import org.netbeans.modules.bugtracking.TestKit;
 import org.netbeans.modules.bugtracking.TestRepository;
 import org.netbeans.modules.bugtracking.spi.*;
-import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
+import org.netbeans.modules.bugtracking.ui.repository.RepositoryComboSupport;
 import org.openide.util.Lookup;
 
 /**

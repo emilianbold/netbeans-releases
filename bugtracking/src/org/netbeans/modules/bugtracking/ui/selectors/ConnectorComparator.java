@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,22 +37,32 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.bugtracking.util;
+
+package org.netbeans.modules.bugtracking.ui.selectors;
 
 import java.util.Comparator;
-import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.DelegatingConnector;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class RepositoryComparator implements Comparator<Repository> {
-    public int compare(Repository r1, Repository r2) {
-        if(r1 == null && r2 == null) return 0;
-        if(r1 == null) return -1;
-        if(r2 == null) return 1;
-        return r1.getDisplayName().compareTo(r2.getDisplayName());
+public class ConnectorComparator implements Comparator<DelegatingConnector>{
+
+    @Override
+    public int compare(DelegatingConnector c1, DelegatingConnector c2) {
+        if(c1 == null && c2 == null) {
+            return 0;
+        }
+        if(c2 == null) {
+            return 1;
+        }
+        if(c1 == null) {
+            return -1;
+        }
+        return c1.getDisplayName().compareTo(c2.getDisplayName());
     }
+
 }
