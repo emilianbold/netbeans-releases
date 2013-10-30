@@ -91,7 +91,7 @@ public class AlignmentOperator extends FormattingPanelOperator {
     private JCheckBoxOperator alignmentFor;
 
     public AlignmentOperator(FormattingOptionsOperator formattingOperator) {
-        super(formattingOperator, "JAVA", "Alignment");
+        super(formattingOperator, "Java", "Alignment");
         switchToPanel();
     }
 
@@ -308,5 +308,5 @@ public class AlignmentOperator extends FormattingPanelOperator {
         public String key() {
             return this.name();
         }
-    }
+    }           
 }
