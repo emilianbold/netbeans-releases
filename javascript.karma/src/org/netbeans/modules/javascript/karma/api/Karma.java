@@ -44,6 +44,8 @@ package org.netbeans.modules.javascript.karma.api;
 
 import java.io.File;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.javascript.karma.exec.KarmaServers;
 import org.netbeans.modules.javascript.karma.ui.customizer.KarmaCustomizer;
 import org.netbeans.modules.javascript.karma.ui.logicalview.KarmaNodeFactory;
 import org.netbeans.spi.project.ui.support.NodeFactory;
@@ -51,6 +53,9 @@ import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 
 /**
  * Support for Karma test runner.
+ * <p>
+ * Each client should call {@link Karma#projectOpened(org.netbeans.api.project.Project)}
+ * and {@link Karma#projectClosed(org.netbeans.api.project.Project)} methods.
  */
 public final class Karma {
 
@@ -98,6 +103,24 @@ public final class Karma {
             return null;
         }
         return new KarmaNodeFactory();
+    }
+
+    /**
+     * Notify Karma that the given project is being opened.
+     * @param project project being opened
+     * @since 0.2
+     */
+    public void projectOpened(Project project) {
+        // noop
+    }
+
+    /**
+     * Notify Karma that the given project is being closed.
+     * @param project project being closed
+     * @since 0.2
+     */
+    public void projectClosed(Project project) {
+        KarmaServers.getInstance().stopServer(project, true);
     }
 
     //~ Inner classes
