@@ -81,12 +81,10 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
         FakeJiraSupport support = FakeJiraSupport.get(project);
         if(support != null) {
             // this is a jira project
-            if(!BugtrackingUtil.isJiraInstalled()) {
-                if(TeamUtil.notifyJiraDownload(support.getIssueUrl(issueID))) {
-                    TeamUtil.downloadAndInstallJira();
-                }
-                return;
+            if(TeamUtil.notifyJiraDownload(support.getIssueUrl(issueID))) {
+                TeamUtil.downloadAndInstallJira();
             }
+            return;
         }
 
         final ProgressHandle handle = ProgressHandleFactory.createHandle(LBL_GETTING_REPO());

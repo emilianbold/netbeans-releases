@@ -263,25 +263,6 @@ public class BugtrackingUtil {
 
     }
     
-    /**
-     * Determines if the jira plugin is instaled or not
-     *
-     * @return true if jira plugin is installed, otherwise false
-     */
-    // XXX NOI
-    public static boolean isJiraInstalled() {
-        DelegatingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
-        for (DelegatingConnector c : connectors) {
-            // XXX hack
-            if(c.getDelegate() != null && 
-               c.getDelegate().getClass().getName().startsWith("org.netbeans.modules.jira")) // NOI18N
-            {    
-                return true;
-            }
-        }
-        return false;
-    }
-
     // XXX NOI
     public static boolean show(JPanel panel, String title, String okName) {
         return show(panel, title, okName, new HelpCtx(panel.getClass()));
