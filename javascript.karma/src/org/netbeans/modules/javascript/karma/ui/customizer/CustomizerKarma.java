@@ -85,8 +85,8 @@ public class CustomizerKarma extends JPanel {
 
     private void init() {
         // data
-        karmaTextField.setText(KarmaPreferences.getInstance().getKarma(project));
-        configTextField.setText(KarmaPreferences.getInstance().getConfig(project));
+        karmaTextField.setText(KarmaPreferences.getKarma(project));
+        configTextField.setText(KarmaPreferences.getConfig(project));
         // listeners
         addListeners();
         // initial validation
@@ -126,8 +126,8 @@ public class CustomizerKarma extends JPanel {
     }
 
     void storeData() {
-        KarmaPreferences.getInstance().setKarma(project, karmaTextField.getText());
-        KarmaPreferences.getInstance().setConfig(project, configTextField.getText());
+        KarmaPreferences.setKarma(project, karmaTextField.getText());
+        KarmaPreferences.setConfig(project, configTextField.getText());
     }
 
     private File getProjectDirectory() {

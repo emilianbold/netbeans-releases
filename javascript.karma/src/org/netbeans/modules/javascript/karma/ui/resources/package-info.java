@@ -39,46 +39,13 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+@TemplateRegistration(folder = "Karma", // XXX
+        content = "karma-netbeans.conf.js",
+        scriptEngine = "freemarker",
+        position = 100,
+        displayName = "#Templates.javascript.karma.template.config.displayName")
+@NbBundle.Messages("Templates.javascript.karma.template.config.displayName=Karma NetBeans configuration")
+package org.netbeans.modules.javascript.karma.ui.resources;
 
-package org.netbeans.modules.javascript.karma.preferences;
-
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.javascript.karma.util.ExternalExecutableValidator;
-import org.netbeans.modules.javascript.karma.util.FileUtils;
-import org.netbeans.modules.javascript.karma.util.ValidationResult;
+import org.netbeans.api.templates.TemplateRegistration;
 import org.openide.util.NbBundle;
-
-public final class KarmaPreferencesValidator {
-
-    private final ValidationResult result = new ValidationResult();
-
-
-    public ValidationResult getResult() {
-        return result;
-    }
-
-    public KarmaPreferencesValidator validate(Project project) {
-        validateKarma(KarmaPreferences.getKarma(project));
-        validateConfig(KarmaPreferences.getConfig(project));
-        return this;
-    }
-
-    @NbBundle.Messages("KarmaPreferencesValidator.karma.name=Karma")
-    public KarmaPreferencesValidator validateKarma(String karma) {
-        String warning = ExternalExecutableValidator.validateCommand(karma, Bundle.KarmaPreferencesValidator_karma_name());
-        if (warning != null) {
-            result.addWarning(new ValidationResult.Message("path", warning)); // NOI18N
-        }
-        return this;
-    }
-
-    @NbBundle.Messages("KarmaPreferencesValidator.config.name=Configuration")
-    public KarmaPreferencesValidator validateConfig(String config) {
-        String warning = FileUtils.validateFile(Bundle.KarmaPreferencesValidator_config_name(), config, false);
-        if (warning != null) {
-            result.addWarning(new ValidationResult.Message("config", warning)); // NOI18N
-        }
-        return this;
-    }
-
-}

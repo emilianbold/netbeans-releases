@@ -40,45 +40,72 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.javascript.karma.preferences;
+var projectConf = require('${projectConfig}');
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.javascript.karma.util.ExternalExecutableValidator;
-import org.netbeans.modules.javascript.karma.util.FileUtils;
-import org.netbeans.modules.javascript.karma.util.ValidationResult;
-import org.openide.util.NbBundle;
+module.exports = function(config) {
+    projectConf(config);
 
-public final class KarmaPreferencesValidator {
+    var fileSeparator = '${fileSeparator}';
 
-    private final ValidationResult result = new ValidationResult();
-
-
-    public ValidationResult getResult() {
-        return result;
-    }
-
-    public KarmaPreferencesValidator validate(Project project) {
-        validateKarma(KarmaPreferences.getKarma(project));
-        validateConfig(KarmaPreferences.getConfig(project));
-        return this;
-    }
-
-    @NbBundle.Messages("KarmaPreferencesValidator.karma.name=Karma")
-    public KarmaPreferencesValidator validateKarma(String karma) {
-        String warning = ExternalExecutableValidator.validateCommand(karma, Bundle.KarmaPreferencesValidator_karma_name());
-        if (warning != null) {
-            result.addWarning(new ValidationResult.Message("path", warning)); // NOI18N
+    // base path
+    if (config.basePath) {
+        if (config.basePath.substr(0, 1) === '/' // unix
+                || config.basePath.substr(1, 2) === ':\\') { // windows
+            // absolute path, do nothing
+        } else {
+            config.basePath = '${projectWebRoot}' + fileSeparator + config.basePath;
         }
-        return this;
+    } else {
+        config.basePath = '${projectWebRoot}' + fileSeparator;
     }
 
-    @NbBundle.Messages("KarmaPreferencesValidator.config.name=Configuration")
-    public KarmaPreferencesValidator validateConfig(String config) {
-        String warning = FileUtils.validateFile(Bundle.KarmaPreferencesValidator_config_name(), config, false);
-        if (warning != null) {
-            result.addWarning(new ValidationResult.Message("config", warning)); // NOI18N
+    config.reporters = config.reporters || [];
+    config.reporters = config.reporters.concat([
+        //'progress',
+        'netbeans'
+    ]);
+    <#if coverage>
+    config.reporters = config.reporters.concat([
+        'coverage'
+    ]);
+    </#if>
+    config.reporters = config.reporters.filter(function (e, i, arr) {
+        return arr.lastIndexOf(e) === i;
+    });
+    config.plugins = config.plugins || [];
+    config.plugins = config.plugins.concat([
+        'karma-chrome-launcher',
+        '${karmaNetbeansReporter}'
+    ]);
+    <#if coverage>
+    config.plugins = config.plugins.concat([
+        'karma-coverage'
+    ]);
+    </#if>
+    config.plugins = config.plugins.filter(function (e, i, arr) {
+        return arr.lastIndexOf(e) === i;
+    });
+    config.browsers = ['Chrome'];
+    config.colors = true;
+    config.autoWatch = false;
+    config.singleRun = false;
+
+    <#if coverage>
+    config.preprocessors = config.preprocessors || {};
+    var projectWebRootLength = '${projectWebRoot}'.length + fileSeparator.length;
+    for (var i = 0; i < config.files.length; ++i) {
+        var file = config.files[i];
+        if (file.substr(0, projectWebRootLength) === '${projectWebRoot}' + fileSeparator) {
+            config.preprocessors[file] = config.preprocessors[file] || [];
+            config.preprocessors[file].push(['coverage']);
         }
-        return this;
     }
+    // XXX
+    config.coverageReporter = {
+        type: 'cobertura',
+        dir: 'coverage' + fileSeparator,
+        file: 'cobertura.xml'
+    }
+    </#if>
 
-}
+};
