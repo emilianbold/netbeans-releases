@@ -45,8 +45,9 @@ package org.netbeans.modules.bugtracking.spi;
 import java.util.Date;
 
 /**
- * Represents the date period for which an issue is scheduled. 
- * This can be a specific day as well an interval of days. 
+ * Represents the date period for which an Issue is scheduled. 
+ * This can be one specific day as well an interval of days given then by a 
+ * beginning date and an amount of days. 
  * 
  * @author Tomas Stupka
  * 
@@ -57,7 +58,8 @@ public final class IssueScheduleInfo {
     private final int interval;
 
     /**
-     * Creates a ScheduleDate representing one specific day for which an issue is scheduled.
+     * Creates a IssueScheduleInfo representing one specific day for which an 
+     * Issue is scheduled to start to work on it.
      * 
      * @param date 
      */
@@ -67,7 +69,8 @@ public final class IssueScheduleInfo {
     }
 
     /**
-     * Creates a ScheduleDate representing one or more days for which an issue is scheduled.
+     * Creates a IssueScheduleInfo representing one or more days for which an 
+     * Issue is scheduled to start to work on it.
      * 
      * @param startDate determines the day from which this issue is scheduled
      * @param interval determines for how many days an issue is scheduled. Allowed values are >=1.
@@ -81,7 +84,8 @@ public final class IssueScheduleInfo {
     }
 
     /**
-     * Returns the date of this ScheduleDate. 
+     * Returns the beginning date of the time period when the work on a Issue should start.
+     * 
      * In case an Issue is scheduled for more than one day, then this would be the starting date.
      * @return 
      */

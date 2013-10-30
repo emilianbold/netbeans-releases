@@ -70,11 +70,6 @@ public class QueryProviderImpl implements QueryProvider<LocalQuery, LocalTask> {
     }
 
     @Override
-    public boolean isSaved (LocalQuery q) {
-        return false;
-    }
-
-    @Override
     public boolean canRemove(LocalQuery q) {
         return false;
     }

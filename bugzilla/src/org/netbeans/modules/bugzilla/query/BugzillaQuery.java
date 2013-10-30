@@ -116,10 +116,6 @@ public class BugzillaQuery {
         support.removePropertyChangeListener(listener);
     }
 
-    private void fireQuerySaved() {
-        support.firePropertyChange(QueryProvider.EVENT_QUERY_SAVED, null, null);
-    }
-
     private void fireQueryRemoved() {
         support.firePropertyChange(QueryProvider.EVENT_QUERY_REMOVED, null, null);
     }
@@ -174,8 +170,6 @@ public class BugzillaQuery {
                     // keeps all issues we will retrieve from the server
                     // - those matching the query criteria
                     // - and the obsolete ones
-                    Set<String> queryIssues = new HashSet<String>();
-
                     issues.clear();
                     if(isSaved()) {
                         if(!wasRun() && !issues.isEmpty()) {
@@ -309,7 +303,6 @@ public class BugzillaQuery {
             info = null;
         }
         this.saved = saved;
-        fireQuerySaved();
     }
 
     public boolean isSaved() {

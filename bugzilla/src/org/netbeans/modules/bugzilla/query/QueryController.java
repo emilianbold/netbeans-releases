@@ -162,7 +162,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         this.repository = repository;
         this.query = query;
         
-        issueTable = new IssueTable(BugzillaUtil.getRepository(repository), query, query.getColumnDescriptors());
+        issueTable = new IssueTable(BugzillaUtil.getRepository(repository), query, query.getColumnDescriptors(), query.isSaved());
         setupRenderer(issueTable);
         panel = new QueryPanel(issueTable.getComponent());
 
@@ -612,7 +612,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
        });
     }
 
-    private boolean saveSynchronously(boolean refresh) {
+    boolean saveSynchronously(boolean refresh) {
         Bugzilla.LOG.fine("on save start");
         String name = query.getDisplayName();
         if (!query.isSaved()) {
@@ -623,10 +623,8 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         }
         assert name != null;
         Bugzilla.LOG.log(Level.FINE, "saving query '{0}'", new Object[]{name});
-        query.setName(name);
-        saveQuery();
-        query.setSaved(true); // XXX
-        setAsSaved();
+        save(name);
+        
         if (!query.wasRun()) {
             Bugzilla.LOG.log(Level.FINE, "refreshing query '{0}' after save", new Object[]{name});
             onRefresh();
@@ -637,6 +635,14 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
             onRefresh();
         }
         return false;
+    }
+
+    void save(String name) {
+        query.setName(name);
+        saveQuery();
+        query.setSaved(true);
+        setAsSaved();
+        fireSaved();
     }
 
     private String getSaveName() {
@@ -1038,9 +1044,6 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
                 if (isChanged()) {
                     panel.saveChangesButton.setEnabled(true);
                     fireUnsaved();
-                } else {
-                    panel.saveChangesButton.setEnabled(false);
-                    fireSaved();
                 }                
             }
         });
@@ -1092,11 +1095,18 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
     }
 
     private void fireUnsaved() {
-        support.firePropertyChange(IssueController.PROPERTY_ISSUE_NOT_SAVED, null, null);
+        support.firePropertyChange(QueryController.PROPERTY_QUERY_CHANGED, null, null);
     }
  
     private void fireSaved() {
-        support.firePropertyChange(IssueController.PROPERTY_ISSUE_SAVED, null, null);
+        support.firePropertyChange(QueryController.PROPERTY_QUERY_SAVED, null, null);
+    }
+
+    /**
+     * package private for testing purposes
+     */
+    IssueTable getIssueTable() {
+        return issueTable;
     }
     
     private class QueryTask implements Runnable, Cancellable, QueryNotifyListener {

@@ -47,7 +47,7 @@ import java.awt.Image;
 /**
  * Represents information related to one particular issue priority. 
  * The Priority attributes are used in various Task Dashboard features 
- * - e.g. Icon is shown next to an Issue.
+ * - e.g. Icon is shown next to an Issue, etc.
  * 
  * @author Tomas Stupka
  */
@@ -62,8 +62,8 @@ public final class IssuePriorityInfo {
      * use default icons given by the order of Priority infos returned
      * via {@link IssuePriorityProvider#getPriorityInfos()}
      * 
-     * @param id
-     * @param displayName 
+     * @param id - priority id as given by the particular implementation
+     * @param displayName - priority name as given by the particular implementation
      * @see IssuePriorityProvider#getPriorityInfos() 
      */
     public IssuePriorityInfo(String id, String displayName) {
@@ -71,10 +71,12 @@ public final class IssuePriorityInfo {
     }
     
     /**
+     * Creates a IssuePriorityInfo. 
      * 
-     * @param id
-     * @param displayName
-     * @param icon
+     * @param id - priority id as given by the particular implementation
+     * @param displayName - priority name as given by the particular implementation
+     * @param icon - priority icon as given by the particular implementation
+     * @see IssuePriorityProvider#getPriorityInfos() 
      */
     public IssuePriorityInfo(String id, String displayName, Image icon) {
         this.id = id;

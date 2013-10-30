@@ -197,7 +197,7 @@ public final class QueryTopComponent extends TopComponent
         addQueryComponent(c);
     }
     
-    void init(QueryImpl query, RepositoryImpl defaultRepository, File context, boolean suggestedSelectionOnly, QueryController.QueryMode mode) {
+    void init(QueryImpl query, RepositoryImpl defaultRepository, File context, boolean suggestedSelectionOnly, QueryController.QueryMode mode, boolean isNew) {
         this.query = query;
         this.context = context;
         this.mode = mode;
@@ -210,7 +210,7 @@ public final class QueryTopComponent extends TopComponent
         }
 
         if (query != null) {
-            if(query.isSaved()) {
+            if(!isNew) {
                 setSaved();
             } else {
                 if(!suggestedSelectionOnly) {
@@ -363,9 +363,7 @@ public final class QueryTopComponent extends TopComponent
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals(QueryProvider.EVENT_QUERY_SAVED)) {
-            setSaved();
-        } else if(evt.getPropertyName().equals(QueryProvider.EVENT_QUERY_REMOVED)) {
+        if(evt.getPropertyName().equals(QueryProvider.EVENT_QUERY_REMOVED)) {
             if(query != null && query.isData(evt.getSource())) {
                 // removed
                 closeInAwt();
@@ -402,17 +400,18 @@ public final class QueryTopComponent extends TopComponent
                     }
                 }
             });
-        } else if(evt.getPropertyName().equals(IssueController.PROPERTY_ISSUE_NOT_SAVED)) {
+        } else if(evt.getPropertyName().equals(QueryController.PROPERTY_QUERY_CHANGED)) {
             if (getLookup().lookup(QuerySavable.class) == null) {
                 instanceContent.add(new QuerySavable(this));
                 setNameAndTooltip();
-        }
-        } else if(evt.getPropertyName().equals(IssueController.PROPERTY_ISSUE_SAVED)) {
+            }
+        } else if(evt.getPropertyName().equals(QueryController.PROPERTY_QUERY_SAVED)) {
+            setSaved();
             QuerySavable savable = getSavable();
             if(savable != null) {
                 savable.destroy();
                 setNameAndTooltip();
-    }
+            }
         }
     }
 

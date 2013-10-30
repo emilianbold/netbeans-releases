@@ -59,7 +59,6 @@ public final class QueryImpl<Q, I>  {
     
     public final static String EVENT_QUERY_REFRESHED = QueryProvider.EVENT_QUERY_REFRESHED;
     public final static String EVENT_QUERY_REMOVED = QueryProvider.EVENT_QUERY_REMOVED;
-    public final static String EVENT_QUERY_SAVED = QueryProvider.EVENT_QUERY_SAVED;
     
     private final RepositoryImpl repository;
     private final QueryProvider<Q, I> queryProvider;
@@ -122,10 +121,6 @@ public final class QueryImpl<Q, I>  {
         QueryAction.openQuery(this, repository, mode);
     }
     
-    public boolean isSaved() {
-        return queryProvider.isSaved(data);
-    }
-
     public boolean canRemove() {
         return queryProvider.canRemove(data);
     }

@@ -209,7 +209,7 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
     }
 
     protected void fireUnsaved() {
-        support.firePropertyChange(IssueController.PROPERTY_ISSUE_NOT_SAVED, null, null);
+        support.firePropertyChange(IssueController.PROPERTY_ISSUE_CHANGED, null, null);
     }
  
     protected void fireSaved() {

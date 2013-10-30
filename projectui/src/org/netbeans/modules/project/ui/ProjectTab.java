@@ -847,9 +847,35 @@ public class ProjectTab extends TopComponent
         }
 
         @Override public void actionPerformed(ActionEvent e) {
-            ProjectTab tab = findDefault(type);
-            for (Node root : tab.manager.getRootContext().getChildren().getNodes()) {
-                tab.btv.collapseNode(root);
+            RP.post(new Runnable() {
+
+                @Override
+                public void run() {
+                    SwingUtilities.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            ProjectTab tab = findDefault(type);
+                            for (Node root : tab.manager.getRootContext().getChildren().getNodes()) {
+                                if( tab.btv.isExpanded(root) ) {
+                                    collapseNodes(root, tab);
+                                    tab.btv.collapseNode(root);
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+        }
+        
+        private void collapseNodes(Node node, ProjectTab tab) {
+            if (  node.getChildren().getNodesCount() != 0 ) {
+                for ( Node nodeIter : node.getChildren().getNodes() ) {
+                    if( tab.btv.isExpanded(nodeIter) ) {
+                        collapseNodes(nodeIter, tab);
+                        tab.btv.collapseNode(nodeIter);
+                    }
+                }
             }
         }
 

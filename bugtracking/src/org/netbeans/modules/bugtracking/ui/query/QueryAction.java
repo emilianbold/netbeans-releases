@@ -93,18 +93,18 @@ public class QueryAction extends SystemAction {
     }
 
     public  static void createNewQuery(RepositoryImpl repositoryToSelect) {
-        openQuery(null, repositoryToSelect, false, QueryMode.EDIT);
+        openQuery(null, repositoryToSelect, false, QueryMode.EDIT, true);
     }
     
     public static void createNewQueryForRepo(RepositoryImpl repositoryToSelect) {
-        openQuery(null, repositoryToSelect, true, QueryMode.EDIT);
+        openQuery(null, repositoryToSelect, true, QueryMode.EDIT, true);
     }
 
     public static void openQuery(QueryImpl query, RepositoryImpl repository, QueryMode mode) {
-        openQuery(query, repository, false, mode);
+        openQuery(query, repository, false, mode, false);
     }
     
-    private static void openQuery(final QueryImpl query, final RepositoryImpl repository, final boolean suggestedSelectionOnly, final QueryMode mode) {
+    private static void openQuery(final QueryImpl query, final RepositoryImpl repository, final boolean suggestedSelectionOnly, final QueryMode mode, final boolean isNew) {
         BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
@@ -121,7 +121,7 @@ public class QueryAction extends SystemAction {
                             }
                             if(tc == null) {
                                 tc = new QueryTopComponent();
-                                tc.init(query, repository, file, suggestedSelectionOnly, mode);
+                                tc.init(query, repository, file, suggestedSelectionOnly, mode, isNew);
                             } else {
                                 tc.setMode(mode);
                             }
