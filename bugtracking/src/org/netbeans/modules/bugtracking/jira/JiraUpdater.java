@@ -122,7 +122,10 @@ public class JiraUpdater {
      * Download and install the JIRA plugin from the Update Center
      */
     @NbBundle.Messages({"MSG_JiraPluginName=JIRA"})
-    public void downloadAndInstall() {
+    public void downloadAndInstall(String projectUrl) {
+        if(projectUrl != null && !JiraUpdater.notifyJiraDownload(projectUrl)) {
+            return;
+        }
         IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
         if(ideServices != null) {
             IDEServices.Plugin plugin = ideServices.getPluginUpdates(JIRA_CNB, Bundle.MSG_JiraPluginName());
@@ -330,7 +333,7 @@ public class JiraUpdater {
             downloadButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    downloadAndInstall();
+                    downloadAndInstall(null);
                 }
             });
             

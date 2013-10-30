@@ -427,12 +427,8 @@ public class TeamUtil {
         return isOpened(APIAccessor.IMPL.getImpl(issue));
     }
 
-    public static boolean notifyJiraDownload(String projectUrl) {
-        return JiraUpdater.notifyJiraDownload(projectUrl);
-    }
-
-    public static void downloadAndInstallJira() {
-        JiraUpdater.getInstance().downloadAndInstall();
+    public static void downloadAndInstallJira(String projectUrl) {
+        JiraUpdater.getInstance().downloadAndInstall(projectUrl);
     }
     
     public static Map<String, List<RecentIssue>> getAllRecentIssues() {
