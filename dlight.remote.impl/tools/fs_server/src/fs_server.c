@@ -671,6 +671,22 @@ static void main_loop() {
             if (request->kind == FS_REQ_QUIT) {
                 break;
             }
+            if (request->kind == FS_REQ_SLEEP) {
+                int interval = 0;
+                for (int i = 0; i < request->len; i++) {
+                    char c = request->path[i];
+                    if (isdigit(c)) {
+                        interval = (interval*10) + (c - '0');
+                    } else {
+                        break;
+                    }
+                }
+                if (interval) {
+                    trace("sleeping %i seconds\n", interval);
+                    sleep(interval);
+                    trace("awoke\n");
+                }
+            }
             if (rp_thread_count > 1) {
                 fs_request* new_request = malloc(request->size);
                 memcpy(new_request, request, request->size);
