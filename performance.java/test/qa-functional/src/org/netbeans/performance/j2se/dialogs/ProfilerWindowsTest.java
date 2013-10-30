@@ -41,105 +41,104 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se.dialogs;
 
+import junit.framework.Test;
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.TopComponentOperator;
+import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.j2se.setup.J2SESetup;
 
-import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
 /**
  *
  * @author mkhramov@netbeans.org
  */
 public class ProfilerWindowsTest extends PerformanceTestCase {
-    
+
     private String commandName;
     private String windowName;
-    
+
     /**
+     * Creates new instance
      *
-     * @param testName
+     * @param testName test name
      */
     public ProfilerWindowsTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
-    
+
     /**
+     * Creates new instance
      *
-     * @param testName
-     * @param performanceDataName
+     * @param testName test name
+     * @param performanceDataName data name
      */
     public ProfilerWindowsTest(String testName, String performanceDataName) {
-        super(testName,performanceDataName);
+        super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(ProfilerWindowsTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(J2SESetup.class, "testCloseMemoryToolbar")
+                .addTest(ProfilerWindowsTest.class)
+                .suite();
     }
-    
-    
+
     public void testProfilerControlPanel() {
-        commandName = "Window|Profiling|Profiler Control Panel"; //NOI18N
+        commandName = "Window|Profiling|Profiler"; //NOI18N
         windowName = "Profiler"; ////NOI18N
         doMeasurement();
     }
-    
+
     public void testProfilerTelemetryOverview() {
-        commandName = "Window|Profiling|"+Bundle.getStringTrimmed("org.netbeans.modules.profiler.actions.Bundle", "HINT_TelemetryOverviewAction");
+        commandName = "Window|Profiling|" + Bundle.getStringTrimmed("org.netbeans.modules.profiler.actions.Bundle", "HINT_TelemetryOverviewAction");
         windowName = Bundle.getStringTrimmed("org.netbeans.modules.profiler.Bundle", "LAB_TelemetryOverviewPanelName");
         doMeasurement();
     }
-    
+
     public void testProfilerLiveResults() {
-        commandName = "Window|Profiling|"+Bundle.getStringTrimmed("org.netbeans.modules.profiler.actions.Bundle", "LBL_ShowLiveResultsWindowAction");
+        commandName = "Window|Profiling|" + Bundle.getStringTrimmed("org.netbeans.modules.profiler.actions.Bundle", "LBL_ShowLiveResultsWindowAction");
         windowName = Bundle.getStringTrimmed("org.netbeans.modules.profiler.Bundle", "LAB_ResultsWindowName");
         doMeasurement();
     }
-    
+
     public void testProfilerVMTelemetry() {
         commandName = "Window|Profiling|VM Telemetry"; //NOI18N
         windowName = Bundle.getStringTrimmed("org.netbeans.modules.profiler.Bundle", "LAB_TelemetryWindowName");
         doMeasurement();
     }
-    
+
     public void testProfilerThreads() {
         commandName = "Window|Profiling|Threads"; //NOI18N
         windowName = Bundle.getStringTrimmed("org.netbeans.modules.profiler.Bundle", "ThreadsWindow_ThreadsWindowName");
         doMeasurement();
     }
-    
+
     public void testProfilerProfilingPoints() {
         commandName = "Window|Profiling|Profiling Points"; //NOI18N
         windowName = "Profiling Points"; ////NOI18N
         doMeasurement();
     }
-    
+
+    @Override
     public void prepare() {
     }
-    
+
+    @Override
     public ComponentOperator open() {
         MainWindowOperator.getDefault().menuBar().closeSubmenus();
         MainWindowOperator.getDefault().menuBar().pushMenu(commandName);
         return new TopComponentOperator(windowName);
     }
-    
+
+    @Override
     public void close() {
-        if(testedComponentOperator != null && testedComponentOperator.isShowing()) {
-            ((TopComponentOperator)this.testedComponentOperator).close();
+        if (testedComponentOperator != null && testedComponentOperator.isShowing()) {
+            ((TopComponentOperator) this.testedComponentOperator).close();
         }
     }
-     
 }
