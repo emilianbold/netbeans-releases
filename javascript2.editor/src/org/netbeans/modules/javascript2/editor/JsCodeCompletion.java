@@ -297,11 +297,8 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
         }
 
         if (element instanceof JsDocumentationElement) {
-            if (((JsDocumentationElement) element).getDocumentation() != null) {
-                return Documentation.create(((JsDocumentationElement) element).getDocumentation());
-            } else {
-                return null;
-            }
+            String documentation = ((JsDocumentationElement) element).getDocumentation();
+            return documentation != null ? Documentation.create(documentation) : null;
         }
 
         return Documentation.create(NbBundle.getMessage(JsCodeCompletion.class, "MSG_DocNotAvailable"));
