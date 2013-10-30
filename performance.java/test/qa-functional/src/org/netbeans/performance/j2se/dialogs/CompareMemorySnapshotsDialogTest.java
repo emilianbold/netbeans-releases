@@ -41,25 +41,24 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se.dialogs;
 
+import junit.framework.Test;
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.j2se.setup.J2SEBaseSetup;
+import org.netbeans.performance.j2se.setup.J2SESetup;
 
 /**
  *
  * @author mkhramov@netbeans.org
  */
-public class CompareMemorySnapshotsDialogTest  extends PerformanceTestCase {
+public class CompareMemorySnapshotsDialogTest extends PerformanceTestCase {
 
     /**
-     * 
-     * @param testName 
+     *
+     * @param testName
      */
     public CompareMemorySnapshotsDialogTest(String testName) {
         super(testName);
@@ -67,46 +66,37 @@ public class CompareMemorySnapshotsDialogTest  extends PerformanceTestCase {
     }
 
     /**
-     * 
+     *
      * @param testName
-     * @param performanceDataName 
+     * @param performanceDataName
      */
     public CompareMemorySnapshotsDialogTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.createConfiguration(J2SEBaseSetup.class)
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(J2SESetup.class, "testCloseMemoryToolbar")
                 .addTest(CompareMemorySnapshotsDialogTest.class)
-                .enableModules(".*").clusters("ide|profiler").suite());
-        return suite;
+                .suite();
     }
 
     public void testCompareMemorySnapshotsDialog() {
         doMeasurement();
     }
-    
+
     @Override
     public void initialize() {
     }
 
+    @Override
     public void prepare() {
     }
 
+    @Override
     public ComponentOperator open() {
-        new ActionNoBlock("Profile|Compare Memory Snapshots",null).performMenu(); // NOI18N
-        return null;
+        new ActionNoBlock("Profile|Compare Snapshots", null).performMenu(); // NOI18N
+        return new NbDialogOperator("Select Snapshots to Compare");
     }
-
-    @Override
-    public void close() {
-        closeAllModal();
-    }
-
-    @Override
-    public void shutdown() {
-    }
-
 }

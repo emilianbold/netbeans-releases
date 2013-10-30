@@ -41,62 +41,65 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se.dialogs;
 
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.j2se.setup.J2SESetup;
-
+import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2se.setup.J2SESetup;
 
 /**
  * Test of Server Manager invoked from main menu.
  *
- * @author  mmirilovic@netbeans.org
+ * @author mmirilovic@netbeans.org
  */
 public class ServerManagerTest extends PerformanceTestCase {
 
-   
-    /** Creates a new instance of ServerManager */
+    /**
+     * Creates a new instance of ServerManager
+     *
+     * @param testName test name
+     */
     public ServerManagerTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
-    
-    /** Creates a new instance of ServerManager */
+
+    /**
+     * Creates a new instance of ServerManager
+     *
+     * @param testName test name
+     * @param performanceDataName data name
+     */
     public ServerManagerTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(ServerManagerTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(J2SESetup.class, "testCloseMemoryToolbar")
+                .addTest(ServerManagerTest.class)
+                .suite();
     }
 
     public void testServerManager() {
         doMeasurement();
     }
-    
-    public void prepare(){
-    }
-    
-    public ComponentOperator open(){
-        String menu = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle","Menu/Tools") +
-        "|" +
-        Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.actions.Bundle","CTL_ServerManager");
 
-        MainWindowOperator.getDefault().menuBar().pushMenu(menu);
-        
-        return new NbDialogOperator(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.devmodules.api.Bundle","TXT_ServerManager"));
+    @Override
+    public void prepare() {
     }
-     
+
+    @Override
+    public ComponentOperator open() {
+        String menu = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/Tools")
+                + "|"
+                + Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.actions.Bundle", "CTL_ServerManager");
+        MainWindowOperator.getDefault().menuBar().pushMenuNoBlock(menu);
+        return new NbDialogOperator(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.devmodules.api.Bundle", "TXT_ServerManager"));
+    }
 }
