@@ -176,7 +176,7 @@ public final class KarmaServer {
 
     @CheckForNull
     private String getNetBeansConfigFile(String projectConfigFile) {
-        FileObject nbConfig = FileUtil.getConfigFile("Templates/Karma/karma-netbeans.conf.js"); // NOI18N
+        FileObject nbConfig = FileUtil.getConfigFile("Karma/karma-netbeans.conf.js"); // NOI18N
         assert nbConfig != null;
         try {
             File tmpDir = new File(System.getProperty("java.io.tmpdir"), "netbeans-karma-" + ProjectUtils.getInformation(project).getName()); // NOI18N

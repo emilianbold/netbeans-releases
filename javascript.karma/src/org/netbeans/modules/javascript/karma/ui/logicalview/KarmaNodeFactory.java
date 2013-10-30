@@ -70,6 +70,7 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
@@ -119,13 +120,11 @@ public final class KarmaNodeFactory implements NodeFactory {
 
         @Override
         public void addNotify() {
-            KarmaPreferences.addPreferenceChangeListener(project, this);
+            KarmaPreferences.addPreferenceChangeListener(project, WeakListeners.create(PreferenceChangeListener.class, this, null));
         }
 
         @Override
         public void removeNotify() {
-            KarmaPreferences.removePreferenceChangeListener(project, this);
-            KarmaServers.getInstance().stopServer(project, true);
         }
 
         @Override
