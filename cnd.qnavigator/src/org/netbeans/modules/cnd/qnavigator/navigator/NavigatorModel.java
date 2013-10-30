@@ -49,7 +49,6 @@ import java.awt.event.ActionEvent;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JEditorPane;
 import javax.swing.JMenu;
@@ -69,6 +68,7 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.qnavigator.navigator.CsmFileFilter.SortMode;
 import org.netbeans.modules.cnd.qnavigator.navigator.CsmFileModel.PreBuildModel;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -84,6 +84,7 @@ import org.openide.util.actions.Presenter;
 public class NavigatorModel {
 
     private final DataObject cdo;
+    private final FileObject fo;
     private final NavigatorPanelUI ui;
     private final Action[] actions;
     private final AbstractNode root;
@@ -93,8 +94,9 @@ public class NavigatorModel {
     private final Object lock = new Lock();
     private final CsmFile csmFile;
 
-    public NavigatorModel(DataObject cdo, NavigatorPanelUI ui, NavigatorComponent component, final String mimeType, final CsmFile csmFile) {
+    public NavigatorModel(DataObject cdo, FileObject fo, NavigatorPanelUI ui, NavigatorComponent component, final String mimeType, final CsmFile csmFile) {
         this.cdo = cdo;
+        this.fo = fo;
         this.ui = ui;
         actions = new Action[]{
             new SortByNameAction(),
@@ -173,7 +175,7 @@ public class NavigatorModel {
         } else {
             try {
                 CsmCacheManager.enter();
-                PreBuildModel buildPreModel = fileModel.buildPreModel(csmFile, canceled);
+                PreBuildModel buildPreModel = fileModel.buildPreModel(cdo, fo, csmFile, canceled);
                 if (!canceled.get()) {
                     synchronized(lock) {
                         if (fileModel.buildModel(buildPreModel, csmFile, force)){

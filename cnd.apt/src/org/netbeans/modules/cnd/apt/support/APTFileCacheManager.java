@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.apt.support;
 
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
@@ -112,7 +113,11 @@ public final class APTFileCacheManager {
         ConcurrentMap<State, APTFileCacheEntry> out = ref2fileCache == null ? null : ref2fileCache.get();
         if (out == null) {
             out = new ConcurrentHashMap<State, APTFileCacheEntry>();
-            ref2fileCache = new SoftReference<ConcurrentMap<State, APTFileCacheEntry>>(out);
+            if (APTTraceFlags.USE_SOFT_APT_CACHE) {
+                ref2fileCache = new SoftReference<ConcurrentMap<State, APTFileCacheEntry>>(out);
+            } else {
+                ref2fileCache = new WeakReference<ConcurrentMap<State, APTFileCacheEntry>>(out);
+            }
             Reference<ConcurrentMap<State, APTFileCacheEntry>> prev = file2AptCacheRef.putIfAbsent(file, ref2fileCache);
             if (prev != null) {
                 ConcurrentMap<State, APTFileCacheEntry> prevCache = prev.get();
