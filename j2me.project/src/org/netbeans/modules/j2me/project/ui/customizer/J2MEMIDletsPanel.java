@@ -399,6 +399,7 @@ public class J2MEMIDletsPanel extends javax.swing.JPanel {
 
         private static final long serialVersionUID = -7485135564331430899L;
         private final J2MEProjectProperties uiProperties;
+        private boolean dataDelegatesWereSet = false;
 
         //NOI18N
         public MIDletsTableModel(J2MEProjectProperties uiProperties) {
@@ -487,6 +488,14 @@ public class J2MEMIDletsPanel extends javax.swing.JPanel {
         }
 
         public synchronized Object[] getDataDelegates() {
+            if (!dataDelegatesWereSet) {
+                String[] propertyNames = uiProperties.MIDLETS_PROPERTY_NAMES;
+                String values[] = new String[propertyNames.length];
+                for (int i = 0; i < values.length; i++) {
+                    values[i] = uiProperties.getEvaluator().getProperty(propertyNames[i]);
+                }
+                setDataDelegates(values);
+            }
             return new Object[]{map};
         }
 
@@ -506,6 +515,7 @@ public class J2MEMIDletsPanel extends javax.swing.JPanel {
                 }
             }
             fireTableDataChanged();
+            dataDelegatesWereSet = true;
         }
 
         public void setRow(final int row, final String name, final String clazz, final String icon) {

@@ -268,6 +268,7 @@ public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
         
         private static final long serialVersionUID = -6523408202243150812L;
         private final J2MEProjectProperties uiProperties;
+        private boolean dataDelegatesWereSet = false;
 
         public StorableTableModel(J2MEProjectProperties uiProperties) {
             this.uiProperties = uiProperties;
@@ -316,6 +317,14 @@ public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
         }
         
         public synchronized Object[] getDataDelegates() {
+            if (!dataDelegatesWereSet) {
+                String[] propertyNames = uiProperties.API_PERMISSIONS_PROPERTY_NAMES;
+                String values[] = new String[propertyNames.length];
+                for (int i = 0; i < values.length; i++) {
+                    values[i] = uiProperties.getEvaluator().getProperty(propertyNames[i]);
+                }
+                setDataDelegates(values);
+            }
             updateMapFromItems();
             return new Object[]{map};
         }
@@ -343,6 +352,7 @@ public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
             map = data[0] == null ? new HashMap<String,String>() : (HashMap<String,String>) uiProperties.decode(data[0]);
             updateItemsFromMap();
             fireTableDataChanged();
+            dataDelegatesWereSet = true;
         }
         
         public void updateItemsFromMap() {

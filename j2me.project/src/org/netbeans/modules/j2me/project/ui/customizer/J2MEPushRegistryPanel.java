@@ -398,6 +398,7 @@ public class J2MEPushRegistryPanel extends javax.swing.JPanel {
         
         private static final long serialVersionUID = 920375326055211848L;
         private final J2MEProjectProperties uiProperties;
+        private boolean dataDelegatesWereSet = false;
         
         public StorableTableModel(J2MEProjectProperties uiProperties) {
             this.uiProperties = uiProperties;
@@ -474,6 +475,14 @@ public class J2MEPushRegistryPanel extends javax.swing.JPanel {
         }
         
         public synchronized Object[] getDataDelegates() {
+            if (!dataDelegatesWereSet) {
+                String[] propertyNames = uiProperties.PUSH_REGISTRY_PROPERTY_NAMES;
+                String values[] = new String[propertyNames.length];
+                for (int i = 0; i < values.length; i++) {
+                    values[i] = uiProperties.getEvaluator().getProperty(propertyNames[i]);
+                }
+                setDataDelegates(values);
+            }
             return new Object[]{map};
         }
         
@@ -489,6 +498,7 @@ public class J2MEPushRegistryPanel extends javax.swing.JPanel {
                 }
             }
             fireTableDataChanged();
+            dataDelegatesWereSet = true;
         }
         
         public void setRow(final int row, final String clazz, final String sender, final String string) {

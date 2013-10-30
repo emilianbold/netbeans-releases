@@ -515,6 +515,7 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
 
         private static final Pattern midpPattern = Pattern.compile("MIDP-([1-3])");
         private final J2MEProjectProperties uiProperties;
+        private boolean dataDelegatesWereSet = false;
 
         public StorableTableModel(J2MEProjectProperties uiProperties) {
             this.uiProperties = uiProperties;
@@ -614,6 +615,14 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
         }
         
         public synchronized Object[] getDataDelegates() {
+            if (!dataDelegatesWereSet) {
+                String[] propertyNames = uiProperties.ATTRIBUTES_PROPERTY_NAMES;
+                String values[] = new String[propertyNames.length];
+                for (int i = 0; i < values.length; i++) {
+                    values[i] = uiProperties.getEvaluator().getProperty(propertyNames[i]);
+                }
+                setDataDelegates(values);
+            }
             updateMapsFromItems();
             return new Object[] {othersMap, jadMap, manifestMap};
         }
@@ -661,6 +670,7 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
             manifestMap = data[2] == null ? new HashMap<String,String>() : (HashMap<String,String>) uiProperties.decode(data[2]);
             updateItemsFromMaps();
             fireTableDataChanged();
+            dataDelegatesWereSet = true;
         }
         
         public synchronized void updateItemsFromMaps() {
