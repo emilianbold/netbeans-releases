@@ -41,74 +41,85 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se.dialogs;
 
-import org.netbeans.jellytools.JellyTestCase;
+import javax.swing.JComponent;
+import junit.framework.Test;
+import static org.netbeans.jellytools.JellyTestCase.emptyConfiguration;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.j2se.setup.J2SESetup;
-
 import org.netbeans.jellytools.OptionsOperator;
-import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jellytools.actions.OptionsViewAction;
+import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 
 /**
  * Test of Options.
  *
- * @author  mmirilovic@netbeans.org
+ * @author mmirilovic@netbeans.org
  */
 public class OptionsTest extends PerformanceTestCase {
 
     OptionsOperator options;
-    
 
-    /** Creates a new instance of Options */
+    /**
+     * Creates a new instance of Options
+     *
+     * @param testName test name
+     */
     public OptionsTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN = 2000;
+        WAIT_AFTER_OPEN = 500;
     }
-    
-    /** Creates a new instance of Options */
+
+    /**
+     * Creates a new instance of Options
+     *
+     * @param testName test name
+     * @param performanceDataName data name
+     */
     public OptionsTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN = 2000;
+        WAIT_AFTER_OPEN = 500;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(OptionsTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(J2SESetup.class, "testCloseMemoryToolbar")
+                .addTest(OptionsTest.class)
+                .suite();
     }
 
     public void testOptions() {
         doMeasurement();
     }
-    
-    public void prepare(){
-    }
-    
-    public ComponentOperator open(){
-//        new OptionsViewAction().performMenu();
-//        options = new OptionsOperator();
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock("Tools|Options","|");
-        JellyTestCase.closeAllModal();
-        return new org.netbeans.jellytools.NbDialogOperator("Options");
-//        return options;
-    }
-    /*
+
     @Override
-    public void close(){
-        if(options != null)
-            options.close();
+    public void initialize() {
+        repaintManager().addRegionFilter(new LoggingRepaintManager.RegionFilter() {
+
+            @Override
+            public boolean accept(JComponent c) {
+                return !"javax.swing.JProgressBar".equals(c.getClass().getName());
+            }
+
+            @Override
+            public String getFilterName() {
+                return "Ignore search field cursor";
+            }
+        });
     }
-    */
+
+    @Override
+    public void prepare() {
+    }
+
+    @Override
+    public ComponentOperator open() {
+        new ActionNoBlock("Tools|Options", null).perform();
+        return new NbDialogOperator("Options");
+    }
 }
