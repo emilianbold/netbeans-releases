@@ -91,6 +91,7 @@ public final class KarmaNodeFactory implements NodeFactory {
 
         private final Project project;
         private final ChangeSupport changeSupport = new ChangeSupport(this);
+        private final PreferenceChangeListener preferenceChangeListener = WeakListeners.create(PreferenceChangeListener.class, this, null);
 
 
         KarmaChildrenList(Project project) {
@@ -120,11 +121,12 @@ public final class KarmaNodeFactory implements NodeFactory {
 
         @Override
         public void addNotify() {
-            KarmaPreferences.addPreferenceChangeListener(project, WeakListeners.create(PreferenceChangeListener.class, this, null));
+            KarmaPreferences.addPreferenceChangeListener(project, preferenceChangeListener);
         }
 
         @Override
         public void removeNotify() {
+            KarmaPreferences.removePreferenceChangeListener(project, preferenceChangeListener);
         }
 
         @Override
@@ -356,6 +358,11 @@ public final class KarmaNodeFactory implements NodeFactory {
         @Override
         public HelpCtx getHelpCtx() {
             return null;
+        }
+
+        @Override
+        protected boolean asynchronous() {
+            return false;
         }
 
         @CheckForNull
