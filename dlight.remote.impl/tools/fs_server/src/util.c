@@ -14,6 +14,7 @@
 #include <sys/time.h>
 
 static bool trace_flag = false;
+static FILE *log_file = NULL;
 
 void set_trace(bool on_off) {
     trace_flag= on_off;
@@ -39,6 +40,31 @@ void trace(const char *format, ...) {
         vfprintf(stderr, format, args);
         va_end(args);  
         fflush(stderr);
+    }
+}
+
+void log_print(const char *format, ...) {
+    if (log_file) {
+        va_list args;
+        va_start(args, format);
+        vfprintf(log_file, format, args);
+        va_end(args);  
+        fflush(log_file);
+    }
+}
+
+void log_open(const char* path) {
+    int fd = open(path, O_WRONLY | O_APPEND | O_CREAT, 0600);
+    if (fd == -1) {
+        log_file = NULL;
+    } else {
+        log_file = fdopen(fd, "a");
+    }
+}
+
+void log_close() {    
+    if (log_file) {
+        fclose(log_file);
     }
 }
 
