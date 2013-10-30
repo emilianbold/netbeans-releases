@@ -1,7 +1,10 @@
+(function () {
 $scope = TestContr.$scope;
-with ($scope1) { 
+TestContr
+with ($scope) { 
 val;
 val;
 val;
 val;
-};
+}
+});

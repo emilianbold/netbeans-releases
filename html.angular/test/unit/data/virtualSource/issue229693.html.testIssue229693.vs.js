@@ -1,9 +1,15 @@
+(function () {
 $scope = list.$scope;
-with ($scope1) { 
+list
+with ($scope) { 
 for (var item in items) {
 item.celejmeno();
 }
-$scope = .$scope;
-with ($scope1) { 
-};
-};
+(function () {
+$scope = $scope;
+
+with ($scope) { 
+}
+});
+}
+});

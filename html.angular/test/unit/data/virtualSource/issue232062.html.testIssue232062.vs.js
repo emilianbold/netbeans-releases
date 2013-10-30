@@ -1,4 +1,7 @@
+(function () {
 $scope = Ctrl.$scope;
-with ($scope1) { 
+Ctrl
+with ($scope) { 
 printAttempt.;
-};
+}
+});
