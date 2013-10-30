@@ -271,4 +271,12 @@ public class HintsTest extends PHPHintsTestBase {
         checkHints(new InitializeFieldSuggestion(), "testIssue229522.php", "function __construct($par^am) {");
     }
 
+    public void testIssue237726_01() throws Exception {
+        checkHints(new UnnecessaryClosingDelimiterHint(), "testIssue237726_01.php");
+    }
+
+    public void testIssue237726_02() throws Exception {
+        checkHints(new UnnecessaryClosingDelimiterHint(), "testIssue237726_02.php");
+    }
+
 }

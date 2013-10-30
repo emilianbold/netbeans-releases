@@ -41,20 +41,17 @@
  */
 package org.netbeans.modules.web.jsf.hints;
 
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
-import java.util.Collections;
 import java.util.List;
-import javax.lang.model.element.Element;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.Severity;
+import org.netbeans.spi.java.hints.HintContext;
 
 /**
  *
@@ -62,27 +59,32 @@ import org.netbeans.spi.editor.hints.Severity;
  */
 public class JsfHintsUtils {
 
-//    public static ErrorDescription createProblem(Element subject, CompilationInfo cinfo, String description) {
-//        return createProblem(subject, cinfo, description, Severity.ERROR, Collections.<Fix>emptyList());
-//    }
-//
-//    public static ErrorDescription createProblem(Element subject, CompilationInfo cinfo, String description, Severity severity) {
-//        return createProblem(subject, cinfo, description, severity, Collections.<Fix>emptyList());
-//    }
-//
-//    public static ErrorDescription createProblem(Element subject, CompilationInfo cinfo, String description, Severity severity, Fix fix) {
-//        return createProblem(subject, cinfo, description, severity, Collections.singletonList(fix));
-//    }
-//
-//    public static ErrorDescription createProblem(Element subject, CompilationInfo cinfo, String description, Fix fix) {
-//        return createProblem(subject, cinfo, description, Severity.ERROR, Collections.singletonList(fix));
-//    }
-//
-//    public static ErrorDescription createProblem(Element subject, CompilationInfo cinfo, String description, Severity severity, List<Fix> fixes) {
-//        // by default place error annotation on the element being checked
-//        Tree elementTree = cinfo.getTrees().getTree(subject);
-//        return createProblem(elementTree, cinfo, description, severity, fixes);
-//    }
+    private static final Logger LOG = Logger.getLogger(JsfHintsUtils.class.getName());
+    private static final String CACHED_CONTEXT = "cached-jsfProblemContext"; //NOI18N
+
+    /**
+     * Gets problem context used by standard JSF hints.
+     * Uses cached value if found, otherwise creates a new one which stores into the CompilationInfo.
+     *
+     * @param context Hints API context
+     * @return {@code JsfHintsContext}
+     */
+    public static JsfHintsContext getOrCacheContext(HintContext context) {
+        Object cached = context.getInfo().getCachedValue(CACHED_CONTEXT);
+        if (cached == null) {
+            LOG.log(Level.FINEST, "HintContext doesn't contain cached JsfHintsContext which is going to be created.");
+            JsfHintsContext newContext = createJsfHintsContext(context);
+            context.getInfo().putCachedValue(CACHED_CONTEXT, newContext, CompilationInfo.CacheClearPolicy.ON_SIGNATURE_CHANGE);
+            return newContext;
+        } else {
+            LOG.log(Level.FINEST, "JsfHintsContext cached value used.");
+            return (JsfHintsContext) cached;
+        }
+    }
+
+    private static JsfHintsContext createJsfHintsContext(HintContext context) {
+        return new JsfHintsContext(context.getInfo().getFileObject(), context.getInfo());
+    }
 
     public static ErrorDescription createProblem(Tree tree, CompilationInfo cinfo, String description, Severity severity, List<Fix> fixes) {
         TextSpan underlineSpan = getUnderlineSpan(cinfo, tree);
