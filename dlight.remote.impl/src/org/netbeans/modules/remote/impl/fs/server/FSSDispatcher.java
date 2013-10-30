@@ -92,7 +92,7 @@ import org.openide.util.RequestProcessor;
     // Actually this RP should have only 2 tasks: one reads error, another stdout;
     // but in the case of, say, connection failure and reconnect, old task can still be alive,
     // while we need to post new one.
-    private final RequestProcessor RP = new RequestProcessor(null, 20);
+    private final RequestProcessor RP = new RequestProcessor(getClass().getSimpleName(), 20);
     
     private FsServer server;
     private final Object serverLock = new Object();
@@ -116,18 +116,25 @@ import org.openide.util.RequestProcessor;
     }
 
     void connected() {
-        try {
-            getOrCreateServer();
-        } catch (IOException ex) {
-            ex.printStackTrace(System.err); // TODO: error processing!!!
-        }
+        RP.post(new ConnectTask());
     }
 
-    private class MainLoop implements Runnable {
-
-        public MainLoop() {
+    private class ConnectTask implements Runnable {
+        @Override
+        public void run() {
+            String oldThreadName = Thread.currentThread().getName();
+            Thread.currentThread().setName("fs_server on-connect initialization for " + env); // NOI18N
+            try {
+                getOrCreateServer();
+            } catch (IOException ioe) {
+                ioe.printStackTrace(System.err);
+            } finally {
+                Thread.currentThread().setName(oldThreadName);
+            }
         }
-        
+    }
+    
+    private class MainLoop implements Runnable {
         @Override
         public void run() {
             String oldThreadName = Thread.currentThread().getName();
@@ -209,6 +216,11 @@ import org.openide.util.RequestProcessor;
     
     private FsServer getOrCreateServer() throws IOException {        
         synchronized (serverLock) {
+            if (server != null) {
+                if (!ProcessUtils.isAlive(server.getProcess())) {
+                    server = null;
+                }
+            }
             if (server == null) {
                 if (!ConnectionManager.getInstance().isConnectedTo(env)) {
                     throw new ConnectException();
