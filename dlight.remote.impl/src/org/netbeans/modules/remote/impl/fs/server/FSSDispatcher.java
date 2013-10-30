@@ -188,12 +188,16 @@ import org.openide.util.RequestProcessor;
             responses.put(request.getId(), response);
         }
         FsServer srv = getOrCreateServer();
-        srv.getWriter().printf("%c %d %d %s\n", request.getKind().getChar(), 
-                request.getId(), request.getPath().length(), request.getPath());
-        srv.getWriter().flush();
+        sendRequest(srv.getWriter(), request);
         return response;
     }
     
+    /*package*/ static void sendRequest(PrintWriter writer, FSSRequest request) {
+        writer.printf("%c %d %d %s\n", request.getKind().getChar(), 
+                request.getId(), request.getPath().length(), request.getPath());
+        writer.flush();        
+    }
+
     private FsServer getServer() {        
         synchronized (serverLock) {
             return server;
