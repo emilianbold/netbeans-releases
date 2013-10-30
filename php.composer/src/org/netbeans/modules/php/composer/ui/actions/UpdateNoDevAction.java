@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,32 +37,29 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.jsf.hints;
+package org.netbeans.modules.php.composer.ui.actions;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import org.netbeans.modules.web.jsf.hints.rules.FlowScopedBeanWithoutCdi;
-import org.netbeans.modules.web.jsf.hints.rules.JavaxFacesBeanIsGonnaBeDeprecated;
-import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.composer.commands.Composer;
+import org.openide.util.NbBundle;
 
-/**
- *
- * @author Martin Fousek <marfous@netbeans.org>
- */
-class JsfHintsRegistry {
+public class UpdateNoDevAction extends BaseComposerAction {
 
-    private static final Collection<? extends JsfHintsRule> RULES = Arrays.asList(
-            new FlowScopedBeanWithoutCdi(),
-            new JavaxFacesBeanIsGonnaBeDeprecated());
+    private static final long serialVersionUID = -9874545677877L;
 
-    public static Collection<ErrorDescription> check(JsfHintsContext ctx) {
-        Collection<ErrorDescription> hints = new ArrayList<ErrorDescription>();
-        for (JsfHintsRule rule : RULES) {
-            hints.addAll(rule.check(ctx));
-        }
-        return hints;
+
+    @NbBundle.Messages("UpdateNoDevAction.name=Update (no-dev)")
+    @Override
+    protected String getName() {
+        return Bundle.UpdateNoDevAction_name();
     }
+
+    @Override
+    protected void runCommand(PhpModule phpModule) throws InvalidPhpExecutableException {
+        Composer.getDefault().updateNoDev(phpModule);
+    }
+
 }

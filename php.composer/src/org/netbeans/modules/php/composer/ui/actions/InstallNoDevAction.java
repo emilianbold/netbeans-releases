@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,47 +37,29 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.jsf.hints.rules;
+package org.netbeans.modules.php.composer.ui.actions;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.web.beans.CdiUtil;
-import org.netbeans.spi.editor.hints.ChangeInfo;
-import org.netbeans.spi.editor.hints.Fix;
-import org.openide.util.NbBundle.Messages;
+import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.composer.commands.Composer;
+import org.openide.util.NbBundle;
 
-/**
- * Fix for enabling CDI in the project.
- *
- * @author Martin Fousek <marfous@netbeans.org>
- */
-public class FixCdiAvailability implements Fix {
+public class InstallNoDevAction extends BaseComposerAction {
 
-    private final Project project;
+    private static final long serialVersionUID = 8974514465465464L;
 
-    public FixCdiAvailability(Project project) {
-        this.project = project;
-    }
 
-    @Messages({
-        "# {0} - project display name",
-        "FixCdiAvailability.lbl.enable.cdi=Enable CDI in project {0}"
-    })
+    @NbBundle.Messages("InstallNoDevAction.name=Install (no-dev)")
     @Override
-    public String getText() {
-        ProjectInformation information = ProjectUtils.getInformation(project);
-        return Bundle.FixCdiAvailability_lbl_enable_cdi(information.getDisplayName());
+    protected String getName() {
+        return Bundle.InstallNoDevAction_name();
     }
 
     @Override
-    public ChangeInfo implement() throws Exception {
-        CdiUtil cdiUtil = project.getLookup().lookup(CdiUtil.class);
-        if (cdiUtil != null) {
-            cdiUtil.enableCdi();
-        }
-        return null;
+    protected void runCommand(PhpModule phpModule) throws InvalidPhpExecutableException {
+        Composer.getDefault().installNoDev(phpModule);
     }
+
 }
