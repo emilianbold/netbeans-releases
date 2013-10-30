@@ -89,24 +89,6 @@ public class BugtrackingUtil {
         DialogDisplayer.getDefault().notifyLater(nd);
     }          
         
-    private static boolean show(JPanel panel, String title, String okName, HelpCtx helpCtx) {
-        JButton ok = new JButton(okName);
-        ok.getAccessibleContext().setAccessibleDescription(ok.getText());
-        JButton cancel = new JButton(NbBundle.getMessage(BugtrackingUtil.class, "LBL_Cancel")); // NOI18N
-        cancel.getAccessibleContext().setAccessibleDescription(cancel.getText());
-        final DialogDescriptor dd =
-            new DialogDescriptor(
-                    panel,
-                    title,
-                    true,
-                    new Object[]{ok, cancel},
-                    ok,
-                    DialogDescriptor.DEFAULT_ALIGN,
-                    helpCtx,
-                    null);
-        return DialogDisplayer.getDefault().notify(dd) == ok;
-    }
-    
     public static RepositoryImpl createRepository() {
         return createRepository(true);
     }
@@ -263,9 +245,22 @@ public class BugtrackingUtil {
 
     }
     
-    // XXX NOI
     public static boolean show(JPanel panel, String title, String okName) {
-        return show(panel, title, okName, new HelpCtx(panel.getClass()));
+        JButton ok = new JButton(okName);
+        ok.getAccessibleContext().setAccessibleDescription(ok.getText());
+        JButton cancel = new JButton(NbBundle.getMessage(BugtrackingUtil.class, "LBL_Cancel")); // NOI18N
+        cancel.getAccessibleContext().setAccessibleDescription(cancel.getText());
+        final DialogDescriptor dd =
+            new DialogDescriptor(
+                    panel,
+                    title,
+                    true,
+                    new Object[]{ok, cancel},
+                    ok,
+                    DialogDescriptor.DEFAULT_ALIGN,
+                    new HelpCtx(panel.getClass()),
+                    null);
+        return DialogDisplayer.getDefault().notify(dd) == ok;
     }
-    
+
 }
