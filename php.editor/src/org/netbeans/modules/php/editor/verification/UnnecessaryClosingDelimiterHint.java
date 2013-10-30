@@ -96,15 +96,18 @@ public class UnnecessaryClosingDelimiterHint extends HintRule {
             Token<PHPTokenId> token = ts.token();
             if (token != null) {
                 PHPTokenId id = token.id();
-                if (id == PHPTokenId.T_OPEN_TAG_WITH_ECHO) {
-                    inOpenTagWithEcho = true;
-                } else if (id == PHPTokenId.PHP_CLOSETAG) {
-                    result = new CloseTagWrapperImpl(ts.offset(), inOpenTagWithEcho);
-                    inOpenTagWithEcho = false;
-                } else if (id == PHPTokenId.T_INLINE_HTML) {
-                    result.setHtmlPart(token);
-                } else {
-                    result = CloseTagWrapper.NONE;
+                switch (id) {
+                    case T_OPEN_TAG_WITH_ECHO:
+                        inOpenTagWithEcho = true;
+                        break;
+                    case PHP_CLOSETAG:
+                        result = new CloseTagWrapperImpl(ts.offset(), inOpenTagWithEcho);
+                        break;
+                    case T_INLINE_HTML:
+                        result.setHtmlPart(token);
+                        break;
+                    default:
+                        result = CloseTagWrapper.NONE;
                 }
             }
         }
