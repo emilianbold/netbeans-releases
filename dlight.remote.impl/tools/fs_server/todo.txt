@@ -12,6 +12,11 @@ High
 
 - it seems access rights aren't passed properly. Check this.
 
+l 44 /home/vkvashin/src/netbeans/pythia-platform/
+fs_server[5036]: unexpected numeric value: '/home/vkvashin/src/netbeans/pythia-platform/
+Segmentation fault (core dumped)
+
+fs_server[23925]: error opening /home/vkvashin/.netbeans/remotefs/dirtab for writing: File exists
 
 Medium
 ------
@@ -39,8 +44,6 @@ otherwise we can get an issue with different types of stat structure on differen
 
 - check for leaks
 
-- make sure there are no another instance who uses the same cache
-
 - handshake 1-st message, version...
 
 - when reading dir, consider simultaneous adding/removing files to this dir
@@ -54,6 +57,8 @@ That's correct. But the processing should be smarter on client side (now it will
 
 - escape '\n' in file names
 
+- support stat
+
 Low
 ---
 
@@ -62,10 +67,6 @@ Low
 - it would be fine to be able to quit accurately (process all request first)?
 
 - consider anti-loop
-
-- check access rights for  ~/.netbeans/remotefs
-
-- chmod 700 ~/.netbeans/remotefs
 
 - perform maximum checks on startup, report - allow client report and/or switch to a different implementation
 
