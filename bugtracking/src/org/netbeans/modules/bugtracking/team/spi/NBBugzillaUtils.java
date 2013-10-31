@@ -40,12 +40,13 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.util;
+package org.netbeans.modules.bugtracking.team.spi;
 
 import java.util.regex.Pattern;
 import org.netbeans.api.keyring.Keyring;
 import org.netbeans.modules.bugtracking.BugtrackingConfig;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.util.NbBundle;
 
 /**

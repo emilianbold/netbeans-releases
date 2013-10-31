@@ -41,71 +41,77 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se.dialogs;
 
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.j2se.setup.J2SESetup;
-
+import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2se.setup.J2SESetup;
 
 /**
  * Test of Refactor | Move Class Dialog
  *
- * @author  mmirilovic@netbeans.org
+ * @author mmirilovic@netbeans.org
  */
 public class RefactorMoveClassDialogTest extends PerformanceTestCase {
 
     private static Node testNode;
     private String TITLE, ACTION;
-    
-    /** Creates a new instance of RefactorRenameDialog */
+
+    /**
+     * Creates a new instance of RefactorRenameDialog
+     *
+     * @param testName test name
+     */
     public RefactorMoveClassDialogTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN=2000;
-    }
-    
-    /** Creates a new instance of RefactorRenameDialog */
-    public RefactorMoveClassDialogTest(String testName, String performanceDataName) {
-        super(testName,performanceDataName);
-        expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN=2000;
+        WAIT_AFTER_OPEN = 2000;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(RefactorMoveClassDialogTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    /**
+     * Creates a new instance of RefactorRenameDialog
+     *
+     * @param testName test name
+     * @param performanceDataName data name
+     */
+    public RefactorMoveClassDialogTest(String testName, String performanceDataName) {
+        super(testName, performanceDataName);
+        expectedTime = WINDOW_OPEN;
+        WAIT_AFTER_OPEN = 2000;
+    }
+
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(J2SESetup.class, "testCloseMemoryToolbar", "testOpenDataProject")
+                .addTest(RefactorMoveClassDialogTest.class)
+                .suite();
     }
 
     public void testRefactorMoveClassDialog() {
         doMeasurement();
     }
-    
+
     @Override
     public void initialize() {
         String BUNDLE = "org.netbeans.modules.refactoring.java.ui.Bundle";
-        TITLE = Bundle.getStringTrimmed(BUNDLE,"LBL_MoveClass");  // "Move Class"
+        TITLE = Bundle.getStringTrimmed(BUNDLE, "LBL_MoveClass");  // "Move Class"
         BUNDLE = "org.netbeans.modules.refactoring.spi.impl.Bundle";
-        ACTION = Bundle.getStringTrimmed(BUNDLE,"Menu/Refactoring") + "|" + Bundle.getStringTrimmed(BUNDLE,"LBL_MoveAction"); // "Refactor|Move Class..."
-        testNode = new Node(new SourcePackagesNode("PerformanceTestData"),"org.netbeans.test.performance|Main20kB.java");
+        ACTION = Bundle.getStringTrimmed(BUNDLE, "Menu/Refactoring") + "|" + Bundle.getStringTrimmed(BUNDLE, "LBL_MoveAction"); // "Refactor|Move Class..."
+        testNode = new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|Main20kB.java");
     }
-    
+
+    @Override
     public void prepare() {
     }
 
+    @Override
     public ComponentOperator open() {
-        testNode.performPopupAction(ACTION);
+        testNode.performPopupActionNoBlock(ACTION);
         return new NbDialogOperator(TITLE);
     }
-    
 }

@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.util;
+package org.netbeans.modules.bugtracking.ui.repository;
 
 import javax.swing.AbstractListModel;
 import javax.swing.MutableComboBoxModel;

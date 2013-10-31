@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.util;
+package org.netbeans.modules.bugtracking.ui.repository;
 
 import org.netbeans.modules.bugtracking.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
@@ -74,6 +74,8 @@ import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.api.IssueQuickSearch.RepositoryFilter;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils;
 
 /**
  * Loads the list of repositories and determines the default one off the AWT

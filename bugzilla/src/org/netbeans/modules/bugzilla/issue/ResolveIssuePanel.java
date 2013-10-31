@@ -49,7 +49,8 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.api.IssueQuickSearch;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
@@ -197,13 +198,13 @@ public class ResolveIssuePanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void duplicateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_duplicateButtonActionPerformed
-        String newIssueID = BugtrackingUtil.selectIssue(
+        Issue i = IssueQuickSearch.selectIssue(
                 NbBundle.getMessage(IssuePanel.class, "IssuePanel.duplicateButton.message"), //NOI18N
                 BugzillaUtil.getRepository(issue.getRepository()),
                 this,
                 new HelpCtx("org.netbeans.modules.bugzilla.duplicateChooser")); // NOI18N
-        if (newIssueID != null) {
-            duplicateField.setText(newIssueID);
+        if (i != null) {
+            duplicateField.setText(i.getID());
         }
 }//GEN-LAST:event_duplicateButtonActionPerformed
 

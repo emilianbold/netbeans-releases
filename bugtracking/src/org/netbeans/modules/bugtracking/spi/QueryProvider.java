@@ -61,11 +61,6 @@ public interface QueryProvider<Q, I> {
     public final static String EVENT_QUERY_REFRESHED = "bugtracking.query.refreshed";   // NOI18N
 
     /**
-     * Fired when a query was removed.
-     */
-    public final static String EVENT_QUERY_REMOVED = "bugtracking.query.removed";     // NOI18N
-
-    /**
      * Returns the queries display name
      * @param q
      * @return

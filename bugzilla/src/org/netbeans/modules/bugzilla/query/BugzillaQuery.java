@@ -116,10 +116,6 @@ public class BugzillaQuery {
         support.removePropertyChangeListener(listener);
     }
 
-    private void fireQueryRemoved() {
-        support.firePropertyChange(QueryProvider.EVENT_QUERY_REMOVED, null, null);
-    }
-
     private void fireQueryIssuesChanged() {
         support.firePropertyChange(QueryProvider.EVENT_QUERY_REFRESHED, null, null);
     }  
@@ -264,7 +260,6 @@ public class BugzillaQuery {
 
     public void remove() {
         repository.removeQuery(this);
-        fireQueryRemoved();
     }
 
     public void setOwnerInfo(OwnerInfo info) {

@@ -41,66 +41,65 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se.dialogs;
 
+import junit.framework.Test;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.j2se.setup.J2SESetup;
-
-import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
-
 
 /**
  * Test of Open File Dialog
  *
- * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
+ * @author anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
 public class OpenFileDialogTest extends PerformanceTestCase {
 
-    private String MENU;
-    
-
-    /** Creates a new instance of OpenFileDialog */
+    /**
+     * Creates a new instance of OpenFileDialog
+     *
+     * @param testName test name
+     */
     public OpenFileDialogTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
-    
-    /** Creates a new instance of OpenFileDialog */
+
+    /**
+     * Creates a new instance of OpenFileDialog
+     *
+     * @param testName test name
+     * @param performanceDataName data name
+     */
     public OpenFileDialogTest(String testName, String performanceDataName) {
-        super(testName,performanceDataName);
+        super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(OpenFileDialogTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(J2SESetup.class, "testCloseMemoryToolbar")
+                .addTest(OpenFileDialogTest.class)
+                .suite();
     }
 
     public void testOpenFileDialog() {
         doMeasurement();
     }
-    
+
+    @Override
     public void prepare() {
     }
-    
+
     @Override
     public void initialize() {
-        MENU = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle","Menu/File") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.openfile.Bundle","LBL_openFile");
     }
-    
+
+    @Override
     public ComponentOperator open() {
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");
+        new ActionNoBlock("File|Open File", null).perform();
         return new NbDialogOperator("Open");
     }
-    
 }

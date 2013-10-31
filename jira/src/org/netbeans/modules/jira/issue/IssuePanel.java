@@ -132,11 +132,10 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.issuetable.TableSorter;
 import org.netbeans.modules.bugtracking.team.spi.RepositoryUser;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.util.LinkButton;
-import org.netbeans.modules.bugtracking.util.RepositoryUserRenderer;
+import org.netbeans.modules.bugtracking.team.spi.RepositoryUserRenderer;
 import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.issue.NbJiraIssue.IssueField;
@@ -152,6 +151,7 @@ import org.netbeans.modules.jira.util.TypeRenderer;
 import org.netbeans.modules.mylyn.util.AbstractNbTaskWrapper;
 import org.netbeans.modules.spellchecker.api.Spellchecker;
 import org.openide.awt.HtmlBrowser;
+import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -281,10 +281,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     unsavedFields.clear();
                 }
                 if (enableMap.isEmpty()) {
-                    btnSaveChanges.setEnabled(isDirty);
                     cancelButton.setEnabled(isModified);
                 } else {
-                    enableMap.put(btnSaveChanges, isDirty);
                     enableMap.put(cancelButton, isModified);
                 }
                 
@@ -1500,7 +1498,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         reporterStatusLabel = new javax.swing.JLabel();
         assigneeStatusLabel = new javax.swing.JLabel();
         issueLinksLabel = new javax.swing.JLabel();
-        btnSaveChanges = new javax.swing.JButton();
         btnDeleteTask = new javax.swing.JButton();
         projectWarning = new javax.swing.JLabel();
         issueTypeWarning = new javax.swing.JLabel();
@@ -1799,15 +1796,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
         issueLinksLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.issueLinksLabel.text")); // NOI18N
 
-        btnSaveChanges.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.btnSaveChanges.text")); // NOI18N
-        btnSaveChanges.setToolTipText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.btnSaveChanges.TTtext")); // NOI18N
-        btnSaveChanges.setEnabled(false);
-        btnSaveChanges.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnSaveChangesActionPerformed(evt);
-            }
-        });
-
         btnDeleteTask.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.btnDeleteTask.text")); // NOI18N
         btnDeleteTask.setToolTipText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.btnDeleteTask.TTtext")); // NOI18N
         btnDeleteTask.addActionListener(new java.awt.event.ActionListener() {
@@ -1930,16 +1918,12 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(summaryWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(environmentWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(addCommentWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(originalEstimateNewWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                        .addGap(5, 5, 5))
-                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                        .addComponent(attachmentsWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(5, 5, 5)))
+                                    .addComponent(summaryWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(environmentWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(addCommentWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(originalEstimateNewWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(attachmentsWarning, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(5, 5, 5)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(originalEstimateLabelNew, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .addComponent(addCommentLabel)
@@ -1965,8 +1949,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                                     .addComponent(originalEstimateFieldNew, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addGroup(layout.createSequentialGroup()
                                         .addComponent(submitButton)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(btnSaveChanges)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(cancelButton)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -2114,7 +2096,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                     .addComponent(submitButton)
                                     .addComponent(cancelButton)
-                                    .addComponent(btnSaveChanges)
                                     .addComponent(btnDeleteTask)))
                             .addComponent(originalEstimateNewWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -2285,7 +2266,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                         public void run() {
                             unsavedFields.clear();
                             enableComponents(true);
-                            btnSaveChanges.setEnabled(!fCleared);
                             cancelButton.setEnabled(!fCleared);                            
                             skipReload = false;
                             reloadForm(true);
@@ -2392,7 +2372,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private void resolveIssueButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resolveIssueButtonActionPerformed
         ResolveIssuePanel panel = new ResolveIssuePanel(issue);
         String title = NbBundle.getMessage(IssuePanel.class, "IssuePanel.resolveIssueButton.text"); // NOI18N
-        if (BugtrackingUtil.show(panel, title, title)) {
+        if (JiraUtils.show(panel, title, title, new HelpCtx(panel.getClass()))) {
             String pattern = NbBundle.getMessage(IssuePanel.class, "IssuePanel.resolveIssueMessage"); // NOI18N
             String message = MessageFormat.format(pattern, issue.getKey());
             final Resolution resolution = panel.getSelectedResolution();
@@ -2413,7 +2393,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         final Resolution newResolution;
         if ((resolution == null) || resolution.trim().equals("")) { // NOI18N
             String title = NbBundle.getMessage(IssuePanel.class, "IssuePanel.closeIssueButton.text"); // NOI18N
-            if (BugtrackingUtil.show(panel, title, title)) {
+            if (JiraUtils.show(panel, title, title, new HelpCtx(panel.getClass()))) {
                 newResolution = panel.getSelectedResolution();
             } else {
                 newResolution = null;
@@ -2505,10 +2485,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         }
     }//GEN-LAST:event_showInBrowserButtonActionPerformed
 
-    private void btnSaveChangesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveChangesActionPerformed
-        saveChanges();
-    }//GEN-LAST:event_btnSaveChangesActionPerformed
-
     @NbBundle.Messages({
         "LBL_IssuePanel.deleteTask.title=Delete New Task?",
         "MSG_IssuePanel.deleteTask.message=Do you want to delete the new task permanently?"
@@ -2551,7 +2527,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private javax.swing.JLabel attachmentLabel;
     private javax.swing.JLabel attachmentsWarning;
     private javax.swing.JButton btnDeleteTask;
-    private javax.swing.JButton btnSaveChanges;
     private javax.swing.JButton cancelButton;
     private org.netbeans.modules.bugtracking.util.LinkButton closeIssueButton;
     private javax.swing.JLabel componentLabel;
@@ -2739,7 +2714,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                         public void run() {
                             unsavedFields.clear();
                             enableComponents(true);
-                            btnSaveChanges.setEnabled(!retval.get());
                             updateFieldStatuses();
                             skipReload = false;
                         }
