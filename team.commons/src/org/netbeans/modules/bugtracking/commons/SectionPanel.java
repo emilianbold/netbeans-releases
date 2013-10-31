@@ -128,7 +128,7 @@ public final class SectionPanel extends javax.swing.JPanel {
         dummyContentPanel.setLayout(dummyContentPanelLayout);
         dummyContentPanelLayout.setHorizontalGroup(
             dummyContentPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 388, Short.MAX_VALUE)
+            .addGap(0, 371, Short.MAX_VALUE)
         );
         dummyContentPanelLayout.setVerticalGroup(
             dummyContentPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
