@@ -39,42 +39,44 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.angular;
+package org.netbeans.modules.html.angular.model;
 
-import java.io.File;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.javascript2.editor.JsCodeCompletionBase;
-import static org.netbeans.modules.javascript2.editor.JsTestBase.JS_SOURCE_ID;
-import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.javascript2.editor.model.JsArray;
+import org.netbeans.modules.javascript2.editor.model.JsElement;
+import org.netbeans.modules.javascript2.editor.model.JsObject;
 
 /**
  *
  * @author Petr Pisl
  */
-public class AngularCodeCompletionTest extends JsCodeCompletionBase {
-
-    public AngularCodeCompletionTest(String testName) {
-        super(testName);
-    }
+public class ModelUtils {
+    // TODO this class shouldnot be there. The model utils should be a part
+    // of the editor API. This is copy paste from ModelUtils
     
-    public void testControllersProperty_01() throws Exception {
-        // TODO it works in ide, not in test now
-//        checkCompletion("completion/simpleController/index.html", "                    {{or^}}", false);
-    }
-    
-    @Override
-    protected Map<String, ClassPath> createClassPathsForTest() {
-        return Collections.singletonMap(
-            JS_SOURCE_ID,
-            ClassPathSupport.createClassPath(new FileObject[] {
-                FileUtil.toFileObject(new File(getDataDir(), "/completion/simpleController"))})
-        );
+    public static JsObject findJsObject(JsObject object, int offset) {
+        JsObject jsObject = object;
+        JsObject result = null;
+        JsObject tmpObject = null;
+        if (jsObject.getOffsetRange().containsInclusive(offset)) {
+            result = jsObject;
+            for (JsObject property : jsObject.getProperties().values()) {
+                JsElement.Kind kind = property.getJSKind();
+                if (kind == JsElement.Kind.OBJECT || kind == JsElement.Kind.ANONYMOUS_OBJECT || kind == JsElement.Kind.OBJECT_LITERAL
+                        || kind == JsElement.Kind.FUNCTION || kind == JsElement.Kind.METHOD || kind == JsElement.Kind.CONSTRUCTOR
+                        || kind == JsElement.Kind.WITH_OBJECT) {
+                    tmpObject = findJsObject(property, offset);
+                }
+                if (tmpObject != null) {
+                    if (tmpObject instanceof JsArray) {
+                        tmpObject = null;
+                        result = tmpObject;
+                    } else {
+                        result = tmpObject;
+                        break;
+                    }
+                }
+            }
+        }
+        return result;
     }
 }
