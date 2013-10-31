@@ -45,9 +45,11 @@ package org.netbeans.modules.debugger.jpda;
 
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.Location;
+import com.sun.jdi.ReferenceType;
 import com.sun.jdi.StackFrame;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -58,12 +60,14 @@ import org.netbeans.spi.debugger.ContextProvider;
 
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.Field;
+import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.openide.ErrorManager;
@@ -159,42 +163,95 @@ public class SourcePath {
         return url;
     }
     
+    public String getURL(JPDAClassType clazz, String stratum) {
+        SourcePathProvider context = getContext();
+        try {
+            String url = (String) context.getClass().
+                    getMethod("getURL", JPDAClassType.class, String.class).
+                    invoke(context, clazz, stratum);
+            if (url != null) {
+                try {
+                    new java.net.URL(url);
+                } catch (java.net.MalformedURLException muex) {
+                    Logger.getLogger(SourcePath.class.getName()).log(Level.WARNING,
+                            "Malformed URL '"+url+"' produced by "+getContext (), muex);
+                    return null;
+                }
+                return url;
+            }
+        } catch (NoSuchMethodException ex) {
+        } catch (SecurityException ex) {
+        } catch (IllegalAccessException ex) {
+        } catch (IllegalArgumentException ex) {
+        } catch (InvocationTargetException ex) {
+        }
+        String typePath = EditorContextBridge.getRelativePath (clazz.getName());
+        return getURL(typePath, true);
+    }
+    
+    public String getURL (
+        CallStackFrame csf,
+        String stratumn
+    ) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, InvalidStackFrameExceptionWrapper, ObjectCollectedExceptionWrapper {
+        return getURL(StackFrameWrapper.location(((CallStackFrameImpl) csf).getStackFrame()), stratumn);
+    }
+    
     public String getURL (
         StackFrame sf,
         String stratumn
     ) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, InvalidStackFrameExceptionWrapper, ObjectCollectedExceptionWrapper {
-        try {
-            return getURL (
-                convertSlash(LocationWrapper.sourcePath(StackFrameWrapper.location(sf), stratumn)),
-                true
-            );
-        } catch (AbsentInformationException e) {
-            return getURL (
-                convertClassNameToRelativePath (
-                    ReferenceTypeWrapper.name(LocationWrapper.declaringType(StackFrameWrapper.location(sf)))
-                ),
-                true
-            );
-        }
+        return getURL(StackFrameWrapper.location(sf), stratumn);
     }
     
     public String getURL (
         Location loc,
         String stratumn
     ) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper {
-        try {
-            return getURL (
-                convertSlash(LocationWrapper.sourcePath(loc, stratumn)),
-                true
-            );
-        } catch (AbsentInformationException e) {
-            return getURL (
-                convertClassNameToRelativePath (
-                    ReferenceTypeWrapper.name(LocationWrapper.declaringType(loc))
-                ),
-                true
-            );
+        ReferenceType declaringType = LocationWrapper.declaringType(loc);
+        JPDAClassType classType = ((JPDADebuggerImpl) debugger).getClassType(declaringType);
+        return getURL(classType, loc, stratumn);
+    }
+    
+    private String getURL (
+        JPDAClassType classType,
+        Location loc,
+        String stratumn
+    ) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper {
+        if (classType != null) {
+            SourcePathProvider context = getContext();
+            try {
+                String url = (String) context.getClass().
+                        getMethod("getURL", JPDAClassType.class, String.class).
+                        invoke(context, classType, stratumn);
+                if (url != null) {
+                    try {
+                        new java.net.URL(url);
+                        return url;
+                    } catch (java.net.MalformedURLException muex) {
+                        Logger.getLogger(SourcePath.class.getName()).log(Level.WARNING,
+                                "Malformed URL '"+url+"' produced by "+getContext (), muex);
+                    }
+                }
+            } catch (NoSuchMethodException ex) {
+            } catch (SecurityException ex) {
+            } catch (IllegalAccessException ex) {
+            } catch (IllegalArgumentException ex) {
+            } catch (InvocationTargetException ex) {
+            }
         }
+        String sourcePath;
+        if (loc == null) {
+            sourcePath = EditorContextBridge.getRelativePath (classType.getName());
+        } else {
+            try {
+                sourcePath = convertSlash(LocationWrapper.sourcePath(loc, stratumn));
+            } catch (AbsentInformationException e) {
+                sourcePath = convertClassNameToRelativePath (
+                                 ReferenceTypeWrapper.name(LocationWrapper.declaringType(loc))
+                             );
+            }
+        }
+        return getURL(sourcePath, true);
     }
     
     /**
@@ -312,6 +369,34 @@ public class SourcePath {
                 }
             }
             return p1;
+        }
+        
+        public String getURL(JPDAClassType clazz, String stratum) {
+            try {
+                java.lang.reflect.Method getURLMethod = cp1.getClass().getMethod("getURL", JPDAClassType.class, String.class); // NOI18N
+                String url = (String) getURLMethod.invoke(cp1, clazz, stratum);
+                if (url != null) {
+                    return url;
+                }
+            } catch (IllegalAccessException ex) {
+            } catch (IllegalArgumentException ex) {
+            } catch (NoSuchMethodException ex) {
+            } catch (SecurityException ex) {
+            } catch (InvocationTargetException ex) {
+            }
+            try {
+                java.lang.reflect.Method getURLMethod = cp2.getClass().getMethod("getURL", JPDAClassType.class, String.class); // NOI18N
+                String url = (String) getURLMethod.invoke(cp2, clazz, stratum);
+                if (url != null) {
+                    return url;
+                }
+            } catch (IllegalAccessException ex) {
+            } catch (IllegalArgumentException ex) {
+            } catch (NoSuchMethodException ex) {
+            } catch (SecurityException ex) {
+            } catch (InvocationTargetException ex) {
+            }
+            return null;
         }
 
         public String getRelativePath (

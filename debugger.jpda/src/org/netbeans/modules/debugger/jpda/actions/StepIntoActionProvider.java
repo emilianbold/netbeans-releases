@@ -57,6 +57,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.locks.Lock;
 import org.netbeans.api.debugger.ActionsManager;
+import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
@@ -232,19 +233,34 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider {
 
     private boolean retievePosition(String[] methodPtr, String[] urlPtr, int[] linePtr) {
         JPDAThread t = debugger.getCurrentThread();
+        CallStackFrame[] topFramePtr;
+        try {
+            topFramePtr = t.getCallStack(0, 1);
+        } catch (AbsentInformationException ex) {
+            return false;
+        }
+        if (topFramePtr.length < 1) {
+            return false;
+        }
+        CallStackFrame csf = (CallStackFrame) topFramePtr[0];
         String stratum = debugger.getSession().getCurrentLanguage();
-        int lineNumber = t.getLineNumber (stratum);
+        int lineNumber = csf.getLineNumber (stratum);
         if (lineNumber < 1) {
             return false;
         }
         linePtr[0] = lineNumber;
-        String sourcePath;
+        String url;
         try {
-            sourcePath = SourcePath.convertSlash (t.getSourcePath (stratum));
-        } catch (AbsentInformationException e) {
-            sourcePath = SourcePath.convertClassNameToRelativePath (t.getClassName ());
+            url = debugger.getEngineContext().getURL (csf, stratum);
+        } catch (InternalExceptionWrapper ex) {
+            return false;
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return false;
+        } catch (InvalidStackFrameExceptionWrapper ex) {
+            return false;
+        } catch (ObjectCollectedExceptionWrapper ex) {
+            return false;
         }
-        String url = debugger.getEngineContext().getURL (sourcePath, true);
         if (url == null) {
             return false;
         }

@@ -45,6 +45,7 @@ package org.netbeans.modules.team.ide;
 import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -295,6 +296,11 @@ public class IDEServicesImpl implements IDEServices {
     @Override
     public DatePickerComponent createDatePicker () {
         return new JXDatePickerImpl();
+    }
+    
+    @Override
+    public DatePickerDialog createDatePickerDialog (Date schedule) {
+        return new DatePickerDialogImpl(schedule);
     }
 
     private static class SwingXBusyIcon extends PainterIcon implements BusyIcon {

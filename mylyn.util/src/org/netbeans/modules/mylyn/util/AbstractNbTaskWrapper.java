@@ -45,7 +45,9 @@ import java.awt.EventQueue;
 import java.io.File;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -713,6 +715,56 @@ public abstract class AbstractNbTaskWrapper {
         scheduleDate = null;
         scheduleDateModified = false;
         estimate = null;
+    }
+
+    protected final String getDueDisplayString () {
+        Calendar cal = Calendar.getInstance();
+        Date date = getPersistentDueDate();
+        if (date == null) {
+            return "";
+        }
+        cal.setTime(date);
+        return formatDate(cal);
+    }
+
+    protected final String getEstimateDisplayString () {
+        int est = getPersistentEstimate();
+        if (est == 0) {
+            return "";
+        }
+        return "" + est;
+    }
+
+    protected final String getScheduleDisplayString () {
+        NbDateRange schedule = getNbTask().getScheduleDate();
+        if (schedule == null) {
+            return "";
+        }
+        return formateDate(schedule.getStartDate(), schedule.getEndDate());
+    }
+
+    private String formatDate (Calendar date) {
+        Calendar now = Calendar.getInstance();
+        if (now.get(Calendar.YEAR) == date.get(Calendar.YEAR)) {
+            return DateFormat.getDateInstance(DateFormat.SHORT).format(date.getTime());
+        } else {
+            return DateFormat.getDateInstance(DateFormat.DEFAULT).format(date.getTime());
+        }
+    }
+
+    private String formateDate (Calendar start, Calendar end) {
+        Calendar now = Calendar.getInstance();
+        // one day range
+        if (start.get(Calendar.YEAR) == end.get(Calendar.YEAR) && start.get(Calendar.MONTH) == end.get(Calendar.MONTH) && start.get(Calendar.DAY_OF_MONTH) == end.get(Calendar.DAY_OF_MONTH)) {
+            return formatDate(start);
+        }
+        if (now.get(Calendar.YEAR) == start.get(Calendar.YEAR) && now.get(Calendar.YEAR) == end.get(Calendar.YEAR)) {
+            DateFormat format = DateFormat.getDateInstance(DateFormat.SHORT);
+            return format.format(start.getTime()) + " - " + format.format(end.getTime()); //NOI18N
+        } else {
+            DateFormat format = DateFormat.getDateInstance(DateFormat.DEFAULT);
+            return format.format(start.getTime()) + " - " + format.format(end.getTime()); //NOI18N
+        }
     }
 
     private class TaskDataListenerImpl implements TaskDataListener {

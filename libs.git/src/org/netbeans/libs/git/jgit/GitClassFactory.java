@@ -55,6 +55,7 @@ import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevObject;
 import org.eclipse.jgit.revwalk.RevTag;
+import org.eclipse.jgit.submodule.SubmoduleStatus;
 import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.RemoteRefUpdate;
 import org.eclipse.jgit.transport.TrackingRefUpdate;
@@ -73,6 +74,7 @@ import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitRevisionInfo.GitFileInfo;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.GitStatus.Status;
+import org.netbeans.libs.git.GitSubmoduleStatus;
 import org.netbeans.libs.git.GitTag;
 import org.netbeans.libs.git.GitTransportUpdate;
 import org.netbeans.libs.git.GitUser;
@@ -113,6 +115,8 @@ public abstract class GitClassFactory {
     public abstract GitStatus createStatus (boolean tracked, String path, String workTreePath, File file, 
                 Status statusHeadIndex, Status statusIndexWC, Status statusHeadWC, 
                 GitConflictDescriptor conflictDescriptor, boolean folder, DiffEntry diffEntry);
+    
+    public abstract GitSubmoduleStatus createSubmoduleStatus (SubmoduleStatus status, File folder);
 
     public abstract GitTag createTag (RevTag revTag);
 
