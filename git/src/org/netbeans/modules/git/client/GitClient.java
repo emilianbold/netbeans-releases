@@ -71,6 +71,7 @@ import org.netbeans.libs.git.GitRevertResult;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitRevisionInfo.GitFileInfo;
 import org.netbeans.libs.git.GitStatus;
+import org.netbeans.libs.git.GitSubmoduleStatus;
 import org.netbeans.libs.git.GitTag;
 import org.netbeans.libs.git.GitTransportUpdate;
 import org.netbeans.libs.git.GitUser;
@@ -115,6 +116,7 @@ public final class GitClient {
             "getRemote", //NOI18N
             "getRemotes", //NOI18N
             "getRepositoryState",  //NOI18N
+            "getSubmoduleStatus",  //NOI18N
             "getUser",  //NOI18N
             "listModifiedIndexEntries", //NOI18N
             "listRemoteBranches", //NOI18N
@@ -147,6 +149,7 @@ public final class GitClient {
             "getRemote", //NOI18N
             "getRemotes", //NOI18N
             "getRepositoryState",  //NOI18N
+            "getSubmoduleStatus",  //NOI18N
             "getTags", //NOI18N
             "getUser",  //NOI18N
             "ignore",  //NOI18N
@@ -180,7 +183,9 @@ public final class GitClient {
             "removeRemote", //NOI18N - updates remotes
             "revert", //NOI18N - creates a new head
             "setRemote", //NOI18N - updates remotes
-            "setUpstreamBranch")); //NOI18N - updates remotes
+            "setUpstreamBranch", //NOI18N - updates remotes
+            "updateSubmodules" //NOI18N - current head changes
+    ));
     /**
      * Commands accessing a remote repository. For these NbAuthenticator must be switched off
      */
@@ -189,7 +194,8 @@ public final class GitClient {
             "listRemoteBranches", //NOI18N
             "listRemoteTags", //NOI18N
             "pull", //NOI18N
-            "push" //NOI18N
+            "push", //NOI18N
+            "updateSubmodules" //NOI18N
             ));
     private static final Logger LOG = Logger.getLogger(GitClient.class.getName());
     private final File repositoryRoot;
@@ -399,6 +405,16 @@ public final class GitClient {
         }, "getBranches"); //NOI18N
     }
 
+    public Map<File, GitSubmoduleStatus> getSubmoduleStatus (final File[] roots, final ProgressMonitor monitor) throws GitException {
+        return new CommandInvoker().runMethod(new Callable<Map<File, GitSubmoduleStatus>>() {
+
+            @Override
+            public Map<File, GitSubmoduleStatus> call () throws Exception {
+                return delegate.getSubmoduleStatus(roots, monitor);
+            }
+        }, "getSubmoduleStatus"); //NOI18N
+    }
+
     public Map<String, GitTag> getTags (final ProgressMonitor monitor, final boolean allTags) throws GitException {
         return new CommandInvoker().runMethod(new Callable<Map<String, GitTag>>() {
 
@@ -522,6 +538,16 @@ public final class GitClient {
                 return null;
             }
         }, "init"); //NOI18N
+    }
+
+    public Map<File, GitSubmoduleStatus> initializeSubmodules (final File[] roots, final ProgressMonitor monitor) throws GitException {
+        return new CommandInvoker().runMethod(new Callable<Map<File, GitSubmoduleStatus>>() {
+
+            @Override
+            public Map<File, GitSubmoduleStatus> call () throws Exception {
+                return delegate.initializeSubmodules(roots, monitor);
+            }
+        }, "initializeSubmodules"); //NOI18N
     }
 
     public File[] listModifiedIndexEntries (final File[] roots, final ProgressMonitor monitor) throws GitException {
@@ -723,6 +749,16 @@ public final class GitClient {
                 return delegate.unignore(files, monitor);
             }
         }, "unignore"); //NOI18N
+    }
+
+    public Map<File, GitSubmoduleStatus> updateSubmodules (final File[] roots, final ProgressMonitor monitor) throws GitException {
+        return new CommandInvoker().runMethod(new Callable<Map<File, GitSubmoduleStatus>>() {
+
+            @Override
+            public Map<File, GitSubmoduleStatus> call () throws Exception {
+                return delegate.updateSubmodules(roots, monitor);
+            }
+        }, "updateSubmodules"); //NOI18N
     }
 
     public GitBranch updateTracking (final String localBranchName, final String remoteBranchName,

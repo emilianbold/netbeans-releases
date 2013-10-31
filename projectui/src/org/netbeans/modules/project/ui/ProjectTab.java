@@ -66,6 +66,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -109,6 +110,7 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.Visualizer;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
@@ -855,17 +857,47 @@ public class ProjectTab extends TopComponent
 
                         @Override
                         public void run() {
-                            ProjectTab tab = findDefault(type);
-                            for (Node root : tab.manager.getRootContext().getChildren().getNodes()) {
+                            final ProjectTab tab = findDefault(type);
+                            final Children children = tab.manager.getRootContext().getChildren();
+                            for (Node root : children.getNodes()) {
                                 if( tab.btv.isExpanded(root) ) {
                                     collapseNodes(root, tab);
                                     tab.btv.collapseNode(root);
                                 }
                             }
+                            Mutex.EVENT.writeAccess(new Runnable() {
+                                public @Override void run() {
+                                    try {
+
+                                        FileObject activeFile = null;
+                                        Iterator<TopComponent> iterator = TopComponent.getRegistry().getOpened().iterator();
+                                        while(iterator.hasNext()) {
+                                            TopComponent componentIter = iterator.next();
+                                            if(componentIter.isVisible() && componentIter.getLookup().lookup(FileObject.class) != null) {
+                                                activeFile = componentIter.getLookup().lookup(FileObject.class);
+                                                break;
+                                            }
+                                        }
+                                        Project projectOwner = FileOwnerQuery.getOwner(activeFile);
+                                        Node projectNode = null;
+                                        for (Node node : children.getNodes(true)) {
+                                            if(projectOwner.equals(node.getLookup().lookup(Project.class))) {
+                                                projectNode = node;
+                                                break;
+                                            }
+                                        }
+                                        tab.manager.setSelectedNodes(new Node[] {projectNode});
+                                        tab.btv.scrollToNode(projectNode);
+                                    } catch (PropertyVetoException e) {
+                                        // Node found but can't be selected
+                                    }
+                                }
+                            });
                         }
                     });
                 }
             });
+            
         }
         
         private void collapseNodes(Node node, ProjectTab tab) {
@@ -880,5 +912,5 @@ public class ProjectTab extends TopComponent
         }
 
     }
-
+    
 }
