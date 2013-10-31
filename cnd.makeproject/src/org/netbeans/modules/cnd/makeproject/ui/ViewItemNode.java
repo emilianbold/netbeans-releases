@@ -71,6 +71,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.FileSensitiveActions;
 import org.openide.actions.PasteAction;
@@ -100,6 +102,7 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
     private final MakeProject project;
     private final ProjectNodesRefreshSupport.ProjectNodeRefreshListener refreshListener;
     private final boolean simpleRunDebug;
+    private Action runAction;
 
     public ViewItemNode(RefreshableItemsContainer childrenKeys, Folder folder, Item item, DataObject dataObject, MakeProject project, boolean simpleRunDebug) {
         super(dataObject.getNodeDelegate());//, null, Lookups.fixed(item));
@@ -240,6 +243,21 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
         return super.getValue(valstring);
     }
 
+    private Action getRunAction(Action action) {
+        if (action instanceof RunDialogAction && runAction == null) {
+            runAction = ((RunDialogAction) action).new SimpleRunActionProxy(project, item.getAbsolutePath());
+        }
+        return runAction;
+    }
+    
+    @Override
+    public Action getPreferredAction() {
+        if (simpleRunDebug && !getItem().getFolder().isDiskFolder() && MIMENames.isBinary(MIMESupport.getBinaryFileMIMEType(getItem().getFileObject()))) {
+            return getRunAction(super.getPreferredAction());
+        }
+        return super.getPreferredAction();
+    }
+    
     @Override
     public Action[] getActions(boolean context) {
         // Replace DeleteAction with Remove Action
@@ -306,7 +324,7 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
                 } else if (simpleRunDebug && oldActions[i] != null && oldActions[i] instanceof CreateProjectAction) { 
                     // not need this for binaries added to logical folders
                 } else if (simpleRunDebug && oldActions[i] != null && oldActions[i] instanceof RunDialogAction) { 
-                   newActions.add(((RunDialogAction) oldActions[i]).new SimpleRunActionProxy(project, item.getAbsolutePath()));
+                   newActions.add(getRunAction(oldActions[i]));
                 } else if (simpleRunDebug && oldActions[i] != null && oldActions[i] instanceof DebugDialogAction) { 
                    newActions.add(((DebugDialogAction) oldActions[i]).new SimpleDebugActionProxy(project, item.getAbsolutePath()));
                 } else if (key != null && ("CndCompileAction".equals(key)||"CndCompileRunAction".equals(key)||"CndCompileDebugAction".equals(key))) { // NOI18N
