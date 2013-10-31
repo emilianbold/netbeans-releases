@@ -113,7 +113,7 @@ public class RepositorySelector {
     }
 
     private DelegatingConnector[] addJiraProxyIfNeeded(DelegatingConnector[] connectors) {
-        if(!BugtrackingUtil.isJiraInstalled() && JiraUpdater.supportsDownload()) {
+        if(!JiraUpdater.isJiraInstalled() && JiraUpdater.supportsDownload()) {
             DelegatingConnector[] ret = new DelegatingConnector[connectors.length + 1];
             System.arraycopy(connectors, 0, ret, 0, connectors.length);
             ret[ret.length - 1] = JiraUpdater.getInstance().getConnector();

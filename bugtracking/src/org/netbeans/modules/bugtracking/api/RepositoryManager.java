@@ -129,7 +129,7 @@ public final class RepositoryManager {
      * including those which are currently opened in a logged in team sever dashboard.
      * 
      * @param connectorId
-     * @return 
+     * @return all known repositories for the given connector
      */
     public Collection<Repository> getRepositories(String connectorId) {
         LinkedList<Repository> ret = new LinkedList<Repository>();
@@ -137,6 +137,18 @@ public final class RepositoryManager {
         ret.addAll(toRepositories(registry.getRepositories(connectorId)));
         return ret;
     }
+    
+    /**
+     * Facility method to obtain an already registered {@link Repository} instance.
+     * 
+     * @param connectorId
+     * @param repositoryId
+     * @return a Repository with the given connector- and repository id or <code>null<code>.
+     */
+    public Repository getRepository(String connectorId, String repositoryId) {
+        RepositoryImpl impl = registry.getRepository(connectorId, repositoryId);
+        return impl != null ? impl.getRepository() : null;
+    }      
     
     private Collection<Repository> toRepositories(Collection<RepositoryImpl> impls) {
         if(impls == null) {

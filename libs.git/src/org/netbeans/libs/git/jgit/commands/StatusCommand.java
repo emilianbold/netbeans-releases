@@ -54,6 +54,8 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.RenameDetector;
 import org.eclipse.jgit.dircache.DirCache;
@@ -174,6 +176,8 @@ public class StatusCommand extends GitCommand {
                     }
                     lastPath = path;
                     File file = new File(workTreePath + File.separator + path);
+                    Logger.getLogger(StatusCommand.class.getName()).log(Level.FINE, "Inspecting file {0} ---- {1}", //NOI18N
+                            new Object[] { path, file.getAbsolutePath() });
                     int mHead = treeWalk.getRawMode(T_COMMIT);
                     int mIndex = treeWalk.getRawMode(T_INDEX);
                     int mWorking = treeWalk.getRawMode(T_WORKSPACE);

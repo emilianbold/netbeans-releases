@@ -105,7 +105,7 @@ public class NBBugzillaUtils {
      * @return username
      */
     public static String getNBUsername() {
-        return org.netbeans.modules.bugtracking.util.NBBugzillaUtils.getNBUsername();
+        return org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils.getNBUsername();
     }
 
     /**
@@ -115,7 +115,7 @@ public class NBBugzillaUtils {
      * @return password
      */
     public static char[] getNBPassword() {
-        return org.netbeans.modules.bugtracking.util.NBBugzillaUtils.getNBPassword();
+        return org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils.getNBPassword();
     }
 
     /**
@@ -123,7 +123,7 @@ public class NBBugzillaUtils {
      * Shouldn't be called in awt
      */
     public static void saveNBUsername(String username) {
-        org.netbeans.modules.bugtracking.util.NBBugzillaUtils.saveNBUsername(username);
+        org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils.saveNBUsername(username);
     }
 
     /**
@@ -131,7 +131,7 @@ public class NBBugzillaUtils {
      * Shouldn't be called in awt
      */
     public static void saveNBPassword(char[] password) {
-        org.netbeans.modules.bugtracking.util.NBBugzillaUtils.saveNBPassword(password);
+        org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils.saveNBPassword(password);
     }
 
     /**
@@ -141,7 +141,7 @@ public class NBBugzillaUtils {
      */
     public static boolean isNbRepository(URL url) {
         assert url != null;
-        return org.netbeans.modules.bugtracking.util.NBBugzillaUtils.isNbRepository(url.toString());
+        return org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils.isNbRepository(url.toString());
     }
 
     public static Repository findNBRepository() {

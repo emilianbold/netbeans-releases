@@ -45,7 +45,6 @@ package org.netbeans.modules.bugtracking.vcs;
 import java.text.MessageFormat;
 import javax.swing.JButton;
 import javax.swing.JPanel;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -102,7 +101,7 @@ public class HookUtils {
     public static boolean show(JPanel panel, String title, String okName, HelpCtx helpCtx) {
         JButton ok = new JButton(okName);
         ok.getAccessibleContext().setAccessibleDescription(ok.getText());
-        JButton cancel = new JButton(NbBundle.getMessage(BugtrackingUtil.class, "LBL_Cancel")); // NOI18N
+        JButton cancel = new JButton(NbBundle.getMessage(HookUtils.class, "LBL_Cancel")); // NOI18N
         cancel.getAccessibleContext().setAccessibleDescription(cancel.getText());
         final DialogDescriptor dd =
             new DialogDescriptor(

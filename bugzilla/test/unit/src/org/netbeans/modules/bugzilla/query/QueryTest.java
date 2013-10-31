@@ -61,6 +61,7 @@ import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.spi.QueryController.QueryMode;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
@@ -313,7 +314,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         TestQueryNotifyListener nl = new TestQueryNotifyListener(q);
         nl.reset();
 
-        QueryListener ql = new QueryListener();
+        QueryListener ql = new QueryListener(q.getRepository(), q);
         q.addPropertyChangeListener(ql);
         q.getController().addPropertyChangeListener(ql);
         
@@ -349,7 +350,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         Collection<BugzillaQuery> qs = QueryTestUtil.getRepository().getQueries();
         int queriesCount = qs.size();
 
-        QueryListener ql = new QueryListener();
+        QueryListener ql = new QueryListener(q.getRepository(), q);
         q.addPropertyChangeListener(ql);
         q.getController().addPropertyChangeListener(ql);
         
@@ -403,9 +404,24 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
     private class QueryListener implements PropertyChangeListener {
         int saved = 0;
         int removed = 0;
+        private final BugzillaRepository repo;
+        private final BugzillaQuery query;
+
+        public QueryListener(BugzillaRepository repo, BugzillaQuery query) {
+            this.repo = repo;
+            this.query = query;
+        }
+        
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if(evt.getPropertyName().equals(QueryProvider.EVENT_QUERY_REMOVED)) {
+            if(evt.getPropertyName().equals(RepositoryProvider.EVENT_QUERY_LIST_CHANGED)) {
+                Collection<BugzillaQuery> queries = repo.getQueries();
+                for (BugzillaQuery q : queries) {
+                    if(q.getDisplayName().equals(query.getDisplayName())) {
+                        // this query wasn't removed
+                        return; 
+                    }
+                }
                 removed++;
             }
             if(evt.getPropertyName().equals(QueryController.PROPERTY_QUERY_SAVED)) {

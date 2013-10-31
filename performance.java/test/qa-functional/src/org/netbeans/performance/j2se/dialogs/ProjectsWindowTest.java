@@ -41,66 +41,75 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se.dialogs;
 
+import junit.framework.Test;
 import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.j2se.setup.J2SESetup;
-
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.ProjectViewAction;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2se.setup.J2SESetup;
 
 /**
  * Test opening Projects Tab.
- * @author  mmirilovic@netbeans.org
+ *
+ * @author mmirilovic@netbeans.org
  */
 public class ProjectsWindowTest extends PerformanceTestCase {
 
-   
-    /** Creates a new instance of ProjectsWindow */
+    /**
+     * Creates a new instance of ProjectsWindow
+     *
+     * @param testName test name
+     */
     public ProjectsWindowTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
 
-    /** Creates a new instance of ProjectsWindow*/
+    /**
+     * Creates a new instance of ProjectsWindowTest
+     *
+     * @param testName test name
+     * @param performanceDataName data name
+     */
     public ProjectsWindowTest(String testName, String performanceDataName) {
-        super(testName,performanceDataName);
+        super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(ProjectsWindowTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(J2SESetup.class, "testCloseMemoryToolbar")
+                .addTest(ProjectsWindowTest.class)
+                .suite();
     }
-    
+
     public void testProjectsWindow() {
         doMeasurement();
-    }    
-    
+    }
+
+    @Override
     public void prepare() {
     }
-    
+
+    @Override
     public ComponentOperator open() {
         new ProjectViewAction().performMenu();
         return new ProjectsTabOperator();
     }
-    
+
+    @Override
     public void close() {
-        if(testedComponentOperator!=null && testedComponentOperator.isShowing())
-            ((ProjectsTabOperator)testedComponentOperator).close();
+        if (testedComponentOperator != null && testedComponentOperator.isShowing()) {
+            ((ProjectsTabOperator) testedComponentOperator).close();
+        }
     }
-    
+
+    @Override
     public void shutdown() {
         MainWindowOperator.getDefault().menuBar().closeSubmenus();
         MainWindowOperator.getDefault().menuBar().pushMenu("Window|Projects");
     }
-    
 }
