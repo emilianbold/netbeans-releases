@@ -243,6 +243,9 @@ public class Flow {
             for (Map.Entry<Tree, Iterable<? extends TreePath>> e : assignmentsForUse.entrySet()) {
                 Tree k = e.getKey();
                 for (TreePath p : e.getValue()) {
+                    if (p == null) {
+                        continue;
+                    }
                     Tree l = p.getLeaf();
                     Collection<Tree> users = res.get(l);
                     if (users == null) {
@@ -541,6 +544,8 @@ public class Flow {
             Element e = info.getTrees().getElement(getCurrentPath());
             
             if (e != null && SUPPORTED_VARIABLES.contains(e.getKind())) {
+                // note: if the variable does not have an initializer and is not a parameter (inParameters = true),
+                // the State will receive null as an assignment to indicate an uninitializer
                 variable2State.put((Element) e, State.create(node.getInitializer() != null ? new TreePath(getCurrentPath(), node.getInitializer()) : inParameters ? getCurrentPath() : null, variable2State.get(e)));
                 currentMethodVariables.add((Element) e);
             }
