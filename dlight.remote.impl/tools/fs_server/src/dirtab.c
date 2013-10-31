@@ -15,7 +15,9 @@
 
 static char root[PATH_MAX];
 static char temp_path[PATH_MAX];
+static char cache_path[PATH_MAX];
 static char dirtab_file_path[PATH_MAX];
+static const char* cahe_subdir_name = "cache";
 
 static pthread_mutex_t cache_mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -100,7 +102,7 @@ static int compare_dirtab_elements_4search(const void *d1, const void *d2) {
 
 static dirtab_element *new_dirtab_element(const char* path, int index) {
     char cache[32];
-    sprintf(cache, "%d", index);
+    sprintf(cache, "%s/%d", cahe_subdir_name, index);
     int path_len = strlen(path);
     int cache_len = strlen(cache);
     int size = sizeof(dirtab_element) + path_len + cache_len + 2;
@@ -221,6 +223,21 @@ const char* dirtab_get_basedir() {
     return root;
 }
 
+static void mkdir_or_die(const char *path, int exit_code_fail_create, int exit_code_fail_access) {
+    struct stat stat_buf;
+    if (lstat(path, &stat_buf) == -1) {
+        if (errno == ENOENT) {
+            if (mkdir(path, 0700) != 0) {
+                report_error("error creating directory '%s': %s\n", path, strerror(errno));
+                exit(exit_code_fail_create);
+            }
+        } else {
+            report_error("error accessing directory '%s': %s\n", path, strerror(errno));
+            exit(exit_code_fail_access);
+        }
+    }    
+}
+
 void dirtab_init() {
 
     const char* home = get_home_dir();
@@ -229,47 +246,20 @@ void dirtab_init() {
     }
     strncpy(root, home, sizeof(root));
 
-    struct stat stat_buf;
-    
     strcat(root, "/.netbeans");    
-    if (lstat(root, &stat_buf) == -1) {
-        if (errno == ENOENT) {
-            if (mkdir(root, 0700) != 0) {
-                report_error("error creating directory '%s': %s\n", root, strerror(errno));
-                exit(FAILURE_CREATING_STORAGE_SUPER_DIR);
-            }
-        } else {
-            report_error("error accessing directory '%s': %s\n", root, strerror(errno));
-            exit(FAILURE_ACCESSING_STORAGE_SUPER_DIR);
-        }
-    }
+    mkdir_or_die(root, FAILURE_CREATING_STORAGE_SUPER_DIR, FAILURE_ACCESSING_STORAGE_SUPER_DIR);
         
     strcat(root, "/remotefs");
-    if (lstat(root, &stat_buf) == -1) {
-        if (errno == ENOENT) {
-            if (mkdir(root, 0700) != 0) {
-                report_error("error creating directory '%s': %s\n", root, strerror(errno));
-                exit(FAILURE_CREATING_STORAGE_DIR);
-            }
-        } else {
-            report_error("error accessing directory '%s': %s\n", root, strerror(errno));
-            exit(FAILURE_ACCESSING_STORAGE_DIR);
-        }
-    }
+    mkdir_or_die(root, FAILURE_CREATING_STORAGE_DIR, FAILURE_ACCESSING_STORAGE_DIR);
     
+    strcpy(cache_path, root);
+    strcat(cache_path, "/");
+    strcat(cache_path, cahe_subdir_name);
+    mkdir_or_die(cache_path, FAILURE_CREATING_CACHE_DIR, FAILURE_ACCESSING_CACHE_DIR);
+
     strcpy(temp_path, root);
     strcat(temp_path, "/tmp");
-    if (lstat(temp_path, &stat_buf) == -1) {
-        if (errno == ENOENT) {
-            if (mkdir(temp_path, 0700) != 0) {
-                report_error("error creating directory '%s': %s\n", temp_path, strerror(errno));
-                exit(FAILURE_CREATING_TEMP_DIR);
-            }
-        } else {
-            report_error("error accessing directory '%s': %s", temp_path, strerror(errno));
-            exit(FAILURE_ACCESSING_TEMP_DIR);
-        }
-    }
+    mkdir_or_die(temp_path, FAILURE_CREATING_TEMP_DIR, FAILURE_ACCESSING_TEMP_DIR);
 
     strcpy(dirtab_file_path, root);
     strcat(dirtab_file_path, "/dirtab");
