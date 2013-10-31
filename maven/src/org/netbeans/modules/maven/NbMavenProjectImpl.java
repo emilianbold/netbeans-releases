@@ -429,17 +429,6 @@ public final class NbMavenProjectImpl implements Project {
             }
             final MavenExecutionResult res = MavenProjectCache.getExecutionResult(newproject);
             final MavenProject np = newproject;
-            ProblemReporterImpl.RP.post(new Runnable() {
-                //#217286 doArtifactChecks can call FileOwnerQuery and attempt to aquire the project mutex. but we are under synchronization here..
-                @Override
-                public void run() {
-                    if (res != null && res.hasExceptions()) { //res is null when there is no pom in the project folder.
-                        problemReporter.reportExceptions(res);
-                    } else {
-                        problemReporter.doArtifactChecks(np);
-                    }
-                }
-            });
         } finally {
             if (LOG.isLoggable(Level.FINE) && SwingUtilities.isEventDispatchThread()) {
                 LOG.log(Level.FINE, "Project " + getProjectDirectory().getPath() + " loaded in AWT event dispatching thread!", new RuntimeException());
