@@ -1501,9 +1501,9 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
                     setDueDate(date, persistChange);
                     if (controller != null) {
                         controller.modelStateChanged(hasUnsavedChanges(), hasLocalEdits());
-                        if (persistChange) {
-                            controller.refreshViewData(false);
-                        }
+                    }
+                    if (persistChange) {
+                        dataChanged();
                     }
                 }
             }
@@ -1514,9 +1514,9 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         super.setScheduleDate(date, persistChange);
         if (controller != null) {
             controller.modelStateChanged(hasUnsavedChanges(), hasLocalEdits());
-            if (persistChange) {
-                controller.refreshViewData(false);
-            }
+        }
+        if (persistChange) {
+            dataChanged();
         }
     }
 
@@ -1524,9 +1524,9 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         super.setEstimate(estimate, persistChange);
         if (controller != null) {
             controller.modelStateChanged(hasUnsavedChanges(), hasLocalEdits());
-            if (persistChange) {
-                controller.refreshViewData(false);
-            }
+        }
+        if (persistChange) {
+            dataChanged();
         }
     }
 
@@ -1744,16 +1744,18 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
-                if (node != null) {
-                    node.fireDataChanged();
-                }
-                if (updateTooltip()) {
-                    fireDataChanged();
-                }
-                fireDataChanged();
-                refreshViewData(false);
+                dataChanged();
             }
         });
+    }
+
+    private void dataChanged() {
+        if (node != null) {
+            node.fireDataChanged();
+        }
+        updateTooltip();
+        fireDataChanged();
+        refreshViewData(false);
     }
 
     @Override
