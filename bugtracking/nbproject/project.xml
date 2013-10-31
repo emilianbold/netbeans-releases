@@ -209,11 +209,9 @@
                 <friend>org.netbeans.modules.odcs.tasks.bridge</friend>
                 <friend>org.netbeans.modules.versioning.kenai</friend>
                 <package>org.netbeans.modules.bugtracking.api</package>
-                <package>org.netbeans.modules.bugtracking.cache</package>
                 <package>org.netbeans.modules.bugtracking.issuetable</package>
                 <package>org.netbeans.modules.bugtracking.spi</package>
                 <package>org.netbeans.modules.bugtracking.team.spi</package>
-                <package>org.netbeans.modules.bugtracking.util</package>
             </friend-packages>
         </data>
         <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">
