@@ -129,7 +129,7 @@ public class VariablesActionsProvider implements NodeActionsProvider {
                 lookupProvider.lookupFirst(null, RequestProcessor.class).post(new Runnable() {
                     @Override
                     public void run() {
-                        showSource (((ObjectVariable) nodes [0]).getType());
+                        showSource (((ObjectVariable) nodes [0]).getClassType());
                     }
                 });
             }
@@ -223,13 +223,13 @@ public class VariablesActionsProvider implements NodeActionsProvider {
         return ectx.sourceAvailable (v);
     }
     
-    private void showSource(final String type) {
+    private void showSource(final JPDAClassType type) {
         DebuggerEngine engine = DebuggerManager.getDebuggerManager().getCurrentEngine();
         if (engine != null) {
             JPDADebugger debugger = engine.lookupFirst(null, JPDADebugger.class);
-            final String typePath = EditorContextBridge.getRelativePath (type);
-            final String url = ((JPDADebuggerImpl) debugger).getEngineContext().getURL(typePath, true);
-            final int lineNumber = findClassLine(url, type);
+            final String typePath = EditorContextBridge.getRelativePath (type.getName());
+            final String url = ((JPDADebuggerImpl) debugger).getEngineContext().getURL(type, null);
+            final int lineNumber = findClassLine(url, type.getName());
             SwingUtilities.invokeLater (new Runnable () {
                 @Override
                 public void run () {

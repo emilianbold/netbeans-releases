@@ -199,7 +199,17 @@ public interface IDEServices {
      *         <code>null</code> if no specific implementation is available
      */
     public DatePickerComponent createDatePicker ();
-    
+
+     /**
+     * Creates a date picker menu that can be used in task editor UI.
+     * May return null.
+     *
+     * @param previousSchedule specify value if the relevant item is already scheduled
+     * @return <code>DatePickerMenu</code> implementation of a date picker menu, or
+     *         <code>null</code> if no specific implementation is available
+     */
+    public DatePickerDialog createDatePickerDialog (Date previousSchedule);
+
     /**
      * Provides access to a downloadable plugin - e.g. from the NetBeans UC
      */
@@ -264,5 +274,20 @@ public interface IDEServices {
          */
         public void removeChangeListener (ChangeListener listener);
         
+    }
+
+    public interface DatePickerDialog {
+
+        /**
+         * Returns the component that can be added into a component hierarchy
+         * @return UI component
+         */
+        public JComponent getComponent ();
+
+        /**
+         * Returns date selected by this component
+         * @return selected date
+         */
+        public Date getDate ();
     }
 }

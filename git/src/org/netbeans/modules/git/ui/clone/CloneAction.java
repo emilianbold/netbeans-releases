@@ -58,12 +58,16 @@ import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRemoteConfig;
+import org.netbeans.libs.git.GitSubmoduleStatus;
 import org.netbeans.libs.git.GitTransportUpdate;
 import org.netbeans.libs.git.GitTransportUpdate.Type;
 import org.netbeans.libs.git.GitURI;
@@ -102,6 +106,7 @@ import org.openide.util.RequestProcessor.Task;
 @NbBundle.Messages("LBL_CloneAction_Name=&Clone...")
 public class CloneAction implements ActionListener, HelpCtx.Provider {
     private final VCSContext ctx;
+    private static final Logger LOG = Logger.getLogger(CloneAction.class.getName());
 
     public CloneAction (ContextHolder ctx) {
         this.ctx = ctx.getContext();
@@ -158,6 +163,13 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
         performClone(url, pa, false);
     }
     
+    @NbBundle.Messages({
+        "LBL_Clone.confirmSubmoduleInit.title=Initialize Submodules",
+        "MSG_Clone.confirmSubmoduleInit.text=Uninitialized submodules found in the cloned repository.\n\n"
+                + "Do you want to automatically initialize and clone them?",
+        "MSG_Clone.progress.initializingSubmodules=Initializing Submodules",
+        "# {0} - submodule folder", "MSG_Clone.progress.updatingingSubmodules=Cloning into Submodule {0}"
+    })
     public static File performClone(String url, PasswordAuthentication pa, boolean waitFinished) throws MissingResourceException {
         final CloneWizard wiz = new CloneWizard(pa, url);
         Boolean ok = Mutex.EVENT.readAccess(new Mutex.Action<Boolean>() {
@@ -212,12 +224,55 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
                                 }
 
                                 Git.getInstance().getFileStatusCache().refreshAllRoots(destination);
+                                
+                                if (!isCanceled()) {
+                                    initSubmodules();
+                                }
+                                
                                 Git.getInstance().versionedFilesChanged();                       
 
                                 if(scan && !isCanceled()) {
                                     scanForProjects(destination);
                                 }
                                 return null;
+                            }
+
+                            private void initSubmodules () {
+                                try {
+                                    GitClient client = getClient();
+                                    Map<File, GitSubmoduleStatus> statuses = client.getSubmoduleStatus(new File[0], getProgressMonitor());
+                                    List<File> toInit = new ArrayList<>(statuses.size());
+                                    for (Map.Entry<File, GitSubmoduleStatus> e : statuses.entrySet()) {
+                                        if (e.getValue().getStatus() == GitSubmoduleStatus.StatusType.UNINITIALIZED) {
+                                            toInit.add(e.getKey());
+                                        }
+                                    }
+                                    if (!isCanceled() && !toInit.isEmpty() && confirmSubmoduleInit(toInit)) {
+                                        setProgress(Bundle.MSG_Clone_progress_initializingSubmodules());
+                                        client.initializeSubmodules(toInit.toArray(new File[toInit.size()]), getProgressMonitor());
+                                        for (File submoduleRoot : toInit) {
+                                            if (isCanceled()) {
+                                                return;
+                                            }
+                                            try {
+                                                setProgress(Bundle.MSG_Clone_progress_updatingingSubmodules(submoduleRoot.getName()));
+                                                client.updateSubmodules(new File[] { submoduleRoot }, getProgressMonitor());
+                                            } catch (GitException ex) {
+                                                LOG.log(Level.INFO, null, ex);
+                                            }
+                                        }
+                                    }
+                                } catch (GitException ex) {
+                                    LOG.log(Level.INFO, null, ex);
+                                }
+                            }
+
+                            private boolean confirmSubmoduleInit (List<File> subrepos) {
+                                return JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(null,
+                                        Bundle.MSG_Clone_confirmSubmoduleInit_text(),
+                                        Bundle.LBL_Clone_confirmSubmoduleInit_title(),
+                                        JOptionPane.YES_NO_OPTION,
+                                        JOptionPane.QUESTION_MESSAGE);
                             }
                         }, destination);
                         

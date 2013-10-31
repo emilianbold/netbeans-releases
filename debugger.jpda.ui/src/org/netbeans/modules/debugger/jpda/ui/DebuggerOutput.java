@@ -329,14 +329,21 @@ PropertyChangeListener {
             Operation op = t.getCurrentOperation();
             try {
                 final String sourceName = t.getSourceName (language);
-                String relativePath = EditorContextBridge.getRelativePath 
-                    (t, language);
                 String url = null;
+                SourcePath sourcePath;
                 synchronized (this) {
-                    if (relativePath != null && engineContext != null) {
-                        url = engineContext.getURL(relativePath, true);
-                    }
+                    sourcePath = engineContext;
                 }
+                if (sourcePath != null) {
+                    url = sourcePath.getURL(t, language);
+                }
+//                String relativePath = EditorContextBridge.getRelativePath 
+//                    (t, language);
+//                synchronized (this) {
+//                    if (relativePath != null && engineContext != null) {
+//                        url = engineContext.getURL(relativePath, true);
+//                    }
+//                }
                 final IOManager.Line line;
                 if (lineNumber > 0 && url != null) {
                     line = new IOManager.Line (

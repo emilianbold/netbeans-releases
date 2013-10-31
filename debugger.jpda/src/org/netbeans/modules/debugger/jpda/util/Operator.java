@@ -511,6 +511,11 @@ public class Operator {
                     } catch (Exception ex) {
                         ErrorManager.getDefault().notify(ex);
                     }
+                } else {
+                    if (e instanceof BreakpointEvent) {
+                        resume = false;
+                        startEventOnly = false;
+                    }
                 }
             } // for
         } else {

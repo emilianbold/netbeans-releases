@@ -48,11 +48,9 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.OutputStream;
 import java.net.URL;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
@@ -108,7 +106,6 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.modules.Places;
 import org.openide.util.NbBundle;
 import static org.netbeans.modules.bugzilla.issue.Bundle.*;
-import org.netbeans.modules.mylyn.util.NbDateRange;
 
 /**
  *
@@ -1255,62 +1252,6 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         }
         return displayName;
     }
-
-    private String getDueDisplayString() {
-        Calendar dueDate = Calendar.getInstance();
-        Date date = getPersistentDueDate();
-        if (date == null) {
-            return "";
-        }
-        dueDate.setTime(date);
-        return formatDate(dueDate);
-    }
-
-    private String getScheduleDisplayString() {
-        NbDateRange scheduleDate = getNbTask().getScheduleDate();
-        if (scheduleDate == null) {
-            return "";
-        }
-        return formateDate(scheduleDate.getStartDate(), scheduleDate.getEndDate());
-    }
-
-    private String getEstimateDisplayString() {
-        int estimate = getPersistentEstimate();
-        if (estimate == 0) {
-            return "";
-        }
-        return "" + estimate;
-    }
-
-    private String formatDate(Calendar date) {
-        Calendar now = Calendar.getInstance();
-        if (now.get(Calendar.YEAR) == date.get(Calendar.YEAR)) {
-
-            return DateFormat.getDateInstance(DateFormat.SHORT).format(date.getTime());
-        } else {
-            return DateFormat.getDateInstance(DateFormat.DEFAULT).format(date.getTime());
-
-        }
-    }
-
-    private String formateDate(Calendar start, Calendar end) {
-        Calendar now = Calendar.getInstance();
-        // one day range
-        if (start.get(Calendar.YEAR) == end.get(Calendar.YEAR) 
-                && start.get(Calendar.MONTH) == end.get(Calendar.MONTH)
-                && start.get(Calendar.DAY_OF_MONTH) == end.get(Calendar.DAY_OF_MONTH)) {
-            return formatDate(start);
-        }
-
-        if (now.get(Calendar.YEAR) == start.get(Calendar.YEAR) && now.get(Calendar.YEAR) == end.get(Calendar.YEAR)) {
-            DateFormat format = DateFormat.getDateInstance(DateFormat.SHORT);
-            return format.format(start.getTime()) + " - " + format.format(end.getTime()); //NOI18N
-        } else {
-            DateFormat format = DateFormat.getDateInstance(DateFormat.DEFAULT);
-            return format.format(start.getTime()) + " - " + format.format(end.getTime()); //NOI18N
-
-        }
-    }
     
     private boolean updateRecentChanges () {
         String oldChanges = recentChanges;
@@ -1501,9 +1442,9 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
                     setDueDate(date, persistChange);
                     if (controller != null) {
                         controller.modelStateChanged(hasUnsavedChanges(), hasLocalEdits());
-                        if (persistChange) {
-                            controller.refreshViewData(false);
-                        }
+                    }
+                    if (persistChange) {
+                        dataChanged();
                     }
                 }
             }
@@ -1514,9 +1455,9 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         super.setScheduleDate(date, persistChange);
         if (controller != null) {
             controller.modelStateChanged(hasUnsavedChanges(), hasLocalEdits());
-            if (persistChange) {
-                controller.refreshViewData(false);
-            }
+        }
+        if (persistChange) {
+            dataChanged();
         }
     }
 
@@ -1524,9 +1465,9 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         super.setEstimate(estimate, persistChange);
         if (controller != null) {
             controller.modelStateChanged(hasUnsavedChanges(), hasLocalEdits());
-            if (persistChange) {
-                controller.refreshViewData(false);
-            }
+        }
+        if (persistChange) {
+            dataChanged();
         }
     }
 
@@ -1744,16 +1685,18 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
-                if (node != null) {
-                    node.fireDataChanged();
-                }
-                if (updateTooltip()) {
-                    fireDataChanged();
-                }
-                fireDataChanged();
-                refreshViewData(false);
+                dataChanged();
             }
         });
+    }
+
+    private void dataChanged() {
+        if (node != null) {
+            node.fireDataChanged();
+        }
+        updateTooltip();
+        fireDataChanged();
+        refreshViewData(false);
     }
 
     @Override
