@@ -271,20 +271,20 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
 
         PHPCompletionItem.CompletionRequest request = new PHPCompletionItem.CompletionRequest();
         request.context = context;
-        String pref = getPrefix(info, caretOffset, true, PrefixBreaker.WITH_NS_PARTS);
-        if (pref == null) {
+        String prefix = getPrefix(info, caretOffset, true, PrefixBreaker.WITH_NS_PARTS);
+        if (prefix == null) {
             return CodeCompletionResult.NONE;
         }
-        pref = pref.trim().isEmpty() ? completionContext.getPrefix() : pref;
+        prefix = prefix.trim().isEmpty() ? completionContext.getPrefix() : prefix;
 
         request.anchor = caretOffset
                 // can't just use 'prefix.getLength()' here cos it might have been calculated with
                 // the 'upToOffset' flag set to false
-                - pref.length();
+                - prefix.length();
 
         request.result = result;
         request.info = info;
-        request.prefix = pref;
+        request.prefix = prefix;
         request.index = ElementQueryFactory.getIndexQuery(info);
 
         request.currentlyEditedFileURL = fileObject.toURL().toString();
