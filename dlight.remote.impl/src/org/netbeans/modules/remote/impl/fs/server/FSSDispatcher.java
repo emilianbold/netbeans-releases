@@ -52,7 +52,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -80,10 +79,6 @@ import org.openide.util.RequestProcessor;
     private final Map<Integer, FSSResponse> responses = new LinkedHashMap<Integer, FSSResponse>();
     private final Object responseLock = new Object();
 
-    // should we have a request queue as well?
-    private final LinkedList<FSSRequest> requestQueue = new LinkedList<FSSRequest>();
-    private final Object requestLock = new Object();
-    
     private static final String SERVER_PATH = System.getProperty("remote.fs_server.path");
     public static final int REFRESH_INTERVAL = Integer.getInteger("remote.fs_server.refresh", 2); // NOI18N
     public static final boolean VERBOSE = Boolean.getBoolean("remote.fs_server.verbose");
@@ -279,8 +274,10 @@ import org.openide.util.RequestProcessor;
             args.add("-t"); // NOI18N
             args.add("4"); // NOI18N
             args.add("-p"); // NOI18N
-            args.add("-r"); // NOI18N
-            args.add("" + REFRESH_INTERVAL);
+            if (REFRESH_INTERVAL > 0) {
+                args.add("-r"); // NOI18N
+                args.add("" + REFRESH_INTERVAL);
+            }
             if (VERBOSE) {
                 args.add("-v"); // NOI18N
             }
