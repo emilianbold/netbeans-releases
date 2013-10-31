@@ -278,9 +278,9 @@ void dirtab_free() {
     mutex_lock(&table.mutex);
     for (int i = 0; i < table.size; i++) {
         free(table.paths[i]);
-        table.size = 0;
-        free(table.paths);
     }
+    table.size = 0;
+    free(table.paths);
     mutex_unlock(&table.mutex);
     free(root);
     free(temp_path);
