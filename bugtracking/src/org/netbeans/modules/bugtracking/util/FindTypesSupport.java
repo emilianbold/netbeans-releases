@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.bugtracking.util;
 
-import org.netbeans.modules.bugtracking.commons.UIUtils;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -49,8 +48,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;

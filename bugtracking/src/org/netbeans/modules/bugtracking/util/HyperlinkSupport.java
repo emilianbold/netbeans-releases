@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.bugtracking.util;
 
-import org.netbeans.modules.bugtracking.commons.UIUtils;
-import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -60,7 +58,6 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**

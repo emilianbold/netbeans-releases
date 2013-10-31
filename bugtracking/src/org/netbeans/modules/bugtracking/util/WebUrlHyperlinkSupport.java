@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.bugtracking.util;
 
-import org.netbeans.modules.bugtracking.commons.UIUtils;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Element;
 import javax.swing.SwingUtilities;
@@ -50,7 +49,6 @@ import java.awt.event.MouseEvent;
 import java.net.URL;
 import org.openide.awt.HtmlBrowser;
 import javax.swing.text.StyledDocument;
-import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.util.logging.Level;
 import javax.swing.text.Style;
@@ -62,7 +60,6 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.commons.UIUtils;
 import static org.netbeans.modules.bugtracking.util.WebUrlHyperlinkSupport.SearchMachine.State.*;
-import org.openide.util.Exceptions;
 
 /**
  * Finds http(s) addresses in a text pane and makes hyperlinks out of them.
