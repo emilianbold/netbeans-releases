@@ -105,7 +105,7 @@ public class DashboardUtils {
     private static final String mODIFIED_COLOR = UIUtils.getColorString(UIUtils.getTaskModifiedColor());
 
     private static final Image SCHEDULE_ICON = ImageUtilities.loadImage("org/netbeans/modules/bugtracking/tasks/resources/schedule.png", true); //NOI18
-    private static final Image SCHEDULE_WARNING_ICON = ImageUtilities.loadImage("org/netbeans/modules/bugtracking/tasks/resources/schedule_warning.png", true); //NOI18
+    private static final Image SCHEDULE_WARNING_ICON = ImageUtilities.loadImage("org/netbeans/modules/bugtracking/tasks/resources/schedule_alarm.png", true); //NOI18
 
     private static final int SCHEDULE_NOT_IN_SCHEDULE = 0;
     private static final int SCHEDULE_IN_SCHEDULE = 1;
@@ -390,8 +390,19 @@ public class DashboardUtils {
 
     private static boolean isAfterDue(IssueImpl issue) {
         Calendar now = Calendar.getInstance();
-        Date dueDate = issue.getDueDate();
-        return dueDate == null ? false : now.getTime().getTime() >= dueDate.getTime();
+        Calendar dueDate = Calendar.getInstance();
+        IssueScheduleInfo schedule = issue.getSchedule();
+
+        if (issue.getDueDate() != null) {
+            dueDate.setTime(issue.getDueDate());
+        } else if (schedule != null){
+            dueDate.setTime(schedule.getDate());
+            dueDate.add(Calendar.DATE, schedule.getInterval());
+        } else {
+            return false;
+        }
+        return now.get(Calendar.YEAR) >= dueDate.get(Calendar.YEAR)
+                && now.get(Calendar.DAY_OF_YEAR) >= dueDate.get(Calendar.DAY_OF_YEAR);
     }
 
     private static boolean isInSchedule(IssueImpl issue) {
