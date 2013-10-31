@@ -16,6 +16,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -74,6 +75,7 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
     }
     private final Map<Long, COSRedirectorImpl.Storage> imap = new HashMap<Long, COSRedirectorImpl.Storage>();
     private final LinkedList<Long> cache = new LinkedList<Long>();
+    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
     @Override
     protected CloneableOpenSupport redirect(CloneableOpenSupport.Env env) {
@@ -85,17 +87,22 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
         if (dobjLookup == null) {
             return null;
         }
-        for (long n : cache) {
-            COSRedirectorImpl.Storage storage = imap.get(n);
-            if (storage != null) {
-                if (storage.hasDataObject(dobj)) {
-                    CloneableOpenSupport aCes = storage.getCloneableOpenSupport(dobj, env.findCloneableOpenSupport());
-                    if (aCes != null) {
-                        return aCes;
+        lock.readLock().lock();
+        try {
+            for (long n : cache) {
+                COSRedirectorImpl.Storage storage = imap.get(n);
+                if (storage != null) {
+                    if (storage.hasDataObject(dobj)) {
+                        CloneableOpenSupport aCes = storage.getCloneableOpenSupport(dobj, env.findCloneableOpenSupport());
+                        if (aCes != null) {
+                            return aCes;
+                        }
+                        break;
                     }
-                    break;
                 }
             }
+        } finally {
+            lock.readLock().unlock();
         }
         Path path = FileSystems.getDefault().getPath(FileUtil.getFileDisplayName(dobj.getPrimaryFile()));
         BasicFileAttributes attrs = null;
@@ -113,16 +120,27 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
         }       
         long inode = key.hashCode();
         { // update L1 cache
-            cache.remove(inode);
-            cache.addFirst(inode);
-            if (cache.size() > L1_CACHE_SIZE) {
-                cache.removeLast();
+            lock.writeLock().lock();
+            try {
+                cache.remove(inode);
+                cache.addFirst(inode);
+                if (cache.size() > L1_CACHE_SIZE) {
+                    cache.removeLast();
+                }
+            } finally {
+                lock.writeLock().unlock();
             }
         }
-        COSRedirectorImpl.Storage list = imap.get(inode);
-        if (list == null) {
-            list = new COSRedirectorImpl.Storage();
-            imap.put(inode, list);
+        COSRedirectorImpl.Storage list;
+        lock.writeLock().lock();
+        try {
+            list = imap.get(inode);
+            if (list == null) {
+                list = new COSRedirectorImpl.Storage();
+                imap.put(inode, list);
+            }
+        } finally {
+            lock.writeLock().unlock();
         }
         if (list.addDataObject(dobj, env.findCloneableOpenSupport())) {
             return null;
@@ -141,18 +159,23 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
         if (dobj == null) {
             return;
         }
-        for (long n : cache) {
-            COSRedirectorImpl.Storage storage = imap.get(n);
-            if (storage != null) {
-                if (storage.hasDataObject(dobj)) {
-                    CloneableOpenSupport aCes = storage.getCloneableOpenSupport(dobj, env.findCloneableOpenSupport());
-                    if (aCes != null) {
-                        storage.removeDataObject(dobj);
-                        cache.remove((Long) n);
+        lock.writeLock().lock();
+        try {
+            for (long n : cache) {
+                COSRedirectorImpl.Storage storage = imap.get(n);
+                if (storage != null) {
+                    if (storage.hasDataObject(dobj)) {
+                        CloneableOpenSupport aCes = storage.getCloneableOpenSupport(dobj, env.findCloneableOpenSupport());
+                        if (aCes != null) {
+                            storage.removeDataObject(dobj);
+                            cache.remove((Long) n);
+                        }
+                        break;
                     }
-                    break;
                 }
             }
+        } finally {
+            lock.writeLock().unlock();
         }
     }
 
@@ -313,10 +336,9 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (!removed.get()) {
-                if (evt.getPropertyName().equals("name") || // NOI18N
-                        evt.getPropertyName().equals("valid") || // NOI18N 
-                        evt.getPropertyName().equals("modified") || // NOI18N
-                        evt.getPropertyName().equals("primaryFile")) { // NOI18N
+                if (evt.getPropertyName().equals(DataObject.PROP_NAME) ||
+                        evt.getPropertyName().equals(DataObject.PROP_VALID) ||
+                        evt.getPropertyName().equals(DataObject.PROP_PRIMARY_FILE)) {
                     if (!(evt.getSource() instanceof DataObject)) {
                         return;
                     }
@@ -338,9 +360,6 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
 
         @Override
         public void fileChanged(FileEvent fe) {
-            if (!removed.get()) {
-                removed.set(true);
-            }
         }
 
         @Override
@@ -359,9 +378,6 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
 
         @Override
         public void fileAttributeChanged(FileAttributeEvent fe) {
-            if (!removed.get()) {
-                removed.set(true);
-            }
         }
     }
 }

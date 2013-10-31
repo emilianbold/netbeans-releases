@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -43,119 +43,73 @@ package org.netbeans.test.permanentUI;
 
 import java.io.IOException;
 import junit.framework.Test;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.OpenAction;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.permanentUI.utils.ProjectContext;
 
-public class MainMenuJavaTest extends MainMenuTest {
-    
-    private static boolean init = true;
-    public static final String[] TESTS = new String[]{
-        "testFileMenu",
-        "testRefactorMenu",
-        "testDebugMenu",
-        "testRunMenu",
-        "testToolsMenu",
-        "testProfileMenu",
-        "testView_CodeFoldsSubMenu"};
+/**
+ *
+ * @author Marian.Mirilovic@oracle.com
+ */
+public class MainMenuJavaTest extends MainMenuTestCase {
 
     public MainMenuJavaTest(String name) {
         super(name);
     }
 
     public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(MainMenuJavaTest.class).clusters(".*").enableModules(".*");
-
-        conf = conf.addTest(TESTS);
-        //conf = conf.addTest("testTeamMenu");
-        return conf.suite();
+        return MainMenuJavaTest.emptyConfiguration().
+                // here you test main-menu bar
+                addTest(MainMenuJavaTest.class, "testFileMenu").
+                addTest(MainMenuJavaTest.class, "testRefactorMenu").
+                addTest(MainMenuJavaTest.class, "testDebugMenu").
+                addTest(MainMenuJavaTest.class, "testRunMenu").
+                addTest(MainMenuJavaTest.class, "testToolsMenu").
+                addTest(MainMenuJavaTest.class, "testProfileMenu").
+                addTest(MainMenuJavaTest.class, "testView_CodeFoldsSubMenu").
+                clusters(".*").enableModules(".*").
+                suite();
     }
 
-        /**
-     * Setup called before every test case.
-     */
     @Override
-    public void setUp() {
-        System.out.println("########  " + " CONTEXT -> " + ProjectContext.JAVA.toString() + " - " + getName() + "  #######");
-        try {
-            clearWorkDir();
-            getWorkDir();
-            if (isInit()) {
-                openDataProjects("SampleProject");
-                setInit(false);
-                initSources();
-            }
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
+    public void initialize() throws IOException {
+        openFile("SampleProject", org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.java.j2seproject.Bundle", "NAME_src.dir") + TREE_SEPARATOR + "sample1", "SampleClass1.java");
     }
     
     @Override
-    protected void initSources() {
-        setContext(); // must be called because of correct golden file name which has contained context in suffix.
-        try {
-            openDataProjects("SampleProject"); // NOI18N
-            EditorOperator.closeDiscardAll();
-            ProjectsTabOperator pto = new ProjectsTabOperator();
-            // find node in given tree
-            Node sample1 = new Node(pto.tree(), "SampleProject|Source Packages|sample1"); // NOI18N
-            Node node = new Node(sample1, "SampleClass1.java"); // NOI18N
-            new OpenAction().performAPI(node);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
+    public ProjectContext getContext() {
+        return ProjectContext.JAVA;
     }
-
+    
     @Override
-    public boolean isInit() {
-        return init;
-    }
+    protected void tearDown() throws Exception {}
+    
 
-    @Override
-    public void setInit(boolean init) {
-        MainMenuJavaTest.init = init;
-    }
-
-    @Override
     public void testFileMenu() {
         oneMenuTest("File");
     }
 
-    @Override
     public void testRefactorMenu() {
         oneMenuTest("Refactor");
     }
 
-    @Override
     public void testDebugMenu() {
         oneMenuTest("Debug");
     }
 
-    @Override
     public void testRunMenu() {
         oneMenuTest("Run");
     }
 
-    @Override
     public void testToolsMenu() {
         oneMenuTest("Tools");
     }
 
-    @Override
     public void testProfileMenu() {
         oneMenuTest("Profile");
     }
 
-    @Override
     public void testView_CodeFoldsSubMenu() {
         oneSubMenuTest("View|Code Folds", true);
     }
-    
-    @Override
-    public void setContext() {
-        MainMenuJavaTest.context = ProjectContext.JAVA;
-    }
+
+
 }

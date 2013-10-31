@@ -430,7 +430,7 @@ public class JavaFixUtilitiesTest extends TestBase {
                            "try { } catch $catches$ => try { new Object(); } catch $catches$",
                            "package test;\n" +
                            "public class Test {\n" +
-                           "    { try {      new Object();\n } catch {NullPointerException ex} { } }\n" +
+                           "    {  try {      new Object();\n } catch {NullPointerException ex} { } }\n" +
 		           "}\n");
     }
 
@@ -1126,6 +1126,24 @@ public class JavaFixUtilitiesTest extends TestBase {
                            "        Collections.sort(list, (l, r) -> {\n" +
                            "            return l.compareTo(r);\n" +
                            "        });\n" +
+                           "    }\n" +
+		           "}\n");
+    }
+
+    public void testMemberRef2Null() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "import java.util.*;\n" +
+                           "public class Test {\n" +
+                           "    public void main(List<String> list) {\n" +
+                           "        Collections.sort(list, String::compareTo);\n" +
+                           "    }\n" +
+                           "}\n",
+                           "$expr::$name => (String l, String r) -> l.$name(r)",
+                           "package test;\n" +
+                           "import java.util.*;\n" +
+                           "public class Test {\n" +
+                           "    public void main(List<String> list) {\n" +
+                           "        Collections.sort(list, (String l, String r) -> l.compareTo(r));\n" +
                            "    }\n" +
 		           "}\n");
     }

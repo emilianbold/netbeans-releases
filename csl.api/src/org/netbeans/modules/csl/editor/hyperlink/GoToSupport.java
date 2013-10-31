@@ -66,6 +66,8 @@ import org.netbeans.modules.csl.api.DeclarationFinder.AlternativeLocation;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
+import org.netbeans.modules.csl.api.CodeCompletionHandler2;
+import org.netbeans.modules.csl.api.Documentation;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.UiUtils;
 import org.netbeans.modules.csl.core.GsfHtmlFormatter;
@@ -91,13 +93,13 @@ import org.openide.util.NbBundle;
  */
 public class GoToSupport {
     private static final Logger LOG = Logger.getLogger(GoToSupport.class.getName());
-    
+
     /** Jump straight to declarations */
     static final boolean IM_FEELING_LUCKY = Boolean.getBoolean("gsf.im_feeling_lucky");
-    
+
     private GoToSupport() {
     }
-    
+
     public static String getGoToElementTooltip(final Document doc, final int offset) {
         return perform(doc, offset, true, new AtomicBoolean());
     }
@@ -113,7 +115,7 @@ public class GoToSupport {
             }
         }, name, cancel, false);
     }
-    
+
     private static String perform(final Document doc, final int offset, final boolean tooltip, final AtomicBoolean cancel) {
         if (tooltip && PopupUtil.isPopupShowing()) {
             return null;
@@ -170,15 +172,25 @@ public class GoToSupport {
                     location[0] = finder.findDeclaration(info, offset);
 
                     if (cancel.get()) return ;
-                    
+
                     if (tooltip) {
                         CodeCompletionHandler completer = language.getCompletionProvider();
                         if (location[0] != DeclarationLocation.NONE && completer != null) {
                             ElementHandle element = location[0].getElement();
                             if (element != null) {
-                                String documentation = completer.document(info, element);
-                                if (documentation != null) {
-                                    result[0] = "<html><body>" + documentation; // NOI18N
+                                String documentationContent;
+                                if (completer instanceof CodeCompletionHandler2) {
+                                    Documentation documentation = ((CodeCompletionHandler2) completer).documentElement(info, element);
+                                    if (documentation != null) {
+                                        documentationContent = documentation.getContent();
+                                    } else {
+                                        documentationContent = completer.document(info, element);
+                                    }
+                                } else {
+                                    documentationContent = completer.document(info, element);
+                                }
+                                if (documentationContent != null) {
+                                    result[0] = "<html><body>" + documentationContent; // NOI18N
                                 }
                             }
                         }
@@ -229,7 +241,7 @@ public class GoToSupport {
         } catch (ParseException pe) {
             LOG.log(Level.WARNING, null, pe);
         }
-        
+
         return result[0];
     }
 
@@ -277,10 +289,10 @@ public class GoToSupport {
                 return comp;
             }
         }
-        
+
         return null;
     }
-    
+
     private static boolean chooseAlternatives(Document doc, int offset, List<AlternativeLocation> alternatives) {
         String caption = NbBundle.getMessage(GoToSupport.class, "ChooseDecl");
 
@@ -289,7 +301,7 @@ public class GoToSupport {
 
     public static boolean chooseAlternatives(Document doc, int offset, String caption, List<AlternativeLocation> alternatives) {
         Collections.sort(alternatives);
-        
+
         // Prune results a bit
         int MAX_COUNT = 30; // Don't show more items than this
         String previous = "";
@@ -311,7 +323,7 @@ public class GoToSupport {
         if (alternatives.size() <= 1) {
             return false;
         }
-        
+
         JTextComponent target = findEditor(doc);
         if (target != null) {
             try {
@@ -326,10 +338,10 @@ public class GoToSupport {
                 Exceptions.printStackTrace(ex);
             }
         }
-        
+
         return false;
     }
-    
+
     private static FileObject getFileObject(Document doc) {
         return DataLoadersBridge.getDefault().getFileObject(doc);
     }

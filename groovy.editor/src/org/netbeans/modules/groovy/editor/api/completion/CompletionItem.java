@@ -851,9 +851,6 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
             if ((this.paramListString == null) ? (other.paramListString != null) : !this.paramListString.equals(other.paramListString)) {
                 return false;
             }
-            if (this.parameters != other.parameters && (this.parameters == null || !this.parameters.equals(other.parameters))) {
-                return false;
-            }
             return true;
         }
 
@@ -863,7 +860,6 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
             hash = 61 * hash + (this.expand ? 1 : 0);
             hash = 61 * hash + (this.name != null ? this.name.hashCode() : 0);
             hash = 61 * hash + (this.paramListString != null ? this.paramListString.hashCode() : 0);
-            hash = 61 * hash + (this.parameters != null ? this.parameters.hashCode() : 0);
             return hash;
         }
     }

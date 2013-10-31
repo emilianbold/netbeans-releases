@@ -126,7 +126,7 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
         performFixTest("test/Test.java",
                        "package test; public class Test {public void test() {if (true) {int aaa = 0; |bbb = aaa; }}}",
                        "AddParameterOrLocalFix:bbb:int:false",
-                       "package test; public class Test {public void test() {if (true) {int aaa = 0;int bbb = aaa; }}}");
+                       "package test; public class Test {public void test() {if (true) {int aaa = 0; int bbb = aaa; }}}");
     }
 
     public void testInsideBlockWithPreviousDeclaration() throws Exception {
@@ -397,7 +397,7 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
                 "            case 1:\n" +
                 "                aa = 2;\n" +
                 "                a|a = 2;\n" +
-                "                break;\n" +
+                "                break;   \n" +
                 "        }\n" +
                 "    }\n" +
                 "}\n",

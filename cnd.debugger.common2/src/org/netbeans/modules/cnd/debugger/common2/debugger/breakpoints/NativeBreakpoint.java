@@ -2199,7 +2199,7 @@ public abstract class NativeBreakpoint
 
 	isConditional = false;
 
-	if (getAction() != Action.STOP) {
+	if (getAction() != Action.STOP && getAction() != Action.STOPINSTR) {
 	    // Not really "conditional", but "complex" - execution doesn't
 	    // necessarily stop
 	    isConditional = true;

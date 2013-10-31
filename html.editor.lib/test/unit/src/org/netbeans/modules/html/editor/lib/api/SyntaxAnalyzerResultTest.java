@@ -52,7 +52,6 @@ import org.netbeans.modules.html.editor.lib.api.elements.Declaration;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
 import org.netbeans.modules.html.editor.lib.api.elements.Named;
-import org.netbeans.modules.html.editor.lib.plain.AbstractElement;
 import org.netbeans.modules.html.editor.lib.test.TestBase;
 
 /**
@@ -313,12 +312,12 @@ public class SyntaxAnalyzerResultTest extends TestBase {
             }
 
             @Override
-            public boolean isCustomTag(Named element) {
+            public boolean isCustomTag(Named element, HtmlSource source) {
                 return false;
             }
 
             @Override
-            public boolean isCustomAttribute(Attribute attribute) {
+            public boolean isCustomAttribute(Attribute attribute, HtmlSource source) {
                 return false;
             }
             

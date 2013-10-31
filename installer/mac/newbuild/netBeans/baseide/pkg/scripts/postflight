@@ -41,7 +41,7 @@ if [ -f "$dirname"/set_jdk_home.sh ]; then
     "$dirname"/set_jdk_home.sh "$NETBEANS_INSTALL_DIR" "$DEFAULT_JDK7_HOME"
 fi
 
-"$dirname"/populate_caches.sh "$NETBEANS_INSTALL_DIR"s
+"$dirname"/populate_caches.sh "$NETBEANS_INSTALL_DIR"
 
 #fix for 114656
 cd "$NETBEANS_INSTALL_DIR"

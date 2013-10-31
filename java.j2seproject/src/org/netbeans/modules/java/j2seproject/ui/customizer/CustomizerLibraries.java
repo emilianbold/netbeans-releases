@@ -58,9 +58,9 @@ import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
+import org.netbeans.modules.java.api.common.project.ui.LogicalViewProvider2;
 import org.netbeans.modules.java.api.common.project.ui.customizer.EditMediator;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
-import org.netbeans.modules.java.j2seproject.ui.J2SELogicalViewProvider;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
@@ -298,7 +298,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         else {
             category.setErrorMessage(null);
         }
-        J2SELogicalViewProvider viewProvider = uiProperties.getProject().getLookup().lookup(J2SELogicalViewProvider.class);
+        LogicalViewProvider2 viewProvider = uiProperties.getProject().getLookup().lookup(LogicalViewProvider2.class);
         //Update the state of project's node if needed
         viewProvider.testBroken();
     }

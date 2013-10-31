@@ -13,6 +13,5 @@ src/java/
 web/
 web/index.html
 web/WEB-INF/
-web/WEB-INF/beans.xml
 web/WEB-INF/glassfish-web.xml
 build.xml

@@ -81,7 +81,7 @@ public final class FileRunner {
     static final Logger LOGGER = Logger.getLogger(FileRunner.class.getName());
 
     private static final RequestProcessor RP = new RequestProcessor(FileRunner.class);
-    private static final ExecutionDescriptor.LineConvertorFactory PHP_LINE_CONVERTOR_FACTORY = new PhpLineConvertorFactory();
+    public static final ExecutionDescriptor.LineConvertorFactory PHP_LINE_CONVERTOR_FACTORY = new PhpLineConvertorFactory();
 
     final File file;
 

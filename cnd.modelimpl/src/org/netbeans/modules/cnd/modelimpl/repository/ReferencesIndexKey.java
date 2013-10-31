@@ -51,21 +51,18 @@ import org.openide.util.CharSequences;
  *
  * @author Vladimir Voskresensky
  */
-public class ReferencesIndexKey extends ProjectContainerKey {
+public final class ReferencesIndexKey extends ProjectContainerKey {
 
     public static final CharSequence UNIT_NAME = CharSequences.create("Global$$Model$$Data"); // NOI18N
-    private final int hashCode; // cashed hash code
 
     public ReferencesIndexKey() {
         super(KeyUtilities.getUnitId(UNIT_NAME, CacheLocation.DEFAULT));
         // TODO: ???
 //        KeyUtilities.getFileIdByName(getUnitId(), "ReferencesIndexKey$$"); // NOI18N
-        hashCode = _hashCode();
     }
 
     public ReferencesIndexKey(KeyDataPresentation presentation) {
         super(presentation);
-        hashCode = _hashCode();
     }
 
     @Override
@@ -79,33 +76,12 @@ public class ReferencesIndexKey extends ProjectContainerKey {
     }
 
     @Override
-    public int hashCode() {
-        return hashCode;
-    }
-
-    private int _hashCode() {
-        int key = super.hashCode();
-        key = 37 * KeyObjectFactory.KEY_MODEL_INDEX_KEY + key;
-        return key;
-    }
-
-    @Override
-    @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
-    public boolean equals(Object obj) {
-        if (!super.equals(obj)) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
     public void write(RepositoryDataOutput aStream) throws IOException {
         super.write(aStream);
     }
 
     /*package*/ ReferencesIndexKey(RepositoryDataInput aStream) throws IOException {
         super(aStream);
-        hashCode = _hashCode();
     }
 
     @Override
@@ -122,7 +98,7 @@ public class ReferencesIndexKey extends ProjectContainerKey {
     @Override
     public int getSecondaryAt(int level) {
         assert level == 0;
-        return KeyObjectFactory.KEY_MODEL_INDEX_KEY;
+        return getHandler();
     }
 
     @Override
@@ -131,7 +107,7 @@ public class ReferencesIndexKey extends ProjectContainerKey {
     }
 
     @Override
-    public short getKindPresentation() {
+    public short getHandler() {
         return KeyObjectFactory.KEY_MODEL_INDEX_KEY;
     }
 }

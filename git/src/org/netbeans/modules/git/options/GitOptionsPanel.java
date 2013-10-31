@@ -49,7 +49,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.api.options.OptionsDisplayer;
-import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
 
@@ -64,11 +63,9 @@ import org.openide.util.NbBundle;
 })
 final class GitOptionsPanel extends javax.swing.JPanel {
     
-    private final GitOptionsPanelController controller;
     private String[] keywords;
     
-    GitOptionsPanel(GitOptionsPanelController controller) {
-        this.controller = controller;        
+    GitOptionsPanel () {
         initComponents();
     }
     
@@ -103,9 +100,9 @@ final class GitOptionsPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        cbOpenOutputWindow = new javax.swing.JCheckBox();
-        excludeNewFiles = new javax.swing.JCheckBox();
-        cbIgnoreNotSharableFiles = new javax.swing.JCheckBox();
+        jLabel1 = new javax.swing.JLabel();
+        jSeparator1 = new javax.swing.JSeparator();
+        jLabel2 = new javax.swing.JLabel();
 
         cbOpenOutputWindow.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(cbOpenOutputWindow, org.openide.util.NbBundle.getMessage(GitOptionsPanel.class, "GitOptionsPanel.cbOpenOutputWindow.text")); // NOI18N
@@ -115,9 +112,18 @@ final class GitOptionsPanel extends javax.swing.JPanel {
         excludeNewFiles.setToolTipText(org.openide.util.NbBundle.getMessage(GitOptionsPanel.class, "GitOptionsPanel.excludeNewFiles.toolTipText")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(signOffCheckBox, org.openide.util.NbBundle.getMessage(GitOptionsPanel.class, "GitOptionsPanel.signOffCheckBox.text")); // NOI18N
+        signOffCheckBox.setToolTipText(org.openide.util.NbBundle.getMessage(GitOptionsPanel.class, "GitOptionsPanel.signOffCheckBox.TTtext")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(cbIgnoreNotSharableFiles, org.openide.util.NbBundle.getMessage(GitOptionsPanel.class, "GitOptionsPanel.cbIgnoreNotSharableFiles.text")); // NOI18N
         cbIgnoreNotSharableFiles.setToolTipText(org.openide.util.NbBundle.getMessage(GitOptionsPanel.class, "GitOptionsPanel.cbIgnoreNotSharableFiles.toolTipText")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(GitOptionsPanel.class, "GitOptionsPanel.jLabel1.text")); // NOI18N
+
+        jLabel2.setLabelFor(txtProjectAnnotation);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(GitOptionsPanel.class, "GitOptionsPanel.jLabel2.text")); // NOI18N
+        jLabel2.setToolTipText(org.openide.util.NbBundle.getMessage(GitOptionsPanel.class, "GitOptionsPanel.jLabel2.TTtext")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(btnAddVariable, org.openide.util.NbBundle.getMessage(GitOptionsPanel.class, "GitOptionsPanel.btnAddVariable.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -126,13 +132,28 @@ final class GitOptionsPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(signOffCheckBox)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(12, 12, 12)
+                        .addComponent(jLabel2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(txtProjectAnnotation)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnAddVariable)
+                        .addContainerGap())
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(excludeNewFiles)
-                            .addComponent(cbOpenOutputWindow)
-                            .addComponent(cbIgnoreNotSharableFiles))
-                        .addGap(0, 0, Short.MAX_VALUE))))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel1)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jSeparator1))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(signOffCheckBox)
+                                    .addComponent(excludeNewFiles)
+                                    .addComponent(cbOpenOutputWindow)
+                                    .addComponent(cbIgnoreNotSharableFiles))
+                                .addGap(0, 0, Short.MAX_VALUE)))
+                        .addGap(12, 12, 12))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -142,40 +163,36 @@ final class GitOptionsPanel extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(excludeNewFiles)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(signOffCheckBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(signOffCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(cbIgnoreNotSharableFiles)
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel1)
+                    .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel2)
+                    .addComponent(txtProjectAnnotation, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnAddVariable))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        cbOpenOutputWindow.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GitOptionsPanel.class, "ACSD_cbOpenOutputWindow")); // NOI18N
-        excludeNewFiles.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GitOptionsPanel.class, "GitOptionsPanel.excludeNewFiles.text")); // NOI18N
-        excludeNewFiles.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GitOptionsPanel.class, "GitOptionsPanel.excludeNewFiles.toolTipText")); // NOI18N
+        cbOpenOutputWindow.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GitOptionsPanel.class, "GitOptionsPanel.cbOpenOutputWindow.AccessibleContext.accessibleDescription_2")); // NOI18N
+        excludeNewFiles.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GitOptionsPanel.class, "GitOptionsPanel.excludeNewFiles.AccessibleContext.accessibleName_2")); // NOI18N
+        excludeNewFiles.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GitOptionsPanel.class, "GitOptionsPanel.excludeNewFiles.AccessibleContext.accessibleDescription_2")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-
-    void load() {        
-        cbOpenOutputWindow.setSelected(GitModuleConfig.getDefault().getAutoOpenOutput());        
-        excludeNewFiles.setSelected(GitModuleConfig.getDefault().getExludeNewFiles());
-        signOffCheckBox.setSelected(GitModuleConfig.getDefault().getSignOff());
-        cbIgnoreNotSharableFiles.setSelected(GitModuleConfig.getDefault().getAutoIgnoreFiles());
-    }
-    
-    void store() {
-        GitModuleConfig.getDefault().setAutoOpenOutput(cbOpenOutputWindow.isSelected());
-        GitModuleConfig.getDefault().setExcludeNewFiles(excludeNewFiles.isSelected());
-        GitModuleConfig.getDefault().setSignOff(signOffCheckBox.isSelected());
-        GitModuleConfig.getDefault().setAutoIgnoreFiles(cbIgnoreNotSharableFiles.isSelected());
-    }
-    
-    boolean valid() {
-        return true;
-    }
  
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox cbIgnoreNotSharableFiles;
-    private javax.swing.JCheckBox cbOpenOutputWindow;
-    private javax.swing.JCheckBox excludeNewFiles;
+    final javax.swing.JButton btnAddVariable = new javax.swing.JButton();
+    final javax.swing.JCheckBox cbIgnoreNotSharableFiles = new javax.swing.JCheckBox();
+    final javax.swing.JCheckBox cbOpenOutputWindow = new javax.swing.JCheckBox();
+    final javax.swing.JCheckBox excludeNewFiles = new javax.swing.JCheckBox();
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JSeparator jSeparator1;
     final javax.swing.JCheckBox signOffCheckBox = new javax.swing.JCheckBox();
+    final javax.swing.JTextField txtProjectAnnotation = new javax.swing.JTextField();
     // End of variables declaration//GEN-END:variables
     
 }

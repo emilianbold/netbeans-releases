@@ -82,7 +82,9 @@ public class OSGILookupProvider implements LookupProvider {
         nbprj.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                checkContent(prj, ic, access, bundler, templates);
+                if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
+                    checkContent(prj, ic, access, bundler, templates);
+                }
             }
 
         });

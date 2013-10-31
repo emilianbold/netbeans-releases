@@ -46,6 +46,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.Icon;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -76,6 +77,9 @@ import org.openide.util.lookup.ProxyLookup;
 
 @NodeFactory.Registration(projectType="org-netbeans-modules-maven", position=520)
 public class BootCPNodeFactory implements NodeFactory {
+    
+    private static final @StaticResource String LIBS_BADGE = "org/netbeans/modules/maven/libraries-badge.png";
+    
 
     @Override public NodeList<?> createNodes(final Project p) {
         return new AbstractMavenNodeList<Void>() {
@@ -100,11 +104,11 @@ public class BootCPNodeFactory implements NodeFactory {
         }
 
         @Override public Image getIcon(int param) {
-            return ImageUtilities.mergeImages(DependenciesNode.getTreeFolderIcon(false), ImageUtilities.loadImage("org/netbeans/modules/maven/libraries-badge.png"), 8, 8);
+            return ImageUtilities.mergeImages(DependenciesNode.getTreeFolderIcon(false), ImageUtilities.loadImage(LIBS_BADGE), 8, 8);
         }
 
         @Override public Image getOpenedIcon(int param) {
-            return ImageUtilities.mergeImages(DependenciesNode.getTreeFolderIcon(true), ImageUtilities.loadImage("org/netbeans/modules/maven/libraries-badge.png"), 8, 8);
+            return ImageUtilities.mergeImages(DependenciesNode.getTreeFolderIcon(true), ImageUtilities.loadImage(LIBS_BADGE), 8, 8);
         }
 
     }

@@ -42,12 +42,9 @@
 
 package org.netbeans.modules.web.jsf.palette.items;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dialog;
-import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -61,15 +58,9 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
-import javax.swing.ListCellRenderer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataEvent;
@@ -94,15 +85,13 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.beans.MetaModelSupport;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.modules.web.jsf.JsfTemplateUtils;
+import org.netbeans.modules.web.jsf.JsfTemplateUtils.OpenTemplateAction;
+import org.netbeans.modules.web.jsf.JsfTemplateUtils.TemplateType;
 import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.DialogDescriptor;
-import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -171,10 +160,10 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel implements Cancell
         }
 
         // templates comboBox
-        for (JsfTemplateUtils.Template template : JsfTemplateUtils.getSnippetTemplates()) {
+        for (JsfTemplateUtils.Template template : JsfTemplateUtils.getTemplates(JsfTemplateUtils.TemplateType.SNIPPETS)) {
             templatesStyleComboBox.addItem(template);
         }
-        templatesStyleComboBox.setRenderer(new TemplateCellRenderer());
+        templatesStyleComboBox.setRenderer(new JsfTemplateUtils.TemplateCellRenderer());
     }
 
     private void updateValidity(String text) {
@@ -312,13 +301,15 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel implements Cancell
                 hint.setText(NbBundle.getMessage(ManagedBeanCustomizer.class, "ManagedBeanCustomizer.instanceHint", entityClass));
             }
             hint.setVisible(true);
-            RP.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
+                @Override
                 public void run() {
                     final List<String> props = getPropertyNames(project, entityClass, collection);
                     EventQueue.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             dummyBean = false;
-                            if (props.size() == 0) {
+                            if (props.isEmpty()) {
                                 props.add(""); // NOI18N
                                 props.add(NbBundle.getMessage(ManagedBeanCustomizer.class, "ManagedBeanCustomizer.notManagedBeanFound")); // NOI18N
                                 dummyBean = true;
@@ -344,11 +335,11 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel implements Cancell
     private void customizeTemplatesLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_customizeTemplatesLabelMouseClicked
         if (collection) {
             new OpenTemplateAction(this, NbBundle.getMessage(ManagedBeanCustomizer.class, "ManagedBeanCustomizer.tableTemplate"),
-                    JsfTemplateUtils.getSnippetTemplatePath(getTemplatesStyle(), TABLE_TEMPLATE)).actionPerformed(null);
+                    JsfTemplateUtils.getTemplatePath(TemplateType.SNIPPETS, getTemplatesStyle(), TABLE_TEMPLATE)).actionPerformed(null);
         } else {
             JPopupMenu menu = new JPopupMenu();
-            String viewTemplatePath = JsfTemplateUtils.getSnippetTemplatePath(getTemplatesStyle(), VIEW_TEMPLATE);
-            String editTemplatePath = JsfTemplateUtils.getSnippetTemplatePath(getTemplatesStyle(), EDIT_TEMPLATE);
+            String viewTemplatePath = JsfTemplateUtils.getTemplatePath(TemplateType.SNIPPETS, getTemplatesStyle(), VIEW_TEMPLATE);
+            String editTemplatePath = JsfTemplateUtils.getTemplatePath(TemplateType.SNIPPETS, getTemplatesStyle(), EDIT_TEMPLATE);
             menu.add(new OpenTemplateAction(this, NbBundle.getMessage(ManagedBeanCustomizer.class, "ManagedBeanCustomizer.allTemplates"), viewTemplatePath, editTemplatePath));
             menu.add(new OpenTemplateAction(this, NbBundle.getMessage(ManagedBeanCustomizer.class, "ManagedBeanCustomizer.viewTemplate"), viewTemplatePath));
             menu.add(new OpenTemplateAction(this, NbBundle.getMessage(ManagedBeanCustomizer.class, "ManagedBeanCustomizer.editTemplate"), editTemplatePath));
@@ -373,39 +364,6 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel implements Cancell
 
     public String getTemplatesStyle() {
         return ((JsfTemplateUtils.Template) templatesStyleComboBox.getSelectedItem()).getName();
-    }
-
-    public static class OpenTemplateAction extends AbstractAction {
-
-        private String[] templateFileName;
-        private CancellableDialog panel;
-
-        public OpenTemplateAction(CancellableDialog panel, String actionName, String ... templateFileName) {
-            this.templateFileName = templateFileName;
-            this.panel = panel;
-            this.putValue(Action.NAME, actionName);
-        }
-
-        public void actionPerformed(ActionEvent arg0) {
-            for (String template : templateFileName) {
-                openSingle(template);
-            }
-        }
-
-        private void openSingle(String template) {
-            FileObject tableTemplate = FileUtil.getConfigRoot().getFileObject(template);
-            try {
-                final DataObject dob = DataObject.find(tableTemplate);
-                EventQueue.invokeLater(new Runnable() {
-                    public void run() {
-                        dob.getLookup().lookup(EditCookie.class).edit();
-                    }
-                });
-                panel.cancel();
-            } catch (DataObjectNotFoundException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -575,17 +533,4 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel implements Cancell
         }
     }
 
-    class TemplateCellRenderer implements ListCellRenderer {
-
-        protected DefaultListCellRenderer defaultRenderer = new DefaultListCellRenderer();
-
-        @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            JLabel renderer = (JLabel) defaultRenderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-            if (value instanceof JsfTemplateUtils.Template) {
-                renderer.setText(((JsfTemplateUtils.Template) value).getDisplayName());
-            }
-            return renderer;
-        }
-}
 }

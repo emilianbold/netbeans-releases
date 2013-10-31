@@ -46,7 +46,6 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.bugtracking.api.Repository;
@@ -57,14 +56,13 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.actions.SystemAction;
 
 /**
  *
  * @author Tomas Stupka
  */
 public class RepositoryNode extends AbstractNode implements PropertyChangeListener {
-    private Repository repository;
+    private final Repository repository;
 
     public RepositoryNode(Repository repository) {
         super(Children.LEAF);
@@ -96,7 +94,7 @@ public class RepositoryNode extends AbstractNode implements PropertyChangeListen
             new AbstractAction(NbBundle.getMessage(BugtrackingRootNode.class, "LBL_EditRepository")) { // NOI18N
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    repository.edit();
+                    Util.edit(repository);
                 }
             },
             new AbstractAction(NbBundle.getMessage(BugtrackingRootNode.class, "LBL_RemoveRepository")) { // NOI18N
@@ -109,6 +107,7 @@ public class RepositoryNode extends AbstractNode implements PropertyChangeListen
 
                     if(DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {
                         RequestProcessor.getDefault().post(new Runnable() {
+                            @Override
                             public void run() {
                                 repository.remove();
                             }
@@ -122,11 +121,7 @@ public class RepositoryNode extends AbstractNode implements PropertyChangeListen
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if(evt.getPropertyName().equals(Repository.EVENT_ATTRIBUTES_CHANGED)) {
-            Map<String, String> oldMap = (Map<String, String>) evt.getOldValue();
-            Map<String, String> newMap = (Map<String, String>) evt.getNewValue();
-            if(oldMap.containsKey(Repository.ATTRIBUTE_DISPLAY_NAME)) {
-                super.setDisplayName(newMap.get(Repository.ATTRIBUTE_DISPLAY_NAME));
-            }
+            super.setDisplayName(repository.getDisplayName());
         }
     }
 

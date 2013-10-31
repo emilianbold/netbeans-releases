@@ -79,6 +79,7 @@ public class DeveloperToolbar {
 
     private DeveloperToolbar() {
         panel = new JPanel( new FlowLayout(FlowLayout.LEFT) );
+        panel.setOpaque(false);
         resizeBar = new JToolBar();
         resizeBar.setFloatable( false );
         resizeBar.setFocusable( false );
@@ -160,6 +161,7 @@ public class DeveloperToolbar {
         }
         bar.setFloatable( false );
         bar.setFocusable( false );
+        bar.setOpaque(false);
         if( null != customToolbar )
             panel.remove( customToolbar );
         panel.add( bar );
@@ -217,6 +219,7 @@ public class DeveloperToolbar {
     private void fillResizeBar() {
         resizeBar.removeAll();
         resizeButtons.clear();
+        resizeBar.setOpaque(false);
 
         final boolean resizingEnabled = null != context.lookup( Resizable.class );
         List<ResizeOption> options = ResizeOptions.getDefault().loadAll();

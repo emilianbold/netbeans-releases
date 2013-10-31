@@ -44,6 +44,7 @@ package org.netbeans.modules.php.phpunit.preferences;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.validation.ValidationResult;
+import org.netbeans.modules.php.phpunit.util.PhpUnitUtils;
 import org.openide.util.NbBundle;
 
 public final class PhpUnitPreferencesValidator {
@@ -81,9 +82,13 @@ public final class PhpUnitPreferencesValidator {
         return this;
     }
 
-    @NbBundle.Messages("PhpUnitPreferencesValidator.phpUnit.label=Custom PHPUnit")
     public PhpUnitPreferencesValidator validatePhpUnit(boolean phpUnitEnabled, String phpUnitPath) {
-        validatePath(phpUnitEnabled, phpUnitPath, Bundle.PhpUnitPreferencesValidator_phpUnit_label(), "phpUnitPath"); // NOI18N
+        if (phpUnitEnabled) {
+            String warning = PhpUnitUtils.validatePhpUnitPath(phpUnitPath);
+            if (warning != null) {
+                result.addWarning(new ValidationResult.Message("phpUnitPath", warning)); // NOI18N
+            }
+        }
         return this;
     }
 

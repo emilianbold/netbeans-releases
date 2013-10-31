@@ -53,8 +53,10 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
-import org.netbeans.modules.bugtracking.util.NBBugzillaUtils;
+import org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils;
+import org.netbeans.modules.bugtracking.util.SimpleIssueFinder;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
@@ -186,23 +188,28 @@ public class BugzillaUtil {
     }
 
     public static Repository getRepository(BugzillaRepository bugzillaRepository) {
-        Repository repository = Bugzilla.getInstance().getBugtrackingFactory().getRepository(BugzillaConnector.ID, bugzillaRepository.getID());
+        Repository repository = RepositoryManager.getInstance().getRepository(BugzillaConnector.ID, bugzillaRepository.getID());
         if(repository == null) {
-            repository = Bugzilla.getInstance().getBugtrackingFactory().createRepository(
-                    bugzillaRepository, 
-                    Bugzilla.getInstance().getRepositoryProvider(), 
-                    Bugzilla.getInstance().getQueryProvider(),
-                    Bugzilla.getInstance().getIssueProvider());
+            repository = createRepository(bugzillaRepository);
         }
         return repository;
     }
+    
+    public static Repository createRepository(BugzillaRepository bugzillaRepository) {
+        return Bugzilla.getInstance().getBugtrackingFactory().createRepository(
+                bugzillaRepository, 
+                Bugzilla.getInstance().getStatusProvider(),
+                Bugzilla.getInstance().getSchedulingProvider(),
+                Bugzilla.getInstance().createPriorityProvider(bugzillaRepository),
+                SimpleIssueFinder.getInstance());
+    }
 
     public static void openIssue(BugzillaIssue bugzillaIssue) {
-        Bugzilla.getInstance().getBugtrackingFactory().openIssue(getRepository(bugzillaIssue.getRepository()), bugzillaIssue);
+        Bugzilla.getInstance().getBugtrackingFactory().openIssue(bugzillaIssue.getRepository(), bugzillaIssue);
     }
     
     public static void openQuery(BugzillaQuery bugzillaQuery) {
-        Bugzilla.getInstance().getBugtrackingFactory().openQuery(getRepository(bugzillaQuery.getRepository()), bugzillaQuery);
+        Bugzilla.getInstance().getBugtrackingFactory().editQuery(bugzillaQuery.getRepository(), bugzillaQuery);
     }
 
     public static void runInAWT(Runnable r) {

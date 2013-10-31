@@ -53,6 +53,7 @@ import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
+import org.netbeans.modules.maven.spi.IconResources;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
@@ -72,6 +73,7 @@ import org.openide.util.lookup.Lookups;
  * @author mkleint
  */
 public final class MoveToDependencyManagementPanel extends javax.swing.JPanel implements ExplorerManager.Provider, Runnable {
+    private static final String WAIT = "org/netbeans/modules/maven/navigator/wait.gif";
 
     private final BeanTreeView treeView;
     private final transient ExplorerManager explorerManager = new ExplorerManager();
@@ -110,7 +112,7 @@ public final class MoveToDependencyManagementPanel extends javax.swing.JPanel im
     }
     private static Node createWaitNode() {
         AbstractNode an = new AbstractNode(Children.LEAF);
-        an.setIconBaseWithExtension("org/netbeans/modules/maven/navigator/wait.gif");
+        an.setIconBaseWithExtension(WAIT);
         an.setDisplayName(NbBundle.getMessage(MoveToDependencyManagementPanel.class, "LBL_Wait"));
         return an;
     }
@@ -183,7 +185,7 @@ public final class MoveToDependencyManagementPanel extends javax.swing.JPanel im
 
     private static class POMNode extends AbstractNode {
 
-        private final Image icon = ImageUtilities.loadImage("org/netbeans/modules/maven/navigator/Maven2Icon.gif"); // NOI18N
+        private final Image icon = ImageUtilities.loadImage(IconResources.MAVEN_ICON); // NOI18N
         private boolean readonly = false;
         private POMNode(File key, MavenEmbedder.ModelDescription mdl, Lookup lkp) {
             super( Children.LEAF, lkp);

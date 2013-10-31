@@ -44,17 +44,21 @@ package org.netbeans.modules.jira;
 
 import com.atlassian.connector.eclipse.internal.jira.core.JiraClientFactory;
 import com.atlassian.connector.eclipse.internal.jira.core.JiraRepositoryConnector;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Priority;
 import com.atlassian.connector.eclipse.internal.jira.core.service.JiraClient;
+import java.beans.PropertyChangeListener;
+import java.util.Collection;
 import java.util.logging.Logger;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
-import org.netbeans.modules.bugtracking.spi.BugtrackingFactory;
-import org.netbeans.modules.bugtracking.util.UndoRedoSupport;
+import org.netbeans.modules.bugtracking.spi.BugtrackingSupport;
+import org.netbeans.modules.bugtracking.spi.IssuePriorityInfo;
+import org.netbeans.modules.bugtracking.spi.IssuePriorityProvider;
+import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.repository.JiraStorageManager;
-import org.netbeans.modules.jira.util.JiraUtils;
 import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.openide.util.RequestProcessor;
 
@@ -71,11 +75,14 @@ public class Jira {
     public static final Logger LOG = Logger.getLogger("org.netbeans.modules.jira.Jira");
     private RequestProcessor rp;
 
-    private BugtrackingFactory<JiraRepository, JiraQuery, NbJiraIssue> bf;
+    private BugtrackingSupport<JiraRepository, JiraQuery, NbJiraIssue> bf;
     private JiraRepositoryProvider jrp;
     private JiraQueryProvider jqp;
     private JiraIssueProvider jip;
+    private IssueStatusProvider<JiraRepository, NbJiraIssue> isp;
     private IssueNode.ChangesProvider<NbJiraIssue> jcp;
+    private IssuePriorityProvider<NbJiraIssue> ipp;
+    
     
     private Jira() {
         ModuleLifecycleManager.instantiated = true;
@@ -125,9 +132,9 @@ public class Jira {
         return storageManager;
     }
 
-    public BugtrackingFactory<JiraRepository, JiraQuery, NbJiraIssue> getBugtrackingFactory() {
+    public BugtrackingSupport<JiraRepository, JiraQuery, NbJiraIssue> getBugtrackingFactory() {
         if(bf == null) {
-            bf = new BugtrackingFactory<JiraRepository, JiraQuery, NbJiraIssue>();
+            bf = new BugtrackingSupport<>(getRepositoryProvider(), getQueryProvider(), getIssueProvider());
         }    
         return bf;
     }    
@@ -155,6 +162,67 @@ public class Jira {
         return jrp; 
     }
 
+    public synchronized IssueStatusProvider<JiraRepository, NbJiraIssue> getStatusProvider() {
+        if(isp == null) {
+            isp = new IssueStatusProvider<JiraRepository, NbJiraIssue>() {
+                @Override
+                public IssueStatusProvider.Status getStatus(NbJiraIssue issue) {
+                    return issue.getStatus();
+                }
+                @Override
+                public void setSeenIncoming(NbJiraIssue issue, boolean uptodate) {
+                    issue.setUpToDate(uptodate);
+                }
+                @Override
+                public void addPropertyChangeListener(NbJiraIssue issue, PropertyChangeListener listener) {
+                    issue.addPropertyChangeListener(listener);
+                }
+                @Override
+                public void removePropertyChangeListener(NbJiraIssue issue, PropertyChangeListener listener) {
+                    issue.removePropertyChangeListener(listener);
+                }
+                @Override
+                public Collection<NbJiraIssue> getUnsubmittedIssues(JiraRepository r) {
+                    return r.getUnsubmittedIssues();
+                }
+                @Override
+                public void discardOutgoing(NbJiraIssue i) {
+                    i.discardLocalEdits();
+                }
+                @Override
+                public boolean submit (NbJiraIssue data) {
+                    return data.submitAndRefresh();
+                }                
+            };
+        }
+        return isp;
+    }
+    
+    public synchronized IssuePriorityProvider<NbJiraIssue> getPriorityProvider(final JiraRepository repository) {
+        if(ipp == null) {
+            ipp = new IssuePriorityProvider<NbJiraIssue>() {
+                private IssuePriorityInfo[] infos;
+                @Override
+                public String getPriorityID(NbJiraIssue i) {
+                    return i.getPriorityID();
+                }
+
+                @Override
+                public IssuePriorityInfo[] getPriorityInfos() {
+                    if(infos == null) {
+                        Priority[] priorities = repository.getConfiguration().getPriorities();
+                        infos = new IssuePriorityInfo[priorities.length];
+                        for (int i = 0; i < priorities.length; i++) {
+                            infos[i] = new IssuePriorityInfo(priorities[i].getId(), priorities[i].getName());
+                        }
+                    }
+                    return infos;
+                }
+            };
+        }
+        return ipp;
+    }
+    
     public IssueNode.ChangesProvider<NbJiraIssue> getChangesProvider() {
         if(jcp == null) {
             jcp = new IssueNode.ChangesProvider<NbJiraIssue>() {
@@ -166,8 +234,4 @@ public class Jira {
         }
         return jcp;
     }    
-    
-    public UndoRedoSupport getUndoRedoSupport(NbJiraIssue issue) {
-        return getBugtrackingFactory().getUndoRedoSupport(JiraUtils.getRepository(issue.getRepository()), issue);
-    }
 }

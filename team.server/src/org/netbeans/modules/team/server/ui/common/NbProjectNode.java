@@ -48,6 +48,7 @@ import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.net.URISyntaxException;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -56,6 +57,7 @@ import org.netbeans.modules.team.ide.spi.IDEProject;
 import org.netbeans.modules.team.server.ui.spi.DashboardProvider;
 import org.netbeans.modules.team.commons.treelist.LeafNode;
 import org.netbeans.modules.team.commons.treelist.TreeListNode;
+import org.openide.util.Utilities;
 
 /**
  * Node for a single netbeans project.
@@ -87,6 +89,10 @@ public class NbProjectNode<P> extends LeafNode {
             panel.add(new JLabel(), new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
         }
         btn.setForeground(foreground, isSelected);
+        try {
+            btn.setToolTipText(Utilities.toFile(prj.getURL().toURI()).getAbsolutePath());
+        } catch (URISyntaxException ex) {
+        }
         return panel;
     }
 

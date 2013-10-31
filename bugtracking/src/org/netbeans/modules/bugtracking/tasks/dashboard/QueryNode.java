@@ -55,8 +55,10 @@ import org.netbeans.modules.team.commons.treelist.LinkButton;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions.OpenQueryAction;
 import org.netbeans.modules.bugtracking.settings.DashboardSettings;
+import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.team.commons.treelist.TreeLabel;
 import org.netbeans.modules.team.commons.treelist.TreeListNode;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -73,8 +75,10 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
     private final Object LOCK = new Object();
     private TreeLabel lblSeparator;
 
+    private static final ImageIcon QUERY_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/query.png", true);
+
     public QueryNode(QueryImpl query, TreeListNode parent, boolean refresh) {
-        super(refresh, true, parent, query.getDisplayName());
+        super(refresh, true, parent, query.getDisplayName(), QUERY_ICON);
         this.query = query;
         queryListener = new QueryListener();
     }
@@ -143,9 +147,11 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
         synchronized (LOCK) {
             labels.clear();
             buttons.clear();
+            JLabel lblIcon = new JLabel(getIcon());
 
+            panel.add(lblIcon, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
             lblName = new TreeLabel(query.getDisplayName());
-            panel.add(lblName, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
+            panel.add(lblName, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
             labels.add(lblName);
 
             TreeLabel lbl = new TreeLabel("("); //NOI18N
@@ -180,8 +186,13 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
     }
 
     @Override
+    Icon getIcon() {
+        return QUERY_ICON;
+    }
+
+    @Override
     protected Action getDefaultAction() {
-        return new OpenQueryAction(this);
+        return query.providesMode(QueryController.QueryMode.VIEW) ? new OpenQueryAction(this) : null;
     }
 
     @Override
@@ -252,7 +263,7 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName().equals(QueryImpl.EVENT_QUERY_ISSUES_CHANGED)) {
+            if (evt.getPropertyName().equals(QueryImpl.EVENT_QUERY_REFRESHED)) {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {

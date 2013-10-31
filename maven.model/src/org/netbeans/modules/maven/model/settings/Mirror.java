@@ -64,4 +64,25 @@ public interface Mirror extends SettingsComponent {
 
     String getMirrorOf();
     void setMirrorOf(String mirrorof);
+    
+    /**
+     * only applicable in <code>SettingsQName.Version.NEW_110</code>
+     * @return 
+     */
+    String getLayout();
+    /**
+     * only applicable in <code>SettingsQName.Version.NEW_110</code>, noop otherwise
+     * @param layout 
+     */
+    void setLayout(String layout);
+     /**
+     * only applicable in <code>SettingsQName.Version.NEW_110</code>
+     * @return 
+     */
+    String getMirrorOfLayouts();
+    /**
+     * only applicable in <code>SettingsQName.Version.NEW_110</code>, noop otherwise 
+     * @param mirrorOf
+     */
+    void setMirrorOfLayouts(String mirrorOf);
 }

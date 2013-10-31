@@ -991,8 +991,10 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
         
         boolean oldXml = xmlVersion == null ? true :
             new BigDecimal(org.netbeans.modules.j2ee.dd.api.ejb.EjbJar.VERSION_2_1).compareTo(xmlVersion) > 0;
-        if (Profile.J2EE_14 == selectedItem.getProfile() && oldXml) {
-            errorMessage = NbBundle.getMessage(ProjectServerPanel.class, "MSG_EjbJarXMLNotSupported");
+        if (selectedItem != null) {
+            if (Profile.J2EE_14 == selectedItem.getProfile() && oldXml) {
+                errorMessage = NbBundle.getMessage(ProjectServerPanel.class, "MSG_EjbJarXMLNotSupported");
+            }
         }
 
         if (d != null) {

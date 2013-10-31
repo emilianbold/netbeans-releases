@@ -44,6 +44,8 @@
 package org.netbeans.modules.cnd.modelimpl.repository;
 
 import java.io.IOException;
+import org.netbeans.modules.cnd.repository.impl.spi.UnitsConverter;
+import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
@@ -76,8 +78,13 @@ import org.openide.util.CharSequences;
     }
 
     @Override
+    public int hashCode(UnitsConverter unitsConverter) {
+        return 37*getHandler() + RepositoryUtils.clientToLayer(unitsConverter, unitIndex);
+    }
+
+    @Override
     public int hashCode() {
-        return unitIndex;
+        return 37*getHandler() + unitIndex;
     }
 
     @Override
@@ -86,12 +93,23 @@ import org.openide.util.CharSequences;
     }
 
     @Override
+    public boolean equals(UnitsConverter unitsConverter, Key object) {
+        if (this == object) {
+            return true;
+        }
+        return RepositoryUtils.clientToLayer(unitsConverter, unitIndex) == RepositoryUtils.clientToLayer(unitsConverter, object.getUnitId());
+    }
+
+
+    @Override
     public boolean equals(Object obj) {
-        if (!super.equals(obj)) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || (this.getClass() != obj.getClass())) {
             return false;
         }
         ProjectNameBasedKey other = (ProjectNameBasedKey) obj;
-
         return this.unitIndex == other.unitIndex;
     }
 

@@ -55,6 +55,7 @@ import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.spi.QueryController.QueryMode;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.kenai.KenaiQuery;
 import org.netbeans.modules.jira.repository.JiraRepository;
@@ -211,7 +212,7 @@ public class QueryRefreshTest extends NbTestCase {
 //    }
 
     private void selectTestProject(final JiraQuery jq) {
-        QueryPanel panel = (QueryPanel) jq.getController().getComponent();
+        QueryPanel panel = (QueryPanel) jq.getController().getComponent(QueryMode.EDIT);
         ListModel model = panel.projectList.getModel();
         for (int i = 0; i < model.getSize(); i++) {
             Project project = (Project) model.getElementAt(i);

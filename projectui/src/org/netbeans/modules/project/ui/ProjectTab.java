@@ -66,6 +66,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -88,6 +89,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -108,6 +110,7 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.Visualizer;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
@@ -141,9 +144,11 @@ public class ProjectTab extends TopComponent
                 
     public static final String ID_LOGICAL = "projectTabLogical_tc"; // NOI18N                            
     public static final String ID_PHYSICAL = "projectTab_tc"; // NOI18N                        
+    private static final @StaticResource String PROJECT_TAB = "org/netbeans/modules/project/ui/resources/projectTab.png";
+    private static final @StaticResource String FILES_TAB = "org/netbeans/modules/project/ui/resources/filesTab.png";
     
-    private static final Image ICON_LOGICAL = ImageUtilities.loadImage( "org/netbeans/modules/project/ui/resources/projectTab.png" );
-    private static final Image ICON_PHYSICAL = ImageUtilities.loadImage( "org/netbeans/modules/project/ui/resources/filesTab.png" );
+    private static final Image ICON_LOGICAL = ImageUtilities.loadImage( PROJECT_TAB);
+    private static final Image ICON_PHYSICAL = ImageUtilities.loadImage( FILES_TAB);
 
     private static final Logger LOG = Logger.getLogger(ProjectTab.class.getName());
 
@@ -844,12 +849,68 @@ public class ProjectTab extends TopComponent
         }
 
         @Override public void actionPerformed(ActionEvent e) {
-            ProjectTab tab = findDefault(type);
-            for (Node root : tab.manager.getRootContext().getChildren().getNodes()) {
-                tab.btv.collapseNode(root);
+            RP.post(new Runnable() {
+
+                @Override
+                public void run() {
+                    SwingUtilities.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            final ProjectTab tab = findDefault(type);
+                            final Children children = tab.manager.getRootContext().getChildren();
+                            for (Node root : children.getNodes()) {
+                                if( tab.btv.isExpanded(root) ) {
+                                    collapseNodes(root, tab);
+                                    tab.btv.collapseNode(root);
+                                }
+                            }
+                            Mutex.EVENT.writeAccess(new Runnable() {
+                                public @Override void run() {
+                                    try {
+
+                                        FileObject activeFile = null;
+                                        Iterator<TopComponent> iterator = TopComponent.getRegistry().getOpened().iterator();
+                                        while(iterator.hasNext()) {
+                                            TopComponent componentIter = iterator.next();
+                                            if(componentIter.isVisible() && componentIter.getLookup().lookup(FileObject.class) != null) {
+                                                activeFile = componentIter.getLookup().lookup(FileObject.class);
+                                                break;
+                                            }
+                                        }
+                                        Project projectOwner = FileOwnerQuery.getOwner(activeFile);
+                                        Node projectNode = null;
+                                        for (Node node : children.getNodes(true)) {
+                                            if(projectOwner.equals(node.getLookup().lookup(Project.class))) {
+                                                projectNode = node;
+                                                break;
+                                            }
+                                        }
+                                        tab.manager.setSelectedNodes(new Node[] {projectNode});
+                                        tab.btv.scrollToNode(projectNode);
+                                    } catch (PropertyVetoException e) {
+                                        // Node found but can't be selected
+                                    }
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+            
+        }
+        
+        private void collapseNodes(Node node, ProjectTab tab) {
+            if (  node.getChildren().getNodesCount() != 0 ) {
+                for ( Node nodeIter : node.getChildren().getNodes() ) {
+                    if( tab.btv.isExpanded(nodeIter) ) {
+                        collapseNodes(nodeIter, tab);
+                        tab.btv.collapseNode(nodeIter);
+                    }
+                }
             }
         }
 
     }
-
+    
 }

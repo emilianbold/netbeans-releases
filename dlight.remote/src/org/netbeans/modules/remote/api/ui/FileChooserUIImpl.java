@@ -43,7 +43,6 @@ package org.netbeans.modules.remote.api.ui;
 
 import java.awt.AWTKeyStroke;
 import java.awt.BorderLayout;
-import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.ComponentOrientation;
@@ -115,7 +114,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
@@ -1112,7 +1110,7 @@ class FileChooserUIImpl extends BasicFileChooserUI{
         }
     }    
 
-    private File lastDir;
+    private String lastDir;
     private File[] lastChildren;
     private void updateCompletions() {
         if (showPopupCompletion) {
@@ -1120,16 +1118,15 @@ class FileChooserUIImpl extends BasicFileChooserUI{
             int slash = name.lastIndexOf(File.separatorChar);
             if (slash != -1) {
                 String prefix = name.substring(0, slash + 1);
-                File dir = getFileChooser().getFileSystemView().createFileObject(prefix);
                 File[] children;
                 synchronized (listFilesWorker) {
-                    if (!dir.equals(lastDir)) {
+                    if (!prefix.equals(lastDir)) {
                         if (completionPopup != null) {
                             completionPopup.setDataList(new Vector<File>(0));
                             completionPopup.detach();
                             completionPopup = null;
                         }
-                        listFilesWorker.d = dir;
+                        listFilesWorker.d = prefix;
                         listFilesTask.schedule(0);
                         return;
                     } else {
@@ -1156,13 +1153,14 @@ class FileChooserUIImpl extends BasicFileChooserUI{
     }
 
     private class ListFilesWorker implements Runnable {
-        private File d;
+        private String d;
         @Override
         public void run() {
-            File dir;
+            String path;
             synchronized (this) {
-                dir = d;
+                path = d;
             }
+            File dir = getFileChooser().getFileSystemView().createFileObject(path);
             List<File> files = new LinkedList<File>();
             File[] children = dir.listFiles();
             if (children != null) {
@@ -1183,7 +1181,7 @@ class FileChooserUIImpl extends BasicFileChooserUI{
                 }
             }
             synchronized (this) {
-                lastDir = dir;
+                lastDir = path;
                 lastChildren = files.toArray(new File[files.size()]);
             }
             if (lastChildren.length > 0) {

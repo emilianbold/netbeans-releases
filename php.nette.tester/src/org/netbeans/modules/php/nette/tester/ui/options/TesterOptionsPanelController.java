@@ -78,6 +78,7 @@ public class TesterOptionsPanelController extends OptionsPanelController impleme
     public void update() {
         assert EventQueue.isDispatchThread();
         getPanel().setTesterPath(getTesterOptions().getTesterPath());
+        getPanel().setPhpIniPath(getTesterOptions().getPhpIniPath());
         changed = false;
     }
 
@@ -87,6 +88,7 @@ public class TesterOptionsPanelController extends OptionsPanelController impleme
             @Override
             public void run() {
                 getTesterOptions().setTesterPath(getPanel().getTesterPath());
+                getTesterOptions().setPhpIniPath(getPanel().getPhpIniPath());
                 changed = false;
             }
         });
@@ -101,7 +103,7 @@ public class TesterOptionsPanelController extends OptionsPanelController impleme
         assert EventQueue.isDispatchThread();
         TesterOptionsPanel panel = getPanel();
         ValidationResult result = new TesterOptionsValidator()
-                .validate(panel.getTesterPath())
+                .validate(panel.getTesterPath(), panel.getPhpIniPath())
                 .getResult();
         // errors
         if (result.hasErrors()) {

@@ -45,7 +45,6 @@ import org.netbeans.spi.editor.hints.projects.PerProjectHintsPanel;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
-import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -103,8 +102,6 @@ class ProjectHintSettingPanel extends javax.swing.JPanel {
     }
 
     private void settingsOriginChanged() {
-        enableDisableRecursively(panelUI, useProjectSettings.isSelected());
-        
         globalSettings.setEnabled(!useProjectSettings.isSelected());
         advanced.setEnabled(useProjectSettings.isSelected());
 
@@ -113,6 +110,7 @@ class ProjectHintSettingPanel extends javax.swing.JPanel {
         } else {
             panel.setGlobalSettings();
         }
+        enableDisableRecursively(panelUI, useProjectSettings.isSelected());
     }
     
     private void enableDisableRecursively(Component what, boolean enable) {

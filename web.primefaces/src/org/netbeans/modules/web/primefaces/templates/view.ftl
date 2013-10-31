@@ -2,16 +2,16 @@
 
   TEMPLATE DESCRIPTION:
 
-  This is XHTML template for 'JSF ReadOnly Form From Entity' action. Templating
+  This is XHTML template for 'JSF Pages From Entity Beans' action. Templating
   is performed using FreeMaker (http://freemarker.org/) - see its documentation
   for full syntax. Variables available for templating are:
 
-    prefixResolver - helps resolve prefix for given template (call prefixForNS(namespace, fallbackPrefix) method)
     entityName - name of entity being modified (type: String)
     managedBean - name of managed choosen in UI (type: String)
     managedBeanProperty - name of managed bean property choosen in UI (type: String)
     item - name of property used for dataTable iteration (type: String)
     comment - always set to "false" (type: Boolean)
+    nsLocation - which namespace location to use (http://xmlns.jcp.org in case of JSF2.2, http://java.sun.com otherwise)
     entityDescriptors - list of beans describing individual entities. Bean has following properties:
         label - field label (type: String)
         name - field property name (type: String)
@@ -23,28 +23,43 @@
         required - is field optional and nullable or it is not? (type: boolean)
         valuesGetter - if item is of type 1:1 or 1:many relationship then use this
             getter to populate <h:selectOneMenu> or <h:selectManyMenu>
+    bundle - name of the variable defined in the JSF config file for the resource bundle (type: String)
 
   This template is accessible via top level menu Tools->Templates and can
-  be found in category JavaServer Faces->JSF Data/Form from Entity.
+  be found in category JavaServer Faces->JSF from Entity.
 
 </#if>
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="${nsLocation}/jsf/facelets"
+      xmlns:h="${nsLocation}/jsf/html"
+      xmlns:f="${nsLocation}/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
 
-<#assign htmlTagPrefix=prefixResolver.getPrefixForNS("http://xmlns.jcp.org/jsf/html", "h")>
-<#assign coreTagPrefix=prefixResolver.getPrefixForNS("http://xmlns.jcp.org/jsf/core", "f")>
-<#assign pfTagPrefix=prefixResolver.getPrefixForNS("http://primefaces.org/ui", "p")>
+    <ui:composition>
 
-<${htmlTagPrefix}:form>
-    <h1><${htmlTagPrefix}:outputText value="View"/></h1>
-    <${pfTagPrefix}:panelGrid columns="2">
+        <p:dialog id="${entityName}ViewDlg" widgetVar="${entityName}ViewDialog" modal="true" resizable="false" appendTo="@(body)" header="${r"#{"}${bundle}.View${entityName}Title${r"}"}">
+            <h:form id="${entityName}ViewForm">
+                <h:panelGroup id="display">
+                    <p:panelGrid columns="2" rendered="${r"#{"}${managedBeanProperty} != null${r"}"}">
 <#list entityDescriptors as entityDescriptor>
-        <${htmlTagPrefix}:outputText value="${entityDescriptor.label}:"/>
-<#if entityDescriptor.dateTimeFormat?? && entityDescriptor.dateTimeFormat != "">
-        <${htmlTagPrefix}:outputText value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${entityDescriptor.label}">
-            <${coreTagPrefix}:convertDateTime pattern="${entityDescriptor.dateTimeFormat}" />
-        </${htmlTagPrefix}:outputText>
-<#else>
-        <${htmlTagPrefix}:outputText value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${entityDescriptor.label}"/>
-</#if>
+                        <h:outputText value="${r"#{"}${bundle}.View${entityName}Label_${entityDescriptor.id?replace(".","_")}${r"}"}"/>
+    <#if entityDescriptor.dateTimeFormat?? && entityDescriptor.dateTimeFormat != "">
+                        <h:outputText value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${r"#{"}${bundle}.View${entityName}Title_${entityDescriptor.id?replace(".","_")}${r"}"}">
+                            <f:convertDateTime pattern="${entityDescriptor.dateTimeFormat}" />
+                        </h:outputText>
+    <#elseif entityDescriptor.returnType?matches(".*[Bb]+oolean")>
+                        <p:selectBooleanCheckbox value="${r"#{"}${entityDescriptor.name}${r"}"}" disabled="true"/>
+    <#else>
+                        <h:outputText value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${r"#{"}${bundle}.View${entityName}Title_${entityDescriptor.id?replace(".","_")}${r"}"}"/>
+    </#if>
 </#list>
-    </${pfTagPrefix}:panelGrid>
-</${htmlTagPrefix}:form>
+                    </p:panelGrid>
+                    <p:commandButton value="${r"#{"}${bundle}.Close${r"}"}" onclick="${entityName}ViewDialog.hide()"/>
+                </h:panelGroup>
+            </h:form>
+        </p:dialog>
+
+    </ui:composition>
+</html>

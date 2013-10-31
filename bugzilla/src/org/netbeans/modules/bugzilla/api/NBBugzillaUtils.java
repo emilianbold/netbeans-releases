@@ -48,8 +48,10 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
+import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.netbeans.modules.bugzilla.commands.ValidateCommand;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
@@ -76,7 +78,11 @@ public class NBBugzillaUtils {
             Bugzilla.LOG.warning("No bugzilla repository available for netbeans.org"); // NOI18N
             return;
         }
-        Issue.open(nbRepo, issueID);
+        if(issueID != null) {
+            Util.openIssue(nbRepo, issueID);
+        } else {
+            Util.createNewIssue(nbRepo);
+        }
     }
 
     public static void reportAnIssue() {
@@ -87,7 +93,7 @@ public class NBBugzillaUtils {
                 if(!checkLogin(repo)) {
                     return;
                 }
-                Issue.open(NBRepositorySupport.getInstance().getNBRepository(), null);
+                Util.createNewIssue(NBRepositorySupport.getInstance().getNBRepository());
             }
         });
     }
@@ -99,7 +105,7 @@ public class NBBugzillaUtils {
      * @return username
      */
     public static String getNBUsername() {
-        return org.netbeans.modules.bugtracking.util.NBBugzillaUtils.getNBUsername();
+        return org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils.getNBUsername();
     }
 
     /**
@@ -109,7 +115,7 @@ public class NBBugzillaUtils {
      * @return password
      */
     public static char[] getNBPassword() {
-        return org.netbeans.modules.bugtracking.util.NBBugzillaUtils.getNBPassword();
+        return org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils.getNBPassword();
     }
 
     /**
@@ -117,7 +123,7 @@ public class NBBugzillaUtils {
      * Shouldn't be called in awt
      */
     public static void saveNBUsername(String username) {
-        org.netbeans.modules.bugtracking.util.NBBugzillaUtils.saveNBUsername(username);
+        org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils.saveNBUsername(username);
     }
 
     /**
@@ -125,7 +131,7 @@ public class NBBugzillaUtils {
      * Shouldn't be called in awt
      */
     public static void saveNBPassword(char[] password) {
-        org.netbeans.modules.bugtracking.util.NBBugzillaUtils.saveNBPassword(password);
+        org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils.saveNBPassword(password);
     }
 
     /**
@@ -135,7 +141,7 @@ public class NBBugzillaUtils {
      */
     public static boolean isNbRepository(URL url) {
         assert url != null;
-        return org.netbeans.modules.bugtracking.util.NBBugzillaUtils.isNbRepository(url.toString());
+        return org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils.isNbRepository(url.toString());
     }
 
     public static Repository findNBRepository() {
@@ -191,7 +197,7 @@ public class NBBugzillaUtils {
                 continue;
             }
             // everythings fine, store the credentials ...
-            TeamUtil.addRepository(BugzillaUtil.getRepository(repo));
+            TeamUtil.addRepository(BugzillaConnector.ID, repo.getID());
             return true;
         }
         repo.setCredentials(null, null, null, null); // reset

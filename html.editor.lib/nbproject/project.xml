@@ -279,6 +279,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.css.visual</friend>
                 <friend>org.netbeans.modules.html</friend>
                 <friend>org.netbeans.modules.html.angular</friend>
+                <friend>org.netbeans.modules.html.custom</friend>
                 <friend>org.netbeans.modules.html.knockout</friend>
                 <friend>org.netbeans.modules.html.editor</friend>
                 <friend>org.netbeans.modules.html.parser</friend>

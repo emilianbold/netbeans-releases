@@ -368,6 +368,11 @@ public class J2MEAntLoggerTest extends NbTestCase {
         public InputOutput getIO() {
             return IOProvider.getDefault().getIO("", true);
         }
+
+        @Override
+        public boolean isConcealed(String propertyName) {
+            return false;
+        }
     }
     
     /**

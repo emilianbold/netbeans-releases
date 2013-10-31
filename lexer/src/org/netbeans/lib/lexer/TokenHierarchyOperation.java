@@ -46,6 +46,7 @@ package org.netbeans.lib.lexer;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -421,9 +422,13 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
     public TokenSequence<T> tokenSequence(Language<?> language) {
         ensureReadLocked();
         synchronized (rootTokenList) {
-            return (isActiveImpl() && (language == null || rootTokenList.languagePath().topLanguage() == language))
-                    ? LexerApiPackageAccessor.get().createTokenSequence(rootTokenList)
-                    : null;
+            TokenSequence<T> ts;
+            if (isActiveImpl() && (language == null || rootTokenList.languagePath().topLanguage() == language)) {
+                ts = LexerApiPackageAccessor.get().createTokenSequence(rootTokenList);
+            } else {
+                ts = null;
+            }
+            return ts;
         }
     }
     
@@ -439,33 +444,68 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
         }
     }
 
+    public List<TokenSequence<?>> embeddedTokenSequences(
+        int offset, boolean backwardBias
+    ) {
+        synchronized (rootTokenList) {
+            TokenSequence<?> seq = tokenSequence();
+            List<TokenSequence<?>> sequences = new ArrayList<TokenSequence<?>>();
+
+            while (seq != null) {
+                seq.move(offset);
+                if (seq.moveNext()) {
+                    if (seq.offset() == offset && backwardBias) {
+                        if (seq.movePrevious()) {
+                            sequences.add(seq);
+                            seq = seq.embedded();
+                        } else {
+                            seq = null;
+                        }
+                    } else {
+                        sequences.add(seq);
+                        seq = seq.embedded();
+                    }
+                } else if (backwardBias && seq.movePrevious()) {
+                    sequences.add(seq);
+                    seq = seq.embedded();
+                } else {
+                    seq = null;
+                }
+            }
+            
+            return sequences;
+        }
+    }
+    
     /**
      * Get the token list list for the given language path.
      * <br/>
      * If the list needs to be created or it was non-mandatory.
      */
     public <ET extends TokenId> TokenListList<ET> tokenListList(LanguagePath languagePath) {
-        assert isActiveNoInit() : "Token hierarchy expected to be active.";
-        @SuppressWarnings("unchecked")
-        TokenListList<ET> tll = (TokenListList<ET>) path2tokenListList().get(languagePath);
-        if (tll == null) {
-            tll = new TokenListList<ET>(rootTokenList, languagePath);
-            path2tokenListList.put(languagePath, tll);
-            maxTokenListListPathSize = Math.max(languagePath.size(), maxTokenListListPathSize);
-            // Also create parent token list lists if they don't exist yet
-            Language<?> innerLanguage = languagePath.innerLanguage();
-            if (languagePath.size() >= 3) { // Top-level token list list not maintained
-                tokenListList(languagePath.parent()).notifyChildAdded(innerLanguage);
-            } else {
-                assert (languagePath.size() == 2);
-                assert (languagePath.parent() == rootTokenList.languagePath());
-                if (rootChildrenLanguages.size() == 0)
-                    rootChildrenLanguages = new HashSet<Language<?>>();
-                boolean added = rootChildrenLanguages.add(innerLanguage);
-                assert (added) : "Language " + innerLanguage + " already contained: " + rootChildrenLanguages; // NOI18N
+        synchronized (rootTokenList) {
+            assert isActiveNoInit() : "Token hierarchy expected to be active.";
+            @SuppressWarnings("unchecked")
+            TokenListList<ET> tll = (TokenListList<ET>) path2tokenListList().get(languagePath);
+            if (tll == null) {
+                tll = new TokenListList<ET>(rootTokenList, languagePath);
+                path2tokenListList.put(languagePath, tll);
+                maxTokenListListPathSize = Math.max(languagePath.size(), maxTokenListListPathSize);
+                // Also create parent token list lists if they don't exist yet
+                Language<?> innerLanguage = languagePath.innerLanguage();
+                if (languagePath.size() >= 3) { // Top-level token list list not maintained
+                    tokenListList(languagePath.parent()).notifyChildAdded(innerLanguage);
+                } else {
+                    assert (languagePath.size() == 2);
+                    assert (languagePath.parent() == rootTokenList.languagePath());
+                    if (rootChildrenLanguages.size() == 0)
+                        rootChildrenLanguages = new HashSet<Language<?>>();
+                    boolean added = rootChildrenLanguages.add(innerLanguage);
+                    assert (added) : "Language " + innerLanguage + " already contained: " + rootChildrenLanguages; // NOI18N
+                }
             }
+            return tll;
         }
-        return tll;
     }
     
     /**
@@ -481,7 +521,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
         }
     }
 
-    public Set<Language<?>> rootChildrenLanguages() {
+    public Set<Language<?>> rootChildrenLanguages() { // Not used from API
         return rootChildrenLanguages;
     }
 
@@ -551,17 +591,19 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
     
     public void textModified(int offset, int removedLength, CharSequence removedText, int insertedLength) {
         ensureWriteLocked();
-        // Attempt to activate the hierarchy in case there are active listeners
-        boolean active = isActiveNoInit();
-        if (!active && listenerList.getListenerCount() > 0) {
-            active = isActive(); // Attempt to activate the hierarchy
-        }
-        if (active) {
-            TokenHierarchyEventInfo eventInfo = new TokenHierarchyEventInfo(
-                    this, TokenHierarchyEventType.MODIFICATION,
-                    offset, removedLength, removedText, insertedLength);
-            new TokenHierarchyUpdate(eventInfo).update();
-            fireTokenHierarchyChanged(eventInfo);
+        synchronized (rootTokenList) {
+            // Attempt to activate the hierarchy in case there are active listeners
+            boolean active = isActiveNoInit();
+            if (!active && listenerList.getListenerCount() > 0) {
+                active = isActive(); // Attempt to activate the hierarchy
+            }
+            if (active) {
+                TokenHierarchyEventInfo eventInfo = new TokenHierarchyEventInfo(
+                        this, TokenHierarchyEventType.MODIFICATION,
+                        offset, removedLength, removedText, insertedLength);
+                new TokenHierarchyUpdate(eventInfo).update();
+                fireTokenHierarchyChanged(eventInfo);
+            }
         }
     }
 
@@ -713,40 +755,44 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
 //    
     @Override
     public String toString() {
-        StringBuilder sb = toStringNoTokens(null);
-        sb.append(":\n"); // NOI18N
-        LexerUtilsConstants.appendTokenList(sb, rootTokenList);
-        if (path2tokenListList != null && path2tokenListList.size() > 0) {
-            sb.append(path2tokenListList.size());
-            sb.append(" TokenListList(s) maintained:\n"); // NOI18N
-            for (TokenListList tll : path2tokenListList.values()) {
-                sb.append(tll).append('\n');
+        synchronized (rootTokenList) {
+            StringBuilder sb = toStringNoTokens(null);
+            sb.append(":\n"); // NOI18N
+            LexerUtilsConstants.appendTokenList(sb, rootTokenList);
+            if (path2tokenListList != null && path2tokenListList.size() > 0) {
+                sb.append(path2tokenListList.size());
+                sb.append(" TokenListList(s) maintained:\n"); // NOI18N
+                for (TokenListList tll : path2tokenListList.values()) {
+                    sb.append(tll).append('\n');
+                }
             }
+            String errors = checkConsistency();
+            if (errors != null) {
+                sb.append("!!! CONSISTENCY ERRORS FOUND in TOKEN HIERARCHY:\n");
+                sb.append(errors);
+                sb.append('\n');
+            }
+            return sb.toString();
         }
-        String errors = checkConsistency();
-        if (errors != null) {
-            sb.append("!!! CONSISTENCY ERRORS FOUND in TOKEN HIERARCHY:\n");
-            sb.append(errors);
-            sb.append('\n');
-        }
-        return sb.toString();
     }
 
     public StringBuilder toStringNoTokens(StringBuilder sb) {
-        if (sb == null)
-            sb = new StringBuilder(200);
-        sb.append("TOKEN HIERARCHY"); // NOI18N
-        if (inputSource() != null) {
-            sb.append(" for " + inputSource());
+        synchronized (rootTokenList) {
+            if (sb == null)
+                sb = new StringBuilder(200);
+            sb.append("TOKEN HIERARCHY"); // NOI18N
+            if (inputSource() != null) {
+                sb.append(" for " + inputSource());
+            }
+            if (!isActive()) {
+                sb.append(" is NOT ACTIVE.");
+            } else {
+                CharSequence inputSourceText = rootTokenList.inputSourceText();
+                sb.append("\nText: ").append(inputSourceText.getClass());
+                sb.append(", length=").append(inputSourceText.length());
+            }
+            return sb;
         }
-        if (!isActive()) {
-            sb.append(" is NOT ACTIVE.");
-        } else {
-            CharSequence inputSourceText = rootTokenList.inputSourceText();
-            sb.append("\nText: ").append(inputSourceText.getClass());
-            sb.append(", length=").append(inputSourceText.length());
-        }
-        return sb;
     }
 
     /**
@@ -754,25 +800,27 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
      * @return string describing the problem or null if the hierarchy is consistent.
      */
     public String checkConsistency() {
-        // Check root token list first
-        String error = LexerUtilsConstants.checkConsistencyTokenList(rootTokenList(), true);
-        // Check token-list lists
-        if (error == null && path2tokenListList != null) {
-            for (TokenListList<?> tll : path2tokenListList.values()) {
-                // Check token-list list consistency
-                error = tll.checkConsistency();
-                if (error != null)
-                    return error;
-                // Check each individual token list in token-list list
-                for (TokenList<?> tl : tll) {
-                    error = LexerUtilsConstants.checkConsistencyTokenList(tl, false);
-                    if (error != null) {
+        synchronized (rootTokenList) {
+            // Check root token list first
+            String error = LexerUtilsConstants.checkConsistencyTokenList(rootTokenList(), true);
+            // Check token-list lists
+            if (error == null && path2tokenListList != null) {
+                for (TokenListList<?> tll : path2tokenListList.values()) {
+                    // Check token-list list consistency
+                    error = tll.checkConsistency();
+                    if (error != null)
                         return error;
+                    // Check each individual token list in token-list list
+                    for (TokenList<?> tl : tll) {
+                        error = LexerUtilsConstants.checkConsistencyTokenList(tl, false);
+                        if (error != null) {
+                            return error;
+                        }
                     }
                 }
             }
+            return error;
         }
-        return error;
     }
 
     public void ensureConsistency() {

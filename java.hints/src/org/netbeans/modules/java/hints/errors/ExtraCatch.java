@@ -45,7 +45,6 @@ package org.netbeans.modules.java.hints.errors;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.CatchTree;
-import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TryTree;
@@ -57,6 +56,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.spi.editor.hints.Fix;
@@ -69,7 +69,9 @@ import org.openide.util.NbBundle.Messages;
  */
 @Messages({
     "DN_ExtraCatch=Extra catch clauses",
-    "FIX_RemoveCatch=Remove catch clause"
+    "FIX_RemoveCatch=Remove catch clause",
+    "# {0} - exception type",
+    "FIX_RemoveCatchException=Remove catch {0} clause"
 })
 public class ExtraCatch implements ErrorRule<Void> {
     
@@ -85,7 +87,21 @@ public class ExtraCatch implements ErrorRule<Void> {
 
     @Override
     public List<Fix> run(CompilationInfo compilationInfo, String diagnosticKey, int offset, TreePath treePath, Data<Void> data) {
-        return Arrays.asList(new RemoveCatch(compilationInfo, treePath).toEditorFix());
+        // tree path is 'catch' clause or an offending type alternative in the case of multi-catch.
+        boolean multiCatch = treePath.getParentPath().getLeaf().getKind() == Tree.Kind.UNION_TYPE;
+        TreePath catchPath = treePath;
+        while (catchPath != null && catchPath.getLeaf().getKind() != Tree.Kind.CATCH) {
+            catchPath = catchPath.getParentPath();
+        }
+        if (catchPath == null) {
+            return null;
+        }
+        String typeName = null;
+        if (multiCatch) {
+            typeName = compilationInfo.getTypeUtilities().getTypeName(compilationInfo.getTrees().getTypeMirror(treePath)).toString();
+        }
+        return Arrays.asList(
+                new RemoveCatch(compilationInfo, multiCatch ? treePath : catchPath, typeName).toEditorFix());
     }
 
     @Override
@@ -103,19 +119,45 @@ public class ExtraCatch implements ErrorRule<Void> {
     }
     
     private static final class RemoveCatch extends JavaFix {
-
-        public RemoveCatch(CompilationInfo info, TreePath tp) {
+        final String typeName;
+        public RemoveCatch(CompilationInfo info, TreePath tp, String typeName) {
             super(info, tp);
+            this.typeName = typeName;
         }
 
         @Override
         protected String getText() {
-            return Bundle.FIX_RemoveCatch();
+            return typeName == null ? Bundle.FIX_RemoveCatch() : Bundle.FIX_RemoveCatchException(typeName);
+        }
+        
+        private void removeAlternativeFromMultiCatch(TransformationContext ctx) throws Exception {
+            TreePath unionPath = ctx.getPath().getParentPath();
+            UnionTypeTree union = (UnionTypeTree)unionPath.getLeaf();
+            TreeMaker mk = ctx.getWorkingCopy().getTreeMaker();
+            GeneratorUtilities gen = GeneratorUtilities.get(ctx.getWorkingCopy());
+            union = gen.importComments(union, ctx.getWorkingCopy().getCompilationUnit());
+            List<? extends Tree> alts = new ArrayList<>(union.getTypeAlternatives());
+            alts.remove(ctx.getPath().getLeaf());
+            if (alts.size() > 1) {
+                // still remains a multi-catch
+                
+                Tree newUnion = mk.UnionType(alts);
+                ctx.getWorkingCopy().rewrite(union, newUnion);
+            } else {
+                // replace union type with just ordinary type
+                ctx.getWorkingCopy().rewrite(union, alts.get(0));
+            }
         }
 
         @Override
         protected void performRewrite(TransformationContext ctx) throws Exception {
-            CatchTree toRemove = (CatchTree) ctx.getPath().getLeaf();
+            Tree t = ctx.getPath().getLeaf();
+            if (t.getKind() != Tree.Kind.CATCH) {
+                // remove a clause from the multi-catch
+                removeAlternativeFromMultiCatch(ctx);
+                return;
+            }
+            CatchTree toRemove = (CatchTree)t;
             TryTree parent = (TryTree) ctx.getPath().getParentPath().getLeaf();
             TreeMaker make = ctx.getWorkingCopy().getTreeMaker();
             

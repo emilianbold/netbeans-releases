@@ -63,6 +63,7 @@ class QueryTableHeaderRenderer extends DefaultTableCellRenderer {
     private final QueryImpl query;
     private final TableCellRenderer delegate;
     private final IssueTable issueTable;
+    private boolean isSaved;
 
      public QueryTableHeaderRenderer(TableCellRenderer delegate, IssueTable issueTable, QueryImpl query) {
         super();
@@ -74,7 +75,7 @@ class QueryTableHeaderRenderer extends DefaultTableCellRenderer {
 
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-        if (query.isSaved() && column == issueTable.getSeenColumnIdx()) {
+        if (isSaved && column == issueTable.getSeenColumnIdx()) {
             Component c = delegate.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             seenCell.setFont(c.getFont());
             seenCell.setForeground(c.getForeground());
@@ -83,6 +84,10 @@ class QueryTableHeaderRenderer extends DefaultTableCellRenderer {
         } else {
             return delegate.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         }
+    }
+
+    void setSaved(boolean saved) {
+        isSaved = saved;
     }
 
 }

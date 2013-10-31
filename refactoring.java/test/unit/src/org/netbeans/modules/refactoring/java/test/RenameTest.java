@@ -70,6 +70,30 @@ public class RenameTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void testJavadocEnum() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public enum A {\n"
+                + "    \n"
+                + "    /**\n"
+                + "     * This is a test\n"
+                + "     * @see www.netbeans.org\n"
+                + "     */\n"
+                + "    ONE\n"
+                + "}"));
+        performRename(src.getFileObject("t/A.java"), 1, "TWO", null, true);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public enum A {\n"
+                + "    \n"
+                + "    /**\n"
+                + "     * This is a test\n"
+                + "     * @see www.netbeans.org\n"
+                + "     */\n"
+                + "    TWO\n"
+                + "}"));
+    }
+    
     public void testRenameCasePackage() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"

@@ -43,9 +43,10 @@
 package org.netbeans.modules.bugtracking.util;
 
 import java.util.*;
-import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.DelegatingConnector;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
 
 /**
@@ -58,9 +59,9 @@ public class IssueFinderUtils {
         
     public static Collection<IssueFinder> getIssueFinders() {
         List<IssueFinder> ret = new LinkedList<IssueFinder>();
-        DelegatingConnector[] dcs = BugtrackingManager.getInstance().getConnectors();
-        for (DelegatingConnector dc : dcs) {
-            IssueFinder issueFinder = dc.getIssueFinder();
+        Collection<RepositoryImpl> repos = RepositoryRegistry.getInstance().getKnownRepositories(false);
+        for (RepositoryImpl r : repos) {
+            IssueFinder issueFinder = r.getIssueFinder();
             if(issueFinder != null) {
                 ret.add(issueFinder);
             }
@@ -129,16 +130,14 @@ public class IssueFinderUtils {
 
     }
 
-    public static String getIssueNumber(String text, int startOffset,
-                                                     int endOffset) {
-        IssueFinder issueFinder = determineIssueFinder(text, startOffset, endOffset);
+    public static String getIssueId(String issueHyperlinkText) {        
+        IssueFinder issueFinder = determineIssueFinder(issueHyperlinkText, 0, issueHyperlinkText.length());
         if (issueFinder == null) {
             return null;
         }
-
-        return issueFinder.getIssueId(text.substring(endOffset, endOffset));
-    }
-
+        return issueFinder.getIssueId(issueHyperlinkText);
+    }  
+    
     public static IssueFinder determineIssueFinder(String text, int startOffset,
                                                                 int endOffset) {
         Collection<IssueFinder> issueFinders = getIssueFinders();
@@ -183,45 +182,40 @@ public class IssueFinderUtils {
                                            int textLength,
                                            IssueFinder issueFinder) {
         if (spans == null) {
-            Logger.global.warning(
-                    "Issue finder "                                     //NOI18N
-                    + issueFinder.getClass().getName()
-                    + " returned <null> from getIssueSpans(...).");     //NOI18N
+            BugtrackingManager.LOG.log(
+                    Level.WARNING, "Issue finder {0} returned <null> from getIssueSpans(...).", issueFinder.getClass().getName());     //NOI18N
             return false;
         }
         if ((spans.length % 2) != 0) {
-            Logger.global.warning(
-                    "Issue finder "                                     //NOI18N
-                    + issueFinder.getClass().getName()
+            BugtrackingManager.LOG.log(
+                    Level.WARNING,"{0}"                                     //NOI18N
+                    + "Issue finder "
                     + " returned array containing odd number of "       //NOI18N
-                    + " elements from method getIssueSpans().");        //NOI18N
+                    + " elements from method getIssueSpans().", issueFinder.getClass().getName());        //NOI18N
             return false;
         }
         for (int index = 0; index < spans.length; ) {
             int low = spans[index++];
             int high = spans[index++];
             if ((low < 0) || (high < 0)) {
-                Logger.global.warning(
-                        "Issue finder "                                 //NOI18N
-                        + issueFinder.getClass().getName()
+                BugtrackingManager.LOG.log(
+                        Level.WARNING,"Issue finder {0}"
                         + " returned invalid data from method"          //NOI18N
-                        + " getIssueSpans() (negative index).");        //NOI18N
+                        + " getIssueSpans() (negative index).", issueFinder.getClass().getName());        //NOI18N
                 return false;
             }
             if (low >= high) {
-                Logger.global.warning(
-                        "Issue finder "                                 //NOI18N
-                        + issueFinder.getClass().getName()
+                BugtrackingManager.LOG.log(
+                        Level.WARNING,"Issue finder {0}"
                         + " returned invalid data from method"          //NOI18N
-                        + " getIssueSpans() (start >= end).");          //NOI18N
+                        + " getIssueSpans() (start >= end).", issueFinder.getClass().getName());          //NOI18N
                 return false;
             }
             if (high > textLength) {
-                Logger.global.warning(
-                        "Issue finder "                                 //NOI18N
-                        + issueFinder.getClass().getName()
+                BugtrackingManager.LOG.log(
+                        Level.WARNING,"Issue finder {0}"
                         + " returned invalid data from method"          //NOI18N
-                        + " getIssueSpans() (index > text length).");   //NOI18N
+                        + " getIssueSpans() (index > text length).", issueFinder.getClass().getName());   //NOI18N
                 return false;
             }
             //PENDING - check for overlaping intervals

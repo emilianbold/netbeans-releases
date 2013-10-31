@@ -61,13 +61,13 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttachmentMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugtracking.api.Issue;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.localtasks.LocalRepository;
 import org.netbeans.modules.localtasks.util.FileUtils;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
 import org.netbeans.modules.bugtracking.util.AttachmentsPanel;
 import org.netbeans.modules.bugtracking.util.AttachmentsPanel.AttachmentInfo;
-import org.netbeans.modules.mylyn.util.NbDateRange;
 import org.netbeans.modules.mylyn.util.NbTask;
 import org.netbeans.modules.mylyn.util.NbTaskDataModel;
 import org.netbeans.modules.mylyn.util.localtasks.AbstractLocalTask;
@@ -95,12 +95,14 @@ public final class LocalTask extends AbstractLocalTask {
     private static final String NB_TASK_REFERENCE = "nb.taskreference."; //NOI18N
 
     private List<AttachmentInfo> unsavedAttachments;
+    private String tooltip = "";
 
     public LocalTask (NbTask task) {
         super(task);
         this.task = task;
         this.repository = LocalRepository.getInstance();
         support = new PropertyChangeSupport(this);
+        updateTooltip();
     }
 
     @Override
@@ -128,10 +130,67 @@ public final class LocalTask extends AbstractLocalTask {
         RP.post(new Runnable() {
             @Override
             public void run () {
-                fireDataChanged();
-                getTaskController().refreshViewData();
+                dataChanged();
             }
         });
+    }
+
+    private void dataChanged () {
+        updateTooltip();
+        fireDataChanged();
+        if (controller != null) {
+            controller.refreshViewData();
+        }
+    }
+    
+    @NbBundle.Messages({
+        "LBL_Task.tooltip.statusLabel=Status",
+        "LBL_Task.tooltip.status.open=Open",
+        "LBL_Task.tooltip.status.completed=Completed",
+        "CTL_Issue_Scheduled_Title=Scheduled",
+        "CTL_Issue_Due_Title=Due",
+        "CTL_Issue_Estimate_Title=Estimate"
+    })
+    private boolean updateTooltip () {
+        String displayName = getDisplayName();
+        if (displayName.startsWith("#")) { //NOI18N
+            displayName = displayName.replaceFirst("#", ""); //NOI18N
+        }
+        String oldTooltip = tooltip;
+
+        String status = isFinished() ? Bundle.LBL_Task_tooltip_status_completed() : Bundle.LBL_Task_tooltip_status_open();
+
+        String scheduledLabel = Bundle.CTL_Issue_Scheduled_Title();
+        String scheduled = getScheduleDisplayString();
+
+        String dueLabel = Bundle.CTL_Issue_Due_Title();
+        String due = getDueDisplayString();
+        
+
+        String estimateLabel = Bundle.CTL_Issue_Estimate_Title();
+        String estimate = getEstimateDisplayString();
+
+        String fieldTable = "<table>" //NOI18N
+            + "<tr><td><b>" + Bundle.LBL_Task_tooltip_statusLabel() + ":</b></td><td>" + status + "</td></tr>"; //NOI18N
+
+        if (!scheduled.isEmpty()) {
+            fieldTable += "<tr><td><b>" + scheduledLabel + ":</b></td><td>" + scheduled + "</td></tr>"; //NOI18N
+        }
+        if (!due.isEmpty()) {
+            fieldTable += "<tr><td><b>" + dueLabel + ":</b></td><td>" + due + "</td></tr>"; //NOI18N
+        }
+        if (!estimate.isEmpty()) {
+            fieldTable += "<tr><td><b>" + estimateLabel + ":</b></td><td>" + estimate + "</td></tr>"; //NOI18N
+        }
+        fieldTable += "</table>"; //NOI18N
+        
+        StringBuilder sb = new StringBuilder("<html>"); //NOI18N
+        sb.append("<b>").append(displayName).append("</b>"); //NOI18N
+        sb.append("<hr>"); //NOI18N
+        sb.append(fieldTable);
+        sb.append("</html>"); //NOI18N
+        tooltip = sb.toString();
+        return !oldTooltip.equals(tooltip);
     }
 
     @Override
@@ -157,7 +216,7 @@ public final class LocalTask extends AbstractLocalTask {
     }
 
     public String getTooltip () {
-        return getDisplayName();
+        return tooltip;
     }
 
     public void addPropertyChangeListener (PropertyChangeListener listener) {
@@ -179,7 +238,7 @@ public final class LocalTask extends AbstractLocalTask {
         return false;
     }
 
-    public BugtrackingController getController () {
+    public IssueController getController () {
         return getTaskController();
     }
     
@@ -218,7 +277,11 @@ public final class LocalTask extends AbstractLocalTask {
         });
     }
 
-    void delete () {
+    public void delete () {
+        fireSaved();
+        if (controller != null) {
+            controller.taskDeleted();
+        }
         deleteTask();
     }
 
@@ -296,7 +359,15 @@ public final class LocalTask extends AbstractLocalTask {
     }
 
     private void fireDataChanged () {
-        support.firePropertyChange(IssueProvider.EVENT_ISSUE_REFRESHED, null, null);
+        support.firePropertyChange(IssueProvider.EVENT_ISSUE_DATA_CHANGED, null, null);
+    }
+
+    protected void fireUnsaved() {
+        support.firePropertyChange(IssueController.PROPERTY_ISSUE_CHANGED, null, null);
+    }
+ 
+    protected void fireSaved() {
+        support.firePropertyChange(IssueController.PROPERTY_ISSUE_SAVED, null, null);
     }
 
     private boolean hasUnsavedAttributes () {
@@ -465,19 +536,34 @@ public final class LocalTask extends AbstractLocalTask {
         getTaskController().modelStateChanged(true);
     }
     
-    void setTaskDueDate (Date date) {
-        super.setDueDate(date);
-        getTaskController().modelStateChanged(true);
+    public void setTaskDueDate (Date date, boolean persistChange) {
+        super.setDueDate(date, persistChange);
+        if (controller != null) {
+            controller.modelStateChanged(hasUnsavedChanges());
+        }
+        if (persistChange) {
+            dataChanged();
+        }
     }
     
-    void setTaskScheduleDate (NbDateRange date) {
-        super.setScheduleDate(date);
-        getTaskController().modelStateChanged(true);
+    public void setTaskScheduleDate (IssueScheduleInfo date, boolean persistChange) {
+        super.setScheduleDate(date, persistChange);
+        if (controller != null) {
+            controller.modelStateChanged(hasUnsavedChanges());
+        }
+        if (persistChange) {
+            dataChanged();
+        }
     }
     
-    void setTaskEstimate (int estimate) {
-        super.setEstimate(estimate);
-        getTaskController().modelStateChanged(true);
+    public void setTaskEstimate (int estimate, boolean persistChange) {
+        super.setEstimate(estimate, persistChange);
+        if (controller != null) {
+            controller.modelStateChanged(hasUnsavedChanges());
+        }
+        if (persistChange) {
+            dataChanged();
+        }
     }
 
     public void addComment (String comment, boolean closeAsFixed) {

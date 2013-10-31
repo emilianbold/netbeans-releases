@@ -496,7 +496,6 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
      */
     public void remove(Fold fold, FoldHierarchyTransactionImpl transaction) {
         transaction.removeFold(fold);
-        
 //        checkConsistency();
     }
     
@@ -972,7 +971,7 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
             FoldHierarchyTransactionImpl transaction = openTransaction();
             try {
                 transaction.insertUpdate(evt);
-
+                
                 int operationsLength = operations.length;
                 for (int i = 0; i < operationsLength; i++) {
                     operations[i].insertUpdate(evt, transaction);
@@ -1091,9 +1090,13 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
                 throw new IllegalStateException("childStartOffset=" + childStartOffset // NOI18N
                     + " < lastEndOffset=" + lastEndOffset); // NOI18N
             }
-            if (childStartOffset > childEndOffset) {
+            // must also check zero-lengh folds, these are not permitted.
+            if (childStartOffset >= childEndOffset) {
                 throw new IllegalStateException("childStartOffset=" + childStartOffset // NOI18N
                     + " > childEndOffset=" + childEndOffset); // NOI18N
+            }
+            if (childStartOffset < startOffset || childEndOffset > endOffset) {
+                throw new IllegalStateException("Invalid child offsets. Child = " + child + ", parent =" + fold);
             }
             lastEndOffset = childEndOffset;
             
@@ -1394,9 +1397,47 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
         } while ((startsWithin || removed) && childIndex < fold.getFoldCount());
     }
     
+    
+    
     private static volatile Method addUpdateListener;
     private static volatile Method removeUpdateListener;
+    private static volatile Method eventInUndo;
+    private static volatile Method eventInRedo;
     
+    /**
+     * This is a hacky way how to get info from BaseDocumentEvent defined by editor.lib; folding does not have
+     * access to it.
+     * 
+     * @param evt document event
+     * @return 
+     */
+    static boolean isEventInUndoRedoHack(DocumentEvent evt) {
+        if (eventInRedo == null) {
+            if (!evt.getClass().getName().endsWith("BaseDocumentEvent")) { // NOI18N
+                return false;
+            }
+            try {
+                eventInUndo = evt.getClass().getMethod("isInUndo");
+                eventInRedo = evt.getClass().getMethod("isInRedo");
+            } catch (NoSuchMethodException | SecurityException ex) {
+                // should not happen
+                Exceptions.printStackTrace(ex);
+                return false;
+            }
+        }
+        // faster than getClass().getName + string compare.
+        if (eventInRedo.getDeclaringClass() != evt.getClass()) {
+            return false;
+        }
+        try {
+            return (Boolean)eventInUndo.invoke(evt) || (Boolean)eventInRedo.invoke(evt);
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return false;
+        
+    }
+
     private static void invokeUpdateListener(Document doc, DocumentListener l, boolean add) {
         Method m = add ? addUpdateListener : removeUpdateListener;
         if (m == null) {

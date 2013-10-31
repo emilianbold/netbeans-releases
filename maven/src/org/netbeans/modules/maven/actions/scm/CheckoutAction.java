@@ -49,6 +49,7 @@ import javax.swing.AbstractAction;
 import javax.swing.SwingUtilities;
 import org.apache.maven.model.Scm;
 import org.apache.maven.project.MavenProject;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.maven.actions.scm.ui.CheckoutUI;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
@@ -75,9 +76,10 @@ import org.openide.util.NbBundle.Messages;
  * @author Anuradha G
  */
 public class CheckoutAction extends AbstractAction implements LookupListener {
+    private static final @StaticResource String UPDATE_ICON = "org/netbeans/modules/maven/actions/scm/update.png";
 
-    private Lookup lookup;
-    private Lookup.Result<MavenProject> result;
+    private final Lookup lookup;
+    private final Lookup.Result<MavenProject> result;
 
     @Messages("LBL_Checkout=Check Out Sources")
     @SuppressWarnings("LeakingThisInConstructor")
@@ -85,8 +87,8 @@ public class CheckoutAction extends AbstractAction implements LookupListener {
         this.lookup = lkp;
         putValue(NAME, LBL_Checkout());
         //TODO proper icon
-        putValue(SMALL_ICON, ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/actions/scm/update.png", true))); //NOI18N
-        putValue("iconBase", "org/netbeans/modules/maven/actions/scm/update.png"); //NOI18N
+        putValue(SMALL_ICON, ImageUtilities.image2Icon(ImageUtilities.loadImage(UPDATE_ICON, true))); //NOI18N
+        putValue("iconBase", UPDATE_ICON); //NOI18N
         result = lookup.lookupResult(MavenProject.class);
         setEnabled(getScm() != null);
         result.addLookupListener(this);

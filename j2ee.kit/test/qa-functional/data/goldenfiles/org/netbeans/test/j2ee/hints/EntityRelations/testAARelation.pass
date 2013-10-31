@@ -1,14 +1,18 @@
-25:7-25:9:warning:The entity relationship is not defined.
+25:7-25:9:verifier:The entity relationship is not defined.
 46:15-46:23:verifier:Add @Override Annotation
 52:19-52:25:verifier:Add @Override Annotation
+58:12-58:31:verifier:Long values compared using == or !=
+58:8-58:10:verifier:The if statement is redundant
 62:18-62:26:verifier:Add @Override Annotation
 Add @Override Annotation
 Add @Override Annotation
 Add @Override Annotation
+Configure "Boxed value identity comparison" Hint
 Create bidirectional ManyToOne relationship...
 Create bidirectional OneToOne relationship...
 Create unidirectional ManyToOne relationship
 Create unidirectional OneToOne relationship
+The if statement is redundant
 ---------------------
 /*
  * CC.java

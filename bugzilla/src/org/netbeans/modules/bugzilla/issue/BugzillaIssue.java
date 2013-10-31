@@ -46,7 +46,6 @@ import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
 import java.text.ParseException;
@@ -76,13 +75,14 @@ import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskOperation;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
+import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
 import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.util.AttachmentsPanel;
-import org.netbeans.modules.bugtracking.util.NBBugzillaUtils;
+import org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils;
 import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.commands.AddAttachmentCommand;
@@ -118,10 +118,11 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
     public static final String RESOLVE_DUPLICATE = "DUPLICATE";                                                 // NOI18N
     public static final String VCSHOOK_BUGZILLA_FIELD = "netbeans.vcshook.bugzilla.";                           // NOI18N
     private static final SimpleDateFormat CC_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");            // NOI18N
+    private static final SimpleDateFormat DUE_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");                 // NOI18N
 
     private final BugzillaRepository repository;
 
-    private IssueController controller;
+    private BugzillaIssueController controller;
     private BugzillaIssueNode node;
     private OwnerInfo info;
 
@@ -201,7 +202,15 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
      * Notify listeners on this issue that its data were changed
      */
     protected void fireDataChanged() {
-        support.firePropertyChange(IssueProvider.EVENT_ISSUE_REFRESHED, null, null);
+        support.firePropertyChange(IssueProvider.EVENT_ISSUE_DATA_CHANGED, null, null);
+    }
+
+    protected void fireUnsaved() {
+        support.firePropertyChange(IssueController.PROPERTY_ISSUE_CHANGED, null, null);
+    }
+ 
+    protected void fireSaved() {
+        support.firePropertyChange(IssueController.PROPERTY_ISSUE_SAVED, null, null);
     }
 
     @Override
@@ -380,9 +389,9 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
     }
 
 
-    public BugtrackingController getController() {
+    public IssueController getController() {
         if (controller == null) {
-            controller = new IssueController(this);
+            controller = new BugzillaIssueController(this);
         }
         return controller;
     }
@@ -917,9 +926,23 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
             });
         }
     }
+    
+    private void setDueDateAndSubmit (final Date date) {
+        refresh();
+        runWithModelLoaded(new Runnable() {
+            @Override
+            public void run () {
+                if (date == null) {
+                    setFieldValue(IssueField.DEADLINE, "");
+                } else {
+                    setFieldValue(IssueField.DEADLINE, DUE_DATE_FORMAT.format(date));
+                }
+                submitAndRefresh();
+            }
+        });
+    }
 
-    public void attachPatch(File file, String description) {
-        boolean isPatch = true;
+    public void attachPatch(File file, String description, boolean isPatch) {
         // HACK for attaching hg bundles - they are NOT patches
         isPatch = !file.getName().endsWith(".hg"); // NOI18N
         addAttachment(file, null, description, null, isPatch);
@@ -986,11 +1009,7 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
                         updateTooltip();
                         fireDataChanged();
                         String id = getID();
-                        try {
-                            repository.getIssueCache().setIssueData(id, BugzillaIssue.this);
-                        } catch (IOException ex) {
-                            Bugzilla.LOG.log(Level.INFO, null, ex);
-                        }
+                        repository.getIssueCache().setIssue(id, BugzillaIssue.this);
                         Bugzilla.LOG.log(Level.FINE, "created issue #{0}", id);
                         // a new issue was created -> refresh all queries
                         repository.refreshAllQueries();
@@ -1160,15 +1179,40 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         if (resolution != null && !resolution.trim().isEmpty()) {
             status += "/" + resolution; //NOI18N
         }
+        String scheduledLabel = NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Scheduled_Title"); //NOI18N
+        String scheduled = getScheduleDisplayString();
 
+        String dueLabel = NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Due_Title"); //NOI18N
+        String due = getDueDisplayString();
+        
+
+        String estimateLabel = NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Estimate_Title"); //NOI18N
+        String estimate = getEstimateDisplayString();
 
         String fieldTable = "<table>" //NOI18N
             + "<tr><td><b>" + priorityLabel + ":</b></td><td><img src=\"" + priorityIcon + "\">&nbsp;" + priority + "</td><td style=\"padding-left:25px;\"><b>" + typeLabel + ":</b></td><td>" + type + "</td></tr>" //NOI18N
             + "<tr><td><b>" + productLabel + ":</b></td><td>" + product + "</td><td style=\"padding-left:25px;\"><b>" + componentLabel + ":</b></td><td>" + component + "</td></tr>" //NOI18N
-            + "<tr><td><b>" + assigneeLabel + ":</b></td><td colspan=\"3\">" + assignee + "</td></tr>" //NOI18N
-            + "<tr><td><b>" + statusLabel + ":</b></td><td colspan=\"3\">" + status + "</td></tr>" //NOI18N
-            + "</table>"; //NOI18N
+            + "<tr><td><b>" + assigneeLabel + ":</b></td><td colspan=\"3\">" + assignee + "</td></tr>"
+            + "<tr><td><b>" + statusLabel + ":</b></td><td colspan=\"3\">" + status + "</td></tr>"; //NOI18N
 
+        if (!scheduled.isEmpty()) {
+            fieldTable += "<tr><td><b>" + scheduledLabel + ":</b></td><td colspan=\"3\">" + scheduled + "</td></tr>"; //NOI18N
+        }
+        boolean addNewLine = !due.isEmpty() || !estimate.isEmpty();
+        if (addNewLine) {
+            fieldTable += "<tr>"; //NOI18N
+        }
+        if (!due.isEmpty()) {
+            fieldTable += "<tr><td><b>" + dueLabel + ":</b></td><td>" + due + "</td>"; //NOI18N
+        }
+        if (!estimate.isEmpty()) {
+            fieldTable += "<td style=\"padding-left:25px;\"><b>" + estimateLabel + ":</b></td><td>" + estimate + "</td>"; //NOI18N
+        }
+        if (addNewLine) {
+            fieldTable += "</tr>"; //NOI18N
+        }
+        fieldTable += "</table>"; //NOI18N
+        
         StringBuilder sb = new StringBuilder("<html>"); //NOI18N
         sb.append("<b>").append(displayName).append("</b><br>"); //NOI18N
         if (stateName != null && !stateName.isEmpty()) {
@@ -1380,6 +1424,73 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         return getNewAttachments();
     }
 
+    void setTaskPrivateNotes (String notes) {
+        super.setPrivateNotes(notes);
+        if (controller != null) {
+            controller.modelStateChanged(true, hasLocalEdits());
+        }
+    }
+    
+    public void setTaskDueDate (final Date date, final boolean persistChange) {
+        runWithModelLoaded(new Runnable() {
+
+            @Override
+            public void run () {
+                if (hasTimeTracking()) {
+                    setDueDateAndSubmit(date);
+                } else {
+                    setDueDate(date, persistChange);
+                    if (controller != null) {
+                        controller.modelStateChanged(hasUnsavedChanges(), hasLocalEdits());
+                    }
+                    if (persistChange) {
+                        dataChanged();
+                    }
+                }
+            }
+        });
+    }
+    
+    public void setTaskScheduleDate (IssueScheduleInfo date, boolean persistChange) {
+        super.setScheduleDate(date, persistChange);
+        if (controller != null) {
+            controller.modelStateChanged(hasUnsavedChanges(), hasLocalEdits());
+        }
+        if (persistChange) {
+            dataChanged();
+        }
+    }
+
+    public void setTaskEstimate (int estimate, boolean persistChange) {
+        super.setEstimate(estimate, persistChange);
+        if (controller != null) {
+            controller.modelStateChanged(hasUnsavedChanges(), hasLocalEdits());
+        }
+        if (persistChange) {
+            dataChanged();
+        }
+    }
+
+    public boolean discardLocalEdits () {
+        final boolean retval[] = new boolean[1];
+        runWithModelLoaded(new Runnable() {
+            @Override
+            public void run () {
+                clearUnsavedChanges();
+                retval[0] = cancelChanges();
+                if (controller != null) {
+                    controller.modelStateChanged(hasUnsavedChanges(), hasLocalEdits());
+                    controller.refreshViewData(false);
+                }
+            }
+        });
+        return retval[0];
+    }
+
+    public String getPriority() {
+        return getRepositoryFieldValue(IssueField.PRIORITY);
+    }
+
     class Comment {
         private final Date when;
         private final String author;
@@ -1574,16 +1685,18 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
-                if (node != null) {
-                    node.fireDataChanged();
-                }
-                if (updateTooltip()) {
-                    fireDataChanged();
-                }
-                fireDataChanged();
-                refreshViewData(false);
+                dataChanged();
             }
         });
+    }
+
+    private void dataChanged() {
+        if (node != null) {
+            node.fireDataChanged();
+        }
+        updateTooltip();
+        fireDataChanged();
+        refreshViewData(false);
     }
 
     @Override

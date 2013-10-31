@@ -143,63 +143,68 @@ public class EntityRelations extends J2eeTestCase {
     }
 
     public void testManyToManyBidirectional() throws Exception {
-        testEntityHintsBidirectional(3);
-    }
-
-    public void testManyToManyBidirectional2() throws Exception {
         testEntityHintsBidirectional(4);
     }
 
-    public void testManyToOneBidirectional() throws Exception {
+    public void testManyToManyBidirectional2() throws Exception {
         testEntityHintsBidirectional(5);
     }
 
-    public void testManyToOneBidirectional2() throws Exception {
+    public void testManyToOneBidirectional() throws Exception {
         testEntityHintsBidirectional(6);
     }
 
-    public void testOneToManyBidirectional() throws Exception {
+    public void testOneToManyBidirectional() throws Exception { // should be O2M
         testEntityHintsBidirectional(7);
     }
 
-    public void testOneToOneBidirectional() throws Exception {
+    public void testOneToManyBidirectional2() throws Exception { // should be O2M2
         testEntityHintsBidirectional(8);
     }
 
-    public void testManyToOneUnidirectional() throws Exception {
-        testEntityHintsUnidirectional(9);
+    public void testOneToOneBidirectional() throws Exception {
+        testEntityHintsBidirectional(9);
     }
 
-    public void testManyToOneUnidirectional2() throws Exception {
+    public void testManyToOneUnidirectional() throws Exception {
         testEntityHintsUnidirectional(10);
     }
 
-    public void testOneToOneUnidirectional() throws Exception {
+    public void testOneToManyUnidirectional() throws Exception { // should be O2M
         testEntityHintsUnidirectional(11);
+    }
+
+    public void testOneToManyUnidirectional2() throws Exception { // new
+        testEntityHintsUnidirectional(12);
+    }
+    
+    public void testOneToOneUnidirectional() throws Exception {
+        testEntityHintsUnidirectional(13);
     }
 
     public void testAARelation() throws Exception {
         File f = new File(getDataDir(), "projects/EntityHintsApp/src/java/hints/CC.java");
-        hintTest(f, 3, "Create", 7);
+        hintTest(f, 4, "Create", 7);
     }
 
     public void testAARelation2() throws Exception {
         File f = new File(getDataDir(), "projects/EntityHintsApp/src/java/hints/CC.java");
-        hintTest(f, 4, "Create", 7);
+        hintTest(f, 5, "Create", 7);
     }
 
     public void testAARelation3() throws Exception {
         File f = new File(getDataDir(), "projects/EntityHintsApp/src/java/hints/CC.java");
-        hintTest(f, 5, null, 7);
+        hintTest(f, 6, null, 7);
     }
 
+    public void testAARelation4() throws Exception {
+        File f = new File(getDataDir(), "projects/EntityHintsApp/src/java/hints/CC.java");
+        hintTest(f, 7, null, 7);
+    }
+    
     public void testCreateID() throws Exception {
         File f = new File(getDataDir(), "projects/EntityHintsEJB/src/java/hints/CreateID.java");
         hintTest(f, 0, "Create", 2);
-    }
-
-    public void testMakePublic() throws Exception {
-        hintTest(new File(getDataDir(), "projects/EntityHintsEJB/src/java/hints/MakePublic.java"), 0, null, 1);
     }
 
     public void testDefaultConstructor() throws Exception {

@@ -203,7 +203,7 @@ public class TextUtils {
         return sb.toString();
     }
 
-/**
+    /**
      * Encodes URL by encoding to %XX escape sequences.
      *
      * @param url url to decode
@@ -220,6 +220,32 @@ public class TextUtils {
             if (!isAlowedChar(c)) {
                 sb.append('%');                                                 // NOI18N
                 sb.append(Integer.toHexString(c).toUpperCase());
+            } else {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Decodes URL by decoding from %XX escape sequences.
+     *
+     * @param encoded url to decode
+     * @return decoded url
+     */
+    public static String decodeURL(String encoded) {
+        if (encoded == null) {
+            return null;
+        }
+        StringBuilder sb = new StringBuilder(encoded.length());
+
+        for (int i = 0; i < encoded.length(); i++) {
+            char c = encoded.charAt(i);
+            if (c == '%') {
+                String code = encoded.substring(i + 1, i + 3);
+                char decode = (char) Integer.parseInt(code, 16);
+                sb.append(decode);
+                i += 2;
             } else {
                 sb.append(c);
             }

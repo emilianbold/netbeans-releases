@@ -43,7 +43,6 @@
 package org.netbeans.modules.bugtracking.hyperlink;
 
 import java.io.File;
-import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -57,18 +56,13 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
-import org.netbeans.modules.bugtracking.spi.IssueFinder;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.util.IssueFinderUtils;
+import org.netbeans.modules.bugtracking.api.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import static org.netbeans.modules.bugtracking.util.IssueFinderUtils.HyperlinkSpanInfo;
 
 /**
  * 
@@ -76,31 +70,9 @@ import static org.netbeans.modules.bugtracking.util.IssueFinderUtils.HyperlinkSp
  * 
  * @author Tomas Stupka
  */
-public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt, LookupListener {
+public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt {
 
     private static final Logger LOG = Logger.getLogger(EditorHyperlinkProviderImpl.class.getName());
-
-    //--------------------------------------------------------------------------
-
-    private IssueFinder[] issueFinders;
-
-    {
-        refreshIssueFinders();
-    }
-
-    @Override
-    public void resultChanged(LookupEvent ev) {
-        refreshIssueFinders();
-    }
-
-    private void refreshIssueFinders() {
-        Collection<IssueFinder> allInstances = IssueFinderUtils.getIssueFinders();
-        IssueFinder[] newResult = new IssueFinder[allInstances.size()];
-        allInstances.toArray(newResult);
-        issueFinders = newResult;
-    }
-
-    //--------------------------------------------------------------------------
 
     @Override
     public Set<HyperlinkType> getSupportedHyperlinkTypes() {
@@ -114,10 +86,7 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt, Lookup
 
     @Override
     public int[] getHyperlinkSpan(Document doc, int offset, HyperlinkType type) {
-        HyperlinkSpanInfo spanInfo = getIssueSpan(doc, offset, type);
-        return (spanInfo != null) ? new int[] {spanInfo.startOffset,
-                                               spanInfo.endOffset}
-                                  : null;
+        return getIssueSpan(doc, offset, type);
     }
 
     @Override
@@ -142,7 +111,7 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt, Lookup
                     Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "EditorHyperlinkProviderImpl - no file found for given document");
                     return;
                 }
-                BugtrackingUtil.openIssue(file, issueId);
+                Util.openIssue(file, issueId);
             }
         }
         RequestProcessor.getDefault().post(new IssueDisplayer());
@@ -155,30 +124,27 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt, Lookup
 
     // XXX get/unify from/with hyperlink provider
     private String getIssueId(Document doc, int offset, HyperlinkType type) {
-        HyperlinkSpanInfo spanInfo = getIssueSpan(doc, offset, type);
+        int[] span = getIssueSpan(doc, offset, type);
 
-        if (spanInfo == null) {
+        if (span == null) {
             return null;
         }
 
         String issueId = null;
         try {
-            if ((spanInfo.startOffset <= offset) && (offset <= spanInfo.endOffset)) {
+            if ((span[0] <= offset) && (offset <= span[1])) {
                 /* at first, check that it is a valid reference text: */
-                int length = spanInfo.endOffset - spanInfo.startOffset;
-                String text = doc.getText(spanInfo.startOffset, length);
-                int[] spans = spanInfo.issueFinder.getIssueSpans(text);
-                if (spans.length == 2) {
-                    /* valid - now just retreive the issue id: */
-                    issueId = spanInfo.issueFinder.getIssueId(text);
+                int length = span[1] - span[0];
+                String text = doc.getText(span[0], length);
+                /* valid - now just retrieve the issue id: */
+                issueId = Util.getIssueId(text);
                 }
-            }
         } catch (BadLocationException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
         if(issueId == null) {
             try {
-                Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "No issue found for {0}", doc.getText(spanInfo.startOffset, spanInfo.endOffset - spanInfo.startOffset));
+                Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "No issue found for {0}", doc.getText(span[0], span[1] - span[0]));
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -186,12 +152,8 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt, Lookup
         return issueId;
     }
 
-    private HyperlinkSpanInfo getIssueSpan(final Document doc, final int offset, final HyperlinkType type) {
-        if (issueFinders.length == 0) {
-            return null;
-        }
-
-        final HyperlinkSpanInfo hyperlinkSpanInfo[] = new HyperlinkSpanInfo[1];
+    private int[] getIssueSpan(final Document doc, final int offset, final HyperlinkType type) {
+        final int[][] ret = new int[1][];
         doc.render(new Runnable() {
             @Override
             public void run() {
@@ -219,22 +181,18 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt, Lookup
                             name.toUpperCase().indexOf("COMMENT") > -1) // consider this as a fallback // NOI18N
                     {
                         CharSequence text = t.text();
-                        for (IssueFinder issueFinder : issueFinders) {
-                            int[] span = issueFinder.getIssueSpans(text);
-                            for (int i = 1; i < span.length; i += 2) {
-                                if (ts.offset() + span[i - 1] <= offset && offset <= ts.offset() + span[i]) {
-                                    hyperlinkSpanInfo[0] = new HyperlinkSpanInfo(issueFinder,
-                                            ts.offset() + span[i - 1],
-                                            ts.offset() + span[i]);
+                        int[] spans = Util.getIssueSpans(text.toString());
+                        for (int i = 1; i < spans.length; i += 2) {
+                            if (ts.offset() + spans[i - 1] <= offset && offset <= ts.offset() + spans[i]) {
+                                ret[0] = new int[] {ts.offset() + spans[i - 1], ts.offset() + spans[i]};
                                     return;
                                 }
                             }
                         }
                     }
                 }
-            }
         });
-        return hyperlinkSpanInfo[0];
+        return ret[0];
     }
 
 }

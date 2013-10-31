@@ -45,18 +45,21 @@ package org.netbeans.modules.bugtracking.spi;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
-import java.util.Collections;
 
 /**
  * 
- * Represents a bug tracking repository (server)
+ * Provides access to a bugtracking repository (server).
  * 
  * @author Tomas Stupka, Jan Stola
+ * 
+ * @param <R> the implementation specific repository type
+ * @param <Q> the implementation specific query type
+ * @param <I> the implementation specific issue type
  */
-public abstract class RepositoryProvider<R, Q, I> {
+public interface RepositoryProvider<R, Q, I> {
 
     /**
-     * A query from this repository was saved or removed
+     * A query from this repository was saved or removed.
      */
     public final static String EVENT_QUERY_LIST_CHANGED = "bugtracking.repository.queries.changed"; // NOI18N
     
@@ -66,87 +69,136 @@ public abstract class RepositoryProvider<R, Q, I> {
     public static final String EVENT_UNSUBMITTED_ISSUES_CHANGED = "bugtracking.repository.unsubmittedIssues.changed"; //NOI18N
     
     /**
-     * Returns the repository info or null in case the repository is new
+     * Returns the repository info or null in case the repository is new and not saved yet.
      * 
-     * @param r
+     * @param r an implementation specific repository
      * @return 
      */
-    public abstract RepositoryInfo getInfo(R r);
+    public RepositoryInfo getInfo(R r);
     
     /**
      * Returns the icon for this repository
+     * 
+     * @param r an implementation specific repository
      * @return
      */
-    public abstract Image getIcon(R r);
+    public Image getIcon(R r);
 
     /**
-     * Returns an issue with the given ID
+     * Returns an issue with the given ID.
      *
-     * XXX add flag refresh
-     *
-     * @param id
+     * @param r an implementation specific repository
+     * @param ids
      * @return
      */
-    public abstract I[] getIssues(R r, String... ids);
+    public Collection<I> getIssues(R r, String... ids);
 
     /**
-     * Removes this repository from its connector
+     * Removes this repository from its connector.
      *
+     * @param r an implementation specific repository
      */
-    public abstract void remove(R r);
+    public void remove(R r);
 
     /**
-     * Returns the {@link BugtrackignController} for this repository
+     * Returns the {@link BugtrackignController} for this repository.
+     * 
+     * @param r an implementation specific repository
      * @return
      */
-    public abstract RepositoryController getController(R r);
+    public RepositoryController getController(R r);
 
     /**
-     * Creates a new query instance. Might block for a longer time.
+     * Creates a new query instance.
      *
+     * @param r an implementation specific repository
+     * 
      * @return a new QueryProvider instance or null if it's not possible
      * to access the repository.
+     * 
+     * @see QueryProvider
      */
-    public abstract Q createQuery(R r); 
+    public Q createQuery(R r); 
 
     /**
-     * Creates a new IssueProvider instance. Might block for a longer time.
+     * Creates a new issue, not yet submitted, issue instance. 
      *
-     * @return return a new IssueProvider instance or null if it's not possible
-     * to access the repository.
+     * @param r an implementation specific repository
+     * 
+     * @return return a new issue instance or null if it's not possible
+     * to create an issue.
+     * 
+     * @see IssueProvider
      */
-    public abstract I createIssue(R r);
+    public I createIssue(R r);
 
     /**
-     * Returns all saved queries
-     * @return
+     * Creates a new issue instance preset with the given summary and description.
+     *
+     * @param r an implementation specific repository
+     * @param summary 
+     * @param description
+     * 
+     * @return return a new issue instance or null if it's not possible
+     * to create an issue.
+     * 
+     * @see IssueProvider
      */
-    public abstract Collection<Q> getQueries(R r);
+    public I createIssue(R r, String summary, String description);
+    
+    /**
+     * Returns all named (already saved) queries. 
+     * 
+     * @param r an implementation specific repository
+     * @return collection of queries
+     */
+    public Collection<Q> getQueries(R r);
 
     /**
      * Runs a query against the bugtracking repository to get all issues
-     * which applies that their ID or summary contains the given criteria string
+     * for which applies that the ID equals to or the summary contains 
+     * the given criteria string.
      *
-     * XXX move to siple search
+     * The method is expected to return after the whole execution was handled.
+     * 
+     * <p>
+     * In case an error appears during execution, the implementation 
+     * should take care of the error handling, user notification etc.
+     * </p>
      *
+     * @param r an implementation specific repository
      * @param criteria
+     * @return collection of issues
      */
-    public abstract Collection<I> simpleSearch(R r, String criteria);
+    public Collection<I> simpleSearch(R r, String criteria);
     
     /**
-     * Returns unsubmitted issues for the given repository.
-     * @param r repository
-     * @return collection of unsubmitted issues
+     * Determines whether it is possible to attach files to an Issue for the given repository.
+     * <p>
+     * Note that in case this method returns <code>true</code> {@link IssueProvider#attachFile(java.lang.Object, java.io.File, java.lang.String, boolean)>
+     * has to be implemented as well.
+     * <p/>
+     * 
+     * @param r an implementation specific repository
+     * @return <code>true</code> in case it is possible to attach files, otherwise <code>false</code>
+     * 
+     * @see IssueProvider#attachFile(java.lang.Object, java.io.File, java.lang.String, boolean) 
      */
-    public Collection<I> getUnsubmittedIssues (R r) {
-        return Collections.<I>emptyList();
-    }
+    public boolean canAttachFiles(R r);
+    
+    /**
+     * Removes a PropertyChangeListener to the given repository.
+     * 
+     * @param r an implementation specific repository
+     * @param listener 
+     */
+    public void removePropertyChangeListener(R r, PropertyChangeListener listener);
 
-    /*********
-     * EVENTS
-     *********/
-
-    public abstract void removePropertyChangeListener(R r, PropertyChangeListener listener);
-
-    public abstract void addPropertyChangeListener(R r, PropertyChangeListener listener);    
+    /**
+     * Add a PropertyChangeListener to the given repository.
+     * 
+     * @param r an implementation specific repository
+     * @param listener 
+     */
+    public void addPropertyChangeListener(R r, PropertyChangeListener listener);    
 }

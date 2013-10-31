@@ -68,6 +68,7 @@ import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModelProvider;
+import org.netbeans.modules.web.jsfapi.api.NamespaceUtils;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -431,5 +432,20 @@ public class JSFUtils {
             return null;
         }
         return modelProvider.getModel();
+    }
+
+    /**
+     * Gets domain name of the namespace according to the JSF version included on the web module classpath.
+     * @param webModule web module, can be null
+     * @return {@link NamespaceUtils#SUN_COM_LOCATION} if JSF not found or JSF version is lower than 2.2,
+     *         {@link NamespaceUtils#JCP_ORG_LOCATION} otherwise
+     */
+    public static String getNamespaceDomain(WebModule webModule) {
+        JSFVersion version = webModule != null ? JSFVersion.forWebModule(webModule) : null;
+        String nsLocation = NamespaceUtils.SUN_COM_LOCATION;
+        if (version != null && version.isAtLeast(JSFVersion.JSF_2_2)) {
+            nsLocation = NamespaceUtils.JCP_ORG_LOCATION;
+        }
+        return nsLocation;
     }
 }

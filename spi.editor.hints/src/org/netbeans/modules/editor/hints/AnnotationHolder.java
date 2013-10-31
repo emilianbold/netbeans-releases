@@ -737,11 +737,14 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
         boolean first = true;
 
         for (ErrorDescription e : errors) {
-            if (!first) {
-                description.append("\n\n"); //NOI18N
+            String desc = e.getDescription();
+            if (desc != null && desc.length() > 0) {
+                if (!first) {
+                    description.append("\n\n"); //NOI18N
+                }
+                description.append(desc);
+                first = false;
             }
-            description.append(e.getDescription());
-            first = false;
         }
     }
 

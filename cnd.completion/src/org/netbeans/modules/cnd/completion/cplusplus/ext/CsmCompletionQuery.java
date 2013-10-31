@@ -48,7 +48,6 @@ import java.awt.Graphics;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -63,7 +62,6 @@ import java.util.Stack;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
@@ -94,6 +92,7 @@ import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
@@ -111,7 +110,6 @@ import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
 import org.netbeans.modules.cnd.api.model.deep.CsmRangeForStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
-import org.netbeans.modules.cnd.api.model.services.CsmCacheMap;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
@@ -131,7 +129,6 @@ import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem.VariableR
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver.QueryScope;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver.Result;
-import org.netbeans.modules.cnd.completion.csm.CompletionUtilities;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.AntiLoop;
 import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
@@ -162,16 +159,16 @@ abstract public class CsmCompletionQuery {
         query_type
     }
     
-    private static final ThreadLocal<Map<AntiloopClient, Set<CsmExpression>>> threadLocalAntiloopMap = new ThreadLocal<Map<AntiloopClient, Set<CsmExpression>>>() {
+    private static final ThreadLocal<Map<AntiloopClient, Set<CsmOffsetable>>> threadLocalAntiloopMap = new ThreadLocal<Map<AntiloopClient, Set<CsmOffsetable>>>() {
 
         @Override
-        protected Map<AntiloopClient, Set<CsmExpression>> initialValue() {
-            return new EnumMap<AntiloopClient, Set<CsmExpression>>(AntiloopClient.class);
+        protected Map<AntiloopClient, Set<CsmOffsetable>> initialValue() {
+            return new EnumMap<AntiloopClient, Set<CsmOffsetable>>(AntiloopClient.class);
         }
         
     };
 
-    Set<CsmExpression> antiLoop = new HashSet<CsmExpression>();
+    Set<CsmOffsetable> antiLoop = new HashSet<CsmOffsetable>();
         
     // the only purpose of this method is that NbJavaCompletionQuery
     // can use it to retrieve baseDocument's fileobject and create correct
@@ -240,7 +237,7 @@ abstract public class CsmCompletionQuery {
      * @param expression - expression to get type from
      * @param instantiations - context
      */
-    public CsmType queryType(CsmExpression expression, List<CsmInstantiation> instantiations) {
+    public CsmType queryType(CsmOffsetable expression, List<CsmInstantiation> instantiations) {
         if (enterThreadLocalAntiloop(AntiloopClient.query_type, expression)) {
             try {
                 CsmCacheManager.enter();
@@ -504,12 +501,12 @@ abstract public class CsmCompletionQuery {
         return ret;
     }
     
-    private boolean enterThreadLocalAntiloop(AntiloopClient client, CsmExpression expression) {
-        Map<AntiloopClient, Set<CsmExpression>> antiloopMap = threadLocalAntiloopMap.get();
-        Set<CsmExpression> antiloopSet = antiloopMap.get(client);
+    private boolean enterThreadLocalAntiloop(AntiloopClient client, CsmOffsetable expression) {
+        Map<AntiloopClient, Set<CsmOffsetable>> antiloopMap = threadLocalAntiloopMap.get();
+        Set<CsmOffsetable> antiloopSet = antiloopMap.get(client);
         
         if (antiloopSet == null) {
-            antiloopSet = new HashSet<CsmExpression>(4);
+            antiloopSet = new HashSet<CsmOffsetable>(4);
             antiloopMap.put(client, antiloopSet);
         }
         
@@ -520,9 +517,9 @@ abstract public class CsmCompletionQuery {
         return false;
     }
     
-    private void exitThreadLocalAntiloop(AntiloopClient client, CsmExpression expression) {
-        Map<AntiloopClient, Set<CsmExpression>> antiloopMap = threadLocalAntiloopMap.get();
-        Set<CsmExpression> antiloopSet = antiloopMap.get(client);
+    private void exitThreadLocalAntiloop(AntiloopClient client, CsmOffsetable expression) {
+        Map<AntiloopClient, Set<CsmOffsetable>> antiloopMap = threadLocalAntiloopMap.get();
+        Set<CsmOffsetable> antiloopSet = antiloopMap.get(client);
         
         assert antiloopSet != null : "Must be set in enter method!"; //NOI18N
         
@@ -1251,7 +1248,7 @@ abstract public class CsmCompletionQuery {
             return resolveType;
         }
         
-        private CsmType findExpressionType(final CsmExpression expression) {
+        private CsmType findExpressionType(final CsmOffsetable expression) {
             if (expression != null && !antiLoop.contains(expression)) {
                 String expressionText = expression.getText().toString();
                 TokenHierarchy<String> hi = TokenHierarchy.create(expressionText, CndLexerUtilities.getLanguage(getBaseDocument()));

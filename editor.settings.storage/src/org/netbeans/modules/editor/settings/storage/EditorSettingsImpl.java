@@ -82,6 +82,9 @@ public class EditorSettingsImpl extends EditorSettings {
 
     /** The name of the property change event for 'Highlighting' font and colors. */
     public static final String PROP_HIGHLIGHT_COLORINGS = "editorFontColors"; //NOI18N
+    
+    /** The name of the property change event for 'Annotation' font and colors. */
+    public static final String PROP_ANNOTATION_COLORINGS = "editorAnnotationFontColors"; //NOI18N
 
     /** The name of the property change event for 'Token' font and colors. */
     public static final String PROP_TOKEN_COLORINGS = "fontColors"; //NOI18N
@@ -281,7 +284,7 @@ public class EditorSettingsImpl extends EditorSettings {
     }
     
     private final Map<String, Map<String, AttributeSet>> highlightings = new HashMap<String, Map<String, AttributeSet>>();
-    private final StorageImpl<String, AttributeSet> highlightingsStorage = new StorageImpl<String, AttributeSet>(new ColoringStorage(false), null);
+    private final StorageImpl<String, AttributeSet> highlightingsStorage = new StorageImpl<String, AttributeSet>(new ColoringStorage(ColoringStorage.FAV_HIGHLIGHT), null);
     
     /**
      * Returns highlighting properties for given profile or null, if the 
@@ -395,6 +398,105 @@ public class EditorSettingsImpl extends EditorSettings {
         pcs.firePropertyChange(PROP_HIGHLIGHT_COLORINGS, MimePath.EMPTY, profile);
     }  
     
+    private final Map<String, Map<String, AttributeSet>> annotations = new HashMap<>();
+    private final StorageImpl<String, AttributeSet> annotationsStorage = new StorageImpl<>(new ColoringStorage(ColoringStorage.FAV_ANNOTATION), null);
+
+    @Override
+    public Map<String, AttributeSet> getAnnotations(String profile) {
+        boolean specialProfile = profile.startsWith("test"); //NOI18N
+        profile = FontColorSettingsImpl.get(MimePath.EMPTY).getInternalFontColorProfile(profile);
+
+        if (!annotations.containsKey(profile)) {
+            Map<String, AttributeSet> profileColorings = null;
+
+            try {
+                profileColorings = annotationsStorage.load(
+                        MimePath.EMPTY,
+                        specialProfile ? DEFAULT_PROFILE : profile,
+                        false
+                );
+            } catch (IOException ioe) {
+                LOG.log(Level.WARNING, null, ioe);
+            }
+
+            Map<String, AttributeSet> defaultProfileColorings = null;
+            if (!specialProfile && !DEFAULT_PROFILE.equals(profile)) {
+                try {
+                    defaultProfileColorings = annotationsStorage.load(
+                            MimePath.EMPTY,
+                            DEFAULT_PROFILE,
+                            false
+                    );
+                } catch (IOException ioe) {
+                    LOG.log(Level.WARNING, null, ioe);
+                }
+            }
+
+            // Add colorings from the default profile that do not exist in
+            // the profileColorings. They are normally the same, but when
+            // imported from previous version some colorings can be missing.
+            // See #119709
+            Map<String, AttributeSet> m = new HashMap<>();
+            if (defaultProfileColorings != null) {
+                m.putAll(defaultProfileColorings);
+            }
+            if (profileColorings != null) {
+                m.putAll(profileColorings);
+            }
+
+            //todo prepare annotations.
+            profileColorings = Collections.unmodifiableMap(m);
+
+            annotations.put(profile, profileColorings);
+        }
+
+        Map<String, AttributeSet> h = annotations.get(profile);
+        return h == null ? Collections.<String, AttributeSet>emptyMap() : h;
+    }
+
+    @Override
+    public Map<String, AttributeSet> getAnnotationDefaults(String profile) {
+        profile = FontColorSettingsImpl.get(MimePath.EMPTY).getInternalFontColorProfile(profile);
+        try {
+            return annotationsStorage.load(MimePath.EMPTY, profile, true);
+        } catch (IOException ioe) {
+            LOG.log(Level.WARNING, null, ioe);
+            return Collections.<String, AttributeSet>emptyMap();
+        }
+    }
+
+    @Override
+    public void setAnnotations(
+            String profile,
+            Map<String, AttributeSet> fontColors
+    ) {
+        boolean specialProfile = profile.startsWith("test"); //NOI18N
+        profile = FontColorSettingsImpl.get(MimePath.EMPTY).getInternalFontColorProfile(profile);
+
+        if (fontColors == null) {
+            try {
+                annotationsStorage.delete(MimePath.EMPTY, profile, false);
+            } catch (IOException ioe) {
+                LOG.log(Level.WARNING, null, ioe);
+            }
+            annotations.remove(profile);
+        } else {
+            Map<String, AttributeSet> m = Utils.immutize(fontColors);
+
+            // 3) save new values to disk
+            if (!specialProfile) {
+                try {
+                    annotationsStorage.save(MimePath.EMPTY, profile, false, m);
+                } catch (IOException ioe) {
+                    LOG.log(Level.WARNING, null, ioe);
+                }
+            }
+
+            annotations.put(profile, m);
+        }
+
+        pcs.firePropertyChange(PROP_ANNOTATION_COLORINGS, MimePath.EMPTY, profile);
+    }
     
     // ------------------------------------------------------
     // Keybindings

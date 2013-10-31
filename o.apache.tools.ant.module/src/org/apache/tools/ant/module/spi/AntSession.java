@@ -209,6 +209,17 @@ public final class AntSession {
     public Map<String,String> getProperties() {
         return impl.getProperties();
     }
+
+    /**
+     * Checks if the property is concealed.
+     * The value of the concealed property is not visible to the user.
+     * @param propertyName the property name to check
+     * @return true if property should not be visible to user
+     * @since 3.71
+     */
+    public boolean isConcealed(String propertyName) {
+        return impl.isConcealed(propertyName);
+    }
     
     /**
      * Get a display name used for the session as a whole.

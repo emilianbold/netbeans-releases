@@ -57,7 +57,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.PathMap;
-import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.builds.ImportUtils;
@@ -83,7 +82,6 @@ import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -659,22 +657,33 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                 String next = iterator.next();
                 if (next.startsWith("@")) {  //NOI18N
                     final String relPath = next.substring(1);
-                    File file;
+                    String filePath;
                     if (CndPathUtilities.isPathAbsolute(relPath)) {
-                        file = new File(relPath);
+                        filePath = relPath;
                     } else {
-                        file = new File(compilePath + "/" + relPath);  //NOI18N
+                        filePath = compilePath + "/" + relPath;  //NOI18N
                     }
-                    FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+                    FileObject fo = fileSystem.findResource(filePath);
                     if (fo != null && fo.isValid()) {
                         List<String> lines;
                         try {
                             lines = fo.asLines();
                             if (lines != null && lines.size() > 0) {
                                 next = lines.get(0).trim();
+                                List<String> additional = DiscoveryUtils.scanCommandLine(next, DiscoveryUtils.LogOrigin.DwarfCompileLine);
+                                for(String option : additional) {
+                                    if (option.startsWith("'") && option.endsWith("'") || // NOI18N
+                                        option.startsWith("\"") && option.endsWith("\"")){ // NOI18N
+                                        if (option.length() >= 2) {
+                                            option = option.substring(1,option.length()-1);
+                                        }
+                                    }
+                                    args.add(option);
+                                }
                               }
                         } catch (IOException ex) {
                         }
+                        continue;
                     }
                 }
                 args.add(next);

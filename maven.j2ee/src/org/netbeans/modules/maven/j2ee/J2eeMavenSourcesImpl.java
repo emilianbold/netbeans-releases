@@ -44,21 +44,29 @@ package org.netbeans.modules.maven.j2ee;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import javax.swing.Icon;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.maven.spi.nodes.OtherSourcesExclude;
+import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.support.GenericSources;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
+import static org.netbeans.modules.maven.j2ee.Bundle.*;
 
 /**
- * Implementation of Sources interface for Java EE Maven projects
+ * Implementation of {@link Sources} interface for Java EE Maven projects.
+ *
+ * This class is <i>thread safe</i>.
+ *
  * @author  Milos Kleint
  */
 @ProjectServiceProvider(
@@ -77,17 +85,17 @@ import org.openide.util.NbBundle;
 )
 public class J2eeMavenSourcesImpl implements Sources, OtherSourcesExclude {
     
-    public static final String TYPE_DOC_ROOT="doc_root"; //NOI18N
-    public static final String TYPE_WEB_INF="web_inf"; //NOI18N
-    
-    private final Object lock = new Object();
+    public static final String TYPE_DOC_ROOT = "doc_root"; // NOI18N
+    public static final String TYPE_WEB_INF  = "web_inf";  // NOI18N
+
     private final Project project;
     private final ChangeSupport cs = new ChangeSupport(this);
     private final PropertyChangeListener pcl;
-    
-    private SourceGroup webDocSrcGroup;
 
-    
+    // @GuardedBy("this")
+    private List<SourceGroup> webResourceRoots;
+
+
     public J2eeMavenSourcesImpl(Project project) {
         this.project = project;
         this.pcl = new PropertyChangeListener() {
@@ -95,22 +103,28 @@ public class J2eeMavenSourcesImpl implements Sources, OtherSourcesExclude {
             @Override
             public void propertyChange(PropertyChangeEvent event) {
                 if (NbMavenProject.PROP_PROJECT.equals(event.getPropertyName())) {
-                    checkChanges();
+                    if (hasChanged()) {
+                        cs.fireChange();
+                    }
                 }
             }
         };
     }
-    
-    private void checkChanges() {
-        boolean changed;
-        synchronized (lock) {
-            changed = checkWebDocGroupCache(getWebAppDir());
+
+    private boolean hasChanged() {
+        List<SourceGroup> resourceRoots = getWebSourceGroups();
+
+        synchronized (this) {
+            if (webResourceRoots == null || !webResourceRoots.equals(resourceRoots)) {
+                // Set the cached value to the current resource roots
+                webResourceRoots = resourceRoots;
+                return true;
+            }
         }
-        if (changed) {
-            cs.fireChange();
-        }
+
+        return false;
     }
-    
+
     @Override
     public void addChangeListener(ChangeListener changeListener) {
         // If no listener were registered until now, start listening at project changes
@@ -129,56 +143,139 @@ public class J2eeMavenSourcesImpl implements Sources, OtherSourcesExclude {
             NbMavenProject.removePropertyChangeListener(project, pcl);
         }
     }
-    
+
     @Override
     public SourceGroup[] getSourceGroups(String str) {
         if (TYPE_DOC_ROOT.equals(str)) {
-            return createWebDocRoot();
+            synchronized (this) {
+                if (webResourceRoots == null) {
+                    webResourceRoots = getWebSourceGroups();
+                }
+                return webResourceRoots.toArray(new SourceGroup[webResourceRoots.size()]);
+            }
         }
         return new SourceGroup[0];
     }
-    
-    private SourceGroup[] createWebDocRoot() {
-        FileObject folder = getWebAppDir();
-        SourceGroup grp;
-        synchronized (lock) {
-            checkWebDocGroupCache(folder);
-            grp = webDocSrcGroup;
+
+    private List<SourceGroup> getWebSourceGroups() {
+        List<SourceGroup> sourceGroups = new ArrayList<>();
+
+        ProjectWebRootProvider webRootProvider = project.getLookup().lookup(ProjectWebRootProvider.class);
+        if (webRootProvider != null) {
+            Collection<FileObject> webRoots = webRootProvider.getWebRoots();
+            for (FileObject webRoot : webRoots) {
+                sourceGroups.add(new WebResourceGroup(project, webRoot, TYPE_DOC_ROOT, getDisplayName(webRoot)));
+            }
         }
-        if (grp != null) {
-            return new SourceGroup[] {grp};
+
+        return sourceGroups;
+    }
+
+    @NbBundle.Messages("LBL_WebPages=Web Pages")
+    private String getDisplayName(FileObject webRoot) {
+        // To preserve current behavior, don't show web root name in the node name for default "webapp"
+        if ("webapp".equals(webRoot.getName())) { // NOI18N
+            return LBL_WebPages();
         } else {
-            return new SourceGroup[0];
+            return LBL_WebPages() + " (" + webRoot.getName() + ")"; // NOI18N
         }
-    }
-    
-    private FileObject getWebAppDir() {
-        NbMavenProject mavenproject = project.getLookup().lookup(NbMavenProject.class);
-        return FileUtilities.convertURItoFileObject(mavenproject.getWebAppDirectory());
-    }
-    
-    /**
-     * consult the SourceGroup cache, return true if anything changed..
-     */
-    private boolean checkWebDocGroupCache(FileObject root) {
-        if (root == null && webDocSrcGroup != null) {
-            webDocSrcGroup = null;
-            return true;
-        }
-        if (root == null) {
-            return false;
-        }
-        boolean changed = false;
-        if (webDocSrcGroup == null || !webDocSrcGroup.getRootFolder().equals(root)) {
-            webDocSrcGroup = GenericSources.group(project, root, TYPE_DOC_ROOT, NbBundle.getMessage(J2eeMavenSourcesImpl.class, "LBL_WebPages"), null, null);
-            changed = true;
-        }
-        return changed;
     }
 
     @Override
     public String folderName() {
-        return "webapp";
+        return "webapp"; // NOI18N
     }
-    
+
+    /**
+     * Wrapper class around {@link SourceGroup}.
+     *
+     * <p>
+     * Implementing {@link Object#equals(java.lang.Object)} and {@link Object#hashCode()},
+     * so it will be possible to track changes in declared Web resources.
+     * </p>
+     *
+     * <p>
+     * This class is <i>immutable</i> and thus <i>thread safe</i>.
+     * </p>
+     */
+    private static class WebResourceGroup implements SourceGroup {
+
+        private final SourceGroup group;
+        private final Project project;
+
+
+        private WebResourceGroup(Project project, FileObject webRoot, String name, String displayName) {
+            this.project = project;
+            this.group = GenericSources.group(project, webRoot, name, displayName, null, null);
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 89 * hash + (this.project != null ? this.project.hashCode() : 0);
+            hash = 89 * hash + (this.group.getRootFolder() != null ? this.group.getRootFolder().hashCode() : 0);
+            hash = 89 * hash + (this.group.getName() != null ? this.group.getName().hashCode() : 0);
+            hash = 89 * hash + (this.group.getDisplayName() != null ? this.group.getDisplayName().hashCode() : 0);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final WebResourceGroup other = (WebResourceGroup) obj;
+            if (this.project != other.project && (this.project == null || !this.project.equals(other.project))) {
+                return false;
+            }
+            if (this.group.getRootFolder() != other.group.getRootFolder() && (this.group.getRootFolder() == null || !this.group.getRootFolder().equals(other.group.getRootFolder()))) {
+                return false;
+            }
+            if ((this.group.getName() == null) ? (other.group.getName() != null) : !this.group.getName().equals(other.group.getName())) {
+                return false;
+            }
+            if ((this.group.getDisplayName() == null) ? (other.group.getDisplayName() != null) : !this.group.getDisplayName().equals(other.group.getDisplayName())) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public FileObject getRootFolder() {
+            return group.getRootFolder();
+        }
+
+        @Override
+        public String getName() {
+            return group.getName();
+        }
+
+        @Override
+        public String getDisplayName() {
+            return group.getDisplayName();
+        }
+
+        @Override
+        public Icon getIcon(boolean opened) {
+            return group.getIcon(opened);
+        }
+
+        @Override
+        public boolean contains(FileObject file) {
+            return group.contains(file);
+        }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            group.addPropertyChangeListener(listener);
+        }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            group.removePropertyChangeListener(listener);
+        }
+    }
 }

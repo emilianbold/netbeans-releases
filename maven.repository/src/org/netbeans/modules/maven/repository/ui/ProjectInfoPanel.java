@@ -444,6 +444,9 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
     public JComponent getToolbarRepresentation() {
         if (toolbar == null) {
             toolbar = new JToolBar();
+            if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+                toolbar.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+            }
             toolbar.setFloatable(false);
             Action[] a = new Action[1];
             Action[] actions = getLookup().lookup(a.getClass());
@@ -463,7 +466,7 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
     @Override
     public void componentOpened() {
         super.componentOpened();
-        result = getLookup().lookup(new Lookup.Template<MavenProject>(MavenProject.class));
+        result = getLookup().lookupResult(MavenProject.class);
         populateFields();
         result.addLookupListener(this);
     }
@@ -623,7 +626,7 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
     }
 
     private class LinkAction extends AbstractAction {
-        private String url;
+        private final String url;
 
         public LinkAction(String url) {
             this.url = url;

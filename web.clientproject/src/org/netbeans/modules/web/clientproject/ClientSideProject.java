@@ -71,6 +71,7 @@ import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.SearchInfo;
 import org.netbeans.api.search.provider.SearchInfoUtils;
 import org.netbeans.api.search.provider.SearchListener;
+import org.netbeans.modules.javascript.karma.api.Karma;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.clientproject.api.ClientSideModule;
@@ -435,6 +436,7 @@ public class ClientSideProject implements Project {
                SharabilityQueryImpl.create(projectHelper, eval, ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER,
                     ClientSideProjectConstants.PROJECT_TEST_FOLDER, ClientSideProjectConstants.PROJECT_CONFIG_FOLDER),
                projectBrowserProvider,
+               new ConfigFolderProviderImpl(),
        });
        return new DynamicProjectLookup(this,
                LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-web-clientproject/Lookup"));
@@ -861,6 +863,19 @@ public class ClientSideProject implements Project {
 
         @Override
         public void propertiesChanged(AntProjectEvent ev) {
+        }
+
+    }
+
+    private final class ConfigFolderProviderImpl implements Karma.ConfigFolderProvider {
+
+        @Override
+        public File getConfigFolder() {
+            FileObject configFolder = ClientSideProject.this.getConfigFolder();
+            if (configFolder == null) {
+                return null;
+            }
+            return FileUtil.toFile(configFolder);
         }
 
     }

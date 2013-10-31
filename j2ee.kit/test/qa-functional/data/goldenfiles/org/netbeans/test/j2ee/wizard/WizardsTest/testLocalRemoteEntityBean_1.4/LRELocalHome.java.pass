@@ -1,7 +1,9 @@
 /*
+ * To change this license header, choose License Headers in Project Properties.
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
+
 package ejbs.entity;
 
 import javax.ejb.CreateException;
@@ -17,4 +19,5 @@ public interface LRELocalHome extends EJBLocalHome {
     ejbs.entity.LRELocal findByPrimaryKey(java.lang.Long key) throws FinderException;
     
     ejbs.entity.LRELocal create(java.lang.Long key) throws CreateException;
+
 }

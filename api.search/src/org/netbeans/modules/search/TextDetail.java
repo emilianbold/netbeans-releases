@@ -64,6 +64,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.text.Caret;
 import org.netbeans.api.search.SearchHistory;
 import org.netbeans.api.search.SearchPattern;
+import org.netbeans.modules.search.ui.HideResultAction;
 import org.netbeans.modules.search.ui.ReplaceCheckableNode;
 import org.netbeans.modules.search.ui.ResultsOutlineSupport;
 import org.netbeans.modules.search.ui.UiUtils;
@@ -82,6 +83,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.OutputEvent;
@@ -485,7 +487,7 @@ public final class TextDetail implements Selectable {
      * @see  TextDetail
      */
     static final class DetailNode extends AbstractNode
-                                          implements OutputListener {
+                                          implements OutputListener, Removable {
         private static final String ICON =
                 "org/netbeans/modules/search/res/textDetail.png";       //NOI18N
         /** Maximal lenght of displayed text detail. */
@@ -513,8 +515,6 @@ public final class TextDetail implements Selectable {
             this.txtDetail = txtDetail;
             this.mo = mo;
             
-            setValue(SearchDisplayer.ATTR_OUTPUT_LINE,
-                     DetailNode.getFullDesc(txtDetail));
             // A workaround for #124559 - when the detail becomes visible,
             // get the Line object. Later - if the user jumps to the document,
             // changes it and saves - the Line objects are not created for the
@@ -540,7 +540,10 @@ public final class TextDetail implements Selectable {
         @Override
         public Action[] getActions(boolean context) {
             if (!context) {
-                return new Action[] { getPreferredAction() };
+                return new Action[]{
+                    getPreferredAction(),
+                    SystemAction.get(HideResultAction.class)
+                };
             } else {
                 return new Action[0];
             }
@@ -916,7 +919,12 @@ public final class TextDetail implements Selectable {
         @Override
         protected void createPasteTypes(Transferable t, List<PasteType> s) {
         }
-        
+
+        @Override
+        public void remove() {
+            this.mo.removeDetail(txtDetail);
+        }
+
         @Override
         public boolean canDestroy() {
             return true;
@@ -924,7 +932,16 @@ public final class TextDetail implements Selectable {
 
         @Override
         public void destroy() throws IOException {
-            this.mo.removeDetail(txtDetail);
+            remove();
+        }
+
+        @Override
+        public Object getValue(String attributeName) {
+            if (SearchDisplayer.ATTR_OUTPUT_LINE.equals(attributeName)) {
+                return DetailNode.getFullDesc(txtDetail); // #236805
+            } else {
+                return super.getValue(attributeName);
+            }
         }
     } // End of DetailNode class.
 

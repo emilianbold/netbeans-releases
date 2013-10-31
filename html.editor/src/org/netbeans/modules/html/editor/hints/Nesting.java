@@ -41,8 +41,18 @@
  */
 package org.netbeans.modules.html.editor.hints;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.html.editor.spi.HintFixProvider;
+import org.netbeans.modules.web.common.api.WebUtils;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -56,6 +66,7 @@ public class Nesting extends PatternRule {
     }
 
     private static final String[] PATTERNS_SOURCES = new String[]{
+        "Element (.*?) not allowed as child of element (.*?) in this context.",
         "Heading cannot be a child of another heading.",
         ".*? start tag found but the .*? element is already open.",
         "Unclosed elements inside a list.",
@@ -74,17 +85,52 @@ public class Nesting extends PatternRule {
         "Saw an end tag after .*? had been closed.",
         "No element .*? to close.",
         "End tag .*? violates nesting rules.",
-        "Element .*? not allowed as child of element .*? in this context.",
         "XHTML element .*? is missing a required instance of child element .*?"
-        
-        
+
+
     }; //NOI18N
-    
+
     private final static Pattern[] PATTERNS = buildPatterns(PATTERNS_SOURCES);
+
+    private static final int UNKNOWN_ELEMENT_PATTERN_INDEX = 0;
 
     @Override
     public Pattern[] getPatterns() {
         return PATTERNS;
     }
-    
+
+    @Override
+    protected List<HintFix> getExtraHintFixes(Error e, HtmlRuleContext context) {
+        if (matched_pattern_index == UNKNOWN_ELEMENT_PATTERN_INDEX) {
+            //the "Element .*? not allowed as child of element .*? in this context." pattern
+            List<HintFix> fixes = new ArrayList<>();
+            fixes.addAll(super.getExtraHintFixes(e, context));
+            fixes.addAll(getSPIHintFixes(e, context));
+            return fixes;
+        } else {
+            return super.getExtraHintFixes(e, context);
+        }
+    }
+
+    private List<HintFix> getSPIHintFixes(Error e, HtmlRuleContext context) {
+        List<HintFix> fixes = new ArrayList<>();
+        //extract the element name and name of its parent first from the error message
+        Pattern p = PATTERNS[UNKNOWN_ELEMENT_PATTERN_INDEX];
+        Matcher matcher = p.matcher(e.getDescription());
+        if (matcher.matches()) {
+            String unknownElement = WebUtils.unquotedValue(matcher.group(1).trim());
+            String contextElement = WebUtils.unquotedValue(matcher.group(2).trim());
+
+            Map<String, Object> meta = new HashMap<>();
+            meta.put(HintFixProvider.UNKNOWN_ELEMENT_FOUND, unknownElement);
+            meta.put(HintFixProvider.UNKNOWN_ELEMENT_CONTEXT, contextElement);
+            
+            HintFixProvider.Context ctx = new HintFixProvider.Context(context.getSnapshot(), context.getHtmlParserResult(), meta);
+            for (HintFixProvider provider : Lookup.getDefault().lookupAll(HintFixProvider.class)) {
+                fixes.addAll(provider.getHintFixes(ctx));
+            }
+        }
+        return fixes;
+    }
+
 }

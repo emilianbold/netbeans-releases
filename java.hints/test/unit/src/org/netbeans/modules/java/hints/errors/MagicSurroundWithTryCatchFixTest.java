@@ -65,7 +65,7 @@ public class MagicSurroundWithTryCatchFixTest extends ErrorHintsTestBase {
         performFixTest("test/Test.java",
                        "package test; public class Test {public void test() { System.out.println(\"\"); |new java.io.FileInputStream(\"\");}}",
                        "FixImpl",
-                       "package test; import java.io.FileNotFoundException; import java.util.logging.Level; import java.util.logging.Logger; public class Test {public void test() {try { System.out.println(\"\"); new java.io.FileInputStream(\"\"); } catch (FileNotFoundException ex) { Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex); } }}");
+                       "package test; import java.io.FileNotFoundException; import java.util.logging.Level; import java.util.logging.Logger; public class Test {public void test() { try { System.out.println(\"\"); new java.io.FileInputStream(\"\"); } catch (FileNotFoundException ex) { Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex); } }}");
     }
 
     public void testLogStatementExceptions() throws Exception {
@@ -176,7 +176,7 @@ public class MagicSurroundWithTryCatchFixTest extends ErrorHintsTestBase {
         performFixTest("test/Test.java",
                        "package test; import java.io.*; import java.net.*; public class Test { public void getTestCase(URL url) { try { File tc = new File(url.toURI()); BufferedReader br = new BufferedReader(ne|w FileReader(tc)); } catch (URISyntaxException ex) { } } }",
                        "FixImpl",
-                       "package test; import java.io.*; import java.net.*;import java.util.logging.Level; import java.util.logging.Logger; public class Test { public void getTestCase(URL url) {BufferedReader br = null; try { File tc = new File(url.toURI());br = new BufferedReader(new FileReader(tc)); } catch (URISyntaxException ex) { } catch (FileNotFoundException ex) { Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex); } finally { try { br.close(); } catch (IOException ex) { Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex); } } } }");
+                       "package test; import java.io.*; import java.net.*;import java.util.logging.Level; import java.util.logging.Logger; public class Test { public void getTestCase(URL url) { BufferedReader br = null; try { File tc = new File(url.toURI()); br = new BufferedReader(new FileReader(tc)); } catch (URISyntaxException ex) { } catch (FileNotFoundException ex) { Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex); } finally { try { br.close(); } catch (IOException ex) { Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex); } } } }");
         } finally {
             UncaughtException.allowMagicSurround = false;
         }

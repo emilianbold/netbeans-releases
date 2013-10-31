@@ -293,7 +293,7 @@ class KenaiHandler {
                 Support.getInstance().post(new Runnable() { // XXX add post method to BM
                     @Override
                     public void run() {
-                        TeamUtil.openNewQuery(repo, true);
+                        TeamUtil.openNewQuery(repo);
                     }
                 });
             }
@@ -389,12 +389,10 @@ class KenaiHandler {
                 for (QueryHandle queryHandle : queryHandles) {
                     if(queryHandle instanceof QueryHandleImpl) {
                         QueryHandleImpl impl = (QueryHandleImpl) queryHandle;
-                        if(impl.getQuery().isSaved()) {
-                            // at this point every saved query should already be refreshed.
-                            // it's just for the one which was eventually saved right now
-                            // that it's needsRefresh flag haven't been set yet.
-                            impl.needsRefresh = false;
-                        }
+                        // at this point every saved query should already be refreshed.
+                        // it's just for the one which was eventually saved right now
+                        // that it's needsRefresh flag haven't been set yet.
+                        impl.needsRefresh = false;
                     }
                 }
                 ProjectHandle[] projectHandles;

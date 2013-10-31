@@ -46,7 +46,6 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.LogUtils;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.NbBundle;
@@ -76,7 +75,7 @@ public class VCSHooksConfig {
         }  
     }
     
-    private static Map<HookType, VCSHooksConfig> instances = new EnumMap<HookType, VCSHooksConfig>(HookType.class);
+    private static final Map<HookType, VCSHooksConfig> instances = new EnumMap<HookType, VCSHooksConfig>(HookType.class);
 
     private static final String HOOK_PREFIX               = "vcshook.";         // NOI18N
     

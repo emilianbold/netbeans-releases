@@ -55,6 +55,8 @@ import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
+import org.netbeans.modules.bugtracking.spi.QueryController;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.team.server.ui.spi.QueryHandle;
 import org.netbeans.modules.team.server.ui.spi.QueryResultHandle;
 import org.openide.util.WeakListeners;
@@ -107,12 +109,12 @@ class QueryHandleImpl extends QueryHandle implements QueryDescriptor, ActionList
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        TeamUtil.openQuery(query, Query.QueryMode.SHOW_ALL, true);
+        TeamUtil.openQuery(query, true);
     }
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals(Query.EVENT_QUERY_ISSUES_CHANGED)) {
+        if(evt.getPropertyName().equals(Query.EVENT_QUERY_REFRESHED)) {
             registerIssues();
             changeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_QUERY_RESULT, null, getQueryResults())); // XXX add result handles
         } else if(evt.getPropertyName().equals(IssueStatusProvider.EVENT_STATUS_CHANGED)) {

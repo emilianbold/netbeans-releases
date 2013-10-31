@@ -82,9 +82,13 @@ public class NativeWindowSystemTest extends NbTestCase {
         assertNotNull(nws);
         
             nws.isWindowAlphaSupported();
-            nws.setWindowAlpha(new Frame(), 0.5f);
+            Frame f = new Frame();
+            f.setUndecorated(true);
+            nws.setWindowAlpha(f, 0.5f);
         
-            nws.setWindowMask(new Frame(), new Icon() {
+            f = new Frame();
+            f.setUndecorated(true);
+            nws.setWindowMask(f, new Icon() {
                 public void paintIcon(Component arg0, Graphics arg1, int arg2, int arg3) {
                 }
 
@@ -96,6 +100,8 @@ public class NativeWindowSystemTest extends NbTestCase {
                     return 10;
                 }
             });
-            nws.setWindowMask(new Frame(), new Area( new Rectangle(0,0,10,10) ) );
+            f = new Frame();
+            f.setUndecorated(true);
+            nws.setWindowMask(f, new Area( new Rectangle(0,0,10,10) ) );
     }
 }

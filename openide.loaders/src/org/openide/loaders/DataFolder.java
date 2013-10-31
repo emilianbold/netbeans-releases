@@ -1100,6 +1100,14 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
          */
         public static final SortMode SIZE = new FolderComparator(FolderComparator.SIZE);
 
+        /**
+         * Folders go first (sorted by name) followed by files sorted by
+         * extension and then by name.
+         *
+         * @since org.openide.loaders 7.54
+         */
+        public static final SortMode EXTENSIONS = new FolderComparator(FolderComparator.EXTENSIONS);
+
         /** Method to write the sort mode to a folder's attributes.
         * @param folder folder write this mode to
         */

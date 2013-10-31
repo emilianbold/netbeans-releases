@@ -46,11 +46,11 @@ package org.netbeans.modules.project.ui.groups;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Set;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import static org.netbeans.modules.project.ui.groups.Bundle.*;
+import static org.netbeans.modules.project.ui.groups.NewGroupPanel.MAX_NAME;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.NbBundle.Messages;
@@ -62,6 +62,7 @@ import org.openide.util.NbBundle.Messages;
 public abstract class GroupEditPanel extends JPanel{
 
     private Category category;
+    public static final String PROP_READY = "ready"; // NOI18N
 
     public Category getCategory() {
         return category;
@@ -70,30 +71,25 @@ public abstract class GroupEditPanel extends JPanel{
     protected abstract void applyChanges();
 
     @Messages("WARN_GroupExists=Another group with the same name exists.")
-    void startPerformingNameChecks(final JTextField field, final String initial) {
-        field.getDocument().addDocumentListener(new DocumentListener() {
-            @Override public void insertUpdate(DocumentEvent e) {
-                doCheck();
+    protected boolean doCheckExistingGroups(JTextField field, Group actualGroup) {
+        getCategory().setErrorMessage(null);
+        getCategory().setValid(true);
+        String name = field.getText();
+                
+        if (name != null) {
+            if (name.trim().length() <= 0 || name.trim().length() >= MAX_NAME) {
+                return false;
             }
-            @Override public void removeUpdate(DocumentEvent e) {
-                doCheck();
-            }
-            @Override public void changedUpdate(DocumentEvent e) {
-                doCheck();
-            }
-            private void doCheck() {
-                getCategory().setErrorMessage(null);
-                getCategory().setValid(true);
-                String newText = field.getText();
-                if (!newText.equals(initial)) {
-                    for (Group g : Group.allGroups()) {
-                        if (newText.equals(g.getNameOrNull())) {
-                            getCategory().setErrorMessage(WARN_GroupExists());
-                        }
-                    }
+            Set<Group> otherGroups = Group.allGroups();
+            otherGroups.remove(actualGroup);
+            for (Group group : otherGroups) {
+                if (name.equalsIgnoreCase(group.getName())) {
+                    getCategory().setErrorMessage(WARN_GroupExists());
+                    return false;
                 }
             }
-        });
+        }
+        return true;
     }
 
     void setCategory(ProjectCustomizer.Category category) {
@@ -105,4 +101,6 @@ public abstract class GroupEditPanel extends JPanel{
             }
         });
     }
+    
+    public abstract boolean isReady();
 }

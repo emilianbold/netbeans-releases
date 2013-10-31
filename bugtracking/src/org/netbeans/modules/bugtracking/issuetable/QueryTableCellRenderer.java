@@ -112,12 +112,18 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
         if( null == unevenLineColor )
             unevenLineColor = new Color(0xf3f6fd);
     }
+    private boolean isSaved;
 
-    public QueryTableCellRenderer(Query query, IssueTable issueTable) {
+    public QueryTableCellRenderer(Query query, IssueTable issueTable, boolean isSaved) {
         this.query = APIAccessor.IMPL.getImpl(query);
         this.issueTable = issueTable;
+        this.isSaved = isSaved;
     }
 
+    void setSaved(boolean saved) {
+        isSaved = saved;
+    }
+    
     private static MessageFormat getFormat (String key, Color c) {
         String format = NbBundle.getMessage(IssueTable.class, key,
                 new Object[] { UIUtils.getColorString(c), "{0}" }); //NOI18N
@@ -129,7 +135,7 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
 
         JLabel renderer = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         renderer.setIcon(null);
-        if(!query.isSaved()) {
+        if(!isSaved) {
             TableCellStyle style = getDefaultCellStyle(table, issueTable, (IssueProperty) value, isSelected, row);
             setStyleProperties(renderer, style);
             return renderer;
@@ -312,56 +318,45 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
         TableCellStyle style = getDefaultCellStyle(table, issueTable, p, isSelected, row);
         try {
             // set text format and background depending on selection and issue status
-            IssueStatusProvider.Status status = null;
             IssueImpl issue = APIAccessor.IMPL.getImpl(p.getIssue());
-            if(!queryImpl.contains(issue.getID())) {
-                // archived issues
-                style.format     = isSelected ? style.format           : issueObsoleteFormat;
-                style.background = isSelected ? obsoleteHighlightColor : style.background;
-                style.foreground = isSelected ? table.getBackground() : style.foreground;
-            } else {
-                status = issue.getStatus();
-                if(status != IssueStatusProvider.Status.SEEN) {
-                    switch(status) {
-                        case INCOMING_NEW :
-                            style.format     = isSelected ? style.format      : issueNewFormat;
-                            style.background = isSelected ? newHighlightColor : style.background;
-                            style.foreground = isSelected ? table.getBackground() : style.foreground;
-                            break;
-                        case INCOMING_MODIFIED :
-                            style.format     = isSelected ? style.format           : issueModifiedFormat;
-                            style.background = isSelected ? modifiedHighlightColor : style.background;
-                            style.foreground = isSelected ? table.getBackground() : style.foreground;
-                            break;
-                    }
+            IssueStatusProvider.Status status = issue.getStatus();
+            if(status != IssueStatusProvider.Status.SEEN) {
+                switch(status) {
+                    case INCOMING_NEW :
+                        style.format     = isSelected ? style.format      : issueNewFormat;
+                        style.background = isSelected ? newHighlightColor : style.background;
+                        style.foreground = isSelected ? table.getBackground() : style.foreground;
+                        break;
+                    case INCOMING_MODIFIED :
+                        style.format     = isSelected ? style.format           : issueModifiedFormat;
+                        style.background = isSelected ? modifiedHighlightColor : style.background;
+                        style.foreground = isSelected ? table.getBackground() : style.foreground;
+                        break;
                 }
             }
             
             Object o = p.getValue();
             if(o instanceof String) {
                 String s = (String) o;
-                if(s == null) s = "";                                               // NOI18N
+                if(s == null) {
+                    s = "";
+                }                                               // NOI18N
                 s = TextUtils.escapeForHTMLLabel(s);
                 StringBuilder sb = new StringBuilder();
                 sb.append("<html>");                                                // NOI18N
                 sb.append(s);
-                if(!queryImpl.contains(issue.getID())) {
-                    sb.append("<br>").append(issueObsoleteFormat.format(new Object[] { labelObsolete }, new StringBuffer(), null)); // NOI18N
-                    sb.append(msgObsolete);
-                } else {
-                    if(status == null) {
-                        status = issue.getStatus();
-                    }
-                    switch(status) {
-                        case INCOMING_NEW :
-                            sb.append("<br>").append(issueNewFormat.format(new Object[] { labelNew }, new StringBuffer(), null)); // NOI18N
-                            sb.append(msgNew);
-                            break;
-                        case INCOMING_MODIFIED :
-                            sb.append("<br>").append(issueModifiedFormat.format(new Object[] { labelModified }, new StringBuffer(), null)); // NOI18N
-                            sb.append(MessageFormat.format(msgModified, p.getRecentChanges()));
-                            break;
-                    }
+                if(status == null) {
+                    status = issue.getStatus();
+                }
+                switch(status) {
+                    case INCOMING_NEW :
+                        sb.append("<br>").append(issueNewFormat.format(new Object[] { labelNew }, new StringBuffer(), null)); // NOI18N
+                        sb.append(msgNew);
+                        break;
+                    case INCOMING_MODIFIED :
+                        sb.append("<br>").append(issueModifiedFormat.format(new Object[] { labelModified }, new StringBuffer(), null)); // NOI18N
+                        sb.append(MessageFormat.format(msgModified, p.getRecentChanges()));
+                        break;
                 }
                 sb.append("</html>"); // NOI18N
                 style.tooltip = sb.toString();

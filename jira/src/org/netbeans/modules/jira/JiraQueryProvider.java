@@ -40,7 +40,6 @@ package org.netbeans.modules.jira;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.EnumSet;
-import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.bugtracking.team.spi.TeamQueryProvider;
 import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.QueryController;
@@ -53,7 +52,7 @@ import org.netbeans.modules.jira.repository.JiraRepository;
  *
  * @author Tomas Stupka
  */
-public class JiraQueryProvider extends TeamQueryProvider<JiraQuery, NbJiraIssue> {
+public class JiraQueryProvider implements TeamQueryProvider<JiraQuery, NbJiraIssue> {
 
     @Override
     public String getDisplayName(JiraQuery query) {
@@ -71,13 +70,23 @@ public class JiraQueryProvider extends TeamQueryProvider<JiraQuery, NbJiraIssue>
     }
 
     @Override
-    public boolean isSaved(JiraQuery query) {
-        return query.isSaved();
+    public boolean canRemove(JiraQuery q) {
+        return q.canRemove();
     }
-
+    
     @Override
     public void remove(JiraQuery q) {
         q.remove();
+    }
+
+    @Override
+    public boolean canRename(JiraQuery q) {
+        return q.canRename();
+    }
+
+    @Override
+    public void rename(JiraQuery q, String displayName) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
     @Override
@@ -93,15 +102,6 @@ public class JiraQueryProvider extends TeamQueryProvider<JiraQuery, NbJiraIssue>
     @Override
     public void addPropertyChangeListener(JiraQuery query, PropertyChangeListener listener) {
         query.addPropertyChangeListener(listener);
-    }
-
-    @Override
-    public boolean contains(JiraQuery query, String id) {
-        return query.contains(id);
-    }
-
-    public Collection<NbJiraIssue> getIssues(JiraQuery query, EnumSet<IssueCache.Status> includeStatus) {
-        return query.getIssues(includeStatus);
     }
 
     @Override
@@ -123,5 +123,4 @@ public class JiraQueryProvider extends TeamQueryProvider<JiraQuery, NbJiraIssue>
         JiraRepository repository = query.getRepository();
         return query == ((KenaiRepository) repository).getMyIssuesQuery();
     }
-
 }

@@ -42,6 +42,9 @@
 
 package org.netbeans.core.windows.nativeaccess;
 
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsDevice;
+import java.awt.IllegalComponentStateException;
 import java.awt.Shape;
 import java.awt.Window;
 import javax.swing.Icon;
@@ -59,17 +62,38 @@ class NoNativeAccessWindowSystem extends NativeWindowSystem {
 
     @Override
     public void setWindowAlpha(Window w, float alpha) {
-        //NOOP
+        GraphicsConfiguration gc = w.getGraphicsConfiguration();
+        GraphicsDevice gd = gc.getDevice();
+        if (gc.getDevice().getFullScreenWindow() == w) {
+            return;
+        }
+        if (!gd.isWindowTranslucencySupported(GraphicsDevice.WindowTranslucency.TRANSLUCENT)) {
+            return;
+        }
+        w.setOpacity(alpha);
     }
 
     @Override
     public void setWindowMask(Window w, Shape mask) {
-        //NOOP
+        GraphicsConfiguration gc = w.getGraphicsConfiguration();
+        GraphicsDevice gd = gc.getDevice();
+        if (gc.getDevice().getFullScreenWindow() == w) {
+            return;
+        }
+        if (!gd.isWindowTranslucencySupported(GraphicsDevice.WindowTranslucency.TRANSLUCENT)) {
+            return;
+        }
+        w.setShape(mask);
     }
 
     @Override
     public void setWindowMask(Window w, Icon mask) {
         //NOOP
+    }
+
+    @Override
+    public boolean isUndecoratedWindowAlphaSupported() {
+        return true;
     }
 
 }

@@ -137,6 +137,11 @@ if [ -z ${DEBUGLEVEL} ]; then
     export DEBUGLEVEL
 fi
 
+if [ -z ${DONT_PACK_LOCALIZATION_JARS_ON_MAC} ]; then
+    DONT_PACK_LOCALIZATION_JARS_ON_MAC=y
+    export DONT_PACK_LOCALIZATION_JARS_ON_MAC
+fi
+
 export ANT_OPTS="-Xmx2G -XX:MaxPermSize=500m"
 
 if [ -n ${JDK_HOME} ] && [ -z ${JAVA_HOME} ] ; then

@@ -139,4 +139,10 @@ public final class JXDatePickerImpl extends javax.swing.JPanel implements IDESer
             }
         }
     }
+
+    @Override
+    public void setEnabled (boolean enabled) {
+        super.setEnabled(enabled);
+        datePicker.setEnabled(enabled);
+    }
 }

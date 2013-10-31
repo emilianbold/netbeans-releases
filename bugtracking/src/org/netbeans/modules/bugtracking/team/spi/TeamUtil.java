@@ -54,9 +54,17 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import javax.swing.JLabel;
-import org.netbeans.modules.bugtracking.*;
+import org.netbeans.modules.bugtracking.APIAccessor;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.BugtrackingOwnerSupport;
+import org.netbeans.modules.bugtracking.DelegatingConnector;
+import org.netbeans.modules.bugtracking.IssueImpl;
+import org.netbeans.modules.bugtracking.QueryImpl;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
@@ -65,6 +73,7 @@ import org.netbeans.modules.bugtracking.team.spi.TeamBugtrackingConnector.Bugtra
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.tasks.DashboardTopComponent;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
+import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.nodes.Node;
@@ -323,6 +332,13 @@ public class TeamUtil {
         return null;
     }
     
+    public static void addRepository(String connectorId, String repositoryId) {
+        RepositoryImpl impl = RepositoryRegistry.getInstance().getRepository(connectorId, repositoryId);
+        if(impl != null) {       
+            RepositoryRegistry.getInstance().addRepository(impl);
+        }
+    }
+    
     public static void addRepository(Repository repository) {
         RepositoryRegistry.getInstance().addRepository(APIAccessor.IMPL.getImpl(repository));
     }
@@ -364,17 +380,17 @@ public class TeamUtil {
         IssueAction.createIssue(APIAccessor.IMPL.getImpl(repo));
     }
 
-    public static void openNewQuery(Repository repository, final boolean suggestedSelectionOnly) {
-        QueryAction.openQuery(null, APIAccessor.IMPL.getImpl(repository), suggestedSelectionOnly);
+    public static void openNewQuery(Repository repository) {
+        QueryAction.createNewQueryForRepo(APIAccessor.IMPL.getImpl(repository));
     }
     
-    public static void openQuery(final Query query, Query.QueryMode mode, final boolean suggestedSelectionOnly) {
+    public static void openQuery(final Query query, final boolean suggestedSelectionOnly) {
         QueryImpl queryImpl = APIAccessor.IMPL.getImpl(query);
         DashboardTopComponent.findInstance().select(queryImpl, true);
     }
 
     public static Collection<Issue> getRecentIssues(Repository repo) {
-        Collection<IssueImpl> c = BugtrackingUtil.getRecentIssues(APIAccessor.IMPL.getImpl(repo));
+        Collection<IssueImpl> c = BugtrackingManager.getInstance().getRecentIssues(APIAccessor.IMPL.getImpl(repo));
         List<Issue> ret = new ArrayList<Issue>(c.size());
         for (IssueImpl impl : c) {
             ret.add(impl.getIssue());
@@ -391,6 +407,10 @@ public class TeamUtil {
         return ret;
     }
 
+    public static void setFirmAssociations(File[] files, Repository repository) {
+        BugtrackingOwnerSupport.getInstance().setFirmAssociations(files, APIAccessor.IMPL.getImpl(repository));
+    }
+    
     public static void addCacheListener(Issue issue, PropertyChangeListener l) {
         APIAccessor.IMPL.getImpl(issue).addIssueStatusListener(l);
     }
@@ -400,18 +420,28 @@ public class TeamUtil {
     }
 
     public static boolean isOpen(Issue issue) {
-        return BugtrackingUtil.isOpened(APIAccessor.IMPL.getImpl(issue));
+        return isOpened(APIAccessor.IMPL.getImpl(issue));
     }
     
     public static boolean isShowing(Issue issue) {
-        return BugtrackingUtil.isOpened(APIAccessor.IMPL.getImpl(issue));
+        return isOpened(APIAccessor.IMPL.getImpl(issue));
     }
 
-    public static boolean notifyJiraDownload(String projectUrl) {
-        return JiraUpdater.notifyJiraDownload(projectUrl);
+    public static void downloadAndInstallJira(String projectUrl) {
+        JiraUpdater.getInstance().downloadAndInstall(projectUrl);
+    }
+    
+    public static Map<String, List<RecentIssue>> getAllRecentIssues() {
+        return BugtrackingManager.getInstance().getAllRecentIssues();
     }
 
-    public static void downloadAndInstallJira() {
-        JiraUpdater.getInstance().downloadAndInstall();
-    }
+    /**
+     * Determines if the gives issue is opened in the editor area
+     * @param issue
+     * @return true in case the given issue is opened in the editor are, otherwise false
+     */
+    private static boolean isOpened(IssueImpl issue) {
+        IssueTopComponent tc = IssueTopComponent.find(issue, false);
+        return tc != null ? tc.isOpened() : false;
+    }    
 }

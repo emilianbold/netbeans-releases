@@ -48,15 +48,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.netbeans.api.keyring.Keyring;
@@ -67,7 +63,7 @@ import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.LogUtils;
-import org.netbeans.modules.bugtracking.util.NBBugzillaUtils;
+import org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils;
 import org.openide.util.NbPreferences;
 
 /**
@@ -260,20 +256,19 @@ public class RepositoryRegistry {
             migrateJira();
             
             String[] ids = getRepositoryIds();
-            if (ids == null || ids.length == 0) {
-                return repositories;
-            }
             DelegatingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
-            for (String id : ids) {
-                String[] idArray = id.split(DELIMITER);
-                String connectorId = idArray[0].substring(BUGTRACKING_REPO.length());
-                for (DelegatingConnector c : connectors) {
-                    if(c.getID().equals(connectorId)) {
-                        RepositoryInfo info = SPIAccessor.IMPL.read(getPreferences(), id);
-                        if(info != null) {
-                            Repository repo = c.createRepository(info);
-                            if (repo != null) {
-                                repositories.put(APIAccessor.IMPL.getImpl(repo));
+            if (ids != null) {
+                for (String id : ids) {
+                    String[] idArray = id.split(DELIMITER);
+                    String connectorId = idArray[0].substring(BUGTRACKING_REPO.length());
+                    for (DelegatingConnector c : connectors) {
+                        if(c.getID().equals(connectorId)) {
+                            RepositoryInfo info = SPIAccessor.IMPL.read(getPreferences(), id);
+                            if(info != null) {
+                                Repository repo = c.createRepository(info);
+                                if (repo != null) {
+                                    repositories.put(APIAccessor.IMPL.getImpl(repo));
+                                }
                             }
                         }
                     }

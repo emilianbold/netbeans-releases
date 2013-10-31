@@ -119,7 +119,7 @@ public class SerialVersionUIDTest extends ErrorHintsTestBase {
 
     public void testAnonymous() throws Exception {
         String test = "package test; public class Test {private Serializable ser = new Serializable() {| public String toString() {return \"Hello from serializable\";}};}";
-        String golden = "package test; public class Test {private Serializable ser = new Serializable() {private static final long serialVersionUID = 1L; public String toString() {return \"Hello from serializable\";}};}";
+        String golden = "package test; public class Test {private Serializable ser = new Serializable() { private static final long serialVersionUID = 1L; public String toString() {return \"Hello from serializable\";}};}";
         performFixTest(test, golden, HINT_DEFAULT);
     }
 

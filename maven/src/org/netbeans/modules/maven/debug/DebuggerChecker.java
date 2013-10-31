@@ -42,14 +42,10 @@
 package org.netbeans.modules.maven.debug;
 
 import com.sun.jdi.VMOutOfMemoryException;
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.net.URL;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
@@ -59,7 +55,6 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import org.netbeans.api.java.source.BuildArtifactMapper;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -75,12 +70,9 @@ import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
-import org.openide.LifecycleManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.util.NbCollections;
-import org.openide.util.RequestProcessor;
 import org.openide.util.io.NullOutputStream;
 import org.openide.windows.OutputListener;
 import org.openide.windows.OutputWriter;
@@ -227,7 +219,19 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
                 JPDAStart start = new JPDAStart(context.getInputOutput(), config.getActionName());
                 NbMavenProject prj = config.getProject().getLookup().lookup(NbMavenProject.class);
                 start.setName(prj.getMavenProject().getArtifactId());
-                start.setStopClassName(config.getProperties().get("jpda.stopclass")); //NOI18N
+                String stopClass = config.getProperties().get("jpda.stopclass");
+                if (stopClass == null) {
+                    stopClass = (String) config.getInternalProperties().get("jpda.stopclass");
+                }
+                start.setStopClassName(stopClass); //NOI18N
+                String sm = (String) config.getInternalProperties().get("jpda.stopmethod");
+                if (sm != null) {
+                    start.setStopMethod(sm);
+                }
+                ClassPath addCP = (ClassPath) config.getInternalProperties().get("jpda.additionalClasspath");
+                if (addCP != null) {
+                    start.setAdditionalSourcePath(addCP);
+                }
                 String val = start.execute(config.getProject());
                 for (Map.Entry<String,String> entry : NbCollections.checkedMapByFilter(config.getProperties(), String.class, String.class, true).entrySet()) {
                     StringBuilder buf = new StringBuilder(entry.getValue());

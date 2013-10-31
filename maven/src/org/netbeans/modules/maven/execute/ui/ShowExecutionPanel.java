@@ -46,53 +46,29 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import static javax.swing.Action.NAME;
 import static org.netbeans.modules.maven.execute.ui.Bundle.*;
 import javax.swing.tree.TreeSelectionModel;
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
-import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.execution.ExecutionEvent;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.JDOMException;
-import org.jdom.filter.Filter;
-import org.jdom.input.SAXBuilder;
 import org.netbeans.api.annotations.common.StaticResource;
-import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
-import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
-import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.ModelUtils;
-import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunConfig;
-import org.netbeans.modules.maven.embedder.EmbedderFactory;
-import org.netbeans.modules.maven.embedder.MavenEmbedder;
-import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
 import org.netbeans.modules.maven.execute.cmd.ExecutionEventObject;
 import org.netbeans.modules.maven.execute.cmd.ExecMojo;
 import org.netbeans.modules.maven.execute.cmd.ExecProject;
-import org.netbeans.modules.maven.nodes.DependencyNode;
-import org.openide.cookies.OpenCookie;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -460,7 +436,8 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
             return new Action[] {
                 new GotoOutputAction(tree),
                 new GotoSourceAction(start),
-                new GotoPluginSourceAction(start, config)
+                new GotoPluginSourceAction(start, config), 
+                new DebugPluginSourceAction(start, config)
             };
         }
         
@@ -501,7 +478,7 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
 
         @Override
         public String getShortDescription() {
-            return "<html>Project GAV: " + start.gav.getId() + "<br/>Location: " + start.currentProjectLocation.getAbsolutePath() + "</html>";
+            return "<html>Project GAV: " + start.gav.getId() + (start.currentProjectLocation != null ? "<br/>Location: " + start.currentProjectLocation.getAbsolutePath() : "") + "</html>";
         }
         
         
@@ -557,109 +534,6 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
         public void actionPerformed(ActionEvent e) {
             if (mojo.getLocation() != null) {
                 ModelUtils.openAtSource(mojo.getLocation());
-            }
-        }
-    }
-    
-    private static class GotoPluginSourceAction extends AbstractAction {
-        private final ExecMojo mojo;
-        private final RunConfig config;
-
-        @NbBundle.Messages("ACT_GOTO_Plugin=Go to Plugin Mojo Source")
-        public GotoPluginSourceAction(ExecMojo start, RunConfig conf) {
-            putValue(NAME, ACT_GOTO_Plugin());           
-            this.mojo = start;
-            this.config = conf;
-        }
-
-        @Override
-        @NbBundle.Messages("TIT_GOTO_Plugin=Opening Plugin Mojo Sources")
-        public void actionPerformed(ActionEvent e) {
-            final AtomicBoolean cancel = new AtomicBoolean();
-            org.netbeans.api.progress.ProgressUtils.runOffEventDispatchThread(new Runnable() {
-
-                @Override
-                public void run() {
-                    doLoad(cancel);
-                }
-            }, TIT_GOTO_Plugin(), cancel, false);
-
-        }
-        
-        private void doLoad(AtomicBoolean cancel) {
-            final MavenEmbedder onlineEmbedder = EmbedderFactory.getOnlineEmbedder();
-            Artifact art = onlineEmbedder.createArtifact(mojo.plugin.groupId, mojo.plugin.artifactId, mojo.plugin.version, "jar");
-            Project prj = config.getProject();
-            if (prj != null) { //todo what about build without project.. it's just create archetype one though..
-                ProgressContributor contributor = AggregateProgressFactory.createProgressContributor("multi-1");
-
-                AggregateProgressHandle handle = AggregateProgressFactory.createHandle("Downloading plugin sources",
-                        new ProgressContributor[]{contributor}, ProgressTransferListener.cancellable(), null);
-                handle.start();
-                try {
-                    ProgressTransferListener.setAggregateHandle(handle);
-                    NbMavenProject pr = prj.getLookup().lookup(NbMavenProject.class);
-                    onlineEmbedder.resolve(art, pr.getMavenProject().getPluginArtifactRepositories(), onlineEmbedder.getLocalRepository());
-                    if (art.getFile().exists() && !cancel.get()) {
-                        Artifact sourceArt = DependencyNode.downloadJavadocSources(contributor, false, art, prj);
-                        FileObject binaryRoot = FileUtil.toFileObject(art.getFile());
-                        if (!cancel.get() && binaryRoot != null && FileUtil.isArchiveFile(binaryRoot)) {
-                            binaryRoot = FileUtil.getArchiveRoot(binaryRoot);
-                            FileObject pluginxml = binaryRoot.getFileObject("META-INF/maven/plugin.xml");
-                            if (!cancel.get() && pluginxml != null) {
-                                try {
-                                    SAXBuilder sb = new SAXBuilder();
-                                    Document doc = sb.build(pluginxml.getInputStream());
-                                    Iterator<Element> it = doc.getRootElement().getDescendants(new Filter() {
-                                        @Override
-                                        public boolean matches(Object object) {
-                                            if (object instanceof Element) {
-                                                Element el = (Element) object;
-                                                if ("mojo".equals(el.getName()) && mojo.goal.equals(el.getChildText("goal"))) {
-                                                    return true;
-                                                }
-                                            }
-                                            return false;
-                                        }
-                                    });
-                                    if (it.hasNext()) {
-                                        Element el = it.next();
-                                        String className = el.getChildText("implementation");
-                                        if (className != null) {
-                                            FileObject fo = binaryRoot.getFileObject(className.replace(".", "/") + ".class");
-                                            if (!cancel.get() && fo != null) {
-                                                DataObject dobj = DataObject.find(fo);
-                                                if (dobj != null) {
-                                                    OpenCookie cookie = dobj.getLookup().lookup(OpenCookie.class);
-                                                    if (cookie != null) {
-                                                        cookie.open();
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                } catch (JDOMException jDOMException) {
-                                } catch (IOException iOException) {
-                                }
-                            }
-                        }
-                    } else {
-                        contributor.finish();
-                    }
-                } catch (ArtifactResolutionException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (ArtifactNotFoundException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (ThreadDeath d) { // download interrupted
-                } catch (IllegalStateException ise) { //download interrupted in dependent thread. #213812
-                    if (!(ise.getCause() instanceof ThreadDeath)) {
-                        throw ise;
-                    }
-                } finally {
-                    handle.finish();
-                    ProgressTransferListener.clearAggregateHandle();
-                }
-
             }
         }
     }

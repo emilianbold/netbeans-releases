@@ -45,6 +45,7 @@ package org.netbeans.libs.git.jgit.commands;
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
+import org.eclipse.jgit.diff.DiffConfig;
 import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.FollowFilter;
@@ -83,7 +84,7 @@ public class GetPreviousCommitCommand extends GitCommand {
                     walk.markStart(walk.parseCommit(rev.getParent(0)));
                     String path = Utils.getRelativePath(repository.getWorkTree(), file);
                     if (path != null && !path.isEmpty()) {
-                        walk.setTreeFilter(FollowFilter.create(path));
+                        walk.setTreeFilter(FollowFilter.create(path, repository.getConfig().get(DiffConfig.KEY)));
                     }
                     Iterator<RevCommit> it = walk.iterator();
                     if (it.hasNext()) {

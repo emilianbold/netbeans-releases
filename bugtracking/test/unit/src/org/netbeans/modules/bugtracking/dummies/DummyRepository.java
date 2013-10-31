@@ -43,17 +43,13 @@
 package org.netbeans.modules.bugtracking.dummies;
 
 import java.awt.Image;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collection;
-import java.util.Collections;
 import javax.imageio.ImageIO;
-import org.netbeans.modules.bugtracking.TestIssue;
 import org.netbeans.modules.bugtracking.TestKit;
-import org.netbeans.modules.bugtracking.TestQuery;
 import org.netbeans.modules.bugtracking.TestRepository;
 import org.netbeans.modules.bugtracking.spi.*;
+import org.netbeans.modules.bugtracking.ui.repository.RepositoryComboSupport;
 import org.openide.util.Lookup;
 
 /**
@@ -78,10 +74,12 @@ public class DummyRepository extends TestRepository {
     private final DummyBugtrackingConnector connector;
     private final String id;
     private RepositoryInfo info;
+    private final boolean canAttach;
 
-    public DummyRepository(DummyBugtrackingConnector connector, String id) {
+    public DummyRepository(DummyBugtrackingConnector connector, String id, boolean canAttach) {
         this.connector = connector;
         this.id = id;
+        this.canAttach = canAttach;
         info = new RepositoryInfo(id, DummyBugtrackingConnector.ID, null, "Dummy repository \"" + id + '"', "dummy repository created for testing purposes", null, null, null, null);
     }
 
@@ -96,44 +94,8 @@ public class DummyRepository extends TestRepository {
     }
 
     @Override
-    public TestIssue[] getIssues(String[] id) {
-        assert false : "This was assumed to be never called.";
-        return null;
-    }
-
-    @Override
     public void remove() {
         connector.removeRepository(TestKit.getRepository(this));
-    }
-
-    @Override
-    public RepositoryController getController() {
-        assert false : "This was assumed to be never called.";
-        return null;
-    }
-
-    @Override
-    public TestQuery createQuery() {
-        assert false : "This was assumed to be never called.";
-        return null;
-    }
-
-    @Override
-    public TestIssue createIssue() {
-        assert false : "This was assumed to be never called.";
-        return null;
-    }
-
-    @Override
-    public Collection<TestQuery> getQueries() {
-        assert false : "This was assumed to be never called.";
-        return Collections.emptyList();
-    }
-    
-    @Override
-    public Collection<TestIssue> simpleSearch(String criteria) {
-        assert false : "This was assumed to be never called.";
-        return Collections.emptyList();
     }
 
     public Lookup getLookup() {
@@ -146,9 +108,8 @@ public class DummyRepository extends TestRepository {
     }
 
     @Override
-    public void removePropertyChangeListener(PropertyChangeListener listener) { }
-
-    @Override
-    public void addPropertyChangeListener(PropertyChangeListener listener) { }
-
+    public boolean canAttachFile() {
+        return canAttach;
+    }
+    
 }

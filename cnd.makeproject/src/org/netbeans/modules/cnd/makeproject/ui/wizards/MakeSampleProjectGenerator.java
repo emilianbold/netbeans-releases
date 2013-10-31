@@ -229,7 +229,7 @@ public class MakeSampleProjectGenerator {
                     variant = MakeConfiguration.getVariant(compilerSet, platform);
                     csVariant = compilerSet.getName();
                     if (compilerSet.getCompilerFlavor() != null) {
-                        csVariant += "|" + compilerSet.getCompilerFlavor().toString(); // NOI18N
+                        csVariant += "|" + compilerSet.getCompilerFlavor().getToolchainDescriptor().getName(); // NOI18N
                     }
                 } else {
                     CndUtils.assertTrue(false, "Expected not null tool collection"); // NOI18N
@@ -374,7 +374,7 @@ public class MakeSampleProjectGenerator {
         String[] families;
         if (compilerSet != null) {
             families = compilerSet.getCompilerFlavor().getToolchainDescriptor().getFamily();
-            flavor = compilerSet.getCompilerFlavor().toString();
+            flavor = compilerSet.getCompilerFlavor().getToolchainDescriptor().getName();
         } else {
             families = new String[0];
             flavor = "UKNOWN"; // NOI18N

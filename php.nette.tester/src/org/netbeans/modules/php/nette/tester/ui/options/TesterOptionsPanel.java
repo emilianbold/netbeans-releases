@@ -92,7 +92,9 @@ public class TesterOptionsPanel extends JPanel {
         errorLabel.setText(" "); // NOI18N
         testerPathHintLabel.setText(Bundle.TesterOptionsPanel_tester_hint(Tester.TESTER_FILE_NAME));
 
-        testerPathTextField.getDocument().addDocumentListener(new DefaultDocumentListener());
+        DocumentListener defaultDocumentListener = new DefaultDocumentListener();
+        testerPathTextField.getDocument().addDocumentListener(defaultDocumentListener);
+        phpIniTextField.getDocument().addDocumentListener(defaultDocumentListener);
     }
 
     public String getTesterPath() {
@@ -101,6 +103,14 @@ public class TesterOptionsPanel extends JPanel {
 
     public void setTesterPath(String path) {
         testerPathTextField.setText(path);
+    }
+
+    public String getPhpIniPath() {
+        return phpIniTextField.getText();
+    }
+
+    public void setPhpIniPath(String path) {
+        phpIniTextField.setText(path);
     }
 
     public void setError(String message) {
@@ -140,6 +150,9 @@ public class TesterOptionsPanel extends JPanel {
         browseTesterButton = new JButton();
         searchTesterButton = new JButton();
         testerPathHintLabel = new JLabel();
+        phpIniLabel = new JLabel();
+        phpIniTextField = new JTextField();
+        phpIniBrowseButton = new JButton();
         noteLabel = new JLabel();
         minVersionLabel = new JLabel();
         installLabel = new JLabel();
@@ -165,6 +178,16 @@ public class TesterOptionsPanel extends JPanel {
 
         Mnemonics.setLocalizedText(testerPathHintLabel, "HINT"); // NOI18N
 
+        phpIniLabel.setLabelFor(phpIniTextField);
+        Mnemonics.setLocalizedText(phpIniLabel, NbBundle.getMessage(TesterOptionsPanel.class, "TesterOptionsPanel.phpIniLabel.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(phpIniBrowseButton, NbBundle.getMessage(TesterOptionsPanel.class, "TesterOptionsPanel.phpIniBrowseButton.text")); // NOI18N
+        phpIniBrowseButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                phpIniBrowseButtonActionPerformed(evt);
+            }
+        });
+
         Mnemonics.setLocalizedText(noteLabel, NbBundle.getMessage(TesterOptionsPanel.class, "TesterOptionsPanel.noteLabel.text")); // NOI18N
 
         Mnemonics.setLocalizedText(minVersionLabel, NbBundle.getMessage(TesterOptionsPanel.class, "TesterOptionsPanel.minVersionLabel.text")); // NOI18N
@@ -188,33 +211,39 @@ public class TesterOptionsPanel extends JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(testerPathLabel)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(testerPathHintLabel)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(testerPathTextField)
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(browseTesterButton)
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(searchTesterButton))))
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(errorLabel))
-                .addGap(0, 0, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addComponent(installLabel)
                     .addComponent(learnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(minVersionLabel))
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(errorLabel))
+                .addGap(0, 0, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addComponent(testerPathLabel)
+                    .addComponent(phpIniLabel))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(phpIniTextField)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(phpIniBrowseButton))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(testerPathTextField)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(browseTesterButton)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(searchTesterButton))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(testerPathHintLabel)
+                        .addGap(0, 0, Short.MAX_VALUE))))
         );
 
-        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {browseTesterButton, searchTesterButton});
+        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {browseTesterButton, phpIniBrowseButton, searchTesterButton});
 
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.Alignment.LEADING)
@@ -226,6 +255,11 @@ public class TesterOptionsPanel extends JPanel {
                     .addComponent(searchTesterButton))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(testerPathHintLabel)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(phpIniTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(phpIniLabel)
+                    .addComponent(phpIniBrowseButton))
                 .addGap(18, 18, 18)
                 .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
@@ -297,6 +331,20 @@ public class TesterOptionsPanel extends JPanel {
         }
     }//GEN-LAST:event_learnMoreLabelMousePressed
 
+    @NbBundle.Messages({
+        "TesterOptionsPanel.php.ini.browse.title=Select file or folder for php.ini",
+        "TesterOptionsPanel.php.ini.browse.ok=Select",
+    })
+    private void phpIniBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_phpIniBrowseButtonActionPerformed
+        File file = new FileChooserBuilder(TesterOptionsPanel.class)
+                .setTitle(Bundle.TesterOptionsPanel_php_ini_browse_title())
+                .setApproveText(Bundle.TesterOptionsPanel_php_ini_browse_ok())
+                .showOpenDialog();
+        if (file != null) {
+            phpIniTextField.setText(file.getAbsolutePath());
+        }
+    }//GEN-LAST:event_phpIniBrowseButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JButton browseTesterButton;
     private JLabel errorLabel;
@@ -304,6 +352,9 @@ public class TesterOptionsPanel extends JPanel {
     private JLabel learnMoreLabel;
     private JLabel minVersionLabel;
     private JLabel noteLabel;
+    private JButton phpIniBrowseButton;
+    private JLabel phpIniLabel;
+    private JTextField phpIniTextField;
     private JButton searchTesterButton;
     private JLabel testerPathHintLabel;
     private JLabel testerPathLabel;

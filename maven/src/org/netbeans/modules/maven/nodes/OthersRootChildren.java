@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.Icon;
 import org.apache.maven.model.Resource;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
@@ -76,6 +77,7 @@ import org.openide.util.NbBundle.Messages;
  * @author  Milos Kleint
  */
 class OthersRootChildren extends Children.Keys<SourceGroup> {
+    private static final @StaticResource String FILTERED_RESOURCE = "org/netbeans/modules/maven/nodes/filteredResourceWarningBadge.png";
     
     private NbMavenProjectImpl project;
     private PropertyChangeListener changeListener;
@@ -86,7 +88,7 @@ class OthersRootChildren extends Children.Keys<SourceGroup> {
         changeListener  = new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
+                if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
                     regenerateKeys();
                     refresh();
                 }
@@ -170,7 +172,7 @@ class OthersRootChildren extends Children.Keys<SourceGroup> {
     
 
     private static class OGFilterNode extends FilterNode {
-        private MavenSourcesImpl.OtherGroup group;
+        private final MavenSourcesImpl.OtherGroup group;
 
         OGFilterNode(Node orig, MavenSourcesImpl.OtherGroup grp) {
             super(orig);
@@ -239,7 +241,7 @@ class OthersRootChildren extends Children.Keys<SourceGroup> {
                 Icon icon = group.getIcon( opened );
                 Image img = ImageUtilities.icon2Image(icon);
                 if (group.getResource().isFiltering()) {
-                    Image warn = ImageUtilities.loadImage("org/netbeans/modules/maven/nodes/filteredResourceWarningBadge.png");
+                    Image warn = ImageUtilities.loadImage(FILTERED_RESOURCE);
                     img = ImageUtilities.mergeImages(img, warn , 0, 8);
                 }
                 return img;

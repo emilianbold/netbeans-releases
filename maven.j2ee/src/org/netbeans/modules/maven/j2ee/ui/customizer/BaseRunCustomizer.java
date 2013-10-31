@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.maven.j2ee.ui.customizer;
 
+import java.util.List;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -52,16 +54,11 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.javaee.project.api.JavaEEProjectSettings;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.customizer.ModelHandle2;
-import org.netbeans.modules.maven.api.customizer.support.CheckBoxUpdater;
-import org.netbeans.modules.maven.api.customizer.support.ComboBoxUpdater;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
 import org.netbeans.modules.maven.j2ee.utils.Server;
 import static org.netbeans.modules.maven.j2ee.ui.customizer.Bundle.*;
-import org.netbeans.modules.maven.j2ee.ui.util.DeployOnSaveCheckBoxUpdater;
-import org.netbeans.modules.maven.j2ee.ui.util.JavaEEVersionComboBoxUpdater;
-import org.netbeans.modules.maven.j2ee.ui.util.ServerComboBoxUpdater;
-import org.netbeans.modules.maven.j2ee.ui.wizard.ServerSelectionHelper;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
+import org.netbeans.modules.maven.j2ee.utils.ServerUtils;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle.Messages;
 
@@ -71,11 +68,10 @@ import org.openide.util.NbBundle.Messages;
  */
 public abstract class BaseRunCustomizer extends JPanel implements ApplyChangesCustomizer, HelpCtx.Provider {
 
-    protected Project project;
-    protected ModelHandle2 handle;
+    protected final Project project;
+    protected final ModelHandle2 handle;
     protected CheckBoxUpdater deployOnSaveUpdater;
-    protected ComboBoxUpdater<Server> serverModelUpdater;
-    protected ServerSelectionHelper helper;
+    protected ComboBoxUpdater<Server> serverUpdater;
 
 
     public BaseRunCustomizer(ModelHandle2 handle, Project project) {
@@ -83,23 +79,16 @@ public abstract class BaseRunCustomizer extends JPanel implements ApplyChangesCu
         this.project = project;
     }
 
-    //mkleint: this method should only be run from within the ApplyChangesCustomizer.applyChanges() method
-    protected void changeServer(JComboBox selectedServerComboBox) {
-        Server selectedServer = (Server) selectedServerComboBox.getSelectedItem();
-        // User is trying to set <No Server> option
-        if (ExecutionChecker.DEV_NULL.equals(selectedServer.getServerInstanceID())) {
-            MavenProjectSupport.setServerID(project, null);
-            JavaEEProjectSettings.setServerInstanceID(project, null);
-        } else {
-            MavenProjectSupport.setServerID(project, selectedServer.getServerID());
-            JavaEEProjectSettings.setServerInstanceID(project, selectedServer.getServerInstanceID());
-        }
-
-        MavenProjectSupport.changeServer(project, false);
-    }
-
     protected void initDeployOnSave(final JCheckBox dosCheckBox, final JLabel dosDescription) {
-        DeployOnSaveCheckBoxUpdater.create(project, dosCheckBox);
+        boolean isDoS = MavenProjectSupport.isDeployOnSave(project);
+        deployOnSaveUpdater = CheckBoxUpdater.create(dosCheckBox, isDoS, new CheckBoxUpdater.Store() {
+
+            @Override
+            public void storeValue(boolean value) {
+                MavenProjectSupport.setDeployOnSave(project, value);
+            }
+        });
+
         addAncestorListener(new AncestorListener() {
 
             @Override
@@ -118,11 +107,38 @@ public abstract class BaseRunCustomizer extends JPanel implements ApplyChangesCu
     }
 
     protected void initServerModel(JComboBox serverCBox, JLabel serverLabel, J2eeModule.Type projectType) {
-        ServerComboBoxUpdater.create(project, serverCBox, serverLabel, projectType);
-    }
+        final List<Server> servers = ServerUtils.findServersFor(projectType);
+        final Server defaultServer = ServerUtils.findServer(project);
 
-    protected void initVersionModel(JComboBox javaeeVersionCBox, JLabel javaeeVersionLabel, J2eeModule.Type projectType) {
-        JavaEEVersionComboBoxUpdater.create(project, javaeeVersionCBox, javaeeVersionLabel, projectType);
+        serverCBox.setModel(new DefaultComboBoxModel(servers.toArray()));
+        
+        serverUpdater = ComboBoxUpdater.create(serverCBox, serverLabel, defaultServer, new ComboBoxUpdater.Store() {
+
+            @Override
+            public void storeValue(Object newServer) {
+                if (newServer == null) {
+                    JavaEEProjectSettings.setServerInstanceID(project, defaultServer.getServerInstanceID());
+                } else {
+                    if (newServer instanceof Server) {
+                        Server selectedServer = (Server) newServer;
+
+                        String serverID = selectedServer.getServerID();
+                        String serverInstanceID = selectedServer.getServerInstanceID();
+
+                        // User is trying to set <No Server> option
+                        if (ExecutionChecker.DEV_NULL.equals(serverInstanceID)) {
+                            MavenProjectSupport.setServerID(project, null);
+                            JavaEEProjectSettings.setServerInstanceID(project, null);
+
+                        } else {
+                            MavenProjectSupport.setServerID(project, serverID);
+                            JavaEEProjectSettings.setServerInstanceID(project, serverInstanceID);
+                        }
+                        MavenProjectSupport.changeServer(project, false);
+                    }
+                }
+            }
+        });
     }
 
     @Messages({

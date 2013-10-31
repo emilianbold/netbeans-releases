@@ -355,8 +355,8 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
         boolean addLibraryResult = false;
         try {
             LibraryManager libraryManager = LibraryManager.getDefault();
-            Library hibernateLibrary = libraryManager.getLibrary("hibernate-support");  //NOI18N
-            Library ejb3PersistenceLibrary = libraryManager.getLibrary("ejb3-persistence");  //NOI18N
+            Library hibernateLibrary = libraryManager.getLibrary("hibernate4-support");  //NOI18N
+            Library ejb3PersistenceLibrary = libraryManager.getLibrary("jpa2-persistence");  //NOI18N
 
             Library[] librariesToBeRegistered = null;
 

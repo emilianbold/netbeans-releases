@@ -64,9 +64,11 @@ import javax.swing.tree.TreePath;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
+import org.netbeans.api.annotations.common.StaticResource;
 import static org.netbeans.modules.maven.dependencies.Bundle.*;
 import org.netbeans.modules.maven.embedder.DependencyTreeFactory;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.netbeans.modules.maven.spi.IconResources;
 import org.openide.NotificationLineSupport;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle.Messages;
@@ -77,6 +79,8 @@ import org.openide.util.RequestProcessor;
  * @author mkleint
  */
 public class ExcludeDependencyPanel extends javax.swing.JPanel {
+    
+    
     private MavenProject project;
     private DependencyNode rootnode;
     private Map<Artifact, TreeModel> modelCache;
@@ -205,7 +209,7 @@ public class ExcludeDependencyPanel extends javax.swing.JPanel {
         DefaultMutableTreeNode root = new DefaultMutableTreeNode(null, true);
         ChangeListener list = new Listener();
         List<CheckNode> s = new ArrayList<CheckNode>();
-        Icon icn = ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/DependencyIcon.png", true)); //NOI18N
+        Icon icn = ImageUtilities.image2Icon(ImageUtilities.loadImage(IconResources.DEPENDENCY_ICON, true)); //NOI18N
         change2Trans.put(list, trans);
         change2Refs.put(list, s);
         for (DependencyNode nd : nds) {
@@ -222,7 +226,7 @@ public class ExcludeDependencyPanel extends javax.swing.JPanel {
     private TreeNode createTransitiveDependenciesList() {
         DefaultMutableTreeNode root = new DefaultMutableTreeNode(null, true);
         Set<Artifact> artifacts = project.getArtifacts();
-        Icon icn = ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/TransitiveDependencyIcon.png", true)); //NOI18N
+        Icon icn = ImageUtilities.image2Icon(ImageUtilities.loadImage(IconResources.TRANSITIVE_DEPENDENCY_ICON, true)); //NOI18N
         for (Artifact a : artifacts) {
             if (a.getDependencyTrail().size() > 2) {
                 String label = a.getGroupId() + ":" + a.getArtifactId();

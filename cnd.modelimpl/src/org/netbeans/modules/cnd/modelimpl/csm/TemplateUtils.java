@@ -46,14 +46,10 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
-import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
-import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
@@ -71,7 +67,6 @@ import org.netbeans.modules.cnd.modelimpl.util.MapHierarchy;
 import org.netbeans.modules.cnd.modelimpl.parser.FakeAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.utils.MutableObject;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.CharSequences;
 
 /**
@@ -124,7 +119,7 @@ public class TemplateUtils {
                     addSpecializationSuffix(grandChild, sb, parameters);
                     paramsNumber++;
                 }
-            } else if (child != null && child.getType() == CPPTokenTypes.LITERAL_template) {
+            } else if (child.getType() == CPPTokenTypes.LITERAL_template) {
                 sb.append(AstUtil.getText(child));
                 sb.append('<');
                 AST grandChild = child.getFirstChild();
@@ -141,10 +136,10 @@ public class TemplateUtils {
                     break;
                 }
             } else {
-                String text = child.getText();
+                CharSequence text = AstUtil.getText(child);
                 if (parameters != null) {
                     for (CsmTemplateParameter param : parameters) {
-                        if (param.getName().toString().equals(text)) {
+                        if (CharSequences.comparator().compare(param.getName(),text)==0) {
                             text = TYPENAME_STRING;
                             paramsNumber++;
                         }
@@ -163,7 +158,7 @@ public class TemplateUtils {
             }
         }
         if(!checkForSpecialization || parameters == null || paramsNumber != parameters.size()) {
-            res.append(sb.toString().substring(res.length()));
+            res.append(sb.substring(res.length()));
         }
     }
 

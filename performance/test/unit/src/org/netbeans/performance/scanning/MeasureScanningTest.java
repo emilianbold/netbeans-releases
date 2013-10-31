@@ -47,21 +47,21 @@ import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 
 /**
  *
- * @author petr
+ * @author Petr Cyhelsky
  */
 public class MeasureScanningTest {
+
     public static NbTestSuite suite() {
         PerformanceTestCase.prepareForMeasurements();
 
         NbTestSuite suite = new NbTestSuite("Scanning suite");
         System.setProperty("suitename", MeasureScanningTest.class.getCanonicalName());
         System.setProperty("suite", "Scanning suite");
-        System.setProperty("grails.home","/space/grails/"); //NOI18N
 
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScanProjectPerfTest.class)
+        suite.addTest(NbModuleSuite.createConfiguration(ScanProjectPerfTest.class)
                 .addTest(ScanSeveralProjectsPerfTest.class)
-                .addTest(JavaNavigatorPerfTest.class)                
-                .enableModules(".*").clusters(".*").reuseUserDir(false)));
+                .addTest(JavaNavigatorPerfTest.class)
+                .enableModules(".*").clusters(".*").suite());
         return suite;
     }
 }

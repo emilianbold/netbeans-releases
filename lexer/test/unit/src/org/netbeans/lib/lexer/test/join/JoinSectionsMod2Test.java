@@ -47,7 +47,7 @@ import java.io.PrintStream;
 import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
+import javax.swing.text.AbstractDocument;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.PartType;
@@ -99,42 +99,47 @@ public class JoinSectionsMod2Test extends NbTestCase {
         doc.putProperty(Language.class, TestJoinTopTokenId.language());
         LexerTestUtilities.incCheck(doc, true); // Ensure the whole embedded hierarchy gets created
 
-        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
-        TokenSequence<?> ts = hi.tokenSequence();
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinTopTokenId.TEXT, "a(x)b(y)c\n", -1);
-        assertFalse(ts.moveNext());
-            TokenSequence<?> ts1 = ts.embedded();
-            assertTrue(ts1.moveNext());
-            LexerTestUtilities.assertTokenEquals(ts1,TestJoinTextTokenId.TEXT, "a", -1);
-            assertTrue(ts1.moveNext());
-            LexerTestUtilities.assertTokenEquals(ts1,TestJoinTextTokenId.PARENS, "(x)", -1);
+        final TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+        doc.runAtomic(new Runnable() {
+            @Override
+            public void run() {
+                TokenSequence<?> ts = hi.tokenSequence();
+                assertTrue(ts.moveNext());
+                LexerTestUtilities.assertTokenEquals(ts, TestJoinTopTokenId.TEXT, "a(x)b(y)c\n", -1);
+                assertFalse(ts.moveNext());
+                TokenSequence<?> ts1 = ts.embedded();
+                assertTrue(ts1.moveNext());
+                LexerTestUtilities.assertTokenEquals(ts1, TestJoinTextTokenId.TEXT, "a", -1);
+                assertTrue(ts1.moveNext());
+                LexerTestUtilities.assertTokenEquals(ts1, TestJoinTextTokenId.PARENS, "(x)", -1);
                 ts1.createEmbedding(TestPlainTokenId.language(), 1, 1, true);
                 TokenSequence<?> ts2 = ts1.embedded();
                 assertTrue(ts2.moveNext());
                 LexerTestUtilities.assertTokenEquals(ts2, TestPlainTokenId.WORD, "x", -1);
                 assertFalse(ts2.moveNext());
                 assertEquals(ts2.token().partType(), PartType.COMPLETE);
-            assertTrue(ts1.moveNext());
-            LexerTestUtilities.assertTokenEquals(ts1,TestJoinTextTokenId.TEXT, "b", -1);
-            assertTrue(ts1.moveNext());
-            LexerTestUtilities.assertTokenEquals(ts1,TestJoinTextTokenId.PARENS, "(y)", -1);
+                assertTrue(ts1.moveNext());
+                LexerTestUtilities.assertTokenEquals(ts1, TestJoinTextTokenId.TEXT, "b", -1);
+                assertTrue(ts1.moveNext());
+                LexerTestUtilities.assertTokenEquals(ts1, TestJoinTextTokenId.PARENS, "(y)", -1);
                 ts1.createEmbedding(TestPlainTokenId.language(), 1, 1, true);
                 TokenSequence<?> ts3 = ts1.embedded();
                 assertTrue(ts3.moveNext());
                 LexerTestUtilities.assertTokenEquals(ts3, TestPlainTokenId.WORD, "y", -1);
                 assertFalse(ts3.moveNext());
-            assertTrue(ts1.moveNext());
-            LexerTestUtilities.assertTokenEquals(ts1,TestJoinTextTokenId.TEXT, "c\n", -1);
-            assertTrue(ts1.movePrevious());
+                assertTrue(ts1.moveNext());
+                LexerTestUtilities.assertTokenEquals(ts1, TestJoinTextTokenId.TEXT, "c\n", -1);
+                assertTrue(ts1.movePrevious());
 
-            // Operation on ts2 should not be possible
-            try {
-                ts2.movePrevious();
-                fail("Operation on ts2 should throw ConcurrentModificationException");
-            } catch (ConcurrentModificationException e) {
-                // Expected
+                // Operation on ts2 should not be possible
+                try {
+                    ts2.movePrevious();
+                    fail("Operation on ts2 should throw ConcurrentModificationException");
+                } catch (ConcurrentModificationException e) {
+                    // Expected
+                }
             }
+        });
     }
 
     public void testEmbeddingDynamicCreation() throws Exception {
@@ -147,21 +152,37 @@ public class JoinSectionsMod2Test extends NbTestCase {
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
         LanguagePath embLP = LanguagePath.get(TestJoinTopTokenId.language()).
                 embedded(TestJoinTextTokenId.inPercentsLanguage);
-        List<TokenSequence<?>> tsList = hi.tokenSequenceList(embLP, 0, Integer.MAX_VALUE);
-        assertEquals(1, tsList.size()); // Contains single token for extra '\n' in the doc
-        LexerTestUtilities.incCheck(doc, true); // Ensure the whole embedded hierarchy gets created
+        List<TokenSequence<?>> tsList;
+        ((AbstractDocument)doc).readLock();
+        try {
+            tsList = hi.tokenSequenceList(embLP, 0, Integer.MAX_VALUE);
+            assertEquals(1, tsList.size()); // Contains single token for extra '\n' in the doc
+            LexerTestUtilities.incCheck(doc, true); // Ensure the whole embedded hierarchy gets created
+        } finally {
+            ((AbstractDocument)doc).readUnlock();
+        }
         
 //        Logger.getLogger("org.netbeans.lib.lexer.inc.TokenHierarchyUpdate").setLevel(Level.FINEST); // Extra logging
 //        Logger.getLogger("org.netbeans.lib.lexer.inc.TokenListUpdater").setLevel(Level.FINE); // Extra logging
 //        Logger.getLogger("org.netbeans.lib.lexer.inc.TokenListListUpdate").setLevel(Level.FINE); // Extra logging
         
         doc.insertString(2, "%", null);
-        tsList = hi.tokenSequenceList(embLP, 0, Integer.MAX_VALUE);
-        assertEquals(1, tsList.size());
+        ((AbstractDocument)doc).readLock();
+        try {
+            tsList = hi.tokenSequenceList(embLP, 0, Integer.MAX_VALUE);
+            assertEquals(1, tsList.size());
+        } finally {
+            ((AbstractDocument)doc).readUnlock();
+        }
 
         doc.remove(2, 1);
-        tsList = hi.tokenSequenceList(embLP, 0, Integer.MAX_VALUE);
-        assertEquals(1, tsList.size()); // Contains single token for extra '\n' in the doc
+        ((AbstractDocument)doc).readLock();
+        try {
+            tsList = hi.tokenSequenceList(embLP, 0, Integer.MAX_VALUE);
+            assertEquals(1, tsList.size()); // Contains single token for extra '\n' in the doc
+        } finally {
+            ((AbstractDocument)doc).readUnlock();
+        }
     }
 
     public void testEmbeddingDynamicUpdate() throws Exception {
@@ -179,18 +200,35 @@ public class JoinSectionsMod2Test extends NbTestCase {
         
         doc.insertString(2, "%", null);
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
-        LanguagePath embLP = LanguagePath.get(TestJoinTopTokenId.language()).
-                embedded(TestJoinTextTokenId.inPercentsLanguage);
-        List<TokenSequence<?>> tsList = hi.tokenSequenceList(embLP, 0, Integer.MAX_VALUE);
-        assertEquals(1, tsList.size());
+        LanguagePath embLP;
+        List<TokenSequence<?>> tsList;
+        ((AbstractDocument)doc).readLock();
+        try {
+            embLP = LanguagePath.get(TestJoinTopTokenId.language()).
+                    embedded(TestJoinTextTokenId.inPercentsLanguage);
+            tsList = hi.tokenSequenceList(embLP, 0, Integer.MAX_VALUE);
+            assertEquals(1, tsList.size());
+        } finally {
+            ((AbstractDocument)doc).readUnlock();
+        }
 
         doc.remove(2, 1);
-        tsList = hi.tokenSequenceList(embLP, 0, Integer.MAX_VALUE);
-        assertEquals(1, tsList.size()); // contains single token for extra '\n' at the end of doc
+        ((AbstractDocument)doc).readLock();
+        try {
+            tsList = hi.tokenSequenceList(embLP, 0, Integer.MAX_VALUE);
+            assertEquals(1, tsList.size()); // contains single token for extra '\n' at the end of doc
+        } finally {
+            ((AbstractDocument)doc).readUnlock();
+        }
         
         doc.insertString(2, "%", null); // BTW does not have to be '%'
-        tsList = hi.tokenSequenceList(embLP, 0, Integer.MAX_VALUE);
-        assertEquals(1, tsList.size());
+        ((AbstractDocument)doc).readLock();
+        try {
+            tsList = hi.tokenSequenceList(embLP, 0, Integer.MAX_VALUE);
+            assertEquals(1, tsList.size());
+        } finally {
+            ((AbstractDocument)doc).readUnlock();
+        }
     }
 
     public void testNestedEmbeddingOffsetsRetaining() throws Exception {
@@ -243,18 +281,23 @@ public class JoinSectionsMod2Test extends NbTestCase {
         doc.putProperty(Language.class, TestJoinTextTokenId.language);
 //        LexerTestUtilities.incCheck(doc, true); // Ensure the whole embedded hierarchy gets created
 
-        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
-        TokenSequence<?> ts = hi.tokenSequence();
-        assertTrue(ts.moveNext());
-        assertTrue(ts.moveNext()); // on "(x)"
-        // Create embedding that joins sections
-        ts.createEmbedding(TestPlainTokenId.language(), 1, 1, true);
-        assertTrue(ts.moveNext()); // on "b"
-        assertTrue(ts.moveNext()); // on "(y)"
-        hi.tokenSequenceList(LanguagePath.get(TestJoinTextTokenId.language).
-                embedded(TestPlainTokenId.language()), 0, Integer.MAX_VALUE);
-        // Create embedding that joins sections
-        ts.createEmbedding(TestPlainTokenId.language(), 1, 1, true);
+        final TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+        doc.runAtomic(new Runnable() {
+            @Override
+            public void run() {
+                TokenSequence<?> ts = hi.tokenSequence();
+                assertTrue(ts.moveNext());
+                assertTrue(ts.moveNext()); // on "(x)"
+                // Create embedding that joins sections
+                ts.createEmbedding(TestPlainTokenId.language(), 1, 1, true);
+                assertTrue(ts.moveNext()); // on "b"
+                assertTrue(ts.moveNext()); // on "(y)"
+                hi.tokenSequenceList(LanguagePath.get(TestJoinTextTokenId.language).
+                        embedded(TestPlainTokenId.language()), 0, Integer.MAX_VALUE);
+                // Create embedding that joins sections
+                ts.createEmbedding(TestPlainTokenId.language(), 1, 1, true);
+            }
+        });
 
         doc.remove(0, doc.getLength());
     }

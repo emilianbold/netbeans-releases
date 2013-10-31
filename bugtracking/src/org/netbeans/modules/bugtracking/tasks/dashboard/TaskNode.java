@@ -49,8 +49,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import javax.swing.Action;
+import javax.swing.Icon;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions;
@@ -59,6 +62,7 @@ import org.netbeans.modules.bugtracking.tasks.Category;
 import org.netbeans.modules.bugtracking.tasks.DashboardUtils;
 import org.netbeans.modules.team.commons.treelist.TreeLabel;
 import org.netbeans.modules.team.commons.treelist.TreeListNode;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -69,14 +73,16 @@ public class TaskNode extends TaskContainerNode implements Comparable<TaskNode>,
     private final IssueImpl task;
     private JPanel panel;
     private TreeLabel lblName;
+    private JLabel lblIcon;
     private Category category;
     private final TaskListener taskListener;
     private final Object LOCK = new Object();
+    private static final Icon DEFAULT_TASK_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/task.png", true);
 
     public TaskNode(IssueImpl task, TreeListNode parent) {
         // TODO subtasks, it is not in bugtracking API
         //super(task.hasSubtasks(), parent);
-        super(false, false, parent, DashboardUtils.getTaskAnotatedText(task));
+        super(false, false, parent, DashboardUtils.getTaskAnotatedText(task), DEFAULT_TASK_ICON);
         this.task = task;
         taskListener = new TaskListener();
     }
@@ -131,9 +137,11 @@ public class TaskNode extends TaskContainerNode implements Comparable<TaskNode>,
         synchronized (LOCK) {
             labels.clear();
             buttons.clear();
+            lblIcon = new JLabel(getIcon());
+            panel.add(lblIcon, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
 
             lblName = new TreeLabel();
-            panel.add(lblName, new GridBagConstraints(0, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 3), 0, 0));
+            panel.add(lblName, new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
             lblName.setToolTipText(task.getTooltip());
             labels.add(lblName);
         }
@@ -141,9 +149,14 @@ public class TaskNode extends TaskContainerNode implements Comparable<TaskNode>,
     }
 
     @Override
+    Icon getIcon() {
+        return DashboardUtils.getTaskIcon(task);
+    }
+
+    @Override
     protected void configure(JComponent component, Color foreground, Color background, boolean isSelected, boolean hasFocus, int rowWidth) {
         super.configure(component, foreground, background, isSelected, hasFocus, rowWidth);
-        lblName.setText(DashboardUtils.getTaskDisplayText(task, lblName, rowWidth, DashboardViewer.getInstance().isTaskNodeActive(this), isSelected || hasFocus));
+        lblName.setText(DashboardUtils.getTaskDisplayText(task, lblName, rowWidth - 18, DashboardViewer.getInstance().isTaskNodeActive(this), isSelected || hasFocus));
     }
 
     @Override
@@ -190,8 +203,13 @@ public class TaskNode extends TaskContainerNode implements Comparable<TaskNode>,
         List<Action> actions = new ArrayList<Action>();
         if (justTasks) {
             actions.addAll(Actions.getTaskPopupActions(taskNodes));
+            actions.add(null);
         }
-        actions.addAll(Actions.getSubmitablePopupActions(selectedNodes.toArray(new TreeListNode[selectedNodes.size()])));
+        List<Action> submitablePopupActions = Actions.getSubmitablePopupActions(selectedNodes.toArray(new TreeListNode[selectedNodes.size()]));
+        if (!submitablePopupActions.isEmpty()) {
+            actions.addAll(submitablePopupActions);
+            actions.add(null);
+        }
         List<Action> defaultActions = Actions.getDefaultActions(selectedNodes.toArray(new TreeListNode[selectedNodes.size()]));
         if (containsNewTask) {
             for (Action action : defaultActions) {
@@ -262,79 +280,13 @@ public class TaskNode extends TaskContainerNode implements Comparable<TaskNode>,
         if (statusCompare != 0) {
             return statusCompare;
         }
-
         //compare ID
-        int id = 0;
-        boolean isIdNumeric = true;
-        try {
-            id = Integer.parseInt(task.getID());
-        } catch (NumberFormatException numberFormatException) {
-            isIdNumeric = false;
-        }
-        int idOther = 0;
-        boolean isIdOtherNumberic = true;
-        try {
-            idOther = Integer.parseInt(toCompare.task.getID());
-        } catch (NumberFormatException numberFormatException) {
-            isIdOtherNumberic = false;
-        }
-        if (isIdNumeric && isIdOtherNumberic) {
-            return compareNumericId(id, idOther);
-        } else if (isIdNumeric) {
-            return -1;
-        } else if (isIdOtherNumberic) {
-            return 1;
-        } else {
-            return compareComplexId(task.getID(), toCompare.task.getID());
-        }
-
+        return DashboardUtils.compareTaskIds(task.getID(), toCompare.task.getID());
     }
 
     @Override
     public String toString() {
         return task.getDisplayName();
-    }
-
-    private int compareNumericId(int id, int idOther) {
-        if (id < idOther) {
-            return 1;
-        } else if (id > idOther) {
-            return -1;
-        } else {
-            return 0;
-        }
-    }
-
-    private int compareComplexId(String id1, String id2) {
-        int dividerIndex1 = id1.lastIndexOf("-"); //NOI18
-        int dividerIndex2 = id2.lastIndexOf("-"); //NOI18
-        if (dividerIndex1 == -1 || dividerIndex2 == -1) {
-            DashboardViewer.LOG.log(Level.WARNING, "Unsupported ID format - id1: {0}, id2: {1}", new Object[]{id1, id2});
-            return id1.compareTo(id2);
-        }
-        String prefix1 = id1.subSequence(0, dividerIndex1).toString();
-        String suffix1 = id1.substring(dividerIndex1 + 1);
-
-        String prefix2 = id2.subSequence(0, dividerIndex2).toString();
-        String suffix2 = id2.substring(dividerIndex2 + 1);
-
-        //compare prefix, alphabetically
-        int comparePrefix = prefix1.compareTo(prefix2);
-        if (comparePrefix != 0) {
-            return comparePrefix;
-        }
-        //compare number suffix
-        int suffixInt1;
-        int suffixInt2;
-        try {
-            suffixInt1 = Integer.parseInt(suffix1);
-            suffixInt2 = Integer.parseInt(suffix2);
-        } catch (NumberFormatException nfe) {
-            //compare suffix alphabetically if it is not convertable to number
-            DashboardViewer.LOG.log(Level.WARNING, "Unsupported ID format - id1: {0}, id2: {1}", new Object[]{id1, id2});
-            return suffix1.compareTo(suffix2);
-        }
-        return compareNumericId(suffixInt1, suffixInt2);
     }
 
     @Override
@@ -346,6 +298,10 @@ public class TaskNode extends TaskContainerNode implements Comparable<TaskNode>,
         return false;
     }
 
+    public boolean isLocal() {
+        return BugtrackingManager.isLocalConnectorID(task.getRepositoryImpl().getConnectorId());
+    }
+
     @Override
     public List<IssueImpl> getTasksToSubmit() {
         return getTasks(true);
@@ -355,11 +311,12 @@ public class TaskNode extends TaskContainerNode implements Comparable<TaskNode>,
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName().equals(IssueImpl.EVENT_ISSUE_REFRESHED)
+            if (evt.getPropertyName().equals(IssueImpl.EVENT_ISSUE_DATA_CHANGED)
                     || IssueStatusProvider.EVENT_STATUS_CHANGED.equals(evt.getPropertyName())) {
                 fireContentChanged();
                 if (lblName != null) {
                     lblName.setToolTipText(task.getTooltip());
+                    lblIcon.setIcon(getIcon());
                 }
             }
         }

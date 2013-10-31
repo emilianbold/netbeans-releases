@@ -1,7 +1,9 @@
 /*
+ * To change this license header, choose License Headers in Project Properties.
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
+
 package ejbs;
 
 import java.rmi.RemoteException;
@@ -15,4 +17,5 @@ import javax.ejb.EJBHome;
 public interface LRSRemoteHome extends EJBHome {
     
     ejbs.LRSRemote create() throws CreateException, RemoteException;
+
 }

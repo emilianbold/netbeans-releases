@@ -126,17 +126,6 @@ public class AdHocGroup extends Group {
         LOG.log(Level.FINE, "updating projects for {0} to {1}", new Object[] {id, projects});
     }
 
-    private static String joinPaths(Collection<String> paths) {
-        StringBuilder b = new StringBuilder();
-        for (String p : paths) {
-            if (b.length() > 0) {
-                b.append(' ');
-            }
-            b.append(p);
-        }
-        return b.toString();
-    }
-
     /**
      * If true, group will automatically update its contents when open.
      */

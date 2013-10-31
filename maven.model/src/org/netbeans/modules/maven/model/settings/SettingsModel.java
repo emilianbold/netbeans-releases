@@ -60,6 +60,7 @@ public abstract class SettingsModel extends AbstractDocumentModel<SettingsCompon
 
     /**
      * Gets domain-specific root component.
+     * @return 
      */
     public abstract Settings getSettings();
 

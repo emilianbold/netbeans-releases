@@ -194,6 +194,7 @@
                 <friend>org.netbeans.modules.android.testrunner</friend>
                 <friend>org.netbeans.modules.cnd.cncppunit</friend>
                 <friend>org.netbeans.modules.cnd.testrunner</friend>
+                <friend>org.netbeans.modules.gototest</friend>
                 <friend>org.netbeans.modules.groovy.support</friend>
                 <friend>org.netbeans.modules.hudson.ui</friend>
                 <friend>org.netbeans.modules.java.testrunner</friend>

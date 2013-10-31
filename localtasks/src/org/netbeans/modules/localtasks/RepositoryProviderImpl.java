@@ -45,6 +45,7 @@ package org.netbeans.modules.localtasks;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
+import java.util.Collections;
 import org.netbeans.modules.localtasks.task.LocalTask;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
@@ -54,7 +55,7 @@ import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
  *
  * @author Ondrej Vrabec
  */
-public class RepositoryProviderImpl extends RepositoryProvider<LocalRepository, LocalQuery, LocalTask> {
+public class RepositoryProviderImpl implements RepositoryProvider<LocalRepository, LocalQuery, LocalTask> {
 
     @Override
     public RepositoryInfo getInfo (LocalRepository r) {
@@ -67,7 +68,7 @@ public class RepositoryProviderImpl extends RepositoryProvider<LocalRepository, 
     }
 
     @Override
-    public LocalTask[] getIssues (LocalRepository r, String... ids) {
+    public Collection<LocalTask> getIssues (LocalRepository r, String... ids) {
         return r.getTasks(ids);
     }
 
@@ -109,6 +110,16 @@ public class RepositoryProviderImpl extends RepositoryProvider<LocalRepository, 
     @Override
     public void addPropertyChangeListener (LocalRepository r, PropertyChangeListener listener) {
         r.addPropertyChangeListener(listener);
+    }
+
+    @Override
+    public LocalTask createIssue(LocalRepository r, String summary, String description) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public boolean canAttachFiles(LocalRepository r) {
+        return true;
     }
     
 }

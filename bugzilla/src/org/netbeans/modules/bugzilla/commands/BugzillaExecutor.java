@@ -61,7 +61,7 @@ import org.eclipse.mylyn.internal.bugzilla.core.BugzillaStatus;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaUserMatchResponse;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
 import org.eclipse.mylyn.tasks.core.RepositoryStatus;
-import org.netbeans.modules.bugtracking.util.NBBugzillaUtils;
+import org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.autoupdate.BugzillaAutoupdate;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
@@ -583,7 +583,7 @@ public class BugzillaExecutor {
                                 }
                                 // do not handle this kind of erorr until flag turned false by a succesfull command
                                 alreadyCalled = true;                                
-                                boolean ret = Bugzilla.getInstance().getBugtrackingFactory().editRepository(BugzillaUtil.getRepository(executor.repository), errroMsg);
+                                boolean ret = Bugzilla.getInstance().getBugtrackingFactory().editRepository(executor.repository, errroMsg);
                                 if(!ret) {
                                     notifyErrorMessage(NbBundle.getMessage(BugzillaExecutor.class, "MSG_ActionCanceledByUser")); // NOI18N
                                 }

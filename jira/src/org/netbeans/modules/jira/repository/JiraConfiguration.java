@@ -54,13 +54,17 @@ import com.atlassian.connector.eclipse.internal.jira.core.model.User;
 import com.atlassian.connector.eclipse.internal.jira.core.model.Version;
 import com.atlassian.connector.eclipse.internal.jira.core.service.JiraClient;
 import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.StringTokenizer;
 import javax.swing.SwingUtilities;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.netbeans.modules.jira.util.PriorityComparator;
 import org.netbeans.modules.mylyn.util.BugtrackingCommand;
 import org.openide.util.Exceptions;
 
@@ -72,6 +76,7 @@ public class JiraConfiguration {
 
     private JiraClient client;
     protected final JiraRepository repository;
+    private List<Priority> priorities;
 
     public JiraConfiguration(JiraClient jiraClient, JiraRepository repository) {
         this.client = jiraClient;
@@ -119,11 +124,27 @@ public class JiraConfiguration {
     }
 
     public Priority[] getPriorities() {
-        return client.getCache().getPriorities();
+        List<Priority> ps = getPrioritiesIntern();
+        return ps != null ? ps.toArray(new Priority[ps.size()]) : null;
+    }
+    
+    public synchronized List<Priority> getPrioritiesIntern() {
+        if(priorities == null) {
+            Priority[] ps = client.getCache().getPriorities();
+            if(ps != null) {
+                Arrays.sort(ps, new PriorityComparator());
+                priorities = Arrays.asList(ps);
+            }
+        }
+        return priorities;
     }
 
     public Priority getPriorityById(String id) {
         return client.getCache().getPriorityById(id);
+    }
+    
+    public int getPrioritySortOrder(Priority priority) {
+        return getPrioritiesIntern().indexOf(priority);
     }
 
     public Resolution getResolutionById(String id) {

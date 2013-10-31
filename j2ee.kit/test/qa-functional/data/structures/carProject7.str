@@ -10,7 +10,6 @@ src/
 src/conf/
 src/conf/application-client.xml
 src/conf/MANIFEST.MF
-src/conf/beans.xml
 src/java/
 src/java/appclient7/
 src/java/appclient7/Main.java

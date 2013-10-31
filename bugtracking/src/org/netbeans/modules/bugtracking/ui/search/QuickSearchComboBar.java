@@ -44,15 +44,25 @@ package org.netbeans.modules.bugtracking.ui.search;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.util.Collection;
+import java.util.ResourceBundle;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.ComboBoxEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.LayoutStyle;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
@@ -65,7 +75,14 @@ import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.ui.search.PopupItem.IssueItem;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  * Quick search toolbar component
@@ -94,6 +111,55 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
         });
         command.setEditor(new ComboEditor(command.getEditor()));
         displayer = new QuickSearchPopup(this);
+    }
+
+    public static Issue selectIssue(String message, Repository repository, JPanel caller, HelpCtx helpCtx) {
+        QuickSearchComboBar bar = new QuickSearchComboBar(caller);
+        bar.setRepository(repository);
+        bar.setAlignmentX(0f);
+        bar.setMaximumSize(new Dimension(Short.MAX_VALUE, bar.getPreferredSize().height));
+        JPanel panel = new JPanel();
+        BoxLayout layout = new BoxLayout(panel, BoxLayout.PAGE_AXIS);
+        panel.setLayout(layout);
+        JLabel label = new JLabel();
+        Mnemonics.setLocalizedText(label, message);
+        panel.add(label);
+        label.setLabelFor(bar.getIssueComponent());
+        LayoutStyle layoutStyle = LayoutStyle.getInstance();
+        int gap = layoutStyle.getPreferredGap(label, bar, LayoutStyle.ComponentPlacement.RELATED, SwingConstants.SOUTH, panel);
+        panel.add(Box.createVerticalStrut(gap));
+        panel.add(bar);
+        panel.add(Box.createVerticalStrut(gap));
+        ResourceBundle bundle = NbBundle.getBundle(QuickSearchComboBar.class);
+        JLabel hintLabel = new JLabel(bundle.getString("MSG_SelectIssueHint")); // NOI18N
+        hintLabel.setEnabled(false);
+        panel.add(hintLabel);
+        panel.add(Box.createVerticalStrut(80));
+        panel.setBorder(BorderFactory.createEmptyBorder(
+                layoutStyle.getContainerGap(panel, SwingConstants.NORTH, null),
+                layoutStyle.getContainerGap(panel, SwingConstants.WEST, null),
+                0,
+                layoutStyle.getContainerGap(panel, SwingConstants.EAST, null)));
+        panel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_IssueSelector"));
+        Issue issue = null;
+        JButton ok = new JButton(bundle.getString("LBL_Select")); // NOI18N
+        ok.getAccessibleContext().setAccessibleDescription(ok.getText());
+        JButton cancel = new JButton(bundle.getString("LBL_Cancel")); // NOI18N
+        cancel.getAccessibleContext().setAccessibleDescription(cancel.getText());
+        DialogDescriptor descriptor = new DialogDescriptor(
+                panel,
+                bundle.getString("LBL_Issues"), // NOI18N
+                true,
+                NotifyDescriptor.OK_CANCEL_OPTION,
+                ok,
+                null);
+        descriptor.setOptions(new Object [] {ok, cancel});
+        descriptor.setHelpCtx(helpCtx);
+        DialogDisplayer.getDefault().createDialog(descriptor).setVisible(true);
+        if (descriptor.getValue() == ok) {
+            issue = bar.getIssue();
+        }
+        return issue;
     }
 
     public synchronized void removeChangeListener(ChangeListener listener) {

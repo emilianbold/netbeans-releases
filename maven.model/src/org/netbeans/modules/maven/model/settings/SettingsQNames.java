@@ -46,6 +46,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.xml.namespace.QName;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.maven.model.settings.SettingsQName.Version;
 
 /**
  *
@@ -108,78 +111,112 @@ public final class SettingsQNames {
     public final SettingsQName INTERACTIVEMODE; //NOI18N
     public final SettingsQName USEPLUGINREGISTRY; //NOI18N
     public final SettingsQName LOCALREPOSITORY; //NOI18N
-
-    private final boolean ns;
-    private final boolean old;
-
+    
+    /** 
+     * in 1.1.0 schema only
+     */
+    public final @NullAllowed SettingsQName MIRROR_LAYOUT_110;
+    /** 
+     * in 1.1.0 schema only
+     */
+    public final @NullAllowed SettingsQName MIRROR_OF_LAYOUTS_110;
+  
+    private final Version version;
+    
+    
+    @Deprecated
     public SettingsQNames(boolean ns, boolean old) {
-        this.ns = ns;
-        this.old = old;
-        SETTINGS = new SettingsQName(SettingsQName.createQName("settings",ns, old)); // NOI18N
-        REPOSITORY = new SettingsQName(SettingsQName.createQName("repository", ns, old)); // NOI18N
-        PLUGINREPOSITORY = new SettingsQName(SettingsQName.createQName("pluginRepository", ns, old)); // NOI18N
-        RELEASES = new SettingsQName(SettingsQName.createQName("releases",ns, old)); // NOI18N
-        SNAPSHOTS = new SettingsQName(SettingsQName.createQName("snapshots",ns, old)); // NOI18N
-        PROFILE = new SettingsQName(SettingsQName.createQName("profile",ns, old)); // NOI18N
-        ACTIVATION = new SettingsQName(SettingsQName.createQName("activation",ns, old)); // NOI18N
-        ACTIVATIONPROPERTY = new SettingsQName(SettingsQName.createQName("property",ns, old)); // NOI18N
-        ACTIVATIONOS = new SettingsQName(SettingsQName.createQName("os",ns, old)); // NOI18N
-        ACTIVATIONFILE = new SettingsQName(SettingsQName.createQName("file",ns, old)); // NOI18N
-        ACTIVATIONCUSTOM = new SettingsQName(SettingsQName.createQName("custom",ns, old)); // NOI18N
-        PROFILES = new SettingsQName(SettingsQName.createQName("profiles",ns, old)); // NOI18N
-        REPOSITORIES = new SettingsQName(SettingsQName.createQName("repositories",ns, old)); // NOI18N
-        PLUGINREPOSITORIES = new SettingsQName(SettingsQName.createQName("pluginRepositories",ns, old)); // NOI18N
+        this(SettingsQName.resolveVersion(ns, old));
+    }
+/**
+ * 
+ * @param version 
+ * @since 1.34
+ */
+    public SettingsQNames(@NonNull Version version) {
 
-        ID = new SettingsQName(SettingsQName.createQName("id",ns, old)); //NOI18N
-        CONFIGURATION = new SettingsQName(SettingsQName.createQName("configuration",ns, old)); //NOI18N
-        PROPERTIES = new SettingsQName(SettingsQName.createQName("properties",ns, old)); //NOI18N
-        URL = new SettingsQName(SettingsQName.createQName("url",ns, old)); //NOI18N
-        NAME = new SettingsQName(SettingsQName.createQName("name",ns, old)); //NOI18N
+        this.version = version;
+        SETTINGS = new SettingsQName("settings",version);
+        REPOSITORY = new SettingsQName("repository", version);
+        PLUGINREPOSITORY = new SettingsQName("pluginRepository", version);
+        RELEASES = new SettingsQName("releases",version);
+        SNAPSHOTS = new SettingsQName("snapshots",version);
+        PROFILE = new SettingsQName("profile",version);
+        ACTIVATION = new SettingsQName("activation",version);
+        ACTIVATIONPROPERTY = new SettingsQName("property",version);
+        ACTIVATIONOS = new SettingsQName("os",version);
+        ACTIVATIONFILE = new SettingsQName("file",version);
+        ACTIVATIONCUSTOM = new SettingsQName("custom",version);
+        PROFILES = new SettingsQName("profiles",version);
+        REPOSITORIES = new SettingsQName("repositories",version);
+        PLUGINREPOSITORIES = new SettingsQName("pluginRepositories",version);
 
-        VALUE = new SettingsQName(SettingsQName.createQName("value",ns, old)); //NOI18N
+        ID = new SettingsQName("id",version);
+        CONFIGURATION = new SettingsQName("configuration",version);
+        PROPERTIES = new SettingsQName("properties",version);
+        URL = new SettingsQName("url",version);
+        NAME = new SettingsQName("name",version);
 
-        LAYOUT = new SettingsQName(SettingsQName.createQName("layout",ns, old)); //NOI18N
+        VALUE = new SettingsQName("value",version);
 
-        ACTIVEPROFILE = new SettingsQName(SettingsQName.createQName("activeProfile",ns, old)); //NOI18N
-        ACTIVEPROFILES = new SettingsQName(SettingsQName.createQName("activeProfiles",ns, old)); //NOI18N
+        LAYOUT = new SettingsQName("layout",version);
 
-        PLUGINGROUP = new SettingsQName(SettingsQName.createQName("pluginGroup",ns, old)); //NOI18N
-        PLUGINGROUPS = new SettingsQName(SettingsQName.createQName("pluginGroups",ns, old)); //NOI18N
+        ACTIVEPROFILE = new SettingsQName("activeProfile",version);
+        ACTIVEPROFILES = new SettingsQName("activeProfiles",version);
 
-        MIRROROF = new SettingsQName(SettingsQName.createQName("mirrorOf",ns, old)); //NOI18N
-        MIRROR = new SettingsQName(SettingsQName.createQName("mirror",ns, old)); //NOI18N
-        MIRRORS = new SettingsQName(SettingsQName.createQName("mirrors",ns, old)); //NOI18N
+        PLUGINGROUP = new SettingsQName("pluginGroup",version);
+        PLUGINGROUPS = new SettingsQName("pluginGroups",version);
 
-        PROXIES = new SettingsQName(SettingsQName.createQName("proxies",ns, old)); //NOI18N
-        PROXY = new SettingsQName(SettingsQName.createQName("proxy",ns, old)); //NOI18N
-        ACTIVE = new SettingsQName(SettingsQName.createQName("active",ns, old)); //NOI18N
-        HOST = new SettingsQName(SettingsQName.createQName("host",ns, old)); //NOI18N
-        PORT = new SettingsQName(SettingsQName.createQName("port",ns, old)); //NOI18N
-        USERNAME = new SettingsQName(SettingsQName.createQName("username",ns, old)); //NOI18N
-        PASSWORD = new SettingsQName(SettingsQName.createQName("password",ns, old)); //NOI18N
-        PROTOCOL = new SettingsQName(SettingsQName.createQName("protocol",ns, old)); //NOI18N
-        NONPROXYHOSTS = new SettingsQName(SettingsQName.createQName("nonProxyHosts",ns, old)); //NOI18N
+        MIRROROF = new SettingsQName("mirrorOf",version);
+        MIRROR = new SettingsQName("mirror",version);
+        MIRRORS = new SettingsQName("mirrors",version);
+
+        PROXIES = new SettingsQName("proxies",version);
+        PROXY = new SettingsQName("proxy",version);
+        ACTIVE = new SettingsQName("active",version);
+        HOST = new SettingsQName("host",version);
+        PORT = new SettingsQName("port",version);
+        USERNAME = new SettingsQName("username",version);
+        PASSWORD = new SettingsQName("password",version);
+        PROTOCOL = new SettingsQName("protocol",version);
+        NONPROXYHOSTS = new SettingsQName("nonProxyHosts",version);
         //when adding items here, need to add them to the set below as well.
 
-        SERVER = new SettingsQName(SettingsQName.createQName("server",ns, old)); //NOI18N
-        SERVERS = new SettingsQName(SettingsQName.createQName("servers",ns, old)); //NOI18N
+        SERVER = new SettingsQName("server",version);
+        SERVERS = new SettingsQName("servers",version);
 
-        PASSPHRASE = new SettingsQName(SettingsQName.createQName("passphrase",ns, old)); //NOI18N
-        PRIVATEKEY = new SettingsQName(SettingsQName.createQName("privateKey",ns, old)); //NOI18N
+        PASSPHRASE = new SettingsQName("passphrase",version);
+        PRIVATEKEY = new SettingsQName("privateKey",version);
 
-        OFFLINE = new SettingsQName(SettingsQName.createQName("offline",ns, old)); //NOI18N
-        USEPLUGINREGISTRY = new SettingsQName(SettingsQName.createQName("usePluginRegistry",ns, old)); //NOI18N
-        LOCALREPOSITORY = new SettingsQName(SettingsQName.createQName("localRepository",ns, old)); //NOI18N
-        INTERACTIVEMODE = new SettingsQName(SettingsQName.createQName("interactiveMode",ns, old)); //NOI18N
+        OFFLINE = new SettingsQName("offline",version);
+        USEPLUGINREGISTRY = new SettingsQName("usePluginRegistry",version);
+        LOCALREPOSITORY = new SettingsQName("localRepository",version);
+        INTERACTIVEMODE = new SettingsQName("interactiveMode",version);
+        
+        if (Version.NEW_110.equals(version)) {
+            MIRROR_LAYOUT_110 = new SettingsQName("layout",version);
+            MIRROR_OF_LAYOUTS_110 = new SettingsQName("mirrorOfLayouts",version);
+        } else {
+            MIRROR_LAYOUT_110 = null;
+            MIRROR_OF_LAYOUTS_110 = null;
+        }
 
     }
 
     public boolean isNSAware() {
-        return ns;
+        return version.getNamespace() != null;
     }
-    
+    @Deprecated
     public boolean isOldNS() {
-        return old;
+        return version.equals(Version.OLD);
+    }
+    /**
+     * 
+     * @return 
+     * @since 1.34
+     */
+    public Version getNamespaceVersion() {
+        return version;
     }
 
 
@@ -232,7 +269,14 @@ public final class SettingsQNames {
             LOCALREPOSITORY.getQName(),
         };
         List<QName> list = Arrays.asList(names);
-        return new HashSet<QName>(list);
+        HashSet<QName> toret = new HashSet<QName>(list);
+        if (MIRROR_LAYOUT_110 != null) { //in 1.1.0+
+            toret.add(MIRROR_LAYOUT_110.getQName());
+        }
+        if (MIRROR_OF_LAYOUTS_110 != null) {//in 1.1.0+
+            toret.add(MIRROR_OF_LAYOUTS_110.getQName());
+        }
+        return toret;
     }
     
 }

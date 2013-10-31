@@ -46,11 +46,8 @@ import java.beans.PropertyVetoException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
-import javax.swing.Icon;
-import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
-import org.netbeans.modules.hudson.api.Utilities;
 import org.netbeans.modules.hudson.ui.actions.ShowBuildConsole;
 import org.netbeans.modules.hudson.ui.actions.ShowChanges;
 import org.netbeans.modules.hudson.ui.actions.ShowFailures;
@@ -60,7 +57,6 @@ import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
 import org.openide.util.ContextAwareAction;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
@@ -152,24 +148,5 @@ public class UI {
      */
     public static ContextAwareAction showFailuresAction() {
         return ShowFailures.getInstance();
-    }
-
-    /**
-     * Return icon for a Hudson job.
-     */
-    public static Icon getIcon(HudsonJob job) {
-        return makeIcon(job.getColor().iconBase());
-    }
-
-    /**
-     * Return icon for a Hudson Job build.
-     */
-    public static Icon getIcon(HudsonJobBuild build) {
-        return makeIcon(Utilities.getColorForBuild(build).iconBase());
-    }
-
-    private static Icon makeIcon(String iconBase) {
-        return ImageUtilities.image2Icon(
-                ImageUtilities.loadImageIcon(iconBase, false).getImage());
     }
 }

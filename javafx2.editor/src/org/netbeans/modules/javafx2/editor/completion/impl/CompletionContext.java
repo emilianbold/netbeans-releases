@@ -59,6 +59,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.whitelist.WhiteListQuery;
 import org.netbeans.api.whitelist.WhiteListQuery.Result;
 import org.netbeans.api.xml.lexer.XMLTokenId;
+import org.netbeans.modules.javafx2.editor.JavaFXEditorUtils;
 import org.netbeans.modules.javafx2.editor.completion.beans.FxBean;
 import org.netbeans.modules.javafx2.editor.completion.beans.FxProperty;
 import org.netbeans.modules.javafx2.editor.completion.model.CompoundCharSequence;
@@ -848,6 +849,44 @@ public final class CompletionContext {
     }
     
     /**
+     * Finds namespace prefix, that corresponds to the FX namespace (the namespace where
+     * fx: special attributes, like fx:id or fx:controller reside). It is assumed that the
+     * text does not contain more than one such prefix. If it contains more of them, the one
+     * with the highest number after / is returned. 
+     * 
+     * @return namespace prefix or {@code null} if no such prefix is found.1
+     */
+    public String findFxmlNsPrefix() {
+        final String fxPrefix = JavaFXEditorUtils.FXML_FX_NAMESPACE;
+        String candidate = null;
+        int version = -1;
+        for (Map.Entry<String, String> nsE : rootNamespacePrefixes.entrySet()) {
+            String p = nsE.getKey();
+            if (p.startsWith(fxPrefix)) {
+                final int thisVersion;
+                if (p.length() > fxPrefix.length()) {
+                    if (p.charAt(fxPrefix.length()) != '/') {
+                        continue;
+                    }
+                    try {
+                        thisVersion = Integer.parseInt(p.substring(fxPrefix.length() + 1));
+                    } catch (NumberFormatException ex) {
+                        // expected, error in the ns prefix, ignore
+                        continue;
+                    }
+                } else {
+                    thisVersion = 0;
+                }
+                
+                if (version < thisVersion) {
+                    candidate = nsE.getValue();
+                }
+            }
+        }
+        return version == -1 ? null : candidate;
+    }
+    
+    /**
      * Finds a suitable non conflicting prefix string for the namespace URI.
      * If the URI is already declared, returns the existing prefix. It will return
      * either the value of 'suggested' parameter, or 'suggested' with some unique
@@ -986,6 +1025,24 @@ public final class CompletionContext {
         } else {
             return prefix + ":" + name; // NOI18N
         }
+    }
+    
+    public String fxAttributeName(String name) {
+        String prefix = findFxmlNsPrefix();
+        if (prefix == null) {
+            return null;
+        }
+        return prefix + ":" + name; // NOI18N
+    }
+    
+    public String attributeNSName(String prefix, String name) {
+        if (prefix == null) {
+            return name;
+        }
+        if (!rootNamespacePrefixes.values().contains(prefix)) {
+            return null;
+        }
+        return prefix + ":" + name; // NOI18N
     }
     
     public String attributeName(String nsURI, String name) {

@@ -1225,10 +1225,6 @@
                           <EmptySpace max="32767" attributes="0"/>
                           <Component id="saveButton" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="separatorLabel1" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="webButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
                           <Component id="separatorLabel3" min="-2" pref="2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="refreshConfigurationButton" min="-2" max="-2" attributes="0"/>
@@ -1249,8 +1245,6 @@
                   <Group type="103" groupAlignment="2" attributes="0">
                       <Component id="refreshConfigurationButton" alignment="2" min="-2" max="-2" attributes="0"/>
                       <Component id="separatorLabel3" alignment="2" min="-2" pref="18" max="-2" attributes="0"/>
-                      <Component id="webButton" linkSize="3" alignment="2" min="-2" max="-2" attributes="0"/>
-                      <Component id="separatorLabel1" linkSize="3" alignment="2" min="-2" max="-2" attributes="0"/>
                       <Component id="saveButton" linkSize="3" alignment="2" min="-2" max="-2" attributes="0"/>
                       <Component id="cancelChangesButton" alignment="2" min="-2" max="-2" attributes="0"/>
                       <Component id="saveChangesButton" alignment="2" min="-2" max="-2" attributes="0"/>
@@ -1262,24 +1256,6 @@
         </DimensionLayout>
       </Layout>
       <SubComponents>
-        <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="webButton">
-          <Properties>
-            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/odcs/tasks/query/Bundle.properties" key="QueryPanel.webButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-            </Property>
-          </Properties>
-          <AccessibilityProperties>
-            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/c2c/tasks/query/Bundle.properties" key="QueryPanel.webButton.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-            </Property>
-          </AccessibilityProperties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="webButtonActionPerformed"/>
-          </Events>
-          <AuxValues>
-            <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
-          </AuxValues>
-        </Component>
         <Component class="javax.swing.JButton" name="searchButton">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
@@ -1626,18 +1602,6 @@
             </Component>
           </SubComponents>
         </Container>
-        <Component class="javax.swing.JLabel" name="separatorLabel1">
-          <Properties>
-            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/odcs/tasks/query/Bundle.properties" key="QueryPanel.separatorLabel1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-            </Property>
-            <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-              <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
-                <LineBorder/>
-              </Border>
-            </Property>
-          </Properties>
-        </Component>
         <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="refreshConfigurationButton">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
@@ -1712,6 +1676,11 @@
                           <Component id="jLabel8" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="cloneQueryButton" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="separatorLabel1" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="webButton" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
@@ -1747,6 +1716,10 @@
                       <Component id="findIssuesButton" alignment="2" min="-2" max="-2" attributes="0"/>
                       <Component id="jLabel8" alignment="2" min="-2" pref="17" max="-2" attributes="0"/>
                       <Component id="cloneQueryButton" alignment="2" min="-2" max="-2" attributes="0"/>
+                      <Group type="103" alignment="2" groupAlignment="2" attributes="0">
+                          <Component id="webButton" linkSize="3" alignment="2" min="-2" max="-2" attributes="0"/>
+                          <Component id="separatorLabel1" linkSize="3" alignment="2" min="-2" max="-2" attributes="0"/>
+                      </Group>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -1938,6 +1911,36 @@
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="17"/>
           </AuxValues>
+        </Component>
+        <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="webButton">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/odcs/tasks/query/Bundle.properties" key="QueryPanel.webButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/c2c/tasks/query/Bundle.properties" key="QueryPanel.webButton.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="webButtonActionPerformed"/>
+          </Events>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
+          </AuxValues>
+        </Component>
+        <Component class="javax.swing.JLabel" name="separatorLabel1">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/odcs/tasks/query/Bundle.properties" key="QueryPanel.separatorLabel1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+            <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+              <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
+                <LineBorder/>
+              </Border>
+            </Property>
+          </Properties>
         </Component>
       </SubComponents>
     </Container>

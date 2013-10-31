@@ -66,8 +66,8 @@ public final class POMQName {
 
     private final QName qName;
 
-    POMQName(QName name) {
-        qName = name;
+    POMQName(String localName, boolean ns) {
+        qName = createQName(localName, ns);
     }
     
     public QName getQName() {

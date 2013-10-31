@@ -195,6 +195,7 @@ public final class LauncherExecutor {
             RunProfile profile = conf.getProfile();
 
             String runCommand = launcher.getCommand();
+            runCommand = preprocessValueField(runCommand, conf);
             profile.getRunCommand().setValue(runCommand);     //RunCommand
             String runDir;    //RunDir
             //use run dir from the launcher if exists, use default from RunProfile otherwise

@@ -41,79 +41,174 @@
  */
 package org.netbeans.modules.bugtracking.api;
 
+import java.awt.Dimension;
+import java.io.File;
+import java.util.ResourceBundle;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.LayoutStyle;
+import javax.swing.SwingConstants;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
+import org.netbeans.modules.bugtracking.ui.search.QuickSearchPanel;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.awt.Mnemonics;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
- *
+ * Provides a UI Component to pick issues. 
+ * 
+ * <p>
+ * The component given by {@link #getComponent()} contains:
+ * <ul>
+ *   <li>a combo box containing all known repositories. 
+ *   <li>a button to create a new repository
+ *   <li>a field to type some text into - to find Issues either by id or summary.
+ * </ul>
+ * </p>
+ * 
  * @author Tomas Stupka
  */
 public final class IssueQuickSearch {
-    private final QuickSearchComboBar bar;
+    private final QuickSearchPanel panel;
+    
+    private IssueQuickSearch(File context, RepositoryFilter filter) {
+        panel = new QuickSearchPanel(context, filter);
+    }
     
     /**
-     * Constructor
-     * @param caller 
+     * Determines what kind of repositories should be shown in the repositories combo box.
      */
-    public IssueQuickSearch(JComponent caller) {
-        bar = new QuickSearchComboBar(caller);
+    public enum RepositoryFilter {
+        /**
+         * Show only repositories which provide the attach file functionality.
+         */
+        ATTACH_FILE,
+        /**
+         * Show all Repositories.
+         */
+        ALL
+    }
+    
+    /**
+     * Creates an IssueQuickSearch providing all repositories and none of them preselected.
+     * 
+     * @return  
+     */
+    public static IssueQuickSearch create() {
+       return new IssueQuickSearch(null, RepositoryFilter.ALL);
+    }
+    
+    /**
+     * Creates an IssueQuickSearch providing all repositories, where one might 
+     * be preselected determined by the given file - e.g. a file from the same VCS
+     * repository was used to pick an Issue in some previous session.
+     * 
+     * @param context a file to give a hint about a repository to preselect
+     * @return IssueQuickSearch
+     */
+    public static IssueQuickSearch create(File context) {
+       return new IssueQuickSearch(context, RepositoryFilter.ALL);
+    }
+    
+    /**
+     * Creates an IssueQuickSearch providing a filtered list of repositories, where one might 
+     * be preselected determined by the given file - e.g. a file from the same VCS
+     * repository was used to pick an Issue in some previous session.
+     * 
+     * @param context a file to give a hint about a repository to preselect
+     * @param filter what kind of repositories should be provided
+     * @return IssueQuickSearch
+     */
+    public static IssueQuickSearch create(File context, RepositoryFilter filter) {
+       return new IssueQuickSearch(context, filter);
+    }
+    
+    /**
+     * Opens a modal dialog to search after Issues from the given repository. 
+     * The dialog presents a field to type some text into - to find Issues either by id or summary.
+     * 
+     * @param message a message to displayed together with the combo box - e.g. Select task that this task depends on.
+     * @param repository the repository from which is the Issue to be found
+     * @param caller caller component
+     * @param helpCtx a help context or null if none
+     * @return an Issue instance or null if none was selected.
+     */
+    public static Issue selectIssue(String message, Repository repository, JPanel caller, HelpCtx helpCtx) {
+        return QuickSearchComboBar.selectIssue(message, repository, caller, helpCtx);
     }
     
     /**
      * Sets the repository for which issues should be made available in 
-     * the issue combo bar
+     * the issue combo bar.
+     * 
      * @param repository 
      */
     public void setRepository(Repository repository) {
-        bar.setRepository(repository);
+        panel.setRepository(repository);
     }
     
     /**
-     * Returns the quick search component
-     * @return 
+     * Returns the IssueQuickSearch component.
+     * 
+     * @return the IssueQuickSearch component
      */
     public JComponent getComponent() {
-        return bar;
+        return panel;
     }
     
     /**
-     * Returns the issue selected in the issue combo bar or null if none selected
-     * @return 
+     * Returns the issue selected in the issue combo bar or null if none selected.
+     * 
+     * @return an Issue instance or null if none was selected.
      */
     public Issue getIssue() {
-        return bar.getIssue();
+        return panel.getIssue();
     }
 
     /**
-     * Register for notifications about changes in the issue combo bar
+     * Register for notifications about changes in the issue combo bar. 
+     * Fires each time an Issue is either selected or deselected.
+     * 
      * @param listener 
      */
-    public void addChangeListener(ChangeListener listener) {
-        bar.addChangeListener(listener);
+    public void setChangeListener(ChangeListener listener) {
+        panel.setChangeListener(listener);
     }
 
     /**
-     * Unregister from notifications about changes in the issue combo bar
-     * @param listener 
-     */
-    public void removeChangeListener(ChangeListener listener) {
-        bar.removeChangeListener(listener);
-    }
-
-    /**
-     * Enable or disable all fields in the quick search component
-     * @param b 
-     */
-    public void enableFields(boolean b) {
-        bar.enableFields(b);
-    }
-    
-    /** 
-     * Select the given issue in the combo bar
+     * Select the given issue in the combo bar.
+     * 
      * @param issue 
      */
     public void setIssue(Issue issue) {
-        bar.setIssue(issue.getImpl());
+        panel.setIssue(issue.getImpl());
+    }
+
+    /**
+     * Returns the selected repository.
+     * 
+     * @return 
+     */
+    public Repository getSelectedRepository() {
+        return panel.getSelectedRepository();
+    }
+
+    /**
+     * Sets whether or not this component is enabled.
+     * 
+     * @param enabled 
+     */
+    public void setEnabled(boolean enabled) {
+        panel.setEnabled(enabled);
     }
 }

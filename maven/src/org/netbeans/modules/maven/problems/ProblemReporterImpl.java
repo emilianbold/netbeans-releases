@@ -127,8 +127,6 @@ import org.openide.util.lookup.Lookups;
 })
 @SuppressWarnings("deprecation")
 public final class ProblemReporterImpl implements ProblemReporter, Comparator<ProblemReport>, ProjectProblemsProvider {
-    private static final String MISSING_J2EE = "MISSINGJ2EE"; //NOI18N
-    private static final String MISSING_APISUPPORT = "MISSINGAPISUPPORT"; //NOI18N
     private static final String MISSING_DEPENDENCY = "MISSING_DEPENDENCY";//NOI18N
     private static final String BUILD_PARTICIPANT = "BUILD_PARTICIPANT";//NOI18N
     private static final String MISSING_PARENT = "MISSING_PARENT";//NOI18N
@@ -159,21 +157,6 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
         }
     };
     private final NbMavenProjectImpl nbproject;
-    private ModuleInfo j2eeInfo;
-    private PropertyChangeListener listener = new PropertyChangeListener() {
-        @Override public void propertyChange(PropertyChangeEvent evt) {
-            if (ModuleInfo.PROP_ENABLED.equals(evt.getPropertyName())) {
-                ProblemReport rep = getReportWithId(MISSING_J2EE);
-                if (rep != null) {
-                    boolean hasj2ee = j2eeInfo != null && j2eeInfo.isEnabled();
-                    if (hasj2ee) {
-                        removeReport(rep);
-                        j2eeInfo.removePropertyChangeListener(this);
-                    }
-                }
-            }
-        }
-    };
     
     /** Creates a new instance of ProblemReporter */
     public ProblemReporterImpl(NbMavenProjectImpl proj) {
@@ -329,78 +312,6 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
         
     }
 
-    private ModuleInfo findJ2eeModule() {
-        Collection<? extends ModuleInfo> infos = Lookup.getDefault().lookupAll(ModuleInfo.class);
-        for (ModuleInfo info : infos) {
-            if ("org.netbeans.modules.maven.j2ee".equals(info.getCodeNameBase())) {
-                return info;
-            }
-        }
-        return null;
-    }
-    
-    @Messages({
-        "ERR_MissingJ2eeModule=Maven Java EE support missing",
-        "MSG_MissingJ2eeModule=You are missing the Maven Java EE support module in your installation. "
-            + "This means that all EE-related functionality (for example, Deployment, File templates) is missing. "
-            + "The most probable cause is that part of the general Java EE support is missing as well. "
-            + "Please go to Tools/Plugins and install the plugins related to Java EE.",
-        "ERR_MissingApisupportModule=Maven NetBeans Module Projects support missing",
-        "MSG_MissingApisupportModule=You are missing the Maven NetBeans Module Projects module in your installation. "
-            + "This means that all NetBeans Platform functionality (for example, API wizards, running Platform applications) is missing. "
-            + "The most probable cause is that part of the general Platform development support is missing as well. "
-            + "Please go to Tools/Plugins and install the plugins related to NetBeans development."
-    })
-    public void doIDEConfigChecks() {
-        String packaging = nbproject.getProjectWatcher().getPackagingType();
-        if (NbMavenProject.TYPE_WAR.equals(packaging) ||
-            NbMavenProject.TYPE_EAR.equals(packaging) ||
-            NbMavenProject.TYPE_EJB.equals(packaging)) {
-            if (j2eeInfo == null) {
-                j2eeInfo = findJ2eeModule();
-            }
-            boolean foundJ2ee = j2eeInfo != null && j2eeInfo.isEnabled();
-            if (!foundJ2ee) {
-                if (!hasReportWithId(MISSING_J2EE)) {
-                    ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_MEDIUM,
-                        ERR_MissingJ2eeModule(),
-                        MSG_MissingJ2eeModule(),
-                        new InstallJ2eeModulesAction());
-                    report.setId(MISSING_J2EE);
-                    addReport(report);
-                    if (j2eeInfo != null) {
-                        j2eeInfo.addPropertyChangeListener(listener);
-                    }
-                }
-            } else {
-                if (j2eeInfo != null) {
-                    j2eeInfo.removePropertyChangeListener(listener);
-                }
-            }
-        } else if (NbMavenProject.TYPE_NBM.equals(packaging)) {
-            Collection<? extends ModuleInfo> infos = Lookup.getDefault().lookupAll(ModuleInfo.class);
-            boolean foundApisupport = false;
-            for (ModuleInfo info : infos) {
-                if ("org.netbeans.modules.maven.apisupport".equals(info.getCodeNameBase()) && //NOI18N
-                        info.isEnabled()) {
-                    foundApisupport = true;
-                    break;
-                }
-            }
-            if (!foundApisupport) {
-                ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_MEDIUM,
-                    ERR_MissingApisupportModule(),
-                    MSG_MissingApisupportModule(),
-                    new InstallApisupportModulesAction());
-                report.setId(MISSING_APISUPPORT);
-                addReport(report);
-            }
-        }   
-
-
-        // XXX undeclared Java platform
-    }
-
     @Messages({
         "ERR_SystemScope=A 'system' scope dependency was not found. Code completion is affected.",
         "MSG_SystemScope=There is a 'system' scoped dependency in the project but the path to the binary is not valid.\n"
@@ -411,7 +322,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
             + "Please download the dependencies, or install them manually, if not available remotely.\n\n"
             + "The artifacts are:\n {0}",
         "ERR_Participant=Custom build participant(s) found",
-        "MSG_Participant=The IDE will not execute any 3rd party extension code during Maven project loading.\nThese can have significant influence on performance of the Maven model (re)loading or interfere with IDE's own codebase. "
+        "MSG_Participant=The IDE will not execute any 3rd party extension code during Maven project loading.\nThese can have significant influence on performance of the Maven model (re)loading or interfere with IDE''s own codebase. "
             + "On the other hand the model loaded can be incomplete without their participation. In this project "
             + "we have discovered the following external build participants:\n{0}"
     })
@@ -686,50 +597,5 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
         
         
     }
-
-    private static class InstallJ2eeModulesAction extends AbstractAction {
-
-        public InstallJ2eeModulesAction() {
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent ae) {
-            try {
-                //ideally we would use InvokeAndWait otherwise the dialog ui gets messed up.
-                SwingUtilities.invokeAndWait(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        PluginManager.install(Collections.singleton("org.netbeans.modules.j2ee.kit"));
-                    }
-                });
-            } catch (InterruptedException ex) {
-            } catch (InvocationTargetException ex) {
-            }
-        }
-    }
-    
-    private static class InstallApisupportModulesAction extends AbstractAction {
-
-        public InstallApisupportModulesAction() {
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent ae) {
-            try {
-                //ideally we would use InvokeAndWait otherwise the dialog ui gets messed up.
-                SwingUtilities.invokeAndWait(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        PluginManager.install(Collections.singleton("org.netbeans.modules.apisupport.kit"));
-                    }
-                });
-            } catch (InterruptedException ex) {
-            } catch (InvocationTargetException ex) {
-            }
-        }
-    }
-   
     
 }

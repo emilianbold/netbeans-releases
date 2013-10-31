@@ -330,13 +330,16 @@ public abstract class AbstractGroovyActionProvider implements ActionProvider {
     }
 
     private static List<String> getTestRootsNames(Project project) {
-        File propFile = FileUtil.toFile(project.getProjectDirectory().getFileObject("nbproject/project.properties")); // NOI18N
-        Map<String, String> map = PropertyUtils.propertiesFilePropertyProvider(propFile).getProperties();
-
         List<String> result = new ArrayList<String>();
-        for (Map.Entry<String, String> entry : map.entrySet()) {
-            if (entry.getKey().startsWith("test.") && entry.getKey().endsWith(".dir")) { // NOI18N
-                result.add(entry.getValue());
+
+        FileObject projectProperties = getPropertiesFO(project);
+        if (projectProperties != null) {
+            Map<String, String> map = getPropertiesMap(FileUtil.toFile(projectProperties));
+
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                if (entry.getKey().startsWith("test.") && entry.getKey().endsWith(".dir")) { // NOI18N
+                    result.add(entry.getValue());
+                }
             }
         }
 
@@ -344,9 +347,19 @@ public abstract class AbstractGroovyActionProvider implements ActionProvider {
     }
 
     private static String evaluateProperty(Project project, String key) {
-        File propFile = FileUtil.toFile(project.getProjectDirectory().getFileObject("nbproject/project.properties")); // NOI18N
-        Map<String, String> map = PropertyUtils.propertiesFilePropertyProvider(propFile).getProperties();
-        return map.get(key);
+        FileObject projectProperties = getPropertiesFO(project);
+        if (projectProperties != null) {
+            return getPropertiesMap(FileUtil.toFile(projectProperties)).get(key);
+        }
+        return null;
+    }
+
+    private static FileObject getPropertiesFO(Project project) {
+         return project.getProjectDirectory().getFileObject("nbproject/project.properties"); // NOI18N
+    }
+
+    private static Map<String, String> getPropertiesMap(File projectPropertiesFO) {
+        return PropertyUtils.propertiesFilePropertyProvider(projectPropertiesFO).getProperties();
     }
 
     private String[] setupTestAll(Properties p) {

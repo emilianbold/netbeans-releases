@@ -108,6 +108,24 @@ is the proper place.
 
     <changes>
 
+         <change id="ProjectProblemsProvider.unresolvable">
+            <api name="general"/>
+            <summary>Allow creating ProjectProblemsProvider.ProjectProblem without a ProjectProblemResolver </summary>
+            <version major="1" minor="74"/>
+            <date day="7" month="10" year="2013"/>
+            <author login="mkleint"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    <code>ProjectProblemsProvider.ProjectProblem</code> has so far required a <code>ProjectProblemResolver</code> effectively
+                    making all problems resolvable, however a few places emerged where an automated resolution is not at hand and still we want to report the
+                    error/warning. 2 new factory methods introduced.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.project.ui" name="ProjectProblemsProvider"/>
+            <issue number="236325"/>
+        </change>
+
         <change id="CustomizerProvider2">
             <api name="general"/>
             <summary>Moved CustomizerProvider2 from java.api.common</summary>

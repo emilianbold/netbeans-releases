@@ -160,7 +160,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         if (compilerSetold != null) {
             ToolchainSPIAccessor.remove(ExecutionEnvironmentFactory.getLocal(), compilerSetold);
         }
-        CompilerSet compilerSet = CompilerSetFactory.getCustomCompilerSet(folderBase.getAbsolutePath(), flavor, "MyCompilerSet");
+        CompilerSet compilerSet = CompilerSetFactory.getCustomCompilerSet(folderBase.getAbsolutePath(), flavor, "MyCompilerSet", ExecutionEnvironmentFactory.getLocal());
         ToolchainSPIAccessor.add(ExecutionEnvironmentFactory.getLocal(), compilerSet);
         conf.getCompilerSet().restore("MyCompilerSet|" + flavorName, 51);
         conf.getDevelopmentHost().setBuildPlatform(platform);
@@ -274,7 +274,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         if (compilerSetold != null) {
             ToolchainSPIAccessor.remove(ExecutionEnvironmentFactory.getLocal(), compilerSetold);
         }
-        CompilerSet compilerSet = CompilerSetFactory.getCustomCompilerSet(folderBase.getAbsolutePath(), flavor, "MyCompilerSet");
+        CompilerSet compilerSet = CompilerSetFactory.getCustomCompilerSet(folderBase.getAbsolutePath(), flavor, "MyCompilerSet", ExecutionEnvironmentFactory.getLocal());
         ToolchainSPIAccessor.add(ExecutionEnvironmentFactory.getLocal(), compilerSet);
         conf.getCompilerSet().restore("MyCompilerSet|" + flavorName, 51);
         conf.getDevelopmentHost().setBuildPlatform(platform);
@@ -452,8 +452,8 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         golden.append("\n");
         golden.append(MakeConfiguration.OBJECTDIR_MACRO+"/test.o: test.cc \n");
         golden.append("\t${MKDIR} -p "+MakeConfiguration.OBJECTDIR_MACRO+"\n");
-        golden.append("\t${RM} $@.d\n");
-        golden.append("\t$(COMPILE.cc) -g -fPIC  -MMD -MP -MF $@.d -o "+MakeConfiguration.OBJECTDIR_MACRO+"/test.o test.cc\n");
+        golden.append("\t${RM} \"$@.d\"\n");
+        golden.append("\t$(COMPILE.cc) -g -fPIC  -MMD -MP -MF \"$@.d\" -o "+MakeConfiguration.OBJECTDIR_MACRO+"/test.o test.cc\n");
         golden.append("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libXxx."+MakeConfiguration.CND_DLIB_EXT_MACRO+": ${OBJECTFILES}\n");
         golden.append("\t${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}\n");
         golden.append("\t${LINK.cc} -o "+MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO+"/libXxx." + MakeConfiguration.CND_DLIB_EXT_MACRO + " ${OBJECTFILES} ${LDLIBSOPTIONS} -dynamiclib -install_name libXxx." + MakeConfiguration.CND_DLIB_EXT_MACRO + " -fPIC\n");
@@ -479,8 +479,8 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         golden.append("\n");
         golden.append(MakeConfiguration.OBJECTDIR_MACRO+"/test.o: test.cc \n");
         golden.append("\t${MKDIR} -p "+MakeConfiguration.OBJECTDIR_MACRO+"\n");
-        golden.append("\t${RM} $@.d\n");
-        golden.append("\t$(COMPILE.cc) -g -fPIC  -MMD -MP -MF $@.d -o "+MakeConfiguration.OBJECTDIR_MACRO+"/test.o test.cc\n");
+        golden.append("\t${RM} \"$@.d\"\n");
+        golden.append("\t$(COMPILE.cc) -g -fPIC  -MMD -MP -MF \"$@.d\" -o "+MakeConfiguration.OBJECTDIR_MACRO+"/test.o test.cc\n");
         golden.append("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libXxx."+MakeConfiguration.CND_DLIB_EXT_MACRO+": ${OBJECTFILES}\n");
         golden.append("\t${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}\n");
         golden.append("\t${LINK.cc} -o "+MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO+"/libXxx." + MakeConfiguration.CND_DLIB_EXT_MACRO + " ${OBJECTFILES} ${LDLIBSOPTIONS} -G -fPIC\n");
@@ -493,8 +493,8 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         golden.append("\n");
         golden.append(MakeConfiguration.OBJECTDIR_MACRO+"/test.o: test.cc \n");
         golden.append("\t${MKDIR} -p "+MakeConfiguration.OBJECTDIR_MACRO+"\n");
-        golden.append("\t${RM} $@.d\n");
-        golden.append("\t$(COMPILE.cc) -g  -MMD -MP -MF $@.d -o "+MakeConfiguration.OBJECTDIR_MACRO+"/test.o test.cc\n");
+        golden.append("\t${RM} \"$@.d\"\n");
+        golden.append("\t$(COMPILE.cc) -g  -MMD -MP -MF \"$@.d\" -o "+MakeConfiguration.OBJECTDIR_MACRO+"/test.o test.cc\n");
         golden.append("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libXxx."+MakeConfiguration.CND_DLIB_EXT_MACRO+": ${OBJECTFILES}\n");
         golden.append("\t${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}\n");
         golden.append("\t${LINK.cc} -o "+MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO+"/libXxx." + MakeConfiguration.CND_DLIB_EXT_MACRO + " ${OBJECTFILES} ${LDLIBSOPTIONS} -shared\n");
@@ -507,8 +507,8 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         golden.append("\n");
         golden.append(MakeConfiguration.OBJECTDIR_MACRO+"/test.o: test.cc \n");
         golden.append("\t${MKDIR} -p "+MakeConfiguration.OBJECTDIR_MACRO+"\n");
-        golden.append("\t${RM} $@.d\n");
-        golden.append("\t$(COMPILE.cc) -g  -MMD -MP -MF $@.d -o "+MakeConfiguration.OBJECTDIR_MACRO+"/test.o test.cc\n");
+        golden.append("\t${RM} \"$@.d\"\n");
+        golden.append("\t$(COMPILE.cc) -g  -MMD -MP -MF \"$@.d\" -o "+MakeConfiguration.OBJECTDIR_MACRO+"/test.o test.cc\n");
         golden.append("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libXxx."+MakeConfiguration.CND_DLIB_EXT_MACRO+": ${OBJECTFILES}\n");
         golden.append("\t${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}\n");
         golden.append("\t${LINK.cc} -o "+MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO+"/libXxx." + MakeConfiguration.CND_DLIB_EXT_MACRO + " ${OBJECTFILES} ${LDLIBSOPTIONS} -mno-cygwin -shared\n");

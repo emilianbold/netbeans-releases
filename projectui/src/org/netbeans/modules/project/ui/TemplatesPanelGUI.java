@@ -83,6 +83,7 @@ import javax.swing.text.ChangedCharSetException;
 import javax.swing.text.Document;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
+import org.netbeans.api.annotations.common.StaticResource;
 import static org.netbeans.modules.project.ui.Bundle.*;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
@@ -132,7 +133,8 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
     public static final String TEMPLATES_FOLDER = "templatesFolder";        //NOI18N
     public static final String TARGET_TEMPLATE = "targetTemplate";          //NOI18N
     private static final String ATTR_INSTANTIATING_DESC = "instantiatingWizardURL"; //NOI18N
-    private static final Image PLEASE_WAIT_ICON = ImageUtilities.loadImage ("org/netbeans/modules/project/ui/resources/wait.gif"); // NOI18N
+    private static final @StaticResource String WAIT = "org/netbeans/modules/project/ui/resources/wait.gif";
+    private static final Image PLEASE_WAIT_ICON = ImageUtilities.loadImage (WAIT); // NOI18N
     private static final RequestProcessor RP = new RequestProcessor(TemplatesPanelGUI.class);
     
     private Builder firer;

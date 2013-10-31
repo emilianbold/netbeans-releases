@@ -46,7 +46,6 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
@@ -123,7 +122,10 @@ public class JiraUpdater {
      * Download and install the JIRA plugin from the Update Center
      */
     @NbBundle.Messages({"MSG_JiraPluginName=JIRA"})
-    public void downloadAndInstall() {
+    public void downloadAndInstall(String projectUrl) {
+        if(projectUrl != null && !JiraUpdater.notifyJiraDownload(projectUrl)) {
+            return;
+        }
         IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
         if(ideServices != null) {
             IDEServices.Plugin plugin = ideServices.getPluginUpdates(JIRA_CNB, Bundle.MSG_JiraPluginName());
@@ -134,6 +136,24 @@ public class JiraUpdater {
     }
 
     /**
+     * Determines if the jira plugin is instaled or not
+     *
+     * @return true if jira plugin is installed, otherwise false
+     */
+    public static boolean isJiraInstalled() {
+        DelegatingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
+        for (DelegatingConnector c : connectors) {
+            // XXX hack
+            if(c.getDelegate() != null && 
+               c.getDelegate().getClass().getName().startsWith("org.netbeans.modules.jira")) // NOI18N
+            {    
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
      * Notifies about the missing jira plugin and provides an option to choose
      * if it should be downloaded
      *
@@ -142,6 +162,9 @@ public class JiraUpdater {
      * @return true if the user pushes the Download button, otherwise false
      */
     public static boolean notifyJiraDownload(String url) {
+        if(isJiraInstalled()) {
+           return false; 
+        }
         final JButton download = new JButton(NbBundle.getMessage(JiraUpdater.class, "CTL_Action_Download"));     // NOI18N
         JButton cancel = new JButton(NbBundle.getMessage(JiraUpdater.class, "CTL_Action_Cancel"));   // NOI18N
 
@@ -219,18 +242,18 @@ public class JiraUpdater {
         return panel;
     }
     
-    private class JiraProxyConector extends BugtrackingConnector {
-        private BugtrackingFactory<Object, Object, Object> f = new BugtrackingFactory<Object, Object, Object>();
+    private class JiraProxyConector implements BugtrackingConnector {
+        private BugtrackingSupport<Object, Object, Object> f = new BugtrackingSupport<Object, Object, Object>(new JiraProxyRepositoryProvider(), null, null);
         @Override
         public Repository createRepository() {
-            return f.createRepository(f, new JiraProxyRepositoryProvider(), null, null);
+            return f.createRepository(f);
         }
         @Override
         public Repository createRepository(RepositoryInfo info) {
             throw new UnsupportedOperationException("Not supported yet.");      // NOI18N
         }
     }
-    private class JiraProxyRepositoryProvider extends RepositoryProvider<Object,Object,Object> {
+    private class JiraProxyRepositoryProvider implements RepositoryProvider<Object,Object,Object> {
         @Override
         public Image getIcon(Object r) {
             return null;
@@ -240,7 +263,7 @@ public class JiraUpdater {
             return null;
         }
         @Override
-        public Object[] getIssues(Object r, String... id) {
+        public Collection<Object> getIssues(Object r, String... id) {
             throw new UnsupportedOperationException("Not supported yet.");      // NOI18N
         }
         @Override
@@ -273,6 +296,14 @@ public class JiraUpdater {
         public void addPropertyChangeListener(Object r, PropertyChangeListener listener) {
             // do nothing
         }
+        @Override
+        public Object createIssue(Object r, String summary, String description) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+        @Override
+        public boolean canAttachFiles(Object r) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
     private class JiraProxyController implements RepositoryController {
@@ -292,11 +323,6 @@ public class JiraUpdater {
         public boolean isValid() {
             return false;
         }
-        @Override
-        public void applyChanges() throws IOException {
-
-        }
-
         private JPanel createControllerPanel() {
             JPanel controllerPanel = new JPanel();
 
@@ -307,7 +333,7 @@ public class JiraUpdater {
             downloadButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    downloadAndInstall();
+                    downloadAndInstall(null);
                 }
             });
             
@@ -336,19 +362,11 @@ public class JiraUpdater {
             return controllerPanel;
         }
 
-        @Override
-        public void populate() {}
-
-        @Override
-        public String getErrorMessage() {
-            return null;
-        }
-
-        @Override
-        public void addChangeListener(ChangeListener l) {}
-
-        @Override
-        public void removeChangeListener(ChangeListener l) {}
-
+        @Override public String getErrorMessage() { return null; }
+        @Override public void applyChanges() { }        
+        @Override public void cancelChanges() { }
+        @Override public void populate() {}
+        @Override public void addChangeListener(ChangeListener l) {}
+        @Override public void removeChangeListener(ChangeListener l) {}
     }
 }

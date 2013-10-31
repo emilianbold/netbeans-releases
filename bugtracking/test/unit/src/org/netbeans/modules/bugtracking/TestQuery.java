@@ -42,8 +42,11 @@
 package org.netbeans.modules.bugtracking;
 
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.Collection;
+import javax.swing.JComponent;
 import org.netbeans.modules.bugtracking.spi.QueryController;
+import org.openide.util.HelpCtx;
 
 /**
  *
@@ -51,24 +54,99 @@ import org.netbeans.modules.bugtracking.spi.QueryController;
  */
 public abstract class TestQuery {
 
-    public abstract String getDisplayName();
+    public void removePropertyChangeListener(PropertyChangeListener listener) { }
 
-    public abstract String getTooltip();
+    public void addPropertyChangeListener(PropertyChangeListener listener) { }
+    
+    public String getDisplayName() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public abstract QueryController getController();
+    public String getTooltip() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public abstract boolean isSaved();
+    private QueryController controller;
+    public QueryController getController() {
+        if(controller == null) {
+            controller = new QueryController() {
+                private final PropertyChangeSupport support = new PropertyChangeSupport(TestQuery.this);
+                
+                @Override
+                public boolean providesMode(QueryController.QueryMode mode) {
+                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                }
 
-    public abstract Collection<? extends TestIssue> getIssues();
+                @Override
+                public JComponent getComponent(QueryController.QueryMode mode) {
+                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                }
 
-    public abstract boolean contains(String id);
+                @Override
+                public HelpCtx getHelpCtx() {
+                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                }
 
-    public abstract void removePropertyChangeListener(PropertyChangeListener listener);
+                @Override
+                public void opened() {
+                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                }
 
-    public abstract void addPropertyChangeListener(PropertyChangeListener listener);
+                @Override
+                public void closed() {
+                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                }
 
-    public abstract void remove();
+                @Override
+                public boolean saveChanges() {
+                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                }
 
-    public abstract void refresh();
+                @Override
+                public boolean discardUnsavedChanges() {
+                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                }
+
+                @Override
+                public void addPropertyChangeListener(PropertyChangeListener l) {
+                    support.addPropertyChangeListener(l);
+                }
+
+                @Override
+                public void removePropertyChangeListener(PropertyChangeListener l) {
+                    support.removePropertyChangeListener(l);
+                }
+            };
+        }
+        return controller;
+    }
+
+    public boolean isSaved() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public Collection<? extends TestIssue> getIssues() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void remove() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void refresh() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
+    public boolean canRename() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
+    public void rename(String name) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    boolean canRemove() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
     
 }

@@ -6,6 +6,7 @@ PACKAGE    Admin                           [PUBLIC]   null
 PACKAGE    AdminModule                     [PUBLIC]   null
 PACKAGE    App                             [PUBLIC]   null
 PACKAGE    Baz                             [PUBLIC]   null
+PACKAGE    Blah                            [PUBLIC]   null
 PACKAGE    Brite                           [PUBLIC]   null
 PACKAGE    CNS                             [PUBLIC]   null
 PACKAGE    Core                            [PUBLIC]   null
@@ -163,6 +164,7 @@ CLASS      ClsBaseDeclarationTest          [PUBLIC]   clsDeclaration.php
 CLASS      ClsDeclarationTest              [PUBLIC]   clsDeclaration.php
 CLASS      ClsFromFactory                  [PUBLIC]   issue144830.php
 CLASS      ClsFromFactory                  [PUBLIC]   issue144840_01.php
+CLASS      ClsOmg                          [PUBLIC]   Blah
 CLASS      ComplexObject                   [PUBLIC]   issue159970.php
 CLASS      Control                         [PUBLIC]   Nette\Application\UI
 CLASS      Controller                      [PUBLIC]   Brite\Controller

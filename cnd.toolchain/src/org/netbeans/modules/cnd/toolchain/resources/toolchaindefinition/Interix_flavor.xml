@@ -45,7 +45,7 @@ made subject to such option by the copyright holder.
 -->
 
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
-    <toolchain name="Interix" display="GNU Compiler Collection from Interix" family="GNU"/>
+    <toolchain name="Interix" display="GNU Interix" family="GNU"/>
     <platforms stringvalue="windows"/>
     <drive_letter_prefix stringvalue="/dev/fs/"/>
 </toolchaindefinition>

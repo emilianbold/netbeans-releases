@@ -70,7 +70,7 @@ public class KenaiQueryController extends QueryController
         this.projectName = projectName;
         this.filter = (FilterDefinition) jf;
     }
-
+    
     @Override
     protected void enableFields(boolean bl) {
         super.enableFields(bl);

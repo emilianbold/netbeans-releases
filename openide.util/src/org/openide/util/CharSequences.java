@@ -235,6 +235,38 @@ public final class CharSequences {
         }
         return new ByteBasedSequence(b);
     }
+    
+    /**
+     * Provides compact char sequence object like {@link String#String(char[], int, int)}
+     */
+    private static CharSequence create(byte buf[], int start, int count) {
+        if (start < 0) {
+            throw new StringIndexOutOfBoundsException(start);
+        }
+        if (count < 0) {
+            throw new StringIndexOutOfBoundsException(count);
+        }
+        // Note: offset or count might be near -1>>>1.
+        if (start > buf.length - count) {
+            throw new StringIndexOutOfBoundsException(start + count);
+        }
+        int n = count;
+        if (n == 0) {
+            // special constant shared among all empty char sequences
+            return EMPTY;
+        }
+        byte[] b = new byte[n];
+        System.arraycopy(buf, start, b, 0, count);
+        boolean id = true;
+        for (int i = 0; i < n; i++) {
+            if (id) {
+                id = is6BitChar(b[i]);
+            } else {
+                break;
+            }
+        }
+        return createFromBytes(b, n, id);
+    }
 
     ////////////////////////////////////////////////////////////////////////////////
     // Memory efficient implementations of CharSequence
@@ -385,12 +417,13 @@ public final class CharSequences {
 
         @Override
         public int hashCode() {
-            int hash = 0;
-            for (int i = 0; i < length(); i++) {
-                hash = 31 * hash + charAt(i);
-            }
-            return hash;
-            //            return (i1 >> 4) + (i1 >> 8) + (i2 << 5) - i2;
+            int hash = 19*i1 + 37*i2;
+            hash += (hash <<  15) ^ 0xffffcd7d;
+            hash ^= (hash >>> 10);
+            hash += (hash <<   3);
+            hash ^= (hash >>>  6);
+            hash += (hash <<   2) + (hash << 14);
+            return hash ^ (hash >>> 16);
         }
 
         @Override
@@ -542,11 +575,13 @@ public final class CharSequences {
 
         @Override
         public int hashCode() {
-            int hash = 0;
-            for (int j = 0; j < length(); j++) {
-                hash = 31 * hash + charAt(j);
-            }
-            return hash;
+            int hash = (int)((i + (i>>32)) & 0xFFFFFFFFL);
+            hash += (hash <<  15) ^ 0xffffcd7d;
+            hash ^= (hash >>> 10);
+            hash += (hash <<   3);
+            hash ^= (hash >>>  6);
+            hash += (hash <<   2) + (hash << 14);
+            return hash ^ (hash >>> 16);
         }
 
         @Override
@@ -1441,7 +1476,7 @@ public final class CharSequences {
 
         @Override
         public CharSequence subSequence(int beginIndex, int endIndex) {
-            return CharSequences.create(toChars(), beginIndex, endIndex-beginIndex);
+            return create(value, beginIndex, endIndex-beginIndex);
         }
 
         @Override

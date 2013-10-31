@@ -221,8 +221,12 @@ abstract class BackupFacility2 {
 
         private void storeChecksum(long l) throws IOException {
             BackupEntry backup = map.get(l);
+            if(backup.orig == null) { // Find fileobject for newly created file
+                backup.orig = FileUtil.toFileObject(backup.origFile);
+                backup.origFile = null;
+            }
             FileObject fo = backup.orig;
-            if (fo==null || !fo.isValid()) {
+            if (!fo.isValid()) {
                 //deleted
                 backup.checkSum = new byte[16];
                 Arrays.fill(backup.checkSum, (byte)0);
@@ -305,6 +309,7 @@ abstract class BackupFacility2 {
 
             private File file;
             private FileObject orig;
+            private File origFile;
             private byte[] checkSum;
             private boolean undo = true;
             private boolean exists = true;
@@ -373,9 +378,14 @@ abstract class BackupFacility2 {
         public long backup(File file) throws IOException {
             BackupEntry entry = new BackupEntry();
             entry.file = File.createTempFile("nbbackup", null); //NOI18N
-            FileObject fo = FileUtil.toFileObject(file);
-            entry.orig = fo;
             entry.exists = file.exists();
+            if(entry.exists) {
+                FileObject fo = FileUtil.toFileObject(file);
+                entry.orig = fo;
+            } else {
+                // Temporarily store the file, will be changed to fileobject when store checksum is called
+                entry.origFile = file;
+            }
             map.put(currentId, entry);
             entry.file.deleteOnExit();
             if (entry.exists)

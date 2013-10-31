@@ -41,14 +41,28 @@
  */
 package org.netbeans.modules.bugtracking.api;
 
+import java.io.File;
 import java.util.Collection;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.spi.RepositoryQueryImplementation;
+import org.netbeans.modules.bugtracking.BugtrackingOwnerSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
 
 /**
- *
+ * Find a bugtracking repository given by a file managed in the IDE.
+ * 
+ * <p>
+ * This is done based on:
+ * <ul>
+ * <li> The IDE keeps track in what context bugtracking related operations were done 
+ * - e.g. when closing an issue during a VCS commit.</li>
+ * <li> Other systems might provide information about bugtracking repositories - e.g. Maven</li>
+ * </p>
+ * 
  * @author Tomas Stupka
  */
 public final class RepositoryQuery {
@@ -56,30 +70,58 @@ public final class RepositoryQuery {
     
     private RepositoryQuery() {};
     
-    public static synchronized RepositoryQuery getInstance() {
+    /**
+     * Determines a Repository by the given file. 
+     * 
+     * @param fileObject the file
+     * @param askIfUnknown if <code>true</code> and no repository was found,
+     * than a modal Repository picker dialog will be presented.  
+     * 
+     * @return a Repository
+     */
+    public static Repository getRepository(FileObject fileObject, boolean askIfUnknown) {
+        if(fileObject == null) {
+            return null;
+        }
+        RepositoryQuery rq = getInstance();
+        Collection<? extends RepositoryQueryImplementation> impls = rq.getImplementations();
+        for (RepositoryQueryImplementation repositoryOwnerQuery : impls) {
+            String url = repositoryOwnerQuery.getRepositoryUrl(fileObject);
+            if(url != null) {
+                Collection<RepositoryImpl> repos = RepositoryRegistry.getInstance().getKnownRepositories(false);
+                for (RepositoryImpl r : repos) {
+                    if(r.getUrl().equals(url)) {
+                        return r.getRepository();
+                    }
+                }
+            }
+        }
+        return rq.getRepositoryIntern(fileObject, askIfUnknown);
+    }
+
+    /**
+     * 
+     * @return 
+     */
+    private static synchronized RepositoryQuery getInstance() {
         if(instance == null) {
             instance = new RepositoryQuery();
         }
         return instance;
     }
     
-    public Repository getRepository(FileObject fileObject, boolean askIfUnknown) {
-        if(fileObject == null) {
-            return null;
-        }
-        Collection<? extends RepositoryQueryImplementation> impls = getImplementations();
-        for (RepositoryQueryImplementation repositoryOwnerQuery : impls) {
-            Repository repo = repositoryOwnerQuery.getRepository(fileObject, askIfUnknown);
-            if(repo != null) {
-                return repo;
-            }
-        }
-        return null;
-    }
-
     private Collection<? extends RepositoryQueryImplementation> getImplementations() {
         Collection<? extends RepositoryQueryImplementation> result = Lookup.getDefault().lookupAll(RepositoryQueryImplementation.class);
         return result;
+    }
+    
+    private Repository getRepositoryIntern(FileObject fileObject, boolean askIfUnknown) {
+        File file = FileUtil.toFile(fileObject);
+        if(file == null) {
+            return null;
+        }
+        RepositoryImpl impl = BugtrackingOwnerSupport.getInstance().getRepository(file, askIfUnknown);
+        return impl != null ? impl.getRepository() : null;
     }
     
 }

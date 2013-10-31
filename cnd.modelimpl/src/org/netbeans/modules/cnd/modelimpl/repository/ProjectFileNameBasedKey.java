@@ -45,6 +45,8 @@ package org.netbeans.modules.cnd.modelimpl.repository;
 
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.repository.impl.spi.UnitsConverter;
+import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
@@ -101,9 +103,7 @@ import org.openide.util.CharSequences;
 
     @Override
     public int hashCode() {
-        int key = super.hashCode();
-        key = 19 * key + fileNameIndex;
-        return key;
+        return 17*fileNameIndex + super.hashCode();
     }
 
     @Override
@@ -111,8 +111,29 @@ import org.openide.util.CharSequences;
         if (!super.equals(obj)) {
             return false;
         }
-        ProjectFileNameBasedKey other = (ProjectFileNameBasedKey) obj;
+        if (obj == null || (this.getClass() != obj.getClass())) {
+            return false;
+        }
+        final ProjectFileNameBasedKey other = (ProjectFileNameBasedKey) obj;
+        if (this.fileNameIndex != other.fileNameIndex) {
+            return false;
+        }
+        return true;
+    }
+    
+    
 
+    @Override
+    public int hashCode(UnitsConverter unitsConverter) {
+        return 17*fileNameIndex + super.hashCode(unitsConverter);
+    }
+
+    @Override
+    public boolean equals(UnitsConverter unitsConverter, Key object) {
+        if (!super.equals(unitsConverter, object)) {
+            return false;
+        }
+        ProjectFileNameBasedKey other = (ProjectFileNameBasedKey) object;
         return this.fileNameIndex == other.fileNameIndex;
     }
 

@@ -198,20 +198,13 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" attributes="0">
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="summaryWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                          <Component id="environmentWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                          <Component id="addCommentWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                          <Component id="originalEstimateNewWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                      </Group>
-                                      <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
-                                  </Group>
-                                  <Group type="102" alignment="1" attributes="0">
-                                      <Component id="attachmentsWarning" min="-2" pref="16" max="-2" attributes="0"/>
-                                      <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
-                                  </Group>
+                                  <Component id="summaryWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                  <Component id="environmentWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                  <Component id="addCommentWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                  <Component id="originalEstimateNewWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                  <Component id="attachmentsWarning" alignment="1" min="-2" pref="16" max="-2" attributes="0"/>
                               </Group>
+                              <EmptySpace min="5" pref="5" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="originalEstimateLabelNew" alignment="0" max="32767" attributes="1"/>
                                   <Component id="addCommentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -241,8 +234,6 @@
                                   <Component id="originalEstimateFieldNew" min="-2" max="-2" attributes="0"/>
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="submitButton" linkSize="3" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="btnSaveChanges" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="cancelButton" linkSize="3" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
@@ -408,7 +399,6 @@
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="submitButton" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="cancelButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="btnSaveChanges" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="btnDeleteTask" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                           </Group>
@@ -1032,20 +1022,6 @@
           <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.issueLinksLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
-    </Component>
-    <Component class="javax.swing.JButton" name="btnSaveChanges">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.btnSaveChanges.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.btnSaveChanges.TTtext" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-        <Property name="enabled" type="boolean" value="false"/>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnSaveChangesActionPerformed"/>
-      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="btnDeleteTask">
       <Properties>

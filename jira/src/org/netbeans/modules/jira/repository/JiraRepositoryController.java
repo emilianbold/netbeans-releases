@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.jira.repository;
 
-import com.atlassian.connector.eclipse.internal.jira.core.util.JiraUtil;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -62,7 +61,7 @@ import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.LogUtils;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.commands.ValidateCommand;
@@ -218,6 +217,11 @@ public class JiraRepositoryController implements RepositoryController, DocumentL
     }
 
     @Override
+    public void cancelChanges() {
+        
+    }
+    
+    @Override
     public void populate() {
         taskRunner = new TaskRunner(NbBundle.getMessage(RepositoryPanel.class, "LBL_ReadingRepoData")) {  // NOI18N
             @Override
@@ -339,7 +343,7 @@ public class JiraRepositoryController implements RepositoryController, DocumentL
             }
 
             private void logValidateMessage(String msg, Level level, String name, String url, String user, char[] password, String httpUser, char[] httpPassword) {
-                Jira.LOG.log(level, msg, new Object[] {name, url, user, BugtrackingUtil.getPasswordLog(password), httpUser, BugtrackingUtil.getPasswordLog(httpPassword)});
+                Jira.LOG.log(level, msg, new Object[] {name, url, user, LogUtils.getPasswordLog(password), httpUser, LogUtils.getPasswordLog(httpPassword)});
             }
         };
         taskRunner.startTask();

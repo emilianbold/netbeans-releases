@@ -104,6 +104,7 @@ CLASS      DatagramSocketImpl                         null
 CLASS      DatagramSocketImplFactory                  null
 CLASS      Date                                       null
 CLASS      Delegate                                   null
+CLASS      DelegatesTo                                null
 CLASS      DelegatingMetaClass                        null
 CLASS      Deprecated                                 null
 CLASS      DeprecationException                       null
@@ -313,6 +314,7 @@ CLASS      Objects                                    null
 CLASS      Observable                                 null
 CLASS      ObservableList                             null
 CLASS      ObservableMap                              null
+CLASS      ObservableSet                              null
 CLASS      Observer                                   null
 CLASS      OptionAccessor                             null
 CLASS      OptionalDataException                      null

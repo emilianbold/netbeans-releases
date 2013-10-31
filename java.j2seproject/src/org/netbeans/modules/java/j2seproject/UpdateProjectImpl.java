@@ -48,7 +48,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.api.common.ant.UpdateImplementation;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
-import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -191,7 +190,7 @@ public class UpdateProjectImpl implements UpdateImplementation {
     public synchronized EditableProperties getUpdatedProjectProperties () {
         EditableProperties cachedProperties = this.helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         //The javadoc.additionalparam was not in NB 4.0
-        ensureValueExists(cachedProperties, J2SEProjectProperties.JAVADOC_ADDITIONALPARAM,"");    //NOI18N
+        ensureValueExists(cachedProperties, ProjectProperties.JAVADOC_ADDITIONALPARAM,"");    //NOI18N
         ensureValueExists(cachedProperties, "build.generated.dir","${build.dir}/generated"); //NOI18N
         ensureValueExists(cachedProperties, "meta.inf.dir","${src.dir}/META-INF"); //NOI18N
         ensureValueExists(cachedProperties, ProjectProperties.ANNOTATION_PROCESSING_ENABLED, "true"); //NOI18N

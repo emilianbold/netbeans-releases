@@ -55,7 +55,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -502,7 +501,7 @@ public final class SyncController implements Cancellable {
 
         private void setTimeStamp(TransferFile transferFile) {
             assert transferFile != null;
-            timeStamps.setSyncTimestamp(transferFile, TimeUnit.SECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS));
+            timeStamps.setSyncTimestamp(transferFile);
         }
 
         private boolean copyContent(TmpLocalFile source, File target) throws IOException {

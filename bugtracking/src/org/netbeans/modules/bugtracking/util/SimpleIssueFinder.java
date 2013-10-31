@@ -53,7 +53,7 @@ import org.openide.ErrorManager;
  * @author Tomas Stupka
  * @author Marian Petras
  */
-public class SimpleIssueFinder extends IssueFinder {
+public class SimpleIssueFinder implements IssueFinder {
     
     private static SimpleIssueFinder instance;
     

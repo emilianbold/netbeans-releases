@@ -75,6 +75,7 @@ import org.netbeans.modules.php.project.classpath.BasePathSupport.Item;
 import org.netbeans.modules.php.project.classpath.IncludePathSupport;
 import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
+import org.netbeans.modules.php.project.connections.sync.TimeStamps;
 import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.actions.DownloadCommand;
@@ -291,6 +292,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
                 break;
             case REMOTE:
                 downloadRemoteFiles(createProperties, monitor);
+                setSyncTimestamp((PhpProject) project, sources);
                 break;
             case EXISTING:
                 // noop
@@ -663,6 +665,14 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         DownloadCommand.download(remoteClient, remoteLog, projectProperties.getName(), sources, forDownload);
 
         remoteMonitor.finishingDownload();
+    }
+
+    private void setSyncTimestamp(PhpProject project, FileObject sources) {
+        File sourceDir = FileUtil.toFile(sources);
+        TransferFile transferFile = TransferFile.fromFile(getRemoteClient().createRemoteClientImplementation(sourceDir.getAbsolutePath()),
+                null, sourceDir);
+        TimeStamps timeStamps = new TimeStamps(project);
+        timeStamps.setSyncTimestamp(transferFile);
     }
 
     private Map<PhpFrameworkProvider, PhpModuleExtender> getFrameworkExtenders() {

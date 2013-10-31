@@ -61,7 +61,6 @@ import java.util.Set;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
@@ -93,6 +92,7 @@ import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
@@ -689,25 +689,22 @@ private void includesExcludesButtonActionPerformed(java.awt.event.ActionEvent ev
     }//GEN-LAST:event_addFolderActionPerformed
 
     private void doAddFolderActionPerformed(java.awt.event.ActionEvent evt, boolean isTests) {                                          
-        JFileChooser chooser = new JFileChooser();
-        FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
-        chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
+        FileChooserBuilder builder = new FileChooserBuilder(SourceFoldersPanel.class).setDirectoriesOnly(true);
         if (model.getBaseFolder() != null) {
             File files[] = model.getBaseFolder().listFiles();
             if (files != null && files.length > 0) {
-                chooser.setSelectedFile(files[0]);
+                builder.setDefaultWorkingDirectory(files[0]);
             } else {
-                chooser.setSelectedFile(model.getBaseFolder());
+                builder.setDefaultWorkingDirectory(model.getBaseFolder());
             }
         }
         if (isTests) {
-            chooser.setDialogTitle(NbBundle.getMessage(SourceFoldersPanel.class, "LBL_Browse_Test_Folder"));
+            builder.setTitle(NbBundle.getMessage(SourceFoldersPanel.class, "LBL_Browse_Test_Folder"));
         } else {
-            chooser.setDialogTitle(NbBundle.getMessage(SourceFoldersPanel.class, "LBL_Browse_Source_Folder"));
+            builder.setTitle(NbBundle.getMessage(SourceFoldersPanel.class, "LBL_Browse_Source_Folder"));
         }
-        chooser.setMultiSelectionEnabled(true);
-        if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
-            File files[] = chooser.getSelectedFiles();
+        File [] files = builder.showMultiOpenDialog();
+        if (files != null) {
             model.setEncoding(encodingComboBox.getModel().getSelectedItem().toString());
             Set<File> invalidRoots = processRoots(model, files, isTests, isWizard);
             if (isTests) {

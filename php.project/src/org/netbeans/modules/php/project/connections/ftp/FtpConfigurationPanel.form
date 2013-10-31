@@ -45,34 +45,36 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="onlyLoginSecuredCheckBox" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="29" max="32767" attributes="0"/>
+                      <EmptySpace pref="21" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="1" attributes="0">
-                      <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="userTextField" alignment="0" max="32767" attributes="2"/>
-                          <Component id="hostTextField" alignment="0" max="32767" attributes="2"/>
-                          <Component id="passwordTextField" alignment="0" max="32767" attributes="0"/>
-                          <Component id="initialDirectoryTextField" alignment="0" max="32767" attributes="2"/>
-                          <Component id="keepAliveTextField" alignment="0" max="32767" attributes="1"/>
-                          <Component id="timeoutTextField" alignment="0" max="32767" attributes="1"/>
-                      </Group>
+                      <Component id="userTextField" max="32767" attributes="2"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                          <Group type="102" alignment="0" attributes="1">
-                              <Component id="portLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="portTextField" max="32767" attributes="0"/>
-                          </Group>
-                          <Component id="anonymousCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                      </Group>
+                      <Component id="anonymousCheckBox" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <Component id="passwordTextField" alignment="0" max="32767" attributes="0"/>
+                  <Component id="initialDirectoryTextField" alignment="0" max="32767" attributes="2"/>
+                  <Group type="102" alignment="1" attributes="0">
+                      <Component id="hostTextField" max="32767" attributes="2"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="portLabel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="portTextField" linkSize="3" min="-2" pref="50" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="keepAliveInfoLabel" min="-2" max="-2" attributes="0"/>
                           <Component id="passwordLabelInfo" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="encryptionComboBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                                  <Component id="keepAliveTextField" linkSize="3" alignment="0" pref="41" max="32767" attributes="1"/>
+                                  <Component id="timeoutTextField" linkSize="3" alignment="0" max="32767" attributes="1"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="keepAliveInfoLabel" min="-2" max="-2" attributes="0"/>
+                          </Group>
                       </Group>
-                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
           </Group>
@@ -121,14 +123,12 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="keepAliveLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="keepAliveTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="keepAliveInfoLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="keepAliveInfoLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="passiveModeCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="ignoreDisconnectErrorsCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>

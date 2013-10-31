@@ -34,7 +34,7 @@
                   </Group>
                   <Component id="configScrollPane" pref="0" max="32767" attributes="2"/>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="separator" alignment="0" pref="506" max="32767" attributes="0"/>
                   <Component id="configurationPanelScrollPane" alignment="0" pref="506" max="32767" attributes="0"/>
@@ -50,7 +50,7 @@
                       <Component id="nameTextField" max="32767" attributes="0"/>
                   </Group>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -65,10 +65,10 @@
                           <Component id="nameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="nameTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
-                      <Component id="separator" min="-2" pref="10" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="6" max="-2" attributes="1"/>
-                      <Component id="configurationPanelScrollPane" pref="315" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="separator" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="1"/>
+                      <Component id="configurationPanelScrollPane" pref="330" max="32767" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>

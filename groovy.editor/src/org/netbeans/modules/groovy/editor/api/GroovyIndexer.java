@@ -344,8 +344,16 @@ public class GroovyIndexer extends EmbeddingIndexer {
             StringBuilder sb = new StringBuilder();
             sb.append(constructor.getName());
             sb.append(';');
-            for (String paramName : constructor.getParameterTypes()) {
-                sb.append(paramName);
+
+            List<String> params = constructor.getParameterTypes();
+            if (!params.isEmpty()) {
+                for (String paramName : params) {
+                    sb.append(paramName);
+                    sb.append(",");
+                }
+
+                // Removing last ","
+                sb.deleteCharAt(sb.length() - 1);
             }
 
             Set<Modifier> modifiers = constructor.getModifiers();

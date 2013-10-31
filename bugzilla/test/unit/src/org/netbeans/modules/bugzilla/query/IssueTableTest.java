@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.bugzilla.query;
 
-import java.lang.reflect.Field;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
@@ -51,7 +50,6 @@ import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.IssuetableTestFactory;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.TestConstants;
 import org.netbeans.modules.bugzilla.TestUtil;
@@ -64,7 +62,7 @@ import org.openide.util.test.MockLookup;
  */
 public class IssueTableTest extends IssuetableTestFactory implements QueryConstants, TestConstants {
 
-    private Map<String, BugzillaQuery> queries = new HashMap<String, BugzillaQuery>();
+    private Map<String, BugzillaQuery> queries = new HashMap<>();
     
     public IssueTableTest(Test test) {
         super(test);
@@ -111,7 +109,7 @@ public class IssueTableTest extends IssuetableTestFactory implements QueryConsta
     @Override
     public void setSaved(Query q) {
         BugzillaQuery bugzillaQuery = queries.get(q.getDisplayName());
-        bugzillaQuery.setSaved(true);
+        bugzillaQuery.getController().save("IssueTableTestQuery" + System.currentTimeMillis());
     }
     
     @Override
@@ -119,9 +117,7 @@ public class IssueTableTest extends IssuetableTestFactory implements QueryConsta
         try {
             BugzillaQuery bugzillaQuery = queries.get(q.getDisplayName());
             QueryController c = bugzillaQuery.getController();
-            Field f = c.getClass().getDeclaredField("issueTable");
-            f.setAccessible(true);
-            return (IssueTable) f.get(c);
+            return c.getIssueTable();
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }

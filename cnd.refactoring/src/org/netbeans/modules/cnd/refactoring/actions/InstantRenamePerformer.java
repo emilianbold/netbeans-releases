@@ -87,6 +87,7 @@ import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.spi.editor.highlighting.support.PositionsBag;
+import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.typinghooks.DeletedTextInterceptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -107,7 +108,7 @@ import org.openide.util.lookup.InstanceContent;
  */
 public class InstantRenamePerformer implements DocumentListener, KeyListener {
     private static final String POSITION_BAG = "CndInstantRenamePerformer"; // NOI18N
-    
+
     private SyncDocumentRegion region;
     private Document doc;
     private JTextComponent target;
@@ -263,7 +264,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
     private static void doInstantRename(Collection<CsmReference> changePoints, JTextComponent target, int caret) throws BadLocationException {
         performInstantRename(target, changePoints, caret);
     }
-    
+        
     static Collection<CsmReference> computeChangePoints(CsmReference ref) {
         CsmObject resolved = ref.getReferencedObject();
         if (resolved == null) {
@@ -272,6 +273,20 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         CsmFile file = ref.getContainingFile();
         Collection<CsmReference> out = CsmReferenceRepository.getDefault().getReferences(resolved, file, CsmReferenceKind.ALL, null);
         return out;
+    }
+    
+    public static void invokeInstantRename(JTextComponent target, ChangeInfo changeInfo) throws BadLocationException {
+        Collection<CsmReference> highlights = new ArrayList<>(changeInfo.size());
+        int size = changeInfo.size();
+        int caretOffset = -1;
+        for (int i = 0; i < size; i++) {
+            ChangeInfo.Change change = changeInfo.get(i);
+            highlights.add(new RefImpl(change));
+            if (caretOffset < 0) {
+                caretOffset = change.getEnd().getOffset();
+            }
+        }
+        performInstantRename(target, highlights, caretOffset);
     }
     
     public synchronized static void performInstantRename(JTextComponent target, Collection<CsmReference> highlights, int caretOffset) throws BadLocationException {
@@ -435,6 +450,64 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
             public DeletedTextInterceptor createDeletedTextInterceptor(MimePath mimePath) {
                 return new RenameDeletedTextInterceptor();
             }
+        }
+    }
+
+    private static class RefImpl implements CsmReference {
+        private final ChangeInfo.Change change;
+
+        public RefImpl(ChangeInfo.Change change) {
+            this.change = change;
+        }
+
+        @Override
+        public CsmReferenceKind getKind() {
+            return CsmReferenceKind.UNKNOWN;
+        }
+
+        @Override
+        public CsmObject getReferencedObject() {
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        }
+
+        @Override
+        public CsmObject getOwner() {
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        }
+
+        @Override
+        public CsmObject getClosestTopLevelObject() {
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        }
+
+        @Override
+        public CsmFile getContainingFile() {
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        }
+
+        @Override
+        public int getStartOffset() {
+            return change.getStart().getOffset();
+        }
+
+        @Override
+        public int getEndOffset() {
+            return change.getEnd().getOffset();
+        }
+
+        @Override
+        public Position getStartPosition() {
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        }
+
+        @Override
+        public Position getEndPosition() {
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        }
+
+        @Override
+        public CharSequence getText() {
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
     }
 }

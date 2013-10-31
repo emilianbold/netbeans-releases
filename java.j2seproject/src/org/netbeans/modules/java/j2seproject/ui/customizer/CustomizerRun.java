@@ -71,21 +71,34 @@ import javax.swing.plaf.UIResource;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.text.Collator;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.PlatformsCustomizer;
+import org.netbeans.api.java.queries.SourceLevelQuery;
+import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
+import org.netbeans.modules.java.j2seproject.api.J2SERuntimePlatformProvider;
+import org.openide.modules.SpecificationVersion;
+import org.openide.util.Parameters;
 
 public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     public static final Logger log = Logger.getLogger(CustomizerRun.class.getName());
     
     private J2SEProject project;
     
-    private JTextField[] data;
-    private JLabel[] dataLabels;
-    private String[] keys;
+    private DataSource[] data;
     private Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> configs;
     J2SEProjectProperties uiProperties;
     
@@ -117,73 +130,41 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         
         configs = uiProperties.RUN_CONFIGS;
         
-        data = new JTextField[] {
-            jTextFieldMainClass,
-            jTextFieldArgs,
-            jTextVMOptions,
-            jTextWorkingDirectory,
-        };
-        dataLabels = new JLabel[] {
-            jLabelMainClass,
-            jLabelArgs,
-            jLabelVMOptions,
-            jLabelWorkingDirectory,
-        };
-        keys = new String[] {
-            ProjectProperties.MAIN_CLASS,
-            ProjectProperties.APPLICATION_ARGS,
-            ProjectProperties.RUN_JVM_ARGS,
-            ProjectProperties.RUN_WORK_DIR,
-        };
-        assert data.length == keys.length;
+        updatePlatformsList();
+
+        data = new DataSource[]{
+            new ComboDataSource(J2SEProjectProperties.PLATFORM_RUNTIME, lblPlatform, platform, configCombo, configs),
+            new TextDataSource(ProjectProperties.MAIN_CLASS, jLabelMainClass, jTextFieldMainClass, configCombo, configs),
+            new TextDataSource(ProjectProperties.APPLICATION_ARGS, jLabelArgs, jTextFieldArgs, configCombo, configs),
+            new TextDataSource(ProjectProperties.RUN_JVM_ARGS, jLabelVMOptions, jTextVMOptions, configCombo, configs),
+            new TextDataSource(ProjectProperties.RUN_WORK_DIR, jLabelWorkingDirectory, jTextWorkingDirectory, configCombo, configs),
+        };        
         
         configChanged(uiProperties.activeConfig);
         
-        configCombo.setRenderer(new ConfigListCellRenderer());
-        
-        for (int i = 0; i < data.length; i++) {
-            final JTextField field = data[i];
-            final String prop = keys[i];
-            final JLabel label = dataLabels[i];
-            field.getDocument().addDocumentListener(new DocumentListener() {
-                Font basefont = label.getFont();
-                Font boldfont = basefont.deriveFont(Font.BOLD);
-                {
-                    updateFont();
-                }
-                public void insertUpdate(DocumentEvent e) {
-                    changed();
-                }
-                public void removeUpdate(DocumentEvent e) {
-                    changed();
-                }
-                public void changedUpdate(DocumentEvent e) {}
-                void changed() {
-                    String config = (String) configCombo.getSelectedItem();
-                    if (config.length() == 0) {
-                        config = null;
-                    }
-                    String v = field.getText();
-                    if (v != null && config != null && v.equals(configs.get(null).get(prop))) {
-                        // default value, do not store as such
-                        v = null;
-                    }
-                    configs.get(config).put(prop, v);
-                    updateFont();
-                }
-                void updateFont() {
-                    String v = field.getText();
-                    String config = (String) configCombo.getSelectedItem();
-                    if (config.length() == 0) {
-                        config = null;
-                    }
-                    String def = configs.get(null).get(prop);
-                    label.setFont(config != null && !Utilities.compareObjects(v != null ? v : "", def != null ? def : "") ? boldfont : basefont);
-                }
-            });
-        }
-        
+        configCombo.setRenderer(new ConfigListCellRenderer());                
         jButtonMainClass.addActionListener( new MainClassListener( project.getSourceRoots(), jTextFieldMainClass ) );
+        final ListDataListener currentSourceLevelListener = new ListDataListener() {
+            @Override
+            public void intervalAdded(ListDataEvent e) {
+            }
+
+            @Override
+            public void intervalRemoved(ListDataEvent e) {
+            }
+
+            @Override
+            public void contentsChanged(ListDataEvent e) {
+                PlatformKey currentPlatform = (PlatformKey) platform.getSelectedItem();
+                platform.setSelectedIndex(0);
+                final Collection<? extends PlatformKey> updatedPlatforms = updatePlatformsList();
+                if (updatedPlatforms.contains(currentPlatform)) {
+                    platform.setSelectedItem(currentPlatform);
+                }
+            }
+        };
+        uiProperties.JAVAC_SOURCE_MODEL.addListDataListener(currentSourceLevelListener);
+        uiProperties.JAVAC_PROFILE_MODEL.addListDataListener(currentSourceLevelListener);
     }
     
     public HelpCtx getHelpCtx() {
@@ -218,6 +199,9 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         jTextVMOptions = new javax.swing.JTextField();
         jLabelVMOptionsExample = new javax.swing.JLabel();
         customizeOptionsButton = new javax.swing.JButton();
+        lblPlatform = new javax.swing.JLabel();
+        platform = new javax.swing.JComboBox();
+        jButtonManagePlatforms = new javax.swing.JButton();
         extPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
@@ -287,10 +271,12 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         jLabelMainClass.setLabelFor(jTextFieldMainClass);
         org.openide.awt.Mnemonics.setLocalizedText(jLabelMainClass, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_MainClass_JLabel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         mainPanel.add(jLabelMainClass, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
@@ -299,6 +285,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
 
         org.openide.awt.Mnemonics.setLocalizedText(jButtonMainClass, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_MainClass_JButton")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -309,10 +296,12 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         jLabelArgs.setLabelFor(jTextFieldArgs);
         org.openide.awt.Mnemonics.setLocalizedText(jLabelArgs, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_Args_JLabel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         mainPanel.add(jLabelArgs, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
@@ -320,15 +309,14 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         mainPanel.add(jTextFieldArgs, gridBagConstraints);
         jTextFieldArgs.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerRun.class).getString("AD_jTextFieldArgs")); // NOI18N
 
-        jLabelWorkingDirectory.setLabelFor(jTextWorkingDirectory);
         org.openide.awt.Mnemonics.setLocalizedText(jLabelWorkingDirectory, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_Working_Directory")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         mainPanel.add(jLabelWorkingDirectory, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -344,7 +332,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -355,10 +343,12 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         jLabelVMOptions.setLabelFor(jTextVMOptions);
         org.openide.awt.Mnemonics.setLocalizedText(jLabelVMOptions, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_VM_Options")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         mainPanel.add(jLabelVMOptions, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
@@ -369,7 +359,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         org.openide.awt.Mnemonics.setLocalizedText(jLabelVMOptionsExample, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_VM_Options_Example")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 0);
@@ -383,7 +373,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.RELATIVE;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -392,6 +382,43 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         mainPanel.add(customizeOptionsButton, gridBagConstraints);
         customizeOptionsButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "AN_CustomizeRun_Run_VM_Options_JButton")); // NOI18N
         customizeOptionsButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "AD_CustomizeRun_Run_VM_Options_Customize")); // NOI18N
+
+        lblPlatform.setLabelFor(platform);
+        org.openide.awt.Mnemonics.setLocalizedText(lblPlatform, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_RuntimePlatform")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
+        mainPanel.add(lblPlatform, gridBagConstraints);
+
+        platform.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        platform.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                platformActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
+        mainPanel.add(platform, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonManagePlatforms, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_ManagePlatforms")); // NOI18N
+        jButtonManagePlatforms.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonManagePlatformsActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 5, 0);
+        mainPanel.add(jButtonManagePlatforms, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -413,6 +440,41 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.weighty = 1.0;
         add(extPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
+    
+    
+    private java.util.List<PlatformKey> updatePlatformsList() {
+        final java.util.List<PlatformKey> platformList = new ArrayList<>();
+        final SpecificationVersion targetLevel = getProjectTargetLevel();
+        final SourceLevelQuery.Profile targetProfile = getProjectProfile();
+        if (targetLevel != null && targetProfile != null) {
+            for (J2SERuntimePlatformProvider rpt : project.getLookup().lookupAll(J2SERuntimePlatformProvider.class)) {
+                for (JavaPlatform jp : rpt.getPlatformType(targetLevel, targetProfile)) {
+                    platformList.add(PlatformKey.create(jp));
+                }
+            }
+            Collections.sort(platformList);
+        }
+        platformList.add(0, PlatformKey.createDefault());
+        final DefaultComboBoxModel<PlatformKey> model = new DefaultComboBoxModel<>(platformList.toArray(new PlatformKey[0]));
+        platform.setModel(model);
+        return platformList;
+    }
+
+    @CheckForNull
+    private SpecificationVersion getProjectTargetLevel() {
+        final Object key = uiProperties.JAVAC_SOURCE_MODEL.getSelectedItem();
+        return key == null ?
+            null :
+            PlatformUiSupport.getSourceLevel(key);
+    }
+
+    @CheckForNull
+    private SourceLevelQuery.Profile getProjectProfile() {
+        final Object key = uiProperties.JAVAC_PROFILE_MODEL.getSelectedItem();
+        return key == null ?
+            null :
+            PlatformUiSupport.getProfile(key);
+    }
 
     @Deprecated
     private void initExtPanel(Project p) {
@@ -473,6 +535,38 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                 constraints);
     }
     
+    private boolean createNewConfiguration(boolean platformChanged) {
+        DialogDescriptor d = new DialogDescriptor(new CreateConfigurationPanel(platformChanged), NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.input.title"));        
+        
+        if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.OK_OPTION) {
+            return false;
+        }
+        String name = ((CreateConfigurationPanel) d.getMessage()).getConfigName();
+        String config = name.replaceAll("[^a-zA-Z0-9_.-]", "_"); // NOI18N
+        if (config.trim().length() == 0) {
+            //#143764
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.input.empty", config), // NOI18N
+                    NotifyDescriptor.WARNING_MESSAGE));
+            return false;
+
+        }
+        if (configs.get(config) != null) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.input.duplicate", config), // NOI18N
+                    NotifyDescriptor.WARNING_MESSAGE));
+            return false;
+        }
+        Map<String,String> m = new HashMap<String,String>();
+        if (!name.equals(config)) {
+            m.put("$label", name); // NOI18N
+        }
+        configs.put(config, m);
+        configChanged(config);
+        uiProperties.activeConfig = config;
+        return true;
+    }  
+    
     private void configDelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configDelActionPerformed
         String config = (String) configCombo.getSelectedItem();
         assert config != null;
@@ -482,41 +576,14 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     }//GEN-LAST:event_configDelActionPerformed
 
     private void configNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configNewActionPerformed
-        NotifyDescriptor.InputLine d = new NotifyDescriptor.InputLine(
-                NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.input.prompt"), // NOI18N
-                NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.input.title")); // NOI18N
-        if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.OK_OPTION) {
-            return;
-        }
-        String name = d.getInputText();
-        String config = name.replaceAll("[^a-zA-Z0-9_.-]", "_"); // NOI18N
-        if (config.trim().length() == 0) {
-            //#143764
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.input.empty", config), // NOI18N
-                    NotifyDescriptor.WARNING_MESSAGE));
-            return;
-            
-        }
-        if (configs.get(config) != null) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.input.duplicate", config), // NOI18N
-                    NotifyDescriptor.WARNING_MESSAGE));
-            return;
-        }
-        Map<String,String> m = new HashMap<String,String>();
-        if (!name.equals(config)) {
-            m.put("$label", name); // NOI18N
-        }
-        configs.put(config, m);
-        configChanged(config);
-        uiProperties.activeConfig = config;
+        createNewConfiguration(false);
     }//GEN-LAST:event_configNewActionPerformed
 
     private void configComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configComboActionPerformed
         String config = (String) configCombo.getSelectedItem();
         if (config.length() == 0) {
             config = null;
+            platform.setSelectedIndex(0);
         }
         configChanged(config);
         uiProperties.activeConfig = config;
@@ -551,6 +618,31 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
 
     }//GEN-LAST:event_customizeVMOptionsByDialog
 
+    private void jButtonManagePlatformsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonManagePlatformsActionPerformed
+        PlatformKey currentPlatform = (PlatformKey) platform.getSelectedItem();
+        platform.setSelectedIndex(0);
+
+        JavaPlatform jp = ((PlatformKey) this.platform.getSelectedItem()).getPlatform();
+        PlatformsCustomizer.showCustomizer(jp);
+
+        java.util.List<PlatformKey> updatedPlatforms = updatePlatformsList();
+        if (updatedPlatforms.contains(currentPlatform)) {
+            platform.setSelectedItem(currentPlatform);
+        }
+    }//GEN-LAST:event_jButtonManagePlatformsActionPerformed
+
+    private void platformActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_platformActionPerformed
+        String config = (String) configCombo.getSelectedItem();
+        PlatformKey currentPlatform = ((PlatformKey) platform.getSelectedItem());
+        String currentPlatformName = ((PlatformKey) platform.getSelectedItem()).displayName;
+        if (config.isEmpty() && !currentPlatformName.equals(NbBundle.getMessage(CustomizerRun.class, "TXT_ActivePlatform"))) { //NOI18N
+            platform.setSelectedIndex(0);
+            if (createNewConfiguration(true)) {
+                platform.setSelectedItem(currentPlatform);
+            }
+        }
+    }//GEN-LAST:event_platformActionPerformed
+
     private void configChanged(String activeConfig) {
         DefaultComboBoxModel model = new DefaultComboBoxModel();
         model.addElement("");
@@ -577,7 +669,6 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         configCombo.setModel(model);
         configCombo.setSelectedItem(activeConfig != null ? activeConfig : "");
         Map<String,String> m = configs.get(activeConfig);
-        Map<String,String> def = configs.get(null);
         if (m != null) {
             // BEGIN Deprecated
             if (compProviderDeprecated != null) {
@@ -587,13 +678,8 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             for(J2SECategoryExtensionProvider compProvider : compProviders) {
                 compProvider.configUpdated(m);
             }
-            for (int i = 0; i < data.length; i++) {
-                String v = m.get(keys[i]);
-                if (v == null) {
-                    // display default value
-                    v = def.get(keys[i]);
-                }
-                data[i].setText(v);
+            for (DataSource ds : data) {
+                ds.update(activeConfig);
             }
         } // else ??
         configDel.setEnabled(activeConfig != null);
@@ -610,6 +696,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     private javax.swing.JButton customizeOptionsButton;
     private javax.swing.JPanel extPanel;
     private javax.swing.JButton jButtonMainClass;
+    private javax.swing.JButton jButtonManagePlatforms;
     private javax.swing.JButton jButtonWorkingDirectoryBrowse;
     private javax.swing.JLabel jLabelArgs;
     private javax.swing.JLabel jLabelMainClass;
@@ -620,13 +707,15 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     private javax.swing.JTextField jTextFieldMainClass;
     private javax.swing.JTextField jTextVMOptions;
     private javax.swing.JTextField jTextWorkingDirectory;
+    private javax.swing.JLabel lblPlatform;
     private javax.swing.JPanel mainPanel;
+    private javax.swing.JComboBox platform;
     // End of variables declaration//GEN-END:variables
     
     
     // Innercasses -------------------------------------------------------------
     
-    private class MainClassListener implements ActionListener /*, DocumentListener */ {
+    private final class MainClassListener implements ActionListener /*, DocumentListener */ {
         
         private final JButton okButton;
         private SourceRoots sourceRoots;
@@ -728,6 +817,286 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         }
         
     }
+
+    private static final class PlatformKey implements Comparable<PlatformKey> {
+
+        private final JavaPlatform platform;
+        private final String displayName;
+
+        private PlatformKey() {
+            this.displayName = NbBundle.getMessage(
+                CustomizerRun.class,
+                "TXT_ActivePlatform");
+            this.platform = null;
+        }
+
+        private PlatformKey(@NonNull final JavaPlatform platform) {
+            this.displayName = platform.getDisplayName();
+            this.platform = platform;
+        }
+
+        @Override
+        public String toString() {
+            return displayName;
+        }
+
+        @Override
+        public int hashCode() {
+            return platform == null ? 17 : platform.hashCode();
+        }
+
+        @Override
+        public boolean equals(@NullAllowed final Object obj) {
+            if (obj == this) {
+                return true;
+            }
+            if (!(obj instanceof PlatformKey)) {
+                return false;
+            }
+            final PlatformKey pk = (PlatformKey) obj;
+            return platform == null ? pk.platform == null : platform.equals(pk.platform);
+        }
+
+        @NonNull
+        String getPlatformAntName() {
+            String antName = platform == null ?
+                "" :    //NOI18N
+                platform.getProperties().get(J2SEProjectProperties.PROP_PLATFORM_ANT_NAME);
+            assert antName != null;
+            return antName;
+        }
+
+        @CheckForNull
+        JavaPlatform getPlatform() {
+            return platform;
+        }
+
+        static PlatformKey create(@NonNull final JavaPlatform platform) {
+            return new PlatformKey(platform);
+        }
+
+        static PlatformKey createDefault() {
+            return new PlatformKey();
+        }
+
+        @Override
+        public int compareTo(PlatformKey o) {
+            return this.displayName.toLowerCase().compareTo(o.displayName.toLowerCase());
+        }
+    }
     
-    
+    private abstract static class DataSource {
+
+        private final String propName;
+        private final JLabel label;
+        private final JComboBox<?> configCombo;
+        private final Map<String,Map<String,String>> configs;
+        private final Font basefont;
+        private final Font boldfont;
+
+
+        DataSource(
+            @NonNull final String propName,
+            @NonNull final JLabel label,
+            @NonNull final JComboBox<?> configCombo,
+            @NonNull final Map<String,Map<String,String>> configs) {
+            Parameters.notNull("propName", propName);   //NOI18N
+            Parameters.notNull("label", label);         //NOI18N
+            Parameters.notNull("configCombo", configCombo); //NOI18N
+            Parameters.notNull("configs", configs); //NOI18N
+            this.propName = propName;
+            this.label = label;
+            this.configCombo = configCombo;
+            this.configs = configs;
+            basefont = label.getFont();
+            boldfont = basefont.deriveFont(Font.BOLD);
+        }
+
+        final String getPropertyName() {
+            return propName;
+        }
+
+        final JLabel getLabel() {
+            return label;
+        }
+
+        final void changed(@NullAllowed String value) {
+            String config = (String) configCombo.getSelectedItem();
+            if (config.length() == 0) {
+                config = null;
+            }
+            if (value != null && config != null && value.equals(configs.get(null).get(propName))) {
+                // default value, do not store as such
+                value = null;
+            }
+            configs.get(config).put(propName, value);
+            updateFont(value);
+        }
+
+        final void updateFont(@NullAllowed String value) {
+            String config = (String) configCombo.getSelectedItem();
+            if (config.length() == 0) {
+                config = null;
+            }
+            String def = configs.get(null).get(propName);
+            label.setFont(config != null && !Utilities.compareObjects(
+                value != null ? value : "", def != null ? def : "") ? boldfont : basefont);
+        }
+
+        @CheckForNull
+        final String getPropertyValue(
+            @NullAllowed String config,
+            @NonNull String key) {
+            final Map<String,String> m = configs.get(config);
+            String v = m.get(key);
+            if (v == null) {
+                // display default value
+                final Map<String,String> def = configs.get(null);
+                v = def.get(getPropertyName());
+            }
+            return v;
+        }
+
+        abstract String getPropertyValue();
+
+        abstract void update(@NullAllowed String activeConfig);
+    }
+
+    private static class TextDataSource extends DataSource {
+
+        private final JTextComponent textComp;
+
+        TextDataSource(
+            @NonNull final String propName,
+            @NonNull final JLabel label,
+            @NonNull final JTextComponent textComp,
+            @NonNull final JComboBox<?> configCombo,
+            @NonNull final Map<String,Map<String,String>> configs) {
+            super(propName, label, configCombo, configs);
+            Parameters.notNull("textComp", textComp);   //NOI18N
+            this.textComp = textComp;
+            this.textComp.getDocument().addDocumentListener(new DocumentListener() {
+                @Override
+                public void insertUpdate(DocumentEvent e) {
+                    changed(textComp.getText());
+                }
+                @Override
+                public void removeUpdate(DocumentEvent e) {
+                    changed(textComp.getText());
+                }
+                @Override
+                public void changedUpdate(DocumentEvent e) {}
+
+            });
+            updateFont(textComp.getText());
+        }
+
+        @Override
+        String getPropertyValue() {
+            return textComp.getText();
+        }
+
+        @Override
+        void update(@NullAllowed final String activeConfig) {
+            textComp.setText(getPropertyValue(activeConfig, getPropertyName()));
+        }
+    }
+
+    private static class ComboDataSource extends DataSource {
+
+        private final JComboBox<PlatformKey> combo;
+
+        ComboDataSource(
+            @NonNull final String propName,
+            @NonNull final JLabel label,
+            @NonNull final JComboBox<PlatformKey> combo,
+            @NonNull final JComboBox<?> configCombo,
+            @NonNull final Map<String,Map<String,String>> configs) {
+            super(propName, label, configCombo, configs);
+            Parameters.notNull("combo", combo); //NOI18N
+            this.combo = combo;
+            this.combo.addItemListener(new ItemListener() {
+                @Override
+                public void itemStateChanged(ItemEvent e) {
+                    changed(getPropertyValue());
+                }
+            });
+            updateFont(getPropertyValue());
+        }
+
+        @Override
+        final String getPropertyValue() {
+            return ((PlatformKey)combo.getSelectedItem()).getPlatformAntName();
+        }
+
+        @Override
+        void update(String activeConfig) {
+            String antName = getPropertyValue(activeConfig, getPropertyName());
+            if (antName == null) {
+                antName = "";   //NOI18N
+            }
+            final ComboBoxModel<PlatformKey> model = combo.getModel();
+            PlatformKey active = null, project = null;
+
+            for (int i=0; i < model.getSize(); i++) {
+                final PlatformKey pk = model.getElementAt(i);
+                final String pkn = pk.getPlatformAntName();
+                if (antName.equals(pkn)) {
+                    active = pk;
+                    break;
+                }
+                if (pkn.isEmpty()) {
+                    project = pk;
+                }
+            }
+            if (active == null) {
+                active = project;
+            }
+            combo.setSelectedItem(active);
+        }
+    }
+
+    private static class CreateConfigurationPanel extends JPanel {
+
+        private JLabel defaultConfigPlatformMsg = new JLabel();
+        private JLabel configNameLabel = new JLabel();
+        private JTextField configName = new JTextField();
+
+        public CreateConfigurationPanel(boolean showDefaultConfigMsg) {
+            org.openide.awt.Mnemonics.setLocalizedText(defaultConfigPlatformMsg, NbBundle.getMessage(CustomizerRun.class, "TXT_DefaultConfigPlatformChange")); // NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(configNameLabel, NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.input.prompt")); // NOI18N
+            configNameLabel.setLabelFor(configName);
+            defaultConfigPlatformMsg.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/java/j2seproject/ui/resources/info.png"))); // NOI18N
+
+            javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+            this.setLayout(layout);
+            layout.setHorizontalGroup(
+                    layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                    .addComponent(configNameLabel)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addComponent(configName, javax.swing.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                    .addComponent(defaultConfigPlatformMsg)
+                    .addGap(0, 0, Short.MAX_VALUE)))
+                    .addContainerGap()));
+            layout.setVerticalGroup(
+                    layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(defaultConfigPlatformMsg)
+                    .addGap(18, 18, 18)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(configName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(configNameLabel))));
+            defaultConfigPlatformMsg.setVisible(showDefaultConfigMsg);
+        }
+
+        public String getConfigName() {
+            return configName.getText();
+        }
+    }
 }

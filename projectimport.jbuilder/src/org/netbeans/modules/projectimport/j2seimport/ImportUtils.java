@@ -67,6 +67,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.modules.java.api.common.SourceRoots;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seplatform.api.J2SEPlatformCreator;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
@@ -272,9 +273,9 @@ public final class ImportUtils {
         String ver = platform.getSpecification().getVersion().toString();
         String normalizedName = (String)platform.getProperties().get("platform.ant.name"); // NOI18N
         
-        prop.setProperty(J2SEProjectProperties.JAVAC_SOURCE, ver);
-        prop.setProperty(J2SEProjectProperties.JAVAC_TARGET, ver);
-        prop.setProperty(J2SEProjectProperties.JAVA_PLATFORM, normalizedName);
+        prop.setProperty(ProjectProperties.JAVAC_SOURCE, ver);
+        prop.setProperty(ProjectProperties.JAVAC_TARGET, ver);
+        prop.setProperty(ProjectProperties.PLATFORM_ACTIVE, normalizedName);
         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, prop);
     }
     

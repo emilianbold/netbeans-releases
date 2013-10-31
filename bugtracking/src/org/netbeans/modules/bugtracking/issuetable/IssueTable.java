@@ -91,10 +91,14 @@ import javax.swing.UIManager;
 import javax.swing.event.TableColumnModelListener;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
-import org.netbeans.modules.bugtracking.*;
+import org.netbeans.modules.bugtracking.APIAccessor;
+import org.netbeans.modules.bugtracking.BugtrackingConfig;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.IssueImpl;
+import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
+import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.openide.awt.MouseUtils;
 import org.openide.explorer.view.TreeTableView;
@@ -109,11 +113,11 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
 
     private NodeTableModel  tableModel;
     private JTable          table;
-    private JPanel     component;
+    private final JPanel     component;
 
-    private TableSorter     sorter;
+    private final TableSorter     sorter;
 
-    private QueryImpl query;
+    private final QueryImpl query;
     private ColumnDescriptor[] descriptors;
 
     private Filter allFilter;
@@ -122,7 +126,7 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
     private Filter[] filters;
     private Set<IssueNode> nodes = new HashSet<IssueNode>();
 
-    private QueryTableHeaderRenderer queryTableHeaderRenderer;
+    private final QueryTableHeaderRenderer queryTableHeaderRenderer;
 
     private Task storeColumnsTask;
     private final StoreColumnsHandler storeColumnsWidthHandler;
@@ -132,6 +136,7 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
 
     private static final String CONFIG_DELIMITER = "<=>";                       // NOI18N
     private final FindInQuerySupport findInQuerySupport;
+    private boolean isSaved;
     
     private static final Comparator<IssueProperty> nodeComparator = new Comparator<IssueProperty>() {
         @Override
@@ -151,22 +156,18 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
         }
     };
 
-    public IssueTable(Repository repository, Q q, ColumnDescriptor[] descriptors) {
-        this(repository, q, descriptors, true);
-    }
-    
-    public IssueTable(Repository repository, Q q, ColumnDescriptor[] descriptors, boolean includeObsoletes) {
+    public IssueTable(Repository repository, Q q, ColumnDescriptor[] descriptors, final boolean isSaved) {
         assert q != null;
         assert descriptors != null;
         assert descriptors.length > 0;
 
         this.query = APIAccessor.IMPL.getImpl(repository).getQuery(q);
-
-        this.descriptors = descriptors;
-        this.query.addPropertyChangeListener(this);
-        this.component = new JPanel();
+        this.isSaved = isSaved;
         
-        initFilters(includeObsoletes);
+        this.descriptors = descriptors;
+        this.component = new TablePanel();
+        
+        initFilters();
 
         /* table */
         tableModel = new NodeTableModel();
@@ -188,6 +189,7 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
         colsButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(TreeTableView.class, "ACD_ColumnsSelector")); //NOI18N
         colsButton.addActionListener(
             new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent evt) {
                     if(tableModel.selectVisibleColumns()) {
                         setDefaultColumnSizes();
@@ -207,7 +209,8 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
         table.addMouseListener(this);
         table.addKeyListener(this);
         table.addAncestorListener(findInQuerySupport.getAncestorListener());
-        table.setDefaultRenderer(Node.Property.class, new QueryTableCellRenderer(query.getQuery(), this));
+        cellRenderer = new QueryTableCellRenderer(query.getQuery(), this, isSaved);
+        table.setDefaultRenderer(Node.Property.class, cellRenderer);
         queryTableHeaderRenderer = new QueryTableHeaderRenderer(table.getTableHeader().getDefaultRenderer(), this, query);
         table.getTableHeader().setDefaultRenderer(queryTableHeaderRenderer);
         table.addAncestorListener(this);
@@ -246,6 +249,7 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
                                                 .getRequestProcessor()
                                                 .create(storeColumnsWidthHandler);
     }
+    private final QueryTableCellRenderer cellRenderer;
 
     private void initComponents(JScrollPane tablePane, FindInQueryBar findBar) {
         GroupLayout layout = new GroupLayout(component);
@@ -345,10 +349,13 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals(QueryProvider.EVENT_QUERY_SAVED)) {
+        if(evt.getPropertyName().equals(QueryController.PROPERTY_QUERY_SAVED)) {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
+                    isSaved = true;
+                    cellRenderer.setSaved(true);
+                    queryTableHeaderRenderer.setSaved(true);
                     initColumns();
                 }
             });
@@ -365,8 +372,6 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
 
     /**
      * Sets visible columns in the Versioning table.
-     *
-     * @param columns array of column names, they must be one of SyncFileNode.COLUMN_NAME_XXXXX constants.
      */
     public final void initColumns() {
         if(savedQueryInitialized) {
@@ -393,7 +398,7 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
             }
         }
         setDefaultColumnSizes();
-        if(query.isSaved()) {
+        if(isSaved) {
             savedQueryInitialized = true;
         }
     }
@@ -435,14 +440,10 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
         return map;
     }
 
-    private void initFilters(boolean includeObsoletes) {
+    private void initFilters() {
         allFilter = Filter.getAllFilter(query);
         newOrChangedFilter = Filter.getNotSeenFilter(query);
-        if(includeObsoletes) {
-            filters = new Filter[]{allFilter, newOrChangedFilter, Filter.getObsoleteDateFilter(query), Filter.getAllButObsoleteDateFilter(query)};
-        } else {
-            filters = new Filter[]{allFilter, newOrChangedFilter};
-        }
+        filters = new Filter[]{allFilter, newOrChangedFilter};
         filter = allFilter;
     }
     
@@ -609,13 +610,13 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
                             setWidthForFit(i);
                         }
                     }
-                    if(query.isSaved()) {
+                    if(isSaved) {
                         int w = UIUtils.getColumnWidthInPixels(25, table);
                         setColumnWidth(getRecentChangesColumnIdx(), w);
                     }
                 }
 
-                if(query.isSaved()) {
+                if(isSaved) {
                     int seenIdx = getSeenColumnIdx();
                     table.getColumnModel().getColumn(seenIdx).setMaxWidth(28);
                     table.getColumnModel().getColumn(seenIdx).setPreferredWidth(28);
@@ -670,13 +671,13 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
     public void ancestorRemoved(AncestorEvent event) { }
 
     private void setModelProperties() {
-        List<ColumnDescriptor> properties = new ArrayList<ColumnDescriptor>(descriptors.length + (query.isSaved() ? 2 : 0));
+        List<ColumnDescriptor> properties = new ArrayList<ColumnDescriptor>(descriptors.length + (isSaved ? 2 : 0));
         int i = 0;
         for (; i < descriptors.length; i++) {
             ColumnDescriptor desc = descriptors[i];
             properties.add(desc);
         }
-        if(query.isSaved()) {
+        if(isSaved) {
             properties.add(new RecentChangesDescriptor());
             properties.add(new SeenDescriptor());
         }
@@ -884,5 +885,22 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
         }
     };
 
+    private class TablePanel extends JPanel {
+
+        @Override
+        public void addNotify() {
+            query.getController().removePropertyChangeListener(IssueTable.this);
+            query.getController().addPropertyChangeListener(IssueTable.this);
+            super.addNotify(); 
+        }
+        
+        @Override
+        public void removeNotify() {
+            query.getController().removePropertyChangeListener(IssueTable.this);
+            super.addNotify(); 
+        }
+        
+    }
+    
 }
 

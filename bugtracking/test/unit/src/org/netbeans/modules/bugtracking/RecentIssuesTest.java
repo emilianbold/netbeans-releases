@@ -233,20 +233,8 @@ public class RecentIssuesTest extends NbTestCase {
         public RepositoryInfo getInfo() {
             return info;
         }
-        
-        public Image getIcon() { throw new UnsupportedOperationException("Not supported yet."); }
-        public Lookup getLookup() { throw new UnsupportedOperationException("Not supported yet."); }
-        public TestIssue[] getIssues(String[] id) { throw new UnsupportedOperationException("Not supported yet."); }
-        public void remove() { throw new UnsupportedOperationException("Not supported yet."); }
-        public RepositoryController getController() { throw new UnsupportedOperationException("Not supported yet.");}
-        public TestQuery createQuery() { throw new UnsupportedOperationException("Not supported yet.");}
-        public TestIssue createIssue() {throw new UnsupportedOperationException("Not supported yet.");}
-        public Collection<TestQuery> getQueries() {throw new UnsupportedOperationException("Not supported yet.");}
-        public Collection<TestIssue> simpleSearch(String criteria) {throw new UnsupportedOperationException("Not supported yet.");}
-        public void removePropertyChangeListener(PropertyChangeListener listener) {}
-        public void addPropertyChangeListener(PropertyChangeListener listener) {}
     }
-
+        
     private class RITestIssue extends TestIssue {
         private final String name;
         private final RITestRepository repository;
@@ -272,31 +260,9 @@ public class RecentIssuesTest extends NbTestCase {
         public String getID() {
             return name;
         }
-        public boolean refresh() {throw new UnsupportedOperationException("Not supported yet.");}
-        public void addComment(String comment, boolean closeAsFixed) {throw new UnsupportedOperationException("Not supported yet.");}
-        public void attachPatch(File file, String description) {throw new UnsupportedOperationException("Not supported yet.");}
-        public BugtrackingController getController() {throw new UnsupportedOperationException("Not supported yet.");}
-        public IssueNode getNode() {throw new UnsupportedOperationException("Not supported yet.");}
-        public Map<String, String> getAttributes() {throw new UnsupportedOperationException("Not supported yet.");}
-        public void setContext(Node[] nodes) {throw new UnsupportedOperationException("Not supported yet.");}
-        public void removePropertyChangeListener(PropertyChangeListener listener) {throw new UnsupportedOperationException("Not supported yet.");}
-        public void addPropertyChangeListener(PropertyChangeListener listener) {throw new UnsupportedOperationException("Not supported yet.");}
-        public TestIssue createFor(String id) {throw new UnsupportedOperationException("Not supported yet.");}
-        public String[] getSubtasks() {throw new UnsupportedOperationException("Not supported yet.");}
-
-        @Override
-        public IssueStatusProvider.Status getStatus() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public void setSeen(boolean seen) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
     }
 
-    private class RITestConector extends BugtrackingConnector {
+    private class RITestConector implements BugtrackingConnector {
         @Override
         public Repository createRepository(RepositoryInfo info) {
             throw new UnsupportedOperationException("Not supported yet.");

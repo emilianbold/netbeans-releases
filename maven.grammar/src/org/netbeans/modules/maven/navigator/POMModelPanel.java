@@ -71,6 +71,7 @@ import org.apache.maven.model.Model;
 import org.apache.maven.model.Parent;
 import org.apache.maven.model.building.ModelBuildingException;
 import org.apache.maven.model.building.ModelProblem;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
@@ -100,6 +101,8 @@ import org.w3c.dom.NodeList;
  * @author  mkleint
  */
 public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager.Provider, Runnable, CaretListener {
+    private static final @StaticResource String FILTER_HIDE = "org/netbeans/modules/maven/navigator/filterHideFields.gif";
+    private static final @StaticResource String SORT_ALPHA = "org/netbeans/modules/maven/navigator/sortAlpha.png";
 
     private static final Logger LOG = Logger.getLogger(POMModelPanel.class.getName());
 
@@ -728,7 +731,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
     private class ShowUndefinedAction extends AbstractAction {
 
         public ShowUndefinedAction() {
-            putValue(SMALL_ICON, ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/navigator/filterHideFields.gif"))); //NOI18N
+            putValue(SMALL_ICON, ImageUtilities.image2Icon(ImageUtilities.loadImage(FILTER_HIDE))); //NOI18N
             putValue(SHORT_DESCRIPTION, org.openide.util.NbBundle.getMessage(POMModelPanel.class, "DESC_FilterUndefined"));
         }
 
@@ -745,7 +748,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
     private class SortListsAction extends AbstractAction {
 
         public SortListsAction() {
-            putValue(SMALL_ICON, ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/navigator/sortAlpha.png"))); //NOI18N
+            putValue(SMALL_ICON, ImageUtilities.image2Icon(ImageUtilities.loadImage(SORT_ALPHA))); //NOI18N
             putValue(SHORT_DESCRIPTION, org.openide.util.NbBundle.getMessage(POMModelPanel.class, "DESC_SortLists"));
         }
 

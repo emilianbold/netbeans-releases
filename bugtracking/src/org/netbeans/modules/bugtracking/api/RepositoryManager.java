@@ -54,7 +54,7 @@ import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 
 /**
- * Providing access to registered {@link Repository}-s and related functionality.
+ * Manages registered {@link Repository}-s and related functionality.
  * 
  * @author Tomas Stupka
  */
@@ -84,6 +84,7 @@ public final class RepositoryManager {
     
     /**
      * Returns the only existing <code>RepositoryManager</code> instance.
+     * 
      * @return a RepositoryManager
      */
     public static synchronized RepositoryManager getInstance() {
@@ -113,9 +114,9 @@ public final class RepositoryManager {
     
     /**
      * Returns all registered repositories, including those which are
-     * currently opened in a logged in team severs dashboards.
+     * currently opened in a logged in team sever dashboard.
      * 
-     * @return 
+     * @return all known repositories
      */
     public Collection<Repository> getRepositories() {
         LinkedList<Repository> ret = new LinkedList<Repository>();
@@ -125,10 +126,10 @@ public final class RepositoryManager {
     
     /**
      * Returns all registered repositories for a connector with the given id, 
-     * including those which are currently opened in a logged in team severs dashboards.
+     * including those which are currently opened in a logged in team sever dashboard.
      * 
      * @param connectorId
-     * @return 
+     * @return all known repositories for the given connector
      */
     public Collection<Repository> getRepositories(String connectorId) {
         LinkedList<Repository> ret = new LinkedList<Repository>();
@@ -138,15 +139,16 @@ public final class RepositoryManager {
     }
     
     /**
-     * Opens the modal create repository dialog and eventually returns a repository.<br>
-     * Blocks until the dialog isn't closed. 
+     * Facility method to obtain an already registered {@link Repository} instance.
      * 
-     * @return a repository in case it was properly specified n the ui, otherwise null
+     * @param connectorId
+     * @param repositoryId
+     * @return a Repository with the given connector- and repository id or <code>null<code>.
      */
-    public Repository createRepository() {
-        RepositoryImpl repoImpl = BugtrackingUtil.createRepository(false);
-        return repoImpl != null ? repoImpl.getRepository() : null;
-    }
+    public Repository getRepository(String connectorId, String repositoryId) {
+        RepositoryImpl impl = registry.getRepository(connectorId, repositoryId);
+        return impl != null ? impl.getRepository() : null;
+    }      
     
     private Collection<Repository> toRepositories(Collection<RepositoryImpl> impls) {
         if(impls == null) {

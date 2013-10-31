@@ -118,7 +118,7 @@ public class WizardUtils {
             NewJavaProjectNameLocationStepOperator op, String version) {
         op.next();
         // "Java EE Version"
-        String javaEEVersionLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.common.project.ui.Bundle", "LBL_NWP1_J2EESpecLevel_Label");
+        String javaEEVersionLabel = Bundle.getStringTrimmed("org.netbeans.modules.javaee.project.api.ant.ui.wizard.Bundle", "LBL_NWP1_J2EESpecLevel_Label");
         JLabelOperator lblJavaEEVersion = new JLabelOperator(op, javaEEVersionLabel);
         JComboBoxOperator cboVersion = new JComboBoxOperator((JComboBox)lblJavaEEVersion.getLabelFor());
         cboVersion.selectItem(version);

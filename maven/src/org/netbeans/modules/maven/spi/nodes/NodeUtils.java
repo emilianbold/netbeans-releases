@@ -53,6 +53,7 @@ import javax.swing.UIManager;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.netbeans.modules.maven.spi.IconResources;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
@@ -94,8 +95,8 @@ public class NodeUtils {
     private static final String OPENED_ICON_KEY_UIMANAGER = "Tree.openIcon"; // NOI18N
     private static final String ICON_KEY_UIMANAGER_NB = "Nb.Explorer.Folder.icon"; // NOI18N
     private static final String OPENED_ICON_KEY_UIMANAGER_NB = "Nb.Explorer.Folder.openedIcon"; // NOI18N
-    private static final String ICON_PATH = "org/netbeans/modules/maven/defaultFolder.gif"; // NOI18N
-    private static final String OPENED_ICON_PATH = "org/netbeans/modules/maven/defaultFolderOpen.gif"; // NOI18N
+    private static final @StaticResource String ICON_PATH = "org/netbeans/modules/maven/defaultFolder.gif"; // NOI18N
+    private static final @StaticResource String OPENED_ICON_PATH = "org/netbeans/modules/maven/defaultFolderOpen.gif"; // NOI18N
 
     // XXX could alternately register a URLMapper so that FileUtil.toFileObject works on repo files (which would be useful for making deserialization of r/o TCs work)
     /**
@@ -157,12 +158,14 @@ public class NodeUtils {
             LOG.log(Level.FINE, "Cannot find dataobject", ex);
         }
     }
-    
+
     /**
      * Icon for a dependency JAR file.
      * @since 2.37
+     * @deprecated  since 2.93, please use the version from <code>IconResources</code>
      */
-    public static final @StaticResource String ICON_DEPENDENCY_JAR = "org/netbeans/modules/maven/spi/nodes/DependencyJar.gif";
+    @Deprecated
+    public static final String ICON_DEPENDENCY_JAR = IconResources.ICON_DEPENDENCY_JAR;
 
     private NodeUtils() {}
     

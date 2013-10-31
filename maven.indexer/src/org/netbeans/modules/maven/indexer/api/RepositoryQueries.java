@@ -315,6 +315,17 @@ public final class RepositoryQueries {
     public static Result<NBVersionInfo> getRecordsResult(String groupId, String artifactId, String version, @NullAllowed List<RepositoryInfo> repos) {
         return findBaseQueries().getRecords(groupId, artifactId, version, repos);
     }
+    
+    /**
+     * returns list of GAV (groupId:artifactId:version) of artifacts with the given packaging. Not adviseable to run on "jar" packaging or "pom".
+     * @param packaging
+     * @param repos
+     * @return 
+     * @since 2.28
+     */
+    public static Result<String> getGAVsForPackaging(String packaging, @NullAllowed List<RepositoryInfo> repos) {
+        return findBaseQueries().getGAVsForPackaging(packaging, repos);
+    }    
 
     
     /**

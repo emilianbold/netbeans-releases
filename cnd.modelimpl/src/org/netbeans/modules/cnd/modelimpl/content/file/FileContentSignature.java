@@ -183,7 +183,7 @@ public final class FileContentSignature {
         ListIterator<KindAndSignature> e2 = second.signature.listIterator();
         boolean changed = false;
         boolean changeCanAffectIncludes = false;
-        char inclKind = Utils.getCsmIncludeKindKey().charAt(0);
+        char inclKind = Utils.getCsmIncludeKindKey();
         while (e1.hasNext() && e2.hasNext()) {
             KindAndSignature o1 = e1.next();
             KindAndSignature o2 = e2.next();
@@ -296,11 +296,10 @@ public final class FileContentSignature {
         private final CharSequence delegate;
         private final char kind;
 
-        public CharAndCharSequence(CharSequence delegate, String kind) {
+        public CharAndCharSequence(CharSequence delegate, char kind) {
             assert delegate != null;
             this.delegate = delegate;
-            assert kind.length() == 1 : kind;
-            this.kind = kind.charAt(0);
+            this.kind = kind;
         }
 
         @Override
@@ -354,10 +353,7 @@ public final class FileContentSignature {
             if (!this.delegate.equals(other.delegate)) {
                 return false;
             }
-            if (this.kind != other.kind) {
-                return false;
-            }
-            return true;
+            return this.kind == other.kind;
         }
 
         @Override
@@ -375,13 +371,12 @@ public final class FileContentSignature {
         private final CharSequence signature;
         private final CharSequence extra;
 
-        public MacroCharSequence(CharSequence sig, CharSequence extra, String kind) {
+        public MacroCharSequence(CharSequence sig, CharSequence extra, char kind) {
             assert sig != null;
             this.signature = sig;
             assert extra != null;
             this.extra = extra;
-            assert kind.length() == 1 : kind;
-            assert kind.charAt(0) == 'M' : kind + " instead of M";
+            assert kind == 'M' : kind + " instead of M";
         }
         
         @Override

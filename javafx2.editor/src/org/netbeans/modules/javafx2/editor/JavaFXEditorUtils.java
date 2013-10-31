@@ -59,6 +59,7 @@ public final class JavaFXEditorUtils {
      * The FXML ns URI
      */
     public static final String FXML_FX_NAMESPACE = "http://javafx.com/fxml"; // NOI18N
+    public static final String FXML_FX_NAMESPACE_CURRENT = "http://javafx.com/fxml/1"; // NOI18N
     public static final String FXML_FX_PREFIX = "fx"; // NOI18N
     
     public static final String FXML_MIME_TYPE = "text/x-fxml+xml"; // NOI18N

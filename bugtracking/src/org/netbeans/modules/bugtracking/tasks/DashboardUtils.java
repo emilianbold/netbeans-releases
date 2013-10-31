@@ -43,14 +43,19 @@ package org.netbeans.modules.bugtracking.tasks;
 
 import java.awt.Font;
 import java.awt.FontMetrics;
+import java.awt.Image;
 import java.io.CharConversionException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Level;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
@@ -58,6 +63,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
+import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.tasks.cache.DashboardStorage;
 import org.netbeans.modules.bugtracking.tasks.cache.TaskEntry;
@@ -66,10 +72,13 @@ import org.netbeans.modules.bugtracking.tasks.dashboard.DashboardViewer;
 import org.netbeans.modules.bugtracking.tasks.dashboard.RepositoryNode;
 import org.netbeans.modules.bugtracking.tasks.dashboard.TaskNode;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.netbeans.modules.team.ide.spi.IDEServices;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.FindAction;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
 import org.openide.xml.XMLUtil;
@@ -83,8 +92,15 @@ public class DashboardUtils {
     private final static int VISIBLE_START_CHARS = 5;
     private final static String BOLD_START_SUBSTITUTE = "$$$BOLD_START$$$"; //NOI18
     private final static String BOLD_END_SUBSTITUTE = "$$$BOLD_END$$$"; //NOI18
-    private static final String newColor = UIUtils.getColorString(UIUtils.getTaskNewColor());
-    private static final String modifiedColor = UIUtils.getColorString(UIUtils.getTaskModifiedColor());
+    private static final String NEW_COLOR = UIUtils.getColorString(UIUtils.getTaskNewColor());
+    private static final String mODIFIED_COLOR = UIUtils.getColorString(UIUtils.getTaskModifiedColor());
+
+    private static final Image SCHEDULE_ICON = ImageUtilities.loadImage("org/netbeans/modules/bugtracking/tasks/resources/schedule.png", true); //NOI18
+    private static final Image SCHEDULE_WARNING_ICON = ImageUtilities.loadImage("org/netbeans/modules/bugtracking/tasks/resources/schedule_warning.png", true); //NOI18
+
+    private static final int SCHEDULE_NOT_IN_SCHEDULE = 0;
+    private static final int SCHEDULE_IN_SCHEDULE = 1;
+    private static final int SCHEDULE_AFTER_DUE = 2;
 
     public static String getCategoryDisplayText(CategoryNode categoryNode) {
         String categoryName = categoryNode.getCategory().getName();
@@ -130,10 +146,6 @@ public class DashboardUtils {
             html = true;
         }
 
-        try {
-            activeText = XMLUtil.toElementContent(activeText);
-        } catch (CharConversionException ex) {
-        }
         activeText = replaceSubstitutes(activeText);
         if (task.isFinished()) {
             activeText = "<strike>" + activeText + "</strike>"; //NOI18N
@@ -183,13 +195,25 @@ public class DashboardUtils {
 
     private static String getTaskAnotatedText(String text, IssueStatusProvider.Status status, boolean hasFocus, boolean isHTML) {
         if (status == IssueStatusProvider.Status.INCOMING_NEW && !hasFocus) {
-            text = "<html><font color=\"" + newColor + "\">" + text + "</font></html>"; //NOI18N
+            text = escapeXmlChars(text);
+            text = "<html><font color=\"" + NEW_COLOR + "\">" + text + "</font></html>"; //NOI18N
         } else if (status == IssueStatusProvider.Status.INCOMING_MODIFIED && !hasFocus) {
-            text = "<html><font color=\"" + modifiedColor + "\">" + text + "</font></html>"; //NOI18N
+            text = escapeXmlChars(text);
+            text = "<html><font color=\"" + mODIFIED_COLOR + "\">" + text + "</font></html>"; //NOI18N
         } else if (isHTML) {
+            text = escapeXmlChars(text);
             text = "<html>" + text + "</html>"; //NOI18N
         }
         return text;
+    }
+
+    private static String escapeXmlChars(String text) {
+        String result = text;
+        try {
+            result = XMLUtil.toElementContent(text);
+        } catch (CharConversionException ex) {
+        }
+        return result;
     }
 
     private static String getTaskDisplayName(IssueImpl task) {
@@ -322,5 +346,143 @@ public class DashboardUtils {
             }
         }
         return null;
+    }
+
+    public static Icon getTaskIcon(IssueImpl issue) {
+        Image priorityIcon = issue.getPriorityIcon();
+        Image scheduleIcon = getScheduleIcon(issue);
+        if (scheduleIcon != null) {
+            return ImageUtilities.image2Icon(ImageUtilities.mergeImages(priorityIcon, scheduleIcon, 0, 0));
+        }
+        return ImageUtilities.image2Icon(priorityIcon);
+    }
+
+    public static int getScheduleIndex(IssueImpl issue) {
+        boolean afterDue = isAfterDue(issue);
+        boolean scheduleNow = isInSchedule(issue);
+        if (afterDue) {
+            return SCHEDULE_AFTER_DUE;
+        } else if (scheduleNow) {
+            return SCHEDULE_IN_SCHEDULE;
+        }
+        return SCHEDULE_NOT_IN_SCHEDULE;
+    }
+
+    private static Image getScheduleIcon(IssueImpl issue) {
+        boolean afterDue = isAfterDue(issue);
+        boolean scheduleNow = isInSchedule(issue);
+        if (afterDue) {
+            return SCHEDULE_WARNING_ICON;
+        } else if (scheduleNow) {
+            return SCHEDULE_ICON;
+        }
+        return null;
+    }
+
+    private static boolean isAfterDue(IssueImpl issue) {
+        Calendar now = Calendar.getInstance();
+        Date dueDate = issue.getDueDate();
+        return dueDate == null ? false : now.getTime().getTime() >= dueDate.getTime();
+    }
+
+    private static boolean isInSchedule(IssueImpl issue) {
+        Calendar now = Calendar.getInstance();
+        IssueScheduleInfo scheduleInfo = issue.getSchedule();
+        if (scheduleInfo == null) {
+            return false;
+        }
+        Calendar scheduleStart = Calendar.getInstance();
+        scheduleStart.setTime(scheduleInfo.getDate());
+
+        Calendar scheduleEnd = Calendar.getInstance();
+        scheduleEnd.setTime(scheduleInfo.getDate());
+        scheduleEnd.add(Calendar.DATE, scheduleInfo.getInterval());
+
+        if (now.getTimeInMillis() >= scheduleStart.getTimeInMillis() && now.getTimeInMillis() <= scheduleEnd.getTimeInMillis()) {
+            return true;
+        }
+        return false;
+    }
+
+    public static int compareTaskIds(String id1, String id2) {
+        int id = 0;
+        boolean isIdNumeric = true;
+        try {
+            id = Integer.parseInt(id1);
+        } catch (NumberFormatException numberFormatException) {
+            isIdNumeric = false;
+        }
+        int idOther = 0;
+        boolean isIdOtherNumberic = true;
+        try {
+            idOther = Integer.parseInt(id2);
+        } catch (NumberFormatException numberFormatException) {
+            isIdOtherNumberic = false;
+        }
+        if (isIdNumeric && isIdOtherNumberic) {
+            return compareNumericId(id, idOther);
+        } else if (isIdNumeric) {
+            return 1;
+        } else if (isIdOtherNumberic) {
+            return -1;
+        } else {
+            return compareComplexId(id1, id2);
+        }
+    }
+
+    private static int compareNumericId(int id, int idOther) {
+        if (id < idOther) {
+            return -1;
+        } else if (id > idOther) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+
+    private static int compareComplexId(String id1, String id2) {
+        int dividerIndex1 = id1.lastIndexOf("-"); //NOI18
+        int dividerIndex2 = id2.lastIndexOf("-"); //NOI18
+        if (dividerIndex1 == -1 || dividerIndex2 == -1) {
+            DashboardViewer.LOG.log(Level.WARNING, "Unsupported ID format - id1: {0}, id2: {1}", new Object[]{id1, id2});
+            return id1.compareTo(id2);
+        }
+        String prefix1 = id1.subSequence(0, dividerIndex1).toString();
+        String suffix1 = id1.substring(dividerIndex1 + 1);
+
+        String prefix2 = id2.subSequence(0, dividerIndex2).toString();
+        String suffix2 = id2.substring(dividerIndex2 + 1);
+
+        //compare prefix, alphabetically
+        int comparePrefix = prefix1.compareTo(prefix2);
+        if (comparePrefix != 0) {
+            return comparePrefix;
+        }
+        //compare number suffix
+        int suffixInt1;
+        int suffixInt2;
+        try {
+            suffixInt1 = Integer.parseInt(suffix1);
+            suffixInt2 = Integer.parseInt(suffix2);
+        } catch (NumberFormatException nfe) {
+            //compare suffix alphabetically if it is not convertable to number
+            DashboardViewer.LOG.log(Level.WARNING, "Unsupported ID format - id1: {0}, id2: {1}", new Object[]{id1, id2});
+            return suffix1.compareTo(suffix2);
+        }
+        return compareNumericId(suffixInt1, suffixInt2);
+    }
+
+    public static boolean confirmDelete(String title, String message) {
+        NotifyDescriptor nd = new NotifyDescriptor(
+                message,
+                title,
+                NotifyDescriptor.YES_NO_OPTION,
+                NotifyDescriptor.QUESTION_MESSAGE,
+                null,
+                NotifyDescriptor.YES_OPTION);
+        if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.YES_OPTION) {
+            return true;
+        }
+        return false;
     }
 }

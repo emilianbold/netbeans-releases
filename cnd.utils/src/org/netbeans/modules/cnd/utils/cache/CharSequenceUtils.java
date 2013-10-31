@@ -259,6 +259,36 @@ public class CharSequenceUtils {
         return new String(chars);
     }
 
+    public static CharSequence concatenate(final char s1, final CharSequence s2) {
+        return new CharSequence() {
+            private final int l1 = 1;
+            private final int l2 = l1+s2.length();
+            @Override
+            public int length() {
+                return l2;
+            }
+
+            @Override
+            public char charAt(int index) {
+                if (index < l1) {
+                    return s1;
+                }
+                return s2.charAt(index-l1);
+            }
+
+            @Override
+            public CharSequence subSequence(int start, int end) {
+                return new StringBuilder(length()).append(s1).append(s2).subSequence(start, end);
+            }
+
+            @Override
+            public String toString() {
+                return new StringBuilder(length()).append(s1).append(s2).toString();
+            }
+            
+        };
+    }
+
     public static CharSequence concatenate(final CharSequence s1, final CharSequence s2) {
         return new CharSequence() {
             private final int l1 = s1.length();
@@ -288,7 +318,73 @@ public class CharSequenceUtils {
             
         };
     }
+
+    public static CharSequence concatenate(final char s1, final CharSequence s2, final CharSequence s3) {
+        return new CharSequence() {
+            private final int l1 = 1;
+            private final int l2 = l1+s2.length();
+            private final int l3 = l2+s3.length();
+
+            @Override
+            public int length() {
+                return l3;
+            }
+
+            @Override
+            public char charAt(int index) {
+                if (index < l1) {
+                    return s1;
+                } else if (index < l2) {
+                    return s2.charAt(index-l1);
+                }
+                return s3.charAt(index-l2);
+            }
+
+            @Override
+            public CharSequence subSequence(int start, int end) {
+                return new StringBuilder(length()).append(s1).append(s2).append(s3).subSequence(start, end);
+            }
+
+            @Override
+            public String toString() {
+                return new StringBuilder(length()).append(s1).append(s2).append(s3).toString();
+            }
+        };
+    }
     
+    public static CharSequence concatenate(final char s1, final char s2, final CharSequence s3) {
+        return new CharSequence() {
+            private final int l1 = 1;
+            private final int l2 = l1+1;
+            private final int l3 = l2+s3.length();
+
+            @Override
+            public int length() {
+                return l3;
+            }
+
+            @Override
+            public char charAt(int index) {
+                if (index < l1) {
+                    return s1;
+                } else if (index < l2) {
+                    return s2;
+                }
+                return s3.charAt(index-l2);
+            }
+
+            @Override
+            public CharSequence subSequence(int start, int end) {
+                return new StringBuilder(length()).append(s1).append(s2).append(s3).subSequence(start, end);
+            }
+
+            @Override
+            public String toString() {
+                return new StringBuilder(length()).append(s1).append(s2).append(s3).toString();
+            }
+        };
+    }
+
     public static CharSequence concatenate(final CharSequence s1, final CharSequence s2, final CharSequence s3) {
         return new CharSequence() {
             private final int l1 = s1.length();

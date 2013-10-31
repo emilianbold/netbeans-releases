@@ -71,6 +71,7 @@ import org.openide.util.Exceptions;
  *
  * @author jhavlin
  */
+@SuppressWarnings({"rawtypes", "unchecked"})
 public final class FileNameController extends ComponentController<JComboBox> {
 
     private FileNamePatternWatcher fileNamePatternWatcher;
@@ -105,7 +106,7 @@ public final class FileNameController extends ComponentController<JComboBox> {
         component.setEditable(true);
         List<String> entries = FindDialogMemory.getDefault().getFileNamePatterns();
         if (!entries.isEmpty()) {
-            component.setModel(new ListComboBoxModel(entries, true));
+            component.setModel(new ListComboBoxModel<String>(entries, true));
         }
     }
 

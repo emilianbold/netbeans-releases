@@ -58,12 +58,12 @@ public class ShorteningCellRenderer extends DefaultListCellRenderer {
     private static final String THREE_DOTS = "...";                     //NOI18N
 
     @Override
-    public Component getListCellRendererComponent(JList list, Object value,
+    public Component getListCellRendererComponent(JList<?> list, Object value,
             int index, boolean isSelected, boolean cellHasFocus) {
         String s = value == null ? null : value.toString();
         Component component = super.getListCellRendererComponent(list,
                 s, index, isSelected, cellHasFocus);
-        if (s.length() > COMBO_TEXT_LENGHT_LIMIT
+        if (s != null && s.length() > COMBO_TEXT_LENGHT_LIMIT
                 && component instanceof JLabel) {
             ((JLabel) component).setText(s.substring(0,
                     COMBO_TEXT_LENGHT_LIMIT - THREE_DOTS.length())

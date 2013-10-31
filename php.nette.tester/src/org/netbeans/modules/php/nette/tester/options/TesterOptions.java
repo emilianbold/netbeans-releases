@@ -58,6 +58,7 @@ public final class TesterOptions {
 
     // path
     private static final String TESTER_PATH = "tester.path"; // NOI18N
+    private static final String PHP_INI_PATH = "php.ini.path"; // NOI18N
 
     private volatile boolean testerSearched = false;
 
@@ -85,6 +86,15 @@ public final class TesterOptions {
 
     public void setTesterPath(String path) {
         getPreferences().put(TESTER_PATH, path);
+    }
+
+    @CheckForNull
+    public String getPhpIniPath() {
+        return getPreferences().get(PHP_INI_PATH, null);
+    }
+
+    public void setPhpIniPath(String path) {
+        getPreferences().put(PHP_INI_PATH, path);
     }
 
     private Preferences getPreferences() {

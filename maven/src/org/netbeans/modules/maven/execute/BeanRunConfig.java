@@ -77,6 +77,7 @@ public class BeanRunConfig implements RunConfig {
     private List<String> goals;
     private String executionName;
     private Map<String,String> properties;
+    private Map<String,Object> internalProperties;
     //for these delegate to default options for defaults.
     private boolean showDebug = MavenSettings.getDefault().isShowDebug();
     private boolean showError = MavenSettings.getDefault().isShowErrors();
@@ -232,6 +233,28 @@ public class BeanRunConfig implements RunConfig {
             mp = null;
         }
     }
+    
+    @Override public final Map<? extends String,? extends Object> getInternalProperties() {
+        if (internalProperties == null) {
+            return parent != null ? parent.getInternalProperties() : Collections.<String, Object>emptyMap();
+        }
+        return Collections.unmodifiableMap(new LinkedHashMap<String,Object>(internalProperties));
+    }
+
+    @Override public final void setInternalProperty(@NonNull String key, @NullAllowed Object value) {
+        if (internalProperties == null) {
+            internalProperties = new LinkedHashMap<String,Object>();
+            if (parent != null) {
+                internalProperties.putAll(parent.getInternalProperties());
+            }
+        }
+        if (value != null) {
+            internalProperties.put(key, value);
+        } else {
+            internalProperties.remove(key);
+        }
+    }
+    
     
     @Override public final void addProperties(Map<String, String> props) {
          if (properties == null) {

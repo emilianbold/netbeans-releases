@@ -57,7 +57,7 @@ public class ParametersPanelOperator extends NbDialogOperator {
     }
     private JButtonOperator _btBack;
     private JButtonOperator _btPreview;
-    private JButtonOperator _btRefactor;
+    JButtonOperator _btRefactor;
     private JCheckBoxOperator _chbxOpenInNewTab;
 
     public JButtonOperator btBack() {

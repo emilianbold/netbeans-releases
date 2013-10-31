@@ -577,7 +577,13 @@ public class Mercurial {
             Mercurial.LOG.log(Level.FINE, " getTopmostManagedParent returns {0} after {1} millis", new Object[] { topmost, System.currentTimeMillis() - t });
         }
         if(topmost != null) {
-            knownRoots.add(topmost);
+            if (knownRoots.add(topmost)) {
+                String homeDir = System.getProperty("user.home"); //NOI18N
+                if (homeDir != null && homeDir.startsWith(topmost.getAbsolutePath())) {
+                    LOG.log(Level.WARNING, "Home folder {0} lies under a hg versioned root {1}." //NOI18N
+                            + "Expecting lots of performance issues.", new Object[] { homeDir, topmost }); //NOI18N
+                }
+            }
         }
 
         return topmost;

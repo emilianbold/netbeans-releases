@@ -90,19 +90,7 @@ public class QueryTest extends NbTestCase {
     public void testGetRepository() {
         assertEquals(getRepo(), getQuery().getRepository());
     }    
-    
-    public void testIsSaved() {
-        APITestQuery apiQuery = getAPIQuery();
-        Query query = getQuery();
         
-        apiQuery.isSaved = false;
-        assertEquals(apiQuery.isSaved(), query.isSaved());
-        assertFalse(query.isSaved());
-        apiQuery.isSaved = true;
-        assertEquals(apiQuery.isSaved(), query.isSaved());
-        assertTrue(query.isSaved());
-    }
-    
     public void testRefresh() {
         APITestQuery apiQuery = getAPIQuery();
         Query query = getQuery();
@@ -111,35 +99,13 @@ public class QueryTest extends NbTestCase {
         query.refresh();
         assertTrue(apiQuery.wasRefreshed);
     }
-    
-    public void testRemove() {
-        APITestQuery apiQuery = getAPIQuery();
-        Query query = getQuery();
         
-        apiQuery.wasRemoved = false;
-        query.remove();
-        assertTrue(apiQuery.wasRemoved);
-    }
-    
     public void testGetIssues() {
         APITestQuery apiQuery = getAPIQuery();
         Query query = getQuery();
         
         assertEquals(apiQuery.getIssues().size(), query.getIssues().size());
     }
-    
-    /**
-     * invoked from BugtrackingViewsTest
-     * @throws InterruptedException 
-     */
-    public void _testOpen() throws InterruptedException {
-        APITestQuery apiQuery = getAPIQuery();
-        Query query = getQuery();
-        
-//        assertOpen(query, apiQuery, Query.QueryMode.EDIT);
-        assertOpen(query, apiQuery, Query.QueryMode.SHOW_ALL);
-        assertOpen(query, apiQuery, Query.QueryMode.SHOW_NEW_OR_CHANGED);
-    }    
     
     public void testPCL() {
         APITestQuery apiQuery = getAPIQuery();
@@ -189,17 +155,6 @@ public class QueryTest extends NbTestCase {
                 fail("issue wasn't opened");
             }
         }
-    }
-
-    private void assertOpen(Query query, APITestQuery apiQuery, Query.QueryMode mode) throws InterruptedException {
-        apiQuery.wasOpened = false;
-        query.open(mode);
-        assertOpened(apiQuery);
-        assertEquals(mode.name(), apiQuery.openedMode.name());
-        
-        QueryTopComponent tc = QueryTopComponent.find(APIAccessor.IMPL.getImpl(query));
-        assertNotNull(tc);
-        tc.close();
     }
 
 }

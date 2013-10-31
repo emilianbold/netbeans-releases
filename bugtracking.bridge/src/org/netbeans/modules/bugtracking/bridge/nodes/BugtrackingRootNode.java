@@ -49,6 +49,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
@@ -57,7 +58,7 @@ import javax.swing.Action;
 import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
-import org.netbeans.modules.bugtracking.util.RepositoryComparator;
+import org.netbeans.modules.bugtracking.api.Util;
 import org.openide.nodes.*;
 import org.openide.util.NbBundle;
 
@@ -67,8 +68,6 @@ import org.openide.util.NbBundle;
  * @author Tomas Stupka
  */
 public class BugtrackingRootNode extends AbstractNode {
-    
-    private static final Logger LOG = Logger.getLogger(BugtrackingRootNode.class.getName());
     
     private static final String BUGTRACKING_NODE_NAME = "bugtracking";                                       // NOI18N
     private static final String ICON_BASE = "org/netbeans/modules/bugtracking/ui/resources/bugtracking.png"; // NOI18N
@@ -113,9 +112,9 @@ public class BugtrackingRootNode extends AbstractNode {
     public Action[] getActions(boolean context) {
         return new Action[] {
             new AbstractAction(NbBundle.getMessage(BugtrackingRootNode.class, "LBL_CreateRepository")) { // NOI18N
-            @Override
+                @Override
                 public void actionPerformed(ActionEvent e) {
-                    RepositoryManager.getInstance().createRepository();
+                    Util.createRepository();
                 }
             }
         };
@@ -150,15 +149,23 @@ public class BugtrackingRootNode extends AbstractNode {
             Iterator<Repository> it = repos.iterator();
             while(it.hasNext()) {
                 Repository repo = it.next();
-                if(!repo.isMutable()) {
-                    it.remove();
+                if(repo.isMutable()) {
+                    toPopulate.add(repo);
                 }
             }
             
-            toPopulate.addAll(repos);
             Collections.sort(toPopulate, new RepositoryComparator());
             return true;
         }
     }
 
+    private static class RepositoryComparator implements Comparator<Repository> {
+        @Override
+        public int compare(Repository r1, Repository r2) {
+            if(r1 == null && r2 == null) return 0;
+            if(r1 == null) return -1;
+            if(r2 == null) return 1;
+            return r1.getDisplayName().compareTo(r2.getDisplayName());
+        }
+    }
 }

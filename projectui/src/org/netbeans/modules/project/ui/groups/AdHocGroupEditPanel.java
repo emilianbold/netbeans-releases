@@ -44,6 +44,9 @@
 
 package org.netbeans.modules.project.ui.groups;
 
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+
 /**
  * Panel to configure state of an existing ad-hoc group.
  * Applicable in advanced mode.
@@ -56,10 +59,19 @@ public class AdHocGroupEditPanel extends GroupEditPanel {
     public AdHocGroupEditPanel(AdHocGroup g) {
         this.g = g;
         initComponents();
+        DocumentListener l = new DocumentListener() {
+            @Override public void insertUpdate(DocumentEvent e) {
+                firePropertyChange(PROP_READY, null, null);
+            }
+            @Override public void removeUpdate(DocumentEvent e) {
+                firePropertyChange(PROP_READY, null, null);
+            }
+            @Override public void changedUpdate(DocumentEvent e) {}
+        };
         nameField.setText(g.getName());
+        nameField.getDocument().addDocumentListener(l);
         autoSynchCheckbox.setSelected(g.isAutoSynch());
         updateSynchButton();
-        startPerformingNameChecks(nameField, g.getName());
     }
 
     @Override
@@ -161,5 +173,10 @@ public class AdHocGroupEditPanel extends GroupEditPanel {
     private javax.swing.JLabel nameLabel;
     private javax.swing.JButton synchButton;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public boolean isReady() {
+        return doCheckExistingGroups(nameField, g);
+    }
     
 }
