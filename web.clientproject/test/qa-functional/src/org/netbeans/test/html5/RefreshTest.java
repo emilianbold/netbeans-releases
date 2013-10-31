@@ -41,7 +41,7 @@
  */
 package org.netbeans.test.html5;
 
-import com.sun.glass.events.KeyEvent;
+import java.awt.event.KeyEvent;
 import java.util.HashMap;
 import java.util.logging.Logger;
 import junit.framework.Test;
