@@ -48,7 +48,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
@@ -79,29 +81,28 @@ public class JSFResourceBundlesProvider {
                 @Override
                 public List<ResourceBundle> run(JsfModel metadata) throws Exception {
                     List<Application> applications = metadata.getElements(Application.class);
-                    List<ResourceBundle> result = new ArrayList<ResourceBundle>();
+                    List<ResourceBundle> result = new ArrayList<>();
                     for (Application application : applications) {
                         for (org.netbeans.modules.web.jsf.api.facesmodel.ResourceBundle bundle : application.getResourceBundles()) {
                             if (bundle.getBaseName() == null) {
                                 continue;
                             }
-
-                            List<FileObject> files = new ArrayList<FileObject>();
+                            List<FileObject> files = new ArrayList<>();
+                            // java source source groups
                             for (SourceGroup sourceGroup : SourceGroups.getJavaSourceGroups(project)) {
-                                int lastDot = bundle.getBaseName().lastIndexOf("."); //NOI18N
-                                String parentPkg = lastDot == -1
-                                        ? bundle.getBaseName()
-                                        : bundle.getBaseName().replace(".", "/").substring(0, lastDot); //NOI18N
-                                String bundleName = bundle.getBaseName().substring(lastDot + 1);
-                                FileObject fileObject = sourceGroup.getRootFolder().getFileObject(parentPkg);
-                                if (fileObject != null && fileObject.isValid() && fileObject.isFolder()) {
-                                    for (FileObject fo : fileObject.getChildren()) {
-                                        if (fo.getName().startsWith(bundleName) && "properties".equals(fo.getExt())) { //NOI18N
-                                            files.add(fo);
-                                        }
-                                    }
+                                FileObject bundleFile = getBundleFileInSourceGroup(sourceGroup, bundle);
+                                if (bundleFile != null) {
+                                    files.add(bundleFile);
                                 }
                             }
+                            // resource source groups
+                            for (SourceGroup sourceGroup : ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_RESOURCES)) {
+                                FileObject bundleFile = getBundleFileInSourceGroup(sourceGroup, bundle);
+                                if (bundleFile != null) {
+                                    files.add(bundleFile);
+                                }
+                            }
+
                             result.add(new ResourceBundle(bundle.getBaseName(), bundle.getVar(), files));
                         }
                     }
@@ -110,13 +111,35 @@ public class JSFResourceBundlesProvider {
             });
         } catch (MetadataModelException ex) {
             LOGGER.log(Level.INFO, "Failed to read resource bundles for " + project, ex);
-        } catch (IOException ex) {
+        } catch (IOException | IllegalStateException ex) {
             LOGGER.log(Level.INFO, "Failed to read resource bundles for " + project, ex);
-        } catch (IllegalStateException ise) {
-            // thrown from xdm (underlying the jsf model) when the model is broken
-            LOGGER.log(Level.INFO, "Failed to read resource bundles for " + project, ise);
         }
         return Collections.emptyList();
+    }
+
+    private static FileObject getBundleFileInSourceGroup(SourceGroup sourceGroup, org.netbeans.modules.web.jsf.api.facesmodel.ResourceBundle bundle) {
+        int lastDelim = bundle.getBaseName().lastIndexOf("/"); //NOI18N
+        if (lastDelim <= 0) {
+            // in root folder or default package
+            String bundleName = bundle.getBaseName().substring(1);
+            return getBundleInFolder(sourceGroup.getRootFolder(), bundleName);
+        } else {
+            // in the subfolder or non-default package
+            String bundleName = bundle.getBaseName().substring(lastDelim + 1);
+            String parentFolder = bundle.getBaseName().replace(".", "/").substring(0, lastDelim); //NOI18N
+            return getBundleInFolder(sourceGroup.getRootFolder().getFileObject(parentFolder), bundleName);
+        }
+    }
+
+    private static FileObject getBundleInFolder(FileObject folder, String bundleName) {
+        if (folder != null && folder.isValid() && folder.isFolder()) {
+            for (FileObject fo : folder.getChildren()) {
+                if (fo.getName().startsWith(bundleName) && "properties".equals(fo.getExt())) { //NOI18N
+                    return fo;
+                }
+            }
+        }
+        return null;
     }
 
 }
