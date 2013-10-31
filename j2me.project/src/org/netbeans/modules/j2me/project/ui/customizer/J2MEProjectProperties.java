@@ -167,7 +167,7 @@ public final class J2MEProjectProperties {
     public static final String PROP_PLATFORM_CONFIGURATION = "platform.configuration"; //NOI18N
     public static final String PROP_PLATFORM_PROFILE = "platform.profile"; //NOI18N
     public static final String PROP_PLATFORM_APIS = "platform.apis"; //NOI18N
-    public static final String PROP_PLATFORM_BOOTCLASSPATH = "platform.bootclasspath"; //NOI18N
+    public static final String PROP_PLATFORM_BOOTCLASSPATH = "platform.bootcp"; //NOI18N
 
 
     // MODELS FOR VISUAL CONTROLS

@@ -88,7 +88,7 @@ public class J2MEProjectWizardIterator implements WizardDescriptor.ProgressInsta
     static final String OPTIONAL_API = "optionalApi"; //NOI18N
     static final String PLATFORM_BOOTCLASSPATH = "bootclasspath"; //NOI18N
     private static final long serialVersionUID = 1L;
-    private WizardType type;
+    private final WizardType type;
 
     private J2MEProjectWizardIterator(WizardType type) {
         this.type = type;
