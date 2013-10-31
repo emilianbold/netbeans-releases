@@ -13,10 +13,10 @@
 #include <ctype.h>
 #include <assert.h>
 
-static char root[PATH_MAX];
-static char temp_path[PATH_MAX];
-static char cache_path[PATH_MAX];
-static char dirtab_file_path[PATH_MAX];
+static char* root = NULL;
+static char* temp_path = NULL;
+static char* cache_path = NULL;
+static char* dirtab_file_path = NULL;
 static const char* cahe_subdir_name = "cache";
 
 static pthread_mutex_t cache_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -131,7 +131,7 @@ static bool load_impl() {
         return false;
     }
     int max_line = PATH_MAX + 40;
-    char line[max_line];
+    char *line = malloc(max_line);
     table.size = 0;
     table.next_index = 0;
     while (fgets(line, max_line, f)) {
@@ -166,6 +166,7 @@ static bool load_impl() {
             table.next_index = index + 1;
         }
     }
+    free(line);
     if (fclose(f) == 0) {
         return true;
     } else {
@@ -240,11 +241,16 @@ static void mkdir_or_die(const char *path, int exit_code_fail_create, int exit_c
 
 void dirtab_init() {
 
+    root = malloc(PATH_MAX);
+    temp_path = malloc(PATH_MAX);
+    cache_path = malloc(PATH_MAX);
+    dirtab_file_path = malloc(PATH_MAX);
+
     const char* home = get_home_dir();
     if (!home) {
         exit(FAILURE_GETTING_HOME_DIR);
     }
-    strncpy(root, home, sizeof(root));
+    strncpy(root, home, PATH_MAX);
 
     strcat(root, "/.netbeans");    
     mkdir_or_die(root, FAILURE_CREATING_STORAGE_SUPER_DIR, FAILURE_ACCESSING_STORAGE_SUPER_DIR);
@@ -266,6 +272,25 @@ void dirtab_init() {
     
     init_table();
     load_table();
+}
+
+void dirtab_free() {
+    mutex_lock(&table.mutex);
+    for (int i = 0; i < table.size; i++) {
+        free(table.paths[i]);
+        table.size = 0;
+        free(table.paths);
+    }
+    mutex_unlock(&table.mutex);
+    free(root);
+    free(temp_path);
+    free(cache_path);
+    free(dirtab_file_path);    
+    // just in case:
+    root = NULL;
+    temp_path = NULL;
+    cache_path = NULL;
+    dirtab_file_path = NULL;
 }
 
 void  dirtab_lock_cache_mutex() {

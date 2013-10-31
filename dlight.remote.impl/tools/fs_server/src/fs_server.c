@@ -804,6 +804,7 @@ int main(int argc, char* argv[]) {
     if (!dirtab_flush()) {
         report_error("error storing dirtab\n");
     }
+    dirtab_free();
     log_close();
     return 0;
 }

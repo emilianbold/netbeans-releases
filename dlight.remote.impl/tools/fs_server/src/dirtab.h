@@ -44,6 +44,9 @@ void dirtab_visit(bool (*visitor) (const char* path, int index, const char* cach
 
 bool dirtab_is_empty();
 
+/** frees all resources*/    
+void dirtab_free();
+
 #ifdef	__cplusplus
 }
 #endif
