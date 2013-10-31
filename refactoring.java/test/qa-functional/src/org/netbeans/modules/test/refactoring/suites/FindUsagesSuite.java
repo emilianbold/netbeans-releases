@@ -52,6 +52,6 @@ public class FindUsagesSuite {
 //                NbModuleSuite.createConfiguration(FindUsagesClassTest.class).addTest(FindUsagesMethodTest.class));
         
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(IntroduceParameterTest.class));
+                NbModuleSuite.createConfiguration(IntroduceConstantTest.class)); // HYdrGu9q
     }
 }

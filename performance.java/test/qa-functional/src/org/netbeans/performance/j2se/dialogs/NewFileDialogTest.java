@@ -41,64 +41,61 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se.dialogs;
 
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.j2se.setup.J2SESetup;
-
+import junit.framework.Test;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.actions.NewFileAction;
-import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2se.setup.J2SESetup;
 
 /**
  * Test of New File Dialog
  *
- * @author  mmirilovic@netbeans.org
+ * @author mmirilovic@netbeans.org
  */
 public class NewFileDialogTest extends PerformanceTestCase {
 
-    
-    /** Creates a new instance of NewFileDialog */
+    /**
+     * Creates a new instance of NewFileDialog
+     *
+     * @param testName test name
+     */
     public NewFileDialogTest(String testName) {
         super(testName);
         expectedTime = 1000;
-        WAIT_AFTER_OPEN=2000;
-    }
-    
-    /** Creates a new instance of NewFileDialog */
-    public NewFileDialogTest(String testName, String performanceDataName) {
-        super(testName,performanceDataName);
-        expectedTime = 1000;
-        WAIT_AFTER_OPEN=2000;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(NewFileDialogTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    /**
+     * Creates a new instance of NewFileDialog
+     *
+     * @param testName test name
+     * @param performanceDataName data name
+     */
+    public NewFileDialogTest(String testName, String performanceDataName) {
+        super(testName, performanceDataName);
+        expectedTime = 1000;
     }
-    
+
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(J2SESetup.class, "testCloseMemoryToolbar")
+                .addTest(NewFileDialogTest.class)
+                .suite();
+    }
+
     public void testNewFileDialog() {
         doMeasurement();
     }
-    
+
+    @Override
     public void prepare() {
-        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.QUEUE_MODEL_MASK);
     }
-    
+
+    @Override
     public ComponentOperator open() {
         new NewFileAction().performMenu();
         return new NewFileWizardOperator();
     }
-
-    public void close() {
-        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
-    }
-    
 }

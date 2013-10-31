@@ -50,7 +50,7 @@ import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
+import org.netbeans.modules.bugtracking.ui.repository.RepositoryComboSupport;
 import org.openide.util.Lookup;
 
 /**

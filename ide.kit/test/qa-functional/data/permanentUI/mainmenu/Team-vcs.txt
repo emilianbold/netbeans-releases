@@ -8,7 +8,7 @@ Checkout >              K
 Revert Modifications... R
 Show Annotations        N
 Show History            H
-Resolve Conflicts >     F
+Resolve Conflicts       F
 ===================
 Ignore          >       I
 Patches         >       P

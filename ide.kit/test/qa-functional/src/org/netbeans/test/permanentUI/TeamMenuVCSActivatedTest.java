@@ -74,7 +74,7 @@ public class TeamMenuVCSActivatedTest extends MainMenuTestCase {
                 addTest(TeamMenuVCSActivatedTest.class, "testTeam_IgnoreSubMenu").
                 addTest(TeamMenuVCSActivatedTest.class, "testTeam_PatchesSubMenu").
                 addTest(TeamMenuVCSActivatedTest.class, "testTeam_BranchTagSubMenu").
-                addTest(TeamMenuVCSActivatedTest.class, "testTeam_QueuesSubMenu").
+                //no more in 8.0 addTest(TeamMenuVCSActivatedTest.class, "testTeam_QueuesSubMenu").
                 addTest(TeamMenuVCSActivatedTest.class, "testTeam_RemoteSubMenu").
                 addTest(TeamMenuVCSActivatedTest.class, "testTeam_RecoverSubMenu").
                 addTest(TeamMenuVCSActivatedTest.class, "testTeam_OtherVCSSubMenu").
@@ -85,7 +85,14 @@ public class TeamMenuVCSActivatedTest extends MainMenuTestCase {
 
     @Override
     public void initialize() throws IOException {
-        openVersioningJavaEEProject("SampleProject");
+        String projectName = "SampleProject";
+        openDataProjects(projectName);
+        waitScanFinished();
+        ProjectRootNode projectNode = new ProjectsTabOperator().getProjectRootNode(projectName);
+        projectNode.select();
+        if (!isVersioningProject()) {
+            versioningActivation(projectNode);
+        }
     }
 
     @Override
@@ -94,7 +101,8 @@ public class TeamMenuVCSActivatedTest extends MainMenuTestCase {
     }
 
     @Override
-    protected void tearDown() throws Exception {}
+    protected void tearDown() throws Exception {
+    }
 
     public void testTeamMenu() {
         oneMenuTest("Team");
@@ -116,9 +124,11 @@ public class TeamMenuVCSActivatedTest extends MainMenuTestCase {
         oneSubMenuTest("Team|Branch/Tag", false);
     }
 
-    public void testTeam_QueuesSubMenu() {
+/** no mor ein 8.0
+ * public void testTeam_QueuesSubMenu() {
         oneSubMenuTest("Team|Queues", false);
     }
+    */ 
 
     public void testTeam_RemoteSubMenu() {
         Utilities.projectName = "core-main";
@@ -127,7 +137,7 @@ public class TeamMenuVCSActivatedTest extends MainMenuTestCase {
 
     public void testTeam_RecoverSubMenu() {
         Utilities.projectName = "core-main";
-        oneSubMenuTest("Team|Recover", false);
+        oneSubMenuTest("Team|Revert/Recover", false);
     }
 
     public void testTeam_OtherVCSSubMenu() {
@@ -136,24 +146,6 @@ public class TeamMenuVCSActivatedTest extends MainMenuTestCase {
 
     public void testTeam_HistorySubMenu() {
         oneSubMenuTest("Team|History", true);
-    }
-
-    /**
-     * Create new Java EE project in default path.
-     *
-     * @param projectName Name of project.
-     * @return name of currently created project.
-     * @throws java.io.IOException
-     */
-    public boolean openVersioningJavaEEProject(String projectName) throws IOException {
-        openDataProjects(projectName);
-        waitScanFinished();
-        ProjectRootNode projectNode = new ProjectsTabOperator().getProjectRootNode(projectName);
-        projectNode.select();
-        if (!isVersioningProject()) {
-            versioningActivation(projectNode);
-        }
-        return true;
     }
 
     /**

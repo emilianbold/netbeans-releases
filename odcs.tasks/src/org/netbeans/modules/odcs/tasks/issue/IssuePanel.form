@@ -35,30 +35,23 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="addCommentWarning" min="-2" pref="16" max="-2" attributes="0"/>
-                                  <Component id="summaryWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                  <Component id="externalWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                  <Component id="subtaskWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                  <Component id="issueTypeWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                  <Component id="statusWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                  <Component id="priorityWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                  <Component id="keywordsWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                  <Component id="foundInWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                  <Component id="dueDateWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                  <Component id="ownerWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                  <Component id="ccWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                  <Component id="parentWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                  <Component id="descriptionWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="1" attributes="0">
-                              <Component id="attachmentsWarning" min="-2" pref="16" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
-                          </Group>
+                          <Component id="addCommentWarning" min="-2" pref="16" max="-2" attributes="0"/>
+                          <Component id="summaryWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                          <Component id="externalWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                          <Component id="subtaskWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                          <Component id="issueTypeWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                          <Component id="statusWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                          <Component id="priorityWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                          <Component id="keywordsWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                          <Component id="foundInWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                          <Component id="dueDateWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                          <Component id="ownerWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                          <Component id="ccWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                          <Component id="parentWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                          <Component id="descriptionWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                          <Component id="attachmentsWarning" alignment="1" min="-2" pref="16" max="-2" attributes="0"/>
                       </Group>
+                      <EmptySpace min="5" pref="5" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="addCommentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="descriptionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -179,8 +172,6 @@
                                   <Component id="ownerCombo" linkSize="3" alignment="0" min="-2" pref="167" max="-2" attributes="0"/>
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="submitButton" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="btnSaveChanges" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="cancelButton" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
@@ -337,7 +328,6 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="submitButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="cancelButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="btnSaveChanges" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="btnDeleteTask" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -1091,23 +1081,6 @@
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
     </Container>
-    <Component class="javax.swing.JButton" name="btnSaveChanges">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/odcs/tasks/issue/Bundle.properties" key="IssuePanel.btnSaveChanges.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/odcs/tasks/issue/Bundle.properties" key="IssuePanel.btnSaveChanges.TTtext" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-        <Property name="enabled" type="boolean" value="false"/>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnSaveChangesActionPerformed"/>
-      </Events>
-      <AuxValues>
-        <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
-      </AuxValues>
-    </Component>
     <Component class="javax.swing.JButton" name="btnDeleteTask">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">

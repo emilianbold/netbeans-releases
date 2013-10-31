@@ -55,6 +55,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.modules.project.ui.OpenProjectListSettings;
 import org.netbeans.modules.project.ui.ProjectChooserAccessory;
+import org.netbeans.modules.project.ui.ProjectTab;
 import org.netbeans.modules.project.ui.ProjectUtilities;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -140,47 +141,51 @@ public class OpenProject extends BasicAction {
             if( projectDirs != null ) {
                 RP.post(new Runnable() {
                     @Override public void run() {
-                ArrayList<Project> projects = new ArrayList<Project>( projectDirs.length );
-                for (File d : projectDirs) {
-                    Project p = OpenProjectList.fileToProject(FileUtil.normalizeFile(d));
-                    if ( p != null ) {
-                        projects.add( p );
-                    }
-                }
-                
-                if ( projects.isEmpty() ) {
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                NbBundle.getMessage( OpenProject.class, "MSG_notProjectDir"), // NOI18N
-                                NotifyDescriptor.WARNING_MESSAGE));
-                    EventQueue.invokeLater(new Runnable() {
-                            @Override public void run() {
-                                show(chooser);
+                        ArrayList<Project> projects = new ArrayList<Project>( projectDirs.length );
+                        for (File d : projectDirs) {
+                            Project p = OpenProjectList.fileToProject(FileUtil.normalizeFile(d));
+                            if ( p != null ) {
+                                projects.add( p );
                             }
-                        });
-                }
-                else {
-                    Project projectsArray[] = new Project[ projects.size() ];
-                    projects.toArray( projectsArray );
-                    
-                    final Project projectToExpand = projectsArray.length == 1 ? projectsArray[0] : null;
+                        }
 
-                    OpenProjectListSettings opls = OpenProjectListSettings.getInstance();
-                    OpenProjectList.getDefault().open( 
-                        projectsArray,                    // Put the project into OpenProjectList
-                        opls.isOpenSubprojects(),         // And optionaly open subprojects
-                        true,                             // open asynchronously
-                        null);
-                    opls.setLastOpenProjectDir( chooser.getCurrentDirectory().getPath() );
-                    
-                    EventQueue.invokeLater(new Runnable() {
-                            @Override public void run() {
-                    ProjectUtilities.makeProjectTabVisible();
-                    if (projectToExpand != null) {
-                        ProjectUtilities.selectAndExpandProject(projectToExpand);
-                    }
-                            }
-                        });
-                }
+                        if ( projects.isEmpty() ) {
+                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                        NbBundle.getMessage( OpenProject.class, "MSG_notProjectDir"), // NOI18N
+                                        NotifyDescriptor.WARNING_MESSAGE));
+                            EventQueue.invokeLater(new Runnable() {
+                                    @Override public void run() {
+                                        show(chooser);
+                                    }
+                            });
+                        }
+                        else {
+                            Project projectsArray[] = new Project[ projects.size() ];
+                            projects.toArray( projectsArray );
+
+                            final Project projectToExpand = projectsArray.length >= 1 ? projectsArray[0] : null;
+
+                            OpenProjectListSettings opls = OpenProjectListSettings.getInstance();
+                            OpenProjectList.getDefault().open( 
+                                projectsArray,                    // Put the project into OpenProjectList
+                                opls.isOpenSubprojects(),         // And optionaly open subprojects
+                                true,                             // open asynchronously
+                                null);
+                            opls.setLastOpenProjectDir( chooser.getCurrentDirectory().getPath() );
+
+                            EventQueue.invokeLater(new Runnable() {
+                                    @Override public void run() {
+                                        ProjectUtilities.makeProjectTabVisible();
+                                    }
+                            });
+                            ProjectTab.RP.post(new Runnable() {
+                                @Override public void run() {
+                                    if (projectToExpand != null) {
+                                        ProjectUtilities.selectAndExpandProject(projectToExpand);
+                                    }
+                                }
+                            }, 500);
+                        }
                     }
                 });
             }

@@ -126,54 +126,54 @@ public class NewProjectTest extends PermUITestCase {
         compareAndAssert(permanentCategories, actualCategories);
     }
 
-    public void testNewProjectsJava() {
+    public void testNewProjectsJava() throws InterruptedException {
         oneCategoryTest("Java");
     }
 
-    public void testNewProjectsJavaFX() {
+    public void testNewProjectsJavaFX() throws InterruptedException {
         oneCategoryTest("JavaFX");
     }
 
-    public void testNewProjectsJavaWeb() {
+    public void testNewProjectsJavaWeb() throws InterruptedException {
         oneCategoryTest("Java Web", "Java_Web");
     }
 
-    public void testNewProjectsJavaEE() {
+    public void testNewProjectsJavaEE() throws InterruptedException {
         oneCategoryTest("Java EE", "Java_EE");
     }
 
-    public void testNewProjectsHTML5() {
+    public void testNewProjectsHTML5() throws InterruptedException {
         oneCategoryTest("HTML5", "HTML5");
     }
 
-    public void testNewProjectsJavaCard() {
+    public void testNewProjectsJavaCard() throws InterruptedException {
         oneCategoryTest("Java Card", "Java_Card");
     }
 
-    public void testNewProjectsJavaME() {
+    public void testNewProjectsJavaME() throws InterruptedException {
         oneCategoryTest("Java ME", "Java_ME");
     }
 
-    public void testNewProjectsCpp() {
+    public void testNewProjectsCpp() throws InterruptedException {
         oneCategoryTest("C/C++", "Cpp");
     }
 
-    public void testNewProjectsNetBeansModules() {
+    public void testNewProjectsNetBeansModules() throws InterruptedException {
         oneCategoryTest("NetBeans Modules", "NetBeans_Modules");
 
     }
 
-    public void testNewProjectsGroovy() {
+    public void testNewProjectsGroovy() throws InterruptedException {
         oneCategoryTest("Groovy");
 
     }
 
-    public void testNewProjectsPHP() {
+    public void testNewProjectsPHP() throws InterruptedException {
         oneCategoryTest("PHP");
 
     }
 
-    public void testNewProjectsMaven() {
+    public void testNewProjectsMaven() throws InterruptedException {
         oneCategoryTest("Maven");
 
     }
@@ -186,7 +186,7 @@ public class NewProjectTest extends PermUITestCase {
      * @param newProjectOperator
      * @return
      */
-    private void oneCategoryTest(String categoryName) {
+    private void oneCategoryTest(String categoryName) throws InterruptedException {
         oneCategoryTest(categoryName, categoryName);
     }
 
@@ -199,10 +199,11 @@ public class NewProjectTest extends PermUITestCase {
      * @param newProjectOperator
      * @return
      */
-    private void oneCategoryTest(String categoryName, String goldenFileName) {
+    private void oneCategoryTest(String categoryName, String goldenFileName) throws InterruptedException {
         npwo = NewProjectWizardOperator.invoke();
         File goldenfile = getGoldenFile("newproject", goldenFileName);
         ArrayList<String> permanentProjects = Utilities.parseFileByLines(goldenfile);
+        wait(2000);
         npwo.selectCategory(categoryName);
         JListOperator jlo = npwo.lstProjects();
         ArrayList<String> actualProjects = new ArrayList<String>();
