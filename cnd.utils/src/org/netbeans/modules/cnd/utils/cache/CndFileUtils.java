@@ -57,6 +57,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.spi.utils.CndFileExistSensitiveCache;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
@@ -524,11 +525,13 @@ public final class CndFileUtils {
 
     private static ConcurrentMap<String, Flags> getFilesMap(FileSystem fs) {
         ConcurrentMap<String, Flags> map;
-        L1Cache aCache = l1Cache;
-        if (aCache != null) {
-            map = aCache.get(fs);
-            if (map != null) {
-                return map;
+        if (CndTraceFlags.L1_CACHE_FILE_UTILS) {
+            L1Cache aCache = l1Cache;
+            if (aCache != null) {
+                map = aCache.get(fs);
+                if (map != null) {
+                    return map;
+                }
             }
         }
         try {
@@ -538,7 +541,9 @@ public final class CndFileUtils {
                 map = new ConcurrentHashMap<String, Flags>();
                 mapRef = new SoftReference<ConcurrentMap<String, Flags>>(map);
                 maps.put(fs, mapRef);
-                l1Cache = new L1Cache(fs, mapRef);
+                if (CndTraceFlags.L1_CACHE_FILE_UTILS) {
+                    l1Cache = new L1Cache(fs, mapRef);
+                }
             }
         } finally {
             maRefLock.unlock();

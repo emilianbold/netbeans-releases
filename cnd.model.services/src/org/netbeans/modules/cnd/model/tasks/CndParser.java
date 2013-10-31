@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.cnd.model.tasks;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -50,6 +49,9 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmListeners;
+import org.netbeans.modules.cnd.api.model.CsmProgressListener;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -58,17 +60,21 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserFactory;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Alexander Simon
  */
-public class CndParser extends Parser {
+public class CndParser extends Parser implements CsmProgressListener {
     public final static Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.model.tasks"); //NOI18N
-    private final Collection<CsmFile> tus = new ArrayList<CsmFile>();
     private Snapshot snapshot;
+    private CsmFile csmFile;
+    private static final class Lock{}
+    private final Lock lock = new Lock();
 
     private CndParser(Collection<Snapshot> snapshots) {
+         CsmListeners.getDefault().addProgressListener(this);
     }
 
     @Override
@@ -77,11 +83,10 @@ public class CndParser extends Parser {
         if (snapshot == null) {
             return;
         }
-        this.snapshot = snapshot;
-        CsmFile csmFile = CsmUtilities.getCsmFile(snapshot.getSource().getFileObject(), true, false);
-        tus.clear();
-        if (csmFile != null) {
-            tus.add(csmFile);
+        CsmFile file = CsmUtilities.getCsmFile(snapshot.getSource().getFileObject(), true, false);
+        synchronized(lock) {
+            this.snapshot = snapshot;
+            csmFile = file;   
         }
     }
     
@@ -92,7 +97,9 @@ public class CndParser extends Parser {
 
     @Override
     public CndParserResult getResult(Task task) throws ParseException {
-        return new CndParserResult(tus, snapshot);
+        synchronized(lock) {
+            return new CndParserResult(csmFile, snapshot);
+        }
     }
 
     @Override
@@ -101,6 +108,55 @@ public class CndParser extends Parser {
 
     @Override
     public void removeChangeListener(ChangeListener changeListener) {
+    }
+
+    @Override
+    public void projectParsingStarted(CsmProject project) {
+    }
+
+    @Override
+    public void projectFilesCounted(CsmProject project, int filesCount) {
+    }
+
+    @Override
+    public void projectParsingFinished(CsmProject project) {
+    }
+
+    @Override
+    public void projectParsingCancelled(CsmProject project) {
+    }
+
+    @Override
+    public void projectLoaded(CsmProject project) {
+    }
+
+    @Override
+    public void fileInvalidated(CsmFile file) {
+    }
+
+    @Override
+    public void fileAddedToParse(CsmFile file) {
+    }
+
+    @Override
+    public void fileParsingStarted(CsmFile file) {
+    }
+
+    @Override
+    public void fileParsingFinished(CsmFile file) {
+        synchronized(lock) {
+            if (snapshot != null) {
+                FileObject fo = snapshot.getSource().getFileObject();
+                if (fo != null && fo.equals(file.getFileObject())) {
+                    LOG.log(Level.FINE, "update parse resuly for {0}", snapshot); //NOI18N
+                    csmFile = file;
+                }
+            }
+        }
+    }
+
+    @Override
+    public void parserIdle() {
     }
     
     @MimeRegistrations({

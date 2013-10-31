@@ -112,15 +112,15 @@ public class BufferedRWAccess implements FileRWAccess {
 	    buffer.flip();
 	    RepositoryDataInput in = new BufferDataInput(buffer, unitCodec);
 	    return factory.read(in);
-	}
-	catch( BufferOverflowException e ) {
+	} catch(BufferOverflowException e) {
 	    e.printStackTrace(System.err);
 	    throw e;
-	}
-	catch( BufferUnderflowException e ) {
+	} catch(BufferUnderflowException e) {
 	    e.printStackTrace(System.err);
 	    throw e;
-	}
+	} catch(IllegalArgumentException e) {
+            throw new IllegalArgumentException(e.getMessage()+". Reading "+path+" at offset "+offset+" size "+size); // NOI18N
+        }
     }
     
     @Override

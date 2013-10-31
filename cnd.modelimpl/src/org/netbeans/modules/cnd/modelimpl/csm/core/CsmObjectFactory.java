@@ -597,7 +597,7 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                 obj = ReferencesIndex.create(stream);
                 break;
             default:
-                throw new IllegalArgumentException("unknown handler" + handler);  //NOI18N
+                throw new IllegalArgumentException("Unknown handler " + handler);  //NOI18N
         }
         return obj;
     }
