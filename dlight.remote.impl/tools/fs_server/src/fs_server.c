@@ -600,6 +600,7 @@ static void *rp_loop(void *data) {
             trace("thread[%d] request #%d sz=%d kind=%c len=%d path=%s\n", 
                     thread_num, request->id, request->size, request->kind, request->len, request->path);
             process_request(request);
+            free(request);
         } else {
             if (!state_get_proceed()) {
                 break;
