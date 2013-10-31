@@ -95,12 +95,14 @@ public final class LocalTask extends AbstractLocalTask {
     private static final String NB_TASK_REFERENCE = "nb.taskreference."; //NOI18N
 
     private List<AttachmentInfo> unsavedAttachments;
+    private String tooltip = "";
 
     public LocalTask (NbTask task) {
         super(task);
         this.task = task;
         this.repository = LocalRepository.getInstance();
         support = new PropertyChangeSupport(this);
+        updateTooltip();
     }
 
     @Override
@@ -134,11 +136,61 @@ public final class LocalTask extends AbstractLocalTask {
     }
 
     private void dataChanged () {
-//        updateTooltip();
+        updateTooltip();
         fireDataChanged();
         if (controller != null) {
             controller.refreshViewData();
         }
+    }
+    
+    @NbBundle.Messages({
+        "LBL_Task.tooltip.statusLabel=Status",
+        "LBL_Task.tooltip.status.open=Open",
+        "LBL_Task.tooltip.status.completed=Completed",
+        "CTL_Issue_Scheduled_Title=Scheduled",
+        "CTL_Issue_Due_Title=Due",
+        "CTL_Issue_Estimate_Title=Estimate"
+    })
+    private boolean updateTooltip () {
+        String displayName = getDisplayName();
+        if (displayName.startsWith("#")) { //NOI18N
+            displayName = displayName.replaceFirst("#", ""); //NOI18N
+        }
+        String oldTooltip = tooltip;
+
+        String status = isFinished() ? Bundle.LBL_Task_tooltip_status_completed() : Bundle.LBL_Task_tooltip_status_open();
+
+        String scheduledLabel = Bundle.CTL_Issue_Scheduled_Title();
+        String scheduled = getScheduleDisplayString();
+
+        String dueLabel = Bundle.CTL_Issue_Due_Title();
+        String due = getDueDisplayString();
+        
+
+        String estimateLabel = Bundle.CTL_Issue_Estimate_Title();
+        String estimate = getEstimateDisplayString();
+
+        String fieldTable = "<table>" //NOI18N
+            + "<tr><td><b>" + Bundle.LBL_Task_tooltip_statusLabel() + ":</b></td><td>" + status + "</td></tr>"; //NOI18N
+
+        if (!scheduled.isEmpty()) {
+            fieldTable += "<tr><td><b>" + scheduledLabel + ":</b></td><td>" + scheduled + "</td></tr>"; //NOI18N
+        }
+        if (!due.isEmpty()) {
+            fieldTable += "<tr><td><b>" + dueLabel + ":</b></td><td>" + due + "</td></tr>"; //NOI18N
+        }
+        if (!estimate.isEmpty()) {
+            fieldTable += "<tr><td><b>" + estimateLabel + ":</b></td><td>" + estimate + "</td></tr>"; //NOI18N
+        }
+        fieldTable += "</table>"; //NOI18N
+        
+        StringBuilder sb = new StringBuilder("<html>"); //NOI18N
+        sb.append("<b>").append(displayName).append("</b>"); //NOI18N
+        sb.append("<hr>"); //NOI18N
+        sb.append(fieldTable);
+        sb.append("</html>"); //NOI18N
+        tooltip = sb.toString();
+        return !oldTooltip.equals(tooltip);
     }
 
     @Override
@@ -164,7 +216,7 @@ public final class LocalTask extends AbstractLocalTask {
     }
 
     public String getTooltip () {
-        return getDisplayName();
+        return tooltip;
     }
 
     public void addPropertyChangeListener (PropertyChangeListener listener) {
