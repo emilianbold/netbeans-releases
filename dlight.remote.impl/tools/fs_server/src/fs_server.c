@@ -316,18 +316,17 @@ static void read_entries_from_dir(array/*<fs_entry>*/ *entries, const char* path
     array_truncate(entries);
 }
 
-static bool form_entry_response(char* buf, const int buf_size, const char *abspath, const struct dirent *entry) {
+static bool form_entry_response(char* buf, const int buf_size, const char *abspath, const struct dirent *entry, char* link_buf, int link_buf_size) {
     struct stat stat_buf;
     if (lstat(abspath, &stat_buf) == 0) {
-        char link[PATH_MAX];
         bool link_flag = S_ISLNK(stat_buf.st_mode);
         if (link_flag) {
-            ssize_t sz = readlink(abspath, link, sizeof link);
+            ssize_t sz = readlink(abspath, link_buf, link_buf_size);
             if (sz == -1) {
                 report_error("error performing readlink for %s: %s\n", abspath, strerror(errno));
-                strcpy(link, "?");
+                strcpy(link_buf, "?");
             } else {
-                link[sz] = 0;
+                link_buf[sz] = 0;
             }
         }
         snprintf(buf, buf_size, "%li %s %li %li %li %li %li %li %s\n",
@@ -338,8 +337,8 @@ static bool form_entry_response(char* buf, const int buf_size, const char *abspa
                 (long) stat_buf.st_mode,
                 (long) stat_buf.st_size,
                 (long) stat_buf.st_mtime,
-                (long) (link_flag ? strlen(link) : 0),
-                (link_flag ? link : ""));
+                (long) (link_flag ? strlen(link_buf) : 0),
+                (link_flag ? link_buf : ""));
         return true;
     } else {
         report_error("error getting stat for '%s': %s\n", abspath, strerror(errno));
@@ -366,6 +365,8 @@ static void response_ls(int request_id, const char* path, bool recursive, int ne
     
     int buf_size = PATH_MAX * 2; // TODO: accurate size calculation
     char* buf = malloc(buf_size); 
+    char* abspath = malloc(PATH_MAX);
+    char* link_buf = malloc(PATH_MAX);
     d = opendir(path);
     if (d) {
         if (persistence) {
@@ -394,8 +395,7 @@ static void response_ls(int request_id, const char* path, bool recursive, int ne
                 request_id, (long) strlen(path), path, cnt);
         if (f) {
             fprintf(f, "%s\n", path);
-        }
-        char abspath[PATH_MAX];
+        }        
         int base_len = strlen(path);
         strcpy(abspath, path);
         abspath[base_len] = '/';
@@ -411,7 +411,7 @@ static void response_ls(int request_id, const char* path, bool recursive, int ne
                 continue;
             }
             strcpy(abspath + base_len + 1, entry->d_name);
-            if (form_entry_response(buf, buf_size, abspath, entry)) {
+            if (form_entry_response(buf, buf_size, abspath, entry, link_buf, PATH_MAX)) {
                 fprintf(stdout, "%c %d %s", FS_RSP_ENTRY, request_id, buf);
                 if (f) {
                     fprintf(f, "%s",buf); // trailing '\n' already there, added by form_entry_response
@@ -453,6 +453,8 @@ static void response_ls(int request_id, const char* path, bool recursive, int ne
     }
     fclose_if_not_null(f);
     closedir_if_not_null(d);
+    free(link_buf);
+    free(abspath);
     free(buf);
 }
 
