@@ -271,10 +271,11 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
 
         PHPCompletionItem.CompletionRequest request = new PHPCompletionItem.CompletionRequest();
         request.context = context;
-        final String pref = getPrefix(info, caretOffset, true, PrefixBreaker.WITH_NS_PARTS);
+        String pref = getPrefix(info, caretOffset, true, PrefixBreaker.WITH_NS_PARTS);
         if (pref == null) {
             return CodeCompletionResult.NONE;
         }
+        pref = pref.trim().isEmpty() ? completionContext.getPrefix() : pref;
 
         request.anchor = caretOffset
                 // can't just use 'prefix.getLength()' here cos it might have been calculated with
