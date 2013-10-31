@@ -143,8 +143,8 @@ public class J2MEProjectWizardIterator implements WizardDescriptor.ProgressInsta
         props.put(J2MEProjectProperties.PROP_PLATFORM_APIS, optionalApi);
         props.put(J2MEProjectProperties.PROP_PLATFORM_BOOTCLASSPATH, bootclasspath);
         if (midletClass != null && !midletClass.isEmpty()) {
-            props.put("manifest.midlets", "MIDlet-1: " + name + ", , " + midletClass + "\n"); //NOI18N
-            props.put("manifest.others", "MIDlet-Vendor: Test\nMIDlet-Name: " + name + "\nMIDlet-Version: 1.0\n"); //NOI18N
+            props.put("manifest.midlets", "MIDlet-1: " + name + ",," + midletClass + "\n"); //NOI18N
+            props.put("manifest.others", "MIDlet-Vendor: " + System.getProperty("user.name") + "\nMIDlet-Name: " + name + "\nMIDlet-Version: 1.0\n"); //NOI18N
         }
         // end of J2ME-specific properties
         handle.progress(NbBundle.getMessage(J2MEProjectWizardIterator.class, "LBL_NewJ2MEProjectWizardIterator_WizardProgress_CreatingProject"), 1); //NOI18N
