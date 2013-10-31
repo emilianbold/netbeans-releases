@@ -277,16 +277,16 @@ import org.openide.util.RequestProcessor;
             NativeProcessBuilder processBuilder = NativeProcessBuilder.newProcessBuilder(env);
             processBuilder.setExecutable(SERVER_PATH);
             List<String> args = new ArrayList<String>();
-            args.add("-t");
-            args.add("4");
-            args.add("-p");
-            args.add("-r");
+            args.add("-t"); // NOI18N
+            args.add("4"); // NOI18N
+            args.add("-p"); // NOI18N
+            args.add("-r"); // NOI18N
             args.add("" + REFRESH_INTERVAL);
             if (VERBOSE) {
-                args.add("-v");
+                args.add("-v"); // NOI18N
             }
             if (LOG) {
-                args.add("-l");
+                args.add("-l"); // NOI18N
             }
             processBuilder.setArguments(args.toArray(new String[args.size()]));
             process = processBuilder.call();
