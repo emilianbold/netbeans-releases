@@ -128,10 +128,17 @@ public final class LocalTask extends AbstractLocalTask {
         RP.post(new Runnable() {
             @Override
             public void run () {
-                fireDataChanged();
-                getTaskController().refreshViewData();
+                dataChanged();
             }
         });
+    }
+
+    private void dataChanged () {
+//        updateTooltip();
+        fireDataChanged();
+        if (controller != null) {
+            controller.refreshViewData();
+        }
     }
 
     @Override
@@ -481,9 +488,9 @@ public final class LocalTask extends AbstractLocalTask {
         super.setDueDate(date, persistChange);
         if (controller != null) {
             controller.modelStateChanged(hasUnsavedChanges());
-            if (persistChange) {
-                controller.refreshViewData();
-            }
+        }
+        if (persistChange) {
+            dataChanged();
         }
     }
     
@@ -491,9 +498,9 @@ public final class LocalTask extends AbstractLocalTask {
         super.setScheduleDate(date, persistChange);
         if (controller != null) {
             controller.modelStateChanged(hasUnsavedChanges());
-            if (persistChange) {
-                controller.refreshViewData();
-            }
+        }
+        if (persistChange) {
+            dataChanged();
         }
     }
     
@@ -501,9 +508,9 @@ public final class LocalTask extends AbstractLocalTask {
         super.setEstimate(estimate, persistChange);
         if (controller != null) {
             controller.modelStateChanged(hasUnsavedChanges());
-            if (persistChange) {
-                controller.refreshViewData();
-            }
+        }
+        if (persistChange) {
+            dataChanged();
         }
     }
 
