@@ -210,8 +210,8 @@ public final class J2MEProjectBuilder {
                             runtimeLibraries,
                             "${"+ ProjectProperties.JAVAC_CLASSPATH+"}:",   //NOI18N
                             "${"+ProjectProperties.BUILD_CLASSES_DIR+ "}"), //NOI18N
-                        platform.getProperties().get(J2MEProjectProperties.PLATFORM_ANT_NAME),
-                        sdk.getProperties().get(J2MEProjectProperties.PLATFORM_ANT_NAME),
+                        platform,
+                        sdk,
                         customProjectProperties,
                         customPrivateProperties);
                 final J2MEProject p = (J2MEProject) ProjectManager.getDefault().findProject(dirFO);
@@ -421,8 +421,8 @@ public final class J2MEProjectBuilder {
             @NullAllowed String librariesDefinition,
             @NonNull String[] compileClassPath,
             @NonNull String[] runtimeClassPath,
-            @NonNull final String platformId,
-            @NonNull final String sdkPlatform,
+            @NonNull final JavaPlatform platform,
+            @NonNull final JavaPlatform sdkPlatform,
             @NullAllowed Map<String, String> customProjectProperties,
             @NullAllowed Map<String, String> customPrivateProperties
             ) throws IOException {
@@ -498,8 +498,12 @@ public final class J2MEProjectBuilder {
         ep.setProperty(ProjectProperties.BUILD_CLASSES_EXCLUDES, "**/*.java,**/*.form"); // NOI18N
 
         //Platform
-        ep.setProperty(ProjectProperties.PLATFORM_ACTIVE, platformId);
-        ep.setProperty(J2MEProjectProperties.PLATFORM_SDK, sdkPlatform);
+        ep.setProperty(
+                ProjectProperties.PLATFORM_ACTIVE,
+                platform.getProperties().get(J2MEProjectProperties.PLATFORM_ANT_NAME));
+        ep.setProperty(
+                J2MEProjectProperties.PLATFORM_SDK,
+                sdkPlatform.getProperties().get(J2MEProjectProperties.PLATFORM_ANT_NAME));
 
         //Javadoc Properties
         ep.setProperty("dist.javadoc.dir", "${dist.dir}/javadoc"); // NOI18N
@@ -536,12 +540,27 @@ public final class J2MEProjectBuilder {
         if (customProjectProperties != null) {
             ep.putAll(customProjectProperties);
         }
-        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);        
+        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        //Platform
+        final Collection<? extends FileObject> installFolders = platform.getInstallFolders();
+        if (installFolders.isEmpty()) {
+            throw new IllegalArgumentException("The platform: " + platform.getDisplayName() + " is broken.");   //NOI18N
+        }
+        final FileObject platformFolder = platform.getInstallFolders().iterator().next();
+        if (platformFolder == null) {
+            throw new IllegalArgumentException("The platform: " + platform.getDisplayName() + " is broken.");   //NOI18N
+        }
+        final File platformDir = FileUtil.toFile(platformFolder);
+        if (platformDir == null) {
+            throw new IllegalArgumentException("Platform: " + platform.getDisplayName() + " is not on a local file system.");       //NOI18N
+        }
+        ep.setProperty(J2MEProjectProperties.PLATFORM_HOME, platformDir.getAbsolutePath());
+        //Other
         if (customPrivateProperties != null) {
-            ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-            ep.putAll(customPrivateProperties);
-            h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
-        }        
+            ep.putAll(customPrivateProperties);            
+        }
+        h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
         logUsage();
         return h;
     }

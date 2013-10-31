@@ -133,6 +133,7 @@ public class J2MEProject implements Project {
     private final Lookup lkp;
     private final SourceRoots sourceRoots;
     private final SourceRoots testRoots;
+    private volatile PlatformListener platformListener;
 
     @SuppressWarnings("LeakingThisInConstructor")
     public J2MEProject(@NonNull final AntProjectHelper helper) {
@@ -315,6 +316,8 @@ public class J2MEProject implements Project {
                         addClassPathType(ClassPath.BOOT).
                         addClassPathType(ClassPath.COMPILE).
                         addClassPathType(ClassPath.SOURCE).
+                        addOpenPostAction(newStartPlatformListenerAction()).
+                        addClosePostAction(newStopPlatformListenerAction()).
                         setBuildImplTemplate(J2MEProject.class.getResource("resources/build-impl.xsl")).    //NOI18N
                         setBuildTemplate(J2MEProject.class.getResource("resources/build.xsl")). //NOI18N
                         build()),
@@ -380,6 +383,35 @@ public class J2MEProject implements Project {
             public void run() {
                 J2MEProject.this.getLookup().lookup(CustomizerProviderImpl.class).
                     showCustomizer(J2MECompositeCategoryProvider.RUN, null);
+            }
+        };
+    }
+
+    @NonNull
+    private Runnable newStartPlatformListenerAction() {
+        return new Runnable() {
+            @Override
+            public void run() {
+                PlatformListener pl = platformListener;
+                if (pl == null) {
+                    pl = PlatformListener.create(J2MEProject.this);
+                    pl.start();
+                    platformListener = pl;
+                }
+            }
+        };
+    }
+
+    @NonNull
+    private Runnable newStopPlatformListenerAction() {
+        return new Runnable() {
+            @Override
+            public void run() {
+                PlatformListener pl = platformListener;
+                if (pl != null) {
+                    pl.stop();
+                    platformListener = null;
+                }
             }
         };
     }
