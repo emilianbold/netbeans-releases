@@ -47,7 +47,7 @@ import java.util.Set;
 import org.netbeans.modules.csl.api.InstantRenamer;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
 import org.netbeans.modules.javascript2.editor.model.OccurrencesSupport;
 import org.netbeans.modules.javascript2.editor.navigation.OccurrencesFinderImpl;
@@ -63,14 +63,20 @@ public class JsInstantRenamer implements InstantRenamer {
     public boolean isRenameAllowed(ParserResult info, int caretOffset, String[] explanationRetValue) {
         JsParserResult jsInfo = (JsParserResult)info;
         OccurrencesSupport os = jsInfo.getModel().getOccurrencesSupport();
-        Occurrence occurrence = os.getOccurrence(caretOffset);
+        Occurrence occurrence = os.getOccurrence(jsInfo.getSnapshot().getEmbeddedOffset(caretOffset));
         return occurrence != null;
     }
 
     @Override
     public Set<OffsetRange> getRenameRegions(ParserResult info, int caretOffset) {
         if (info instanceof JsParserResult) {
-            return OccurrencesFinderImpl.findOccurrenceRanges((JsParserResult)info, caretOffset);
+            JsParserResult pResult = (JsParserResult)info;
+            Set<OffsetRange> findOccurrenceRanges = OccurrencesFinderImpl.findOccurrenceRanges(pResult, info.getSnapshot().getEmbeddedOffset(caretOffset));
+            HashSet<OffsetRange> sourceRanges = new HashSet(findOccurrenceRanges.size());
+            for (OffsetRange range : findOccurrenceRanges) {
+                sourceRanges.add(LexUtilities.getLexerOffsets(pResult, range));
+            }
+            return sourceRanges;
         } else {
             return Collections.EMPTY_SET;
         }
