@@ -80,7 +80,6 @@ import org.netbeans.modules.bugtracking.tasks.dashboard.RepositoryNode;
 import org.netbeans.modules.bugtracking.tasks.dashboard.TaskNode;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.netbeans.modules.bugtracking.commons.UIUtils;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.team.ide.spi.IDEServices;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -530,7 +529,7 @@ public class DashboardUtils {
 
         public SchedulingMenu(final IssueScheduleInfo previousSchedule) {
             this.support = new ChangeSupport(this);
-            this.menu = new JMenu(NbBundle.getMessage(BugtrackingUtil.class, "LBL_ScheduleFor"));
+            this.menu = new JMenu(NbBundle.getMessage(DashboardUtils.class, "LBL_ScheduleFor"));
             this.menuItems = new ArrayList<JMenuItem>();
 
             for (int i = 0; i < 7; i++) {
@@ -538,7 +537,7 @@ public class DashboardUtils {
                 calendar.add(Calendar.DATE, i);
                 String itemName = calendar.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.LONG, Locale.getDefault());
                 if (i == 0) {
-                    itemName += " - " +NbBundle.getMessage(BugtrackingUtil.class, "CTL_Today");
+                    itemName += " - " +NbBundle.getMessage(DashboardUtils.class, "CTL_Today");
                 }
                 JMenuItem item = new JCheckBoxMenuItem(new ScheduleItemAction(itemName, new IssueScheduleInfo(calendar.getTime())));
                 menu.add(item);
@@ -549,7 +548,7 @@ public class DashboardUtils {
             Calendar calendar = Calendar.getInstance();
             calendar.set(Calendar.DAY_OF_WEEK, calendar.getFirstDayOfWeek());
             JMenuItem thisWeek = new JCheckBoxMenuItem(new ScheduleItemAction(
-                    NbBundle.getMessage(BugtrackingUtil.class, "CTL_ThisWeek"),
+                    NbBundle.getMessage(DashboardUtils.class, "CTL_ThisWeek"),
                     new IssueScheduleInfo(calendar.getTime(), 7)));
 
             menu.add(thisWeek);
@@ -559,7 +558,7 @@ public class DashboardUtils {
             calendar.set(Calendar.DAY_OF_WEEK, calendar.getFirstDayOfWeek());
             calendar.add(Calendar.DATE, 7);
             JMenuItem nextWeek = new JCheckBoxMenuItem(new ScheduleItemAction(
-                    NbBundle.getMessage(BugtrackingUtil.class, "CTL_NextWeek"),
+                    NbBundle.getMessage(DashboardUtils.class, "CTL_NextWeek"),
                     new IssueScheduleInfo(calendar.getTime(), 7)));
 
             menu.add(nextWeek);
@@ -567,7 +566,7 @@ public class DashboardUtils {
             menu.addSeparator();
 
             JMenuItem chooseDate = new JCheckBoxMenuItem(new ScheduleItemAction(
-                    NbBundle.getMessage(BugtrackingUtil.class, "CTL_ChooseDate"),
+                    NbBundle.getMessage(DashboardUtils.class, "CTL_ChooseDate"),
                     null) {
                         @Override
                         public void actionPerformed(ActionEvent e) {
@@ -582,7 +581,7 @@ public class DashboardUtils {
             menuItems.add(chooseDate);
 
             JMenuItem notScheduled = new JCheckBoxMenuItem(new ScheduleItemAction(
-                    NbBundle.getMessage(BugtrackingUtil.class, "CTL_NotScheduled"),
+                    NbBundle.getMessage(DashboardUtils.class, "CTL_NotScheduled"),
                     null));
             menu.add(notScheduled);
             menuItems.add(notScheduled);
@@ -671,7 +670,7 @@ public class DashboardUtils {
         IDEServices.DatePickerDialog dialog = createDatePickerDialog(scheduled);
         NotifyDescriptor nd = new NotifyDescriptor(
                 dialog.getComponent(),
-                NbBundle.getMessage(BugtrackingUtil.class, "LBL_ChooseDate"),
+                NbBundle.getMessage(DashboardUtils.class, "LBL_ChooseDate"),
                 NotifyDescriptor.OK_CANCEL_OPTION,
                 NotifyDescriptor.PLAIN_MESSAGE,
                 null,
