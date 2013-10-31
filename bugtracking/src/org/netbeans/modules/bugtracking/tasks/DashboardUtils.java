@@ -395,7 +395,7 @@ public class DashboardUtils {
 
         if (issue.getDueDate() != null) {
             dueDate.setTime(issue.getDueDate());
-        } else if (schedule != null){
+        } else if (schedule != null) {
             dueDate.setTime(schedule.getDate());
             dueDate.add(Calendar.DATE, schedule.getInterval());
         } else {
@@ -500,12 +500,9 @@ public class DashboardUtils {
                 NotifyDescriptor.QUESTION_MESSAGE,
                 null,
                 NotifyDescriptor.YES_OPTION);
-        if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.YES_OPTION) {
-            return true;
-        }
-        return false;
+        return DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.YES_OPTION;
     }
-    
+
     public static SchedulingMenu createScheduleMenu(IssueScheduleInfo previousSchedule) {
         return new SchedulingMenu(previousSchedule);
     }
@@ -525,7 +522,7 @@ public class DashboardUtils {
         Calendar interva2End = Calendar.getInstance();
         interva2End.setTime(interval2.getDate());
         interva2End.add(Calendar.DATE, interval2.getInterval());
-        
+
         return interval2Start.get(Calendar.YEAR) == interval1Start.get(Calendar.YEAR)
                 && interval2Start.get(Calendar.DAY_OF_YEAR) == interval1Start.get(Calendar.DAY_OF_YEAR)
                 && interva2End.get(Calendar.YEAR) == interval1End.get(Calendar.YEAR)
@@ -533,6 +530,7 @@ public class DashboardUtils {
     }
 
     public static final class SchedulingMenu {
+
         private final JMenu menu;
         private final List<JMenuItem> menuItems;
         private final ChangeSupport support;
@@ -548,7 +546,7 @@ public class DashboardUtils {
                 calendar.add(Calendar.DATE, i);
                 String itemName = calendar.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.LONG, Locale.getDefault());
                 if (i == 0) {
-                    itemName += " - " +NbBundle.getMessage(DashboardUtils.class, "CTL_Today");
+                    itemName += " - " + NbBundle.getMessage(DashboardUtils.class, "CTL_Today");
                 }
                 JMenuItem item = new JCheckBoxMenuItem(new ScheduleItemAction(itemName, new IssueScheduleInfo(calendar.getTime())));
                 menu.add(item);
@@ -656,7 +654,6 @@ public class DashboardUtils {
         }
     }
 
-
     private static class ScheduleMenuAction extends AbstractAction implements Presenter.Popup {
 
         private final JMenu menu;
@@ -701,5 +698,5 @@ public class DashboardUtils {
         if (dialog == null) {
         }
         return dialog;
-    }    
+    }
 }
