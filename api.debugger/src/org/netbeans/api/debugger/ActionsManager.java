@@ -167,6 +167,7 @@ public final class ActionsManager {
             for (i = 0; i < k; i++) {
                 ActionsProvider ap = l.get(i);
                 if (ap.isEnabled (action)) {
+                    fireActionToBeRun(action);
                     done = true;
                     ap.doAction (action);
                 }
@@ -237,6 +238,7 @@ public final class ActionsManager {
                     }
                 };
                 count[0] = k = postedActions.size();
+                fireActionToBeRun(action);
                 for (i = 0; i < k; i++) {
                     postedActions.get(i).postAction (action, notifier);
                 }
@@ -369,6 +371,27 @@ public final class ActionsManager {
 
     
     // firing support ..........................................................
+    
+    private void fireActionToBeRun(Object action) {
+        initListeners ();
+        List<ActionsManagerListener> l1;
+        synchronized (listeners) {
+            l1 = listeners.get("actionToBeRun");
+            if (l1 != null) {
+                l1 = new ArrayList<ActionsManagerListener>(l1);
+            }
+        }
+        if (l1 != null) {
+            int k = l1.size ();
+            PropertyChangeEvent e = new PropertyChangeEvent(this, "actionToBeRun", null, action);
+            for (int i = 0; i < k; i++) {
+                ActionsManagerListener aml = l1.get(i);
+                if (aml instanceof PropertyChangeListener) {
+                    ((PropertyChangeListener) aml).propertyChange(e);
+                }
+            }
+        }
+    }
 
     /**
      * Notifies registered listeners about a change.

@@ -2307,6 +2307,12 @@ public class JPDADebuggerImpl extends JPDADebugger {
                             l = Collections.singletonList(extension);
                             stratum = extension;
                         }
+                    } else if ("<eval>".equals(sourceName)) {
+                        // Check Nashorn:
+                        if ("jdk/nashorn/internal/scripts/<eval>".equals(f.getSourcePath(null))) {
+                            l = Collections.singletonList("JS");
+                            stratum = "JS";
+                        }
                     }
                 }
                 int i, k = l.size ();
