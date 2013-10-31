@@ -60,6 +60,7 @@ public class CredentialsCallback extends GitClientCallback {
     private String identityFile;
     private char[] passphrase;
     private boolean credentialsReady;
+    private String lastUri = null;
     
     @Override
     public String askQuestion (String uri, String prompt) {
@@ -82,17 +83,19 @@ public class CredentialsCallback extends GitClientCallback {
 
     @Override
     public String getUsername (String uri, String prompt) {
-        if (!credentialsReady) {
-            getCredentials(uri);
-        }
+        getCredentials(uri);
         return username;
+    }
+
+    private void getCredentials (String uri) {
+        if (!credentialsReady || !uri.equals(lastUri)) {
+            fetchCredentials(uri);
+        }
     }
 
     @Override
     public char[] getPassword (String uri, String prompt) {
-        if (!credentialsReady) {
-            getCredentials(uri);
-        }
+        getCredentials(uri);
         char[] pwd = null;
         if (password != null) {
             pwd = password.clone();
@@ -104,9 +107,7 @@ public class CredentialsCallback extends GitClientCallback {
 
     @Override
     public char[] getPassphrase (String uri, String prompt) {
-        if (!credentialsReady) {
-            getCredentials(uri);
-        }
+        getCredentials(uri);
         char[] pwd = null;
         if (passphrase != null) {
             pwd = passphrase.clone();
@@ -118,9 +119,7 @@ public class CredentialsCallback extends GitClientCallback {
 
     @Override
     public String getIdentityFile (String uri, String prompt) {
-        if (!credentialsReady) {
-            getCredentials(uri);
-        }
+        getCredentials(uri);
         return identityFile;
     }
 
@@ -131,7 +130,8 @@ public class CredentialsCallback extends GitClientCallback {
                 NotifyDescriptor.YES_NO_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE));
     }
     
-    private void getCredentials (String uri) {
+    private void fetchCredentials (String uri) {
+        lastUri = uri;
         ConnectionSettings settings = GitModuleConfig.getDefault().getConnectionSettings(uri);
         if (settings == null) {
             if (uri.endsWith("/")) {

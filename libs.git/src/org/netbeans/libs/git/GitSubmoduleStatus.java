@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,63 +37,94 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-
 package org.netbeans.libs.git;
 
-import java.io.IOException;
-import org.eclipse.jgit.api.MergeResult;
-import org.eclipse.jgit.api.RebaseResult;
-import org.eclipse.jgit.lib.RefUpdate;
-import org.eclipse.jgit.lib.RepositoryState;
+import java.io.File;
+import org.eclipse.jgit.submodule.SubmoduleStatus;
 import org.eclipse.jgit.submodule.SubmoduleStatusType;
-import org.eclipse.jgit.transport.RemoteRefUpdate;
-import org.netbeans.libs.git.jgit.AbstractGitTestCase;
 
 /**
+ * Describes current status of a repository's submodule
  *
- * @author ondra
+ * @author Ondrej Vrabec
+ * @since 1.16
  */
-public class GitEnumsStateTest extends AbstractGitTestCase {
+public final class GitSubmoduleStatus {
 
-    public GitEnumsStateTest (String testName) throws IOException {
-        super(testName);
+    private final SubmoduleStatus delegate;
+    private final StatusType statusType;
+    private final File folder;
+
+    /**
+     * Submodule's status
+     */
+    public enum StatusType {
+
+        /**
+         * Submodule's configuration is missing
+         */
+        MISSING,
+        /**
+         * Submodule's Git repository is not initialized
+         */
+        UNINITIALIZED,
+        /**
+         * Submodule's Git repository is initialized
+         */
+        INITIALIZED,
+        /**
+         * Submodule checked out commit is different than the commit referenced
+         * in the index tree
+         */
+        REV_CHECKED_OUT;
     }
 
-    public void testUpdateResult () {
-        for (RefUpdate.Result result : RefUpdate.Result.values()) {
-            assertNotNull(GitRefUpdateResult.valueOf(result.name()));
-        }
-    }
-    
-    public void testMergeStatus () {
-        for (MergeResult.MergeStatus status : MergeResult.MergeStatus.values()) {
-            assertNotNull(GitMergeResult.parseMergeStatus(status));
-        }
+    GitSubmoduleStatus (SubmoduleStatus delegate, File folder) {
+        this.delegate = delegate;
+        this.folder = folder;
+        this.statusType = parseStatus(delegate.getType());
     }
 
-    public void testRemoteUpdateStatus () {
-        for (RemoteRefUpdate.Status status : RemoteRefUpdate.Status.values()) {
-            assertNotNull(GitRefUpdateResult.valueOf(status.name()));
-        }
+    /**
+     * Returns status of the submodule
+     *
+     * @return submodule's status
+     */
+    public StatusType getStatus () {
+        return statusType;
     }
 
-    public void testRepositoryState () {
-        for (RepositoryState state : RepositoryState.values()) {
-            assertNotNull(GitRepositoryState.getStateFor(state));
-        }
+    /**
+     * Returns the submodule's root folder.
+     *
+     * @return submodule's root folder.
+     */
+    public File getSubmoduleFolder () {
+        return folder;
     }
-    
-    public void testRebaseStatus () {
-        for (RebaseResult.Status status : RebaseResult.Status.values()) {
-            assertNotNull(GitRebaseResult.parseRebaseStatus(status));
-        }
+
+    /**
+     * Returns the commit id of the currently checked-out commit.
+     *
+     * @return submodule's commit id.
+     */
+    public String getHeadId () {
+        return delegate.getHeadId().getName();
     }
-    
-    public void testSubmoduleStatus () {
-        for (SubmoduleStatusType status : SubmoduleStatusType.values()) {
-            assertNotNull(GitSubmoduleStatus.parseStatus(status));
-        }
+
+    /**
+     * Returns the commit id of the submodule entry, in other words the
+     * referenced commit.
+     *
+     * @return submodule's referenced commit id.
+     */
+    public String getReferencedCommitId () {
+        return delegate.getIndexId().getName();
+    }
+
+    static StatusType parseStatus (SubmoduleStatusType status) {
+        return StatusType.valueOf(status.name());
     }
 }
