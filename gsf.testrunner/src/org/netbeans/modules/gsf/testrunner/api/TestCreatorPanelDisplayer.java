@@ -76,10 +76,7 @@ public final class TestCreatorPanelDisplayer {
 	final DataObject[] modified = DataObject.getRegistry().getModified();
 	CommonTestsCfgOfCreate cfg = new CommonTestsCfgOfCreate(activatedNodes);
         boolean isJ2MEProject = isJ2MEProject(activatedNodes);
-	cfg.createCfgPanel(modified.length == 0 ? false : true, isJ2MEProject);
-        if (isJ2MEProject) {
-            return;
-        }
+	cfg.createCfgPanel((modified.length != 0), isJ2MEProject);
 
 	ArrayList<String> testingFrameworks = new ArrayList<String>();
 	Collection<? extends Lookup.Item<TestCreatorProvider>> providers = Lookup.getDefault().lookupResult(TestCreatorProvider.class).allItems();
