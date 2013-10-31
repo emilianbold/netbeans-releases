@@ -41,8 +41,10 @@
  */
 package org.netbeans.modules.web.jsf.editor;
 
+import java.awt.Color;
 import java.util.Map.Entry;
 import java.util.*;
+import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -61,10 +63,8 @@ import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.parsing.api.*;
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
-import org.netbeans.modules.web.common.api.LexerUtils;
+import org.netbeans.modules.web.common.api.FileReferenceCompletion;
 import org.netbeans.modules.web.common.taginfo.AttrValueType;
 import org.netbeans.modules.web.common.taginfo.LibraryMetadata;
 import org.netbeans.modules.web.common.taginfo.TagAttrMetadata;
@@ -78,6 +78,7 @@ import org.netbeans.modules.web.jsf.editor.hints.HintsRegistry;
 import org.netbeans.modules.web.jsf.editor.index.CompositeComponentModel;
 import org.netbeans.modules.web.jsf.editor.index.JsfPageModelFactory;
 import org.netbeans.modules.web.jsfapi.api.Attribute;
+import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 import org.netbeans.modules.web.jsfapi.api.JsfUtils;
 import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.api.LibraryComponent;
@@ -87,7 +88,6 @@ import org.netbeans.modules.web.jsfapi.spi.LibraryUtils;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.lexer.MutableTextInput;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 
 /**
  * XXX should be rather done by dynamic artificial embedding creation. The
@@ -100,6 +100,7 @@ import org.openide.util.Exceptions;
 public class JsfHtmlExtension extends HtmlExtension {
 
     private static final String EL_ENABLED_KEY = "el_enabled"; //NOI18N
+    private static final FilenameSupport FILENAME_SUPPORT = new FilenameSupport();
 
     @Override
     public Map<OffsetRange, Set<ColoringAttributes>> getHighlights(HtmlParserResult result, SchedulerEvent event) {
@@ -406,6 +407,9 @@ public class JsfHtmlExtension extends HtmlExtension {
         //then try to complete according to the attribute type (taken from the library descriptor)
         completeValueAccordingToType(context, items, ns, openTag, jsfs);
 
+        // completion for files in cases of ui:include src attribute
+        completeFaceletsFromProject(context, items, ns, openTag);
+
         //facets
         completeFacetsInCCImpl(context, items, ns, openTag, jsfs);
         completeFacets(context, items, ns, openTag, jsfs);
@@ -490,6 +494,16 @@ public class JsfHtmlExtension extends HtmlExtension {
             items.add(HtmlCompletionItem.createAttributeValue("false", context.getCCItemStartOffset(), !context.isValueQuoted())); //NOI18N
         }
 
+    }
+
+    private static void completeFaceletsFromProject(CompletionContext context, List<CompletionItem> items, String ns, OpenTag openTag) {
+        if (NamespaceUtils.containsNsOf(Collections.singleton(ns), DefaultLibraryInfo.FACELETS)
+                && "src".equals(context.getAttributeName())) { //NOI18N
+            items.addAll(FILENAME_SUPPORT.getItems(
+                    context.getResult().getSnapshot().getSource().getFileObject(),
+                    context.getCCItemStartOffset(),
+                    context.getPrefix()));
+        }
     }
 
     private void completeXMLNSAttribute(CompletionContext context, List<CompletionItem> items, JsfSupportImpl jsfs) {
@@ -634,6 +648,19 @@ public class JsfHtmlExtension extends HtmlExtension {
         Hint injectCC = InjectCompositeComponent.getHint(context, start, end);
         if (injectCC != null) {
             hints.add(injectCC);
+        }
+    }
+
+    private static class FilenameSupport extends FileReferenceCompletion<HtmlCompletionItem> {
+
+        @Override
+        public HtmlCompletionItem createFileItem(FileObject file, int anchor) {
+            return HtmlCompletionItem.createFileCompletionItem(file, anchor);
+        }
+
+        @Override
+        public HtmlCompletionItem createGoUpItem(int anchor, Color color, ImageIcon icon) {
+            return HtmlCompletionItem.createGoUpFileCompletionItem(anchor, color, icon); // NOI18N
         }
     }
 }
