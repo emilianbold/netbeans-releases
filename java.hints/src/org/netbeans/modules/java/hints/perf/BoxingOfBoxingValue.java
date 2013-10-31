@@ -68,7 +68,7 @@ import org.openide.util.NbBundle;
 @Hint(
     displayName = "#DN_BoxingOfBoxedValue",
     description = "#DESC_BoxingOfBoxedValue",
-    category = "perf",
+    category = "performance",
     enabled = true,
     suppressWarnings = "BoxingBoxedValue"
 )

@@ -44,6 +44,7 @@ package org.netbeans.modules.java.hints.perf;
 
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.Tree;
@@ -61,6 +62,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.errors.CreateElementUtilities;
 import org.netbeans.modules.java.hints.errors.Utilities;
@@ -363,5 +365,23 @@ wc.rewrite(tp.getLeaf(), wc.getTreeMaker().Identifier("'" + content + "'"));
         String displayName = NbBundle.getMessage(Tiny.class, "ERR_Tiny_collectionsToArray");
 
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName, fixes);
+    }
+    
+    @NbBundle.Messages({
+        "TEXT_RedundantToString=Redundant String.toString()",
+        "FIX_RedundantToString=Remove .toString()"
+    })
+    @TriggerPattern(value = "$v.toString()", constraints = @ConstraintVariableType(variable = "$v", type = "java.lang.String"))
+    @Hint(
+        displayName = "#DN_RedundantToString",
+        description = "#DESC_RedundantToString",
+        enabled = true,
+        category = "performance",
+        suppressWarnings = "RedundantStringToString"
+    )
+    public static ErrorDescription redundantToString(HintContext ctx) {
+        return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), 
+                Bundle.TEXT_RedundantToString(), 
+                JavaFixUtilities.rewriteFix(ctx, Bundle.FIX_RedundantToString(), ctx.getPath(), "$v"));
     }
 }
