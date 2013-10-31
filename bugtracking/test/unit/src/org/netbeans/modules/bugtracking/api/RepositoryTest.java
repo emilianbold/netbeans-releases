@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import static junit.framework.Assert.assertTrue;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.TestIssue;
 import org.openide.util.test.MockLookup;
 
@@ -156,14 +157,14 @@ public class RepositoryTest extends NbTestCase {
         final String newDisplayName = "newDisplayName";
         APITestRepository apiTestRepo = getApiRepo();
         apiTestRepo.getController().setDisplayName(newDisplayName);
-        testAttributeChange(Repository.ATTRIBUTE_DISPLAY_NAME, APITestRepository.DISPLAY_NAME, newDisplayName);
+        testAttributeChange(RepositoryImpl.ATTRIBUTE_DISPLAY_NAME, APITestRepository.DISPLAY_NAME, newDisplayName);
     }
     
     public void testUrlChanged() throws IOException {
         final String newURL = "http://test/newUrl/";
         APITestRepository apiTestRepo = getApiRepo();
         apiTestRepo.getController().setURL(newURL);
-        testAttributeChange(Repository.ATTRIBUTE_URL, APITestRepository.URL, newURL);
+        testAttributeChange(RepositoryImpl.ATTRIBUTE_URL, APITestRepository.URL, newURL);
     }
     
     private void testAttributeChange(final String key, final String expectedOldValue, final String expectedNewValue) throws IOException {

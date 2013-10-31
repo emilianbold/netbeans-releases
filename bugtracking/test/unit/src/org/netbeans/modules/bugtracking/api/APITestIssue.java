@@ -130,7 +130,7 @@ public class APITestIssue extends TestIssue {
     @Override
     public boolean refresh() {
         wasRefreshed = true;
-        support.firePropertyChange(IssueProvider.EVENT_ISSUE_REFRESHED, null, null);
+        support.firePropertyChange(IssueProvider.EVENT_ISSUE_DATA_CHANGED, null, null);
         return true;
     }
 

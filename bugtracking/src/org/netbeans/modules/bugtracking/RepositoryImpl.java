@@ -45,11 +45,11 @@ import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import static org.netbeans.modules.bugtracking.BugtrackingOwnerSupport.ContextType.SELECTED_FILE_AND_ALL_PROJECTS;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.team.spi.TeamProject;
@@ -242,15 +242,18 @@ public final class RepositoryImpl<R, Q, I> {
     }
 
     public QueryImpl createNewQuery() {
+        setLooseAssociation();
         return getQuery(repositoryProvider.createQuery(r));
     }
 
     public IssueImpl createNewIssue() {
+        setLooseAssociation();
         I issueData = repositoryProvider.createIssue(r);
         return getIssue(issueData);
     }   
     
     public IssueImpl createNewIssue(String summary, String description) {
+        setLooseAssociation();
         I issueData = repositoryProvider.createIssue(r, summary, description);
         return getIssue(issueData);
     }   
@@ -474,6 +477,10 @@ public final class RepositoryImpl<R, Q, I> {
         }
         return prioritySupport;
     }
-        
+
+    private void setLooseAssociation() {
+        BugtrackingOwnerSupport.getInstance().setLooseAssociation(SELECTED_FILE_AND_ALL_PROJECTS, this);
+    }
+    
 }
 

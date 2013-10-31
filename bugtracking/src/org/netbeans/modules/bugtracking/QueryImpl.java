@@ -57,9 +57,7 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
  */
 public final class QueryImpl<Q, I>  {
     
-    public final static String EVENT_QUERY_ISSUES_CHANGED = QueryProvider.EVENT_QUERY_ISSUES_CHANGED;
-    public final static String EVENT_QUERY_REMOVED = QueryProvider.EVENT_QUERY_REMOVED;
-    public final static String EVENT_QUERY_SAVED = QueryProvider.EVENT_QUERY_SAVED;
+    public final static String EVENT_QUERY_REFRESHED = QueryProvider.EVENT_QUERY_REFRESHED;
     
     private final RepositoryImpl repository;
     private final QueryProvider<Q, I> queryProvider;
@@ -81,7 +79,7 @@ public final class QueryImpl<Q, I>  {
         return query;
     }
 
-    public RepositoryImpl getRepositoryImpl() {
+    public RepositoryImpl<?, Q, I> getRepositoryImpl() {
         return repository;
     }
     
@@ -96,22 +94,6 @@ public final class QueryImpl<Q, I>  {
     }
 
     /**
-     * Returns all issues given by the last refresh for
-     * which applies that their ID or summary contains the
-     * given criteria string
-     * XXX used only by issue table filter - move out from spi
-     *
-     * @param criteria
-     * @return
-     */
-    // XXX Shouldn't be called while running
-    // XXX move to simple search
-
-    public Collection<IssueImpl> getIssues(String criteria) {
-        return Collections.unmodifiableCollection(BugtrackingUtil.getByIdOrSummary(getIssues(), criteria));
-    }
-    
-    /**
      * @param query
      */
     public static void openNew(RepositoryImpl repository) {
@@ -122,10 +104,6 @@ public final class QueryImpl<Q, I>  {
         QueryAction.openQuery(this, repository, mode);
     }
     
-    public boolean isSaved() {
-        return queryProvider.isSaved(data);
-    }
-
     public boolean canRemove() {
         return queryProvider.canRemove(data);
     }

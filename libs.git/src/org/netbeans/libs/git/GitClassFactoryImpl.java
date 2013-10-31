@@ -54,6 +54,7 @@ import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevObject;
 import org.eclipse.jgit.revwalk.RevTag;
+import org.eclipse.jgit.submodule.SubmoduleStatus;
 import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.RemoteRefUpdate;
 import org.eclipse.jgit.transport.TrackingRefUpdate;
@@ -183,6 +184,11 @@ final class GitClassFactoryImpl extends GitClassFactory {
     @Override
     public void setBranchTracking (GitBranch branch, GitBranch trackedBranch) {
         branch.setTrackedBranch(trackedBranch);
+    }
+
+    @Override
+    public GitSubmoduleStatus createSubmoduleStatus (SubmoduleStatus status, File folder) {
+        return new GitSubmoduleStatus(status, folder);
     }
 
 }

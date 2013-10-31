@@ -59,8 +59,9 @@ import org.openide.util.HelpCtx;
  * When viewing, creating or editing a new Issue, the UI is presented in an 
  * TopComponent in the editor area. Fire <code>PROPERTY_ISSUE_CHANGED</code> and 
  * <code>PROPERTY_ISSUE_SAVED</code> to notify the Issue TopComponent about the 
- * UI state. The <code>saveChanges()</code> and <code>discardUnsavedChanges()</code> 
- * will be called accordingly.
+ * UI state, so that it's state can be accordingly rendered and the IDE-s general SaveAction enabled. 
+ * On save or TopComponent close are then the <code>saveChanges()</code> and <code>discardUnsavedChanges()</code> 
+ * methods called accordingly.
  * </p>
  * 
  * @author Tomas Stupka
@@ -68,24 +69,26 @@ import org.openide.util.HelpCtx;
 public interface IssueController {
 
     /**
-     * The Issue UI contains unsaved changes.
+     * Fired when the data presented in the Issue UI were changed by the user.
      */
-    public static String PROPERTY_ISSUE_NOT_SAVED = "bugtracking.issue.changed";
+    public static String PROPERTY_ISSUE_CHANGED = "bugtracking.issue.changed";
     
     /**
-     * The Issue UI does not contain unsaved changes.
+     *  Fired when the data presented in the Issue UI aren't changed anymore - e.g. by saving or submit.
      */
     public static String PROPERTY_ISSUE_SAVED = "bugtracking.issue.saved";
     
     /**
      * Returns a visual Issue component.
+     * 
      * @return a visual component representing an Issue
      */
     public JComponent getComponent();
 
     /**
-     * Returns the help context associated with this controllers visual component
-     * @return
+     * Returns the help context associated with this controllers visual component.
+     * 
+     * @return a HelpCtx
      */
     public HelpCtx getHelpCtx();
 

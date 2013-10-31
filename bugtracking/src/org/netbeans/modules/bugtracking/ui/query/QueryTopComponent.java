@@ -88,14 +88,15 @@ import org.netbeans.modules.bugtracking.spi.QueryController.QueryMode;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
-import org.netbeans.modules.bugtracking.util.NBBugzillaUtils;
+import org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils;
 import org.netbeans.modules.bugtracking.util.NoContentPanel;
-import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
+import org.netbeans.modules.bugtracking.ui.repository.RepositoryComboSupport;
 import org.netbeans.spi.actions.AbstractSavable;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Cancellable;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.AbstractLookup;
@@ -197,7 +198,7 @@ public final class QueryTopComponent extends TopComponent
         addQueryComponent(c);
     }
     
-    void init(QueryImpl query, RepositoryImpl defaultRepository, File context, boolean suggestedSelectionOnly, QueryController.QueryMode mode) {
+    void init(QueryImpl query, RepositoryImpl defaultRepository, File context, boolean suggestedSelectionOnly, QueryController.QueryMode mode, boolean isNew) {
         this.query = query;
         this.context = context;
         this.mode = mode;
@@ -210,7 +211,7 @@ public final class QueryTopComponent extends TopComponent
         }
 
         if (query != null) {
-            if(query.isSaved()) {
+            if(!isNew) {
                 setSaved();
             } else {
                 if(!suggestedSelectionOnly) {
@@ -257,11 +258,13 @@ public final class QueryTopComponent extends TopComponent
     private void registerListeners() {
         query.addPropertyChangeListener(this);
         query.getController().addPropertyChangeListener(this);
+        query.getRepositoryImpl().addPropertyChangeListener(this);
     }
     
     private void unregisterListeners() {
         query.removePropertyChangeListener(this);
         query.getController().removePropertyChangeListener(this);
+        query.getRepositoryImpl().removePropertyChangeListener(this);
     }
 
     private QueryController getController(QueryImpl query) {
@@ -363,12 +366,20 @@ public final class QueryTopComponent extends TopComponent
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals(QueryProvider.EVENT_QUERY_SAVED)) {
-            setSaved();
-        } else if(evt.getPropertyName().equals(QueryProvider.EVENT_QUERY_REMOVED)) {
-            if(query != null && query.isData(evt.getSource())) {
-                // removed
-                closeInAwt();
+        if(evt.getPropertyName().equals(RepositoryImpl.EVENT_QUERY_LIST_CHANGED)) {
+            // only saved queries can be removed
+            if(query != null && isSaved()) {
+                Collection<QueryImpl> queries = query.getRepositoryImpl().getQueries();
+                boolean stillExists = false;
+                for (QueryImpl q : queries) {
+                    if(q.getDisplayName().equals(query.getDisplayName())) {
+                        stillExists = true;
+                        break;
+                    }    
+                }
+                if(!stillExists) {
+                    closeInAwt();
+                }
             }
         } else if(evt.getPropertyName().equals(RepositoryRegistry.EVENT_REPOSITORIES_CHANGED)) {
             if(query != null) {
@@ -402,18 +413,37 @@ public final class QueryTopComponent extends TopComponent
                     }
                 }
             });
-        } else if(evt.getPropertyName().equals(IssueController.PROPERTY_ISSUE_NOT_SAVED)) {
+        } else if(evt.getPropertyName().equals(QueryController.PROPERTY_QUERY_CHANGED)) {
             if (getLookup().lookup(QuerySavable.class) == null) {
                 instanceContent.add(new QuerySavable(this));
                 setNameAndTooltip();
-        }
-        } else if(evt.getPropertyName().equals(IssueController.PROPERTY_ISSUE_SAVED)) {
+            }
+        } else if(evt.getPropertyName().equals(QueryController.PROPERTY_QUERY_SAVED)) {
+            if(!isSaved()) {
+                openDashboard();                
+            }
+            setSaved();
             QuerySavable savable = getSavable();
             if(savable != null) {
                 savable.destroy();
                 setNameAndTooltip();
-    }
+            }
         }
+    }
+
+    private void openDashboard() {
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run() {
+                TopComponent tc = WindowManager.getDefault().findTopComponent("DashboardTopComponent"); // NOI18N
+                if (tc == null) {
+                    BugtrackingManager.LOG.fine("No Tasks Dashboard found"); // NOI18N
+                    return;
+                }
+                tc.open();
+                tc.requestActive();
+            }
+        });
     }
 
     private QuerySavable getSavable() {
@@ -638,6 +668,10 @@ public final class QueryTopComponent extends TopComponent
                 setNameAndTooltip();
             }
         });
+    }
+    
+    private boolean isSaved() {
+        return !headerPanel.isVisible();
     }
 
     @Override

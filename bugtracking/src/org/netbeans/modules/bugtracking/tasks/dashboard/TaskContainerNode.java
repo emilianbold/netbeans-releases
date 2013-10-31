@@ -389,7 +389,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
     private class TaskListener implements PropertyChangeListener {
         @Override
         public void propertyChange(final PropertyChangeEvent evt) {
-            if (evt.getPropertyName().equals(IssueImpl.EVENT_ISSUE_REFRESHED)
+            if (evt.getPropertyName().equals(IssueImpl.EVENT_ISSUE_DATA_CHANGED)
                     || IssueStatusProvider.EVENT_STATUS_CHANGED.equals(evt.getPropertyName())) {
                 updateTask.schedule(1000);
             }

@@ -52,6 +52,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
@@ -101,6 +102,10 @@ public class NavigatorPanelUI extends JPanel implements ExplorerManager.Provider
 
         setLayout(new java.awt.BorderLayout());
     }// </editor-fold>//GEN-END:initComponents
+    
+    void setDataObject(DataObject cdo) {
+        content.setDataObject(cdo);
+    }
     
     void showWaitNode() {
         SwingUtilities.invokeLater(new Runnable() {

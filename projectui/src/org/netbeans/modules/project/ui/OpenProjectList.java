@@ -102,7 +102,9 @@ import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.ErrorManager;
+import org.openide.WizardDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
@@ -1096,6 +1098,15 @@ public final class OpenProjectList {
     public List<DataObject> getTemplatesLRU( @NullAllowed Project project,  PrivilegedTemplates priv ) {
         List<FileObject> pLRU = getTemplateNamesLRU( project,  priv );
         List<DataObject> templates = new ArrayList<DataObject>();
+        // Using folder is preferred option
+        try {     
+            FileObject fo = FileUtil.getConfigFile( "Templates/Other/Folder" ); //NOI18N
+            DataObject dobj = DataObject.find( fo );
+            templates.add(dobj);
+            pLRU.remove(fo);
+        } catch (DataObjectNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         for( Iterator<FileObject> it = pLRU.iterator(); it.hasNext(); ) {
             FileObject fo = it.next();
             if ( fo != null ) {

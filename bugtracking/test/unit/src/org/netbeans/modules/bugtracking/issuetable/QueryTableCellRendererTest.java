@@ -114,7 +114,8 @@ public class QueryTableCellRendererTest {
         IssueTable<RendererQuery> issueTable = new IssueTable(
                 repository.getRepository(),
                 rendererQuery, 
-                new ColumnDescriptor[] {new ColumnDescriptor("dummy", String.class, "dummy", "dummy")});
+                new ColumnDescriptor[] {new ColumnDescriptor("dummy", String.class, "dummy", "dummy")}, 
+                rendererQuery.isSaved());
 
         
         // issue seen, not selected
@@ -214,7 +215,8 @@ public class QueryTableCellRendererTest {
         IssueTable<RendererQuery> issueTable = new IssueTable(
                 TestKit.getRepository(rendererRepository).getRepository(),
                 query, 
-                new ColumnDescriptor[] {new ColumnDescriptor("dummy", String.class, "dummy", "dummy")});
+                new ColumnDescriptor[] {new ColumnDescriptor("dummy", String.class, "dummy", "dummy")}, 
+                query.isSaved());
         
         TableCellStyle result = QueryTableCellRenderer.getDefaultCellStyle(table, issueTable, property, true, 0);
         assertEquals(table.getSelectionBackground(), result.getBackground()); // keep table selection colors

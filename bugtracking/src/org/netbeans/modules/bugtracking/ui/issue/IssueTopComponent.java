@@ -42,6 +42,9 @@
 
 package org.netbeans.modules.bugtracking.ui.issue;
 
+import org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils;
+import org.netbeans.modules.bugtracking.ui.repository.RepositoryComboRenderer;
+import org.netbeans.modules.bugtracking.ui.repository.RepositoryComboSupport;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
@@ -594,7 +597,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals(IssueProvider.EVENT_ISSUE_REFRESHED)) {
+        if(evt.getPropertyName().equals(IssueImpl.EVENT_ISSUE_DATA_CHANGED)) {
             repoPanel.setVisible(false);
             setNameAndTooltip();
         } else if(evt.getPropertyName().equals(RepositoryRegistry.EVENT_REPOSITORIES_CHANGED)) {
@@ -610,7 +613,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                     }
                 }
             });
-        } else if(evt.getPropertyName().equals(IssueController.PROPERTY_ISSUE_NOT_SAVED)) {
+        } else if(evt.getPropertyName().equals(IssueController.PROPERTY_ISSUE_CHANGED)) {
             if (getLookup().lookup(IssueSavable.class) == null) {
                 instanceContent.add(new IssueSavable(IssueTopComponent.this));
                 setNameAndTooltip();

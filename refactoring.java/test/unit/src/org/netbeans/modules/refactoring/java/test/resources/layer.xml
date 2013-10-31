@@ -70,5 +70,13 @@ made subject to such option by the copyright holder.
                 <attr name="templateCategory" stringvalue="java-classes,jdk5"/>
             </file>
         </folder>
+        <folder name="Other">
+            <folder name="Folder">
+                <attr name="template" boolvalue="true"/>
+                <attr stringvalue="Folder" name="displayName"/>
+                <attr name="iconBase" stringvalue="org/openide/loaders/defaultFolder.gif"/>
+                <attr name="templateCategory" stringvalue="simple-files"/>             
+            </folder>
+        </folder>
     </folder>
 </filesystem>

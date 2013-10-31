@@ -137,8 +137,8 @@ public class IntroduceConstantTest extends ModifyingRefactoring {
                         
                                 addTest(RenameTest.class, "testSimple_A_M").
 				addTest(RenameTest.class, "testSimple_A_N").
-//				addTest(RenameTest.class, "testSimple_A_O").
-//				addTest(RenameTest.class, "testSimple_A_P").
+//				addTest(RenameTest.class, "testSimple_A_O"). // <--- don't work
+//				addTest(RenameTest.class, "testSimple_A_P"). // <--- don't work
                         
                                 addTest(RenameTest.class, "testSimple_A_Q").
 				addTest(RenameTest.class, "testSimple_A_R").
@@ -160,7 +160,7 @@ public class IntroduceConstantTest extends ModifyingRefactoring {
 				addTest(RenameTest.class, "testSimple_B_E").
 				addTest(RenameTest.class, "testSimple_B_F").
                         
-//                                addTest(RenameTest.class, "testSimple_B_G").
+//                                addTest(RenameTest.class, "testSimple_B_G"). // <--- don't work
 				addTest(RenameTest.class, "testSimple_B_H").
 				addTest(RenameTest.class, "testSimple_B_I").
 				addTest(RenameTest.class, "testSimple_B_J").
@@ -614,6 +614,7 @@ public class IntroduceConstantTest extends ModifyingRefactoring {
                     case testSimple_B_F:
                         // ReplaceAllOccurences = FALSE
                         if(ico.getAlsoReplace().isSelected()) ico.getAlsoReplace().doClick();
+//                        ico.getAlsoReplace().setSelected(false);
                         break;
                     case testSimple_A_E:
                     case testSimple_A_F:

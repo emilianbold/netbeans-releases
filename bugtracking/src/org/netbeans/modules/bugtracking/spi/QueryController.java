@@ -55,15 +55,23 @@ import org.openide.util.HelpCtx;
  * possible to provide no QueryController and no UI at all - e.g. an immutable 
  * server defined query with no remote api to modify the criteria.
  * </p>
+ * 
  * <p>
- * The results of an query (see {@link QueryProvider<Q>#getIssues(java.lang.Object)}  
+ * When editing or creating a Query, the UI is presented in an 
+ * TopComponent in the editor area. Fire <code>PROPERTY_QUERY_CHANGED</code> and 
+ * <code>PROPERTY_QUERY_SAVED</code> to notify the Issue TopComponent about the 
+ * UI state, so that it's state can be accordingly rendered and the IDE-s general SaveAction enabled. 
+ * On save or TopComponent close are then the <code>saveChanges()</code> and <code>discardUnsavedChanges()</code> 
+ * methods called accordingly.
+ * </p>
+ * 
+ * <p>
+ * Please <b>note</b>, that the results of an query (see {@link QueryProvider<Q>#getIssues(java.lang.Object)}  
  * are always presented in the TaskDashboard, but eventually, in case the need appears,
  * it is also possible for the bugtracking plugin implementation to provide a
  * customized result view - e.g a table listing more attributes than then TasksDashboard does.
  * </p>
- * <p>
- * When viewing, creating or editing a new Query, the UI is presented in an TopComponent in the editor area.
- * </p>
+ * 
  * @author Tomas Stupka
  */
 public interface QueryController {
@@ -71,12 +79,12 @@ public interface QueryController {
     /**
      * The Issue UI contains unsaved changes.
      */
-    public static String PROPERTY_QUERY_NOT_SAVED = "bugtracking.issue.changed";
+    public static String PROPERTY_QUERY_CHANGED = "bugtracking.query.changed";
     
     /**
      * The Issue UI does not contain unsaved changes.
      */
-    public static String PROPERTY_QUERY_SAVED = "bugtracking.issue.saved";
+    public static String PROPERTY_QUERY_SAVED = "bugtracking.query.saved";
     
     /**
      * The mode in which this controllers component is shown.

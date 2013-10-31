@@ -58,7 +58,6 @@ import org.netbeans.performance.j2se.dialogs.FilesWindowTest;
 import org.netbeans.performance.j2se.dialogs.FindInProjectsTest;
 import org.netbeans.performance.j2se.dialogs.GotoLineDialogTest;
 import org.netbeans.performance.j2se.dialogs.HelpContentsWindowTest;
-import org.netbeans.performance.j2se.dialogs.HttpMonitorWindowTest;
 import org.netbeans.performance.j2se.dialogs.InternationalizeDialogTest;
 import org.netbeans.performance.j2se.dialogs.JavaPlatformManagerTest;
 import org.netbeans.performance.j2se.dialogs.JavadocIndexSearchTest;
@@ -83,9 +82,9 @@ import org.netbeans.performance.j2se.dialogs.RefactorMoveClassDialogTest;
 import org.netbeans.performance.j2se.dialogs.RefactorRenameDialogTest;
 import org.netbeans.performance.j2se.dialogs.RuntimeWindowTest;
 import org.netbeans.performance.j2se.dialogs.SelectProfilingTaskDialogTest;
+import org.netbeans.performance.j2se.dialogs.ServerManagerTest;
 import org.netbeans.performance.j2se.dialogs.TemplateManagerTest;
 import org.netbeans.performance.j2se.dialogs.ToDoWindowTest;
-import org.netbeans.performance.j2se.dialogs.VersioningWindowTest;
 import org.netbeans.performance.j2se.setup.J2SESetup;
 
 /**
@@ -111,7 +110,6 @@ public class MeasureJ2SEDialogsTest {
                 .addTest(FavoritesWindowTest.class)
                 .addTest(FilesWindowTest.class)
                 .addTest(HelpContentsWindowTest.class)
-                .addTest(HttpMonitorWindowTest.class)
                 .addTest(AddProfilingPointWizardTest.class)
                 .addTest(DeleteFileDialogTest.class)
                 .addTest(DocumentsDialogTest.class)
@@ -141,9 +139,9 @@ public class MeasureJ2SEDialogsTest {
                 .addTest(RefactorRenameDialogTest.class)
                 .addTest(RuntimeWindowTest.class)
                 .addTest(SelectProfilingTaskDialogTest.class)
+                .addTest(ServerManagerTest.class)
                 .addTest(TemplateManagerTest.class)
                 .addTest(ToDoWindowTest.class)
-                .addTest(VersioningWindowTest.class)
                 .suite());
         return suite;
     }

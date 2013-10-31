@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.cnd.model.tasks;
 
-import java.util.Collection;
-import java.util.Collections;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -53,18 +51,18 @@ import org.netbeans.modules.parsing.spi.Parser.Result;
  * @author Alexander Simon
  */
 public class CndParserResult  extends Result {
-    private final Collection<CsmFile> files;
+    private final CsmFile file;
 
-    public CndParserResult(Collection<CsmFile> tus, Snapshot snapshot) {
+    public CndParserResult(CsmFile file, Snapshot snapshot) {
         super(snapshot);
-        this.files = Collections.unmodifiableCollection(tus);
+        this.file = file;
     }
 
     @Override
     protected void invalidate() {
     }
 
-    public Collection<CsmFile> getCsmFiles() {
-        return files;
+    public CsmFile getCsmFile() {
+        return file;
     }
 }

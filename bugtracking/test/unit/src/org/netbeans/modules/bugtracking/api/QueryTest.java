@@ -90,19 +90,7 @@ public class QueryTest extends NbTestCase {
     public void testGetRepository() {
         assertEquals(getRepo(), getQuery().getRepository());
     }    
-    
-    public void testIsSaved() {
-        APITestQuery apiQuery = getAPIQuery();
-        Query query = getQuery();
         
-        apiQuery.isSaved = false;
-        assertEquals(apiQuery.isSaved(), query.isSaved());
-        assertFalse(query.isSaved());
-        apiQuery.isSaved = true;
-        assertEquals(apiQuery.isSaved(), query.isSaved());
-        assertTrue(query.isSaved());
-    }
-    
     public void testRefresh() {
         APITestQuery apiQuery = getAPIQuery();
         Query query = getQuery();
@@ -111,16 +99,7 @@ public class QueryTest extends NbTestCase {
         query.refresh();
         assertTrue(apiQuery.wasRefreshed);
     }
-    
-    public void testRemove() {
-        APITestQuery apiQuery = getAPIQuery();
-        Query query = getQuery();
         
-        apiQuery.wasRemoved = false;
-        query.remove();
-        assertTrue(apiQuery.wasRemoved);
-    }
-    
     public void testGetIssues() {
         APITestQuery apiQuery = getAPIQuery();
         Query query = getQuery();

@@ -43,17 +43,21 @@ package org.netbeans.modules.bugtracking.tasks.actions;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.QueryImpl;
+import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.tasks.DashboardTopComponent;
@@ -400,7 +404,8 @@ public class Actions {
         if (!enableSetCategory) {
             setCategoryAction.setEnabled(false);
         }
-        //actions.add(new ScheduleTaskAction(taskNodes));
+
+        actions.add(getScheduleAction(taskNodes));
         //actions.add(new NotificationTaskAction(taskNodes));
         return actions;
     }
@@ -464,21 +469,25 @@ public class Actions {
         }
     }
 
-    private static class ScheduleTaskAction extends TaskAction {
-
-        public ScheduleTaskAction(TaskNode... taskNodes) {
-            super("Schedule", taskNodes); //NOI18N
+    private static Action getScheduleAction(final TaskNode... taskNodes) {
+        IssueScheduleInfo schedule = null;
+        if (taskNodes.length == 1) {
+            schedule = taskNodes[0].getTask().getSchedule();
         }
+        final BugtrackingUtil.SchedulingMenu scheduleMenu = BugtrackingUtil.createScheduleMenu(schedule);
 
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            new DummyAction().actionPerformed(e);
-        }
-
-        @Override
-        public boolean isEnabled() {
-            return false;
-        }
+        //TODO weak listener??
+        final ChangeListener listener = new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                for (TaskNode taskNode : taskNodes) {
+                    taskNode.getTask().setSchedule(scheduleMenu.getScheduleInfo());
+                }
+                scheduleMenu.removeChangeListener(this);
+            }
+        };
+        scheduleMenu.addChangeListener(listener);
+        return scheduleMenu.getMenuAction();
     }
 
     private static class SetCategoryAction extends TaskAction {
@@ -821,19 +830,19 @@ public class Actions {
     public static List<Action> getQueryPopupActions(QueryNode... queryNodes) {
         boolean editPossible = true;
         boolean openPossible = true;
-        
+
         for (QueryNode queryNode : queryNodes) {
             QueryImpl q = queryNode.getQuery();
-            if(!q.providesMode(QueryController.QueryMode.EDIT)) {
+            if (!q.providesMode(QueryController.QueryMode.EDIT)) {
                 editPossible = false;
             }
-            if(!q.providesMode(QueryController.QueryMode.VIEW)) {
+            if (!q.providesMode(QueryController.QueryMode.VIEW)) {
                 openPossible = false;
             }
-            if(!editPossible && !openPossible) {
+            if (!editPossible && !openPossible) {
                 break;
             }
-        }        
+        }
         List<Action> actions = new ArrayList<Action>();
         actions.add(new EditQueryAction(queryNodes));
         actions.add(new OpenQueryAction(queryNodes));

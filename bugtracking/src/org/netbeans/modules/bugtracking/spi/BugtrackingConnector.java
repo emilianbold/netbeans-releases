@@ -50,7 +50,22 @@ import org.netbeans.modules.bugtracking.api.Repository;
 
 /**
  * Represents a bugtracking connector.
+ * <p>
+ * Bugtracking system registration can be done via {@link BugtrackingConnector#Registration}. 
+ * </p>
  *
+ * <pre>
+ *  {@literal @}BugtrackingConnector.Registration (
+ *      id = "foo.bar.MyConnector",
+ *      displayName ="My Connector",
+ *      tooltip = "This is My Connector")    
+ *   public class MyConnector extends BugtrackingConnector {
+ *  
+ *    ... 
+ * 
+ *   }
+ * </pre>
+ * 
  * @author Tomas Stupka
  */
 public interface BugtrackingConnector {
@@ -73,6 +88,12 @@ public interface BugtrackingConnector {
      */
     public Repository createRepository();
 
+    /**
+     * Register a BugtrackingConnector in the IDE.
+     * 
+     * @author Tomas Stupka
+     * @see org.openide.util.lookup.ServiceProvider
+     */
     @Retention(RetentionPolicy.SOURCE)
     @Target({ElementType.TYPE, ElementType.METHOD})
     public @interface Registration {    

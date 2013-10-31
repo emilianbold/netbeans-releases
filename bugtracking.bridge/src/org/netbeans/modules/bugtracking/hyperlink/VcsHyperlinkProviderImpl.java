@@ -45,9 +45,7 @@ package org.netbeans.modules.bugtracking.hyperlink;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.bugtracking.spi.IssueFinder;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.util.IssueFinderUtils;
+import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -62,17 +60,17 @@ public class VcsHyperlinkProviderImpl extends VCSHyperlinkProvider {
 
     @Override
     public int[] getSpans(String text) {
-        return IssueFinderUtils.getIssueSpans(text);
+        return Util.getIssueSpans(text);
     }
 
     @Override
     public String getTooltip(String text, int offsetStart, int offsetEnd) {
-        return NbBundle.getMessage(VcsHyperlinkProviderImpl.class, "LBL_OpenIssue", new Object[] { getIssueId(text, offsetStart, offsetEnd) });
+        return NbBundle.getMessage(VcsHyperlinkProviderImpl.class, "LBL_OpenIssue", new Object[] { Util.getIssueId(text.substring(offsetStart, offsetEnd))});
     }
 
     @Override
     public void onClick(final File file, final String text, int offsetStart, int offsetEnd) {
-        final String issueId = getIssueId(text, offsetStart, offsetEnd);
+        final String issueId = Util.getIssueId(text.substring(offsetStart, offsetEnd));
         if(issueId == null) {
             Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "No issue found for {0}", text.substring(offsetStart, offsetEnd));
             return;
@@ -80,18 +78,9 @@ public class VcsHyperlinkProviderImpl extends VCSHyperlinkProvider {
         RequestProcessor.getDefault().post(new Runnable() {
             @Override
             public void run() {
-                BugtrackingUtil.openIssue(file, issueId);
+                Util.openIssue(file, issueId);
             }
         });
     }
 
-    private String getIssueId(String text, int offsetStart, int offsetEnd) {        
-        IssueFinder issueFinder = IssueFinderUtils.determineIssueFinder(text, offsetStart, offsetEnd);
-        if (issueFinder == null) {
-            return null;
         }
-
-        return issueFinder.getIssueId(text.substring(offsetStart, offsetEnd));
-    }
-
-}

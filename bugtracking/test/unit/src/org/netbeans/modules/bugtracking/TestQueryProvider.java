@@ -75,11 +75,6 @@ public class TestQueryProvider implements QueryProvider<TestQuery, TestIssue> {
     }
     
     @Override
-    public boolean isSaved(TestQuery q) {
-        return q.isSaved();
-    }
-
-    @Override
     public Collection<TestIssue> getIssues(TestQuery q) {
         return (Collection<TestIssue>) q.getIssues();
     }

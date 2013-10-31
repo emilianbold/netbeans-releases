@@ -56,19 +56,9 @@ import java.util.Collection;
 public interface QueryProvider<Q, I> {
 
     /**
-     * queries issue list was changed
+     * Fired when a queries list of issue was changed.
      */
-    public final static String EVENT_QUERY_ISSUES_CHANGED = "bugtracking.query.issues_changed";   // NOI18N
-
-    /**
-     * query was saved
-     */
-    public final static String EVENT_QUERY_SAVED   = "bugtracking.query.saved";       // NOI18N
-
-    /**
-     * query was removed
-     */
-    public final static String EVENT_QUERY_REMOVED = "bugtracking.query.removed";     // NOI18N
+    public final static String EVENT_QUERY_REFRESHED = "bugtracking.query.refreshed";   // NOI18N
 
     /**
      * Returns the queries display name
@@ -90,13 +80,6 @@ public interface QueryProvider<Q, I> {
      * @return
      */
     public QueryController getController(Q q);
-
-    /**
-     * Returns true if query is saved
-     * @param q the implementation specific query type
-     * @return
-     */
-    public boolean isSaved(Q q);
 
     /**
      * Determines whether it is possible to remove the given Query.

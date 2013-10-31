@@ -189,9 +189,8 @@ public class RepositoryListenerImpl implements RepositoryListener {
             return;
         }
         if (exc.getCause() != null) {
-            exc.getCause().printStackTrace(System.err);
+            DiagnosticExceptoins.register(exc.getCause());
         }
-        DiagnosticExceptoins.register(exc.getCause());
     }
 
     // NB: un-synchronized!

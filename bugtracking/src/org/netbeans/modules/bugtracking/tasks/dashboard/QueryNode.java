@@ -263,7 +263,7 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName().equals(QueryImpl.EVENT_QUERY_ISSUES_CHANGED)) {
+            if (evt.getPropertyName().equals(QueryImpl.EVENT_QUERY_REFRESHED)) {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {

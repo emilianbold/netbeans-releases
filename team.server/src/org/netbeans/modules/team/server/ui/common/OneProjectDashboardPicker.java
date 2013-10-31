@@ -190,7 +190,7 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
         separator = new JToolBar.Separator();
         toolbar.add(separator);
 
-        btnNewServer = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/team/server/resources/new_team_project.png", true), new AddInstanceAction()); 
+        btnNewServer = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/team/server/resources/mm_new_team_project.png", true), new AddInstanceAction()); 
         btnNewServer.setToolTipText(Bundle.CTL_NewServer());
         btnNewServer.setRolloverEnabled(true);
         btnNewServer.setVisible(false);

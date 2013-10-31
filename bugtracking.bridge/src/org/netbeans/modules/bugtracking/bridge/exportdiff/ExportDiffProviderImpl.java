@@ -51,7 +51,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.bugtracking.api.Issue;
-import org.netbeans.modules.bugtracking.util.OwnerUtils;
 import org.netbeans.modules.versioning.util.ExportDiffSupport;
 
 /**
@@ -63,7 +62,7 @@ public class ExportDiffProviderImpl extends ExportDiffSupport.ExportDiffProvider
 
     private AttachPanel panel;
     private File[] files;
-    private static Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.exportdiff.AttachIssue");   // NOI18N
+    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.exportdiff.AttachIssue");   // NOI18N
 
     public ExportDiffProviderImpl() {
     }
@@ -75,7 +74,7 @@ public class ExportDiffProviderImpl extends ExportDiffSupport.ExportDiffProvider
 
     @Override
     public void handleDiffFile(File file) {
-        LOG.log(Level.FINE, "handeDiff start for " + file); // NOI18N
+        LOG.log(Level.FINE, "handeDiff start for {0}", file); // NOI18N
 
         Issue issue = panel.getIssue();
         if (issue == null) {
@@ -86,17 +85,14 @@ public class ExportDiffProviderImpl extends ExportDiffSupport.ExportDiffProvider
         issue.attachFile(file, panel.descriptionTextField.getText(), true);
         issue.open();
 
-        OwnerUtils.setFirmAssociations(files, panel.getRepository());
-                
-        LOG.log(Level.FINE, "handeDiff end for " + file); // NOI18N
+        LOG.log(Level.FINE, "handeDiff end for {0}", file); // NOI18N
     }
 
     @Override
     public JComponent createComponent() {
         assert files != null;
-        panel = new AttachPanel(this);
+        panel = new AttachPanel(this, files.length > 0 ? files[0] : null);
         panel.descriptionTextField.getDocument().addDocumentListener(this);        
-        panel.init(files.length > 0 ? files[0] : null);
         return panel;
     }
 
@@ -106,12 +102,12 @@ public class ExportDiffProviderImpl extends ExportDiffSupport.ExportDiffProvider
                 panel.getIssue() != null;
     }
 
-    public void insertUpdate(DocumentEvent e)  { fireDataChanged(); }
-    public void removeUpdate(DocumentEvent e)  { fireDataChanged(); }
-    public void changedUpdate(DocumentEvent e) { fireDataChanged(); }
+    @Override public void insertUpdate(DocumentEvent e)  { fireDataChanged(); }
+    @Override public void removeUpdate(DocumentEvent e)  { fireDataChanged(); }
+    @Override public void changedUpdate(DocumentEvent e) { fireDataChanged(); }
 
     @Override
     public void stateChanged(ChangeEvent e) {
-            fireDataChanged();
+        fireDataChanged();
     }
 }

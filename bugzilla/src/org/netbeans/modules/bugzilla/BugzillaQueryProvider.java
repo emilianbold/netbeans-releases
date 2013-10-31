@@ -89,11 +89,6 @@ public class BugzillaQueryProvider implements TeamQueryProvider<BugzillaQuery, B
     }
     
     @Override
-    public boolean isSaved(BugzillaQuery query) {
-        return query.isSaved();
-    }
-
-    @Override
     public Collection<BugzillaIssue> getIssues(BugzillaQuery query) {
         return query.getIssues();
     }

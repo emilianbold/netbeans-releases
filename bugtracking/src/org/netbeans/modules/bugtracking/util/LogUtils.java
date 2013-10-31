@@ -41,19 +41,13 @@
  */
 package org.netbeans.modules.bugtracking.util;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.modules.bugtracking.APIAccessor;
-import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 
 /**
  *
@@ -230,6 +224,16 @@ public final class LogUtils {
         return id;
     }
 
+    public static String getPasswordLog(char[] psswd) {
+        if(psswd == null) {
+            return ""; // NOI18N
+        }
+        if("true".equals(System.getProperty("org.netbeans.modules.bugtracking.logPasswords", "false"))) { // NOI18N
+            return new String(psswd); 
+        }
+        return "******"; // NOI18N
+    }    
+    
     /**
      * Logs bugtracking events
      *

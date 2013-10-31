@@ -43,6 +43,7 @@
  */
 package org.netbeans.performance.j2se.actions;
 
+import javax.swing.JTextField;
 import junit.framework.Test;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
@@ -51,7 +52,9 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NewJavaProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 
 /**
@@ -73,7 +76,7 @@ public class CreateNBProjectTest extends PerformanceTestCase {
     public CreateNBProjectTest(String testName) {
         super(testName);
         expectedTime = 10000;
-        WAIT_AFTER_OPEN = 20000;
+        WAIT_AFTER_OPEN = 8000;
     }
 
     /**
@@ -85,7 +88,7 @@ public class CreateNBProjectTest extends PerformanceTestCase {
     public CreateNBProjectTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = 10000;
-        WAIT_AFTER_OPEN = 20000;
+        WAIT_AFTER_OPEN = 8000;
     }
 
     public static Test suite() {
@@ -112,6 +115,7 @@ public class CreateNBProjectTest extends PerformanceTestCase {
     public void initialize() {
     }
 
+    @Override
     public void prepare() {
         NewProjectWizardOperator wizard = NewProjectWizardOperator.invoke();
         wizard.selectCategory(category);
@@ -119,20 +123,20 @@ public class CreateNBProjectTest extends PerformanceTestCase {
         wizard.next();
         wizard_location = new NewJavaProjectNameLocationStepOperator();
         String directory = System.getProperty("nbjunit.workdir");
-        wizard_location.txtProjectLocation().setText("");
         wizard_location.txtProjectLocation().setText(directory);
         project_name = project_type + "_" + CommonUtilities.getTimeIndex();
-        wizard_location.txtProjectName().setText("");
-        wizard_location.txtProjectName().typeText(project_name);
+        wizard_location.txtProjectName().setText(project_name);
     }
 
+    @Override
     public ComponentOperator open() {
         if (project_type.equalsIgnoreCase("moduleProject")) {
             wizard_location.next();
             next = new NbDialogOperator("New Module");
-            new JTextFieldOperator(next).typeText("test");
+            new JTextFieldOperator((JTextField) new JLabelOperator(next, "Code Name Base").getLabelFor()).setText("test");
         }
         wizard_location.finish();
+        new ProjectsTabOperator().getProjectRootNode(project_name);
         return null;
     }
 
@@ -140,5 +144,4 @@ public class CreateNBProjectTest extends PerformanceTestCase {
     public void close() {
         CommonUtilities.actionOnProject(project_name, "Close");
     }
-
 }

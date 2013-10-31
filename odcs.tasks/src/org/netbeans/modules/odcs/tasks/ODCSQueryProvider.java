@@ -73,11 +73,6 @@ public class ODCSQueryProvider implements TeamQueryProvider<ODCSQuery, ODCSIssue
     }
 
     @Override
-    public boolean isSaved(ODCSQuery q) {
-        return q.isSaved();
-    }
-
-    @Override
     public boolean canRemove(ODCSQuery q) {
         return q.canRemove();
     }

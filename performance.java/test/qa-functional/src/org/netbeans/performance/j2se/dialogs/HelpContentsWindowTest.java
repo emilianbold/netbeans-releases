@@ -41,66 +41,72 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se.dialogs;
 
+import junit.framework.Test;
 import org.netbeans.jellytools.HelpOperator;
 import org.netbeans.jellytools.actions.HelpAction;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.j2se.setup.J2SEBaseSetup;
+import org.netbeans.performance.j2se.setup.J2SESetup;
 
 /**
  * Test of Help Contents window
  *
- * @author  anebuzelsky@netbeans.org
+ * @author anebuzelsky@netbeans.org
  */
 public class HelpContentsWindowTest extends PerformanceTestCase {
 
-   
-    /** Creates a new instance of HelpContentsWindow */
+    /**
+     * Creates a new instance of HelpContentsWindow
+     *
+     * @param testName test name
+     */
     public HelpContentsWindowTest(String testName) {
         super(testName);
-        expectedTime = 1000; 
-    }
-    
-    /** Creates a new instance of HelpContentsWindow */
-    public HelpContentsWindowTest(String testName, String performanceDataName) {
-        super(testName,performanceDataName);
-        expectedTime = 1000; 
+        expectedTime = 1500;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.createConfiguration(J2SEBaseSetup.class)
-        .addTest(HelpContentsWindowTest.class)
-                .enableModules(".*").clusters("ide").suite());
-        return suite;
+    /**
+     * Creates a new instance of HelpContentsWindow
+     *
+     * @param testName test name
+     * @param performanceDataName data name
+     */
+    public HelpContentsWindowTest(String testName, String performanceDataName) {
+        super(testName, performanceDataName);
+        expectedTime = 1500;
     }
-    
+
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(J2SESetup.class, "testCloseMemoryToolbar")
+                .addTest(HelpContentsWindowTest.class)
+                .suite();
+    }
+
     public void testHelpContentsWindow() {
         doMeasurement();
-    }    
-    
+    }
+
+    @Override
     public void prepare() {
     }
-    
+
+    @Override
     public ComponentOperator open() {
-        HelpAction ha = new HelpAction();
-        ha.perform();
+        new HelpAction().perform();
         return new HelpOperator();
-        }        
-    
+    }
+
     @Override
     public void close() {
-        if(testedComponentOperator!=null && 
-           testedComponentOperator.isShowing() &&
-           ((HelpOperator)testedComponentOperator).getTitle()!=null) {
-            ((HelpOperator)testedComponentOperator).close();
+        if (testedComponentOperator != null
+                && testedComponentOperator.isShowing()
+                && ((HelpOperator) testedComponentOperator).getTitle() != null) {
+            ((HelpOperator) testedComponentOperator).close();
         } else {
-            testedComponentOperator=null;
+            testedComponentOperator = null;
             closeAllModal();
             closeAllDialogs();
         }

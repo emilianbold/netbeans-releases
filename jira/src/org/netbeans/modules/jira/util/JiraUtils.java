@@ -66,7 +66,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskOperation;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.issue.JiraIssueFinder;
@@ -347,7 +347,7 @@ public class JiraUtils {
     }
 
     public static Repository getRepository(JiraRepository jiraRepository) {
-        Repository repository = BugtrackingUtil.getRepository(JiraConnector.ID, jiraRepository.getID());
+        Repository repository = RepositoryManager.getInstance().getRepository(JiraConnector.ID, jiraRepository.getID());
         if(repository == null) {
             repository = createRepository(jiraRepository);
         }

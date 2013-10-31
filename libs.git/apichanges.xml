@@ -112,6 +112,24 @@ is the proper place.
         <change>
             <api name="gitlibrary_api"/>
             <summary>The log command returns also branches containing the commits from the result.</summary>
+            <version major="1" minor="16"/>
+            <date day="31" month="10" year="2013"/>
+            <author login="ovrabec"/>
+            <compatibility addition="yes"/>
+            <description>
+                <ul>
+                <li>Adding new methods to GitClient allowing users to check a submodule's status, initialize them
+                    after a clone and update them to a commit relevant to the state in the parent repository.</li>
+                <li>Adding a new class GitSubmoduleStatus wrapping information about a submodule.</li>
+                </ul>
+            </description>
+            <class package="org.netbeans.libs.git" name="GitClient"/>
+            <class package="org.netbeans.libs.git" name="GitSubmoduleStatus"/>
+            <issue number="237621"/>
+        </change>
+        <change>
+            <api name="gitlibrary_api"/>
+            <summary>The log command returns also branches containing the commits from the result.</summary>
             <version major="1" minor="14"/>
             <date day="25" month="9" year="2013"/>
             <author login="ovrabec"/>

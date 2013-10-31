@@ -72,7 +72,9 @@ import org.netbeans.modules.bugtracking.tasks.dashboard.DashboardViewer;
 import org.netbeans.modules.bugtracking.tasks.dashboard.RepositoryNode;
 import org.netbeans.modules.bugtracking.tasks.dashboard.TaskNode;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.netbeans.modules.team.ide.spi.IDEServices;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.FindAction;
@@ -470,7 +472,7 @@ public class DashboardUtils {
         return compareNumericId(suffixInt1, suffixInt2);
     }
 
-     public static boolean confirmDelete(String title, String message) {
+    public static boolean confirmDelete(String title, String message) {
         NotifyDescriptor nd = new NotifyDescriptor(
                 message,
                 title,

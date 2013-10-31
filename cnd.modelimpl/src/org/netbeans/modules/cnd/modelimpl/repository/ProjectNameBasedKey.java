@@ -44,6 +44,7 @@
 package org.netbeans.modules.cnd.modelimpl.repository;
 
 import java.io.IOException;
+import org.netbeans.modules.cnd.repository.impl.spi.UnitsConverter;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
@@ -77,13 +78,13 @@ import org.openide.util.CharSequences;
     }
 
     @Override
-    public int hashCode(int unitID) {
-        return 37*getHandler() + unitID;
+    public int hashCode(UnitsConverter unitsConverter) {
+        return 37*getHandler() + RepositoryUtils.clientToLayer(unitsConverter, unitIndex);
     }
 
     @Override
     public int hashCode() {
-        return hashCode(unitIndex);
+        return 37*getHandler() + unitIndex;
     }
 
     @Override
@@ -92,19 +93,16 @@ import org.openide.util.CharSequences;
     }
 
     @Override
-    public boolean equals(int unitThis, Key obj, int unitObject) {
-        if (this == obj) {
+    public boolean equals(UnitsConverter unitsConverter, Key object) {
+        if (this == object) {
             return true;
         }
-        if (obj == null || (this.getClass() != obj.getClass())) {
-            return false;
-        }
-        return unitThis == unitObject;
+        return RepositoryUtils.clientToLayer(unitsConverter, unitIndex) == RepositoryUtils.clientToLayer(unitsConverter, object.getUnitId());
     }
 
 
     @Override
-    public final boolean equals(Object obj) {
+    public boolean equals(Object obj) {
         if (this == obj) {
             return true;
         }
@@ -112,7 +110,7 @@ import org.openide.util.CharSequences;
             return false;
         }
         ProjectNameBasedKey other = (ProjectNameBasedKey) obj;
-        return equals(unitIndex, other, other.unitIndex);
+        return this.unitIndex == other.unitIndex;
     }
 
     @Override

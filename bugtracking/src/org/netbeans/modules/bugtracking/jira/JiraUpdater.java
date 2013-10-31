@@ -122,7 +122,10 @@ public class JiraUpdater {
      * Download and install the JIRA plugin from the Update Center
      */
     @NbBundle.Messages({"MSG_JiraPluginName=JIRA"})
-    public void downloadAndInstall() {
+    public void downloadAndInstall(String projectUrl) {
+        if(projectUrl != null && !JiraUpdater.notifyJiraDownload(projectUrl)) {
+            return;
+        }
         IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
         if(ideServices != null) {
             IDEServices.Plugin plugin = ideServices.getPluginUpdates(JIRA_CNB, Bundle.MSG_JiraPluginName());
@@ -133,6 +136,24 @@ public class JiraUpdater {
     }
 
     /**
+     * Determines if the jira plugin is instaled or not
+     *
+     * @return true if jira plugin is installed, otherwise false
+     */
+    public static boolean isJiraInstalled() {
+        DelegatingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
+        for (DelegatingConnector c : connectors) {
+            // XXX hack
+            if(c.getDelegate() != null && 
+               c.getDelegate().getClass().getName().startsWith("org.netbeans.modules.jira")) // NOI18N
+            {    
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
      * Notifies about the missing jira plugin and provides an option to choose
      * if it should be downloaded
      *
@@ -141,6 +162,9 @@ public class JiraUpdater {
      * @return true if the user pushes the Download button, otherwise false
      */
     public static boolean notifyJiraDownload(String url) {
+        if(isJiraInstalled()) {
+           return false; 
+        }
         final JButton download = new JButton(NbBundle.getMessage(JiraUpdater.class, "CTL_Action_Download"));     // NOI18N
         JButton cancel = new JButton(NbBundle.getMessage(JiraUpdater.class, "CTL_Action_Cancel"));   // NOI18N
 
@@ -309,7 +333,7 @@ public class JiraUpdater {
             downloadButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    downloadAndInstall();
+                    downloadAndInstall(null);
                 }
             });
             

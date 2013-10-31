@@ -258,16 +258,8 @@ public abstract class ODCSQuery {
         support.removePropertyChangeListener(listener);
     }
 
-    public void fireQuerySaved() {
-        support.firePropertyChange(QueryProvider.EVENT_QUERY_SAVED, null, null);
-    }
-
-    protected void fireQueryRemoved() {
-        support.firePropertyChange(QueryProvider.EVENT_QUERY_REMOVED, null, null);
-    }
-
     private void fireQueryIssuesChanged() {
-        support.firePropertyChange(QueryProvider.EVENT_QUERY_ISSUES_CHANGED, null, null);
+        support.firePropertyChange(QueryProvider.EVENT_QUERY_REFRESHED, null, null);
     }  
 
     public void refresh() {
@@ -512,7 +504,6 @@ public abstract class ODCSQuery {
             }
             setSaved(name); 
             getRepository().saveQuery(this);
-            fireQuerySaved();            
             return true;
         }        
 
@@ -536,7 +527,6 @@ public abstract class ODCSQuery {
             if (repositoryQuery != null) {
                 MylynSupport.getInstance().deleteQuery(repositoryQuery);
             }
-            fireQueryRemoved();
         }
         
         private class ProjectAndClient {

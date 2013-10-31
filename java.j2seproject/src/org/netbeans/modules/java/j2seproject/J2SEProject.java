@@ -72,6 +72,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -91,12 +92,14 @@ import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
 import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.java.api.common.project.ProjectConfigurations;
 import org.netbeans.modules.java.api.common.project.ProjectHooks;
+import org.netbeans.modules.java.api.common.project.ProjectOperations;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.project.ui.LogicalViewProviders;
 import org.netbeans.modules.java.api.common.queries.QuerySupport;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SECompositePanelProvider;
+import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.modules.project.ui.spi.TemplateCategorySorter;
 import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
@@ -110,7 +113,6 @@ import org.netbeans.spi.project.ant.AntBuildExtenderImplementation;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.FilterPropertyProvider;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
@@ -140,6 +142,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.HelpCtx;
+import org.openide.util.Pair;
 /**
  * Represents one plain J2SE project.
  * @author Jesse Glick, et al.
@@ -221,7 +224,7 @@ public final class J2SEProject implements Project {
 
         this.cpProvider = new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()); //Does not use APH to get/put properties/cfgdata
         this.cpMod = new ClassPathModifier(this, this.updateHelper, evaluator(), refHelper, null, createClassPathModifierCallback(), null);
-        lookup = createLookup(aux, new J2SEProjectOperations(this, updateProject));
+        lookup = createLookup(aux, newProjectOperationsCallback(this, updateProject));
     }
 
     private ClassPathModifier.Callback createClassPathModifierCallback() {
@@ -295,7 +298,7 @@ public final class J2SEProject implements Project {
         return helper;
     }
 
-    private Lookup createLookup(final AuxiliaryConfiguration aux, final J2SEProjectOperations ops) {
+    private Lookup createLookup(final AuxiliaryConfiguration aux, final ProjectOperations.Callback opsCallback) {
         final FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), ProjectProperties.SOURCE_ENCODING);
         final Lookup base = Lookups.fixed(
             J2SEProject.this,
@@ -317,10 +320,9 @@ public final class J2SEProject implements Project {
             QuerySupport.createCompiledSourceForBinaryQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
             QuerySupport.createJavadocForBinaryQuery(helper, evaluator()),
             new AntArtifactProviderImpl(),
-            ProjectHooks.createProjectXmlSavedHookBuilder(updateHelper, genFilesHelper).
+            ProjectHooks.createProjectXmlSavedHookBuilder(eval, updateHelper, genFilesHelper).
                     setBuildImplTemplate(J2SEProject.class.getResource("resources/build-impl.xsl")).    //NOI18N
                     setBuildTemplate(J2SEProject.class.getResource("resources/build.xsl")).             //NOI18N
-                    setBuildXmlName(J2SEProjectUtil.getBuildXmlName(this)).
                     setOverrideModifiedBuildImplPredicate(new Callable<Boolean>(){
                         @Override
                         public Boolean call() throws Exception {
@@ -335,7 +337,6 @@ public final class J2SEProject implements Project {
                         addClassPathType(ClassPath.SOURCE).
                         setBuildImplTemplate(J2SEProject.class.getResource("resources/build-impl.xsl")).    //NOI18N
                         setBuildTemplate(J2SEProject.class.getResource("resources/build.xsl")).             //NOI18N
-                        setBuildXmlName(J2SEProjectUtil.getBuildXmlName(this)).
                         addOpenPostAction(newStartMainUpdaterAction()).
                         addOpenPostAction(newWebServicesAction()).
                         addOpenPostAction(newMissingPropertiesAction()).
@@ -351,7 +352,14 @@ public final class J2SEProject implements Project {
             ProjectClassPathModifier.extenderForModifier(cpMod),
             buildExtender,
             cpMod,
-            ops,
+            ProjectOperations.createBuilder(this, eval, updateHelper, refHelper, sourceRoots, testRoots).
+                    addDataFiles("manifest.mf","master-application.jnlp","master-applet.jnlp","master-component.jnlp","preview-application.html","preview-applet.html").    //NOI18N
+                    addMetadataFiles("xml-resources","catalog.xml").    //NOI18N
+                    addPreservedPrivateProperties(ProjectProperties.APPLICATION_ARGS, ProjectProperties.RUN_WORK_DIR, ProjectProperties.COMPILE_ON_SAVE).
+                    addUpdatedNameProperty(ProjectProperties.DIST_JAR, "$'{'dist.dir'}'/{0}.jar", true).    //NOI18N
+                    addUpdatedNameProperty(J2SEProjectProperties.APPLICATION_TITLE, "{0}", false).  //NOI18N
+                    setCallback(opsCallback).
+                    build(),
             ProjectConfigurations.createConfigurationProviderBuilder(this, eval, updateHelper).
                     addConfigurationsAffectActions(ActionProvider.COMMAND_RUN, ActionProvider.COMMAND_DEBUG).
                     setCustomizerAction(newConfigCustomizerAction()).
@@ -960,6 +968,31 @@ public final class J2SEProject implements Project {
             public boolean isImportant(@NonNull final String propertyName) {
                 return ProjectProperties.COMPILE_ON_SAVE.equals(propertyName) ||
                 propertyName.startsWith(ProjectProperties.COMPILE_ON_SAVE_UNSUPPORTED_PREFIX);
+            }
+        };
+    }
+
+    @NonNull
+    private static ProjectOperations.Callback newProjectOperationsCallback (
+        @NonNull final J2SEProject project,
+        @NonNull final UpdateProjectImpl projectUpdate) {
+        return new ProjectOperations.Callback() {
+            @Override
+            public void beforeOperation(@NonNull final ProjectOperations.Callback.Operation operation) {
+            }
+            @Override
+            @SuppressWarnings("fallthrough")
+            public void afterOperation(
+                    @NonNull final ProjectOperations.Callback.Operation operation,
+                    @NullAllowed final String newName,
+                    @NullAllowed final Pair<File, Project> oldProject) {
+                switch (operation) {
+                    case COPY:
+                        projectUpdate.setTransparentUpdate(true);
+                    case MOVE:
+                    case RENAME:
+                        project.setName(newName);
+                }
             }
         };
     }

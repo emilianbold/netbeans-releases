@@ -104,6 +104,7 @@ import javax.swing.text.NumberFormatter;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
+import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.issuetable.TableSorter;
 import org.netbeans.modules.localtasks.LocalRepository;
 import org.netbeans.modules.localtasks.task.LocalTask.Attachment;
@@ -342,8 +343,6 @@ final class TaskPanel extends javax.swing.JPanel {
         headerPanel = new javax.swing.JPanel();
         headerField = new javax.swing.JTextField();
         jPanel2 = new javax.swing.JPanel();
-        btnSave = new org.netbeans.modules.bugtracking.util.LinkButton();
-        separatorCancelLabel = new javax.swing.JLabel();
         btnCancel = new org.netbeans.modules.bugtracking.util.LinkButton();
         separatorDismissLabel = new javax.swing.JLabel();
         btnDismiss = new org.netbeans.modules.bugtracking.util.LinkButton();
@@ -493,17 +492,6 @@ final class TaskPanel extends javax.swing.JPanel {
 
         jPanel2.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
 
-        org.openide.awt.Mnemonics.setLocalizedText(btnSave, org.openide.util.NbBundle.getMessage(TaskPanel.class, "TaskPanel.btnSave.text")); // NOI18N
-        btnSave.setToolTipText(org.openide.util.NbBundle.getMessage(TaskPanel.class, "TaskPanel.btnSave.TTtext")); // NOI18N
-        btnSave.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnSaveActionPerformed(evt);
-            }
-        });
-
-        separatorCancelLabel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-        separatorCancelLabel.setFocusable(false);
-
         org.openide.awt.Mnemonics.setLocalizedText(btnCancel, org.openide.util.NbBundle.getMessage(TaskPanel.class, "TaskPanel.btnCancel.text")); // NOI18N
         btnCancel.setToolTipText(org.openide.util.NbBundle.getMessage(TaskPanel.class, "TaskPanel.btnCancel.TTtext")); // NOI18N
         btnCancel.addActionListener(new java.awt.event.ActionListener() {
@@ -550,11 +538,7 @@ final class TaskPanel extends javax.swing.JPanel {
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGap(0, 0, 0)
-                .addComponent(btnSave, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(separatorCancelLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addContainerGap()
                 .addComponent(btnCancel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(separatorDismissLabel)
@@ -575,8 +559,6 @@ final class TaskPanel extends javax.swing.JPanel {
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addGap(0, 0, 0)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                    .addComponent(separatorCancelLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btnSave, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnCancel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(separatorDismissLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btnDismiss, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -674,10 +656,6 @@ final class TaskPanel extends javax.swing.JPanel {
                 .addComponent(mainScrollPane))
         );
     }// </editor-fold>//GEN-END:initComponents
-
-    private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
-        saveChanges();
-    }//GEN-LAST:event_btnSaveActionPerformed
 
     private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
         discardUnsavedChanges();
@@ -819,7 +797,6 @@ final class TaskPanel extends javax.swing.JPanel {
     private org.netbeans.modules.bugtracking.util.LinkButton btnDismiss;
     private org.netbeans.modules.bugtracking.util.LinkButton btnFinish;
     private org.netbeans.modules.bugtracking.util.LinkButton btnOpen;
-    private org.netbeans.modules.bugtracking.util.LinkButton btnSave;
     private javax.swing.JLabel dueDateLabel;
     private javax.swing.JTextField dummyDueDateField;
     private javax.swing.JTextField dummyScheduleDateField;
@@ -838,7 +815,6 @@ final class TaskPanel extends javax.swing.JPanel {
     private javax.swing.JPanel referencesPanel;
     private org.netbeans.modules.bugtracking.util.CollapsibleSectionPanel referencesSection;
     private javax.swing.JLabel scheduleDateLabel;
-    private javax.swing.JLabel separatorCancelLabel;
     private javax.swing.JLabel separatorDismissLabel;
     private javax.swing.JLabel separatorFinishLabel;
     private javax.swing.JLabel separatorOpenLabel;
@@ -921,10 +897,8 @@ final class TaskPanel extends javax.swing.JPanel {
                     unsavedFields.clear();
                 }
                 if (enableMap.isEmpty()) {
-                    btnSave.setEnabled(dirty);
                     btnCancel.setEnabled(dirty);
                 } else {
-                    enableMap.put(btnSave, dirty);
                     enableMap.put(btnCancel, dirty);
                 }
                 
@@ -1175,7 +1149,6 @@ final class TaskPanel extends javax.swing.JPanel {
                         public void run () {
                             unsavedFields.clear();
                             enableComponents(true);
-                            btnSave.setEnabled(!retval[0]);
                             skipReload = false;
                             refreshViewData();
                         }
@@ -1206,7 +1179,6 @@ final class TaskPanel extends javax.swing.JPanel {
                         public void run () {
                             unsavedFields.clear();
                             enableComponents(true);
-                            btnSave.setEnabled(false);
                             btnCancel.setEnabled(false);
                             skipReload = false;
                             refreshViewData();
@@ -1254,7 +1226,7 @@ final class TaskPanel extends javax.swing.JPanel {
                         public void run () {
                             for (Repository r : RepositoryManager.getInstance().getRepositories()) {
                                 if (repositoryId.equals(r.getId())) {
-                                    Issue.open(r, taskId);
+                                    Util.openIssue(r, taskId);
                                     break;
                                 }
                             }

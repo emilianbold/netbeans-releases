@@ -54,9 +54,9 @@ import java.util.Collection;
 public interface IssueProvider<I> {
 
     /**
-     * Issue data were refreshed
+     * Issue data were changed. Fire this to notify e.g. Issue nodes in Tasks Dashboard.
      */
-    public static final String EVENT_ISSUE_REFRESHED = "issue.data_changed"; // NOI18N
+    public static final String EVENT_ISSUE_DATA_CHANGED = "issue.data_changed"; // NOI18N
 
     /**
      * Returns this issues display name. 
@@ -75,7 +75,8 @@ public interface IssueProvider<I> {
     public String getTooltip(I i);
 
     /**
-     * Returns this issues unique ID
+     * Returns this issues unique ID.
+     * 
      * @param i an implementation specific issue instance
      * @return id of the given Issue
      */
@@ -86,14 +87,14 @@ public interface IssueProvider<I> {
      * being superordinate to them. 
      * e.g. the blocks/depends relationship in Bugzilla, or sub-/parent-task in JIRA
      * 
-     * 
      * @param i an implementation specific issue instance
      * @return id-s of subtasks for the given Issue
      */
     public Collection<String> getSubtasks(I i);
 
     /**
-     * Returns this issues summary
+     * Returns this issues summary.
+     * 
      * @param i an implementation specific issue instance
      * @return
      */
@@ -110,7 +111,7 @@ public interface IssueProvider<I> {
     /**
      * Determines if the issue is considered finished 
      * in the means of the particular implementation 
-     * - e.g closed as fixed in case of bugzilla
+     * - e.g closed as fixed in case of bugzilla.
      * 
      * @param i an implementation specific issue instance
      * @return <code>true</code> if finished, otherwise <code>false</code>
@@ -118,7 +119,7 @@ public interface IssueProvider<I> {
     public boolean isFinished(I i);
 
     /**
-     * Refreshes this Issues data from its bugtracking repository
+     * Refreshes this Issues data from its bugtracking repository.
      *
      * <p>
      * In case an error appears during execution, the implementation 
@@ -168,7 +169,8 @@ public interface IssueProvider<I> {
     public void attachFile(I i, File file, String description, boolean isPatch);
 
     /**
-     * Returns this issues controller
+     * Returns this issues controller.
+     * 
      * @param i an implementation specific issue instance
      * @return an IssueController for the given issue
      */

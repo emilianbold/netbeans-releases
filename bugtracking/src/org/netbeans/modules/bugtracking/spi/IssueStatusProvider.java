@@ -122,7 +122,7 @@ import org.netbeans.modules.bugtracking.api.Issue;
 public interface IssueStatusProvider<R, I> {
 
     /**
-     * Determines the {@link Issue} status.
+     * Determines an Issue status.
      */
     public enum Status {
         /**
@@ -152,17 +152,21 @@ public interface IssueStatusProvider<R, I> {
     }
         
     /**
-     * Issue status has changed.<br/>
+     * Issue status has changed. Fire this to notify e.g. Issue nodes in 
+     * Tasks Dashboard where the status is rendered.
+     * <p>
      * Old value should be the status before the change, new value the Status after the change.
+     * </p>
      */
     public static final String EVENT_STATUS_CHANGED = "issue.status_changed"; // NOI18N
 
     /**
+     * Get the Issue Status.
      * 
-     * @param issue
+     * @param i an implementation specific Issue instance
      * @return 
      */
-    public Status getStatus(I issue);
+    public Status getStatus(I i);
 
     /**
      * Sets the information if the user has seen the incoming changes or 
@@ -213,10 +217,10 @@ public interface IssueStatusProvider<R, I> {
      * {@link IssueStatusProvider.Status#INCOMING_MODIFIED}.
      * </p>
      * 
-     * @param issue
-     * @param seen 
+     * @param i an implementation specific Issue instance
+     * @param seen <code>true</code> if the Issue was seen or set as seen by the user 
      */
-    public void setSeenIncoming(I issue, boolean seen);
+    public void setSeenIncoming(I i, boolean seen);
     
     /**
      * Returns unsubmitted issues from the given repository. 
@@ -228,7 +232,7 @@ public interface IssueStatusProvider<R, I> {
      * {@link IssueStatusProvider.Status#OUTGOING_MODIFIED}. 
      * </p>
      * 
-     * @param r repository
+     * @param r an implementation specific Repository instance
      * @return collection of unsubmitted issues
      */
     public Collection<I> getUnsubmittedIssues (R r);
@@ -243,7 +247,7 @@ public interface IssueStatusProvider<R, I> {
      * {@link IssueStatusProvider.Status#OUTGOING_MODIFIED}. 
      * </p> 
      * 
-     * @param i 
+     * @param i an implementation specific Issue instance
      */
     public void discardOutgoing(I i);
 
@@ -262,7 +266,7 @@ public interface IssueStatusProvider<R, I> {
      * {@link IssueStatusProvider.Status#OUTGOING_MODIFIED}. 
      * </p>
      * 
-     * @param i issue data
+     * @param i an implementation specific Issue instance
      * @return <code>true</code> if the task was successfully
      * submitted,<code>false</code> if the task was not submitted for any
      * reason.
@@ -272,17 +276,17 @@ public interface IssueStatusProvider<R, I> {
     /**
      * Registers a PropertyChangeListener to notify about status changes for an issue.
      * 
-     * @param issue
-     * @param listener
+     * @param i an implementation specific Issue instance
+     * @param listener a PropertyChangeListener
      */
-    public void removePropertyChangeListener(I issue, PropertyChangeListener listener);
+    public void removePropertyChangeListener(I i, PropertyChangeListener listener);
 
     /**
      * Unregisters a PropertyChangeListener.
      * 
-     * @param issue
-     * @param listener 
+     * @param i an implementation specific Issue instance
+     * @param listener a PropertyChangeListener
      */
-    public void addPropertyChangeListener(I issue, PropertyChangeListener listener);
+    public void addPropertyChangeListener(I i , PropertyChangeListener listener);
 
 }

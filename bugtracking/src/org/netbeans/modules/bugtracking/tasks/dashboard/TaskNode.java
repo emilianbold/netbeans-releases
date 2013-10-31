@@ -73,6 +73,7 @@ public class TaskNode extends TaskContainerNode implements Comparable<TaskNode>,
     private final IssueImpl task;
     private JPanel panel;
     private TreeLabel lblName;
+    private JLabel lblIcon;
     private Category category;
     private final TaskListener taskListener;
     private final Object LOCK = new Object();
@@ -136,7 +137,7 @@ public class TaskNode extends TaskContainerNode implements Comparable<TaskNode>,
         synchronized (LOCK) {
             labels.clear();
             buttons.clear();
-            JLabel lblIcon = new JLabel(getIcon());
+            lblIcon = new JLabel(getIcon());
             panel.add(lblIcon, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
 
             lblName = new TreeLabel();
@@ -310,11 +311,12 @@ public class TaskNode extends TaskContainerNode implements Comparable<TaskNode>,
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName().equals(IssueImpl.EVENT_ISSUE_REFRESHED)
+            if (evt.getPropertyName().equals(IssueImpl.EVENT_ISSUE_DATA_CHANGED)
                     || IssueStatusProvider.EVENT_STATUS_CHANGED.equals(evt.getPropertyName())) {
                 fireContentChanged();
                 if (lblName != null) {
                     lblName.setToolTipText(task.getTooltip());
+                    lblIcon.setIcon(getIcon());
                 }
             }
         }

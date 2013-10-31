@@ -127,17 +127,8 @@ public class JiraQuery {
         support.removePropertyChangeListener(listener);
     }
 
-    // XXX does this has to be protected
-    public void fireQuerySaved() {
-        support.firePropertyChange(QueryProvider.EVENT_QUERY_SAVED, null, null);
-    }
-
-    protected void fireQueryRemoved() {
-        support.firePropertyChange(QueryProvider.EVENT_QUERY_REMOVED, null, null);
-    }
-
     protected void fireQueryIssuesChanged() {
-        support.firePropertyChange(QueryProvider.EVENT_QUERY_ISSUES_CHANGED, null, null);
+        support.firePropertyChange(QueryProvider.EVENT_QUERY_REFRESHED, null, null);
     }  
     
     public String getDisplayName() {
@@ -296,7 +287,6 @@ public class JiraQuery {
             return;
         }
         repository.removeQuery(this);
-        fireQueryRemoved();
     }
 
     public Status getIssueStatus(String key) {
@@ -316,7 +306,6 @@ public class JiraQuery {
 
     public void setSaved(boolean saved) {
         this.saved = saved;
-        fireQuerySaved();
     }
 
     public boolean isSaved() {
