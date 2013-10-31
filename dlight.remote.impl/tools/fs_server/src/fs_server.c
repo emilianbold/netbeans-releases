@@ -35,6 +35,7 @@ static blocking_queue req_queue;
 static bool log_flag = false;
 static bool persistence = false;
 static bool refresh = false;
+static bool statistics = false;
 static int refresh_sleep = 1;
 
 #define FS_SERVER_MAJOR_VERSION 1
@@ -682,10 +683,11 @@ static void main_loop() {
                     }
                 }
                 if (interval) {
-                    trace("sleeping %i seconds\n", interval);
+                    fprintf(stderr, "fs_server: sleeping %i seconds\n", interval);
                     sleep(interval);
-                    trace("awoke\n");
+                    fprintf(stderr, "fs_server: awoke\n");
                 }
+                continue;
             }
             if (rp_thread_count > 1) {
                 fs_request* new_request = malloc(request->size);
@@ -699,6 +701,9 @@ static void main_loop() {
     state_set_proceed(false);
     blocking_queue_shutdown(&req_queue);
     trace("Max. requests queue size: %d\n", blocking_queue_max_size(&req_queue));
+    if (statistics) {
+        fprintf(stderr, "Max. requests queue size: %d\n", blocking_queue_max_size(&req_queue));
+    }
     trace("Shutting down. Joining threads...\n");
     for (int i = 0; i < rp_thread_count; i++) {
         trace("Shutting down. Joining thread #%i [%ui]\n", i, rp_threads[i]);
@@ -715,14 +720,18 @@ static void usage(char* argv[]) {
             "   -r nsec  set refresh ON and sets refresh interval in seconds\n"
             "   -v verbose: print trace messages\n"
             "   -l log: log all requests into log file\n"
+            "   -s statistics: orint some statistics output to stderr\n"
             , prog_name ? prog_name : argv[0], rp_thread_count);
 }
 
 void process_options(int argc, char* argv[]) {
     int opt;
     int new_thread_count, new_refresh_sleep;
-    while ((opt = getopt(argc, argv, "r:pvt:l")) != -1) {
+    while ((opt = getopt(argc, argv, "r:pvt:ls")) != -1) {
         switch (opt) {
+            case 's':
+                statistics = true;
+                break;
             case 'r':
                 refresh  = true;
                 new_refresh_sleep = atoi(optarg);
