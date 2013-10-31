@@ -2236,6 +2236,11 @@ public class Term extends JComponent implements Accessible {
         try {
             String string;
             string = (String) contents.getTransferData(DataFlavor.stringFlavor);
+            
+            // bug #23703
+            if (string == null) {
+                return;
+            }
             /* DEBUG
             System.out.println("System selection contains '" + string + "'"); // NOI18N
              */
