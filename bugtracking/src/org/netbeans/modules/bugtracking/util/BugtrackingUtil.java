@@ -42,29 +42,8 @@
 
 package org.netbeans.modules.bugtracking.util;
 
-import java.awt.event.ActionEvent;
 import java.io.File;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
 import java.util.MissingResourceException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.JButton;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JComponent;
-import javax.swing.JFormattedTextField;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.event.ChangeListener;
-import javax.swing.text.DateFormatter;
-import javax.swing.text.DefaultFormatterFactory;
 import org.netbeans.api.keyring.Keyring;
 import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
@@ -72,22 +51,13 @@ import org.netbeans.modules.bugtracking.DelegatingConnector;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
 import org.netbeans.modules.bugtracking.ui.selectors.RepositorySelector;
-import org.netbeans.modules.team.ide.spi.IDEServices;
-import org.netbeans.modules.team.ide.spi.IDEServices.DatePickerDialog;
 import org.netbeans.modules.team.ide.spi.ProjectServices;
-import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.actions.Presenter;
-import org.openide.util.ChangeSupport;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -95,7 +65,6 @@ import org.openide.util.RequestProcessor;
  * @author Marian Petras
  */
 public class BugtrackingUtil {
-    private static RequestProcessor parallelRP;
 
     public static void notifyError (final String title, final String message) {
         NotifyDescriptor nd = new NotifyDescriptor(message, title, NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.ERROR_MESSAGE, new Object[] {NotifyDescriptor.OK_OPTION}, NotifyDescriptor.OK_OPTION);

@@ -110,7 +110,6 @@ import org.netbeans.modules.localtasks.LocalRepository;
 import org.netbeans.modules.localtasks.task.LocalTask.Attachment;
 import org.netbeans.modules.localtasks.task.LocalTask.TaskReference;
 import org.netbeans.modules.bugtracking.commons.AttachmentsPanel;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.mylyn.util.NbDateRange;
 import org.netbeans.modules.mylyn.util.localtasks.IssueField;
