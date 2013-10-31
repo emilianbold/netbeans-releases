@@ -388,6 +388,10 @@ static void response_ls(int request_id, const char* path, bool recursive, int ne
             if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
                 continue;
             }
+            // see comment on NFS entries below
+            if (strchr(entry->d_name, '/')) {
+                continue;
+            }
             cnt++;
         }
         rewinddir(d);
@@ -408,6 +412,16 @@ static void response_ls(int request_id, const char* path, bool recursive, int ne
                 break;
             }
             if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
+                continue;
+            }
+            //trace("\tentry: '%s'\n", entry->d_name);            
+            // on NFS entry->d_name may contain '/' or even be absolute!
+            // for example, "/ws" directory can contain 
+            // "bb-11u1", /ws/bb-11u1/packages" and "bb-11u1/packages" entries!
+            // TODO: investigate how to process this properly
+            // for now just ignoring such entries
+            if (strchr(entry->d_name, '/')) {
+                report_error("skipping entry %s\n", entry->d_name);
                 continue;
             }
             strcpy(abspath + base_len + 1, entry->d_name);
