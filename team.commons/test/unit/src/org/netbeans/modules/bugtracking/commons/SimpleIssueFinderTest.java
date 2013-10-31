@@ -40,9 +40,8 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.util;
+package org.netbeans.modules.bugtracking.commons;
 
-import org.netbeans.modules.bugtracking.util.SimpleIssueFinder;
 import org.junit.After;
 import org.junit.Test;
 import org.netbeans.junit.NbTestCase;
@@ -52,11 +51,11 @@ import static org.junit.Assert.*;
  *
  * @author  Marian Petras
  */
-public class BugzillaIssueFinderTest extends NbTestCase {
+public class SimpleIssueFinderTest extends NbTestCase {
 
     private SimpleIssueFinder issueFinder;
 
-    public BugzillaIssueFinderTest(String name) {
+    public SimpleIssueFinderTest(String name) {
         super(name);
     }
 

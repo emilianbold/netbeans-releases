@@ -51,8 +51,10 @@ import java.util.logging.Logger;
 import oracle.eclipse.tools.cloud.dev.tasks.CloudDevClient;
 import oracle.eclipse.tools.cloud.dev.tasks.CloudDevRepositoryConnector;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.netbeans.modules.bugtracking.commons.SimpleIssueFinder;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.BugtrackingSupport;
+import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.bugtracking.spi.IssuePriorityInfo;
 import org.netbeans.modules.bugtracking.spi.IssuePriorityProvider;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
@@ -89,6 +91,7 @@ public class ODCS {
     private IssuePriorityProvider<ODCSIssue> ipp;    
     private BugtrackingSupport<ODCSRepository, ODCSQuery, ODCSIssue> bf;
     private IssueNode.ChangesProvider<ODCSIssue> ocp;
+    private IssueFinder issueFinder;
 
     private void init() {
         rc = MylynRepositoryConnectorProvider.getInstance().getConnector();
@@ -219,4 +222,20 @@ public class ODCS {
         }
         return ocp;
     }    
+    
+    public IssueFinder getODCSIssueFinder() {
+        if(issueFinder == null) {
+            issueFinder = new IssueFinder() {
+                @Override
+                public int[] getIssueSpans(CharSequence text) {
+                    return SimpleIssueFinder.getInstance().getIssueSpans(text);
+                }
+                @Override
+                public String getIssueId(String issueHyperlinkText) {
+                    return SimpleIssueFinder.getInstance().getIssueId(issueHyperlinkText);
+                }
+            };
+        }
+        return issueFinder;
+    }        
 }

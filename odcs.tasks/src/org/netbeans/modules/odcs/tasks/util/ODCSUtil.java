@@ -77,7 +77,8 @@ import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.bugtracking.team.spi.TeamProject;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.commons.ListValuePicker;
-import org.netbeans.modules.bugtracking.util.SimpleIssueFinder;
+import org.netbeans.modules.bugtracking.commons.SimpleIssueFinder;
+import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.odcs.tasks.ODCS;
 import org.netbeans.modules.odcs.tasks.ODCSConnector;
 import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
@@ -206,7 +207,7 @@ public class ODCSUtil {
                 ODCS.getInstance().getStatusProvider(),
                 null, 
                 ODCS.getInstance().getPriorityProvider(odcsRepository),
-                SimpleIssueFinder.getInstance());
+                ODCS.getInstance().getODCSIssueFinder());
     }
 
     public static TaskResolution getResolutionByValue(RepositoryConfiguration rc, String value) {
@@ -433,5 +434,5 @@ public class ODCSUtil {
             EventQueue.invokeLater(r);
         }
     }
-    
+
 }

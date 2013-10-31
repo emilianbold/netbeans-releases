@@ -40,12 +40,11 @@
  * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.util;
+package org.netbeans.modules.bugtracking.commons;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.openide.ErrorManager;
 
 /**
@@ -53,7 +52,7 @@ import org.openide.ErrorManager;
  * @author Tomas Stupka
  * @author Marian Petras
  */
-public class SimpleIssueFinder implements IssueFinder {
+public class SimpleIssueFinder {
     
     private static SimpleIssueFinder instance;
     
@@ -68,13 +67,11 @@ public class SimpleIssueFinder implements IssueFinder {
         return instance;
     }
 
-    @Override
     public int[] getIssueSpans(CharSequence text) {
         int[] result = findBoundaries(text);
         return (result != null) ? result : EMPTY_INT_ARR;
     }
 
-    @Override
     public String getIssueId(String issueHyperlinkText) {
         int pos = issueHyperlinkText.length() - 1;
         while ((pos >= 0) && Impl.isDigit(issueHyperlinkText.charAt(pos))) {

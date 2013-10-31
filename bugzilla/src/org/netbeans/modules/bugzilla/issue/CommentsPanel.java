@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.bugzilla.issue;
 
-import org.netbeans.modules.bugtracking.util.SimpleIssueFinder;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -93,6 +92,7 @@ import org.netbeans.modules.bugtracking.commons.IssueSettingsStorage;
 import org.netbeans.modules.bugtracking.util.HyperlinkSupport;
 import org.netbeans.modules.bugtracking.util.HyperlinkSupport.Link;
 import org.netbeans.modules.bugtracking.commons.LinkButton;
+import org.netbeans.modules.bugtracking.commons.SimpleIssueFinder;
 import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
@@ -329,7 +329,7 @@ public class CommentsPanel extends JPanel {
         HyperlinkSupport.getInstance().registerForTypes(textPane);
         HyperlinkSupport.getInstance().registerForStacktraces(textPane);
         HyperlinkSupport.getInstance().registerForURLs(textPane);
-        HyperlinkSupport.getInstance().registerForIssueLinks(textPane, issueLink, SimpleIssueFinder.getInstance());
+        HyperlinkSupport.getInstance().registerForIssueLinks(textPane, issueLink, Bugzilla.getInstance().getBugzillaIssueFinder());
         
         Caret caret = textPane.getCaret();
         if (caret instanceof DefaultCaret) {

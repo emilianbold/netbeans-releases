@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.odcs.tasks.issue;
 
-import org.netbeans.modules.bugtracking.util.SimpleIssueFinder;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -91,6 +90,7 @@ import org.netbeans.modules.bugtracking.commons.LinkButton;
 import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.mylyn.util.WikiPanel;
 import org.netbeans.modules.mylyn.util.WikiUtils;
+import org.netbeans.modules.odcs.tasks.ODCS;
 import org.netbeans.modules.odcs.tasks.util.ODCSUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -133,7 +133,7 @@ public class CommentsPanel extends JPanel {
         issueLink = new HyperlinkSupport.Link() {
             @Override
             public void onClick(String linkText) {
-                final String issueKey = SimpleIssueFinder.getInstance().getIssueId(linkText);
+                final String issueKey = ODCS.getInstance().getODCSIssueFinder().getIssueId(linkText);
                 RP.post(new Runnable() {
                     @Override
                     public void run() {
@@ -301,7 +301,7 @@ public class CommentsPanel extends JPanel {
         if( UIUtils.isNimbus() ) {
             textPane.setUI( new BasicTextPaneUI() );
         }
-        HyperlinkSupport.getInstance().registerForIssueLinks(textPane, issueLink, SimpleIssueFinder.getInstance());
+        HyperlinkSupport.getInstance().registerForIssueLinks(textPane, issueLink, ODCS.getInstance().getODCSIssueFinder());
         
         Caret caret = textPane.getCaret();
         if (caret instanceof DefaultCaret) {
