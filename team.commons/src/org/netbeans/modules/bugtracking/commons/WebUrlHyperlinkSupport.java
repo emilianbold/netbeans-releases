@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.util;
+package org.netbeans.modules.bugtracking.commons;
 
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Element;
@@ -57,9 +57,7 @@ import javax.swing.text.StyleContext;
 import java.net.URI;
 import javax.swing.JTextPane;
 import javax.swing.text.BadLocationException;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.commons.UIUtils;
-import static org.netbeans.modules.bugtracking.util.WebUrlHyperlinkSupport.SearchMachine.State.*;
+import static org.netbeans.modules.bugtracking.commons.WebUrlHyperlinkSupport.SearchMachine.State.*;
 
 /**
  * Finds http(s) addresses in a text pane and makes hyperlinks out of them.
@@ -74,7 +72,7 @@ class WebUrlHyperlinkSupport {
         try {
             text = doc.getText(0, doc.getLength());
         } catch (BadLocationException ex) {
-            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+            Support.LOG.log(Level.SEVERE, null, ex);
         }
         final int[] boundaries = findBoundaries(text);
         if ((boundaries != null) && (boundaries.length != 0)) {
@@ -123,7 +121,7 @@ class WebUrlHyperlinkSupport {
                             }
                         }
                     } catch (Exception ex) {
-                        BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+                        Support.LOG.log(Level.SEVERE, null, ex);
                     }
                 }
             };
@@ -138,7 +136,7 @@ class WebUrlHyperlinkSupport {
                 HtmlBrowser.URLDisplayer.getDefault().showURL(url);
             } catch (Exception ex) {
                 assert false;
-                BugtrackingManager.LOG.log(Level.WARNING,
+                Support.LOG.log(Level.WARNING,
                                               "Could not open URL: "    //NOI18N
                                                       + hyperlinkText);
             }

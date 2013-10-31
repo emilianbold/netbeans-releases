@@ -66,11 +66,6 @@ import org.openide.util.NbBundle;
  */
 public class BugtrackingUtil {
 
-    public static void notifyError (final String title, final String message) {
-        NotifyDescriptor nd = new NotifyDescriptor(message, title, NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.ERROR_MESSAGE, new Object[] {NotifyDescriptor.OK_OPTION}, NotifyDescriptor.OK_OPTION);
-        DialogDisplayer.getDefault().notifyLater(nd);
-    }          
-        
     public static RepositoryImpl createRepository() {
         return createRepository(true);
     }

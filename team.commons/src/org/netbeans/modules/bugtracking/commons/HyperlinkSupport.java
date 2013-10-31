@@ -39,12 +39,17 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.bugtracking.util;
+package org.netbeans.modules.bugtracking.commons;
 
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Cursor;
+import java.awt.event.ContainerEvent;
+import java.awt.event.ContainerListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
@@ -55,9 +60,7 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.commons.UIUtils;
-import org.netbeans.modules.bugtracking.spi.IssueFinder;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -85,34 +88,64 @@ public final class HyperlinkSupport {
         return instance;
     }
     
-    public void registerForStacktraces(final JTextPane pane) {
+    public interface IssueRefProvider {
+        public int[] getIssueRefSpans(CharSequence text);
+    }
+
+    public void register(Component c) {
+        if(c instanceof Container) {
+            Container container = (Container) c;
+            container.removeContainerListener(regListener);
+            container.addContainerListener(regListener);
+            
+            Component[] components = container.getComponents();
+            for (Component cmp : components) {
+                if(cmp instanceof JTextPane) {
+                    JTextPane tp = (JTextPane) cmp;
+                    if(tp.isEditable()) {
+                        continue;
+                    }
+                    registerForStacktraces(tp);
+                    registerForTypes(tp);
+                    registerForURLs(tp);
+                } else {
+                    register(cmp);
+                }
+            }
+        }          
+    }
+        
+    private void registerForStacktraces(final JTextPane pane) {
         pane.removeMouseMotionListener(motionListener);
         rp.post(new Runnable() {
             @Override
             public void run() {
                 StackTraceSupport.register(pane);
+                pane.removeMouseMotionListener(motionListener);
                 pane.addMouseMotionListener(motionListener);
             }
         });    
     }
     
-    public void registerForTypes(final JTextPane pane) {
+    private void registerForTypes(final JTextPane pane) {
         pane.removeMouseMotionListener(motionListener);
         rp.post(new Runnable() {
             @Override
             public void run() {
                 FindTypesSupport.getInstance().register(pane);
+                pane.removeMouseMotionListener(motionListener);
                 pane.addMouseMotionListener(motionListener);
             }
         });
     }
     
-    public void registerForURLs(final JTextPane pane) {
+    private void registerForURLs(final JTextPane pane) {
         pane.removeMouseMotionListener(motionListener);
         rp.post(new Runnable() {
             @Override
             public void run() {
                 WebUrlHyperlinkSupport.register(pane);
+                pane.removeMouseMotionListener(motionListener);
                 pane.addMouseMotionListener(motionListener);
             }
         });    
@@ -124,23 +157,28 @@ public final class HyperlinkSupport {
             @Override
             public void run() {
                 registerLinkIntern(pane, pos, link);
+                pane.removeMouseMotionListener(motionListener);
                 pane.addMouseMotionListener(motionListener);
             }
         });    
     }
     
-    public void registerForIssueLinks(final JTextPane pane, final Link issueLink, final IssueFinder issueFinder) {
+    public void registerForIssueLinks(final JTextPane pane, final Link issueLink, final IssueRefProvider issueIdProvider) {
         pane.removeMouseMotionListener(motionListener);
         rp.post(new Runnable() {
             @Override
             public void run() {
-                String text = "";
                 try {
-                    text = pane.getStyledDocument().getText(0, pane.getStyledDocument().getLength());
-                } catch (BadLocationException ex) {
-                    BugtrackingManager.LOG.log(Level.INFO, null, ex);
+                    String text = "";
+                    try {
+                        text = pane.getStyledDocument().getText(0, pane.getStyledDocument().getLength());
+                    } catch (BadLocationException ex) {
+                        Support.LOG.log(Level.INFO, null, ex);
+                    }
+                    registerLinkIntern(pane, issueIdProvider.getIssueRefSpans(text), issueLink);
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-                registerLinkIntern(pane, issueFinder.getIssueSpans(text), issueLink);
                 pane.addMouseMotionListener(motionListener);
             }
         });    
@@ -165,6 +203,7 @@ public final class HyperlinkSupport {
                         int length = pos[i+1]-pos[i];
                         doc.setCharacterAttributes(off, length, hlStyle, true);
                     }
+                    pane.removeMouseListener(mouseListener);
                     pane.addMouseListener(mouseListener);
                 }
             });
@@ -186,7 +225,7 @@ public final class HyperlinkSupport {
                     }
                 }
             } catch(Exception ex) {
-                BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+                Support.LOG.log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -209,5 +248,12 @@ public final class HyperlinkSupport {
     public interface Link {
         public void onClick(String linkText);
     }
-    
+
+    private final ContainerListener regListener = new ContainerListener() {
+        @Override
+        public void componentAdded(ContainerEvent e) {
+            register((Container)e.getComponent());
+        }
+        @Override public void componentRemoved(ContainerEvent e) { }
+    };    
 }

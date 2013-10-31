@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.bugtracking.util;
+package org.netbeans.modules.bugtracking.commons;
 
 import java.awt.Component;
 import java.awt.Font;
@@ -64,8 +64,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.*;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.team.ide.spi.IDEServices;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -153,7 +151,7 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
     }
     
     public void register(final JTextPane pane) {
-        IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
+        IDEServices ideServices = Support.getInstance().getIDEServices();
         if(ideServices == null || !ideServices.providesJumpTo()) {
             return;
         }
@@ -172,7 +170,7 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
                     try {
                         l = getHighlightOffsets(doc.getText(0, doc.getLength()));
                     } catch (BadLocationException ex) {
-                        BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+                        Support.LOG.log(Level.SEVERE, null, ex);
                     }
                     List<Highlight> highlights = new ArrayList<Highlight>(l.size());
                     for (int i = 0; i < l.size(); i++) {
@@ -187,7 +185,7 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
             });
             
         } finally {
-            BugtrackingManager.LOG.log(Level.FINE, "{0}.register took  {1}", new Object[]{this.getClass().getName(), System.currentTimeMillis() - t}); // NOI18N
+            Support.LOG.log(Level.FINE, "{0}.register took  {1}", new Object[]{this.getClass().getName(), System.currentTimeMillis() - t}); // NOI18N
         }
     }
 
@@ -285,7 +283,7 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
                         }
                         action.jumpTo(name);
                     } catch(BadLocationException ex) {
-                        BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+                        Support.LOG.log(Level.SEVERE, null, ex);
                     }
                 }
             } else if (SwingUtilities.isRightMouseButton(e)) {
@@ -294,7 +292,7 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
                 popupMenu.show((JTextPane)e.getSource(), e.getPoint().x, e.getPoint().y);
             }
         } catch(Exception ex) {
-            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+            Support.LOG.log(Level.SEVERE, null, ex);
         }
     }
 
@@ -312,7 +310,7 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
     
     private class TypeLink {
         public void jumpTo(String resource) {
-            IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
+            IDEServices ideServices = Support.getInstance().getIDEServices();
             if(ideServices != null) {
                 ideServices.jumpTo(resource, NbBundle.getMessage(FindTypesSupport.class, "LBL_FindType"));  // NOI18N
             }
@@ -376,7 +374,7 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
 //                            }
 //                        }));
                     } catch(Exception ex) {
-                        BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+                        Support.LOG.log(Level.SEVERE, null, ex);
                     }
                     super.setVisible(true);
                 } else {

@@ -84,8 +84,8 @@ import javax.swing.text.DefaultCaret;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.bugtracking.commons.IssueSettingsStorage;
-import org.netbeans.modules.bugtracking.util.HyperlinkSupport;
-import org.netbeans.modules.bugtracking.util.HyperlinkSupport.Link;
+import org.netbeans.modules.bugtracking.commons.HyperlinkSupport;
+import org.netbeans.modules.bugtracking.commons.HyperlinkSupport.Link;
 import org.netbeans.modules.bugtracking.commons.LinkButton;
 import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.mylyn.util.WikiPanel;
@@ -124,27 +124,10 @@ public class CommentsPanel extends JPanel {
     private NewCommentHandler newCommentHandler;
 
     private Set<Long> collapsedComments = Collections.synchronizedSet(new HashSet<Long>());
-    private final Link issueLink;
     private String wikiLanguage = "";
     
     public CommentsPanel() {
         setOpaque( false );
-        
-        issueLink = new HyperlinkSupport.Link() {
-            @Override
-            public void onClick(String linkText) {
-                final String issueKey = ODCS.getInstance().getODCSIssueFinder().getIssueId(linkText);
-                RP.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        ODCSIssue is = issue.getRepository().getIssue(issueKey);
-                        if (is != null) {
-                            ODCSUtil.openIssue(is);
-                        }
-                    }
-                });
-            }
-        };
     }
 
     public void setWikiLanguage(String wikiLanguage) {
@@ -301,7 +284,6 @@ public class CommentsPanel extends JPanel {
         if( UIUtils.isNimbus() ) {
             textPane.setUI( new BasicTextPaneUI() );
         }
-        HyperlinkSupport.getInstance().registerForIssueLinks(textPane, issueLink, ODCS.getInstance().getODCSIssueFinder());
         
         Caret caret = textPane.getCaret();
         if (caret instanceof DefaultCaret) {

@@ -57,7 +57,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.bugtracking.commons.UIUtils;
-import org.netbeans.modules.bugtracking.util.HyperlinkSupport;
 import org.netbeans.modules.mylyn.util.WikiPanel;
 import org.netbeans.modules.mylyn.util.WikiUtils;
 import org.netbeans.modules.spellchecker.api.Spellchecker;
@@ -132,7 +131,6 @@ public class WikiEditPanel extends WikiPanel {
         }
         textCode.setText(wikiFormatText);
         textPreview.setText(htmlFormatText);
-        registerHighlights(textPreview);
         this.repaint();
     }
 
@@ -157,11 +155,7 @@ public class WikiEditPanel extends WikiPanel {
     }
 
     @Override
-    public void registerHighlights(JTextPane wikiPreviewPane) {
-        HyperlinkSupport.getInstance().registerForTypes(wikiPreviewPane);
-        HyperlinkSupport.getInstance().registerForStacktraces(wikiPreviewPane);
-        HyperlinkSupport.getInstance().registerForURLs(wikiPreviewPane);
-    }
+    public void registerHighlights(JTextPane wikiPreviewPane) { }
 
     @Override
     public JTextPane getPreviewPane() {

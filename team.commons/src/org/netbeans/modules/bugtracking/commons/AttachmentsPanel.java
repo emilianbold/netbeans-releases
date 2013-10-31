@@ -687,7 +687,7 @@ public class AttachmentsPanel extends JPanel {
             final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
             handle.start();
             handle.switchToIndeterminate();
-            Support.getParallelRP().post(new Runnable() {
+            Support.getInstance().getParallelRP().post(new Runnable() {
                 @Override
                 public void run() {
                     try {
@@ -730,7 +730,7 @@ public class AttachmentsPanel extends JPanel {
                 final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
                 handle.start();
                 handle.switchToIndeterminate();
-                Support.getParallelRP().post(new Runnable() {
+                Support.getInstance().getParallelRP().post(new Runnable() {
                     @Override
                     public void run() {
                         try {
@@ -751,7 +751,7 @@ public class AttachmentsPanel extends JPanel {
             final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
             handle.start();
             handle.switchToIndeterminate();
-            Support.getParallelRP().post(
+            Support.getInstance().getParallelRP().post(
                 new Runnable() {
                     @Override
                     public void run() {

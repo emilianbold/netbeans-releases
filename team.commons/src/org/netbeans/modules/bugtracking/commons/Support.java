@@ -56,7 +56,7 @@ import org.openide.util.RequestProcessor;
 class Support {
     private static Support instance;
     static final Logger LOG = Logger.getLogger(Support.class.getName());
-    private static RequestProcessor parallelRP;
+    private RequestProcessor parallelRP;
 
     public static synchronized Support getInstance() {
         if(instance == null) {
@@ -77,7 +77,7 @@ class Support {
         return NbPreferences.forModule(Support.class);
     }    
     
-    public static RequestProcessor getParallelRP () {
+    public RequestProcessor getParallelRP () {
         if (parallelRP == null) {
             parallelRP = new RequestProcessor("Bugtracking commons parallel tasks", 5, true); //NOI18N
         }

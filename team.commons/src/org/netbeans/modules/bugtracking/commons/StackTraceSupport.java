@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008-2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.util;
+package org.netbeans.modules.bugtracking.commons;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
@@ -63,8 +63,6 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.team.ide.spi.IDEServices;
 import org.openide.util.NbBundle;
 
@@ -294,14 +292,14 @@ class StackTraceSupport {
     }
 
     static void open(String path, final int line) {
-        IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
+        IDEServices ideServices = Support.getInstance().getIDEServices();
         if(ideServices != null) {
             ideServices.openDocument(path, line);
         }
     }
 
     static boolean isAvailable() {
-        IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
+        IDEServices ideServices = Support.getInstance().getIDEServices();
         return ideServices != null && ideServices.providesOpenDocument();
     }
     
@@ -311,15 +309,15 @@ class StackTraceSupport {
         if(path == null) {
             return;
         }
-        final IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
+        final IDEServices ideServices = Support.getInstance().getIDEServices();
         if(ideServices == null || !ideServices.providesOpenHistory()) {
             return;
         }
-        BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+        Support.getInstance().getParallelRP().post(new Runnable() {
             @Override
             public void run() {
                 if(!ideServices.openHistory(path, line)) {
-                    BugtrackingUtil.notifyError(Bundle.CTL_ShowHistoryTitle(), Bundle.MSG_NoHistory(path));
+                    Util.notifyError(Bundle.CTL_ShowHistoryTitle(), Bundle.MSG_NoHistory(path));
                 }
             }
         });
@@ -334,7 +332,7 @@ class StackTraceSupport {
         try {
             text = doc.getText(0, doc.getLength());
         } catch (BadLocationException ex) {
-            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+            Support.LOG.log(Level.SEVERE, null, ex);
         }
         final String comment = text;
         final List<StackTracePosition> stacktraces = find(comment);
@@ -391,7 +389,7 @@ class StackTraceSupport {
         try {
             doc.insertString(doc.getLength(), comment.substring(last), defStyle);
         } catch (BadLocationException ex) {
-            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+            Support.LOG.log(Level.SEVERE, null, ex);
         }
     }
       
@@ -399,7 +397,7 @@ class StackTraceSupport {
         try {
             doc.insertString(doc.getLength(), comment.substring(last, start), defStyle);
         } catch (BadLocationException ex) {
-            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+            Support.LOG.log(Level.SEVERE, null, ex);
         }
     }
     
@@ -418,12 +416,12 @@ class StackTraceSupport {
                                 try {
                                     StackTraceAction.openStackTrace(elem.getDocument().getText(elem.getStartOffset(), elem.getEndOffset() - elem.getStartOffset()), false);
                                 } catch(Exception ex) {
-                                    BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+                                    Support.LOG.log(Level.SEVERE, null, ex);
                                 }
                             }
                         }
                     } catch(Exception ex) {
-                        BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+                        Support.LOG.log(Level.SEVERE, null, ex);
                     }
                 }
                 @Override
@@ -455,7 +453,7 @@ class StackTraceSupport {
                                 menu.show((JTextPane)e.getSource(), e.getX(), e.getY());
                             }
                         } catch(Exception ex) {
-                            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+                            Support.LOG.log(Level.SEVERE, null, ex);
                         }
                     }
                 }

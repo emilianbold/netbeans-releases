@@ -77,7 +77,6 @@ import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.commons.IssueSettingsStorage;
-import org.netbeans.modules.bugtracking.util.HyperlinkSupport;
 import org.netbeans.modules.bugtracking.commons.LinkButton;
 import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.jira.Jira;
@@ -95,7 +94,6 @@ public class CommentsPanel extends JPanel {
     private final static String REPLY_TO_PROPERTY = "replyTo"; // NOI18N
     private final static String QUOTE_PREFIX = "> "; // NOI18N
     private NbJiraIssue issue;
-    private HyperlinkSupport.Link issueLink;
     private NewCommentHandler newCommentHandler;
 
     private Set<Long> collapsedComments = Collections.synchronizedSet(new HashSet<Long>());
@@ -114,21 +112,6 @@ public class CommentsPanel extends JPanel {
 
     public CommentsPanel() {
         setOpaque( false );
-        issueLink = new HyperlinkSupport.Link() {
-            @Override
-            public void onClick(String linkText) {
-                final String issueKey = JiraIssueFinder.getInstance().getIssueId(linkText);
-                RP.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        NbJiraIssue is = issue.getRepository().getIssue(issueKey);
-                        if (is != null) {
-                            JiraUtils.openIssue(is);
-                        }
-                    }
-                });
-            }
-        };
     }
 
     public void setIssue(NbJiraIssue issue) {
@@ -290,12 +273,7 @@ public class CommentsPanel extends JPanel {
             ((DefaultCaret)caret).setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
         }
 
-        // Stack-traces
         textPane.setText(comment);
-        HyperlinkSupport.getInstance().registerForTypes(textPane);
-        HyperlinkSupport.getInstance().registerForStacktraces(textPane);
-        HyperlinkSupport.getInstance().registerForURLs(textPane);
-        HyperlinkSupport.getInstance().registerForIssueLinks(textPane, issueLink, JiraIssueFinder.getInstance());
         
         textPane.setBackground(blueBackground);
         textPane.setBorder(BorderFactory.createEmptyBorder(3,3,3,3));
