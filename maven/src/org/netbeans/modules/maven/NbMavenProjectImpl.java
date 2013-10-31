@@ -266,11 +266,11 @@ public final class NbMavenProjectImpl implements Project {
             req.setPom(projectFile);
             req.setNoSnapshotUpdates(true);
             req.setUpdateSnapshots(false);
-            Properties props = MavenProjectCache.createSystemPropsForProjectLoading(null);
+            Properties props = MavenProjectCache.createSystemPropsForProjectLoading();
             if (properties != null) {
-                props.putAll(properties);
+                req.setUserProperties(props);
             }
-            req.setUserProperties(props);
+            req.setSystemProperties(props);
             //MEVENIDE-634 i'm wondering if this fixes the issue
             req.setInteractiveMode(false);
             req.setOffline(true);
@@ -318,8 +318,9 @@ public final class NbMavenProjectImpl implements Project {
         req.setInteractiveMode(false);
         req.setRecursive(false);
         req.setOffline(true);
-        req.setUserProperties(MavenProjectCache.createSystemPropsForProjectLoading(active.getProperties()));
-
+        req.setSystemProperties(MavenProjectCache.createSystemPropsForProjectLoading());
+        req.setUserProperties(MavenProjectCache.createUserPropsForProjectLoading(active.getProperties()));
+        
         ProjectBuildingRequest request = req.getProjectBuildingRequest();
         request.setRemoteRepositories(project.getRemoteArtifactRepositories());
         DefaultMaven maven = (DefaultMaven) embedder.lookupComponent(Maven.class);
@@ -354,9 +355,12 @@ public final class NbMavenProjectImpl implements Project {
         ActiveJ2SEPlatformProvider platformProvider = getLookup().lookup(ActiveJ2SEPlatformProvider.class);
         if (platformProvider != null) { // may be null inside PackagingProvider
             props.putAll(platformProvider.getJavaPlatform().getSystemProperties());
-        }
-        props.putAll(configProvider.getActiveConfiguration().getProperties());
+        }       
         return props;
+    }
+    
+    public  Map<? extends String,? extends String> createUserPropsForPropertyExpressions() {
+         return NbCollections.checkedMapByCopy(configProvider.getActiveConfiguration().getProperties(), String.class, String.class, true);
     }
 
     /**

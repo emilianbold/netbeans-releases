@@ -165,7 +165,8 @@ public final class MavenProjectCache {
             // #135070
             req.setRecursive(false);
             req.setOffline(true);
-            req.setUserProperties(createSystemPropsForProjectLoading(active.getProperties()));
+            req.setUserProperties(createUserPropsForProjectLoading(active.getProperties()));
+            req.setSystemProperties(createSystemPropsForProjectLoading());
             res = projectEmbedder.readProjectWithDependencies(req, true);
             newproject = res.getProject();
             
@@ -274,15 +275,22 @@ public final class MavenProjectCache {
     }
 
     //#158700
-    public static Properties createSystemPropsForProjectLoading(Map<String, String> activeConfiguration) {
+    public static Properties createSystemPropsForProjectLoading() {
         Properties props = cloneStaticProps();
-        if (activeConfiguration != null) {
-            props.putAll(activeConfiguration);
-        }
+       
         //TODO the properties for java.home and maybe others shall be relevant to the project setup not ide setup.
         // we got a chicken-egg situation here, the jdk used in project can be defined in the pom.xml file.
         return props;
-    }  
+    }
+    
+    public static Properties createUserPropsForProjectLoading(Map<String, String> activeConfiguration) {
+        Properties props = new Properties();
+        if (activeConfiguration != null) {
+            props.putAll(activeConfiguration);
+        }
+        return props;
+    }
+    
     
     private static Mutex getMutex(File pomFile) {
         synchronized (file2Mutex) {
