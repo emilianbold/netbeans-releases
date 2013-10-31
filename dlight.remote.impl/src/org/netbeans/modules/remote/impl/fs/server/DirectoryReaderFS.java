@@ -218,7 +218,6 @@ public class DirectoryReaderFS implements DirectoryReader {
 
     private List<DirEntry> readEntries(FSSResponse response, String path, int cnt, long reqId) 
             throws IOException, InterruptedException {
-        boolean responseIsRead = false;
         try {
             int realCnt = 0;
             RemoteLogger.finest("Reading response #{0} from fs_server for directry {1})",
@@ -238,7 +237,6 @@ public class DirectoryReaderFS implements DirectoryReader {
             }
             RemoteLogger.finest("Proceeing response #{0} from fs_server for directry {1}",
                     reqId, path);
-            responseIsRead = true;
             List<DirEntry> result = new ArrayList<DirEntry>(cnt);
             for (FSSResponse.Package pkg : packages) {
                 try {

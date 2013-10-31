@@ -152,7 +152,6 @@ import org.openide.util.RequestProcessor;
                         RemoteLogger.info("error: empty line for " + traceName);
                         continue;
                     }
-                    char c = line.charAt(0);
                     Buffer buf = new Buffer(line);
                     char respKind = buf.getChar();
                     int respId = buf.getInt();
