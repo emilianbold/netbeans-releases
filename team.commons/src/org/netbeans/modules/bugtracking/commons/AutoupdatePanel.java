@@ -46,7 +46,7 @@
  * Created on Jul 2, 2009, 6:52:07 PM
  */
 
-package org.netbeans.modules.bugtracking.util;
+package org.netbeans.modules.bugtracking.commons;
 
 import org.openide.util.NbBundle;
 

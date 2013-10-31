@@ -45,7 +45,7 @@ package org.netbeans.modules.bugzilla.util;
 import java.awt.Color;
 import java.util.Collections;
 import java.util.MissingResourceException;
-import org.netbeans.modules.bugtracking.util.ListValuePicker;
+import org.netbeans.modules.bugtracking.commons.ListValuePicker;
 import java.util.logging.Level;
 import javax.swing.JButton;
 import javax.swing.JPanel;

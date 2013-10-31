@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.bugtracking.util;
 
+import org.netbeans.modules.bugtracking.commons.TextUtils;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;

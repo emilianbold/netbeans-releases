@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.bugtracking.util;
+package org.netbeans.modules.bugtracking.commons;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -72,7 +72,6 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.NbBundle;
 
@@ -261,7 +260,7 @@ public class LinkButton extends JButton implements MouseListener, FocusListener 
                     try {
                         HtmlBrowser.URLDisplayer.getDefault().showURL(new URL("mailto:" + mail)); // NOI18N
                     } catch (MalformedURLException ex) {
-                        BugtrackingManager.LOG.log(Level.INFO, "unable to invoke {0}", mail); // NOI18N
+                        Support.LOG.log(Level.INFO, "unable to invoke {0}", mail); // NOI18N
                     }
                 }
             });  

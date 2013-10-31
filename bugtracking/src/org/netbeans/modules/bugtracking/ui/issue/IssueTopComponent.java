@@ -252,7 +252,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         findIssuesLabel = new javax.swing.JLabel();
         repoLabel = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
-        newButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+        newButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
         jSeparator1 = new javax.swing.JSeparator();
         issuePanel = new javax.swing.JPanel();
         preparingLabel = new javax.swing.JLabel();
@@ -456,7 +456,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     private javax.swing.JPanel issuePanel;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JSeparator jSeparator1;
-    private org.netbeans.modules.bugtracking.util.LinkButton newButton;
+    private org.netbeans.modules.bugtracking.commons.LinkButton newButton;
     private javax.swing.JLabel preparingLabel;
     private javax.swing.JLabel repoLabel;
     private javax.swing.JPanel repoPanel;

@@ -474,7 +474,7 @@ public class Actions {
         if (taskNodes.length == 1) {
             schedule = taskNodes[0].getTask().getSchedule();
         }
-        final BugtrackingUtil.SchedulingMenu scheduleMenu = BugtrackingUtil.createScheduleMenu(schedule);
+        final DashboardUtils.SchedulingMenu scheduleMenu = DashboardUtils.createScheduleMenu(schedule);
 
         //TODO weak listener??
         final ChangeListener listener = new ChangeListener() {

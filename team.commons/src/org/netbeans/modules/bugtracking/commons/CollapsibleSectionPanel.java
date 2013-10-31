@@ -39,10 +39,13 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.bugtracking.util;
+package org.netbeans.modules.bugtracking.commons;
 
+import org.netbeans.modules.bugtracking.commons.LinkButton;
 import java.awt.Color;
-import java.awt.Dimension;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
@@ -55,7 +58,7 @@ import javax.swing.UIManager;
  *
  * @author Ondrej Vrabec
  */
-public final class SectionPanel extends javax.swing.JPanel {
+public final class CollapsibleSectionPanel extends javax.swing.JPanel implements FocusListener {
 
     final boolean isGTK = "GTK".equals( UIManager.getLookAndFeel().getID() );
     final boolean isNimbus = "Nimbus".equals( UIManager.getLookAndFeel().getID() );
@@ -64,18 +67,19 @@ public final class SectionPanel extends javax.swing.JPanel {
     /**
      * Creates new form CollapsibleSectionPanel
      */
-    public SectionPanel () {
+    public CollapsibleSectionPanel () {
         initComponents();
         Color c = getHeaderBackground();
         headerPanel.setBackground(c);
+        sectionButton1.addFocusListener(this);
     }
 
     public void setLabel (String label) {
-        lblTitle.setText(label);
+        sectionButton1.setText(label);
     }
 
     public String getLabel () {
-        return lblTitle.getText();
+        return sectionButton1.getText();
     }
 
     public void setContent (JComponent content) {
@@ -83,30 +87,56 @@ public final class SectionPanel extends javax.swing.JPanel {
         this.content = content;
     }
 
-    public JLabel getLabelComponent () {
-        return lblTitle;
+    public AbstractButton getLabelComponent () {
+        return sectionButton1;
+    }
+
+    public boolean isExpanded () {
+        return sectionButton1.isSelected();
+    }
+
+    public void setExpanded (boolean expanded) {
+        sectionButton1.setSelected(expanded);
+        sectionButtonStateChanged();
     }
 
     public void setActions (Action[] sectionActions) {
-        ActionsBuilder builder = new ActionsBuilder(actionsPanel);
+        ActionsBuilder builder = new ActionsBuilder(actionsPanel, this);
         for (Action action : sectionActions) {
             builder.addAction(action);
         }
         builder.finish();
     }
 
+    @Override
+    public void focusGained (FocusEvent e) {
+        focusEvent(e);
+    }
+
+    @Override
+    public void focusLost (FocusEvent e) {
+        focusEvent(e);
+    }
+
     private Color getHeaderBackground () {
-        if (isAqua) {
-            Color defBk = UIManager.getColor("NbExplorerView.background");
-            if (null == defBk) {
-                defBk = Color.gray;
+        if (sectionButton1.isFocusOwner()) {
+            if (isGTK || isNimbus) {
+                return UIManager.getColor("Tree.selectionBackground"); //NOI18N
             }
-            return new Color(defBk.getRed() - 10, defBk.getGreen() - 10, defBk.getBlue() - 10);
+            return UIManager.getColor("PropSheet.selectedSetBackground"); //NOI18N
+        } else {
+            if (isAqua) {
+                Color defBk = UIManager.getColor("NbExplorerView.background");
+                if (null == defBk) {
+                    defBk = Color.gray;
+                }
+                return new Color(defBk.getRed() - 10, defBk.getGreen() - 10, defBk.getBlue() - 10);
+            }
+            if (isGTK || isNimbus) {
+                return new Color(UIManager.getColor("Menu.background").getRGB());//NOI18N
+            }
+            return UIManager.getColor("PropSheet.setBackground"); //NOI18N
         }
-        if (isGTK || isNimbus) {
-            return new Color(UIManager.getColor("Menu.background").getRGB());//NOI18N
-        }
-        return UIManager.getColor("PropSheet.setBackground"); //NOI18N
     }
 
     /**
@@ -121,7 +151,6 @@ public final class SectionPanel extends javax.swing.JPanel {
         headerPanel = new javax.swing.JPanel();
         actionsPanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
-        lblTitle = new javax.swing.JLabel();
 
         javax.swing.GroupLayout dummyContentPanelLayout = new javax.swing.GroupLayout(dummyContentPanel);
         dummyContentPanel.setLayout(dummyContentPanelLayout);
@@ -135,6 +164,13 @@ public final class SectionPanel extends javax.swing.JPanel {
         );
 
         headerPanel.setBackground(getHeaderBackground());
+
+        sectionButton1.setSelected(true);
+        sectionButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sectionButton1ActionPerformed(evt);
+            }
+        });
 
         actionsPanel.setOpaque(false);
 
@@ -153,16 +189,14 @@ public final class SectionPanel extends javax.swing.JPanel {
                 .addComponent(jLabel1))
         );
 
-        org.openide.awt.Mnemonics.setLocalizedText(lblTitle, org.openide.util.NbBundle.getMessage(SectionPanel.class, "SectionPanel.title")); // NOI18N
-
         javax.swing.GroupLayout headerPanelLayout = new javax.swing.GroupLayout(headerPanel);
         headerPanel.setLayout(headerPanelLayout);
         headerPanelLayout.setHorizontalGroup(
             headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(headerPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(lblTitle)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(0, 0, 0)
+                .addComponent(sectionButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(0, 0, 0)
                 .addComponent(actionsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -172,7 +206,8 @@ public final class SectionPanel extends javax.swing.JPanel {
                 .addGap(0, 0, 0)
                 .addGroup(headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
                     .addComponent(actionsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(lblTitle)))
+                    .addComponent(sectionButton1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(0, 0, 0))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -194,21 +229,38 @@ public final class SectionPanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void sectionButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sectionButton1ActionPerformed
+        sectionButtonStateChanged();
+    }//GEN-LAST:event_sectionButton1ActionPerformed
+
+    private void sectionButtonStateChanged () {
+        content.setVisible(sectionButton1.isSelected());
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel actionsPanel;
     private final javax.swing.JPanel dummyContentPanel = new javax.swing.JPanel();
     private javax.swing.JPanel headerPanel;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel lblTitle;
+    private final org.netbeans.modules.bugtracking.commons.TransparentSectionButton sectionButton1 = new org.netbeans.modules.bugtracking.commons.TransparentSectionButton();
     // End of variables declaration//GEN-END:variables
     private JComponent content = dummyContentPanel;
+
+    private void focusEvent (FocusEvent e) {
+        if (sectionButton1 == e.getSource()) {
+            Color c = getHeaderBackground();
+            headerPanel.setBackground(c);
+        }
+    }
 
     private static class ActionsBuilder {
         private final GroupLayout.SequentialGroup horizontalSeqGroup;
         private final GroupLayout.ParallelGroup verticalParallelGroup;
         private boolean notEmpty = false;
+        private final FocusListener focusListener;
 
-        public ActionsBuilder (JPanel panel) {
+        public ActionsBuilder (JPanel panel, FocusListener listener) {
+            this.focusListener = listener;
             panel.removeAll();
             GroupLayout layout = (GroupLayout) panel.getLayout();
             horizontalSeqGroup = layout.createSequentialGroup();
@@ -227,6 +279,7 @@ public final class SectionPanel extends javax.swing.JPanel {
             String name = (String) action.getValue(Action.NAME);
             LinkButton btn = new LinkButton(name);
             btn.addActionListener(action);
+            btn.addFocusListener(focusListener);
             
             if (notEmpty) {
                 JLabel separator = new javax.swing.JLabel();

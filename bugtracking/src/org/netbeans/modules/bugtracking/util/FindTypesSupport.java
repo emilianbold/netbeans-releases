@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.bugtracking.util;
 
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -67,6 +68,7 @@ import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.*;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.team.ide.spi.IDEServices;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;

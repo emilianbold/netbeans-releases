@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.bugtracking.util;
+package org.netbeans.modules.bugtracking.commons;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -55,7 +55,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.openide.modules.Places;
 
 /**
@@ -102,7 +101,7 @@ public class IssueSettingsStorage {
             }
             return s;
         } catch (IOException ex) {
-            BugtrackingManager.LOG.log(Level.WARNING, repoUrl + " " + id, ex);
+            Support.LOG.log(Level.WARNING, repoUrl + " " + id, ex);
         } finally {
             l.release();
         }
@@ -140,7 +139,7 @@ public class IssueSettingsStorage {
                 fos.close();
             }
         } catch (IOException ex) {
-            BugtrackingManager.LOG.log(Level.WARNING, repoUrl + " " + id, ex);
+            Support.LOG.log(Level.WARNING, repoUrl + " " + id, ex);
         } finally {
             l.release();
         }

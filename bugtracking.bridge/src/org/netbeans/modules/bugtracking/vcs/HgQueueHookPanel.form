@@ -106,7 +106,7 @@
         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
       </AuxValues>
     </Component>
-    <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="changeFormatButton">
+    <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="changeFormatButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/bugtracking/vcs/Bundle.properties" key="HgQueueHookPanel.changeFormatButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>

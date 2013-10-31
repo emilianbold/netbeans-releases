@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.bugtracking.util;
+package org.netbeans.modules.bugtracking.commons;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -147,7 +147,7 @@ public class AttachmentPanel extends javax.swing.JPanel implements DocumentListe
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        deleteButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+        deleteButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
         descriptionLabel = new javax.swing.JLabel();
         descriptionField = new javax.swing.JTextField();
         fileTypeLabel = new javax.swing.JLabel();
@@ -282,7 +282,7 @@ public class AttachmentPanel extends javax.swing.JPanel implements DocumentListe
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     final javax.swing.JButton browseButton = new javax.swing.JButton();
-    private org.netbeans.modules.bugtracking.util.LinkButton deleteButton;
+    private org.netbeans.modules.bugtracking.commons.LinkButton deleteButton;
     private javax.swing.JTextField descriptionField;
     private javax.swing.JLabel descriptionLabel;
     final javax.swing.JTextField fileField = new javax.swing.JTextField();
@@ -290,7 +290,7 @@ public class AttachmentPanel extends javax.swing.JPanel implements DocumentListe
     private javax.swing.JLabel fileTypeLabel;
     final javax.swing.JCheckBox patchChoice = new javax.swing.JCheckBox();
     final javax.swing.JLabel patchLabel = new javax.swing.JLabel();
-    final org.netbeans.modules.bugtracking.util.LinkButton viewButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+    final org.netbeans.modules.bugtracking.commons.LinkButton viewButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
     // End of variables declaration//GEN-END:variables
 
     void addChangeListener (ChangeListener changeListener) {
