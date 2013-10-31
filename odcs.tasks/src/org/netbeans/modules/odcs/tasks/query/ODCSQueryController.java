@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.odcs.tasks.query;
 
+import org.netbeans.modules.bugtracking.commons.LogUtils;
 import com.tasktop.c2c.server.common.service.domain.criteria.Criteria;
 import com.tasktop.c2c.server.common.service.domain.criteria.CriteriaBuilder;
 import com.tasktop.c2c.server.common.service.domain.criteria.CriteriaParser;

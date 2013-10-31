@@ -44,6 +44,7 @@ package org.netbeans.modules.bugtracking.api;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import org.netbeans.modules.bugtracking.IssueImpl;
+import org.netbeans.modules.bugtracking.commons.LogUtils;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
@@ -260,6 +261,7 @@ public final class Issue {
      * @param close <code>true<code> in case this issue should be closed.
      */
     public void addComment(String comment, boolean close) {
+        LogUtils.logBugtrackingUsage(impl.getRepositoryImpl().getConnectorId(), "COMMIT_HOOK"); // NOI18N
         impl.addComment(comment, close);
     }
     
