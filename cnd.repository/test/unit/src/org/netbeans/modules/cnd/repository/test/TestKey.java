@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.repository.test;
 
 import java.io.IOException;
+import org.netbeans.modules.cnd.repository.impl.spi.UnitsConverter;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
@@ -108,11 +109,15 @@ public class TestKey implements Key, SelfPersistent {
     }
 
     @Override
-    public final boolean equals(int unitThis, Key obj, int unitObject) {
-        if (unitThis != unitObject) {
+    public final boolean equals(UnitsConverter unitsConverter, Key object) {
+        if (object == null || (this.getClass() != object.getClass())) {
+            return false;
+        }        
+        if ((unitsConverter != null  && unitsConverter.clientToLayer(unitId) != unitsConverter.clientToLayer(object.getUnitId())) || 
+                unitsConverter == null && unitId != ((TestKey)object).unitId) {
             return false;
         }
-        final TestKey other = (TestKey) obj;
+        final TestKey other = (TestKey) object;
         if (this.key != other.key && (this.key == null || !this.key.equals(other.key))) {
             return false;
         }
@@ -123,28 +128,38 @@ public class TestKey implements Key, SelfPersistent {
     }
 
     @Override
-    public final boolean equals(Object obj) {
-        if (obj == null) {
+    public final boolean equals(Object object) {
+        if (object == null || (this.getClass() != object.getClass())) {
+            return false;
+        } 
+        
+        final TestKey other = (TestKey) object;
+        if (unitId != other.unitId) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
+        if (this.key != other.key && (this.key == null || !this.key.equals(other.key))) {
             return false;
         }
-        final TestKey other = (TestKey) obj;
-        return equals(unitId, other, other.unitId);
+        if (this.unit != other.unit && (this.unit == null || !this.unit.equals(other.unit))) {
+            return false;
+        }
+        return this.behavior == other.behavior;        
     }
 
     @Override
-    public final int hashCode(int unitID) {
+    public final int hashCode(UnitsConverter unitsConverter) {
         int hash = this.key != null ? this.key.hashCode() : 0;
         hash = 59 * hash + (this.unit != null ? this.unit.hashCode() : 0);
         hash = 59 * hash + (this.behavior != null ? this.behavior.hashCode() : 0);
-        return hash + unitID;
+        return hash + (unitsConverter == null ? unitId : unitsConverter.clientToLayer(unitId));
     }
 
     @Override
     public final int hashCode() {
-        return hashCode(unitId);
+        int hash = this.key != null ? this.key.hashCode() : 0;
+        hash = 59 * hash + (this.unit != null ? this.unit.hashCode() : 0);
+        hash = 59 * hash + (this.behavior != null ? this.behavior.hashCode() : 0);
+        return hash + unitId;
     }
     
     @Override

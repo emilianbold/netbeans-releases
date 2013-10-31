@@ -270,8 +270,9 @@ public final class Terminal extends JComponent {
 	public void titleChanged(String title) {
 	    if (!customTitle) {
 		final String prefix = "...";			// NOI18N
-		if (prefix.length() + title.length() > MAX_TITLE_LENGTH) {
-		    title = prefix + title.substring(title.length() - MAX_TITLE_LENGTH);
+		final int currentLength = prefix.length() + title.length();
+		if (currentLength > MAX_TITLE_LENGTH) {
+		    title = prefix + title.substring(currentLength - MAX_TITLE_LENGTH);
 		}
 		setTitle(title);
 	    }
