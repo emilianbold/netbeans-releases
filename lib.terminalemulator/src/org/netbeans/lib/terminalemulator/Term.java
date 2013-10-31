@@ -2237,7 +2237,7 @@ public class Term extends JComponent implements Accessible {
             String string;
             string = (String) contents.getTransferData(DataFlavor.stringFlavor);
             
-            // bug #23703
+            // bug #237034
             if (string == null) {
                 return;
             }
