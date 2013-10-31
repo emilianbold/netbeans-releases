@@ -50,7 +50,6 @@ import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.j2se.setup.J2SESetup;
 import org.netbeans.jellytools.EditorOperator;
 import static org.netbeans.jellytools.JellyTestCase.emptyConfiguration;
-import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
@@ -74,7 +73,7 @@ public class PasteInEditorTest extends PerformanceTestCase {
      */
     public PasteInEditorTest(String testName) {
         super(testName);
-        expectedTime = 200;
+        expectedTime = 1000;
         WAIT_AFTER_OPEN = 400;
     }
 
@@ -86,12 +85,15 @@ public class PasteInEditorTest extends PerformanceTestCase {
      */
     public PasteInEditorTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        expectedTime = 200;
+        expectedTime = 1000;
         WAIT_AFTER_OPEN = 400;
     }
 
     public static Test suite() {
-        return emptyConfiguration().addTest(J2SESetup.class).addTest(PasteInEditorTest.class).suite();
+        return emptyConfiguration()
+                .addTest(J2SESetup.class, "testCloseMemoryToolbar", "testOpenDataProject")
+                .addTest(PasteInEditorTest.class)
+                .suite();
     }
 
     public void testPasteInEditor() {
