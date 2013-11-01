@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,37 +34,44 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.util;
+package org.netbeans.modules.bugtracking.commons;
 
-import java.util.Calendar;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertTrue;
-import junit.framework.TestCase;
-import org.openide.util.HelpCtx;
+import java.io.File;
+import java.io.IOException;
+import org.netbeans.modules.team.ide.spi.IDEServices;
 
 /**
  *
- * @author tomas
+ * @author Tomas Stupka
  */
-public class AutoupdateSupportTest extends TestCase {
-
-    public void testCheckedToday() {
-        AutoupdateSupport as = new AutoupdateSupport(null, null, null);
-        assertFalse(as.wasCheckedToday(-1));                           // never
-
-        assertFalse(as.wasCheckedToday(1L));                           // a long long time ago
-
-        Calendar c = Calendar.getInstance();
-        c.add(Calendar.HOUR, -24);                                      // yesterday
-        assertFalse(as.wasCheckedToday(c.getTime().getTime()));
-
-        assertTrue(as.wasCheckedToday(System.currentTimeMillis()));    // now
+public final class PatchUtils {
+    
+    public static boolean isAvailable() {
+        IDEServices ideServices = Support.getInstance().getIDEServices();
+        return ideServices != null && ideServices.providesPatchUtils();
+    }
+    
+    public static boolean isPatch(File file) throws IOException{
+        IDEServices ideServices = Support.getInstance().getIDEServices();
+        return ideServices != null && ideServices.providesPatchUtils() && ideServices.isPatch(file);
+    }
+    
+    /**
+     * 
+     * @param patchFile
+     */
+    public static void applyPatch(File patchFile) {
+        IDEServices ideServices = Support.getInstance().getIDEServices();
+        assert ideServices != null : "do not call this if patch utils not provided!";
+        if(ideServices != null && ideServices.providesPatchUtils()) {
+            ideServices.applyPatch(patchFile);
+        }
     }
 
 }

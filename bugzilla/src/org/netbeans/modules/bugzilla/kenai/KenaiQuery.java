@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.bugzilla.kenai;
 
-import org.netbeans.modules.bugtracking.util.LogUtils;
+import org.netbeans.modules.bugtracking.commons.LogUtils;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;

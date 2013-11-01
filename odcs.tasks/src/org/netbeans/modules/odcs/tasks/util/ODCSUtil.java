@@ -76,7 +76,7 @@ import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.bugtracking.team.spi.TeamProject;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
-import org.netbeans.modules.bugtracking.util.ListValuePicker;
+import org.netbeans.modules.bugtracking.commons.ListValuePicker;
 import org.netbeans.modules.bugtracking.util.SimpleIssueFinder;
 import org.netbeans.modules.odcs.tasks.ODCS;
 import org.netbeans.modules.odcs.tasks.ODCSConnector;

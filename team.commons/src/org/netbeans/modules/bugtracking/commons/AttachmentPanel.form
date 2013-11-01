@@ -111,7 +111,7 @@
         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
       </AuxValues>
     </Component>
-    <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="deleteButton">
+    <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="deleteButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/bugtracking/util/Bundle.properties" key="AttachmentPanel.deleteButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -203,7 +203,7 @@
         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
       </AuxValues>
     </Component>
-    <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="viewButton">
+    <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="viewButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/bugtracking/util/Bundle.properties" key="AttachmentPanel.viewButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>

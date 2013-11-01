@@ -44,7 +44,6 @@ package org.netbeans.modules.bugtracking.util;
 
 import java.util.List;
 import junit.framework.TestCase;
-import org.netbeans.modules.bugtracking.util.StackTraceSupport;
 import org.netbeans.modules.bugtracking.util.StackTraceSupport.StackTracePosition;
 
 /**

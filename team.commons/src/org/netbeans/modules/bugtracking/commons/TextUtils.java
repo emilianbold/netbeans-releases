@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.util;
+package org.netbeans.modules.bugtracking.commons;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;

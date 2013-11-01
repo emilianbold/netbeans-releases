@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.util;
+package org.netbeans.modules.bugtracking.commons;
 
 import java.util.Calendar;
 import java.util.HashMap;
@@ -49,8 +49,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.bugtracking.BugtrackingConfig;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.team.ide.spi.IDEServices;
 import org.openide.util.NbBundle;
 
@@ -77,11 +75,11 @@ public final class AutoupdateSupport {
     }
 
     boolean getCheckUpdates() {
-        return BugtrackingConfig.getInstance().getPreferences().getBoolean(cnb + CHECK_UPDATES, true);
+        return Support.getInstance().getPreferences().getBoolean(cnb + CHECK_UPDATES, true);
     }
 
     void setCheckUpdates(boolean b) {
-        BugtrackingConfig.getInstance().getPreferences().putBoolean(cnb + CHECK_UPDATES, b);
+        Support.getInstance().getPreferences().putBoolean(cnb + CHECK_UPDATES, b);
     }
 
     String getPluginName() {
@@ -105,7 +103,7 @@ public final class AutoupdateSupport {
     public void checkAndNotify(String url) {
         LOG.log(Level.FINEST, "{0} AutoupdateSupport.checkAndNotify start", pluginName); // NOI18N
         
-        IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
+        IDEServices ideServices = Support.getInstance().getIDEServices();
         if(ideServices == null || !ideServices.providesPluginUpdate()) {
             return;
         }
@@ -134,7 +132,7 @@ public final class AutoupdateSupport {
                 IDEServices.Plugin plugin = checkNewPluginAvailable();
                 if(plugin != null) {
                     AutoupdatePanel panel = new AutoupdatePanel(this);
-                    if(BugtrackingUtil.show(
+                    if(Util.show(
                             panel,
                             Bundle.CTL_AutoupdateTitle(pluginName),
                             Bundle.CTL_Yes()))
@@ -149,7 +147,7 @@ public final class AutoupdateSupport {
     }
 
     public IDEServices.Plugin checkNewPluginAvailable() {
-        IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
+        IDEServices ideServices = Support.getInstance().getIDEServices();
         IDEServices.Plugin plugin = ideServices.getPluginUpdates(cnb, pluginName);
         if(plugin != null) {
             if(callback.checkIfShouldDownload(plugin.getDescription())){

@@ -57,7 +57,7 @@ import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider.Status;
-import org.netbeans.modules.bugtracking.util.LogUtils;
+import org.netbeans.modules.bugtracking.commons.LogUtils;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.JiraConnector;

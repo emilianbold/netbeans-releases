@@ -157,11 +157,11 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
             = EnumSet.noneOf(Modifier.class);
     
     /**
-     * Returns {@code EnumSet} of all access modifiers.
+     * Returns {@literal EnumSet} of all access modifiers.
      * 
-     * @return  {@code EnumSet} of all access modifiers;
+     * @return  {@literal EnumSet} of all access modifiers;
      *          it is guaranteed that the returned set always contains
-     *          the same set of {@code Modifier}s, but the returned
+     *          the same set of {@literal Modifier}s, but the returned
      *          instance may not always be the same
      */
     protected static EnumSet<Modifier> accessModifiers() {
@@ -176,9 +176,9 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
     }
     
     /**
-     * Returns an empty {@code EnumSet} of {@code Modifier}s.
+     * Returns an empty {@literal EnumSet} of {@literal Modifier}s.
      * 
-     * @return  empty {@code EnumSet} of all {@code Modifier}s;
+     * @return  empty {@literal EnumSet} of all {@literal Modifier}s;
      *          it is guaranteed that the returned set is always empty
      *          but the returned instance may not always be the same
      */
@@ -395,7 +395,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
      * fail("The test case is a prototype.");
      * </code></pre>
      * @param maker the tree maker
-     * @return an {@code ExpressionStatementTree} for the generated body.
+     * @return an {@literal ExpressionStatementTree} for the generated body.
      * @throws MissingResourceException
      * @throws IllegalStateException
      */
@@ -556,7 +556,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
      * @param  name
      * @param  workingCopy  working copy of the class being created
      * @return  constructor for the class being generated,
-     *          or {@code null} if no explicit constructor is necessary
+     *          or {@literal null} if no explicit constructor is necessary
      */
     private static MethodTree generateAbstractClassImplCtor(
                                                     TypeElement srcClass,
@@ -635,7 +635,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
      *
      * @param  clazz  class to find constructor in
      * @return  accessible (non-private) constructor,
-     *          or {@code null} if none was found
+     *          or {@literal null} if none was found
      */
     private static ExecutableElement findAccessibleConstructor(TypeElement clazz) {
         List<ExecutableElement> ctors
@@ -747,12 +747,12 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
     }
 
     /**
-     * Makes a tree representing the given {@code TypeParameterElement}.
+     * Makes a tree representing the given {@literal TypeParameterElement}.
      *
-     * @param  typeParamElem  {@code TypeParameterElement} to make a copy of
+     * @param  typeParamElem  {@literal TypeParameterElement} to make a copy of
      * @param  maker  tree maker to use when for creation of the copy
-     * @return  {@code Tree} respresenting the given
-     *          {@code TypeParameterElement}
+     * @return  {@literal Tree} respresenting the given
+     *          {@literal TypeParameterElement}
      */
     private static TypeParameterTree makeCopy(TypeParameterElement typeParamElem,
                                               TreeMaker maker) {
@@ -787,11 +787,11 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
 
     /**
      * Checks whether the given type object represents type
-     * {@code java.lang.Object}.
+     * {@literal java.lang.Object}.
      * 
      * @param  type  type to be checked
-     * @return  {@code true} if the passed type object represents type
-     *          {@code java.lang.Object}, {@code false} otherwise
+     * @return  {@literal true} if the passed type object represents type
+     *          {@literal java.lang.Object}, {@literal false} otherwise
      */
     private static boolean isRootObjectType(DeclaredType type) {
         if (type.getKind() != TypeKind.DECLARED) {
@@ -804,11 +804,11 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
     }
 
     /**
-     * Makes a tree representing the given {@code VariableElement}.
+     * Makes a tree representing the given {@literal VariableElement}.
      *
-     * @param  paramElem  {@code VariableElement} to make a copy of
+     * @param  paramElem  {@literal VariableElement} to make a copy of
      * @param  maker  tree maker to use when for creation of the copy
-     * @return  {@code Tree} respresenting the given {@code VariableElement}
+     * @return  {@literal Tree} respresenting the given {@literal VariableElement}
      */
     private static VariableTree makeCopy(VariableElement paramElem,
                                          TreeMaker maker) {
@@ -889,8 +889,8 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
      * @param  clsMap  index of the test class contents
      *                 - it will be updated if some members are added
      *                 to the list
-     * @return  {@code true} if the list of members was modified,
-     *          {@code false} otherwise
+     * @return  {@literal true} if the list of members was modified,
+     *          {@literal false} otherwise
      */
     protected abstract boolean generateMissingInitMembers(
                                                  List<Tree> tstMembers,
@@ -902,7 +902,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
      * 
      * @param  clsMap  index of the test class contents
      * @return  index where the first init method should be put,
-     *          or {@code -1} if the method should be put to the end
+     *          or {@literal -1} if the method should be put to the end
      *          of the class
      */
     protected int getPlaceForFirstInitMethod(ClassMap clsMap) {
@@ -1091,12 +1091,12 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
      *                    created
      * @param  useNoArgConstrutor  whether a no-argument constructor should be
      *                             used in the default test method body;
-     *                             it should not be {@code true} unless
+     *                             it should not be {@literal true} unless
      *                             the source class contains an accessible
      *                             no-argument constructor
      * @param  instanceClsName  name of a class of which a constructor should be
-     *                          createc if {@code useNoArgConstrutor} is
-     *                          {@code true}
+     *                          createc if {@literal useNoArgConstrutor} is
+     *                          {@literal true}
      * @return  the generated test method
      */
     protected MethodTree generateTestMethod(TypeElement srcClass,
@@ -1157,17 +1157,17 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
     }
 
     /**
-     * Generates a {@code throws}-clause of a method or constructor such that
+     * Generates a {@literal throws}-clause of a method or constructor such that
      * it declares all non-runtime exceptions and errors that are declared
-     * in the {@code throws}-clause of the given executable element (method or
+     * in the {@literal throws}-clause of the given executable element (method or
      * constructor).
      *
      * @param  execElem  executable element (method or constructor) that serves
      *                   as the model for the generated throws-list
-     * @param  compInfo  {@code CompilationInfo} to be used for obtaining
+     * @param  compInfo  {@literal CompilationInfo} to be used for obtaining
      *                   information about the given executable element
      * @param  maker  maker to be used for construction of the resulting list
-     * @return  list of {@code ExpressionTree}s representing the throws-list
+     * @return  list of {@literal ExpressionTree}s representing the throws-list
      *          that can be used for construction of a method with the same
      *          throws-clause as the given executable element
      */
@@ -1347,12 +1347,12 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
     // </editor-fold>
 
     /**
-     * Creates a public static {@code main(String[])} method
+     * Creates a public static {@literal main(String[])} method
      * with the body taken from settings.
      *
-     * @param  maker  {@code TreeMaker} to use for creating the method
-     * @return  created {@code main(...)} method,
-     *          or {@code null} if the method body would be empty
+     * @param  maker  {@literal TreeMaker} to use for creating the method
+     * @return  created {@literal main(...)} method,
+     *          or {@literal null} if the method body would be empty
      */
     private MethodTree createMainMethod(TreeMaker maker) {
         String initialMainMethodBody = getInitialMainMethodBody();
@@ -1387,11 +1387,11 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
      * @param  srcMethod  source method which should be tested by the test
      * @param  useNoArgConstrutor  whether a no-argument constructor should be
      *                             used in the body;
-     *                             it should not be {@code true} unless
+     *                             it should not be {@literal true} unless
      *                             the source class contains an accessible
      *                             no-argument constructor
      * @param  instanceClsName  name of a class of instance - only used if
-     *                          {@code useNoArgConstrutor} is {@code true}
+     *                          {@literal useNoArgConstrutor} is {@literal true}
      */
     protected BlockTree generateTestMethodBody(TypeElement srcClass,
                                                ExecutableElement srcMethod,
@@ -1894,7 +1894,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
      * @param  tstClassPath  tree-path to the test class
      * @param  tstClassMap  content index of the test class
      * @param  preferredName  preferred name of the nested/inner class
-     * @return  name of the found nested class, or {@code null} if non was found
+     * @return  name of the found nested class, or {@literal null} if non was found
      */
     private static CharSequence findAbstractClassImplName(TypeElement srcClass,
                                                           ClassTree tstClass,
@@ -1944,8 +1944,8 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
      * methods.
      * 
      * @param  methods  methods to probe
-     * @return  {@code true} if there is at least one non-static method in the
-     *          given list of methods, {@code false} otherwise
+     * @return  {@literal true} if there is at least one non-static method in the
+     *          given list of methods, {@literal false} otherwise
      */
     private static boolean hasInstanceMethods(List<ExecutableElement> methods) {
         if (methods.isEmpty()) {
@@ -2157,7 +2157,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
     }
 
     /**
-     * Creates a {@code Set} of {@code Modifier}s from the given list
+     * Creates a {@literal Set} of {@literal Modifier}s from the given list
      * of modifiers.
      * 
      * @param  modifiers  modifiers that should be contained in the set
@@ -2192,12 +2192,12 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
 
     /**
      * Checks whether is given method declared by no-interface Bean or by interface annotated by
-     * {@code @javax.ejb.Remote} or {@code @javax.ejb.Local}
+     * {@literal @javax.ejb.Remote} or {@literal @javax.ejb.Local}
      *
      * @param srcClass class for which are generated test cases
      * @param srcMethod method of interest
-     * @return {@code true} if the bean is no-interface or method is declared by
-     * respectively annotated interface, {@code false} otherwise
+     * @return {@literal true} if the bean is no-interface or method is declared by
+     * respectively annotated interface, {@literal false} otherwise
      */
     private static boolean isMethodInContainerLookup(TypeElement srcClass, ExecutableElement srcMethod) {
         // check for no-interface LocalBean
@@ -2218,12 +2218,12 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
     }
 
     /**
-     * Checks {@code List} of interfaces if are all of them allowed for LocalBean,
-     * means if all interfaces are {@code java.io.Serializable}, {@code java.io.Externalizable} or
-     * from package {@code javax.ejb}
+     * Checks {@literal List} of interfaces if are all of them allowed for LocalBean,
+     * means if all interfaces are {@literal java.io.Serializable}, {@literal java.io.Externalizable} or
+     * from package {@literal javax.ejb}
      * 
-     * @param interfaces {@code List} of interfaces which should be checked
-     * @return {@code true} if all interfaces are allowed for LocalBean, {@code false} otherwise
+     * @param interfaces {@literal List} of interfaces which should be checked
+     * @return {@literal true} if all interfaces are allowed for LocalBean, {@literal false} otherwise
      */
     private static boolean areAllowedInterfacesForLocalBean(List<? extends TypeMirror> interfaces) {
         for (TypeMirror typeMirror : interfaces) {
@@ -2288,7 +2288,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
      *
      * @param srcClass class for which are generated JUnit tests
      * @param srcMethod currently generated method 
-     * @return {@code String} which should be used for searching in context
+     * @return {@literal String} which should be used for searching in context
      */
     private static String getBeanInterfaceOrImplementationClassName(TypeElement srcClass, ExecutableElement srcMethod) {
         String interfaceClassName = getEjbInterfaceDeclaringMethod(srcMethod, srcClass.getInterfaces());
@@ -2301,12 +2301,12 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
 
     /**
      * Gets interface classname which is annotated as Remote or Local and declares 
-     * given method or {@code null} if no such interface was found
+     * given method or {@literal null} if no such interface was found
      *
      * @param srcMethod method which should be declared
-     * @param interfaces {@code List} of interfaces to be scanned for {@code @Local},
-     * {@code @Remote} annotation and method declaration
-     * @return interface classname when was found satisfactory interface, {@code null} otherwise
+     * @param interfaces {@literal List} of interfaces to be scanned for {@literal @Local},
+     * {@literal @Remote} annotation and method declaration
+     * @return interface classname when was found satisfactory interface, {@literal null} otherwise
      */
     private static String getEjbInterfaceDeclaringMethod(ExecutableElement srcMethod, List<? extends TypeMirror> interfaces) {
         for (TypeMirror typeMirror : interfaces) {
@@ -2323,10 +2323,10 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
     }
 
     /**
-     * Checks whether is interface annotated as {@code @javax.ejb.Remote} or {@code @javax.ejb.Local}
+     * Checks whether is interface annotated as {@literal @javax.ejb.Remote} or {@literal @javax.ejb.Local}
      *
      * @param trgInterface interface which should be annotated
-     * @return {@code true} if the interface is annotated, {@code false} otherwise
+     * @return {@literal true} if the interface is annotated, {@literal false} otherwise
      */
     private static boolean isLocalOrRemoteInterface(TypeElement trgInterface) {
         List<? extends AnnotationMirror> annotations = trgInterface.getAnnotationMirrors();
@@ -2346,7 +2346,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
      *
      * @param trgInterface interface to be declaring the method
      * @param srcMethod method to be declared
-     * @return {@code true} if the method is declared by the interface, {@code false} otherwise
+     * @return {@literal true} if the method is declared by the interface, {@literal false} otherwise
      */
     private static boolean isMethodDeclaredByInterface(TypeElement trgInterface, ExecutableElement srcMethod) {
         List<? extends Element> enclosedElements = trgInterface.getEnclosedElements();
@@ -2385,10 +2385,10 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
      * Finds a class with the specified simple name in the specified list of
      * classes.
      * @param simpleName the simple class name.
-     * @param classes the list of the {@code ClassTree}s.
-     * @return a {@code ClassTree} of the class if the specified simple class
-     *         name is not {@code null}, and a class with that name exists,
-     *         otherwise {@code null}.
+     * @param classes the list of the {@literal ClassTree}s.
+     * @return a {@literal ClassTree} of the class if the specified simple class
+     *         name is not {@literal null}, and a class with that name exists,
+     *         otherwise {@literal null}.
      */
     private ClassTree findClass(String simpleName, List<ClassTree> classes) {
         if(simpleName == null) { // #180480

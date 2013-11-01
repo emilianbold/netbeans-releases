@@ -46,7 +46,7 @@
  * Created on Mar 23, 2010, 4:01:47 PM
  */
 
-package org.netbeans.modules.bugtracking.util;
+package org.netbeans.modules.bugtracking.commons;
 
 import java.awt.Color;
 import java.awt.Image;

@@ -40,8 +40,9 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.util;
+package org.netbeans.modules.bugtracking.commons;
 
+import org.netbeans.modules.bugtracking.commons.LinkButton;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -78,7 +79,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.team.ide.spi.IDEServices;
 import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.OpenCookie;
@@ -604,7 +604,7 @@ public class AttachmentsPanel extends JPanel {
     }
     
     private static boolean hasPatchUtils() {
-        IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
+        IDEServices ideServices = Support.getInstance().getIDEServices();
         return ideServices != null && ideServices.providesPatchUtils();
     }
 
@@ -687,7 +687,7 @@ public class AttachmentsPanel extends JPanel {
             final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
             handle.start();
             handle.switchToIndeterminate();
-            BugtrackingUtil.getParallelRP().post(new Runnable() {
+            Support.getParallelRP().post(new Runnable() {
                 @Override
                 public void run() {
                     try {
@@ -730,7 +730,7 @@ public class AttachmentsPanel extends JPanel {
                 final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
                 handle.start();
                 handle.switchToIndeterminate();
-                BugtrackingUtil.getParallelRP().post(new Runnable() {
+                Support.getParallelRP().post(new Runnable() {
                     @Override
                     public void run() {
                         try {
@@ -751,11 +751,11 @@ public class AttachmentsPanel extends JPanel {
             final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
             handle.start();
             handle.switchToIndeterminate();
-            BugtrackingUtil.getParallelRP().post(
+            Support.getParallelRP().post(
                 new Runnable() {
                     @Override
                     public void run() {
-                        IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
+                        IDEServices ideServices = Support.getInstance().getIDEServices();
                         if(ideServices != null) {
                             try {
                                 ideServices.applyPatch(saveToTempFile());

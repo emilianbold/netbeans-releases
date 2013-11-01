@@ -858,7 +858,7 @@
             </Property>
           </Properties>
         </Component>
-        <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="startProgressButton">
+        <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="startProgressButton">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.startProgressButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -868,7 +868,7 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="startProgressButtonActionPerformed"/>
           </Events>
         </Component>
-        <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="stopProgressButton">
+        <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="stopProgressButton">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.stopProgressButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -878,7 +878,7 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="stopProgressButtonActionPerformed"/>
           </Events>
         </Component>
-        <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="resolveIssueButton">
+        <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="resolveIssueButton">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.resolveIssueButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -888,7 +888,7 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="resolveIssueButtonActionPerformed"/>
           </Events>
         </Component>
-        <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="closeIssueButton">
+        <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="closeIssueButton">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.closeIssueButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -898,7 +898,7 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="closeIssueButtonActionPerformed"/>
           </Events>
         </Component>
-        <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="createSubtaskButton">
+        <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="createSubtaskButton">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.createSubtaskButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -908,14 +908,14 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="createSubtaskButtonActionPerformed"/>
           </Events>
         </Component>
-        <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="convertToSubtaskButton">
+        <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="convertToSubtaskButton">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.convertToSubtaskButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
         </Component>
-        <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="refreshButton">
+        <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="refreshButton">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.refreshButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -925,7 +925,7 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="refreshButtonActionPerformed"/>
           </Events>
         </Component>
-        <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="reopenIssueButton">
+        <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="reopenIssueButton">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.reopenIssueButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -935,7 +935,7 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="reopenIssueButtonActionPerformed"/>
           </Events>
         </Component>
-        <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="addToCategoryButton">
+        <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="addToCategoryButton">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.tasklistButton.add" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -945,7 +945,7 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addToCategoryButtonActionPerformed"/>
           </Events>
         </Component>
-        <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="showInBrowserButton">
+        <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="showInBrowserButton">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.showInBrowserButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -1002,7 +1002,7 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="logWorkButton2">
+    <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="logWorkButton2">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.logWorkButton2.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>

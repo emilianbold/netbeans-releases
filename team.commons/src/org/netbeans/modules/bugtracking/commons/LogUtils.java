@@ -39,15 +39,13 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.bugtracking.util;
+package org.netbeans.modules.bugtracking.commons;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import org.netbeans.modules.bugtracking.APIAccessor;
-import org.netbeans.modules.bugtracking.api.Repository;
 
 /**
  *
@@ -112,13 +110,6 @@ public final class LogUtils {
     public static void logAutoRefreshEvent(String connector, String queryName, boolean isFromTeamServer, boolean on) {
         queryName = obfuscateQueryName(queryName);
         logBugtrackingEvents(USG_BUGTRACKING_AUTOMATIC_REFRESH, new Object[] {connector, queryName, isFromTeamServer, on} );
-    }
-    
-    public static synchronized void logBugtrackingUsage(Repository repository, String operation) {
-        if(repository == null) {
-            return;
-        }
-        logBugtrackingUsage(APIAccessor.IMPL.getImpl(repository).getConnectorId(), operation);
     }
     
     public static synchronized void logBugtrackingUsage(String connectorID, String operation) {
@@ -204,10 +195,6 @@ public final class LogUtils {
         return buf.toString();
     }
 
-    public static String getBugtrackingType(Repository repository) {
-        return getBugtrackingType(APIAccessor.IMPL.getImpl(repository).getConnectorId());
-    }
-    
     public static String getBugtrackingType(String id) {
         // XXX hack: there's no clean way to determine the type of bugtracking
         // from RepositoryProvider (need BugtrackingConnector.getDisplayName)

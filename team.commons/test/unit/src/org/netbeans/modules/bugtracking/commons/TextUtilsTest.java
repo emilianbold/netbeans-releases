@@ -40,11 +40,11 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.util;
+package org.netbeans.modules.bugtracking.commons;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
-import static org.netbeans.modules.bugtracking.util.TextUtils.trimSpecial;
+import static org.netbeans.modules.bugtracking.commons.TextUtils.trimSpecial;
 
 /**
  *

@@ -86,7 +86,7 @@
         </DimensionLayout>
       </Layout>
       <SubComponents>
-        <Component class="org.netbeans.modules.bugtracking.util.TransparentSectionButton" name="sectionButton1">
+        <Component class="org.netbeans.modules.bugtracking.commons.TransparentSectionButton" name="sectionButton1">
           <Properties>
             <Property name="selected" type="boolean" value="true"/>
           </Properties>

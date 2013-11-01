@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.bugtracking.util;
+package org.netbeans.modules.bugtracking.commons;
 
 import java.awt.Component;
 import java.util.ArrayList;
@@ -70,7 +70,7 @@ public class ListValuePicker extends javax.swing.JPanel {
         }
 
         ListValuePicker vp = new ListValuePicker(label, message, knownValues, values);
-        if (BugtrackingUtil.show(vp, title, NbBundle.getMessage(ListValuePicker.class, "LBL_Ok"))) { // NOI18N
+        if (Util.show(vp, title, NbBundle.getMessage(ListValuePicker.class, "LBL_Ok"))) { // NOI18N
             values = vp.getSelectedValues();
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < values.length; i++) {

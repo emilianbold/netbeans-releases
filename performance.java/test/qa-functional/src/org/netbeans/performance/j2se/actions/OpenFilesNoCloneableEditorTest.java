@@ -41,52 +41,57 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se.actions;
 
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.j2se.setup.J2SESetup;
-
-import org.netbeans.jellytools.TopComponentOperator;
+import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2se.setup.J2SESetup;
 
 /**
- * Test of opening files, where CloneableEditor isn't super class of their editor.
+ * Test of opening files, where CloneableEditor isn't super class of their
+ * editor.
  *
- * @author  mmirilovic@netbeans.org
+ * @author mmirilovic@netbeans.org
  */
 public class OpenFilesNoCloneableEditorTest extends PerformanceTestCase {
 
-    /** Node to be opened/edited */
-    public static Node openNode ;
-    /** Folder with data */
+    /**
+     * Node to be opened/edited
+     */
+    public static Node openNode;
+    /**
+     * Folder with data
+     */
     public static String fileProject;
-    /** Folder with data  */
+    /**
+     * Folder with data
+     */
     public static String filePackage;
-    /** Name of file to open */
+    /**
+     * Name of file to open
+     */
     public static String fileName;
-    /** Menu item name that opens the editor */
-    public static String menuItem;
-    protected static String OPEN = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");
-    protected static String EDIT = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Edit");
-    
+
     /**
      * Creates a new instance of OpenFilesNoCloneableEditor
+     *
      * @param testName the name of the test
      */
     public OpenFilesNoCloneableEditorTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
-    
+
     /**
      * Creates a new instance of OpenFilesNoCloneableEditor
+     *
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
      */
@@ -95,62 +100,58 @@ public class OpenFilesNoCloneableEditorTest extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(OpenFilesNoCloneableEditorTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(J2SESetup.class, "testCloseMemoryToolbar", "testOpenDataProject")
+                .addTest(OpenFilesNoCloneableEditorTest.class)
+                .suite();
     }
 
-    public void testOpening20kBPropertiesFile(){
+    public void testOpening20kBPropertiesFile() {
         WAIT_AFTER_OPEN = 2000;
         fileProject = "PerformanceTestData";
         filePackage = "org.netbeans.test.performance";
         fileName = "Bundle20kB.properties";
-        menuItem = OPEN;
         doMeasurement();
     }
 
-    public void testOpening20kBPictureFile(){
+    public void testOpening20kBPictureFile() {
         WAIT_AFTER_OPEN = 2000;
         fileProject = "PerformanceTestData";
         filePackage = "org.netbeans.test.performance";
         fileName = "splash.gif";
-        menuItem = OPEN;
         doMeasurement();
     }
 
-    public void testOpening20kBFormFile(){
+    public void testOpening20kBFormFile() {
         WAIT_AFTER_OPEN = 2000;
         fileProject = "PerformanceTestData";
         filePackage = "org.netbeans.test.performance";
         fileName = "JFrame20kB.java";
-        menuItem = OPEN;
         doMeasurement();
     }
 
     @Override
     protected void initialize() {
         EditorOperator.closeDiscardAll();
-        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
+        repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);
     }
-    
+
     @Override
-    protected void shutdown(){
+    protected void shutdown() {
         EditorOperator.closeDiscardAll();
         repaintManager().resetRegionFilters();
     }
-    
+
     @Override
-    public ComponentOperator open(){
-        JPopupMenuOperator popup =  openNode.callPopup();
-        popup.pushMenu(menuItem);
+    public ComponentOperator open() {
+        JPopupMenuOperator popup = openNode.callPopup();
+        popup.pushMenu("Open");
         return new TopComponentOperator(fileName);
     }
-    
+
     @Override
-    public void close(){
+    public void close() {
         new TopComponentOperator(fileName).closeDiscard();
     }
 
@@ -158,5 +159,4 @@ public class OpenFilesNoCloneableEditorTest extends PerformanceTestCase {
     public void prepare() {
         openNode = new Node(new SourcePackagesNode(fileProject), filePackage + '|' + fileName);
     }
-
 }
