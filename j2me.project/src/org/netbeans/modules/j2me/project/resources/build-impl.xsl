@@ -112,9 +112,34 @@ is divided into following sections:
                     </loadproperties>
                 </target>
             </xsl:if>
+            
+            <target name="-check-platform-home" depends="-pre-init,-init-private">
+                <condition property="has.platform.home">
+                    <and>
+                        <isset property="platform.home"/>
+                        <length string="${{platform.home}}" when="gt" length="0" trim="true"/>
+                        <available file="${{platform.home}}"/>
+                    </and>
+                </condition>
+            </target>
+
+            <target name="-init-platform-home" depends="-pre-init,-init-private,-check-platform-home" unless="has.platform.home">
+                <loadproperties srcFile="nbproject/project.properties">
+                  <filterchain>
+                    <containsregex pattern="^platform.active="/>
+                  </filterchain>
+                </loadproperties>
+                <loadproperties srcFile="${{user.properties.file}}">
+                  <filterchain>
+                    <containsregex pattern="^platforms\.${{platform.active}}\.home="/>
+                    <replaceregex pattern="^platforms\.${{platform.active}}\." replace="platform."/>
+                  </filterchain>
+                </loadproperties>
+                <echo message="Missing platform.home property, defined as ${{platform.home}}" level="warning"/>
+            </target>
 
             <target name="-init-user">
-                <xsl:attribute name="depends">-pre-init,-init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if></xsl:attribute>
+                <xsl:attribute name="depends">-pre-init,-init-private,-init-platform-home<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if></xsl:attribute>
                 <property file="${{user.properties.file}}"/>
                 <xsl:comment> The two properties below are usually overridden </xsl:comment>
                 <xsl:comment> by the active platform. Just a fallback. </xsl:comment>
@@ -130,10 +155,6 @@ is divided into following sections:
 
             <target name="-do-init">
                 <xsl:attribute name="depends">-pre-init,-init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if>,-init-user,-init-project,-init-macrodef-property</xsl:attribute>
-
-                <j2meproject1:property name="platform.home" value="platforms.${{platform.active}}.home"/>
-                <j2meproject1:property name="platform.bootcp" value="platforms.${{platform.active}}.bootclasspath"/>
-
                 <j2meproject1:property name="platform.sdk.home.tmp" value="platforms.${{platform.sdk}}.home"/>
                 <condition property="platform.sdk.home" value="${{jdk.home}}">
                     <equals arg1="${{platform.sdk.home.tmp}}" arg2="$${{platforms.${{platform.sdk}}.home}}"/>
