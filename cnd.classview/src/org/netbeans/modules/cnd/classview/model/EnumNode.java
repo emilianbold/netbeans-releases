@@ -45,9 +45,11 @@
 package org.netbeans.modules.cnd.classview.model;
 
 import java.awt.Image;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 
 import  org.netbeans.modules.cnd.api.model.*;
+import static org.netbeans.modules.cnd.classview.model.BaseNode.RP;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.openide.nodes.Children;
 
@@ -65,24 +67,34 @@ public class EnumNode extends ClassifierNode {
     }
     
     private void init(CsmEnum enumeration){
-        CharSequence old = name;
+        final CharSequence old = name;
         name = enumeration.getName();
-        if ((old == null) || !old.equals(name)) {
-            fireNameChange(old == null ? null : old.toString(),
-                    name == null ? null : name.toString());
-            fireDisplayNameChange(old == null ? null : old.toString(),
-                    name == null ? null : name.toString());
-        }
-        old = qname;
+        final CharSequence oldQ = qname;
         qname = enumeration.getQualifiedName();
-        if ((old == null) || !old.equals(qname)) {
-            fireShortDescriptionChange(old == null ? null : old.toString(),
-                    qname == null ? null : qname.toString());
-        }
         if( enumImage == null ) {
             enumImage = CsmImageLoader.getImage(enumeration);
         }
-        image = CsmImageLoader.getImage(enumeration);
+        final Runnable runnable = new Runnable() {
+            
+            @Override
+            public void run() {
+                if ((old == null) || !old.equals(name)) {
+                    fireNameChange(old == null ? null : old.toString(),
+                            name == null ? null : name.toString());
+                    fireDisplayNameChange(old == null ? null : old.toString(),
+                            name == null ? null : name.toString());
+                }
+                if ((oldQ == null) || !oldQ.equals(qname)) {
+                    fireShortDescriptionChange(oldQ == null ? null : oldQ.toString(),
+                            qname == null ? null : qname.toString());
+                }
+            }
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            runnable.run();
+        } else {
+            SwingUtilities.invokeLater(runnable);
+        }
     }
 
     @Override

@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.classview.model;
 
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.cnd.api.model.CsmFriendClass;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
@@ -63,17 +64,38 @@ public class FriendClassNode extends ObjectNode {
     }
     
     private void init(final CsmFriendClass cls){
+        final CharSequence old = shortName;
         shortName = cls.getName();
+        final CharSequence oldQ = longName;
         longName = cls.getQualifiedName();
-        RP.post(new Runnable() {
-
+        final Runnable runnable = new Runnable() {
+            
             @Override
             public void run() {
-                image = CsmImageLoader.getImage(cls);
-                fireIconChange();
-                fireOpenedIconChange();
+                if (SwingUtilities.isEventDispatchThread()) {
+                    if ((old == null) || !old.equals(shortName)) {
+                        fireNameChange(old == null ? null : old.toString(),
+                                shortName == null ? null : shortName.toString());
+                        fireDisplayNameChange(old == null ? null : old.toString(),
+                                shortName == null ? null : shortName.toString());
+                    }
+                    if ((oldQ == null) || !oldQ.equals(longName)) {
+                        fireShortDescriptionChange(oldQ == null ? null : oldQ.toString(),
+                                longName == null ? null : longName.toString());
+                    }
+                    fireIconChange();
+                    fireOpenedIconChange();
+                } else {
+                    resetIcon(CsmImageLoader.getImage(cls));
+                    SwingUtilities.invokeLater(this);
+                }
             }
-        });
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            RP.post(runnable);
+        } else {
+            runnable.run();
+        }
     }
     
     @Override
@@ -98,8 +120,6 @@ public class FriendClassNode extends ObjectNode {
             CsmFriendClass cls = (CsmFriendClass)o;
             setObject(cls);
             init(cls);
-            fireIconChange();
-            fireOpenedIconChange();
         } else if (o != null) {
             System.err.println("Expected CsmFriendClass. Actually event contains "+o.toString());
         }
