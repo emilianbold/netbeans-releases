@@ -123,8 +123,10 @@ public final class KarmaServers {
             return;
         }
         KarmaServer karmaServer = serverInfo.getServer();
-        karmaServer.stop();
-        karmaServer.removeChangeListener(serverListener);
+        if (karmaServer != null) {
+            karmaServer.stop();
+            karmaServer.removeChangeListener(serverListener);
+        }
         if (cleanup) {
             karmaServers.remove(project);
         } else {
@@ -219,6 +221,7 @@ public final class KarmaServers {
             return port;
         }
 
+        @CheckForNull
         public KarmaServer getServer() {
             return server;
         }

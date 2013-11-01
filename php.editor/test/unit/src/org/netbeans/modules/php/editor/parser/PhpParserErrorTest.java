@@ -371,4 +371,8 @@ public class PhpParserErrorTest extends PHPTestBase {
     public void testClassConstant() throws Exception {
         checkErrors("testfiles/parser/classConstant.php");
     }
+
+    public void testIssue237220() throws Exception {
+        checkErrors("testfiles/parser/issue237220.php");
+    }
 }
