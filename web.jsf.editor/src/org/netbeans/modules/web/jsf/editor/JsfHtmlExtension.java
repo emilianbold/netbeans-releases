@@ -583,10 +583,29 @@ public class JsfHtmlExtension extends HtmlExtension {
             return DeclarationLocation.NONE;
         }
 
-        if (lib instanceof CompositeComponentLibrary) {
-            return JsfNavigationHelper.goToCompositeComponentLibrary(htmlresult, caretOffset, lib);
-        } else if (lib instanceof FacesComponentLibrary) {
-            return JsfNavigationHelper.goToFacesComponentLibrary(htmlresult, caretOffset, (FacesComponentLibrary) lib);
+        TokenSequence ts = JsfNavigationHelper.getTokenSequenceAtCaret(result.getSnapshot().getTokenHierarchy(), caretOffset);
+        if (ts == null) {
+            return DeclarationLocation.NONE;
+        }
+
+        Token t = ts.token();
+        if (t.id() == HTMLTokenId.VALUE) {
+            String value = CharSequenceUtilities.toString(ts.token().text()).replaceAll("[\"']", ""); //NOI18N
+            String attribute = ""; //NOI18N
+            while (ts.movePrevious()) {
+                if (ts.token().id() == HTMLTokenId.TAG_OPEN) {
+                    String tag = CharSequenceUtilities.toString(ts.token().text());
+                    return JsfNavigationHelper.goToReferencedFile(htmlresult, caretOffset, tag, attribute, value);
+                } else if (ts.token().id() == HTMLTokenId.ARGUMENT && attribute.isEmpty()) {
+                    attribute = CharSequenceUtilities.toString(ts.token().text());
+                }
+            }
+        } else {
+            if (lib instanceof CompositeComponentLibrary) {
+                return JsfNavigationHelper.goToCompositeComponentLibrary(htmlresult, caretOffset, lib);
+            } else if (lib instanceof FacesComponentLibrary) {
+                return JsfNavigationHelper.goToFacesComponentLibrary(htmlresult, caretOffset, (FacesComponentLibrary) lib);
+            }
         }
 
         return DeclarationLocation.NONE;
@@ -596,44 +615,48 @@ public class JsfHtmlExtension extends HtmlExtension {
     @Override
     public OffsetRange getReferenceSpan(final Document doc, final int caretOffset) {
         TokenHierarchy th = TokenHierarchy.get(doc);
-        List<TokenSequence> seqs = th.embeddedTokenSequences(caretOffset, false);
-        TokenSequence ts = null;
-        for (TokenSequence _ts : seqs) {
-            if (_ts.language() == HTMLTokenId.language()) {
-                ts = _ts;
-                break;
-            }
-        }
-
+        TokenSequence ts = JsfNavigationHelper.getTokenSequenceAtCaret(th, caretOffset);
         if (ts == null) {
             return OffsetRange.NONE;
         }
 
-        ts.move(caretOffset);
-        if (ts.moveNext() || ts.movePrevious()) {
-            Token t = ts.token();
-            if (t.id() == HTMLTokenId.TAG_OPEN) {
-                if (CharSequenceUtilities.indexOf(t.text(), ':') != -1) {
-                    return new OffsetRange(ts.offset(), ts.offset() + t.length());
-                }
-            } else if (t.id() == HTMLTokenId.ARGUMENT) {
-                int from = ts.offset();
-                int to = from + t.text().length();
-                //try to find the tag and check if there is a prefix
-                while (ts.movePrevious()) {
-                    if (ts.token().id() == HTMLTokenId.TAG_OPEN) {
-                        if (CharSequenceUtilities.indexOf(ts.token().text(), ':') != -1) {
-                            return new OffsetRange(from, to);
-                        } else {
-                            break;
-                        }
+        Token t = ts.token();
+        if (t.id() == HTMLTokenId.TAG_OPEN) {
+            if (CharSequenceUtilities.indexOf(t.text(), ':') != -1) {
+                return new OffsetRange(ts.offset(), ts.offset() + t.length());
+            }
+        } else if (t.id() == HTMLTokenId.ARGUMENT) {
+            int from = ts.offset();
+            int to = from + t.text().length();
+            //try to find the tag and check if there is a prefix
+            while (ts.movePrevious()) {
+                if (ts.token().id() == HTMLTokenId.TAG_OPEN) {
+                    if (CharSequenceUtilities.indexOf(ts.token().text(), ':') != -1) {
+                        return new OffsetRange(from, to);
+                    } else {
+                        break;
                     }
+                }
+            }
+        } else if (t.id() == HTMLTokenId.VALUE) {
+            CharSequence value = ts.token().text();
+            int from = ts.offset();
+            int to = from + t.text().length();
+            //try to find the tag and check if there is a prefix
+            while (ts.movePrevious()) {
+                if (ts.token().id() == HTMLTokenId.TAG_OPEN) {
+                    if (CharSequenceUtilities.indexOf(ts.token().text(), "include") != -1) {
+                        if (CharSequenceUtilities.indexOf(value, "'") != -1 || CharSequenceUtilities.indexOf(value, "\"") != -1) {
+                            from++; to--;
+                        }
+                        return new OffsetRange(from, to);
+                    }
+                    break;
                 }
             }
         }
 
         return OffsetRange.NONE;
-
     }
 
     @Override
