@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.bugtracking.kenai;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -59,6 +60,7 @@ import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor;
 import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor.IssueHandle;
 import org.openide.util.RequestProcessor;
 import static org.netbeans.modules.bugtracking.kenai.Bundle.*;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -121,7 +123,7 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
                 Support.LOG.log(Level.FINE, "No repository available with ID {0}", entry.getKey()); // NOI18N
                 continue;
             }
-            TeamProjectImpl kenaiProject = null; //(TeamProjectImpl) TeamUtil.getTeamProject(repo);
+            TeamProjectImpl kenaiProject = (TeamProjectImpl) TeamUtil.getTeamProject(repo);
             if(kenaiProject == null) {
                 continue;
             }

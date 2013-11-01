@@ -296,6 +296,10 @@ public class TeamUtil {
         }
         return null;
     }
+    
+    public static TeamProject getTeamProject(Repository repo) {
+        return TeamRepositories.getInstance().getTeamProject(APIAccessor.IMPL.getImpl(repo));
+    }
 
     /**
      * @see TeamAccessor#getTeamProject(java.lang.String, java.lang.String)
