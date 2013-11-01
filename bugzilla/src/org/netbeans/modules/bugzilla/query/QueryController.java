@@ -160,7 +160,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         this.repository = repository;
         this.query = query;
         
-        issueTable = new IssueTable(BugzillaUtil.getRepository(repository), query, query.getColumnDescriptors(), query.isSaved());
+        issueTable = new IssueTable(repository.getID(), query.getDisplayName(), this, query.getColumnDescriptors(), query.isSaved());
         setupRenderer(issueTable);
         panel = new QueryPanel(issueTable.getComponent());
 

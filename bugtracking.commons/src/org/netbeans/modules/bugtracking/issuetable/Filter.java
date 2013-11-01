@@ -44,14 +44,6 @@
 
 package org.netbeans.modules.bugtracking.issuetable;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.WeakHashMap;
-import java.util.logging.Level;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.openide.util.NbBundle;
 
@@ -61,48 +53,32 @@ import org.openide.util.NbBundle;
  */
 public abstract class Filter {
 
-    private static final Map<QueryImpl, Map<Class, Filter>> queryToFilter = new WeakHashMap<QueryImpl, Map<Class, Filter>>();
+    private static AllFilter allFilter;
+    private static NotSeenFilter notSeenFilter;
+    private static NewFilter newFilter;
 
     public abstract String getDisplayName();
     public abstract boolean accept(IssueNode issue);
 
-    public static Filter getAllFilter(QueryImpl query) {
-        return getFilter(query, AllFilter.class);
-    }
-    public static Filter getNotSeenFilter(QueryImpl query) {
-        return getFilter(query, NotSeenFilter.class);
-    }
-    public static Filter getNewFilter() {
-        return getFilter(null, NewFilter.class);
-    }
-
-    private static <T extends Filter> Filter getFilter(QueryImpl query, Class<T> clazz) {
-        Map<Class, Filter> filters = queryToFilter.get(query);
-        if(filters == null) {
-            filters = new HashMap<Class, Filter>(5);
-            queryToFilter.put(query, filters);
+    static synchronized Filter getAllFilter() {
+        if(allFilter == null) {
+            allFilter = new AllFilter();
         }
-        Filter filter = filters.get(clazz);
-        if(filter == null) {
-            try {
-                Constructor<T> c = clazz.getDeclaredConstructor();
-                filter = c.newInstance();
-            } catch (NoSuchMethodException ex) {
-                BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
-            } catch (SecurityException ex) {
-                BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
-            } catch (InstantiationException ex) {
-                BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
-            } catch (IllegalAccessException ex) {
-                BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
-            } catch (IllegalArgumentException ex) {
-                BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
-            } catch (InvocationTargetException ex) {
-                BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
-            }            
-            filters.put(clazz, filter);
+        return allFilter;
+    }
+    
+    static Filter getNotSeenFilter() {
+        if(notSeenFilter == null) {
+            notSeenFilter = new NotSeenFilter();
         }
-        return filter;
+        return notSeenFilter;
+    }
+    
+    static Filter getNewFilter() {
+        if(newFilter == null) {
+            newFilter = new NewFilter();
+        }
+        return newFilter;
     }
 
     private static class AllFilter extends Filter {
@@ -124,7 +100,7 @@ public abstract class Filter {
         }
         @Override
         public boolean accept(IssueNode node) {
-            return node.getIssue().getStatus() != IssueStatusProvider.Status.SEEN;
+            return node.getStatus() != IssueStatusProvider.Status.SEEN;
         }
     }
     private static class NewFilter extends Filter {
@@ -135,7 +111,7 @@ public abstract class Filter {
         }
         @Override
         public boolean accept(IssueNode node) {
-            return node.getIssue().getStatus() == IssueStatusProvider.Status.INCOMING_NEW;
+            return node.getStatus() == IssueStatusProvider.Status.INCOMING_NEW;
         }
     }
     

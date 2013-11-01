@@ -52,12 +52,9 @@ import java.util.logging.Level;
 import org.openide.nodes.*;
 import org.openide.util.lookup.Lookups;
 import javax.swing.*;
-import org.netbeans.modules.bugtracking.APIAccessor;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.IssueImpl;
-import org.netbeans.modules.bugtracking.api.Issue;
-import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.api.Util;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.openide.util.NbBundle;
 
@@ -66,6 +63,7 @@ import org.openide.util.NbBundle;
  * Issue which serves as the 'data' 'visual' node.
  * 
  * @author Tomas Stupka
+ * @param <I>
  */
 public abstract class IssueNode<I> extends AbstractNode {
 
@@ -85,36 +83,34 @@ public abstract class IssueNode<I> extends AbstractNode {
     }
         
     private IssueImpl issueImpl;
-    private I issueData;
 
     private String htmlDisplayName;
     private Action preferedAction = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
-            issueImpl.open();
+            
+//            issueImpl.open();
         }
     };
     private final ChangesProvider<I> changesProvider;
 
     /**
      * Creates a {@link IssueNode}
-     * @param issue - the {@link Issue} to be represented by this IssueNode
+     * @param i
+     * @param issueProvider
+     * @param statusProvider
+     * @param changesProvider
      */
-    public IssueNode(Repository repository, I issueData, ChangesProvider<I> changesProvider) {
-        this(Children.LEAF, APIAccessor.IMPL.getImpl(repository).getIssue(issueData), issueData, changesProvider);
-    }
-
-    private IssueNode(Children children, IssueImpl issue, I issueData, ChangesProvider<I> changesProvider) {
-        super(children, Lookups.fixed(issue));
-        this.issueImpl = issue;
-        this.issueData = issueData;
+    public IssueNode(I i, IssueProvider<I> issueProvider, IssueStatusProvider<?, I> statusProvider, ChangesProvider<I> changesProvider) {
+        super(Children.LEAF);
+        this.issueImpl = new IssueImpl(i, issueProvider, statusProvider);
         this.changesProvider = changesProvider;
         initProperties();
         refreshHtmlDisplayName();
-        issue.addIssueStatusListener(new PropertyChangeListener() {
+        issueImpl.addIssueStatusListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                if(!IssueNode.this.issueImpl.isData(evt.getSource())) {
+                if(IssueNode.this.issueImpl.i != evt.getSource()) {
                     return;
                 }
                 if(evt.getPropertyName().equals(IssueStatusProvider.EVENT_STATUS_CHANGED)) {
@@ -124,19 +120,15 @@ public abstract class IssueNode<I> extends AbstractNode {
         });
     }
     
-    public IssueImpl getIssue() {
-        return issueImpl;
-    }
-    
     public I getIssueData() {
-        return issueData;
+        return issueImpl.i;
     }
     
     /**
      * Returns the properties to be shown in the Issue Table according to the ColumnDescriptors returned by
      * {@link Query#getColumnDescriptors() }
      *
-     * @return properites
+     * @return properties
      */
     protected abstract Node.Property<?>[] getProperties();
 
@@ -149,6 +141,18 @@ public abstract class IssueNode<I> extends AbstractNode {
         return issueImpl.getStatus() == IssueStatusProvider.Status.SEEN;
     }
 
+    IssueStatusProvider.Status getStatus() {
+        return issueImpl.getStatus();
+    }
+
+    void setSeen(boolean b) {
+        issueImpl.setSeen(b);
+    }
+
+    String getSummary() {
+        return issueImpl.getSummary();
+    }
+    
     private void initProperties() {
         Sheet sheet = Sheet.createDefault();
         Sheet.Set ps = Sheet.createPropertiesSet();
@@ -214,17 +218,15 @@ public abstract class IssueNode<I> extends AbstractNode {
         public String toString() {
             try {
                 return getValue().toString();
-            } catch (Exception e) {
-                BugtrackingManager.LOG.log(Level.INFO, null, e);
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                IssueTable.LOG.log(Level.INFO, null, e);
                 return e.getLocalizedMessage();
             }
         }
         public I getIssueData() {
-            return IssueNode.this.issueData;
+            return IssueNode.this.issueImpl.i;
         }
-        public Issue getIssue() {
-            return IssueNode.this.issueImpl.getIssue();
-        }
+
         @Override
         public int compareTo(IssueNode<I>.IssueProperty<T> o) {
             return toString().compareTo(o.toString());
@@ -233,6 +235,10 @@ public abstract class IssueNode<I> extends AbstractNode {
         @Override
         public abstract T getValue() throws IllegalAccessException, InvocationTargetException;        
 
+        IssueStatusProvider.Status getStatus() {
+            return IssueNode.this.getStatus();
+        }
+        
         String getRecentChanges() {
             String changes = changesProvider.getRecentChanges(getIssueData());
             if(changes == null) {
@@ -245,6 +251,10 @@ public abstract class IssueNode<I> extends AbstractNode {
                 changes = NbBundle.getMessage(IssueNode.class, "LBL_IssueModified"); // NOI18N
             }
             return changes;
+        }
+
+        private String getSummary() {
+            return IssueNode.this.getSummary();
         }
     }
     
@@ -259,19 +269,19 @@ public abstract class IssueNode<I> extends AbstractNode {
         }
         @Override
         public String getValue() {
-            return getIssue().getSummary();
+            return IssueNode.this.getSummary();
         }
         @Override
         public int compareTo(IssueProperty p) {
             if(p == null) return 1;
-            String s1 = getIssue().getSummary();
-            String s2 = p.getIssue().getSummary();
+            String s1 = IssueNode.this.getSummary();
+            String s2 = p.getSummary();
             return s1.compareTo(s2);
         }
     }
 
     /**
-     * Represens the Seen value in a IssueNode
+     * Represents the Seen value in a IssueNode
      */
     public class SeenProperty extends IssueProperty<Boolean> {
         public SeenProperty() {
@@ -288,14 +298,14 @@ public abstract class IssueNode<I> extends AbstractNode {
         public int compareTo(IssueProperty p) {
             if(p == null) return 1;
             Boolean b1 = IssueNode.this.wasSeen();
-            Boolean b2 = APIAccessor.IMPL.getImpl(p.getIssue()).getStatus() == IssueStatusProvider.Status.SEEN;
+            Boolean b2 = p.getStatus() == IssueStatusProvider.Status.SEEN;
             return b1.compareTo(b2);
         }
 
     }
 
     /**
-     * Represens the Seen value in a IssueNode
+     * Represents the Seen value in a IssueNode
      */
     public class RecentChangesProperty extends IssueNode<I>.IssueProperty<String> {
         public RecentChangesProperty() {
@@ -306,13 +316,13 @@ public abstract class IssueNode<I> extends AbstractNode {
         }
         @Override
         public String getValue() {
-            return changesProvider.getRecentChanges(issueData);
+            return changesProvider.getRecentChanges(IssueNode.this.issueImpl.i);
         }
         @Override
         public int compareTo(IssueNode<I>.IssueProperty<String> p) {
             if(p == null) return 1;
             if(p.getClass().isAssignableFrom(RecentChangesProperty.class)) {
-                String recentChanges1 = changesProvider.getRecentChanges(issueData);;
+                String recentChanges1 = changesProvider.getRecentChanges(IssueNode.this.issueImpl.i);
                 String recentChanges2 = changesProvider.getRecentChanges(p.getIssueData());
                 return recentChanges1.compareToIgnoreCase(recentChanges2);
             }
@@ -320,4 +330,35 @@ public abstract class IssueNode<I> extends AbstractNode {
         }
     }
 
+    private class IssueImpl {
+        private final I i;
+        private final IssueProvider<I> provider;
+        private final IssueStatusProvider<?, I> statusProvider;
+        
+        public IssueImpl(I i, IssueProvider<I> provider, IssueStatusProvider<?, I> statusProvider) {
+            this.i = i;
+            this.provider = provider;
+            this.statusProvider = statusProvider;
+        }
+
+        private void addIssueStatusListener(PropertyChangeListener propertyChangeListener) {
+            provider.addPropertyChangeListener(i, propertyChangeListener);
+        }
+
+        private IssueStatusProvider.Status getStatus() {
+            return statusProvider.getStatus(i);
+        }
+
+        private String getDisplayName() {
+            return provider.getDisplayName(i);
+        }
+
+        private String getSummary() {
+            return provider.getSummary(i);
+        }
+
+        private void setSeen(boolean b) {
+            statusProvider.setSeenIncoming(i, b);
+        }
+    }
 }

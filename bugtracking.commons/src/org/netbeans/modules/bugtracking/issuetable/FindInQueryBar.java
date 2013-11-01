@@ -43,8 +43,6 @@ package org.netbeans.modules.bugtracking.issuetable;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import javax.swing.AbstractAction;
@@ -166,7 +164,7 @@ class FindInQueryBar extends javax.swing.JPanel {
             }
         });
 
-        closeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/bugtracking/ui/resources/find_close.png"))); // NOI18N
+        closeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/bugtracking/commons/resources/find_close.png"))); // NOI18N
         closeButton.setBorderPainted(false);
         closeButton.setContentAreaFilled(false);
         closeButton.setFocusable(false);
@@ -217,7 +215,7 @@ class FindInQueryBar extends javax.swing.JPanel {
                 .addContainerGap()
                 .addComponent(findLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(findCombo, 0, 105, Short.MAX_VALUE)
+                .addComponent(findCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(machCaseChoice)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)

@@ -59,15 +59,12 @@ import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
-import org.netbeans.modules.bugtracking.APIAccessor;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.IssueImpl;
-import org.netbeans.modules.bugtracking.issuetable.IssueNode.IssueProperty;
-import org.netbeans.modules.bugtracking.QueryImpl;
-import org.netbeans.modules.bugtracking.api.Query;
-import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.commons.TextUtils;
 import org.netbeans.modules.bugtracking.commons.UIUtils;
+import org.netbeans.modules.bugtracking.issuetable.IssueNode.IssueProperty;
+import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
+import static org.netbeans.modules.bugtracking.spi.IssueStatusProvider.Status.INCOMING_MODIFIED;
+import static org.netbeans.modules.bugtracking.spi.IssueStatusProvider.Status.INCOMING_NEW;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -79,11 +76,10 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
     public static final String PROPERTY_FORMAT = "format";                      // NOI18N
     public static final String PROPERTY_HIGHLIGHT_PATTERN = "highlightPattern"; // NOI18N
 
-    private final QueryImpl query;
     private final IssueTable issueTable;
 
     private static final int VISIBLE_START_CHARS = 0;
-    private static final Icon seenValueIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/ui/resources/seen-value.png")); // NOI18N
+    private static final Icon seenValueIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/commons/resources/seen-value.png")); // NOI18N
 
     private static final MessageFormat issueNewFormat       = getFormat("issueNewFormat", UIUtils.getTaskNewColor()); //NOI18N
     private static final MessageFormat issueObsoleteFormat  = getFormat("issueObsoleteFormat", UIUtils.getTaskObsoleteColor()); //NOI18N
@@ -114,8 +110,7 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
     }
     private boolean isSaved;
 
-    public QueryTableCellRenderer(Query query, IssueTable issueTable, boolean isSaved) {
-        this.query = APIAccessor.IMPL.getImpl(query);
+    public QueryTableCellRenderer(IssueTable issueTable, boolean isSaved) {
         this.issueTable = issueTable;
         this.isSaved = isSaved;
     }
@@ -149,7 +144,7 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
         } 
 
         if(value instanceof IssueNode.IssueProperty) {
-            style = getCellStyle(table, query.getQuery(), issueTable, (IssueProperty)value, isSelected, row);
+            style = getCellStyle(table, issueTable, (IssueProperty)value, isSelected, row);
         }
         setStyleProperties(renderer, style);
         return renderer;
@@ -313,13 +308,11 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
 
     }
     
-    public static TableCellStyle getCellStyle(JTable table, Query query, IssueTable issueTable, IssueProperty p, boolean isSelected, int row) {
-        QueryImpl queryImpl = APIAccessor.IMPL.getImpl(query);
+    public static TableCellStyle getCellStyle(JTable table, IssueTable issueTable, IssueProperty p, boolean isSelected, int row) {
         TableCellStyle style = getDefaultCellStyle(table, issueTable, p, isSelected, row);
         try {
             // set text format and background depending on selection and issue status
-            IssueImpl issue = APIAccessor.IMPL.getImpl(p.getIssue());
-            IssueStatusProvider.Status status = issue.getStatus();
+            IssueStatusProvider.Status status = p.getStatus();
             if(status != IssueStatusProvider.Status.SEEN) {
                 switch(status) {
                     case INCOMING_NEW :
@@ -346,7 +339,7 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
                 sb.append("<html>");                                                // NOI18N
                 sb.append(s);
                 if(status == null) {
-                    status = issue.getStatus();
+                    status = p.getStatus();
                 }
                 switch(status) {
                     case INCOMING_NEW :
@@ -362,7 +355,7 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
                 style.tooltip = sb.toString();
             }
         } catch (Exception ex) {
-            BugtrackingManager.LOG.log(Level.WARNING, null, ex);
+            IssueTable.LOG.log(Level.WARNING, null, ex);
         }
         return style;
     }

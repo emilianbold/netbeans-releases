@@ -90,7 +90,7 @@ final class SummaryTextFilter extends Filter {
 
     @Override
     public boolean accept(IssueNode node) {
-        return pattern.matcher(node.getIssue().getSummary()).find();
+        return pattern.matcher(node.getSummary()).find();
     }
 
     boolean isHighLightingOn() {

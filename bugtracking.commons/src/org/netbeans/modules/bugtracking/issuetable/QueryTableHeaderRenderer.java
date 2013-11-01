@@ -52,22 +52,19 @@ import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
-import org.netbeans.modules.bugtracking.QueryImpl;
 import org.openide.util.ImageUtilities;
 
 class QueryTableHeaderRenderer extends DefaultTableCellRenderer {
 
     private final JLabel seenCell = new JLabel();
 
-    private static final Icon seenHeaderIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/ui/resources/seen-header.png")); // NOI18N
-    private final QueryImpl query;
+    private static final Icon seenHeaderIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/commons/resources/seen-header.png")); // NOI18N
     private final TableCellRenderer delegate;
     private final IssueTable issueTable;
     private boolean isSaved;
 
-     public QueryTableHeaderRenderer(TableCellRenderer delegate, IssueTable issueTable, QueryImpl query) {
+     public QueryTableHeaderRenderer(TableCellRenderer delegate, IssueTable issueTable) {
         super();
-        this.query = query;
         this.issueTable = issueTable;
         this.delegate = delegate;
         seenCell.setIcon(seenHeaderIcon);

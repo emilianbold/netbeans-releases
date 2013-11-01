@@ -49,10 +49,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.TableColumnModelEvent;
 import javax.swing.table.TableColumn;
-import java.beans.PropertyChangeEvent;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode.IssueProperty;
 import org.openide.util.NbBundle;
-
 import javax.swing.event.AncestorListener;
 import javax.swing.event.AncestorEvent;
 import java.awt.event.MouseListener;
@@ -65,6 +63,7 @@ import java.awt.EventQueue;
 import java.awt.Rectangle;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyListener;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -76,6 +75,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
@@ -91,40 +93,39 @@ import javax.swing.UIManager;
 import javax.swing.event.TableColumnModelListener;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
-import org.netbeans.modules.bugtracking.APIAccessor;
-import org.netbeans.modules.bugtracking.BugtrackingConfig;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.IssueImpl;
-import org.netbeans.modules.bugtracking.QueryImpl;
-import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
+import org.netbeans.modules.bugtracking.spi.BugtrackingSupport;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.spi.QueryController;
-import org.netbeans.modules.bugtracking.commons.UIUtils;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.openide.awt.MouseUtils;
 import org.openide.explorer.view.TreeTableView;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 
 /**
  * @author Tomas Stupka
  */
-public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListener, PropertyChangeListener {
+public class IssueTable implements MouseListener, AncestorListener, KeyListener, PropertyChangeListener {
 
+    static final Logger LOG = Logger.getLogger(IssueTable.class.getName());
+    
     private NodeTableModel  tableModel;
     private JTable          table;
     private final JPanel     component;
 
     private final TableSorter     sorter;
 
-    private final QueryImpl query;
     private ColumnDescriptor[] descriptors;
 
     private Filter allFilter;
     private Filter newOrChangedFilter;
     private Filter filter;
     private Filter[] filters;
-    private Set<IssueNode> nodes = new HashSet<IssueNode>();
+    private Set<IssueNode> nodes = new HashSet<>();
 
     private final QueryTableHeaderRenderer queryTableHeaderRenderer;
 
@@ -149,23 +150,30 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
                 try {
                     return p1.compareTo(p2);
                 } catch (Exception e) {
-                    BugtrackingManager.LOG.log(Level.SEVERE, null, e);
+                    LOG.log(Level.SEVERE, null, e);
                     return 0;
                 }
             }
         }
     };
+    private RequestProcessor rp;
+    private final String repositoryId;
 
-    public IssueTable(Repository repository, Q q, ColumnDescriptor[] descriptors, final boolean isSaved) {
-        assert q != null;
+    public IssueTable(String repositoryId, String queryName, QueryController controller, ColumnDescriptor[] descriptors, final boolean isSaved) {
         assert descriptors != null;
         assert descriptors.length > 0;
 
-        this.query = APIAccessor.IMPL.getImpl(repository).getQuery(q);
-        this.isSaved = isSaved;
+        
+        if(queryName == null) {
+            queryName = "#find#issues#hitlist#table#";               // NOI18N
+        }
+        this.repositoryId = repositoryId + ":" + queryName;      // NOI18N
+        
+        controller.addPropertyChangeListener(this);
         
         this.descriptors = descriptors;
-        this.component = new TablePanel();
+        this.component = new JPanel();
+        this.isSaved = isSaved;
         
         initFilters();
 
@@ -183,7 +191,7 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
         if (borderColor == null) borderColor = UIManager.getColor("controlShadow"); // NOI18N
         tableScrollPane.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
 
-        ImageIcon ic = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/ui/resources/columns_16.png", true)); // NOI18N
+        ImageIcon ic = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/commons/resources/columns_16.png", true)); // NOI18N
         colsButton = new javax.swing.JButton(ic);
         colsButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(TreeTableView.class, "ACN_ColumnsSelector")); //NOI18N
         colsButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(TreeTableView.class, "ACD_ColumnsSelector")); //NOI18N
@@ -209,9 +217,10 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
         table.addMouseListener(this);
         table.addKeyListener(this);
         table.addAncestorListener(findInQuerySupport.getAncestorListener());
-        cellRenderer = new QueryTableCellRenderer(query.getQuery(), this, isSaved);
+        cellRenderer = new QueryTableCellRenderer(this, isSaved);
         table.setDefaultRenderer(Node.Property.class, cellRenderer);
-        queryTableHeaderRenderer = new QueryTableHeaderRenderer(table.getTableHeader().getDefaultRenderer(), this, query);
+        queryTableHeaderRenderer = new QueryTableHeaderRenderer(table.getTableHeader().getDefaultRenderer(), this);
+        queryTableHeaderRenderer.setSaved(isSaved);
         table.getTableHeader().setDefaultRenderer(queryTableHeaderRenderer);
         table.addAncestorListener(this);
         table.getAccessibleContext().setAccessibleName(NbBundle.getMessage(IssueTable.class, "ACSN_IssueTable")); // NOI18N
@@ -245,9 +254,7 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
         UIUtils.fixFocusTraversalKeys(table);
 
         storeColumnsWidthHandler = new StoreColumnsHandler();
-        storeColumnsTask = BugtrackingManager.getInstance()
-                                                .getRequestProcessor()
-                                                .create(storeColumnsWidthHandler);
+        storeColumnsTask = getRequestProcessor().create(storeColumnsWidthHandler);
     }
     private final QueryTableCellRenderer cellRenderer;
 
@@ -404,8 +411,8 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
     }
 
     /**
-     * Callback from sorter. It also throws an event when the order is changed, unfortunatelly
-     * that also applyies for chages caused by refreshing a query and there is no way to 
+     * Callback from sorter. It also throws an event when the order is changed, unfortunately
+     * that also applies for changes caused by refreshing a query and there is no way to 
      * distinguish between those events. 
      */
     void sortOrderChanged() {
@@ -417,32 +424,30 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
             }
             sb.append(i).append(CONFIG_DELIMITER).append(sorter.getSortingStatus(i));
         }
-        BugtrackingConfig.getInstance().storeColumnSorting(getColumnsKey(), sb.toString());
+        storeColumnSorting(repositoryId, sb.toString());
     }
 
     private Map<Integer, Integer> getColumnSorting() {
-        String sortingString = BugtrackingConfig.getInstance().getColumnSorting(getColumnsKey());
+        String sortingString = getColumnSorting(repositoryId);
         if(sortingString == null || sortingString.equals("")) {
             return Collections.EMPTY_MAP;
         }
-        Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+        Map<Integer, Integer> map = new HashMap<>();
         String[] sortingArray = sortingString.split(CONFIG_DELIMITER);
         for (int i = 0; i < sortingArray.length; i+=2) {
             try {
                 map.put(Integer.parseInt(sortingArray[i]),
                         Integer.parseInt(sortingArray[i + 1]));
-            } catch (NumberFormatException e) {
-                BugtrackingManager.LOG.log(Level.FINE, null, e);
-            } catch (ArrayIndexOutOfBoundsException e) {
-                BugtrackingManager.LOG.log(Level.FINE, null, e);
+            } catch (    NumberFormatException | ArrayIndexOutOfBoundsException e) {
+                LOG.log(Level.FINE, null, e);
             }
         }
         return map;
     }
 
     private void initFilters() {
-        allFilter = Filter.getAllFilter(query);
-        newOrChangedFilter = Filter.getNotSeenFilter(query);
+        allFilter = Filter.getAllFilter();
+        newOrChangedFilter = Filter.getNotSeenFilter();
         filters = new Filter[]{allFilter, newOrChangedFilter};
         filter = allFilter;
     }
@@ -472,6 +477,13 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
 
     SummaryTextFilter getSummaryFilter() {
         return textFilter;
+    }
+
+    private RequestProcessor getRequestProcessor() {
+        if(rp == null) {
+            rp = new RequestProcessor("Issue table", 5);
+        }
+        return rp; 
     }
 
     private static class CellAction implements ActionListener {
@@ -578,7 +590,7 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
         Runnable r = new Runnable() {
             @Override
             public void run() {
-                int[] widths = BugtrackingConfig.getInstance().getColumnWidths(getColumnsKey());
+                int[] widths = getColumnWidths(repositoryId);
                 Map<String, Integer> persistedColumnsMap = getPersistedColumnValues();
                 if(persistedColumnsMap.size() > 0) {
                     final TableColumnModel columnModel = table.getColumnModel();
@@ -696,7 +708,7 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
     }
 
     private Map<String, Integer> getPersistedColumnValues() {
-        String columns = BugtrackingConfig.getInstance().getColumns(getColumnsKey());
+        String columns = getColumns(repositoryId);
         String[] visibleColumns = columns.split(CONFIG_DELIMITER);                         // NOI18N
         if(visibleColumns.length <= 1) {
             return Collections.EMPTY_MAP;
@@ -707,7 +719,7 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
                 ret.put(visibleColumns[i], Integer.parseInt(visibleColumns[i + 1]));
             } catch (NumberFormatException nfe) {
                 ret.put(visibleColumns[i], -1);
-                BugtrackingManager.LOG.log(Level.WARNING, visibleColumns[i], nfe);
+                LOG.log(Level.WARNING, visibleColumns[i], nfe);
             }
         }
         return ret;
@@ -746,13 +758,12 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
 
                 // seen column
                 if(column == getSeenColumnIdx()) {
-                    IssueNode in = (IssueNode) tableModel.getNodes()[row];
-                    final IssueImpl issue = in.getLookup().lookup(IssueImpl.class);
-                    BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+                    final IssueNode in = (IssueNode) tableModel.getNodes()[row];
+                    getRequestProcessor().post(new Runnable() {
                         @Override
                         public void run() {
-                            IssueStatusProvider.Status status = issue.getStatus();
-                            issue.setSeen(status != IssueStatusProvider.Status.SEEN);
+                            IssueStatusProvider.Status status = in.getStatus();
+                            in.setSeen(status != IssueStatusProvider.Status.SEEN);
                         }
                     });
                 }
@@ -833,14 +844,6 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
         }
     }
 
-    private String getColumnsKey() {
-        String name = query.getDisplayName();
-        if(name == null) {
-            name = "#find#issues#hitlist#table#";               // NOI18N
-        }
-        return query.getRepositoryImpl().getId() + ":" + name;      // NOI18N
-    }
-
     private class StoreColumnsHandler implements Runnable {
         @Override
         public void run() {            
@@ -857,7 +860,7 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
                     }
                 }
             }
-            BugtrackingConfig.getInstance().storeColumns(getColumnsKey(), sb.toString());
+            storeColumns(repositoryId, sb.toString());
         }
     }
 
@@ -885,22 +888,54 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
         }
     };
 
-    private class TablePanel extends JPanel {
-
-        @Override
-        public void addNotify() {
-            query.getController().removePropertyChangeListener(IssueTable.this);
-            query.getController().addPropertyChangeListener(IssueTable.this);
-            super.addNotify(); 
-        }
-        
-        @Override
-        public void removeNotify() {
-            query.getController().removePropertyChangeListener(IssueTable.this);
-            super.addNotify(); 
-        }
-        
-    }
+    private static final String COLUMN_WIDTH_PREFIX  = "bugtracking.issuetable.columnwidth";  // NOI18N
+    private static final String COLUMN_SORTING_PREFIX = "bugtracking.issuetable.columnsorting";  // NOI18N
     
+    public Preferences getPreferences() {
+        // legacy - use some public bugtracking type, 
+        // to acces the previously (before 8.0) used preferences location
+        return NbPreferences.forModule(BugtrackingSupport.class);
+    }
+
+    public void storeColumns(String key, String columns) {
+        getPreferences().put(COLUMN_WIDTH_PREFIX + "." + key, columns); // NOI18N
+    }
+
+    public String getColumns(String key) {
+        return getPreferences().get(COLUMN_WIDTH_PREFIX + "." + key, ""); // NOI18N
+    }
+
+    @Deprecated
+    public int[] getColumnWidths(String key) {
+        List<Integer> retval = new ArrayList<>();
+        try {
+            String[] keys = getPreferences().keys();
+            for (int i = 0; i < keys.length; i++) {
+                String k = keys[i];
+                if (k != null && k.startsWith(COLUMN_WIDTH_PREFIX + "." + key + ".")) { // NOI18N
+                    int idx = Integer.parseInt(k.substring(k.lastIndexOf('.') + 1));    // NOI18N
+                    int value = getPreferences().getInt(k, -1);
+                    retval.add(idx, value);
+                    getPreferences().remove(k);
+                }
+            }
+            int[] ret = new int[retval.size()];
+            for (int i = 0; i < ret.length; i++) {
+                ret[i] = retval.get(i);
+            }
+            return ret;
+        } catch (NumberFormatException | BackingStoreException ex) {
+            LOG.log(Level.INFO, null, ex);
+            return new int[0];
+        }
+    }
+
+    public void storeColumnSorting(String columnsKey, String sorting) {
+        getPreferences().put(COLUMN_SORTING_PREFIX + "." + columnsKey, sorting); // NOI18N
+    }
+
+    public String getColumnSorting(String key) {
+        return getPreferences().get(COLUMN_SORTING_PREFIX + "." + key, ""); // NOI18N
+    }    
 }
 

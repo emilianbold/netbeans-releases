@@ -126,7 +126,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
     private final Object CRITERIA_LOCK = new Object();
     private final Semaphore querySemaphore = new Semaphore(1);
     
-    private final IssueTable<ODCSQuery> issueTable;
+    private final IssueTable issueTable;
     private boolean modifiable;
     private Criteria criteria;
     private Criteria originalCriteria;
@@ -139,7 +139,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
         this.modifiable = modifiable;
         this.criteria = criteria;
         
-        issueTable = new IssueTable<>(ODCSUtil.getRepository(repository), query, query.getColumnDescriptors(), query.isSaved());
+        issueTable = new IssueTable(repository.getID(), query.getDisplayName(), this, query.getColumnDescriptors(), query.isSaved());
         setupRenderer(issueTable);
         panel = new QueryPanel(issueTable.getComponent());
 
