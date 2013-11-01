@@ -43,6 +43,7 @@ package org.netbeans.modules.remote.impl.fs.server;
  */
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -65,6 +66,7 @@ import org.netbeans.modules.remote.impl.fs.RemoteFileObject;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemManager;
 import org.openide.modules.OnStart;
 import org.openide.modules.OnStop;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -153,6 +155,16 @@ public class DirectoryReaderFS implements DirectoryReader {
                     paths.add(serverPath);
                 }
             }
+        } catch (CancellationException ex) {
+            // don't report CancellationException
+            synchronized (lock) { 
+                cache.clear();
+                return;
+            }
+        } catch (ConnectException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ExecutionException ex) {
+            ex.printStackTrace(System.err);
         } finally {
             RemoteLogger.finest("Communication #{0} with fs_server for directry {1}: ({2} entries) took {3} ms",
                     request.getId(), path, realCnt.get(), System.currentTimeMillis() - time);

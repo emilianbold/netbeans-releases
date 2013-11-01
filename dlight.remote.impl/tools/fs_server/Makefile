@@ -42,8 +42,8 @@ SRC_DIRS=\
 
 MKDIR=mkdir -p
 OBJ_DIR=$(ROOT_DIR)/build/$(CONF)
-DIST_DIR=$(ROOT_DIR)/dist/$(CONF)
-INSTALL_DIR=../../release/bin/nativeexecution/$(CONF)
+DIST_DIR=$(ROOT_DIR)/../../release/bin/$(CONF)
+INSTALL_DIR=../../../nbbuild/netbeans/dlight/bin$(CONF)
 LINE=sh $(ROOT_DIR)/make/line
 
 EXEC=$(DIST_DIR)/$(PNAME)
