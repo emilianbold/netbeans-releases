@@ -42,14 +42,12 @@
 
 package org.netbeans.modules.bugtracking.kenai;
 
-import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.logging.Level;
@@ -60,7 +58,6 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.*;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.spi.*;
 import org.netbeans.modules.kenai.api.Kenai;
