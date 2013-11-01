@@ -39,60 +39,69 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.jquery;
+package org.netbeans.modules.html.angular.editor;
 
 import java.util.Collections;
-import static junit.framework.Assert.assertTrue;
-import org.netbeans.modules.csl.api.DeclarationFinder;
+import java.util.Set;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
-import static org.netbeans.modules.csl.api.test.CslTestBase.getCaretOffset;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.javascript2.editor.JsTestBase;
-import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.spi.Parser;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Petr Pisl
  */
-public class Goto218102Test extends JsTestBase {
+public class AngularJsElement implements ElementHandle {
+
+    private final String name;
+    private final ElementKind kind;
     
-    public Goto218102Test(String testName) {
-        super(testName);
-    }
-    // TODO disable, because it's failing in teh continues build: server. Should be corrected.
-    public void testIssue218102_01() throws Exception {
-//        checkOffsetRange("testfiles/jquery/218102/issue218102.js", "jQuery(\".do^g\").get(1);", 8, 12);
-    }
-    
-    protected void checkOffsetRange(String file, String caretLine, int start, int end) throws Exception {
-        OffsetRange computed = findReferenceSpan(file, caretLine);
-        assertEquals(new OffsetRange(start, end), computed);
-    }
-    
-    protected OffsetRange findReferenceSpan(String relFilePath, final String caretLine) throws Exception {
-        Source testSource = getTestSource(getTestFile(relFilePath));
 
-        final int caretOffset = getCaretOffset(testSource.createSnapshot().getText().toString(), caretLine);
-        enforceCaretOffset(testSource, caretOffset);
-
-        final OffsetRange [] location = new OffsetRange[] { OffsetRange.NONE };
-        ParserManager.parse(Collections.singleton(testSource), new UserTask() {
-            public @Override void run(ResultIterator resultIterator) throws Exception {
-                Parser.Result r = resultIterator.getParserResult();
-                assertTrue(r instanceof ParserResult);
-                ParserResult pr = (ParserResult) r;
-
-                DeclarationFinder finder = getFinder();
-                location[0] = finder.getReferenceSpan(resultIterator.getSnapshot().getSource().getDocument(false), caretOffset);
-            }
-        });
-
-        return location[0];
+    public AngularJsElement(String name, ElementKind kind) {
+        this.name = name;
+        this.kind = kind;
     }
 
-    
+    @Override
+    public FileObject getFileObject() {
+        return null;
+    }
+
+    @Override
+    public String getMimeType() {
+        return "";
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String getIn() {
+        return "";
+    }
+
+    @Override
+    public ElementKind getKind() {
+        return kind;
+    }
+
+    @Override
+    public Set<Modifier> getModifiers() {
+        return Collections.<Modifier>emptySet();
+    }
+
+    @Override
+    public boolean signatureEquals(ElementHandle handle) {
+        return false;
+    }
+
+    @Override
+    public OffsetRange getOffsetRange(ParserResult result) {
+        return OffsetRange.NONE;
+    }
 }

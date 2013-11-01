@@ -39,60 +39,54 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.jquery;
+package org.netbeans.modules.javascript2.editor;
 
+import java.io.File;
 import java.util.Collections;
-import static junit.framework.Assert.assertTrue;
-import org.netbeans.modules.csl.api.DeclarationFinder;
-import org.netbeans.modules.csl.api.OffsetRange;
-import static org.netbeans.modules.csl.api.test.CslTestBase.getCaretOffset;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.javascript2.editor.JsTestBase;
-import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.spi.Parser;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import static org.netbeans.modules.javascript2.editor.JsTestBase.JS_SOURCE_ID;
+import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author Petr Pisl
  */
-public class Goto218102Test extends JsTestBase {
+public class JsCodeCompletionWithAnonymProperty extends JsCodeCompletionBase {
     
-    public Goto218102Test(String testName) {
+    public JsCodeCompletionWithAnonymProperty(String testName) {
         super(testName);
     }
-    // TODO disable, because it's failing in teh continues build: server. Should be corrected.
-    public void testIssue218102_01() throws Exception {
-//        checkOffsetRange("testfiles/jquery/218102/issue218102.js", "jQuery(\".do^g\").get(1);", 8, 12);
+
+    public void testWith5() throws Exception {
+        checkCompletion("testfiles/completion/withAnonymProperty/test.js", "fw.^language;", false);
     }
     
-    protected void checkOffsetRange(String file, String caretLine, int start, int end) throws Exception {
-        OffsetRange computed = findReferenceSpan(file, caretLine);
-        assertEquals(new OffsetRange(start, end), computed);
-    }
-    
-    protected OffsetRange findReferenceSpan(String relFilePath, final String caretLine) throws Exception {
-        Source testSource = getTestSource(getTestFile(relFilePath));
-
-        final int caretOffset = getCaretOffset(testSource.createSnapshot().getText().toString(), caretLine);
-        enforceCaretOffset(testSource, caretOffset);
-
-        final OffsetRange [] location = new OffsetRange[] { OffsetRange.NONE };
-        ParserManager.parse(Collections.singleton(testSource), new UserTask() {
-            public @Override void run(ResultIterator resultIterator) throws Exception {
-                Parser.Result r = resultIterator.getParserResult();
-                assertTrue(r instanceof ParserResult);
-                ParserResult pr = (ParserResult) r;
-
-                DeclarationFinder finder = getFinder();
-                location[0] = finder.getReferenceSpan(resultIterator.getSnapshot().getSource().getDocument(false), caretOffset);
-            }
-        });
-
-        return location[0];
+    public void testProperty01() throws Exception {
+        checkCompletion("testfiles/completion/withAnonymProperty/test2.js", "fw.l^anguage;", false);
     }
 
+    public void testProperty02() throws Exception {
+        checkCompletion("testfiles/completion/withAnonymProperty/test2.js", "gg.l^anguage;", false);
+    }
     
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
+        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/withAnonymProperty")));
+        return Collections.singletonMap(
+            JS_SOURCE_ID,
+            ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))
+        );
+    }
+
+    @Override
+    protected boolean classPathContainsBinaries() {
+        return true;
+    }
 }
