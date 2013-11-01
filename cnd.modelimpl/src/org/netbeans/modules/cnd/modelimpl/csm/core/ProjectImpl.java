@@ -461,7 +461,10 @@ public final class ProjectImpl extends ProjectBase {
                 delay = Integer.MAX_VALUE;
             }
         }
-        task.schedule(delay);
+        // to prevent frequent re-post 
+        if (task.getDelay() < Math.max(100, delay - 100)) {
+            task.schedule(delay);
+        }
     }
 
     @Override
