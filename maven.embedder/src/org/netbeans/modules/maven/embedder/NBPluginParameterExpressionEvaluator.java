@@ -43,6 +43,7 @@
 package org.netbeans.modules.maven.embedder;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.Map;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.path.DefaultPathTranslator;
@@ -54,9 +55,12 @@ import org.codehaus.plexus.util.introspection.ReflectionValueExtractor;
 
 /**
  * a stripped down version of plugin parameter expression evaluator
- * (PluginParameterExpressionEvaluator)
+ * (PluginParameterExpressionEvaluator).
+ * Please do not use directly, use <code>PluginPropertyUtils.createEvaluator()</code> instead.
+ * @deprecated only public for simplicity reasons, do not use
  * @author mkleint
  */
+@Deprecated
 public class NBPluginParameterExpressionEvaluator 
     implements ExpressionEvaluator
 {
@@ -71,6 +75,14 @@ public class NBPluginParameterExpressionEvaluator
     
     private final Settings settings;
 
+    @Deprecated
+    public NBPluginParameterExpressionEvaluator( 
+                                               MavenProject project, 
+                                               Settings settings,
+                                               Map<? extends String,? extends String> systemProperties)
+    {
+        this(project, settings, systemProperties, Collections.<String, String>emptyMap());
+    }
     public NBPluginParameterExpressionEvaluator( 
                                                MavenProject project, 
                                                Settings settings,
