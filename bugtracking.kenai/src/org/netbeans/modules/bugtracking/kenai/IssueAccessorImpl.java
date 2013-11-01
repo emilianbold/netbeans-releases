@@ -121,7 +121,7 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
                 Support.LOG.log(Level.FINE, "No repository available with ID {0}", entry.getKey()); // NOI18N
                 continue;
             }
-            TeamProjectImpl kenaiProject = (TeamProjectImpl) TeamUtil.getTeamProject(repo);
+            TeamProjectImpl kenaiProject = null; //(TeamProjectImpl) TeamUtil.getTeamProject(repo);
             if(kenaiProject == null) {
                 continue;
             }

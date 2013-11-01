@@ -58,7 +58,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import javax.swing.JLabel;
 import org.netbeans.modules.bugtracking.team.spi.TeamAccessor;
-import org.netbeans.modules.bugtracking.team.spi.RepositoryUser;
+import org.netbeans.modules.team.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
@@ -149,7 +149,7 @@ public class TeamAccessorImpl extends TeamAccessor {
     }
 
     @Override
-    public Collection<RepositoryUser> getProjectMembers(org.netbeans.modules.bugtracking.team.spi.TeamProject kp) throws IOException {
+    public Collection<RepositoryUser> getProjectMembers(org.netbeans.modules.team.spi.TeamProject kp) throws IOException {
         if(kp instanceof TeamProjectImpl) {
             List<RepositoryUser> members;
             KenaiProjectMember[] kenaiMembers = ((TeamProjectImpl)kp).getProject().getMembers();
@@ -197,19 +197,19 @@ public class TeamAccessorImpl extends TeamAccessor {
     }
 
     @Override
-    public org.netbeans.modules.bugtracking.team.spi.OwnerInfo getOwnerInfo(Node node) {
+    public org.netbeans.modules.team.spi.OwnerInfo getOwnerInfo(Node node) {
         OwnerInfo ownerInfo = NbModuleOwnerSupport.getInstance().getOwnerInfo(node);
         return ownerInfo != null ? new OwnerInfoImpl(ownerInfo) : null;
     }
 
     @Override
-    public org.netbeans.modules.bugtracking.team.spi.OwnerInfo getOwnerInfo(File file) {
+    public org.netbeans.modules.team.spi.OwnerInfo getOwnerInfo(File file) {
         OwnerInfo ownerInfo = NbModuleOwnerSupport.getInstance().getOwnerInfo(NbModuleOwnerSupport.NB_BUGZILLA_CONFIG, file);
         return ownerInfo != null ? new OwnerInfoImpl(ownerInfo) : null;
     }
 
     @Override
-    public org.netbeans.modules.bugtracking.team.spi.TeamProject[] getDashboardProjects(boolean onlyOpened) {
+    public org.netbeans.modules.team.spi.TeamProject[] getDashboardProjects(boolean onlyOpened) {
         ProjectHandle<KenaiProject>[] handles = KenaiUIUtils.getDashboardProjects(onlyOpened);
         if ((handles == null) || (handles.length == 0)) {
             return new TeamProjectImpl[0];
@@ -231,13 +231,13 @@ public class TeamAccessorImpl extends TeamAccessor {
     }
 
     @Override
-    public org.netbeans.modules.bugtracking.team.spi.TeamProject getTeamProjectForRepository(String url) throws IOException {
+    public org.netbeans.modules.team.spi.TeamProject getTeamProjectForRepository(String url) throws IOException {
         KenaiProject kp = KenaiProject.forRepository(url);
         return kp != null ? TeamProjectImpl.getInstance(kp) : null;
     }
 
     @Override
-    public org.netbeans.modules.bugtracking.team.spi.TeamProject getTeamProject(String url, String projectName) throws IOException {
+    public org.netbeans.modules.team.spi.TeamProject getTeamProject(String url, String projectName) throws IOException {
         Kenai kenai = getKenai(url);
         if (kenai == null) {
             Support.LOG.log(Level.FINEST, "no kenai for url : [{0}]", url);
@@ -366,7 +366,7 @@ public class TeamAccessorImpl extends TeamAccessor {
         }
     }
 
-    private class OwnerInfoImpl extends org.netbeans.modules.bugtracking.team.spi.OwnerInfo {
+    private class OwnerInfoImpl extends org.netbeans.modules.team.spi.OwnerInfo {
         private final OwnerInfo delegate;
 
         public OwnerInfoImpl(OwnerInfo delegate) {

@@ -74,7 +74,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
-import org.netbeans.modules.bugtracking.team.spi.TeamProject;
+import org.netbeans.modules.team.spi.TeamProject;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.commons.ListValuePicker;
 import org.netbeans.modules.bugtracking.commons.SimpleIssueFinder;

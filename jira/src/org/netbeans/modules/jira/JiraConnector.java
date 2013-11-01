@@ -47,9 +47,9 @@ import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.team.spi.TeamBugtrackingConnector;
-import org.netbeans.modules.bugtracking.team.spi.TeamBugtrackingConnector.BugtrackingType;
-import org.netbeans.modules.bugtracking.team.spi.TeamProject;
+import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
+import org.netbeans.modules.team.spi.TeamBugtrackingConnector.BugtrackingType;
+import org.netbeans.modules.team.spi.TeamProject;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
@@ -105,38 +105,38 @@ public class JiraConnector implements BugtrackingConnector, TeamBugtrackingConne
      * Kenai
      ******************************************************************************/
     
-    @Override
-    public Repository createRepository(TeamProject project) {
-        if(project == null || project.getType() != BugtrackingType.JIRA) {
-            return null;
-        }
-
-        String location = project.getFeatureLocation().toString();
-        final URL loc;
-        try {
-            loc = new URL(project.getWebLocation().toString());
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
-            return null;
-        }
-
-        String host = loc.getHost();
-        int idx = location.indexOf("/browse/");
-        if (idx <= 0) {
-            Jira.LOG.log(Level.WARNING, "can''t get issue tracker url from [{0}, {1}]", new Object[]{project.getName(), location}); // NOI18N
-            return null;
-        }
-        String url = location.substring(0, idx);
-        if (url.startsWith("http:")) { // XXX hack???                   // NOI18N
-            url = "https" + url.substring(4);                           // NOI18N
-        }
-
-        String product = location.substring(idx + "/browse/".length()); // NOI18N
-
-        KenaiRepository repo = new KenaiRepository(project, project.getDisplayName(), url, host, product);
-        return JiraUtils.getRepository(repo);
-        
-    }
+//    @Override
+//    public Repository createRepository(TeamProject project) {
+//        if(project == null || project.getType() != BugtrackingType.JIRA) {
+//            return null;
+//        }
+//
+//        String location = project.getFeatureLocation().toString();
+//        final URL loc;
+//        try {
+//            loc = new URL(project.getWebLocation().toString());
+//        } catch (MalformedURLException ex) {
+//            Exceptions.printStackTrace(ex);
+//            return null;
+//        }
+//
+//        String host = loc.getHost();
+//        int idx = location.indexOf("/browse/");
+//        if (idx <= 0) {
+//            Jira.LOG.log(Level.WARNING, "can''t get issue tracker url from [{0}, {1}]", new Object[]{project.getName(), location}); // NOI18N
+//            return null;
+//        }
+//        String url = location.substring(0, idx);
+//        if (url.startsWith("http:")) { // XXX hack???                   // NOI18N
+//            url = "https" + url.substring(4);                           // NOI18N
+//        }
+//
+//        String product = location.substring(idx + "/browse/".length()); // NOI18N
+//
+//        KenaiRepository repo = new KenaiRepository(project, project.getDisplayName(), url, host, product);
+//        return JiraUtils.getRepository(repo);
+//        
+//    }
 
     @Override
     public BugtrackingType getType() {
@@ -144,7 +144,7 @@ public class JiraConnector implements BugtrackingConnector, TeamBugtrackingConne
     }    
 
     @Override
-    public Repository findNBRepository() {
+    public String findNBRepository() {
         return null; // relevant only for bugzilla
     }
 }

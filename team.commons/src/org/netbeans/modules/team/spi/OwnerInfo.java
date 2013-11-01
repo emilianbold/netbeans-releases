@@ -37,49 +37,29 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.team.spi;
+package org.netbeans.modules.team.spi;
+
+import java.util.List;
 
 /**
- * Repository user.
- *
- * @author Jan Stola
+ * Wrapper for a OwnerInfo instance returned by a Kenai Server
+ * 
+ * @author Tomas Stupka
+ * @see org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport
  */
-public class RepositoryUser {
-    /** User name (login) of the user. */
-    private String userName;
-    /** Full name of the user. */
-    private String fullName;
+public abstract class OwnerInfo {
 
     /**
-     * Creates new <code>RepositoryUser</code>.
-     *
-     * @param userName user name.
-     * @param fullName full name.
+     * @see org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport.OwnerInfo
      */
-    public RepositoryUser(String userName, String fullName) {
-        this.userName = userName;
-        this.fullName = fullName;
-    }
+    public abstract String getOwner();
 
     /**
-     * Returns user name.
-     *
-     * @return user name.
+     * @see org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport.OwnerInfo
      */
-    public String getUserName() {
-        return userName;
-    }
-
-    /**
-     * Returns full name.
-     *
-     * @return full name.
-     */
-    public String getFullName() {
-        return fullName;
-    }
+    public abstract List<String> getExtraData();
 
 }

@@ -86,7 +86,7 @@ import org.netbeans.modules.bugtracking.commons.SaveQueryPanel.QueryNameValidato
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
-import org.netbeans.modules.bugtracking.team.spi.TeamProject;
+import org.netbeans.modules.team.spi.TeamProject;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryController.QueryMode;
 import org.netbeans.modules.odcs.tasks.ODCS;

@@ -52,8 +52,8 @@ import java.util.logging.Logger;
 import static org.netbeans.modules.bugtracking.BugtrackingOwnerSupport.ContextType.SELECTED_FILE_AND_ALL_PROJECTS;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.team.spi.TeamProject;
-import org.netbeans.modules.bugtracking.team.spi.TeamRepositoryProvider;
+import org.netbeans.modules.team.spi.TeamProject;
+import org.netbeans.modules.team.spi.TeamRepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.*;
 
 
@@ -423,11 +423,15 @@ public final class RepositoryImpl<R, Q, I> {
         return queryImpl != null ? queryImpl.getQuery() : null;
     }
 
-    public TeamProject getTeamProject() {
-        return repositoryProvider instanceof TeamRepositoryProvider ?
-                    ((TeamRepositoryProvider<R, Q, I>)repositoryProvider).getTeamProject(r) :
-                    null;
+    public boolean isTeamRepository() {
+        return repositoryProvider instanceof TeamRepositoryProvider;
     }
+
+//    public TeamProject getTeamProject() {
+//        return repositoryProvider instanceof TeamRepositoryProvider ?
+//                    ((TeamRepositoryProvider<R, Q, I>)repositoryProvider).getTeamProject(r) :
+//                    null;
+//    }
     
     public boolean isMutable() {
         DelegatingConnector dc = BugtrackingManager.getInstance().getConnector(getConnectorId());
@@ -481,6 +485,6 @@ public final class RepositoryImpl<R, Q, I> {
     private void setLooseAssociation() {
         BugtrackingOwnerSupport.getInstance().setLooseAssociation(SELECTED_FILE_AND_ALL_PROJECTS, this);
     }
-    
+
 }
 

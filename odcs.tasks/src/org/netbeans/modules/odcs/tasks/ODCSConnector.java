@@ -42,8 +42,8 @@
 package org.netbeans.modules.odcs.tasks;
 
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.team.spi.TeamBugtrackingConnector;
-import org.netbeans.modules.bugtracking.team.spi.TeamProject;
+import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
+import org.netbeans.modules.team.spi.TeamProject;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
@@ -76,16 +76,16 @@ public class ODCSConnector implements BugtrackingConnector, TeamBugtrackingConne
      * Team Support
      ***************************************************************************/
     
-    @Override
-    public Repository createRepository (TeamProject project) {
-        if (project == null || 
-            project.getType() != BugtrackingType.ODCS || 
-            project.getFeatureLocation() == null) 
-        {
-            return null;
-        }
-        return ODCSUtil.createRepository(new ODCSRepository(project));
-    }
+//    @Override
+//    public Repository createRepository (TeamProject project) {
+//        if (project == null || 
+//            project.getType() != BugtrackingType.ODCS || 
+//            project.getFeatureLocation() == null) 
+//        {
+//            return null;
+//        }
+//        return ODCSUtil.createRepository(new ODCSRepository(project));
+//    }
 
     @Override
     public BugtrackingType getType () {
@@ -93,7 +93,7 @@ public class ODCSConnector implements BugtrackingConnector, TeamBugtrackingConne
     }
 
     @Override
-    public Repository findNBRepository() {
+    public String findNBRepository() {
         return null; // relevant only for bugzilla
     }
     

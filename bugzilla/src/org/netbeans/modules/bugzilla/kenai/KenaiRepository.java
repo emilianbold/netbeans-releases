@@ -57,9 +57,9 @@ import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.team.spi.TeamAccessor;
-import org.netbeans.modules.bugtracking.team.spi.TeamProject;
-import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
-import org.netbeans.modules.bugtracking.team.spi.RepositoryUser;
+import org.netbeans.modules.team.spi.TeamProject;
+import org.netbeans.modules.team.spi.OwnerInfo;
+import org.netbeans.modules.team.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.commons.TextUtils;
@@ -266,11 +266,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
 
     @Override
     protected Object[] getLookupObjects() {
-        Object[] obj = super.getLookupObjects();
-        Object[] obj2 = new Object[obj.length + 1];
-        System.arraycopy(obj, 0, obj2, 0, obj.length);
-        obj2[obj2.length - 1] = kenaiProject;
-        return obj2;
+        return new Object[0];
     }
 
     /**

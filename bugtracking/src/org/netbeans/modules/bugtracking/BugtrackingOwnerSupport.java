@@ -55,7 +55,7 @@ import org.netbeans.modules.bugtracking.DelegatingConnector;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.team.ide.spi.ProjectServices;
-import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
+import org.netbeans.modules.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.ui.selectors.RepositorySelectorBuilder;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils;

@@ -39,17 +39,21 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.bugtracking.team.spi;
+package org.netbeans.modules.team.spi;
 
 /**
  *
  * @author Tomas Stupka
- * @param <R>
- * @param <Q>
  * @param <I>
  */
-public interface TeamRepositoryProvider<R, Q, I> {
-    public Q getAllIssuesQuery(R repository);
-    public Q getMyIssuesQuery(R repository);
-    public TeamProject getTeamProject(R repository);
+public interface TeamIssueProvider<I> {
+   
+    /** 
+     * Provides owner (project/component/...) info to prefill the respective fields.
+     * Note that currently meant only for a NB issue
+     * 
+     * @param data
+     * @param info
+     */
+    public void setOwnerInfo(I data, OwnerInfo info);   
 }

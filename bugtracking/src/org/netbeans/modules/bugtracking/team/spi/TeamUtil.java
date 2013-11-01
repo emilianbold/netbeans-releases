@@ -42,6 +42,10 @@
 
 package org.netbeans.modules.bugtracking.team.spi;
 
+import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
+import org.netbeans.modules.team.spi.TeamProject;
+import org.netbeans.modules.team.spi.RepositoryUser;
+import org.netbeans.modules.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.team.TeamRepositories;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -69,7 +73,7 @@ import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.jira.JiraUpdater;
-import org.netbeans.modules.bugtracking.team.spi.TeamBugtrackingConnector.BugtrackingType;
+import org.netbeans.modules.team.spi.TeamBugtrackingConnector.BugtrackingType;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.tasks.DashboardTopComponent;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
@@ -127,7 +131,7 @@ public class TeamUtil {
      * @return
      */
     public static boolean isFromTeamServer(Repository repo) {
-        return getTeamProject(repo) != null;
+        return APIAccessor.IMPL.getImpl(repo).isTeamRepository();
     }
 
     /**
@@ -324,7 +328,8 @@ public class TeamUtil {
             if ((bugtrackingConnector instanceof TeamBugtrackingConnector)) {
                 TeamBugtrackingConnector teamConnector = (TeamBugtrackingConnector) bugtrackingConnector;
                 if(teamConnector.getType() == BugtrackingType.BUGZILLA) {
-                    return teamConnector.findNBRepository(); // ensure repository exists
+                    String id = teamConnector.findNBRepository(); // ensure repository exists
+                    return RepositoryRegistry.getInstance().getRepository(c.getID(), id).getRepository();
                 }
             }
         }
@@ -342,9 +347,9 @@ public class TeamUtil {
         RepositoryRegistry.getInstance().addRepository(APIAccessor.IMPL.getImpl(repository));
     }
     
-    public static TeamProject getTeamProject(Repository repository) {
-        return APIAccessor.IMPL.getImpl(repository).getTeamProject();
-    }
+//    public static TeamProject getTeamProject(Repository repository) {
+//        return APIAccessor.IMPL.getImpl(repository).getTeamProject();
+//    }
 
     public static Query getAllIssuesQuery(Repository repository) {
         return APIAccessor.IMPL.getImpl(repository).getAllIssuesQuery();

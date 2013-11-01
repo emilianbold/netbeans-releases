@@ -40,8 +40,8 @@ package org.netbeans.modules.bugzilla;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
-import org.netbeans.modules.bugtracking.team.spi.TeamProject;
-import org.netbeans.modules.bugtracking.team.spi.TeamRepositoryProvider;
+import org.netbeans.modules.team.spi.TeamProject;
+import org.netbeans.modules.team.spi.TeamRepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
@@ -132,12 +132,12 @@ public class BugzillaRepositoryProvider implements RepositoryProvider<BugzillaRe
         return ((KenaiRepository)repository).getMyIssuesQuery();
     }
 
-    @Override
-    public TeamProject getTeamProject(BugzillaRepository repository) {
-        return repository instanceof KenaiRepository ? 
-                ((KenaiRepository)repository).getKenaiProject() :
-                null;
-    }
+//    @Override
+//    public TeamProject getTeamProject(BugzillaRepository repository) {
+//        return repository instanceof KenaiRepository ? 
+//                ((KenaiRepository)repository).getKenaiProject() :
+//                null;
+//    }
 
     @Override
     public BugzillaIssue createIssue(BugzillaRepository r, String summary, String description) {

@@ -39,31 +39,40 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.bugtracking.team.spi;
+package org.netbeans.modules.team.spi;
 
 /**
- *
- * @author Tomas Stupka
+ * Provides Team specific functionality to a {@link BugtrackingConnector}
+ * 
+ * @author tomas
  */
-public interface TeamQueryProvider<Q, I> {
+public interface TeamBugtrackingConnector {
+    
+    public enum BugtrackingType {
+        BUGZILLA,
+        JIRA,
+        ODCS
+    }
+        
+//    /**
+//     * Creates a {@link Repository} for the given {@link TeamProject}
+//     *
+//     * @param project
+//     * @return
+//     */
+//    public abstract Repository createRepository(TeamProject project);
     
     /**
-     * Determines if the query needs the user to be logged in to show some
-     * results - e.g. MyIssues queries have no results in case the user is
-     * not logged in
+     * Creates a {@link RepositoryProvider} for the given {@link }
      *
-     * @param q
-     * @return true if login needed, otherwise false
+     * @return
      */
-    public abstract boolean needsLogin(Q q);
+    public String findNBRepository();
     
-    /** 
-     * Provides owner (project/component/...) info to prefill the respective fields.
-     * Note that currently meant only for a NB query.
-     * 
-     * @param q
-     * @param info 
+    /**
+     * Determines the bugtracking type
+     *
+     * @return
      */
-    public abstract void setOwnerInfo(Q q, OwnerInfo info);
-    
+    public abstract BugtrackingType getType();
 }

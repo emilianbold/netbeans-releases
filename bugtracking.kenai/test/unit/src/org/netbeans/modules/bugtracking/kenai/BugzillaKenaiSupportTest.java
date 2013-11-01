@@ -275,7 +275,7 @@ public class BugzillaKenaiSupportTest extends NbTestCase implements TestConstant
 
     private Repository createRepository(String location) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, IOException {
         BugzillaConnector support = new BugzillaConnector();
-        Method m = support.getClass().getDeclaredMethod("createKenaiRepository", org.netbeans.modules.bugtracking.team.spi.TeamProject.class, String.class, String.class);
+        Method m = support.getClass().getDeclaredMethod("createKenaiRepository", org.netbeans.modules.team.spi.TeamProject.class, String.class, String.class);
         m.setAccessible(true);
         KenaiRepository kr = (KenaiRepository) m.invoke(support, getKenaiProject(), "Kenai repo", location);
         return kr != null ? BugzillaUtil.getRepository(kr) : null;
@@ -287,7 +287,7 @@ public class BugzillaKenaiSupportTest extends NbTestCase implements TestConstant
         return f.get(obj);
     }
 
-    private org.netbeans.modules.bugtracking.team.spi.TeamProject getKenaiProject() throws KenaiException {
+    private org.netbeans.modules.team.spi.TeamProject getKenaiProject() throws KenaiException {
         return TeamProjectImpl.getInstance(instance.getProject("nb-jnet-test"));
     }
 

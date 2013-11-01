@@ -39,8 +39,8 @@ package org.netbeans.modules.jira;
 
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
-import org.netbeans.modules.bugtracking.team.spi.TeamQueryProvider;
-import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
+import org.netbeans.modules.team.spi.TeamQueryProvider;
+import org.netbeans.modules.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.jira.issue.NbJiraIssue;

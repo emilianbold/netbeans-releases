@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.team.spi;
+package org.netbeans.modules.team.spi;
 
 import java.awt.Component;
 import java.text.MessageFormat;

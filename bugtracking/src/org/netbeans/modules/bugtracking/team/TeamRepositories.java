@@ -63,12 +63,13 @@ import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.team.ide.spi.ProjectServices;
 import org.netbeans.modules.bugtracking.team.spi.TeamAccessor;
-import org.netbeans.modules.bugtracking.team.spi.TeamBugtrackingConnector;
-import org.netbeans.modules.bugtracking.team.spi.TeamBugtrackingConnector.BugtrackingType;
-import org.netbeans.modules.bugtracking.team.spi.TeamProject;
+import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
+import org.netbeans.modules.team.spi.TeamBugtrackingConnector.BugtrackingType;
+import org.netbeans.modules.team.spi.TeamProject;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
-import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
+import org.netbeans.modules.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
+import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils;
 import org.openide.filesystems.FileObject;
@@ -182,7 +183,8 @@ public abstract class TeamRepositories implements PropertyChangeListener {
         for (BugtrackingConnector c : connectors) {
             if (isType(c, project.getType())) {
                 BugtrackingManager.LOG.log(Level.FINER, "found suport for {0}", project.getWebLocation().toString()); // NOI18N
-                Repository repo = ((TeamBugtrackingConnector) c).createRepository(project);
+                RepositoryInfo info = new RepositoryInfo(null, null, null, null, null);
+                Repository repo = (c).createRepository(info);
                 return APIAccessor.IMPL.getImpl(repo);
             }
         }

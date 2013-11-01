@@ -57,8 +57,8 @@ import java.util.Map;
 import java.util.logging.Level;
 import javax.swing.JLabel;
 import org.netbeans.modules.bugtracking.team.spi.TeamAccessor;
-import org.netbeans.modules.bugtracking.team.spi.TeamProject;
-import org.netbeans.modules.bugtracking.team.spi.RepositoryUser;
+import org.netbeans.modules.team.spi.TeamProject;
+import org.netbeans.modules.team.spi.RepositoryUser;
 import org.netbeans.modules.odcs.api.ODCSServer;
 import org.netbeans.modules.odcs.api.ODCSManager;
 import org.netbeans.modules.odcs.api.ODCSProject;
@@ -171,12 +171,12 @@ public class TeamAccessorImpl extends TeamAccessor {
     }
 
     @Override
-    public org.netbeans.modules.bugtracking.team.spi.OwnerInfo getOwnerInfo(Node node) {
+    public org.netbeans.modules.team.spi.OwnerInfo getOwnerInfo(Node node) {
         return null; // available only for netbeans.org 
     }
 
     @Override
-    public org.netbeans.modules.bugtracking.team.spi.OwnerInfo getOwnerInfo(File file) {
+    public org.netbeans.modules.team.spi.OwnerInfo getOwnerInfo(File file) {
         return null; // available only for netbeans.org 
     }
 
@@ -337,7 +337,7 @@ public class TeamAccessorImpl extends TeamAccessor {
         }
     }
     
-    private class OwnerInfoImpl extends org.netbeans.modules.bugtracking.team.spi.OwnerInfo {
+    private class OwnerInfoImpl extends org.netbeans.modules.team.spi.OwnerInfo {
         private final OwnerInfo delegate;
 
         public OwnerInfoImpl(OwnerInfo delegate) {

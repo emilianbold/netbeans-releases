@@ -45,8 +45,8 @@ import com.tasktop.c2c.server.tasks.domain.PredefinedTaskQuery;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
-import org.netbeans.modules.bugtracking.team.spi.TeamProject;
-import org.netbeans.modules.bugtracking.team.spi.TeamRepositoryProvider;
+import org.netbeans.modules.team.spi.TeamProject;
+import org.netbeans.modules.team.spi.TeamRepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
@@ -134,10 +134,10 @@ public class ODCSRepositoryProvider implements RepositoryProvider<ODCSRepository
         return repository.getPredefinedQuery(PredefinedTaskQuery.MINE);
     }
 
-    @Override
-    public TeamProject getTeamProject(ODCSRepository repository) {
-        return repository.getKenaiProject();
-    }
+//    @Override
+//    public TeamProject getTeamProject(ODCSRepository repository) {
+//        return repository.getKenaiProject();
+//    }
 
     @Override
     public ODCSIssue createIssue(ODCSRepository r, String summary, String description) {

@@ -49,7 +49,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.bugtracking.api.Query;
-import org.netbeans.modules.bugtracking.team.spi.TeamBugtrackingConnector.BugtrackingType;
+import org.netbeans.modules.team.spi.TeamBugtrackingConnector.BugtrackingType;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.team.server.ui.spi.QueryHandle;
 
@@ -57,7 +57,7 @@ import org.netbeans.modules.team.server.ui.spi.QueryHandle;
  *
  * @author Tomas Stupka
  */
-class TeamProjectImpl extends org.netbeans.modules.bugtracking.team.spi.TeamProject {
+class TeamProjectImpl extends org.netbeans.modules.team.spi.TeamProject {
 
     public static String getProjectKey (ODCSProject project) {
         return project.getServer().getUrl().toString() + ":" + project.getName();
@@ -120,19 +120,19 @@ class TeamProjectImpl extends org.netbeans.modules.bugtracking.team.spi.TeamProj
         return getName();
     }
 
-    @Override
-    public void fireQueryActivated(Query query) {
-        ODCSHandler handler = Support.getInstance().getODCSHandler(project.getServer());
-        if(handler == null) {
-            return;
-        }
-        List<QueryHandle> queries = handler.getQueryHandles(project.getName(), query);
-        assert queries.size() == 1;
-        QueryHandle qh = queries.get(0);
-        assert qh instanceof QueryHandleImpl;
-        if(qh instanceof QueryHandleImpl) {
-            ((QueryHandleImpl) qh).fireQueryActivated();
-        }
-    }
+//    @Override
+//    public void fireQueryActivated(Query query) {
+//        ODCSHandler handler = Support.getInstance().getODCSHandler(project.getServer());
+//        if(handler == null) {
+//            return;
+//        }
+//        List<QueryHandle> queries = handler.getQueryHandles(project.getName(), query);
+//        assert queries.size() == 1;
+//        QueryHandle qh = queries.get(0);
+//        assert qh instanceof QueryHandleImpl;
+//        if(qh instanceof QueryHandleImpl) {
+//            ((QueryHandleImpl) qh).fireQueryActivated();
+//        }
+//    }
 
 }

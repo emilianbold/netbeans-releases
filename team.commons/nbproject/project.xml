@@ -136,6 +136,8 @@
                 <friend>oracle.jdevimpl.nbteam.ide</friend>
                 <friend>org.netbeans.modules.bugtracking</friend>
                 <friend>org.netbeans.modules.bugtracking.bridge</friend>
+                <friend>org.netbeans.modules.bugtracking.kenai</friend>
+                <friend>org.netbeans.modules.odcs.tasks.bridge</friend>
                 <friend>org.netbeans.modules.bugtracking.commons</friend>
                 <friend>org.netbeans.modules.bugzilla</friend>
                 <friend>org.netbeans.modules.jira</friend>
@@ -149,6 +151,7 @@
                 <friend>org.netbeans.modules.mylyn.util</friend>
                 <package>org.netbeans.modules.team.commons.treelist</package>
                 <package>org.netbeans.modules.team.ide.spi</package>
+                <package>org.netbeans.modules.team.spi</package>
                 <package>org.netbeans.modules.bugtracking.commons</package>
             </friend-packages>
         </data>

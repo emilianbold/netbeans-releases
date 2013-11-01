@@ -90,7 +90,7 @@ import org.netbeans.modules.bugtracking.commons.HyperlinkSupport;
 import org.netbeans.modules.bugtracking.commons.HyperlinkSupport.IssueRefProvider;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
-import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
+import org.netbeans.modules.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.util.*;
 import org.netbeans.spi.actions.AbstractSavable;
 import org.openide.DialogDisplayer;

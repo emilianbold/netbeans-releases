@@ -42,6 +42,9 @@
 
 package org.netbeans.modules.bugtracking.team.spi;
 
+import org.netbeans.modules.team.spi.TeamProject;
+import org.netbeans.modules.team.spi.RepositoryUser;
+import org.netbeans.modules.team.spi.OwnerInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -233,11 +236,11 @@ public abstract class TeamAccessor {
                     if(allIssuesQuery == null || query != APIAccessor.IMPL.getImpl(allIssuesQuery)) {
                         return; 
                     } 
-                    TeamProject teamProject = TeamUtil.getTeamProject(repositoryImpl.getRepository());
-                    if(teamProject == null) {
-                        return;
-                    }
-                    teamProject.fireQueryActivated(query.getQuery());
+//                    TeamProject teamProject = TeamUtil.getTeamProject(repositoryImpl.getRepository());
+//                    if(teamProject == null) {
+//                        return;
+//                    }
+//                    teamProject.fireQueryActivated(query.getQuery());
                 }
             }
         }

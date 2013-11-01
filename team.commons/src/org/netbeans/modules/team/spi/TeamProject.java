@@ -40,26 +40,52 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.team.spi;
+package org.netbeans.modules.team.spi;
 
-import java.util.List;
+import java.net.URL;
+import org.netbeans.modules.team.spi.TeamBugtrackingConnector.BugtrackingType;
 
 /**
- * Wrapper for a OwnerInfo instance returned by a Kenai Server
- * 
+ * Wrapper for a TeamProject instance returned by team
  * @author Tomas Stupka
  * @see org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport
  */
-public abstract class OwnerInfo {
+public abstract class TeamProject {
 
     /**
-     * @see org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport.OwnerInfo
+     * Return a URL representing the project location on web
+     * @return
      */
-    public abstract String getOwner();
+    public abstract URL getWebLocation();
 
     /**
-     * @see org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport.OwnerInfo
+     * Returns a url representing the projects issuetracking feature location
+     * @return
      */
-    public abstract List<String> getExtraData();
+    public abstract String getFeatureLocation();
+
+    /**
+     * Determines what type of bugtracking system the project has
+     * @return
+     */
+    public abstract BugtrackingType getType();
+
+    /**
+     * Returns the projects name
+     * @return
+     */
+    public abstract String getName();
+
+    /**
+     * Returns the projects display name
+     * @return
+     */
+    public abstract String getDisplayName();
+
+    /**
+     * Notifies team that a query was activated
+     * @param query
+     */
+//    public abstract void fireQueryActivated(Query query);
 
 }
