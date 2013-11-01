@@ -523,12 +523,14 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                         NotifyDescriptor.INFORMATION_MESSAGE, 
                         new Object[] {save, discard, NotifyDescriptor.CANCEL_OPTION}, null);
                 Object ret = DialogDisplayer.getDefault().notify(nd);
+                boolean canClose = false;
                 if(ret == save) {
-                    return issue.getController().saveChanges();
+                    canClose = issue.getController().saveChanges();
                 } else if(ret == discard) {
-                    return issue.getController().discardUnsavedChanges();
-                } else {
-                    return false;
+                    canClose = issue.getController().discardUnsavedChanges();
+                } 
+                if(canClose) {
+                    savable.destroy();
                 }
             }
         }
@@ -809,7 +811,10 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
 
         @Override
         protected String findDisplayName() {
-            return tc.getDisplayName();
+            if(tc.issue != null) {
+                return tc.issue.getDisplayName();
+            }
+            return tc.getName();
         }
 
         @Override

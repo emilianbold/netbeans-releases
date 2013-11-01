@@ -481,13 +481,15 @@ public final class QueryTopComponent extends TopComponent
                         NotifyDescriptor.INFORMATION_MESSAGE, 
                         new Object[] {save, discard, NotifyDescriptor.CANCEL_OPTION}, null);
                 Object ret = DialogDisplayer.getDefault().notify(nd);
+                boolean canClose = false;
                 if(ret == save) {
-                    return query.getController().saveChanges();
+                    canClose = query.getController().saveChanges();
                 } else if(ret == discard) {
-                    return query.getController().discardUnsavedChanges();
-                } else {
-                    return false;
+                    canClose = query.getController().discardUnsavedChanges();
+                } if(canClose) {
+                    savable.destroy();
                 }
+                return canClose;
             }
         }
         return super.canClose(); 
@@ -654,7 +656,7 @@ public final class QueryTopComponent extends TopComponent
         });
     }
 
-    private String getFQQueryName(QueryImpl query) throws MissingResourceException {
+    private static String getFQQueryName(QueryImpl query) throws MissingResourceException {
         return NbBundle.getMessage(QueryTopComponent.class, "LBL_QueryName", new Object[]{query.getRepositoryImpl().getDisplayName(), query.getDisplayName()});
     }
 
@@ -783,11 +785,14 @@ public final class QueryTopComponent extends TopComponent
         QuerySavable(QueryTopComponent tc) {
             this.tc = tc;
             register();
-}
+        }
 
         @Override
         protected String findDisplayName() {
-            return tc.getDisplayName();
+            if(tc.query != null) {
+                return getFQQueryName(tc.query);
+            }
+            return tc.getName();
         }
 
         @Override
