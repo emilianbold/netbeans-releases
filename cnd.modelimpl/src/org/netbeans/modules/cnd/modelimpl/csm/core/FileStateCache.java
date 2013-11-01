@@ -61,8 +61,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 /*package-local*/ class FileStateCache {
     private static final boolean TRACE = false;
     private static final boolean cacheStates = TraceFlags.CACHE_FILE_STATE;
-    private static final int CACHE_SIZE = 10;
-    private static final int MAX_KEY_SIZE = 1000;
+    private static final int CACHE_SIZE = 3;
     private static int stateCacheAttempt = 0;
     private static int stateCacheSuccessAttempt = 0;
     private final Map<APTPreprocHandler.StateKey, Value> stateCache = new LinkedHashMap<APTPreprocHandler.StateKey, Value>();
@@ -105,6 +104,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
         PreprocessorStatePair res = null;
         if (cacheStates && inputState.isCompileContext()) {
             if (TRACE) {stateCacheAttempt++;}
+            int count = 0;
             stateCacheLock.readLock().lock();
             APTPreprocHandler.StateKey key = null;
             try {
@@ -114,6 +114,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
                     if (value != null) {
                         res = value.value.get();
                         value.count++;
+                        count = value.count;
                     }
                 }
             } finally {
@@ -121,7 +122,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
             }
             if (TRACE && res != null) {
                 stateCacheSuccessAttempt++;
-                System.err.println("State Cache Attempt="+stateCacheAttempt+" successful="+stateCacheSuccessAttempt+" cache size="+stateCache.size()+" in file "+file.getName());
+                System.err.println("State Cache Attempt="+stateCacheAttempt+" successful="+stateCacheSuccessAttempt+" cache size="+stateCache.size()+" in file "+file.getName()+" hits "+count);
                 System.err.println("    Key="+key);
                 System.err.println("    Res="+createKey(res.state));
             }
