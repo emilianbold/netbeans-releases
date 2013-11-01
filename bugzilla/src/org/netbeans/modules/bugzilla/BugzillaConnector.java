@@ -42,14 +42,23 @@
 
 package org.netbeans.modules.bugzilla;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.logging.Level;
+import org.eclipse.mylyn.internal.bugzilla.core.IBugzillaConstants;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
+import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugzilla.api.NBBugzillaUtils;
+import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.repository.NBRepositorySupport;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.netbeans.modules.team.spi.TeamProject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -69,6 +78,10 @@ public class BugzillaConnector implements BugtrackingConnector, TeamBugtrackingC
     
     @Override
     public Repository createRepository(RepositoryInfo info) {
+        Repository r = createKenaiRepository(info);
+        if(r != null) {
+            return r;
+        }
         BugzillaRepository bugzillaRepository = new BugzillaRepository(info);
         if(BugzillaUtil.isNbRepository(bugzillaRepository)) {
             NBRepositorySupport.getInstance().setNBBugzillaRepository(bugzillaRepository);
@@ -90,58 +103,66 @@ public class BugzillaConnector implements BugtrackingConnector, TeamBugtrackingC
      * Kenai
      ******************************************************************************/
     
-//    @Override
-//    public Repository createRepository(TeamProject project) {
-//        if(project == null || project.getType() != BugtrackingType.BUGZILLA) {
-//            return null;
-//        }
-//
-//        KenaiRepository repo = createKenaiRepository(project, project.getDisplayName(), project.getFeatureLocation());
-//        if(BugzillaUtil.isNbRepository(repo)) {
-//            NBRepositorySupport.getInstance().setNBBugzillaRepository(repo);
-//        }
-//        return BugzillaUtil.createRepository(repo);
-//    }
-//
-//    private KenaiRepository createKenaiRepository(TeamProject kenaiProject, String displayName, String location) {
-//        final URL loc;
-//        try {
-//            loc = new URL(location);
-//        } catch (MalformedURLException ex) {
-//            Bugzilla.LOG.log(Level.WARNING, null, ex);
-//            return null;
-//        }
-//
-//        String host = loc.getHost();
-//        int idx = location.indexOf(IBugzillaConstants.URL_BUGLIST);
-//        if (idx <= 0) {
-//            Bugzilla.LOG.log(Level.WARNING, "can't get issue tracker url from [{0}, {1}]", new Object[]{displayName, location}); // NOI18N
-//            return null;
-//        }
-//        String url = location.substring(0, idx);
-//        if (url.startsWith("http:")) { // XXX hack???                   // NOI18N
-//            url = "https" + url.substring(4);                           // NOI18N
-//        }
-//        String productParamUrl = null;
-//        String productAttribute = "product=";                           // NOI18N
-//        String product = null;
-//        int idxProductStart = location.indexOf(productAttribute);
-//        if (idxProductStart <= 0) {
-//            Bugzilla.LOG.log(Level.WARNING, "can''t get issue tracker product from [{0}, {1}]", new Object[]{displayName, location}); // NOI18N
-//            return null;
-//        } else {
-//            int idxProductEnd = location.indexOf("&", idxProductStart); // NOI18N
-//            if(idxProductEnd > -1) {
-//                productParamUrl = location.substring(idxProductStart, idxProductEnd);
-//                product = location.substring(idxProductStart + productAttribute.length(), idxProductEnd);
-//            } else {
-//                productParamUrl = location.substring(idxProductStart);
-//                product = location.substring(idxProductStart + productAttribute.length());
-//            }
-//        }
-//
-//        return new KenaiRepository(kenaiProject, displayName, url, host, productParamUrl, product);
-//    }
+    public Repository createKenaiRepository(RepositoryInfo info) {
+        String name = info.getValue(TeamBugtrackingConnector.TEAM_PROJECT_NAME);
+        TeamProject project = null;
+        if(name != null) {
+            try {
+                project = TeamUtil.getTeamProject(info.getUrl(), name);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        if(project == null || project.getType() != BugtrackingType.BUGZILLA) {
+            return null;
+        }
+
+        KenaiRepository repo = createKenaiRepository(project, project.getDisplayName(), project.getFeatureLocation());
+        if(BugzillaUtil.isNbRepository(repo)) {
+            NBRepositorySupport.getInstance().setNBBugzillaRepository(repo);
+        }
+        return BugzillaUtil.createRepository(repo);
+    }
+
+    private KenaiRepository createKenaiRepository(TeamProject kenaiProject, String displayName, String location) {
+        final URL loc;
+        try {
+            loc = new URL(location);
+        } catch (MalformedURLException ex) {
+            Bugzilla.LOG.log(Level.WARNING, null, ex);
+            return null;
+        }
+
+        String host = loc.getHost();
+        int idx = location.indexOf(IBugzillaConstants.URL_BUGLIST);
+        if (idx <= 0) {
+            Bugzilla.LOG.log(Level.WARNING, "can't get issue tracker url from [{0}, {1}]", new Object[]{displayName, location}); // NOI18N
+            return null;
+        }
+        String url = location.substring(0, idx);
+        if (url.startsWith("http:")) { // XXX hack???                   // NOI18N
+            url = "https" + url.substring(4);                           // NOI18N
+        }
+        String productParamUrl = null;
+        String productAttribute = "product=";                           // NOI18N
+        String product = null;
+        int idxProductStart = location.indexOf(productAttribute);
+        if (idxProductStart <= 0) {
+            Bugzilla.LOG.log(Level.WARNING, "can''t get issue tracker product from [{0}, {1}]", new Object[]{displayName, location}); // NOI18N
+            return null;
+        } else {
+            int idxProductEnd = location.indexOf("&", idxProductStart); // NOI18N
+            if(idxProductEnd > -1) {
+                productParamUrl = location.substring(idxProductStart, idxProductEnd);
+                product = location.substring(idxProductStart + productAttribute.length(), idxProductEnd);
+            } else {
+                productParamUrl = location.substring(idxProductStart);
+                product = location.substring(idxProductStart + productAttribute.length());
+            }
+        }
+
+        return new KenaiRepository(kenaiProject, displayName, url, host, productParamUrl, product);
+    }
 
     @Override
     public BugtrackingType getType() {

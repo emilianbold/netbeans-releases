@@ -183,7 +183,8 @@ public abstract class TeamRepositories implements PropertyChangeListener {
         for (BugtrackingConnector c : connectors) {
             if (isType(c, project.getType())) {
                 BugtrackingManager.LOG.log(Level.FINER, "found suport for {0}", project.getWebLocation().toString()); // NOI18N
-                RepositoryInfo info = new RepositoryInfo(null, null, null, null, null);
+                RepositoryInfo info = new RepositoryInfo(project.getName(), null, project.getHost(), project.getDisplayName(), project.getDisplayName());
+                info.putValue(TeamBugtrackingConnector.TEAM_PROJECT_NAME, project.getName());
                 Repository repo = (c).createRepository(info);
                 return APIAccessor.IMPL.getImpl(repo);
             }

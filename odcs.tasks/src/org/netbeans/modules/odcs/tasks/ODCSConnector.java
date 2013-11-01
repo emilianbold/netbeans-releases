@@ -41,13 +41,16 @@
  */
 package org.netbeans.modules.odcs.tasks;
 
+import java.io.IOException;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
 import org.netbeans.modules.team.spi.TeamProject;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
+import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
 import org.netbeans.modules.odcs.tasks.util.ODCSUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -64,6 +67,10 @@ public class ODCSConnector implements BugtrackingConnector, TeamBugtrackingConne
     
     @Override
     public Repository createRepository(RepositoryInfo info) {
+        Repository r = createODCSRepository(info);
+        if(r != null) {
+            return r;
+        }
         return ODCSUtil.createRepository(new ODCSRepository(info));
     }
 
@@ -76,16 +83,24 @@ public class ODCSConnector implements BugtrackingConnector, TeamBugtrackingConne
      * Team Support
      ***************************************************************************/
     
-//    @Override
-//    public Repository createRepository (TeamProject project) {
-//        if (project == null || 
-//            project.getType() != BugtrackingType.ODCS || 
-//            project.getFeatureLocation() == null) 
-//        {
-//            return null;
-//        }
-//        return ODCSUtil.createRepository(new ODCSRepository(project));
-//    }
+    public Repository createODCSRepository (RepositoryInfo info) {
+        String name = info.getValue(TeamBugtrackingConnector.TEAM_PROJECT_NAME);
+        TeamProject project = null;
+        if(name != null) {
+            try {
+                project = TeamUtil.getTeamProject(info.getUrl(), name);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        if (project == null || 
+            project.getType() != BugtrackingType.ODCS || 
+            project.getFeatureLocation() == null) 
+        {
+            return null;
+        }
+        return ODCSUtil.createRepository(new ODCSRepository(project));
+    }
 
     @Override
     public BugtrackingType getType () {

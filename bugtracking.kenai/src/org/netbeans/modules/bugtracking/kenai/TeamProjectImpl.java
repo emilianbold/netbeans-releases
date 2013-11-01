@@ -160,6 +160,11 @@ class TeamProjectImpl extends org.netbeans.modules.team.spi.TeamProject {
         }
     }
 
+    @Override
+    public String getHost() {
+        return project.getKenai().getUrl().toString();
+    }
+    
 //    @Override
 //    public void fireQueryActivated(Query query) {
 //        KenaiHandler handler = Support.getInstance().getKenaiHandler(project.getKenai());

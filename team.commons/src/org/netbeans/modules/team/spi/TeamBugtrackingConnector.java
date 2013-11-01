@@ -47,6 +47,7 @@ package org.netbeans.modules.team.spi;
  * @author tomas
  */
 public interface TeamBugtrackingConnector {
+    public static String TEAM_PROJECT_NAME = "team.project.name"; // NOI18N
     
     public enum BugtrackingType {
         BUGZILLA,

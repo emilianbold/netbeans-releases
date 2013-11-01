@@ -120,6 +120,11 @@ class TeamProjectImpl extends org.netbeans.modules.team.spi.TeamProject {
         return getName();
     }
 
+    @Override
+    public String getHost() {
+        return project.getServer().getUrl().toString();
+    }
+    
 //    @Override
 //    public void fireQueryActivated(Query query) {
 //        ODCSHandler handler = Support.getInstance().getODCSHandler(project.getServer());
