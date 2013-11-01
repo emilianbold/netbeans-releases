@@ -55,7 +55,6 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.j2me.project.ui.customizer.J2MEProjectProperties;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
-import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.java.api.common.project.BaseActionProvider;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
@@ -64,14 +63,12 @@ import static org.netbeans.spi.project.ActionProvider.COMMAND_CLEAN;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_COMPILE_SINGLE;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_COPY;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_DEBUG;
-import static org.netbeans.spi.project.ActionProvider.COMMAND_DEBUG_STEP_INTO;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_DELETE;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_MOVE;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_PROFILE;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_REBUILD;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_RENAME;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_RUN;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 
@@ -91,7 +88,6 @@ class J2MEActionProvider extends BaseActionProvider {
         COMMAND_PROFILE,
         JavaProjectConstants.COMMAND_JAVADOC,
         JavaProjectConstants.COMMAND_DEBUG_FIX,
-        COMMAND_DEBUG_STEP_INTO,
         COMMAND_DELETE,
         COMMAND_COPY,
         COMMAND_MOVE,
@@ -107,7 +103,6 @@ class J2MEActionProvider extends BaseActionProvider {
         COMMAND_PROFILE,
         JavaProjectConstants.COMMAND_JAVADOC,
         JavaProjectConstants.COMMAND_DEBUG_FIX,
-        COMMAND_DEBUG_STEP_INTO,
     };
 
     private static final Map<String,String[]> commands;
@@ -120,7 +115,6 @@ class J2MEActionProvider extends BaseActionProvider {
         tmp.put(COMMAND_PROFILE, new String[] {"profile"}); // NOI18N
         tmp.put(JavaProjectConstants.COMMAND_JAVADOC, new String[] {"javadoc"}); // NOI18N
         tmp.put(JavaProjectConstants.COMMAND_DEBUG_FIX, new String[] {"debug-fix"}); // NOI18N
-        tmp.put(COMMAND_DEBUG_STEP_INTO, new String[] {"debug-stepinto"}); // NOI18N
         commands = Collections.unmodifiableMap(tmp);
     }
 
@@ -129,8 +123,7 @@ class J2MEActionProvider extends BaseActionProvider {
         COMMAND_RUN,
         COMMAND_RUN_SINGLE,
         COMMAND_DEBUG,
-        COMMAND_DEBUG_SINGLE,
-        COMMAND_DEBUG_STEP_INTO
+        COMMAND_DEBUG_SINGLE
     )));
 
     private static final Set<String>  needJavaModelActions = Collections.unmodifiableSet(

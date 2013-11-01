@@ -112,9 +112,34 @@ is divided into following sections:
                     </loadproperties>
                 </target>
             </xsl:if>
+            
+            <target name="-check-platform-home" depends="-pre-init,-init-private">
+                <condition property="has.platform.home">
+                    <and>
+                        <isset property="platform.home"/>
+                        <length string="${{platform.home}}" when="gt" length="0" trim="true"/>
+                        <available file="${{platform.home}}"/>
+                    </and>
+                </condition>
+            </target>
+
+            <target name="-init-platform-home" depends="-pre-init,-init-private,-check-platform-home" unless="has.platform.home">
+                <loadproperties srcFile="nbproject/project.properties">
+                  <filterchain>
+                    <containsregex pattern="^platform.active="/>
+                  </filterchain>
+                </loadproperties>
+                <loadproperties srcFile="${{user.properties.file}}">
+                  <filterchain>
+                    <containsregex pattern="^platforms\.${{platform.active}}\.home="/>
+                    <replaceregex pattern="^platforms\.${{platform.active}}\." replace="platform."/>
+                  </filterchain>
+                </loadproperties>
+                <echo message="Missing platform.home property, defined as ${{platform.home}}" level="warning"/>
+            </target>
 
             <target name="-init-user">
-                <xsl:attribute name="depends">-pre-init,-init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if></xsl:attribute>
+                <xsl:attribute name="depends">-pre-init,-init-private,-init-platform-home<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if></xsl:attribute>
                 <property file="${{user.properties.file}}"/>
                 <xsl:comment> The two properties below are usually overridden </xsl:comment>
                 <xsl:comment> by the active platform. Just a fallback. </xsl:comment>
@@ -130,10 +155,6 @@ is divided into following sections:
 
             <target name="-do-init">
                 <xsl:attribute name="depends">-pre-init,-init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if>,-init-user,-init-project,-init-macrodef-property</xsl:attribute>
-
-                <j2meproject1:property name="platform.home" value="platforms.${{platform.active}}.home"/>
-                <j2meproject1:property name="platform.bootcp" value="platforms.${{platform.active}}.bootclasspath"/>
-
                 <j2meproject1:property name="platform.sdk.home.tmp" value="platforms.${{platform.sdk}}.home"/>
                 <condition property="platform.sdk.home" value="${{jdk.home}}">
                     <equals arg1="${{platform.sdk.home.tmp}}" arg2="$${{platforms.${{platform.sdk}}.home}}"/>
@@ -541,83 +562,6 @@ is divided into following sections:
                 </macrodef>
             </target>
 
-
-            <target name="-init-macrodef-nbjpda" depends="-init-debug-args">
-                <macrodef>
-                    <xsl:attribute name="name">nbjpdastart</xsl:attribute>
-                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2me-embedded-project/1</xsl:attribute>
-                    <attribute>
-                        <xsl:attribute name="name">name</xsl:attribute>
-                        <xsl:attribute name="default">${main.class}</xsl:attribute>
-                    </attribute>
-                    <attribute>
-                        <xsl:attribute name="name">classpath</xsl:attribute>
-                        <xsl:attribute name="default">${debug.classpath}</xsl:attribute>
-                    </attribute>
-                    <attribute>
-                        <xsl:attribute name="name">stopclassname</xsl:attribute>
-                        <xsl:attribute name="default"></xsl:attribute>
-                    </attribute>
-                    <sequential>
-                        <nbjpdastart transport="${{debug-transport}}" addressproperty="jpda.address" name="@{{name}}" stopclassname="@{{stopclassname}}">
-                            <classpath>
-                                <path path="@{{classpath}}"/>
-                            </classpath>
-                            <bootclasspath>
-                                <path path="${{platform.bootcp}}"/>
-                            </bootclasspath>
-                        </nbjpdastart>
-                    </sequential>
-                </macrodef>
-                <macrodef>
-                    <xsl:attribute name="name">nbjpdareload</xsl:attribute>
-                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2me-embedded-project/1</xsl:attribute>
-                    <attribute>
-                        <xsl:attribute name="name">dir</xsl:attribute>
-                        <xsl:attribute name="default">${build.classes.dir}</xsl:attribute>
-                    </attribute>
-                    <sequential>
-                        <nbjpdareload>
-                            <fileset includes="${{fix.classes}}" dir="@{{dir}}" >
-                                <include name="${{fix.includes}}*.class"/>
-                            </fileset>
-                        </nbjpdareload>
-                    </sequential>
-                </macrodef>
-            </target>
-
-            <target name="-init-debug-args">
-                <property name="debug-args-line" value="-Xdebug"/>
-                <condition property="debug-transport-by-os" value="dt_shmem" else="dt_socket">
-                    <os family="windows"/>
-                </condition>
-                <condition property="debug-transport" value="${{debug.transport}}" else="${{debug-transport-by-os}}">
-                    <isset property="debug.transport"/>
-                </condition>
-            </target>
-
-            <target name="-init-macrodef-debug" depends="-init-debug-args">
-                <macrodef>
-                    <xsl:attribute name="name">debug</xsl:attribute>
-                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2me-embedded-project/1</xsl:attribute>
-                    <attribute>
-                        <xsl:attribute name="name">classname</xsl:attribute>
-                        <xsl:attribute name="default">${main.class}</xsl:attribute>
-                    </attribute>
-                    <attribute>
-                        <xsl:attribute name="name">classpath</xsl:attribute>
-                        <xsl:attribute name="default">${debug.classpath}</xsl:attribute>
-                    </attribute>
-                    <element>
-                        <xsl:attribute name="name">customize</xsl:attribute>
-                        <xsl:attribute name="optional">true</xsl:attribute>
-                    </element>
-                    <sequential>
-                        <!-- TODO -->
-                    </sequential>
-                </macrodef>
-            </target>
-
             <target name="-init-macrodef-copylibs">
                 <macrodef>
                     <xsl:attribute name="name">copylibs</xsl:attribute>
@@ -705,7 +649,7 @@ is divided into following sections:
             </target>
 
             <target name="init">
-                <xsl:attribute name="depends">-pre-init,-init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if>,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-nbjpda,-init-macrodef-debug,-init-presetdef-jar,-init-ap-cmdline,-init-javame</xsl:attribute>
+                <xsl:attribute name="depends">-pre-init,-init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if>,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-presetdef-jar,-init-ap-cmdline,-init-javame</xsl:attribute>
             </target>
 
             <xsl:comment>
@@ -959,40 +903,12 @@ is divided into following sections:
                 =================
             </xsl:comment>
 
-            <target name="-debug-start-debugger">
-                <xsl:attribute name="if">netbeans.home</xsl:attribute>
-                <xsl:attribute name="depends">init</xsl:attribute>
-                <j2meproject1:nbjpdastart name="${{debug.class}}"/>
-            </target>
-
-
-            <target name="-debug-start-debuggee">
-                <xsl:attribute name="depends">init,compile</xsl:attribute>
-                <j2meproject1:debug>
-                    <customize>
-                        <arg line="${{application.args}}"/>
-                    </customize>
-                </j2meproject1:debug>
-            </target>
-
             <target name="debug">
-                <xsl:attribute name="if">netbeans.home</xsl:attribute>
-                <!--<xsl:attribute name="depends">init,compile,-debug-start-debugger,-debug-start-debuggee</xsl:attribute>-->
+                <xsl:attribute name="if">netbeans.home</xsl:attribute>                
                 <xsl:attribute name="depends">-debug-javame</xsl:attribute>
                 <xsl:attribute name="description">Debug project in IDE.</xsl:attribute>
             </target>
-
-            <target name="-debug-start-debugger-stepinto">
-                <xsl:attribute name="if">netbeans.home</xsl:attribute>
-                <xsl:attribute name="depends">init</xsl:attribute>
-                <j2meproject1:nbjpdastart stopclassname="${{main.class}}"/>
-            </target>
-
-            <target name="debug-stepinto">
-                <xsl:attribute name="if">netbeans.home</xsl:attribute>
-                <xsl:attribute name="depends">init,compile,-debug-start-debugger-stepinto,-debug-start-debuggee</xsl:attribute>
-            </target>
-
+                        
             <target name="-pre-debug-fix">
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <fail unless="fix.includes">Must set fix.includes</fail>
