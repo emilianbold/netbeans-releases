@@ -95,12 +95,10 @@ import org.netbeans.modules.mylyn.util.UnsubmittedTasksContainer;
 import org.netbeans.modules.mylyn.util.commands.SimpleQueryCommand;
 import org.netbeans.modules.mylyn.util.commands.SynchronizeTasksCommand;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.WeakListeners;
-import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -128,7 +126,6 @@ public class JiraRepository {
     private final Object CONFIGURATION_LOCK = new Object();
     private final Object QUERIES_LOCK = new Object();
 
-    private Lookup lookup;
     private RepositoryInfo info;
     
     private PropertyChangeSupport support;
@@ -285,17 +282,6 @@ public class JiraRepository {
             controller = new JiraRepositoryController(this);
         }
         return controller;
-    }
-
-    public Lookup getLookup() {
-        if(lookup == null) {
-            lookup = Lookups.fixed(getLookupObjects());
-        }
-        return lookup;
-    }
-
-    protected Object[] getLookupObjects() {
-        return new Object[] { getIssueCache() };
     }
 
     public String getUrl() {

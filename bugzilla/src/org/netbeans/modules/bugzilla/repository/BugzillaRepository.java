@@ -90,13 +90,11 @@ import org.netbeans.modules.mylyn.util.commands.SynchronizeTasksCommand;
 import org.netbeans.modules.mylyn.util.UnsubmittedTasksContainer;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
-import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -122,8 +120,6 @@ public class BugzillaRepository {
     private Task refreshQueryTask;
 
     private PropertyChangeSupport support;
-    
-    private Lookup lookup;
     
     private final Object RC_LOCK = new Object();
     private final Object CACHE_LOCK = new Object();
@@ -229,13 +225,6 @@ public class BugzillaRepository {
         }
     }
 
-    public Lookup getLookup() {
-        if(lookup == null) {
-            lookup = Lookups.fixed(getLookupObjects());
-        }
-        return lookup;
-    }
-    
     public BugzillaIssue getIssueForTask (NbTask task) {
         BugzillaIssue issue = null;
         if (task != null) {
@@ -285,10 +274,6 @@ public class BugzillaRepository {
             Bugzilla.LOG.log(Level.WARNING, null, ex);
         }
         return new BugzillaQuery(queryName, query, this, urlParams, true, urlDef, true);
-    }
-
-    protected Object[] getLookupObjects() {
-        return new Object[] { getIssueCache() };
     }
 
     synchronized void resetRepository(boolean keepConfiguration) {

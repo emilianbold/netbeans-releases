@@ -3030,7 +3030,7 @@ public class IssuePanel extends javax.swing.JPanel {
     
     
     private void showInBrowserButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showInBrowserButtonActionPerformed
-        TeamProject kp = issue.getRepository().getLookup().lookup(TeamProject.class);
+        TeamProject kp = issue.getRepository().getTeamProject();
         assert kp != null; // all odcs repositories hould come from team support
         if (kp == null) {
             return;

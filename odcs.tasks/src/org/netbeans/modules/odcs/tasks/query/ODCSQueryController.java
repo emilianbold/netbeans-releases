@@ -696,7 +696,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
     }
 
     private void onWeb() {
-        TeamProject kp = repository.getLookup().lookup(TeamProject.class);
+        TeamProject kp = repository.getTeamProject();
         assert kp != null; // all odcs repositories should come from team support
         if (kp == null) {
             return;

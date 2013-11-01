@@ -264,11 +264,6 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
         return true;
     }
 
-    @Override
-    protected Object[] getLookupObjects() {
-        return new Object[0];
-    }
-
     /**
      * Returns the name of the bz product - should be the same as the name of the kenai project that owns this repository
      * @return

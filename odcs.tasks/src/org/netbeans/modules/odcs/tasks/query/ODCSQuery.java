@@ -540,7 +540,7 @@ public abstract class ODCSQuery {
         }
 
         private ProjectAndClient getProjectAndClient() {
-            TeamProject kp = getRepository().getLookup().lookup(TeamProject.class);
+            TeamProject kp = getRepository().getTeamProject();
             assert kp != null; // all odcs repositories should come from team support
             if (kp == null) {
                 ODCS.LOG.log(Level.WARNING, "  no project available for query"); // NOI18N

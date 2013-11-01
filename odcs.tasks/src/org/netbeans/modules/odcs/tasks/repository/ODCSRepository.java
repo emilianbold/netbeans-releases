@@ -70,8 +70,6 @@ import oracle.eclipse.tools.cloud.dev.tasks.CloudDevConstants;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
-import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
-import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.TaskMapping;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
@@ -96,10 +94,8 @@ import org.netbeans.modules.mylyn.util.commands.SimpleQueryCommand;
 import org.netbeans.modules.odcs.tasks.query.QueryParameters;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
-import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -112,7 +108,6 @@ public class ODCSRepository implements PropertyChangeListener {
     private RepositoryInfo info;
     private ODCSRepositoryController controller;
     private TaskRepository taskRepository;
-    private Lookup lookup;
     private Cache cache;
     private ODCSExecutor executor;
     private Map<PredefinedTaskQuery, ODCSQuery> predefinedQueries;
@@ -406,13 +401,6 @@ public class ODCSRepository implements PropertyChangeListener {
         return false;
     }    
 
-    public Lookup getLookup() {
-        if(lookup == null) {
-            lookup = Lookups.fixed(new Object[] { getIssueCache(), project });
-        }
-        return lookup;
-    }
-
     public Collection<ODCSQuery> getQueries() {
         List<ODCSQuery> ret = new ArrayList<ODCSQuery>();
         synchronized (QUERIES_LOCK) {
@@ -673,6 +661,10 @@ public class ODCSRepository implements PropertyChangeListener {
             ODCS.LOG.log(Level.INFO, null, ex);
             return Collections.<ODCSIssue>emptyList();
         }
+    }
+
+    public TeamProject getTeamProject() {
+        return project;
     }
     
     public class Cache {

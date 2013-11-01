@@ -128,15 +128,6 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
     }
 
     @Override
-    protected Object[] getLookupObjects() {
-        Object[] obj = super.getLookupObjects();
-        Object[] obj2 = new Object[obj.length + 1];
-        System.arraycopy(obj, 0, obj2, 0, obj.length);
-        obj2[obj2.length - 1] = kenaiProject;
-        return obj2;
-    }
-    
-    @Override
     public JiraQuery createPersistentQuery (String queryName, FilterDefinition filter) {
         return new KenaiQuery(queryName, this, filter, projectName, true, false);
     }
