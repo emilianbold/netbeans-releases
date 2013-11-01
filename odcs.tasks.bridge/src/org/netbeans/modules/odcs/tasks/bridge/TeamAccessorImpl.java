@@ -57,7 +57,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import javax.swing.JLabel;
 import org.netbeans.modules.bugtracking.api.Query;
-import org.netbeans.modules.bugtracking.team.spi.TeamAccessor;
+import org.netbeans.modules.team.spi.TeamAccessor;
 import org.netbeans.modules.team.spi.TeamProject;
 import org.netbeans.modules.team.spi.RepositoryUser;
 import org.netbeans.modules.odcs.api.ODCSServer;

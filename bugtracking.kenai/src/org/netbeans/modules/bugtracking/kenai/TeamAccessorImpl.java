@@ -58,7 +58,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import javax.swing.JLabel;
 import org.netbeans.modules.bugtracking.api.Query;
-import org.netbeans.modules.bugtracking.team.spi.TeamAccessor;
+import org.netbeans.modules.team.spi.TeamAccessor;
 import org.netbeans.modules.team.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils;
 import org.netbeans.modules.kenai.api.Kenai;
@@ -86,7 +86,7 @@ import org.openide.windows.WindowManager;
  *
  * @author Tomas Stupka
  */
-@org.openide.util.lookup.ServiceProviders({@ServiceProvider(service=org.netbeans.modules.bugtracking.team.spi.TeamAccessor.class),
+@org.openide.util.lookup.ServiceProviders({@ServiceProvider(service=org.netbeans.modules.team.spi.TeamAccessor.class),
                                            @ServiceProvider(service=org.netbeans.modules.bugtracking.kenai.TeamAccessorImpl.class)})
 public class TeamAccessorImpl extends TeamAccessor {
 

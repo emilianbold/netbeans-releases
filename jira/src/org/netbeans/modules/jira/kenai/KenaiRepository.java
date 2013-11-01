@@ -55,7 +55,7 @@ import java.beans.PropertyChangeListener;
 import java.net.PasswordAuthentication;
 import java.util.*;
 import org.eclipse.core.runtime.CoreException;
-import org.netbeans.modules.bugtracking.team.spi.TeamAccessor;
+import org.netbeans.modules.team.spi.TeamAccessor;
 import org.netbeans.modules.team.spi.TeamProject;
 import org.netbeans.modules.team.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;

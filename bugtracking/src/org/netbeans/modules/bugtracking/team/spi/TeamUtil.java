@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.bugtracking.team.spi;
 
+import org.netbeans.modules.team.spi.TeamAccessor;
 import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
 import org.netbeans.modules.team.spi.TeamProject;
 import org.netbeans.modules.team.spi.RepositoryUser;

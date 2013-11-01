@@ -40,29 +40,15 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.team.spi;
+package org.netbeans.modules.team.spi;
 
-import org.netbeans.modules.team.spi.TeamProject;
-import org.netbeans.modules.team.spi.RepositoryUser;
-import org.netbeans.modules.team.spi.OwnerInfo;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.PasswordAuthentication;
 import java.util.Collection;
-import java.util.logging.Level;
 import javax.swing.JLabel;
-import org.netbeans.modules.bugtracking.APIAccessor;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.QueryImpl;
-import org.netbeans.modules.bugtracking.RepositoryImpl;
-import org.netbeans.modules.bugtracking.api.Query;
-import org.netbeans.modules.bugtracking.ui.query.QueryTopComponent;
 import org.openide.nodes.Node;
-import org.openide.windows.TopComponent;
-import org.openide.windows.TopComponent.Registry;
-import org.openide.windows.WindowManager;
 
 /**
  * Implementation provides access to a particular Team API

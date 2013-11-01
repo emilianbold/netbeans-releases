@@ -56,7 +56,7 @@ import java.util.List;
 import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.logging.Level;
-import org.netbeans.modules.bugtracking.team.spi.TeamAccessor;
+import org.netbeans.modules.team.spi.TeamAccessor;
 import org.netbeans.modules.team.spi.TeamProject;
 import org.netbeans.modules.team.spi.OwnerInfo;
 import org.netbeans.modules.team.spi.RepositoryUser;
