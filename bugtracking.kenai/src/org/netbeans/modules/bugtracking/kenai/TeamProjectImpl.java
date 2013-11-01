@@ -165,19 +165,18 @@ class TeamProjectImpl extends org.netbeans.modules.team.spi.TeamProject {
         return project.getKenai().getUrl().toString();
     }
     
-//    @Override
-//    public void fireQueryActivated(Query query) {
-//        KenaiHandler handler = Support.getInstance().getKenaiHandler(project.getKenai());
-//        if(handler == null) {
-//            return;
-//        }
-//        List<QueryHandle> queries = handler.getQueryHandles(project.getName(), query);
-//        assert queries.size() == 1;
-//        QueryHandle qh = queries.get(0);
-//        assert qh instanceof QueryHandleImpl;
-//        if(qh instanceof QueryHandleImpl) {
-//            ((QueryHandleImpl) qh).fireQueryActivated();
-//        }
-//    }
+    public void fireQueryActivated(Query query) {
+        KenaiHandler handler = Support.getInstance().getKenaiHandler(project.getKenai());
+        if(handler == null) {
+            return;
+        }
+        List<QueryHandle> queries = handler.getQueryHandles(project.getName(), query);
+        assert queries.size() == 1;
+        QueryHandle qh = queries.get(0);
+        assert qh instanceof QueryHandleImpl;
+        if(qh instanceof QueryHandleImpl) {
+            ((QueryHandleImpl) qh).fireQueryActivated();
+        }
+    }
 
 }

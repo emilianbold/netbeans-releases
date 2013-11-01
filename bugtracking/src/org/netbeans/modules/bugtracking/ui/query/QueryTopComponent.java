@@ -80,17 +80,17 @@ import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryController.QueryMode;
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.commons.LinkButton;
 import org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils;
 import org.netbeans.modules.bugtracking.commons.NoContentPanel;
+import org.netbeans.modules.bugtracking.team.TeamRepositories;
 import org.netbeans.modules.bugtracking.ui.repository.RepositoryComboSupport;
+import org.netbeans.modules.team.spi.TeamProject;
 import org.netbeans.spi.actions.AbstractSavable;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -209,7 +209,18 @@ public final class QueryTopComponent extends TopComponent
             repositoryComboBox.setEnabled(false);
             newButton.setEnabled(false);
         }
-
+        
+        RepositoryImpl repoImpl = query.getRepositoryImpl();
+        if(repoImpl.isTeamRepository()) {
+            if(query.getQuery() == TeamUtil.getAllIssuesQuery(repoImpl.getRepository())) {
+                TeamProject teamProject = TeamRepositories.getInstance().getTeamProject(defaultRepository);
+                if(teamProject != null) {
+                    instanceContent.add(query.getQuery());
+                    instanceContent.add(teamProject);
+                }
+            }
+        }
+        
         if (query != null) {
             if(!isNew) {
                 setSaved();

@@ -56,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import javax.swing.JLabel;
+import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.team.spi.TeamAccessor;
 import org.netbeans.modules.team.spi.TeamProject;
 import org.netbeans.modules.team.spi.RepositoryUser;
@@ -72,6 +73,9 @@ import org.netbeans.modules.team.server.ui.spi.TeamServer;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.windows.TopComponent;
+import org.openide.windows.TopComponent.Registry;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -106,6 +110,7 @@ public class TeamAccessorImpl extends TeamAccessor {
                 }
             }
         });
+        WindowManager.getDefault().getRegistry().addPropertyChangeListener(new ActivatedTCListener());
     }
     
     static TeamAccessorImpl getInstance() {
@@ -410,4 +415,24 @@ public class TeamAccessorImpl extends TeamAccessor {
             }
         }
     }
+    
+    private class ActivatedTCListener implements PropertyChangeListener {
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            Registry registry = WindowManager.getDefault().getRegistry();
+            if (Registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
+                TopComponent tc = registry.getActivated();
+                Support.LOG.log(Level.FINER, "activated TC : {0}", tc); // NOI18N
+                final Lookup lookup = tc.getLookup();
+                Query query = lookup.lookup(Query.class);
+                if(query == null) {
+                    return;
+                }
+                TeamProject project = lookup.lookup(TeamProject.class);
+                if(project instanceof TeamProjectImpl) {
+                    ((TeamProjectImpl)project).fireQueryActivated(query);
+                }
+            }
+        }
+    }    
 }

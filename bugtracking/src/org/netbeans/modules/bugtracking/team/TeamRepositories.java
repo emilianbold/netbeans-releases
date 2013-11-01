@@ -54,6 +54,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import org.netbeans.api.queries.VersioningQuery;
 import org.netbeans.modules.bugtracking.APIAccessor;
@@ -74,7 +75,6 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -87,6 +87,7 @@ public abstract class TeamRepositories implements PropertyChangeListener {
     private static TeamRepositories instance;
 
     private final Map<String, Object> teamLocks = new HashMap<String, Object>(1);
+    private final Map<RepositoryImpl, TeamProject> repoToTeam = new WeakHashMap<RepositoryImpl, TeamProject>(5);
 
     /**
      * Holds already created team repositories
@@ -172,13 +173,17 @@ public abstract class TeamRepositories implements PropertyChangeListener {
         }
     }
     
+    public TeamProject getTeamProject(RepositoryImpl repoImpl) {
+        return repoToTeam.get(repoImpl);
+    }
+    
     /**
      * Creates a {@link Repository} for the given {@link TeamProject}
      *
      * @param project
      * @return
      */
-    private static RepositoryImpl createRepository(TeamProject project) {
+    private RepositoryImpl createRepository(TeamProject project) {
         BugtrackingConnector[] connectors = BugtrackingUtil.getBugtrackingConnectors();
         for (BugtrackingConnector c : connectors) {
             if (isType(c, project.getType())) {
@@ -186,7 +191,9 @@ public abstract class TeamRepositories implements PropertyChangeListener {
                 RepositoryInfo info = new RepositoryInfo(project.getName(), null, project.getHost(), project.getDisplayName(), project.getDisplayName());
                 info.putValue(TeamBugtrackingConnector.TEAM_PROJECT_NAME, project.getName());
                 Repository repo = (c).createRepository(info);
-                return APIAccessor.IMPL.getImpl(repo);
+                RepositoryImpl repoImpl = APIAccessor.IMPL.getImpl(repo);
+                repoToTeam.put(repoImpl, project);
+                return repoImpl;
             }
         }
         return null;

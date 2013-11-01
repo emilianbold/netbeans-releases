@@ -75,7 +75,7 @@ public abstract class TeamAccessor {
     public static final String PROP_PROJETCS_CHANGED = "team.projects.changed"; // NOI18N
 
     protected TeamAccessor() {
-       WindowManager.getDefault().getRegistry().addPropertyChangeListener(new ActivatedTCListener());
+       
     }
 
     /**
@@ -211,38 +211,4 @@ public abstract class TeamAccessor {
      * @return 
      */
     public abstract boolean isOwner (String url);
-
-    private class ActivatedTCListener implements PropertyChangeListener {
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            Registry registry = WindowManager.getDefault().getRegistry();
-            if (Registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
-                TopComponent tc = registry.getActivated();
-                BugtrackingManager.LOG.log(Level.FINER, "activated TC : {0}", tc); // NOI18N
-                if(tc instanceof QueryTopComponent) {
-                    QueryTopComponent qtc = (QueryTopComponent) tc;
-                    QueryImpl query = qtc.getQuery();
-                    if(query == null) {
-                        return;
-                    }
-                    RepositoryImpl repositoryImpl = query.getRepositoryImpl();
-                    if(repositoryImpl == null) {
-                        return;
-                    }
-                    if(!TeamUtil.isFromTeamServer(repositoryImpl.getRepository())) {
-                        return;
-                    }
-                    Query allIssuesQuery = TeamUtil.getAllIssuesQuery(repositoryImpl.getRepository());
-                    if(allIssuesQuery == null || query != APIAccessor.IMPL.getImpl(allIssuesQuery)) {
-                        return; 
-                    } 
-//                    TeamProject teamProject = TeamUtil.getTeamProject(repositoryImpl.getRepository());
-//                    if(teamProject == null) {
-//                        return;
-//                    }
-//                    teamProject.fireQueryActivated(query.getQuery());
-                }
-            }
-        }
-    }
 }
