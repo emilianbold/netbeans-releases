@@ -49,6 +49,7 @@ import org.netbeans.modules.bugtracking.team.spi.TeamProject;
 import org.netbeans.modules.bugtracking.team.spi.TeamRepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
 import org.netbeans.modules.odcs.tasks.query.ODCSQuery;
 import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
@@ -57,7 +58,7 @@ import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
  *
  * @author Tomas Stupka
  */
-public class ODCSRepositoryProvider extends TeamRepositoryProvider<ODCSRepository, ODCSQuery, ODCSIssue> {
+public class ODCSRepositoryProvider implements RepositoryProvider<ODCSRepository, ODCSQuery, ODCSIssue>, TeamRepositoryProvider<ODCSRepository, ODCSQuery, ODCSIssue> {
 
     @Override
     public RepositoryInfo getInfo(ODCSRepository r) {

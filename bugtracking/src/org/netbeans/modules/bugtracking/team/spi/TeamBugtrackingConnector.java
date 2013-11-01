@@ -50,7 +50,7 @@ import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
  * 
  * @author tomas
  */
-public abstract class TeamBugtrackingConnector implements BugtrackingConnector {
+public interface TeamBugtrackingConnector {
     
     public enum BugtrackingType {
         BUGZILLA,
@@ -69,12 +69,9 @@ public abstract class TeamBugtrackingConnector implements BugtrackingConnector {
     /**
      * Creates a {@link RepositoryProvider} for the given {@link }
      *
-     * @param project
      * @return
      */
-    public Repository findNBRepository() {
-        return null;
-    }
+    public Repository findNBRepository();
     
     /**
      * Determines the bugtracking type

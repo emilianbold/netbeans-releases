@@ -51,7 +51,6 @@ import org.netbeans.modules.bugtracking.team.spi.TeamBugtrackingConnector.Bugtra
  * @author Tomas Stupka
  * @see org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport
  */
-// XXX rename to team project
 public abstract class TeamProject {
 
     /**

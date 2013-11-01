@@ -41,13 +41,11 @@
  */
 package org.netbeans.modules.bugtracking.team.spi;
 
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
-
 /**
  *
  * @author Tomas Stupka
  */
-public interface TeamQueryProvider<Q, I> extends QueryProvider<Q, I> {
+public interface TeamQueryProvider<Q, I> {
     
     /**
      * Determines if the query needs the user to be logged in to show some

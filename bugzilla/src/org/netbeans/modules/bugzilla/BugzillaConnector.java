@@ -67,7 +67,7 @@ import org.openide.util.NbBundle;
         displayName="#LBL_ConnectorName",
         tooltip="#LBL_ConnectorTooltip"
 )    
-public class BugzillaConnector extends TeamBugtrackingConnector {
+public class BugzillaConnector implements BugtrackingConnector, TeamBugtrackingConnector {
 
     public static final String ID = "org.netbeans.modules.bugzilla";
 

@@ -44,17 +44,17 @@ import org.netbeans.modules.bugtracking.team.spi.TeamProject;
 import org.netbeans.modules.bugtracking.team.spi.TeamRepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.repository.JiraRepository;
-import org.openide.util.Lookup;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class JiraRepositoryProvider extends TeamRepositoryProvider<JiraRepository, JiraQuery, NbJiraIssue> {
+public class JiraRepositoryProvider implements RepositoryProvider<JiraRepository, JiraQuery, NbJiraIssue>, TeamRepositoryProvider<JiraRepository, JiraQuery, NbJiraIssue> {
 
     @Override
     public Image getIcon(JiraRepository r) {

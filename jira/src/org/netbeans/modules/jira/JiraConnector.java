@@ -69,7 +69,7 @@ import org.openide.util.NbBundle;
         displayName="#LBL_ConnectorName",
         tooltip="#LBL_ConnectorTooltip"
 )    
-public class JiraConnector extends TeamBugtrackingConnector {
+public class JiraConnector implements BugtrackingConnector, TeamBugtrackingConnector {
 
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.jira.JiraConnector");  //  NOI18N
     private boolean alreadyLogged = false;
@@ -142,4 +142,9 @@ public class JiraConnector extends TeamBugtrackingConnector {
     public BugtrackingType getType() {
         return BugtrackingType.JIRA;
     }    
+
+    @Override
+    public Repository findNBRepository() {
+        return null; // relevant only for bugzilla
+    }
 }

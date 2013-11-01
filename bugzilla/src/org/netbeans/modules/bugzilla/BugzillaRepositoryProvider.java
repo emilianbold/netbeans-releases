@@ -44,6 +44,7 @@ import org.netbeans.modules.bugtracking.team.spi.TeamProject;
 import org.netbeans.modules.bugtracking.team.spi.TeamRepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
@@ -53,7 +54,7 @@ import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
  *
  * @author Tomas Stupka
  */
-public class BugzillaRepositoryProvider extends TeamRepositoryProvider<BugzillaRepository, BugzillaQuery, BugzillaIssue> {
+public class BugzillaRepositoryProvider implements RepositoryProvider<BugzillaRepository, BugzillaQuery, BugzillaIssue>, TeamRepositoryProvider<BugzillaRepository, BugzillaQuery, BugzillaIssue> {
 
     @Override
     public Image getIcon(BugzillaRepository r) {

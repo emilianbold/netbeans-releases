@@ -122,8 +122,9 @@ public abstract class TeamAccessor {
     /**
      * Determines whether the given url belongs to a team project or not
      *
-     * @param url
+     * @param kp
      * @return true if the given url belongs to a team project, otherwise false
+     * @throws java.io.IOException
      */
     public abstract Collection<RepositoryUser> getProjectMembers(TeamProject kp) throws IOException;
 

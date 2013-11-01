@@ -59,7 +59,7 @@ import org.netbeans.modules.odcs.tasks.util.ODCSUtil;
         tooltip="#LBL_ConnectorTooltip",
         providesRepositoryManagement=false
 )    
-public class ODCSConnector extends TeamBugtrackingConnector {
+public class ODCSConnector implements BugtrackingConnector, TeamBugtrackingConnector {
     public static final String ID = "org.netbeans.modules.odcs.tasks"; // NOI18N
     
     @Override
@@ -90,6 +90,11 @@ public class ODCSConnector extends TeamBugtrackingConnector {
     @Override
     public BugtrackingType getType () {
         return BugtrackingType.ODCS;
+    }
+
+    @Override
+    public Repository findNBRepository() {
+        return null; // relevant only for bugzilla
     }
     
 }

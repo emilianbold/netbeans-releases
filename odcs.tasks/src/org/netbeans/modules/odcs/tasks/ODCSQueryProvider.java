@@ -47,6 +47,7 @@ import java.util.Collection;
 import org.netbeans.modules.bugtracking.team.spi.TeamQueryProvider;
 import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.QueryController;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
 import org.netbeans.modules.odcs.tasks.query.ODCSQuery;
 import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
@@ -55,7 +56,7 @@ import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
  *
  * @author Tomas Stupka
  */
-public class ODCSQueryProvider implements TeamQueryProvider<ODCSQuery, ODCSIssue> {
+public class ODCSQueryProvider implements QueryProvider<ODCSQuery, ODCSIssue>, TeamQueryProvider<ODCSQuery, ODCSIssue> {
 
     @Override
     public String getDisplayName(ODCSQuery q) {

@@ -46,7 +46,6 @@ import java.awt.Component;
 import java.text.MessageFormat;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
-import org.netbeans.modules.bugtracking.team.spi.RepositoryUser;
 import org.openide.util.NbBundle;
 
 /**
@@ -55,7 +54,7 @@ import org.openide.util.NbBundle;
  * @author Jan Stola
  */
 public final class RepositoryUserRenderer extends DefaultListCellRenderer {
-    private String pattern;
+    private final String pattern;
     
     public RepositoryUserRenderer() {
         pattern = NbBundle.getMessage(RepositoryUserRenderer.class, "RepositoryUserRenderer.format"); // NOI18N

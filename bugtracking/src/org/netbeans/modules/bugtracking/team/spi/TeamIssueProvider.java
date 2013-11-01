@@ -41,13 +41,12 @@
  */
 package org.netbeans.modules.bugtracking.team.spi;
 
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
-
 /**
  *
  * @author Tomas Stupka
+ * @param <I>
  */
-public abstract class TeamIssueProvider<I> implements IssueProvider<I> {
+public interface TeamIssueProvider<I> {
    
     /** 
      * Provides owner (project/component/...) info to prefill the respective fields.
@@ -56,5 +55,5 @@ public abstract class TeamIssueProvider<I> implements IssueProvider<I> {
      * @param data
      * @param info
      */
-    public abstract void setOwnerInfo(I data, OwnerInfo info);   
+    public void setOwnerInfo(I data, OwnerInfo info);   
 }

@@ -40,7 +40,6 @@ package org.netbeans.modules.bugtracking;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.team.spi.TeamQueryProvider;
@@ -49,7 +48,6 @@ import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 
 /**
  *

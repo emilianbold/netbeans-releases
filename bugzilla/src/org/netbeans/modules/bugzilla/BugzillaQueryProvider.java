@@ -42,6 +42,7 @@ import java.util.Collection;
 import org.netbeans.modules.bugtracking.team.spi.TeamQueryProvider;
 import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.QueryController;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
@@ -51,7 +52,7 @@ import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
  *
  * @author Tomas Stupka
  */
-public class BugzillaQueryProvider implements TeamQueryProvider<BugzillaQuery, BugzillaIssue> {
+public class BugzillaQueryProvider implements QueryProvider<BugzillaQuery, BugzillaIssue>, TeamQueryProvider<BugzillaQuery, BugzillaIssue> {
 
     @Override
     public String getDisplayName(BugzillaQuery query) {

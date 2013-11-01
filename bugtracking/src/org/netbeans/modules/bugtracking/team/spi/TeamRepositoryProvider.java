@@ -41,14 +41,15 @@
  */
 package org.netbeans.modules.bugtracking.team.spi;
 
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
-
 /**
  *
  * @author Tomas Stupka
+ * @param <R>
+ * @param <Q>
+ * @param <I>
  */
-public abstract class TeamRepositoryProvider<R, Q, I> implements RepositoryProvider<R, Q, I> {
-    public abstract Q getAllIssuesQuery(R repository);
-    public abstract Q getMyIssuesQuery(R repository);
-    public abstract TeamProject getTeamProject(R repository);
+public interface TeamRepositoryProvider<R, Q, I> {
+    public Q getAllIssuesQuery(R repository);
+    public Q getMyIssuesQuery(R repository);
+    public TeamProject getTeamProject(R repository);
 }
