@@ -61,6 +61,7 @@ import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserFactory;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ChangeSupport;
 
 /**
  *
@@ -72,6 +73,8 @@ public class CndParser extends Parser implements CsmProgressListener {
     private CsmFile csmFile;
     private static final class Lock{}
     private final Lock lock = new Lock();
+    //Listener support
+    private final ChangeSupport listeners = new ChangeSupport(this);
 
     private CndParser(Collection<Snapshot> snapshots) {
          CsmListeners.getDefault().addProgressListener(this);
@@ -104,10 +107,12 @@ public class CndParser extends Parser implements CsmProgressListener {
 
     @Override
     public void addChangeListener(ChangeListener changeListener) {
+        listeners.addChangeListener(changeListener);
     }
 
     @Override
     public void removeChangeListener(ChangeListener changeListener) {
+        listeners.removeChangeListener(changeListener);
     }
 
     @Override
@@ -128,6 +133,19 @@ public class CndParser extends Parser implements CsmProgressListener {
 
     @Override
     public void projectLoaded(CsmProject project) {
+        synchronized(lock) {
+            if (snapshot != null) {
+                FileObject fo = snapshot.getSource().getFileObject();
+                if (fo != null) {
+                    CsmFile file = project.findFile(fo.getPath(), false, false);
+                    if (file != null) {
+                        LOG.log(Level.FINE, "update parse result for {0}", snapshot); //NOI18N
+                        csmFile = file;
+                        listeners.fireChange();
+                    }
+                }
+            }
+        }
     }
 
     @Override
@@ -148,8 +166,9 @@ public class CndParser extends Parser implements CsmProgressListener {
             if (snapshot != null) {
                 FileObject fo = snapshot.getSource().getFileObject();
                 if (fo != null && fo.equals(file.getFileObject())) {
-                    LOG.log(Level.FINE, "update parse resuly for {0}", snapshot); //NOI18N
+                    LOG.log(Level.FINE, "update parse result for {0}", snapshot); //NOI18N
                     csmFile = file;
+                    listeners.fireChange();
                 }
             }
         }

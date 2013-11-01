@@ -44,6 +44,7 @@ package org.netbeans.modules.java.hints.perf;
 
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.Tree;
@@ -51,7 +52,9 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
@@ -61,6 +64,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.errors.CreateElementUtilities;
 import org.netbeans.modules.java.hints.errors.Utilities;
@@ -363,5 +367,131 @@ wc.rewrite(tp.getLeaf(), wc.getTreeMaker().Identifier("'" + content + "'"));
         String displayName = NbBundle.getMessage(Tiny.class, "ERR_Tiny_collectionsToArray");
 
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName, fixes);
+    }
+    
+    @NbBundle.Messages({
+        "TEXT_RedundantToString=Redundant String.toString()",
+        "FIX_RedundantToString=Remove .toString()"
+    })
+    @TriggerPattern(value = "$v.toString()", constraints = @ConstraintVariableType(variable = "$v", type = "java.lang.String"))
+    @Hint(
+        displayName = "#DN_RedundantToString",
+        description = "#DESC_RedundantToString",
+        enabled = true,
+        category = "performance",
+        suppressWarnings = "RedundantStringToString"
+    )
+    public static ErrorDescription redundantToString(HintContext ctx) {
+        return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), 
+                Bundle.TEXT_RedundantToString(), 
+                JavaFixUtilities.rewriteFix(ctx, Bundle.FIX_RedundantToString(), ctx.getPath(), "$v"));
+    }
+    
+    private static final Map<TypeKind, String[]> PARSE_METHODS = new HashMap<TypeKind, String[]>(7);
+    static {
+        PARSE_METHODS.put(TypeKind.BOOLEAN, new String[] { "Boolean", "parseBoolean" }); // NOI18N
+        PARSE_METHODS.put(TypeKind.BYTE, new String[] { "Byte", "parseByte"}); // NOI18N
+        PARSE_METHODS.put(TypeKind.DOUBLE, new String[] { "Double", "parseDouble"}); // NOI18N
+        PARSE_METHODS.put(TypeKind.FLOAT, new String[] { "Float", "parseFloat"}); // NOI18N
+        PARSE_METHODS.put(TypeKind.INT, new String[] { "Integer", "parseInt"}); // NOI18N
+        PARSE_METHODS.put(TypeKind.LONG, new String[] { "Long", "parseLong"}); // NOI18N
+        PARSE_METHODS.put(TypeKind.SHORT, new String[] { "Short", "parseShort"}); // NOI18N
+    }
+    
+    @TriggerPatterns({
+        @TriggerPattern(value = "new java.lang.Byte($v).byteValue()", constraints = @ConstraintVariableType(variable = "$v", type = "java.lang.String")),
+        @TriggerPattern(value = "new java.lang.Double($v).doubleValue()", constraints = @ConstraintVariableType(variable = "$v", type = "java.lang.String")),
+        @TriggerPattern(value = "new java.lang.Float($v).floatValue()", constraints = @ConstraintVariableType(variable = "$v", type = "java.lang.String")),
+        @TriggerPattern(value = "new java.lang.Integer($v).intValue()", constraints = @ConstraintVariableType(variable = "$v", type = "java.lang.String")),
+        @TriggerPattern(value = "new java.lang.Long($v).longValue()", constraints = @ConstraintVariableType(variable = "$v", type = "java.lang.String")),
+        @TriggerPattern(value = "new java.lang.Short($v).shortValue()", constraints = @ConstraintVariableType(variable = "$v", type = "java.lang.String")),
+        @TriggerPattern(value = "new java.lang.Boolean($v).booleanValue()", constraints = @ConstraintVariableType(variable = "$v", type = "java.lang.String")),
+        
+        
+        @TriggerPattern(value = "java.lang.Byte.valueOf($v).byteValue()", constraints = @ConstraintVariableType(variable = "$v", type = "java.lang.String")),
+        @TriggerPattern(value = "java.lang.Double.valueOf($v).doubleValue()", constraints = @ConstraintVariableType(variable = "$v", type = "java.lang.String")),
+        @TriggerPattern(value = "java.lang.Float.valueOf($v).floatValue()", constraints = @ConstraintVariableType(variable = "$v", type = "java.lang.String")),
+        @TriggerPattern(value = "java.lang.Integer.valueOf($v).intValue()", constraints = @ConstraintVariableType(variable = "$v", type = "java.lang.String")),
+        @TriggerPattern(value = "java.lang.Long.valueOf($v).longValue()", constraints = @ConstraintVariableType(variable = "$v", type = "java.lang.String")),
+        @TriggerPattern(value = "java.lang.Short.valueOf($v).shortValue()", constraints = @ConstraintVariableType(variable = "$v", type = "java.lang.String")),
+        @TriggerPattern(value = "java.lang.Boolean.valueOf($v).booleanValue()", constraints = @ConstraintVariableType(variable = "$v", type = "java.lang.String")),
+    })
+    @NbBundle.Messages({
+        "TEXT_UnnecessaryTempFromString=Unnecessary temporary when converting from String",
+        "# {0} - wrapper type simple name",
+        "# {1} - parse method name",
+        "FIX_UnnecessaryTempFromString1=Replace with {0}.{1}()",
+    })
+    @Hint(
+        displayName = "#DN_UnnecessaryTempFromString",
+        description = "#DESC_UnnecessaryTempFromString",
+        enabled = true,
+        category = "performance",
+        suppressWarnings = "UnnecessaryTemporaryOnConversionFromString" 
+    )
+    public static ErrorDescription unnecessaryTempFromString(HintContext ctx) {
+        TypeMirror resType = ctx.getInfo().getTrees().getTypeMirror(ctx.getPath());
+        if (resType == null) {
+            return null;
+        }
+        if (resType.getKind() == TypeKind.BOOLEAN) {
+            if (ctx.getInfo().getSourceVersion().compareTo(SourceVersion.RELEASE_5) < 0) {
+                // might alter new Boolean($v) to Boolean.valueOf($v), but that's all we can do. JDK < 5 has no 
+                // primitive-valued pasre* method for booleans.
+                return null;
+            }
+        }
+        String[] arr = PARSE_METHODS.get(resType.getKind());
+        if (arr == null) {
+            return null; // just in case
+        }
+        return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), Bundle.TEXT_UnnecessaryTempFromString(),
+                JavaFixUtilities.rewriteFix(ctx, Bundle.FIX_UnnecessaryTempFromString1(arr[0], arr[1]), ctx.getPath(),
+                arr[0] + "." + arr[1] + "($v)")); // NOI18N
+    }
+    
+    @TriggerPatterns({
+        @TriggerPattern(value = "new java.lang.Byte($v).toString()", constraints = @ConstraintVariableType(variable = "$v", type = "int")),
+        @TriggerPattern(value = "new java.lang.Double($v).toString()", constraints = @ConstraintVariableType(variable = "$v", type = "double")),
+        @TriggerPattern(value = "new java.lang.Float($v).toString()", constraints = @ConstraintVariableType(variable = "$v", type = "float")),
+        @TriggerPattern(value = "new java.lang.Integer($v).toString()", constraints = @ConstraintVariableType(variable = "$v", type = "int")),
+        @TriggerPattern(value = "new java.lang.Long($v).toString()", constraints = @ConstraintVariableType(variable = "$v", type = "long")),
+        @TriggerPattern(value = "new java.lang.Short($v).toString()", constraints = @ConstraintVariableType(variable = "$v", type = "int")),
+        @TriggerPattern(value = "new java.lang.Boolean($v).toString()", constraints = @ConstraintVariableType(variable = "$v", type = "boolean")),
+        
+        
+        @TriggerPattern(value = "java.lang.Byte.valueOf($v).toString()", constraints = @ConstraintVariableType(variable = "$v", type = "int")),
+        @TriggerPattern(value = "java.lang.Double.valueOf($v).toString()", constraints = @ConstraintVariableType(variable = "$v", type = "double")),
+        @TriggerPattern(value = "java.lang.Float.valueOf($v).toString()", constraints = @ConstraintVariableType(variable = "$v", type = "float")),
+        @TriggerPattern(value = "java.lang.Integer.valueOf($v).toString()", constraints = @ConstraintVariableType(variable = "$v", type = "int")),
+        @TriggerPattern(value = "java.lang.Long.valueOf($v).toString()", constraints = @ConstraintVariableType(variable = "$v", type = "long")),
+        @TriggerPattern(value = "java.lang.Short.valueOf($v).toString()", constraints = @ConstraintVariableType(variable = "$v", type = "int")),
+        @TriggerPattern(value = "java.lang.Boolean.valueOf($v).toString()", constraints = @ConstraintVariableType(variable = "$v", type = "boolean")),
+    })
+    @NbBundle.Messages({
+        "TEXT_UnnecessaryTempToSring=Unnecessary temporary when converting to String",
+        "# {0} - wrapper type simple name",
+        "FIX_UnnecessaryTempToString=Replace with {0}.toString()",
+    })
+    @Hint(
+        displayName = "#DN_UnnecessaryTempToString",
+        description = "#DESC_UnnecessaryTempToString",
+        enabled = true,
+        category = "performance",
+        suppressWarnings = "UnnecessaryTemporaryOnConversionToString" 
+    )
+    public static ErrorDescription unnecessaryTypeToString(HintContext ctx) {
+        TreePath vPath = ctx.getVariables().get("$v"); // NOI18N
+        TypeMirror resType = ctx.getInfo().getTrees().getTypeMirror(vPath);
+        if (resType == null) {
+            return null;
+        }
+        String[] arr = PARSE_METHODS.get(resType.getKind());
+        if (arr == null) {
+            return null; // just in case
+        }
+        return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), Bundle.TEXT_UnnecessaryTempFromString(),
+                JavaFixUtilities.rewriteFix(ctx, Bundle.FIX_UnnecessaryTempToString(arr[0]), ctx.getPath(),
+                arr[0] + ".toString($v)")); // NOI18N
     }
 }

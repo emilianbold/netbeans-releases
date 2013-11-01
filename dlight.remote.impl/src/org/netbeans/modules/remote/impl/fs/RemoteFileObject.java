@@ -78,6 +78,8 @@ public final class RemoteFileObject extends FileObject implements Serializable {
     static final long serialVersionUID = 1931650016889811086L;
     private final RemoteFileSystem fileSystem;
     private RemoteFileObjectBase implementor;
+
+    private static final boolean MIME_SNIFFING = getBoolean("remote.MIME.sniffing", true); //NOI18N
     
     /*package*/ RemoteFileObject(RemoteFileSystem fileSystem) {
         this.fileSystem = fileSystem;
@@ -201,6 +203,13 @@ public final class RemoteFileObject extends FileObject implements Serializable {
         super.fireFileRenamedEvent(en, fe);
     }
 
+    private static boolean getBoolean(String name, boolean result) {
+        String text = System.getProperty(name);
+        if (text != null) {
+            result = Boolean.parseBoolean(text);
+        }
+        return result;
+    }    
 
     // </editor-fold>
 
@@ -251,8 +260,8 @@ public final class RemoteFileObject extends FileObject implements Serializable {
     public void refresh() {
         getImplementor().refresh();
     }
-
-    /*package*/ void nonRecursiveRefresh() {
+    
+    public void nonRecursiveRefresh() {
         getImplementor().nonRecursiveRefresh();
     }
 
@@ -374,6 +383,15 @@ public final class RemoteFileObject extends FileObject implements Serializable {
         FileStatistics.getInstance(fileSystem).logPath(getPath());
         if (!getImplementor().hasCache()) {
             if (isMimeResolving()) {
+                if (!MIME_SNIFFING) {
+                    return new InputStream() {
+                        @Override
+                        public int read() throws IOException {
+                            return -1;
+                        }
+                        
+                    };
+                }
                 byte[] b = getImplementor().getMagic();
                 if (b != null) {
                     return new ByteArrayInputStream(b);
