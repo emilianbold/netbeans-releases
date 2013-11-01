@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.odcs.tasks.issue;
 
-import org.netbeans.modules.bugtracking.util.SimpleIssueFinder;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -84,13 +83,14 @@ import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
-import org.netbeans.modules.bugtracking.util.IssueSettingsStorage;
-import org.netbeans.modules.bugtracking.util.HyperlinkSupport;
-import org.netbeans.modules.bugtracking.util.HyperlinkSupport.Link;
-import org.netbeans.modules.bugtracking.util.LinkButton;
-import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.netbeans.modules.bugtracking.commons.IssueSettingsStorage;
+import org.netbeans.modules.bugtracking.commons.HyperlinkSupport;
+import org.netbeans.modules.bugtracking.commons.HyperlinkSupport.Link;
+import org.netbeans.modules.bugtracking.commons.LinkButton;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.mylyn.util.WikiPanel;
 import org.netbeans.modules.mylyn.util.WikiUtils;
+import org.netbeans.modules.odcs.tasks.ODCS;
 import org.netbeans.modules.odcs.tasks.util.ODCSUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -124,27 +124,10 @@ public class CommentsPanel extends JPanel {
     private NewCommentHandler newCommentHandler;
 
     private Set<Long> collapsedComments = Collections.synchronizedSet(new HashSet<Long>());
-    private final Link issueLink;
     private String wikiLanguage = "";
     
     public CommentsPanel() {
         setOpaque( false );
-        
-        issueLink = new HyperlinkSupport.Link() {
-            @Override
-            public void onClick(String linkText) {
-                final String issueKey = SimpleIssueFinder.getInstance().getIssueId(linkText);
-                RP.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        ODCSIssue is = issue.getRepository().getIssue(issueKey);
-                        if (is != null) {
-                            ODCSUtil.openIssue(is);
-                        }
-                    }
-                });
-            }
-        };
     }
 
     public void setWikiLanguage(String wikiLanguage) {
@@ -301,7 +284,6 @@ public class CommentsPanel extends JPanel {
         if( UIUtils.isNimbus() ) {
             textPane.setUI( new BasicTextPaneUI() );
         }
-        HyperlinkSupport.getInstance().registerForIssueLinks(textPane, issueLink, SimpleIssueFinder.getInstance());
         
         Caret caret = textPane.getCaret();
         if (caret instanceof DefaultCaret) {

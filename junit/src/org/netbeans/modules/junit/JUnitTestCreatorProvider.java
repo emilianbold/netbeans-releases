@@ -73,7 +73,7 @@ import org.openide.util.RequestProcessor;
  */
 @Registration(displayName=GuiUtils.JUNIT_TEST_FRAMEWORK)
 public class JUnitTestCreatorProvider extends TestCreatorProvider {
-    
+
     @Override
     public boolean enable(Node[] activatedNodes) {
         if (activatedNodes.length == 0) {
@@ -184,6 +184,11 @@ public class JUnitTestCreatorProvider extends TestCreatorProvider {
             params.put(CommonPlugin.CreateTestParam.CLASS_NAME, context.getTestClassName());
         }
         final FileObject targetFolder = context.getTargetFolder();
+        if(context.isIntegrationTests()) {
+            params.put(CommonPlugin.CreateTestParam.INC_GENERATE_INTEGRATION_TEST, Boolean.TRUE);
+        } else {
+            params.put(CommonPlugin.CreateTestParam.INC_GENERATE_INTEGRATION_TEST, Boolean.FALSE);
+        }
 
         RequestProcessor.getDefault().post(new Runnable() {
 

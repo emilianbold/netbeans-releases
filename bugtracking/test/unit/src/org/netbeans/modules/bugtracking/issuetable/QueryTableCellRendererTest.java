@@ -61,7 +61,7 @@ import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer.TableC
 import org.netbeans.modules.bugtracking.issuetable.IssueNode.IssueProperty;
 import org.netbeans.modules.bugtracking.spi.*;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider.Status;
-import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.openide.nodes.Node.Property;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;

@@ -52,6 +52,7 @@ import java.util.Collection;
  * The synchronization is one way only, it's not guaranteed that <code>getReports()</code> contains all problems.
  * 
  */
+@Deprecated
 public interface ProblemReporter {
     
     public void addReport(ProblemReport report);

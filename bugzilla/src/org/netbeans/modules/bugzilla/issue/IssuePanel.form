@@ -691,7 +691,7 @@
         </Component>
         <Component class="javax.swing.JLabel" name="statusWarning">
         </Component>
-        <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="urlLabel">
+        <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="urlLabel">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.urlLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -1339,7 +1339,7 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="attachLogCheckBoxActionPerformed"/>
           </Events>
         </Component>
-        <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="viewLogButton">
+        <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="viewLogButton">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.viewLogButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -1670,7 +1670,7 @@
                 </Property>
               </Properties>
             </Component>
-            <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="refreshButton">
+            <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="refreshButton">
               <Properties>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.refreshButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -1688,7 +1688,7 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="refreshButtonActionPerformed"/>
               </Events>
             </Component>
-            <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="cancelButton">
+            <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="cancelButton">
               <Properties>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.cancelButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -1703,7 +1703,7 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cancelButtonActionPerformed"/>
               </Events>
             </Component>
-            <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="showInBrowserButton">
+            <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="showInBrowserButton">
               <Properties>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.showInBrowserButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -1713,7 +1713,7 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="showInBrowserButtonActionPerformed"/>
               </Events>
             </Component>
-            <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="submitButton">
+            <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="submitButton">
               <Properties>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.submitButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -1728,7 +1728,7 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="submitButtonActionPerformed"/>
               </Events>
             </Component>
-            <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="btnDeleteTask">
+            <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="btnDeleteTask">
               <Properties>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.btnDeleteTask.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -1796,7 +1796,7 @@
             </DimensionLayout>
           </Layout>
           <SubComponents>
-            <Component class="org.netbeans.modules.bugtracking.util.CollapsibleSectionPanel" name="attributesSection">
+            <Component class="org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel" name="attributesSection">
               <Properties>
                 <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                   <Color blue="31" green="1e" id="TextArea.background" palette="3" red="12" type="palette"/>
@@ -1812,7 +1812,7 @@
                 </Property>
               </Properties>
             </Component>
-            <Component class="org.netbeans.modules.bugtracking.util.CollapsibleSectionPanel" name="attachmentsSection">
+            <Component class="org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel" name="attachmentsSection">
               <Properties>
                 <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                   <Color blue="31" green="1e" id="TextArea.background" palette="3" red="12" type="palette"/>
@@ -1826,7 +1826,7 @@
                 </Property>
               </Properties>
             </Component>
-            <Component class="org.netbeans.modules.bugtracking.util.SectionPanel" name="newCommentSection">
+            <Component class="org.netbeans.modules.bugtracking.commons.SectionPanel" name="newCommentSection">
               <Properties>
                 <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                   <Color blue="31" green="1e" id="TextArea.background" palette="3" red="12" type="palette"/>
@@ -1865,7 +1865,7 @@
                 </DimensionLayout>
               </Layout>
               <SubComponents>
-                <Component class="org.netbeans.modules.bugtracking.util.CollapsibleSectionPanel" name="commentsSection">
+                <Component class="org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel" name="commentsSection">
                   <Properties>
                     <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                       <Color blue="31" green="1e" id="TextArea.background" palette="3" red="12" type="palette"/>
@@ -1883,7 +1883,7 @@
                 </Component>
               </SubComponents>
             </Container>
-            <Component class="org.netbeans.modules.bugtracking.util.CollapsibleSectionPanel" name="privateSection">
+            <Component class="org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel" name="privateSection">
               <Properties>
                 <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                   <Color blue="31" green="1e" id="TextArea.background" palette="3" red="12" type="palette"/>

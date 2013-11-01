@@ -97,9 +97,9 @@ import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
-import org.netbeans.modules.bugtracking.util.AttachmentsPanel.AttachmentInfo;
-import org.netbeans.modules.bugtracking.util.TextUtils;
-import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.netbeans.modules.bugtracking.commons.AttachmentsPanel.AttachmentInfo;
+import org.netbeans.modules.bugtracking.commons.TextUtils;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
@@ -1246,32 +1246,6 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
         return iconPath;
     }
 
-    private String getDueDisplayString() {
-        Calendar dueDate = Calendar.getInstance();
-        Date date = getNbTask().getDueDate();
-        if (date == null) {
-            return "";
-        }
-        dueDate.setTime(date);
-        return formatDate(dueDate);
-    }
-
-    private String getScheduleDisplayString() {
-        NbDateRange scheduleDate = getNbTask().getScheduleDate();
-        if (scheduleDate == null) {
-            return "";
-        }
-        return formateDate(scheduleDate.getStartDate(), scheduleDate.getEndDate());
-    }
-
-    private String getEstimateDisplayString() {
-        int estimate = getNbTask().getEstimate();
-        if (estimate == 0) {
-            return "";
-        }
-        return "" + estimate;
-    }
-
     private String formatDate(Calendar date) {
         Calendar now = Calendar.getInstance();
         if (now.get(Calendar.YEAR) == date.get(Calendar.YEAR)) {
@@ -1279,25 +1253,6 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
             return DateFormat.getDateInstance(DateFormat.SHORT).format(date.getTime());
         } else {
             return DateFormat.getDateInstance(DateFormat.DEFAULT).format(date.getTime());
-
-        }
-    }
-
-    private String formateDate(Calendar start, Calendar end) {
-        Calendar now = Calendar.getInstance();
-        // one day range
-        if (start.get(Calendar.YEAR) == end.get(Calendar.YEAR)
-                && start.get(Calendar.MONTH) == end.get(Calendar.MONTH)
-                && start.get(Calendar.DAY_OF_MONTH) == end.get(Calendar.DAY_OF_MONTH)) {
-            return formatDate(start);
-        }
-
-        if (now.get(Calendar.YEAR) == start.get(Calendar.YEAR) && now.get(Calendar.YEAR) == end.get(Calendar.YEAR)) {
-            DateFormat format = DateFormat.getDateInstance(DateFormat.SHORT);
-            return format.format(start.getTime()) + " - " + format.format(end.getTime()); //NOI18N
-        } else {
-            DateFormat format = DateFormat.getDateInstance(DateFormat.DEFAULT);
-            return format.format(start.getTime()) + " - " + format.format(end.getTime()); //NOI18N
 
         }
     }

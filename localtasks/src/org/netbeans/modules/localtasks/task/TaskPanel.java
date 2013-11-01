@@ -109,9 +109,8 @@ import org.netbeans.modules.bugtracking.issuetable.TableSorter;
 import org.netbeans.modules.localtasks.LocalRepository;
 import org.netbeans.modules.localtasks.task.LocalTask.Attachment;
 import org.netbeans.modules.localtasks.task.LocalTask.TaskReference;
-import org.netbeans.modules.bugtracking.util.AttachmentsPanel;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.netbeans.modules.bugtracking.commons.AttachmentsPanel;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.mylyn.util.NbDateRange;
 import org.netbeans.modules.mylyn.util.localtasks.IssueField;
 import org.netbeans.modules.spellchecker.api.Spellchecker;
@@ -198,8 +197,8 @@ final class TaskPanel extends javax.swing.JPanel {
         attachmentsSection.setContent(attachmentsPanel);
         
         GroupLayout layout = (GroupLayout) attributesPanel.getLayout();
-        dueDatePicker = BugtrackingUtil.createDatePickerComponent();
-        scheduleDatePicker = BugtrackingUtil.createDatePickerComponent();
+        dueDatePicker = UIUtils.createDatePickerComponent();
+        scheduleDatePicker = UIUtils.createDatePickerComponent();
         layout.replace(dummyDueDateField, dueDatePicker.getComponent());
         dueDateLabel.setLabelFor(dueDatePicker.getComponent());
         layout.replace(dummyScheduleDateField, scheduleDatePicker.getComponent());
@@ -312,7 +311,7 @@ final class TaskPanel extends javax.swing.JPanel {
 
         referencesPanel = new javax.swing.JPanel();
         emptyTaskReferencesPanel = new javax.swing.JPanel();
-        btnAddTaskReference = new org.netbeans.modules.bugtracking.util.LinkButton();
+        btnAddTaskReference = new org.netbeans.modules.bugtracking.commons.LinkButton();
         attributesPanel = new javax.swing.JPanel();
         dueDateLabel = new javax.swing.JLabel();
         summaryLabel = new javax.swing.JLabel();
@@ -343,19 +342,19 @@ final class TaskPanel extends javax.swing.JPanel {
         headerPanel = new javax.swing.JPanel();
         headerField = new javax.swing.JTextField();
         jPanel2 = new javax.swing.JPanel();
-        btnCancel = new org.netbeans.modules.bugtracking.util.LinkButton();
+        btnCancel = new org.netbeans.modules.bugtracking.commons.LinkButton();
         separatorDismissLabel = new javax.swing.JLabel();
-        btnDismiss = new org.netbeans.modules.bugtracking.util.LinkButton();
+        btnDismiss = new org.netbeans.modules.bugtracking.commons.LinkButton();
         separatorFinishLabel = new javax.swing.JLabel();
-        btnFinish = new org.netbeans.modules.bugtracking.util.LinkButton();
+        btnFinish = new org.netbeans.modules.bugtracking.commons.LinkButton();
         separatorOpenLabel = new javax.swing.JLabel();
-        btnOpen = new org.netbeans.modules.bugtracking.util.LinkButton();
+        btnOpen = new org.netbeans.modules.bugtracking.commons.LinkButton();
         mainScrollPane = new javax.swing.JScrollPane();
         jPanel1 = new javax.swing.JPanel();
         messagePanel = new javax.swing.JPanel();
-        attributesSection = new org.netbeans.modules.bugtracking.util.CollapsibleSectionPanel();
-        referencesSection = new org.netbeans.modules.bugtracking.util.CollapsibleSectionPanel();
-        attachmentsSection = new org.netbeans.modules.bugtracking.util.CollapsibleSectionPanel();
+        attributesSection = new org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel();
+        referencesSection = new org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel();
+        attachmentsSection = new org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel();
 
         referencesPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
 
@@ -789,14 +788,14 @@ final class TaskPanel extends javax.swing.JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private org.netbeans.modules.bugtracking.util.CollapsibleSectionPanel attachmentsSection;
+    private org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel attachmentsSection;
     private javax.swing.JPanel attributesPanel;
-    private org.netbeans.modules.bugtracking.util.CollapsibleSectionPanel attributesSection;
-    private org.netbeans.modules.bugtracking.util.LinkButton btnAddTaskReference;
-    private org.netbeans.modules.bugtracking.util.LinkButton btnCancel;
-    private org.netbeans.modules.bugtracking.util.LinkButton btnDismiss;
-    private org.netbeans.modules.bugtracking.util.LinkButton btnFinish;
-    private org.netbeans.modules.bugtracking.util.LinkButton btnOpen;
+    private org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel attributesSection;
+    private org.netbeans.modules.bugtracking.commons.LinkButton btnAddTaskReference;
+    private org.netbeans.modules.bugtracking.commons.LinkButton btnCancel;
+    private org.netbeans.modules.bugtracking.commons.LinkButton btnDismiss;
+    private org.netbeans.modules.bugtracking.commons.LinkButton btnFinish;
+    private org.netbeans.modules.bugtracking.commons.LinkButton btnOpen;
     private javax.swing.JLabel dueDateLabel;
     private javax.swing.JTextField dummyDueDateField;
     private javax.swing.JTextField dummyScheduleDateField;
@@ -813,7 +812,7 @@ final class TaskPanel extends javax.swing.JPanel {
     private javax.swing.JLabel notesLabel;
     private javax.swing.JTextArea privateNotesField;
     private javax.swing.JPanel referencesPanel;
-    private org.netbeans.modules.bugtracking.util.CollapsibleSectionPanel referencesSection;
+    private org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel referencesSection;
     private javax.swing.JLabel scheduleDateLabel;
     private javax.swing.JLabel separatorDismissLabel;
     private javax.swing.JLabel separatorFinishLabel;

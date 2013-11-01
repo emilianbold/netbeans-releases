@@ -41,34 +41,34 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se.actions;
 
 import javax.swing.KeyStroke;
-
+import junit.framework.Test;
+import org.netbeans.jellytools.FavoritesOperator;
+import org.netbeans.jellytools.FilesTabOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.RuntimeTabOperator;
+import org.netbeans.jellytools.TopComponentOperator;
+import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.j2se.setup.J2SESetup;
 
-import org.netbeans.jellytools.actions.Action;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.RuntimeTabOperator;
-import org.netbeans.jellytools.FilesTabOperator;
-import org.netbeans.jellytools.FavoritesOperator;
-import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
-
 /**
+ * Test view switching.
  *
- * 
  */
-public class SwitchViewTest  extends PerformanceTestCase {
-    
-        private String operator;
-        private int ke;
+public class SwitchViewTest extends PerformanceTestCase {
 
-    /** Creates a new instance of SwitchToFile */
+    private String operator;
+    private int ke;
+
+    /**
+     * Creates a new instance of SwitchToFile
+     *
+     * @param testName test name
+     */
     public SwitchViewTest(String testName) {
         super(testName);
         ProjectsTabOperator.invoke();
@@ -76,69 +76,77 @@ public class SwitchViewTest  extends PerformanceTestCase {
         FilesTabOperator.invoke();
         FavoritesOperator.invoke();
         expectedTime = 100;
-        WAIT_AFTER_OPEN=200;
+        WAIT_AFTER_OPEN = 200;
     }
-    
-    /** Creates a new instance of SwitchView */
+
+    /**
+     * Creates a new instance of SwitchView
+     *
+     * @param testName test name
+     * @param performanceDataName data name
+     */
     public SwitchViewTest(String testName, String performanceDataName) {
-        super(testName,performanceDataName);
+        super(testName, performanceDataName);
         ProjectsTabOperator.invoke();
         RuntimeTabOperator.invoke();
         FilesTabOperator.invoke();
         FavoritesOperator.invoke();
         expectedTime = 100;
-        WAIT_AFTER_OPEN=200;
+        WAIT_AFTER_OPEN = 200;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(SwitchViewTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(J2SESetup.class, "testCloseMemoryToolbar")
+                .addTest(SwitchViewTest.class)
+                .suite();
     }
 
-    public void testSwitchToServices(){
-        ke=java.awt.event.KeyEvent.VK_5;
-        operator="Services";
+    public void testSwitchToServices() {
+        ke = java.awt.event.KeyEvent.VK_5;
+        operator = "Services";
         doMeasurement();
     }
 
-    public void testSwitchToProjects(){
-        ke=java.awt.event.KeyEvent.VK_1;
-        operator="Projects";
+    public void testSwitchToProjects() {
+        ke = java.awt.event.KeyEvent.VK_1;
+        operator = "Projects";
         doMeasurement();
     }
 
-    public void testSwitchToFiles(){
-        ke=java.awt.event.KeyEvent.VK_2;
-        operator="Files";
+    public void testSwitchToFiles() {
+        ke = java.awt.event.KeyEvent.VK_2;
+        operator = "Files";
         doMeasurement();
     }
 
-    public void testSwitchToFavorites(){
-        ke=java.awt.event.KeyEvent.VK_3;
-        operator="Favorites";
+    public void testSwitchToFavorites() {
+        ke = java.awt.event.KeyEvent.VK_3;
+        operator = "Favorites";
         doMeasurement();
     }
-    
+
     @Override
     protected void initialize() {
     }
-        
+
+    @Override
     public void prepare() {
-        if (!operator.equals("Projects")) new TopComponentOperator("Projects").makeComponentVisible();
-           else new TopComponentOperator("Services").makeComponentVisible();
+        if (!operator.equals("Projects")) {
+            new TopComponentOperator("Projects").makeComponentVisible();
+        } else {
+            new TopComponentOperator("Services").makeComponentVisible();
+        }
     }
-    
+
+    @Override
     public ComponentOperator open() {
         new Action(null, null, KeyStroke.getKeyStroke(ke, java.awt.event.KeyEvent.CTRL_MASK)).performShortcut();
         return null;
     }
-    
+
     @Override
     protected void shutdown() {
         repaintManager().resetRegionFilters();
     }
-
 }
