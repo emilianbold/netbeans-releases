@@ -782,11 +782,7 @@ _L214      : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS:
                                                      aliasToName      : OBJECT aliasToName [ANONYMOUS: false, DECLARED: true - aliasToName, MODIFIERS: PUBLIC, OBJECT_LITERAL]
                                                      alternateToName  : OBJECT alternateToName [ANONYMOUS: false, DECLARED: true - alternateToName, MODIFIERS: PUBLIC, OBJECT_LITERAL]
                                                      nameToAliases    : OBJECT nameToAliases [ANONYMOUS: false, DECLARED: true - nameToAliases, MODIFIERS: PUBLIC, OBJECT_LITERAL]
-                                                                      # PROPERTIES
-                                                                      length : OBJECT length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
                                                      nameToAlternates : OBJECT nameToAlternates [ANONYMOUS: false, DECLARED: true - nameToAlternates, MODIFIERS: PUBLIC, OBJECT_LITERAL]
-                                                                      # PROPERTIES
-                                                                      length : OBJECT length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
                      nameCreatedListeners            : OBJECT nameCreatedListeners [ANONYMOUS: false, DECLARED: true - nameCreatedListeners, MODIFIERS: PUBLIC, OBJECT_LITERAL]
                      namespaceParseCache             : OBJECT namespaceParseCache [ANONYMOUS: false, DECLARED: true - namespaceParseCache, MODIFIERS: PUBLIC, OBJECT_LITERAL]
                      namespaceRewrites               : OBJECT namespaceRewrites [ANONYMOUS: false, DECLARED: true - namespaceRewrites, MODIFIERS: PUBLIC, PROPERTY]
@@ -802,11 +798,6 @@ _L214      : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS:
                                                                   OBJECT param2 [ANONYMOUS: false, DECLARED: true - param2, MODIFIERS: PUBLIC, PARAMETER]
                                                                   # PROPERTIES
                                                                   arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                                                                  push      : FUNCTION push [ANONYMOUS: false, DECLARED: false - push, MODIFIERS: PUBLIC, METHOD]
-                                                                            # PARAMETERS
-                                                                            OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
-                                                                            # PROPERTIES
-                                                                            arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                      OBJECT scope [ANONYMOUS: false, DECLARED: true - scope, MODIFIERS: PUBLIC, PARAMETER]
                                                      OBJECT className [ANONYMOUS: false, DECLARED: true - className, MODIFIERS: PUBLIC, PARAMETER]
                                                      # PROPERTIES

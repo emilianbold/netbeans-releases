@@ -60,4 +60,8 @@ public class ExtModelTest extends ModelTestBase {
     public void testExtApplyMethod() throws Exception {
         checkModel("testfiles/completion/applyMethod/ClassManager.js");
     }
+    
+    public void testIssue231923() throws Exception {
+        checkModel("testfiles/structure/issue231923.js");
+    }
 }
