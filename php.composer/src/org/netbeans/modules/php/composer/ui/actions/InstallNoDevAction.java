@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,59 +37,29 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.jsf.hints;
+package org.netbeans.modules.php.composer.ui.actions;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.HintsController;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.composer.commands.Composer;
+import org.openide.util.NbBundle;
 
-/**
- *
- * @author Martin Fousek <marfous@netbeans.org>
- */
-public class JsfHintsFinder implements CancellableTask<CompilationInfo> {
+public class InstallNoDevAction extends BaseComposerAction {
 
-    private static final Logger LOG = Logger.getLogger(JsfHintsFinder.class.getName());
+    private static final long serialVersionUID = 8974514465465464L;
 
-    private final FileObject fileObject;
-    private final AtomicBoolean cancel = new AtomicBoolean(false);
-    private final List<ErrorDescription> hints = new ArrayList<ErrorDescription>();
-    private final static AtomicReference<CancellableTask> instance = new AtomicReference<CancellableTask>();
 
-    public JsfHintsFinder(FileObject fileObject) {
-        this.fileObject = fileObject;
+    @NbBundle.Messages("InstallNoDevAction.name=Install (no-dev)")
+    @Override
+    protected String getName() {
+        return Bundle.InstallNoDevAction_name();
     }
 
     @Override
-    public void cancel() {
-        LOG.log(Level.FINE, "JsfHints computation was canceled.");
-        cancel.set(true);
-    }
-
-    @Override
-    public void run(CompilationInfo parameter) throws Exception {
-        if (!instance.compareAndSet(null, this)) {
-            return;
-        }
-        if (!"text/x-java".equals(fileObject.getMIMEType("text/x-java"))) { //NOI18N
-            return;
-        }
-
-        hints.clear();
-        JsfHintsContext ctx = new JsfHintsContext(fileObject, parameter);
-        hints.addAll(JsfHintsRegistry.check(ctx));
-        HintsController.setErrors(fileObject, JsfHintsFinder.class.getName(), hints);
-        instance.set(null);
+    protected void runCommand(PhpModule phpModule) throws InvalidPhpExecutableException {
+        Composer.getDefault().installNoDev(phpModule);
     }
 
 }

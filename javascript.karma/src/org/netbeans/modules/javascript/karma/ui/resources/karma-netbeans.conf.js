@@ -39,30 +39,73 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.jsf.hints;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import org.netbeans.modules.web.jsf.hints.rules.FlowScopedBeanWithoutCdi;
-import org.netbeans.modules.web.jsf.hints.rules.JavaxFacesBeanIsGonnaBeDeprecated;
-import org.netbeans.spi.editor.hints.ErrorDescription;
+var projectConf = require('${projectConfig}');
 
-/**
- *
- * @author Martin Fousek <marfous@netbeans.org>
- */
-class JsfHintsRegistry {
+module.exports = function(config) {
+    projectConf(config);
 
-    private static final Collection<? extends JsfHintsRule> RULES = Arrays.asList(
-            new FlowScopedBeanWithoutCdi(),
-            new JavaxFacesBeanIsGonnaBeDeprecated());
+    var fileSeparator = '${fileSeparator}';
 
-    public static Collection<ErrorDescription> check(JsfHintsContext ctx) {
-        Collection<ErrorDescription> hints = new ArrayList<ErrorDescription>();
-        for (JsfHintsRule rule : RULES) {
-            hints.addAll(rule.check(ctx));
+    // base path
+    if (config.basePath) {
+        if (config.basePath.substr(0, 1) === '/' // unix
+                || config.basePath.substr(1, 2) === ':\\') { // windows
+            // absolute path, do nothing
+        } else {
+            config.basePath = '${projectWebRoot}' + fileSeparator + config.basePath;
         }
-        return hints;
+    } else {
+        config.basePath = '${projectWebRoot}' + fileSeparator;
     }
-}
+
+    config.reporters = config.reporters || [];
+    config.reporters = config.reporters.concat([
+        //'progress',
+        'netbeans'
+    ]);
+    <#if coverage>
+    config.reporters = config.reporters.concat([
+        'coverage'
+    ]);
+    </#if>
+    config.reporters = config.reporters.filter(function (e, i, arr) {
+        return arr.lastIndexOf(e) === i;
+    });
+    config.plugins = config.plugins || [];
+    config.plugins = config.plugins.concat([
+        'karma-chrome-launcher',
+        '${karmaNetbeansReporter}'
+    ]);
+    <#if coverage>
+    config.plugins = config.plugins.concat([
+        'karma-coverage'
+    ]);
+    </#if>
+    config.plugins = config.plugins.filter(function (e, i, arr) {
+        return arr.lastIndexOf(e) === i;
+    });
+    config.browsers = ['Chrome'];
+    config.colors = true;
+    config.autoWatch = false;
+    config.singleRun = false;
+
+    <#if coverage>
+    config.preprocessors = config.preprocessors || {};
+    var projectWebRootLength = '${projectWebRoot}'.length + fileSeparator.length;
+    for (var i = 0; i < config.files.length; ++i) {
+        var file = config.files[i];
+        if (file.substr(0, projectWebRootLength) === '${projectWebRoot}' + fileSeparator) {
+            config.preprocessors[file] = config.preprocessors[file] || [];
+            config.preprocessors[file].push(['coverage']);
+        }
+    }
+    // XXX
+    config.coverageReporter = {
+        type: 'cobertura',
+        dir: 'coverage' + fileSeparator,
+        file: 'cobertura.xml'
+    }
+    </#if>
+
+};

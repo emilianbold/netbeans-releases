@@ -47,6 +47,8 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import javax.swing.Action;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -54,7 +56,10 @@ import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.karma.exec.KarmaServers;
 import org.netbeans.modules.javascript.karma.exec.KarmaServersListener;
+import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
+import org.netbeans.modules.javascript.karma.preferences.KarmaPreferencesValidator;
 import org.netbeans.modules.javascript.karma.ui.customizer.KarmaCustomizer;
+import org.netbeans.modules.javascript.karma.util.ValidationResult;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
@@ -65,6 +70,7 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
@@ -81,10 +87,11 @@ public final class KarmaNodeFactory implements NodeFactory {
 
     //~ Inner classes
 
-    private static class KarmaChildrenList implements NodeList<Node> {
+    private static class KarmaChildrenList implements NodeList<Node>, PreferenceChangeListener {
 
         private final Project project;
         private final ChangeSupport changeSupport = new ChangeSupport(this);
+        private final PreferenceChangeListener preferenceChangeListener = WeakListeners.create(PreferenceChangeListener.class, this, KarmaPreferences.class);
 
 
         KarmaChildrenList(Project project) {
@@ -114,12 +121,26 @@ public final class KarmaNodeFactory implements NodeFactory {
 
         @Override
         public void addNotify() {
-            // noop
+            KarmaPreferences.addPreferenceChangeListener(project, preferenceChangeListener);
         }
 
         @Override
         public void removeNotify() {
-            KarmaServers.getInstance().stopServer(project, true);
+            KarmaPreferences.removePreferenceChangeListener(project, preferenceChangeListener);
+        }
+
+        @Override
+        public void preferenceChange(PreferenceChangeEvent evt) {
+            // possibly restart server
+            if (KarmaServers.getInstance().isServerRunning(project)) {
+                KarmaServers.getInstance().stopServer(project, false);
+                ValidationResult result = new KarmaPreferencesValidator()
+                        .validate(project)
+                        .getResult();
+                if (result.isFaultless()) {
+                    KarmaServers.getInstance().startServer(project);
+                }
+            }
         }
 
     }
@@ -337,6 +358,11 @@ public final class KarmaNodeFactory implements NodeFactory {
         @Override
         public HelpCtx getHelpCtx() {
             return null;
+        }
+
+        @Override
+        protected boolean asynchronous() {
+            return false;
         }
 
         @CheckForNull
