@@ -381,7 +381,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
             foundInCache = true;
         }
         // check visited file cache
-        boolean isFileCacheApplicable = (params.mode == ProjectBase.GATHERING_TOKENS) && (APTHandlersSupport.getIncludeStackDepth(newState) != 0);
+        boolean isFileCacheApplicable = (params.mode == ProjectBase.GATHERING_TOKENS) && (APTHandlersSupport.getIncludeStackDepth(newState) == 1);
         if (!foundInCache && isFileCacheApplicable) {
             
             cachedOut = getCsmCorePackageAccessor().getCachedVisitedState(params.includedFile, newState);
