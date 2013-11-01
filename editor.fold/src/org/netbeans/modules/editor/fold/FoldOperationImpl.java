@@ -49,11 +49,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -506,7 +508,10 @@ public final class FoldOperationImpl {
 
     private class Refresher implements Comparator<FoldInfo> {
         private Collection<FoldInfo>    foldInfos;
+        // toRemove will be interated in the reverse order, cannot be represented together with removeFolds as LinkedHashSet.
+        // removedFolds will be checked often, so HashSet saves some lookup time compared to List
         private List<Fold>              toRemove = new ArrayList<Fold>();
+        private Set<Fold>               removedFolds = new HashSet<Fold>();
         private Collection<FoldInfo>    toAdd = new ArrayList<FoldInfo>();
         private Map<FoldInfo, Fold>     currentFolds = new HashMap<FoldInfo, Fold>();
 
@@ -619,6 +624,16 @@ public final class FoldOperationImpl {
             return containsOneAnother(i, f);
         }
         
+        private Fold markRemoveFold(Fold f) {
+            toRemove.add(f);
+            removedFolds.add(f);
+            f = foldIt.hasNext() ? foldIt.next() : null;
+            if (LOG.isLoggable(Level.FINEST)) {
+                LOG.finest("Advanced fold, next = " + f);
+            }
+            return f;
+        }
+        
         public void run() throws BadLocationException {
             // first order the supplied folds:
             List ll = new ArrayList<FoldInfo>(foldInfos);
@@ -640,7 +655,7 @@ public final class FoldOperationImpl {
                     }
                     int action = compare(i, f);
                     boolean nextSameRange = nextSameRange(i, f);
-                    if (action < 0 && !nextSameRange) {
+                    if (f == null || (action < 0 && !nextSameRange)) {
                         // create a new fold from the FoldInfo
                         toAdd.add(i);
                         i = ni();
@@ -648,15 +663,33 @@ public final class FoldOperationImpl {
                             LOG.finest("Advanced info, next = " + i);
                         }
                         continue;
-                    } else if (action > 0 && !nextSameRange) {
-                        toRemove.add(f);
-                        f = foldIt.hasNext() ? foldIt.next() : null;
-                        if (LOG.isLoggable(Level.FINEST)) {
-                            LOG.finest("Advanced fold, next = " + f);
-                        }
+                    } else if (i == null || (action > 0 && !nextSameRange)) {
+                        f = markRemoveFold(f);
                         continue;
                     }
+                    
+                    // the new fold's bounds must conform to its parent, possibly overriden in the currentFolds (parent
+                    // should have been processed earlier)
+                    Fold p = f.getParent();
+                    if (p != null) {
+                        boolean removeAnyway = false;
 
+// existing folds should be nested correctly, if parent ceases to exist, they will be first moved up the hierarchy bottom-up,
+// and only then updated top-down.                       
+//                        if (toRemove.contains(p)) {
+//                            removeAnyway = true;
+//                        } else {
+                            int s = i.getStart();
+                            int e = i.getEnd();
+                            int ps = p.getStartOffset();
+                            int pe = p.getEndOffset();
+                            removeAnyway = s < ps || e > pe;
+//                        }
+                        if (removeAnyway) {
+                            f = markRemoveFold(f);
+                            continue;
+                        }
+                    }
                     currentFolds.put(i, f);
                     i = ni();
                     f = foldIt.hasNext() ? foldIt.next() : null;
@@ -665,9 +698,9 @@ public final class FoldOperationImpl {
                     }
                 }
                 // remove folds in reverse order. If a fold ceases to exist with all its children, the children are
-                // removed first instead of propagating up to the hierarchy.
+                // removed first (if they should be removed) instead of propagating up to the hierarchy.
                 // other folds currently in the hierarchy should have their positions updated by document, so even
-                for (int ri = 0; ri < toRemove.size(); ri++) { /*toRemove.size() - 1; ri >= 0; ri--) {*/
+                for (int ri = toRemove.size() - 1; ri >= 0; ri--) {
                     Fold fold = toRemove.get(ri);
                     if (LOG.isLoggable(Level.FINEST)) {
                         LOG.finest("Removing: " + f);
