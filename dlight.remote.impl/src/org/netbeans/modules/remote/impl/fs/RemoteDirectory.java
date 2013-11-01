@@ -80,6 +80,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -281,6 +282,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     
     @Override
     public RemoteFileObject getFileObject(String relativePath, Set<String> antiLoop) {
+        Parameters.notNull("path", relativePath);
         relativePath = PathUtilities.normalizeUnixPath(relativePath);
         if ("".equals(relativePath)) { // NOI18N
             return getOwnerFileObject();
@@ -290,7 +292,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             absPath = PathUtilities.normalizeUnixPath(absPath);
             return getFileSystem().findResource(absPath, antiLoop);
         }
-        if (relativePath != null && relativePath.length()  > 0 && relativePath.charAt(0) == '/') { //NOI18N
+        if (relativePath.length()  > 0 && relativePath.charAt(0) == '/') { //NOI18N
             relativePath = relativePath.substring(1);
         }
         if (relativePath.endsWith("/")) { // NOI18N
@@ -574,10 +576,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
     private boolean isAutoMount() {
         String path = getPath();
-        if (AUTO_MOUNTS.contains(path)) {
-            return true;
-        }
-        return false;
+        return AUTO_MOUNTS.contains(path);
     }
 
     private boolean canLs() {
@@ -886,7 +885,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             throw new ConnectException();
         }
 
-        DirectoryStorage storage = null;
+        DirectoryStorage storage;
 
         File storageFile = getStorageFile();
 
