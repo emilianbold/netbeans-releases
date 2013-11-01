@@ -1038,7 +1038,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
             HistoryEntry e = getEntry(value);
             if(e != null) {
                 String msg = e.getMessage();
-                return msg.toLowerCase().contains(byMsg.toLowerCase());
+                return msg != null && msg.toLowerCase().contains(byMsg.toLowerCase());
             }
             return true;
         }
