@@ -51,6 +51,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -513,7 +514,7 @@ public final class FoldOperationImpl {
         private List<Fold>              toRemove = new ArrayList<Fold>();
         private Set<Fold>               removedFolds = new HashSet<Fold>();
         private Collection<FoldInfo>    toAdd = new ArrayList<FoldInfo>();
-        private Map<FoldInfo, Fold>     currentFolds = new HashMap<FoldInfo, Fold>();
+        private Map<FoldInfo, Fold>     currentFolds = new LinkedHashMap<FoldInfo, Fold>();
 
         /**
          * Transaction which covers the update
