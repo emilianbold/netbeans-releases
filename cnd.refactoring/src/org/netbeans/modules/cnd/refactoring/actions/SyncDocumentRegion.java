@@ -63,10 +63,10 @@ import org.openide.ErrorManager;
  */
 public final class SyncDocumentRegion {
 
-    private Document doc;
-    private List<? extends MutablePositionRegion> regions;
-    private List<? extends MutablePositionRegion> sortedRegions;
-    private boolean regionsSortPerformed;
+    private final Document doc;
+    private final List<? extends MutablePositionRegion> regions;
+    private final List<? extends MutablePositionRegion> sortedRegions;
+    private final boolean regionsSortPerformed;
 
     /**
      * Construct synchronized document regions.
@@ -149,11 +149,24 @@ public final class SyncDocumentRegion {
                 int offset = region.getStartOffset();
                 int length = region.getEndOffset() - offset;
                 try {
-                    if (!CharSequenceUtilities.textEquals(firstRegionText, DocumentUtilities.getText(doc, offset, length))) {
-                        if (firstRegionText.length() > 0) {
-                            doc.insertString(offset, firstRegionText, null);
+                    final CharSequence old = DocumentUtilities.getText(doc, offset, length);
+                    if (!CharSequenceUtilities.textEquals(firstRegionText, old)) {
+                        int res = -1;
+                        for(int k = 0; k < Math.min(old.length(), firstRegionText.length()); k++) {
+                            if (old.charAt(k) == firstRegionText.charAt(k)) {
+                                res = k;
+                            } else {
+                                break;
+                            }
                         }
-                        doc.remove(offset + firstRegionText.length(), length);
+                        String insert = firstRegionText.substring(res+1);
+                        CharSequence remove = old.subSequence(res + 1, old.length());
+                        if (insert.length() > 0) {
+                            doc.insertString(offset + res + 1, insert, null);
+                        }
+                        if (remove.length() > 0) {
+                            doc.remove(offset + res + 1 + insert.length(), remove.length());
+                        }
                     }
                 } catch (BadLocationException e) {
                     ErrorManager.getDefault().notify(e);
