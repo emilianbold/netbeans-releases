@@ -127,7 +127,7 @@ public class MissingNbInstallationProblemProvider implements ProjectProblemsProv
         Project parent = MavenNbModuleImpl.findAppProject(project);
         if (parent == null) {
             File install = MavenNbModuleImpl.findIDEInstallation(project);
-            if (install == null) {
+            if (install == null || !install.exists()) {
                 return Collections.singleton(ProjectProblem.createWarning(Bundle.TIT_Missing_platform(), Bundle.DESC_Missing_platform(), new ProjectProblemResolver() {
 
                     @Override

@@ -52,7 +52,7 @@ import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.ui.search.PopupItem.IssueItem;
-import org.netbeans.modules.bugtracking.util.TextUtils;
+import org.netbeans.modules.bugtracking.commons.TextUtils;
 
 /**
  * ListCellRenderer for SearchResults

@@ -41,87 +41,86 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se.actions;
 
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.j2se.setup.J2SESetup;
-
+import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.actions.SaveAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2se.setup.J2SESetup;
 
 /**
  * Test of Save modified file.
  *
- * @author  mmirilovic@netbeans.org
+ * @author mmirilovic@netbeans.org
  */
 public class SaveModifiedFileTest extends PerformanceTestCase {
 
-    /** Editor with opened file */
+    /**
+     * Editor with opened file
+     */
     public static EditorOperator editorOperator;
-    
+
     /**
      * Creates a new instance of SaveModifiedFile
+     *
      * @param testName the name of the test
      */
     public SaveModifiedFileTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_PREPARE=2000;
     }
-    
+
     /**
      * Creates a new instance of SaveModifiedFile
+     *
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
      */
     public SaveModifiedFileTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_PREPARE=2000;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(SaveModifiedFileTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(J2SESetup.class, "testCloseMemoryToolbar", "testOpenDataProject")
+                .addTest(SaveModifiedFileTest.class)
+                .suite();
     }
 
-    public void testSaveModifiedFile(){
+    public void testSaveModifiedFile() {
         doMeasurement();
-    }    
-    
+    }
+
     @Override
-    public void initialize(){
+    public void initialize() {
         EditorOperator.closeDiscardAll();
-	SourcePackagesNode spn=new SourcePackagesNode("PerformanceTestData");
-	Node n=new Node(spn, "org.netbeans.test.performance|Main.java");
+        SourcePackagesNode spn = new SourcePackagesNode("PerformanceTestData");
+        Node n = new Node(spn, "org.netbeans.test.performance|Main.java");
         new OpenAction().performAPI(n);
         editorOperator = new EditorOperator("Main.java");
     }
 
     @Override
-    public void shutdown(){
+    public void shutdown() {
         EditorOperator.closeDiscardAll();
     }
-    
-    public void prepare(){
-        editorOperator.setCaretPosition(1, 3);
-        editorOperator.txtEditorPane().typeText("XXX");
+
+    @Override
+    public void prepare() {
+        editorOperator.replace("DO NOT ALTER", "DO NOT ALTER");
+        editorOperator.waitModified(true);
     }
-    
-    public ComponentOperator open(){
+
+    @Override
+    public ComponentOperator open() {
         new SaveAction().performShortcut(editorOperator);
         editorOperator.waitModified(false);
         return null;
     }
-    
 }

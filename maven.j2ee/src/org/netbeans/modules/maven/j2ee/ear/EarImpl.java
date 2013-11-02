@@ -56,6 +56,7 @@ import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
+import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
 import org.codehaus.plexus.util.StringInputStream;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
@@ -739,7 +740,7 @@ public class EarImpl implements EarImplementation, EarImplementation2,
     private MavenModule[] checkConfiguration(MavenProject prj, Object conf) {
         List<MavenModule> toRet = new ArrayList<MavenModule>();
         if (conf != null && conf instanceof Xpp3Dom) {
-            NBPluginParameterExpressionEvaluator eval = new NBPluginParameterExpressionEvaluator(prj, EmbedderFactory.getProjectEmbedder().getSettings(), Collections.<String,String>emptyMap());
+            ExpressionEvaluator eval = PluginPropertyUtils.createEvaluator(project);
             Xpp3Dom dom = (Xpp3Dom) conf;
             Xpp3Dom modules = dom.getChild("modules"); //NOI18N
             if (modules != null) {

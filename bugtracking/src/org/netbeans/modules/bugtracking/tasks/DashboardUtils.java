@@ -44,6 +44,7 @@ package org.netbeans.modules.bugtracking.tasks;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Image;
+import java.awt.event.ActionEvent;
 import java.io.CharConversionException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -52,12 +53,18 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.bugtracking.IssueImpl;
@@ -72,15 +79,17 @@ import org.netbeans.modules.bugtracking.tasks.dashboard.DashboardViewer;
 import org.netbeans.modules.bugtracking.tasks.dashboard.RepositoryNode;
 import org.netbeans.modules.bugtracking.tasks.dashboard.TaskNode;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.team.ide.spi.IDEServices;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.FindAction;
+import org.openide.util.ChangeSupport;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
+import org.openide.util.actions.Presenter;
 import org.openide.xml.XMLUtil;
 
 /**
@@ -96,7 +105,7 @@ public class DashboardUtils {
     private static final String mODIFIED_COLOR = UIUtils.getColorString(UIUtils.getTaskModifiedColor());
 
     private static final Image SCHEDULE_ICON = ImageUtilities.loadImage("org/netbeans/modules/bugtracking/tasks/resources/schedule.png", true); //NOI18
-    private static final Image SCHEDULE_WARNING_ICON = ImageUtilities.loadImage("org/netbeans/modules/bugtracking/tasks/resources/schedule_warning.png", true); //NOI18
+    private static final Image SCHEDULE_WARNING_ICON = ImageUtilities.loadImage("org/netbeans/modules/bugtracking/tasks/resources/schedule_alarm.png", true); //NOI18
 
     private static final int SCHEDULE_NOT_IN_SCHEDULE = 0;
     private static final int SCHEDULE_IN_SCHEDULE = 1;
@@ -381,8 +390,19 @@ public class DashboardUtils {
 
     private static boolean isAfterDue(IssueImpl issue) {
         Calendar now = Calendar.getInstance();
-        Date dueDate = issue.getDueDate();
-        return dueDate == null ? false : now.getTime().getTime() >= dueDate.getTime();
+        Calendar dueDate = Calendar.getInstance();
+        IssueScheduleInfo schedule = issue.getSchedule();
+
+        if (issue.getDueDate() != null) {
+            dueDate.setTime(issue.getDueDate());
+        } else if (schedule != null) {
+            dueDate.setTime(schedule.getDate());
+            dueDate.add(Calendar.DATE, schedule.getInterval());
+        } else {
+            return false;
+        }
+        return now.get(Calendar.YEAR) >= dueDate.get(Calendar.YEAR)
+                && now.get(Calendar.DAY_OF_YEAR) >= dueDate.get(Calendar.DAY_OF_YEAR);
     }
 
     private static boolean isInSchedule(IssueImpl issue) {
@@ -480,9 +500,203 @@ public class DashboardUtils {
                 NotifyDescriptor.QUESTION_MESSAGE,
                 null,
                 NotifyDescriptor.YES_OPTION);
-        if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.YES_OPTION) {
-            return true;
+        return DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.YES_OPTION;
+    }
+
+    public static SchedulingMenu createScheduleMenu(IssueScheduleInfo previousSchedule) {
+        return new SchedulingMenu(previousSchedule);
+    }
+
+    public static boolean isMatchingInterval(IssueScheduleInfo interval1, IssueScheduleInfo interval2) {
+        if (interval2 == null || interval1 == null) {
+            return false;
         }
-        return false;
+        Calendar interval1Start = Calendar.getInstance();
+        interval1Start.setTime(interval1.getDate());
+        Calendar interval1End = Calendar.getInstance();
+        interval1End.setTime(interval1.getDate());
+        interval1End.add(Calendar.DATE, interval1.getInterval());
+
+        Calendar interval2Start = Calendar.getInstance();
+        interval2Start.setTime(interval2.getDate());
+        Calendar interva2End = Calendar.getInstance();
+        interva2End.setTime(interval2.getDate());
+        interva2End.add(Calendar.DATE, interval2.getInterval());
+
+        return interval2Start.get(Calendar.YEAR) == interval1Start.get(Calendar.YEAR)
+                && interval2Start.get(Calendar.DAY_OF_YEAR) == interval1Start.get(Calendar.DAY_OF_YEAR)
+                && interva2End.get(Calendar.YEAR) == interval1End.get(Calendar.YEAR)
+                && interva2End.get(Calendar.DAY_OF_YEAR) == interval1End.get(Calendar.DAY_OF_YEAR);
+    }
+
+    public static final class SchedulingMenu {
+
+        private final JMenu menu;
+        private final List<JMenuItem> menuItems;
+        private final ChangeSupport support;
+        private IssueScheduleInfo scheduleInfo;
+
+        public SchedulingMenu(final IssueScheduleInfo previousSchedule) {
+            this.support = new ChangeSupport(this);
+            this.menu = new JMenu(NbBundle.getMessage(DashboardUtils.class, "LBL_ScheduleFor"));
+            this.menuItems = new ArrayList<JMenuItem>();
+
+            for (int i = 0; i < 7; i++) {
+                final Calendar calendar = Calendar.getInstance();
+                calendar.add(Calendar.DATE, i);
+                String itemName = calendar.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.LONG, Locale.getDefault());
+                if (i == 0) {
+                    itemName += " - " + NbBundle.getMessage(DashboardUtils.class, "CTL_Today");
+                }
+                JMenuItem item = new JCheckBoxMenuItem(new ScheduleItemAction(itemName, new IssueScheduleInfo(calendar.getTime())));
+                menu.add(item);
+                menuItems.add(item);
+            }
+            menu.addSeparator();
+
+            Calendar calendar = Calendar.getInstance();
+            calendar.set(Calendar.DAY_OF_WEEK, calendar.getFirstDayOfWeek());
+            JMenuItem thisWeek = new JCheckBoxMenuItem(new ScheduleItemAction(
+                    NbBundle.getMessage(DashboardUtils.class, "CTL_ThisWeek"),
+                    new IssueScheduleInfo(calendar.getTime(), 7)));
+
+            menu.add(thisWeek);
+            menuItems.add(thisWeek);
+
+            calendar = Calendar.getInstance();
+            calendar.set(Calendar.DAY_OF_WEEK, calendar.getFirstDayOfWeek());
+            calendar.add(Calendar.DATE, 7);
+            JMenuItem nextWeek = new JCheckBoxMenuItem(new ScheduleItemAction(
+                    NbBundle.getMessage(DashboardUtils.class, "CTL_NextWeek"),
+                    new IssueScheduleInfo(calendar.getTime(), 7)));
+
+            menu.add(nextWeek);
+            menuItems.add(nextWeek);
+            menu.addSeparator();
+
+            JMenuItem chooseDate = new JCheckBoxMenuItem(new ScheduleItemAction(
+                    NbBundle.getMessage(DashboardUtils.class, "CTL_ChooseDate"),
+                    null) {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            Date date = showChooseDateDialog(previousSchedule == null ? new Date() : previousSchedule.getDate());
+                            if (date != null) {
+                                scheduleInfo = new IssueScheduleInfo(date);
+                                support.fireChange();
+                            }
+                        }
+                    });
+            menu.add(chooseDate);
+            menuItems.add(chooseDate);
+
+            JMenuItem notScheduled = new JCheckBoxMenuItem(new ScheduleItemAction(
+                    NbBundle.getMessage(DashboardUtils.class, "CTL_NotScheduled"),
+                    null));
+            menu.add(notScheduled);
+            menuItems.add(notScheduled);
+
+            // select already schedule item
+            if (previousSchedule == null) {
+                notScheduled.setSelected(true);
+                return;
+            }
+            boolean findPrevious = true;
+            for (JMenuItem item : menuItems) {
+                if (item.getAction() instanceof ScheduleItemAction) {
+                    IssueScheduleInfo assignedSchedule = ((ScheduleItemAction) item.getAction()).getAssignedSchedule();
+                    if (findPrevious && isMatchingInterval(assignedSchedule, previousSchedule)) {
+                        item.setSelected(true);
+                        return;
+                    }
+                }
+            }
+            chooseDate.setSelected(true);
+        }
+
+        public Action getMenuAction() {
+            return new ScheduleMenuAction(menu);
+        }
+
+        public List<JMenuItem> getMenuItems() {
+            return menuItems;
+        }
+
+        public IssueScheduleInfo getScheduleInfo() {
+            return scheduleInfo;
+        }
+
+        public void addChangeListener(ChangeListener listener) {
+            support.addChangeListener(listener);
+        }
+
+        public void removeChangeListener(ChangeListener listener) {
+            support.removeChangeListener(listener);
+        }
+
+        private class ScheduleItemAction extends AbstractAction {
+
+            private final IssueScheduleInfo assignedSchedule;
+
+            public ScheduleItemAction(String name, IssueScheduleInfo assignedSchedule) {
+                super(name);
+                this.assignedSchedule = assignedSchedule;
+            }
+
+            public IssueScheduleInfo getAssignedSchedule() {
+                return assignedSchedule;
+            }
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                scheduleInfo = assignedSchedule;
+                support.fireChange();
+            }
+        }
+    }
+
+    private static class ScheduleMenuAction extends AbstractAction implements Presenter.Popup {
+
+        private final JMenu menu;
+
+        public ScheduleMenuAction(JMenu menu) {
+            super();
+            this.menu = menu;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            menu.getAction().actionPerformed(e);
+        }
+
+        @Override
+        public JMenuItem getPopupPresenter() {
+            return menu;
+        }
+    }
+
+    private static Date showChooseDateDialog(Date scheduled) {
+        IDEServices.DatePickerDialog dialog = createDatePickerDialog(scheduled);
+        NotifyDescriptor nd = new NotifyDescriptor(
+                dialog.getComponent(),
+                NbBundle.getMessage(DashboardUtils.class, "LBL_ChooseDate"),
+                NotifyDescriptor.OK_CANCEL_OPTION,
+                NotifyDescriptor.PLAIN_MESSAGE,
+                null,
+                NotifyDescriptor.OK_OPTION);
+        if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {
+            return dialog.getDate();
+        }
+        return null;
+    }
+
+    private static IDEServices.DatePickerDialog createDatePickerDialog(Date scheduled) {
+        IDEServices.DatePickerDialog dialog = null;
+        IDEServices services = Lookup.getDefault().lookup(IDEServices.class);
+        if (services != null) {
+            dialog = services.createDatePickerDialog(scheduled);
+        }
+        if (dialog == null) {
+        }
+        return dialog;
     }
 }

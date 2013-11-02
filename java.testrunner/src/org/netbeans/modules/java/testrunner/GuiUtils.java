@@ -81,6 +81,8 @@ public final class GuiUtils {
     public static final String JUNIT_TEST_FRAMEWORK = "JUnit";             //NOI18N
     public static final String TESTNG_TEST_FRAMEWORK = "TestNG";             //NOI18N
     
+    public static final String CHK_INTEGRATION_TESTS = "IntegrationTests";                   //NOI18N
+    
     /** */
     public static final String CHK_PUBLIC = "Public";                   //NOI18N
     /** */

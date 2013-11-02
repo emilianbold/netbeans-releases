@@ -63,7 +63,7 @@ import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.plaf.basic.BasicTreeUI;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
-import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.jira.util.PriorityRenderer;
 import org.netbeans.modules.jira.util.ProjectRenderer;
 import org.netbeans.modules.jira.util.ResolutionRenderer;
@@ -1175,7 +1175,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     final javax.swing.JLabel byTextLabel = new javax.swing.JLabel();
     private javax.swing.JPanel byTextPanel;
     final javax.swing.JButton cancelChangesButton = new javax.swing.JButton();
-    public final org.netbeans.modules.bugtracking.util.LinkButton cloneQueryButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+    public final org.netbeans.modules.bugtracking.commons.LinkButton cloneQueryButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
     final javax.swing.JCheckBox commentsCheckBox = new javax.swing.JCheckBox();
     final javax.swing.JLabel componentsLabel = new javax.swing.JLabel();
     final javax.swing.JList componentsList = new javax.swing.JList();
@@ -1226,7 +1226,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     private javax.swing.JLabel lastRefreshLabel;
     final javax.swing.JLabel lblIssueKeyPrefix = new javax.swing.JLabel();
     final javax.swing.JLabel lblIssueKeyWarning = new javax.swing.JLabel();
-    public final org.netbeans.modules.bugtracking.util.LinkButton modifyButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+    public final org.netbeans.modules.bugtracking.commons.LinkButton modifyButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
     final javax.swing.JLabel nameLabel = new javax.swing.JLabel();
     private javax.swing.JLabel noContentLabel;
     private javax.swing.JPanel noContentPanel;
@@ -1241,17 +1241,17 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     final javax.swing.JTextField queryTextField = new javax.swing.JTextField();
     final javax.swing.JTextField ratioMaxTextField = new javax.swing.JTextField();
     final javax.swing.JTextField ratioMinTextField = new javax.swing.JTextField();
-    final org.netbeans.modules.bugtracking.util.LinkButton refreshButton = new org.netbeans.modules.bugtracking.util.LinkButton();
-    final org.netbeans.modules.bugtracking.util.LinkButton reloadAttributesButton = new org.netbeans.modules.bugtracking.util.LinkButton();
-    public final org.netbeans.modules.bugtracking.util.LinkButton removeButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+    final org.netbeans.modules.bugtracking.commons.LinkButton refreshButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
+    final org.netbeans.modules.bugtracking.commons.LinkButton reloadAttributesButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
+    public final org.netbeans.modules.bugtracking.commons.LinkButton removeButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
     final javax.swing.JComboBox reporterComboBox = new javax.swing.JComboBox();
     final javax.swing.JTextField reporterTextField = new javax.swing.JTextField();
     final javax.swing.JList resolutionList = new javax.swing.JList();
-    final org.netbeans.modules.bugtracking.util.LinkButton saveButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+    final org.netbeans.modules.bugtracking.commons.LinkButton saveButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
     final javax.swing.JButton saveChangesButton = new javax.swing.JButton();
     final javax.swing.JButton searchButton = new javax.swing.JButton();
     final javax.swing.JPanel searchPanel = new javax.swing.JPanel();
-    final org.netbeans.modules.bugtracking.util.LinkButton seenButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+    final org.netbeans.modules.bugtracking.commons.LinkButton seenButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
     private javax.swing.JLabel separatorLabel1;
     private javax.swing.JLabel separatorLabel2;
     final javax.swing.JList statusList = new javax.swing.JList();
@@ -1265,7 +1265,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     final javax.swing.JTextField updatedFromTextField = new javax.swing.JTextField();
     final javax.swing.JTextField updatedToTextField = new javax.swing.JTextField();
     final javax.swing.JLabel warningLabel = new javax.swing.JLabel();
-    final org.netbeans.modules.bugtracking.util.LinkButton webButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+    final org.netbeans.modules.bugtracking.commons.LinkButton webButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
     // End of variables declaration//GEN-END:variables
 
     /**
