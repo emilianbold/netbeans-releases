@@ -44,15 +44,20 @@ package org.netbeans.modules.git.ui.fetch;
 
 import java.awt.EventQueue;
 import java.io.File;
+import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitTransportUpdate;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
@@ -129,12 +134,13 @@ public class FetchAction extends SingleRepositoryAction {
         "# {0} - branch name", "MSG_FetchAction.branchDeleted=Branch {0} deleted."
     })
     public Task fetch (final File repository, final String target, final List<String> fetchRefSpecs, final String remoteNameToUpdate) {
+        final List<String> fetchRefSpecsList = new ArrayList<>(fetchRefSpecs);
         GitProgressSupport supp = new GitProgressSupport() {
             @Override
             protected void perform () {
                 try {
-                    Set<String> toDelete = new HashSet<String>();
-                    for(ListIterator<String> it = fetchRefSpecs.listIterator(); it.hasNext(); ) {
+                    Set<String> toDelete = new HashSet<>();
+                    for(ListIterator<String> it = fetchRefSpecsList.listIterator(); it.hasNext(); ) {
                         String refSpec = it.next();
                         if (refSpec.startsWith(GitUtils.REF_SPEC_DEL_PREFIX)) {
                             // branches are deleted separately
@@ -147,20 +153,23 @@ public class FetchAction extends SingleRepositoryAction {
                         client.deleteBranch(branch, true, getProgressMonitor());
                         getLogger().outputLine(Bundle.MSG_FetchAction_branchDeleted(branch));
                     }
-                    if (!fetchRefSpecs.isEmpty() && !isCanceled()) {
+                    if (!fetchRefSpecsList.isEmpty() && !isCanceled()) {
                         if (remoteNameToUpdate != null) {
                             GitRemoteConfig config = client.getRemote(remoteNameToUpdate, getProgressMonitor());
                             if (isCanceled()) {
                                 return;
                             }
-                            config = GitUtils.prepareConfig(config, remoteNameToUpdate, target, fetchRefSpecs);
+                            config = GitUtils.prepareConfig(config, remoteNameToUpdate, target, fetchRefSpecsList);
                             client.setRemote(config, getProgressMonitor());
                             if (isCanceled()) {
                                 return;
                             }
                         }
-                        Map<String, GitTransportUpdate> updates = client.fetch(target, fetchRefSpecs, getProgressMonitor());
-                        FetchUtils.log(repository, updates, getLogger());
+                        Map<String, GitTransportUpdate> updates = fetchRepeatedly(client,
+                                getProgressMonitor(), target, fetchRefSpecs);
+                        if (!isCanceled()) {
+                            FetchUtils.log(repository, updates, getLogger());
+                        }
                     }
                 } catch (GitException ex) {
                     GitClientExceptionHandler.notifyException(ex, true);
@@ -168,5 +177,36 @@ public class FetchAction extends SingleRepositoryAction {
             }
         };
         return supp.start(Git.getInstance().getRequestProcessor(repository), repository, Bundle.LBL_FetchAction_progressName(repository.getName()));
+    }
+
+    static Map<String, GitTransportUpdate> fetchRepeatedly (GitClient client, ProgressMonitor monitor,
+            String target, List<String> fetchRefSpecs) throws GitException {
+        List<String> fetchRefSpecsList = new ArrayList<>(fetchRefSpecs);
+        Map<String, GitTransportUpdate> result = null;
+        while (result == null && !fetchRefSpecsList.isEmpty() && !monitor.isCanceled()) {
+            try {
+                result = client.fetch(target, fetchRefSpecsList, monitor);
+            } catch (GitException ex) {
+                boolean found = false;
+                if (fetchRefSpecsList.size() > 1) {
+                    for (ListIterator<String> it = fetchRefSpecsList.listIterator(); it.hasNext(); ) {
+                        String refSpec = it.next();
+                        String remoteHead = GitUtils.parseRemoteHeadFromFetch(refSpec);
+                        if (refSpec != null && ex.getMessage().toLowerCase().matches(
+                                MessageFormat.format(".*remote does not have {0} available for fetch.*", remoteHead))) { //NOI18N
+                            it.remove();
+                            found = true;
+                            Logger.getLogger(FetchAction.class.getName()).log(Level.INFO,
+                                    "Remote does not have head according to spec {0}, trying fetching without the spec.", refSpec); //NOI18N
+                            break;
+                        }
+                    }
+                }
+                if (!found) {
+                    throw ex;
+                }
+            }
+        }
+        return result;
     }
 }

@@ -206,7 +206,11 @@ public class PullAction extends SingleRepositoryAction {
                             getLogger().outputLine(Bundle.MSG_PullAction_branchDeleted(branch));
                         }
                         setProgress(Bundle.MSG_PullAction_fetching());
-                        Map<String, GitTransportUpdate> fetchResult = client.fetch(target, fetchRefSpecs, getProgressMonitor());
+                        Map<String, GitTransportUpdate> fetchResult = FetchAction.fetchRepeatedly(
+                                client, getProgressMonitor(), target, fetchRefSpecs);
+                        if (isCanceled()) {
+                            return null;
+                        }
                         FetchUtils.log(repository, fetchResult, getLogger());
                         if (isCanceled() || branchToMerge == null) {
                             return null;
