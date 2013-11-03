@@ -684,8 +684,8 @@ static void main_loop() {
         trace("raw request: %s", raw_req_buffer); // no LF since buffer ends it anyhow 
         log_print(raw_req_buffer);
         fs_request* request = decode_request(raw_req_buffer, (fs_request*) req_buffer);
-        trace("decoded request #%d sz=%d kind=%c len=%d path=%s\n", request->id, request->size, request->kind, request->len, request->path);
         if (request) {
+            trace("decoded request #%d sz=%d kind=%c len=%d path=%s\n", request->id, request->size, request->kind, request->len, request->path);
             if (request->kind == FS_REQ_QUIT) {
                 break;
             }
@@ -713,6 +713,8 @@ static void main_loop() {
             } else {
                 process_request(request);
             }
+       } else {
+            trace("incorrect request \n");
        }
     }
     state_set_proceed(false);
