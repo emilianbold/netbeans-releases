@@ -62,7 +62,7 @@
           <buildCommandWorkingDir>.</buildCommandWorkingDir>
           <buildCommand>${MAKE} -f Makefile</buildCommand>
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
-          <executablePath>dist/Linux-x86/fs_server</executablePath>
+          <executablePath>../../release/bin/Linux-x86/fs_server</executablePath>
           <cTool>
             <incDir>
               <pElem>.</pElem>
@@ -105,7 +105,7 @@
           <buildCommandWorkingDir>.</buildCommandWorkingDir>
           <buildCommand>${MAKE} -f Makefile</buildCommand>
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
-          <executablePath>dist/SunOS-x86/fs_server</executablePath>
+          <executablePath>../../release/bin/SunOS-x86/fs_server</executablePath>
           <cTool>
             <incDir>
               <pElem>.</pElem>
@@ -158,7 +158,7 @@
           <buildCommandWorkingDir>.</buildCommandWorkingDir>
           <buildCommand>${MAKE} -f Makefile</buildCommand>
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
-          <executablePath>dist/SunOS-x86/fs_server</executablePath>
+          <executablePath>../../release/bin/SunOS-x86/fs_server</executablePath>
           <cTool>
             <incDir>
               <pElem>.</pElem>
@@ -209,7 +209,7 @@
           <buildCommandWorkingDir>.</buildCommandWorkingDir>
           <buildCommand>${MAKE} -f Makefile</buildCommand>
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
-          <executablePath>dist/FreeBSD-x86/fs_server</executablePath>
+          <executablePath>../../release/bin/FreeBSD-x86/fs_server</executablePath>
           <cTool>
             <incDir>
               <pElem>.</pElem>
@@ -267,7 +267,7 @@
           <buildCommandWorkingDir>.</buildCommandWorkingDir>
           <buildCommand>${MAKE} -f Makefile</buildCommand>
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
-          <executablePath>dist/Darwin-x86/fs_server</executablePath>
+          <executablePath>../../release/bin/MacOSX-x86/fs_server</executablePath>
           <cTool>
             <incDir>
               <pElem>.</pElem>
@@ -326,7 +326,7 @@
           <buildCommandWorkingDir>test</buildCommandWorkingDir>
           <buildCommand>${MAKE} -f Makefile</buildCommand>
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
-          <executablePath>dist/Linux-x86/fs_server_test</executablePath>
+          <executablePath>../../release/bin/Linux-x86_64/fs_server_test</executablePath>
           <cTool>
             <preprocessorList>
               <Elem>LINUX</Elem>
@@ -379,7 +379,7 @@
           <buildCommandWorkingDir>.</buildCommandWorkingDir>
           <buildCommand>${MAKE} -f Makefile</buildCommand>
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
-          <executablePath>dist/SunOS-x86/fs_server</executablePath>
+          <executablePath>../../release/bin/SunOS-sparc/fs_server</executablePath>
           <cTool>
             <incDir>
               <pElem>.</pElem>
@@ -430,7 +430,7 @@
           <buildCommandWorkingDir>.</buildCommandWorkingDir>
           <buildCommand>${MAKE} -f Makefile 64BITS=1 </buildCommand>
           <cleanCommand>${MAKE} -f Makefile clean 64BITS=1</cleanCommand>
-          <executablePath>dist/Linux-x86/fs_server</executablePath>
+          <executablePath>../../release/bin/Linux-x86_64/fs_server</executablePath>
           <cTool>
             <incDir>
               <pElem>.</pElem>

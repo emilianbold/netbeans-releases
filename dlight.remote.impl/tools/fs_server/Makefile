@@ -74,7 +74,8 @@ LDFLAGS=$(LF_$(CONF)) -lpthread
 
 all: $(EXEC)
 	@$(LINE) =
-	@echo $(EXEC); echo
+	@(cd `dirname $(EXEC)`; echo "`pwd`/`basename $(EXEC)`"); echo
+	@#echo $(EXEC); echo
 	@ls -la $(EXEC) | sed "s#$(EXEC)##"
 	@FILE=`(ls /bin/file || ls /usr/bin/file) 2>/dev/null`; \
 	   if [ -n "$${FILE}" ]; then $${FILE} ${EXEC} | sed "s#$(EXEC):.##"; fi
