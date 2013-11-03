@@ -1409,6 +1409,9 @@ made subject to such option by the copyright holder.
         </question>
 -->
  <answer id="arch-usecases">
+     <usecase id="bytecode.patching" name="Bytecode patching">
+         XXX: 
+     </usecase>
      <usecase id="invalidate.cache" name="Invalidating Caches">
         <a name="usecase-invalidate.cache"></a>
         <p>
