@@ -1078,6 +1078,10 @@ public final class ModuleManager extends Modules {
                         throw ie;
                     }
                     m.setEnabled(true);
+                    final String agentClass = m.data().getAgentClass();
+                    if (agentClass != null) {
+                        NbInstrumentation.registerAgent(m.getClassLoader(), agentClass);
+                    }
                     ev.log(Events.PERF_END, "bringing up classloader on " + m.getCodeNameBase() ); // NOI18N
                     // Check package dependencies.
 //                    ev.log(Events.PERF_START, "package dependency check on " + m.getCodeName() ); // NOI18N
