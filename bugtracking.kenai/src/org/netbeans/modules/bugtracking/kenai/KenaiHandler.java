@@ -108,17 +108,7 @@ class KenaiHandler {
                         }
                     } else {
                         // logged in
-                        String user = getKenaiUser();
-                        if(user != null && !user.equals(lastLoggedUser)) {
-                            for(Map<String, QueryHandle> m : queryHandles.values()) {
-                                for(QueryHandle qh : m.values()) {
-                                    if(qh instanceof LoginAwareQueryHandle) {
-                                        ((LoginAwareQueryHandle)qh).needsRefresh();
-                                    }
-                                }
-                            }
-                        }
-                        lastLoggedUser = user;
+                        lastLoggedUser = getKenaiUser();
                     }
                 }
             }
@@ -182,11 +172,7 @@ class KenaiHandler {
 
     private QueryHandleImpl createQueryHandle(Query q, boolean needsRefresh) {
         Repository repo = q.getRepository();
-        boolean needsLogin = TeamUtil.needsLogin(q);
         boolean predefined = TeamUtil.getAllIssuesQuery(repo) == q || TeamUtil.getMyIssuesQuery(repo) == q;
-        if(needsLogin) {
-            return new LoginAwareQueryHandle(q, needsRefresh, predefined);
-        }
         return new QueryHandleImpl(q, needsRefresh, predefined);
     }
 
@@ -410,27 +396,4 @@ class KenaiHandler {
         }
     }
 
-    private class LoginAwareQueryHandle extends QueryHandleImpl {
-        public LoginAwareQueryHandle(Query query, boolean needsRefresh, boolean predefined) {
-            super(query, needsRefresh, predefined);
-        }
-        @Override
-        public String getDisplayName() {
-            return super.getDisplayName() + (TeamAccessorImpl.isLoggedIn(kenai) ? "" : " " +  NbBundle.getMessage(QueryAccessorImpl.class, "LBL_NotLoggedIn"));        // NOI18N
-        }
-        @Override
-        List<QueryResultHandle> getQueryResults() {
-            return TeamAccessorImpl.isLoggedIn(kenai) ? super.getQueryResults() : Collections.EMPTY_LIST;
-        }
-        @Override
-        void refreshIfNeeded() {
-            if(!TeamAccessorImpl.isLoggedIn(kenai)) {
-                return;
-            }
-            super.refreshIfNeeded();
-        }
-        void needsRefresh() {
-            super.needsRefresh = true;
-        }
-    }
 }

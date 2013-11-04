@@ -149,14 +149,6 @@ public final class QueryImpl<Q, I>  {
         }
     }
 
-    public boolean needsLogin() {
-        assert (queryProvider instanceof TeamQueryProvider);
-        if((queryProvider instanceof TeamQueryProvider)) {
-            return ((TeamQueryProvider<Q, I>)queryProvider).needsLogin(data);
-        } 
-        return false;
-    }
-
     public boolean isData(Object obj) {
         return data == obj;
     }

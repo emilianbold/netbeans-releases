@@ -184,11 +184,7 @@ public class ODCSHandler {
     private QueryHandleImpl createQueryHandle (Query q, boolean needsRefresh) {
         Repository repo = q.getRepository();
         boolean predefined = false;
-        boolean needsLogin = TeamUtil.needsLogin(q);
         predefined = TeamUtil.getAllIssuesQuery(repo) == q || TeamUtil.getMyIssuesQuery(repo) == q;
-        if (needsLogin) {
-            return new LoginAwareQueryHandle(q, needsRefresh, predefined);
-        }
         return new QueryHandleImpl(q, needsRefresh, predefined);
     }
 
@@ -389,36 +385,4 @@ public class ODCSHandler {
         }
     }
 
-    private class LoginAwareQueryHandle extends QueryHandleImpl {
-
-        private final String notLoggedIn;
-
-        @Messages("LBL_NotLoggedIn=(Not logged in)")
-        public LoginAwareQueryHandle (Query query, boolean needsRefresh, boolean predefined) {
-            super(query, needsRefresh, predefined);
-            this.notLoggedIn = LBL_NotLoggedIn();
-        }
-
-        @Override
-        public String getDisplayName () {
-            return super.getDisplayName() + (TeamAccessorImpl.isLoggedIn(server) ? "" : " " + notLoggedIn); //NOI18N
-        }
-
-        @Override
-        List<QueryResultHandle> getQueryResults () {
-            return TeamAccessorImpl.isLoggedIn(server) ? super.getQueryResults() : Collections.EMPTY_LIST;
-        }
-
-        @Override
-        void refreshIfNeeded () {
-            if (!TeamAccessorImpl.isLoggedIn(server)) {
-                return;
-            }
-            super.refreshIfNeeded();
-        }
-
-        void needsRefresh () {
-            super.needsRefresh = true;
-        }
-    }
 }

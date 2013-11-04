@@ -666,6 +666,12 @@ public class ODCSRepository implements PropertyChangeListener {
     public TeamProject getTeamProject() {
         return project;
     }
+
+    public boolean needsAndHasNoLogin(ODCSQuery q) {
+        return (q != getPredefinedQuery(PredefinedTaskQuery.ALL)
+               || q != getPredefinedQuery(PredefinedTaskQuery.RECENT))
+            && !TeamAccessorUtils.isLoggedIn(project.getWebLocation());
+    }
     
     public class Cache {
         private final Map<String, Reference<ODCSIssue>> issues = new HashMap<String, Reference<ODCSIssue>>();

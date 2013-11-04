@@ -264,6 +264,14 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
         return true;
     }
 
+    public boolean isLoggedIn() {
+        return TeamAccessorUtils.isLoggedIn(kenaiProject.getWebLocation());
+    }
+    
+    public boolean isMyIssues(BugzillaQuery q) {
+        return myIssues == q;
+    }
+
     /**
      * Returns the name of the bz product - should be the same as the name of the kenai project that owns this repository
      * @return

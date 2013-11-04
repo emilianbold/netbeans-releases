@@ -47,6 +47,7 @@ import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -56,7 +57,8 @@ public class BugzillaQueryProvider implements QueryProvider<BugzillaQuery, Bugzi
 
     @Override
     public String getDisplayName(BugzillaQuery query) {
-        return query.getDisplayName();
+        String name = query.getDisplayName();
+        return name + (needsAndHasNoLogin(query) ? "" : " " +  NbBundle.getMessage(BugzillaQueryProvider.class, "LBL_NotLoggedIn"));
     }
 
     @Override
@@ -106,6 +108,9 @@ public class BugzillaQueryProvider implements QueryProvider<BugzillaQuery, Bugzi
 
     @Override
     public void refresh(BugzillaQuery query) {
+        if(needsAndHasNoLogin(query)) {
+            return;
+        }
         query.getController().refresh(true);
     }
 
@@ -119,9 +124,9 @@ public class BugzillaQueryProvider implements QueryProvider<BugzillaQuery, Bugzi
         q.setOwnerInfo(info);
     }
     
-    @Override
-    public boolean needsLogin(BugzillaQuery query) {
-        BugzillaRepository repository = query.getRepository();
-        return query == ((KenaiRepository) repository).getMyIssuesQuery();
+    private boolean needsAndHasNoLogin(BugzillaQuery query) {
+        KenaiRepository repo = (KenaiRepository) query.getRepository();
+        return repo.isMyIssues(query) && !repo.isLoggedIn();
     }
+    
 }

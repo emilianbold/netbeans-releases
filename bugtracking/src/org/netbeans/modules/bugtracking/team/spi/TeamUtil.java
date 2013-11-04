@@ -106,10 +106,6 @@ public class TeamUtil {
         return APIAccessor.IMPL.getImpl(repository).getMyIssuesQuery();
     }
 
-    public static boolean needsLogin(Query query) {
-        return APIAccessor.IMPL.getImpl(query).needsLogin();
-    }
-
     public static BugtrackingType getType(Repository repo) {
         DelegatingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
         for (DelegatingConnector delegatingConnector : connectors) {

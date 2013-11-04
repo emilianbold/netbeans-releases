@@ -49,16 +49,6 @@ package org.netbeans.modules.team.spi;
  */
 public interface TeamQueryProvider<Q, I> {
     
-    /**
-     * Determines if the query needs the user to be logged in to show some
-     * results - e.g. MyIssues queries have no results in case the user is
-     * not logged in
-     *
-     * @param q
-     * @return true if login needed, otherwise false
-     */
-    public abstract boolean needsLogin(Q q);
-    
     /** 
      * Provides owner (project/component/...) info to prefill the respective fields.
      * Note that currently meant only for a NB query.

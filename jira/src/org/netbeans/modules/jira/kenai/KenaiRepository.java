@@ -247,10 +247,18 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
 
     @Override
     protected void getRemoteFilters() {
-        if(!TeamAccessorUtils.isLoggedIn(kenaiProject.getWebLocation())) {
+        if(!isLoggedIn()) {
             return;
         }
         super.getRemoteFilters();
+    }
+
+    public boolean isLoggedIn() {
+        return TeamAccessorUtils.isLoggedIn(kenaiProject.getWebLocation());
+    }
+    
+    public boolean isMyIssues(JiraQuery q) {
+        return myIssues == q;
     }
 
     @Override

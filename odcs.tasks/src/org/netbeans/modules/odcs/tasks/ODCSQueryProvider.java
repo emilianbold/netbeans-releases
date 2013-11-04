@@ -41,26 +41,23 @@
  */
 package org.netbeans.modules.odcs.tasks;
 
-import com.tasktop.c2c.server.tasks.domain.PredefinedTaskQuery;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
-import org.netbeans.modules.team.spi.TeamQueryProvider;
-import org.netbeans.modules.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
 import org.netbeans.modules.odcs.tasks.query.ODCSQuery;
-import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class ODCSQueryProvider implements QueryProvider<ODCSQuery, ODCSIssue>, TeamQueryProvider<ODCSQuery, ODCSIssue> {
+public class ODCSQueryProvider implements QueryProvider<ODCSQuery, ODCSIssue> {
 
     @Override
     public String getDisplayName(ODCSQuery q) {
-        return q.getDisplayName();
+        return q.getDisplayName() + (q.getRepository().needsAndHasNoLogin(q) ? "" : " " +  NbBundle.getMessage(ODCSQueryProvider.class, "LBL_NotLoggedIn"));
     }
 
     @Override
@@ -100,6 +97,9 @@ public class ODCSQueryProvider implements QueryProvider<ODCSQuery, ODCSIssue>, T
 
     @Override
     public void refresh(ODCSQuery q) {
+        if(q.getRepository().needsAndHasNoLogin(q)) {
+            return;
+        }
         q.getController().refresh(true);
     }
 
@@ -116,16 +116,4 @@ public class ODCSQueryProvider implements QueryProvider<ODCSQuery, ODCSIssue>, T
     /************************************************************************************
      * Team
      ************************************************************************************/
-    
-    @Override
-    public boolean needsLogin (ODCSQuery q) {
-        ODCSRepository repository = q.getRepository();
-        return q != (repository).getPredefinedQuery(PredefinedTaskQuery.ALL)
-            && q != (repository).getPredefinedQuery(PredefinedTaskQuery.RECENT);
-    }
-
-    @Override
-    public void setOwnerInfo (ODCSQuery q, OwnerInfo info) {
-        q.setOwnerInfo(info);
-    }
 }

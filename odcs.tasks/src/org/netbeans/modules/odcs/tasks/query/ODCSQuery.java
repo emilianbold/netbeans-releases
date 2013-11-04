@@ -98,7 +98,6 @@ public abstract class ODCSQuery {
 
     private boolean firstRun = true;
     private ColumnDescriptor[] columnDescriptors;
-    private OwnerInfo info;
     
     private final Object ISSUES_LOCK = new Object();
     private final Set<String> issues = new HashSet<String>();
@@ -141,14 +140,6 @@ public abstract class ODCSQuery {
         return saved;
     }
     
-    public void setOwnerInfo (OwnerInfo info) {
-        this.info = info;
-    }
-
-    public OwnerInfo getOwnerInfo () {
-        return info;
-    }
-
     int getSize() {
         synchronized(ISSUES_LOCK) {
             return issues.size();
