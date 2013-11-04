@@ -113,7 +113,4 @@ public class ODCSQueryProvider implements QueryProvider<ODCSQuery, ODCSIssue> {
         q.addPropertyChangeListener(listener);
     }
 
-    /************************************************************************************
-     * Team
-     ************************************************************************************/
 }
