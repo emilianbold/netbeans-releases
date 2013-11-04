@@ -146,21 +146,24 @@ public class DashboardUtils {
         String fitText = computeFitText(component, maxWidth, getTaskDisplayName(task), active); //NOI18N
 
         boolean html = false;
-        String activeText = getFilterBoldText(fitText);
-        if (activeText.length() != fitText.length()) {
+        String text = getFilterBoldText(fitText);
+        if (text.length() != fitText.length() || active || task.isFinished()) {
+            text = escapeXmlChars(text);
+        }
+        if (text.length() != fitText.length()) {
             html = true;
         }
         if (active) {
-            activeText = BOLD_START_SUBSTITUTE + fitText + BOLD_END_SUBSTITUTE;
+            text = BOLD_START_SUBSTITUTE + fitText + BOLD_END_SUBSTITUTE;
             html = true;
         }
+        text = replaceSubstitutes(text);
 
-        activeText = replaceSubstitutes(activeText);
         if (task.isFinished()) {
-            activeText = "<strike>" + activeText + "</strike>"; //NOI18N
+            text = "<strike>" + text + "</strike>"; //NOI18N
             html = true;
         }
-        return getTaskAnotatedText(activeText, task.getStatus(), hasFocus, html);
+        return getTaskAnotatedText(text, task.getStatus(), hasFocus, html, task.isFinished());
     }
 
     public static String computeFitText(JComponent component, int maxWidth, String text, boolean bold) {
@@ -199,18 +202,15 @@ public class DashboardUtils {
     }
 
     public static String getTaskAnotatedText(IssueImpl task) {
-        return getTaskAnotatedText(getTaskDisplayName(task), task.getStatus(), false, false);
+        return getTaskAnotatedText(getTaskDisplayName(task), task.getStatus(), false, false, task.isFinished());
     }
 
-    private static String getTaskAnotatedText(String text, IssueStatusProvider.Status status, boolean hasFocus, boolean isHTML) {
+    private static String getTaskAnotatedText(String text, IssueStatusProvider.Status status, boolean hasFocus, boolean isHTML, boolean isFinished) {
         if (status == IssueStatusProvider.Status.INCOMING_NEW && !hasFocus) {
-            text = escapeXmlChars(text);
             text = "<html><font color=\"" + NEW_COLOR + "\">" + text + "</font></html>"; //NOI18N
         } else if (status == IssueStatusProvider.Status.INCOMING_MODIFIED && !hasFocus) {
-            text = escapeXmlChars(text);
             text = "<html><font color=\"" + mODIFIED_COLOR + "\">" + text + "</font></html>"; //NOI18N
         } else if (isHTML) {
-            text = escapeXmlChars(text);
             text = "<html>" + text + "</html>"; //NOI18N
         }
         return text;
