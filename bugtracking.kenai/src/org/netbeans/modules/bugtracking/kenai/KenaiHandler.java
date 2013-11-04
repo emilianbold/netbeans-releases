@@ -181,13 +181,10 @@ class KenaiHandler {
 
     private QueryHandleImpl createQueryHandle(Query q, boolean needsRefresh) {
         Repository repo = q.getRepository();
-        boolean predefined = false;
-        if(TeamUtil.isFromTeamServer(repo)) {
-            boolean needsLogin = TeamUtil.needsLogin(q);
-            predefined = TeamUtil.getAllIssuesQuery(repo) == q || TeamUtil.getMyIssuesQuery(repo) == q;
-            if(needsLogin) {
-                return new LoginAwareQueryHandle(q, needsRefresh, predefined);
-            }
+        boolean needsLogin = TeamUtil.needsLogin(q);
+        boolean predefined = TeamUtil.getAllIssuesQuery(repo) == q || TeamUtil.getMyIssuesQuery(repo) == q;
+        if(needsLogin) {
+            return new LoginAwareQueryHandle(q, needsRefresh, predefined);
         }
         return new QueryHandleImpl(q, needsRefresh, predefined);
     }

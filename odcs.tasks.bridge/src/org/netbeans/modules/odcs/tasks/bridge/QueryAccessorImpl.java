@@ -78,7 +78,7 @@ public class QueryAccessorImpl extends QueryAccessor<ODCSProject> {
     @Override
     public QueryHandle getAllIssuesQuery (ProjectHandle<ODCSProject> projectHandle) {
         Repository repo = TeamUtil.getRepository(TeamProjectImpl.getInstance(projectHandle.getTeamProject()));
-        if (repo == null || !TeamUtil.isFromTeamServer(repo)) {
+        if (repo == null) {
             return null;
         }
 

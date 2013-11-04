@@ -87,10 +87,6 @@ public class QueryAccessorImpl extends QueryAccessor<KenaiProject> {
             return null;
         }
 
-        if(!TeamUtil.isFromTeamServer(repo)) {
-            return null;
-        }
-
         KenaiHandler handler = Support.getInstance().getKenaiHandler(projectHandle, this);
         handler.registerRepository(repo, projectHandle);
         Query allIssuesQuery = TeamUtil.getAllIssuesQuery(repo);
