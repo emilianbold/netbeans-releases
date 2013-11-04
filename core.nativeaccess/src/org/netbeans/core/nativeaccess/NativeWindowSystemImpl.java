@@ -132,7 +132,6 @@ public class NativeWindowSystemImpl extends NativeWindowSystem {
             }
         }
         //try the JNA way
-        w.setShape(mask);
         if( true )
             return;
         try {
