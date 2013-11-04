@@ -79,7 +79,6 @@ class QueryHandleImpl extends QueryHandle implements QueryDescriptor, ActionList
         this.predefined = predefined;
         changeSupport = new PropertyChangeSupport(query);
         query.addPropertyChangeListener(WeakListeners.propertyChange(this, query));
-        registerIssues();
     }
 
     @Override
@@ -115,7 +114,6 @@ class QueryHandleImpl extends QueryHandle implements QueryDescriptor, ActionList
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if(evt.getPropertyName().equals(Query.EVENT_QUERY_REFRESHED)) {
-            registerIssues();
             changeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_QUERY_RESULT, null, getQueryResults())); // XXX add result handles
         } else if(evt.getPropertyName().equals(IssueStatusProvider.EVENT_STATUS_CHANGED)) {
             changeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_QUERY_RESULT, null, getQueryResults())); // XXX add result handles
@@ -143,13 +141,6 @@ class QueryHandleImpl extends QueryHandle implements QueryDescriptor, ActionList
         if(needsRefresh) {
             needsRefresh = false;
             query.refresh();
-        }
-    }
-
-    private void registerIssues() {
-        issues = query.getIssues();
-        for (Issue issue : issues) {
-            issue.addPropertyChangeListener(WeakListeners.propertyChange(this, issue));
         }
     }
 
