@@ -89,6 +89,7 @@ public class ExtDefineFunctionInterceptor implements FunctionInterceptor {
                                 newJsObject.addOccurrence(occurrence.getOffsetRange());
                             }
                             newJsObject.addOccurrence(jsObject.getDeclarationName().getOffsetRange());
+                            jsObject = newJsObject;
                         }
                         else {
                             jsObject.addOccurrence(offsetRange);
