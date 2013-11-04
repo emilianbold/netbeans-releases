@@ -60,7 +60,7 @@ import org.netbeans.modules.bugtracking.team.spi.TeamProject;
 import org.netbeans.modules.bugtracking.team.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
-import org.netbeans.modules.bugtracking.util.TextUtils;
+import org.netbeans.modules.bugtracking.commons.TextUtils;
 import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.query.JiraQuery;

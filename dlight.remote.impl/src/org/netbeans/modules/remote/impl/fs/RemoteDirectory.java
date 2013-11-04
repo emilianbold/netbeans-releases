@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.remote.impl.fs;
 
+import org.netbeans.modules.remote.impl.fs.server.DirectoryReaderFS;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
@@ -497,9 +498,19 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     private boolean isProhibited() {
-        return getPath().equals("/proc");//NOI18N
+        return getPath().equals("/proc") || getPath().equals("/dev");//NOI18N
     }
 
+    @Override
+    public void setAttribute(String attrName, Object value) throws IOException {
+        if (attrName.equals("warmup")) { // NOI18N
+            DirectoryReaderFS fsReader = DirectoryReaderFS.getInstance(getExecutionEnvironment());
+            if (fsReader != null) {
+                fsReader.warmap(getPath());
+            }
+        }
+        super.setAttribute(attrName, value);
+    }
     private Map<String, DirEntry> readEntries(DirectoryStorage oldStorage, boolean forceRefresh, String childName) throws IOException, InterruptedException, ExecutionException, CancellationException {
         if (isProhibited()) {
             return Collections.<String, DirEntry>emptyMap();
@@ -507,8 +518,13 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         Map<String, DirEntry> newEntries = new HashMap<String, DirEntry>();            
         boolean canLs = canLs();
         if (canLs) {
-            DirectoryReader directoryReader = DirectoryReaderSftp.getInstance(getExecutionEnvironment());
-            for (DirEntry entry : directoryReader.readDirectory(getPath())) {
+            DirectoryReader directoryReader;
+            directoryReader = DirectoryReaderFS.getInstance(getExecutionEnvironment());
+            if (directoryReader == null) {
+                directoryReader = DirectoryReaderSftp.getInstance(getExecutionEnvironment());
+            }
+            List<DirEntry> entries = directoryReader.readDirectory(getPath());
+            for (DirEntry entry : entries) {
                 newEntries.put(entry.getName(), entry);
             }
             

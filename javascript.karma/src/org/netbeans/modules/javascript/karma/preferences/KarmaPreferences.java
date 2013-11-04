@@ -43,6 +43,7 @@
 package org.netbeans.modules.javascript.karma.preferences;
 
 import java.io.File;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
@@ -56,37 +57,40 @@ import org.openide.filesystems.FileUtil;
  */
 public final class KarmaPreferences {
 
-    private static final String KARMA = "karma";
-    private static final String CONFIG = "config";
+    private static final String KARMA = "karma"; // NOI18N
+    private static final String CONFIG = "config"; // NOI18N
 
-    private static final KarmaPreferences INSTANCE = new KarmaPreferences();
 
     private KarmaPreferences() {
     }
 
-    public static KarmaPreferences getInstance() {
-        return INSTANCE;
-    }
-
     @CheckForNull
-    public String getKarma(Project project) {
+    public static String getKarma(Project project) {
         return resolvePath(project, getPreferences(project).get(KARMA, null));
     }
 
-    public void setKarma(Project project, String karma) {
+    public static void setKarma(Project project, String karma) {
         getPreferences(project).put(KARMA, relativizePath(project, karma));
     }
 
     @CheckForNull
-    public String getConfig(Project project) {
+    public static String getConfig(Project project) {
         return resolvePath(project, getPreferences(project).get(CONFIG, null));
     }
 
-    public void setConfig(Project project, String config) {
+    public static void setConfig(Project project, String config) {
         getPreferences(project).put(CONFIG, relativizePath(project, config));
     }
 
-    private Preferences getPreferences(Project project) {
+    public static void addPreferenceChangeListener(Project project, PreferenceChangeListener listener) {
+        getPreferences(project).addPreferenceChangeListener(listener);
+    }
+
+    public static void removePreferenceChangeListener(Project project, PreferenceChangeListener listener) {
+        getPreferences(project).removePreferenceChangeListener(listener);
+    }
+
+    private static Preferences getPreferences(Project project) {
         assert project != null;
         return ProjectUtils.getPreferences(project, KarmaPreferences.class, false);
     }

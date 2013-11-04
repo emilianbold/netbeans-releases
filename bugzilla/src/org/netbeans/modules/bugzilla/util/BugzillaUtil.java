@@ -45,7 +45,7 @@ package org.netbeans.modules.bugzilla.util;
 import java.awt.Color;
 import java.util.Collections;
 import java.util.MissingResourceException;
-import org.netbeans.modules.bugtracking.util.ListValuePicker;
+import org.netbeans.modules.bugtracking.commons.ListValuePicker;
 import java.util.logging.Level;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -56,7 +56,6 @@ import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils;
-import org.netbeans.modules.bugtracking.util.SimpleIssueFinder;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
@@ -201,7 +200,7 @@ public class BugzillaUtil {
                 Bugzilla.getInstance().getStatusProvider(),
                 Bugzilla.getInstance().getSchedulingProvider(),
                 Bugzilla.getInstance().createPriorityProvider(bugzillaRepository),
-                SimpleIssueFinder.getInstance());
+                Bugzilla.getInstance().getBugzillaIssueFinder());
     }
 
     public static void openIssue(BugzillaIssue bugzillaIssue) {

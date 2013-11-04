@@ -42,7 +42,7 @@
 package org.netbeans.modules.odcs.tasks.issue;
 
 import com.tasktop.c2c.server.tasks.domain.Iteration;
-import org.netbeans.modules.bugtracking.util.AttachmentsPanel;
+import org.netbeans.modules.bugtracking.commons.AttachmentsPanel;
 import com.tasktop.c2c.server.tasks.domain.Keyword;
 import com.tasktop.c2c.server.tasks.domain.Milestone;
 import com.tasktop.c2c.server.tasks.domain.Priority;
@@ -132,8 +132,8 @@ import org.netbeans.modules.bugtracking.api.IssueQuickSearch;
 import org.netbeans.modules.bugtracking.issuetable.TableSorter;
 import org.netbeans.modules.bugtracking.team.spi.TeamProject;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
-import org.netbeans.modules.bugtracking.util.LinkButton;
-import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.netbeans.modules.bugtracking.commons.LinkButton;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.mylyn.util.WikiPanel;
 import org.netbeans.modules.mylyn.util.WikiUtils;
 import org.netbeans.modules.odcs.tasks.ODCS;
@@ -2961,11 +2961,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     final javax.swing.JComboBox productCombo = new javax.swing.JComboBox();
     private javax.swing.JLabel productLabel;
     private javax.swing.JLabel productWarning;
-    final org.netbeans.modules.bugtracking.util.LinkButton refreshButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+    final org.netbeans.modules.bugtracking.commons.LinkButton refreshButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
     final javax.swing.JComboBox releaseCombo = new javax.swing.JComboBox();
     private javax.swing.JLabel releaseLabel;
     private javax.swing.JLabel releaseWarning;
-    final org.netbeans.modules.bugtracking.util.LinkButton reloadButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+    final org.netbeans.modules.bugtracking.commons.LinkButton reloadButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
     final javax.swing.JTextField reportedField = new javax.swing.JTextField();
     final javax.swing.JLabel reportedLabel = new javax.swing.JLabel();
     private javax.swing.JComboBox resolutionCombo;
@@ -2977,7 +2977,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     final javax.swing.JComboBox severityCombo = new javax.swing.JComboBox();
     private javax.swing.JLabel severityLabel;
     private javax.swing.JLabel severityWarning;
-    final org.netbeans.modules.bugtracking.util.LinkButton showInBrowserButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+    final org.netbeans.modules.bugtracking.commons.LinkButton showInBrowserButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
     final javax.swing.JComboBox statusCombo = new javax.swing.JComboBox();
     private javax.swing.JLabel statusLabel;
     private javax.swing.JLabel statusWarning;

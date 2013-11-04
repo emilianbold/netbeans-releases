@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.bugzilla.query;
 
-import org.netbeans.modules.bugtracking.util.SaveQueryPanel;
+import org.netbeans.modules.bugtracking.commons.SaveQueryPanel;
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
@@ -83,7 +83,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
-import org.netbeans.modules.bugtracking.util.SaveQueryPanel.QueryNameValidator;
+import org.netbeans.modules.bugtracking.commons.SaveQueryPanel.QueryNameValidator;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;

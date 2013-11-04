@@ -581,6 +581,7 @@ public class ClientSideProject implements Project {
                 browserId = wb.getId();
             }
             CssPreprocessors.getDefault().addCssPreprocessorsListener(project.cssPreprocessorsListener);
+            Karma.getDefault().projectOpened(project);
             // usage logging
             FileObject cordova = project.getProjectDirectory().getFileObject(".cordova"); // NOI18N
             ClientSideProjectUtilities.logUsage(ClientSideProject.class, "USG_PROJECT_HTML5_OPEN", // NOI18N
@@ -597,6 +598,7 @@ public class ClientSideProject implements Project {
             removeSiteRootListener();
             GlobalPathRegistry.getDefault().unregister(ClassPathProviderImpl.SOURCE_CP, new ClassPath[]{project.getSourceClassPath()});
             CssPreprocessors.getDefault().removeCssPreprocessorsListener(project.cssPreprocessorsListener);
+            Karma.getDefault().projectClosed(project);
             // browser
             ClientProjectEnhancedBrowserImplementation enhancedBrowserImpl = project.getEnhancedBrowserImpl();
             if (enhancedBrowserImpl != null) {

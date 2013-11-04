@@ -303,6 +303,18 @@ public final class GitUtils {
             return false;
         }
     }
+
+    public static String parseRemoteHeadFromFetch (String fetchRefSpec) {
+        if (fetchRefSpec.startsWith("+")) { //NOI18N
+            fetchRefSpec = fetchRefSpec.substring(1);
+        }
+        int pos = fetchRefSpec.indexOf(':');
+        if (pos > 0) {
+            return fetchRefSpec.substring(0, pos);
+        } else {
+            return null;
+        }
+    }
     
     private static void addNotSharable (File topFile, String ignoredPath) {
         synchronized (notSharable) {
