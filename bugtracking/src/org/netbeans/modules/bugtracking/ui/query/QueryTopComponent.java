@@ -211,19 +211,18 @@ public final class QueryTopComponent extends TopComponent
             newButton.setEnabled(false);
         }
         
-        RepositoryImpl repoImpl = query.getRepositoryImpl();
-        if(repoImpl.isTeamRepository()) {
-            if(query.getQuery() == TeamUtil.getAllIssuesQuery(repoImpl.getRepository())) {
-                TeamProject teamProject = TeamRepositories.getInstance().getTeamProject(defaultRepository);
-                if(teamProject != null) {
-                    instanceContent.add(query.getQuery());
-                    instanceContent.add(teamProject);
-                }
-            }
-        }
-        
         if (query != null) {
             if(!isNew) {
+                RepositoryImpl repoImpl = query.getRepositoryImpl();
+                if(repoImpl.isTeamRepository()) {
+                    if(query.getQuery() == TeamUtil.getAllIssuesQuery(repoImpl.getRepository())) {
+                        TeamProject teamProject = TeamRepositories.getInstance().getTeamProject(defaultRepository);
+                        if(teamProject != null) {
+                            instanceContent.add(query.getQuery());
+                            instanceContent.add(teamProject);
+                        }
+                    }
+                }                
                 setSaved();
             } else {
                 if(!suggestedSelectionOnly) {
