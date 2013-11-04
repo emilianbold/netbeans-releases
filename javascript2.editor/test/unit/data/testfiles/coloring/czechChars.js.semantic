@@ -20,7 +20,7 @@ jQuery(function($){
         |>FIELD:isRTL<|: false,
         |>FIELD:showMonthAfterYear<|: false,
         |>FIELD:yearSuffix<|: ''};
-    $.timepicker.setDefaults($.timepicker.regional['cs']);
+    $.timepicker.setDefaults($.timepicker.regional['|>CLASS:cs<|']);
     
     var |>CLASS:test<| = {}
     test["|>FIELD:myProperty<|"] = 20;
