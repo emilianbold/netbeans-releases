@@ -608,19 +608,21 @@ public class ActionProviderImpl implements ActionProvider {
                     } else {
                       maps = ActionToGoalUtils.getActiveCustomMappings(proj.getLookup().lookup(NbMavenProjectImpl.class));
                     }
+                    final List<Action> acts = new ArrayList<Action>();
                     for (NetbeansActionMapping mapp : maps) {
                         Action act = createCustomMavenAction(mapp.getActionName(), mapp, false, lookup);
-                        JMenuItem item = new JMenuItem(act);
-                        item.setText(mapp.getDisplayName() == null ? mapp.getActionName() : mapp.getDisplayName());
-                        menu.add(item);
+                        act.putValue(NAME, mapp.getDisplayName() == null ? mapp.getActionName() : mapp.getDisplayName());
+                        acts.add(act);
                     }
-                    menu.add(new JMenuItem(createCustomMavenAction(LBL_Custom_run_goals(), new NetbeansActionMapping(), true, lookup)));
+                    acts.add(createCustomMavenAction(LBL_Custom_run_goals(), new NetbeansActionMapping(), true, lookup));
                     SwingUtilities.invokeLater(new Runnable() {
-
                         @Override
                         public void run() {
                             boolean selected = menu.isSelected();
                             menu.remove(loading);
+                            for (Action a : acts) {
+                                menu.add(new JMenuItem(a));
+                            }
                             menu.getPopupMenu().pack();
                             menu.repaint();
                             menu.updateUI();

@@ -40,105 +40,76 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.javascript.karma.api;
+package org.netbeans.modules.javascript.karma;
 
-import java.io.File;
-import org.netbeans.api.annotations.common.CheckForNull;
+import java.net.URL;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.karma.exec.KarmaServers;
 import org.netbeans.modules.javascript.karma.ui.customizer.KarmaCustomizer;
 import org.netbeans.modules.javascript.karma.ui.logicalview.KarmaNodeFactory;
+import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
+import org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo;
+import org.netbeans.modules.web.clientproject.spi.jstesting.JsTestingProviderImplementation;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
 
-/**
- * Support for Karma test runner.
- * <p>
- * Each client should call {@link Karma#projectOpened(org.netbeans.api.project.Project)}
- * and {@link Karma#projectClosed(org.netbeans.api.project.Project)} methods.
- */
-public final class Karma {
+@ServiceProvider(service = JsTestingProviderImplementation.class, path = JsTestingProviders.JS_TESTING_PATH, position = 100)
+public class JsTestingProviderImpl implements JsTestingProviderImplementation {
 
-    private static final Karma INSTANCE = new Karma();
-
-
-    private Karma() {
+    @Override
+    public String getIdentifier() {
+        return "Karma"; // NOI18N
     }
 
-    /**
-     * Get Karma instance.
-     * @return Karma instance
-     */
-    public static Karma getDefault() {
-        return INSTANCE;
+    @NbBundle.Messages("JsTestingProviderImpl.displayName=Karma")
+    @Override
+    public String getDisplayName() {
+        return Bundle.JsTestingProviderImpl_displayName();
     }
 
-    /**
-     * Create project customizer for Karma. These properties are used
-     * by {@link #createNodeFactory() Karma server node}.
-     * <p>
-     * Category name is {@value KarmaCustomizer#IDENTIFIER}.
-     * <p>
-     * Instance of this class can be registered for any project in its project customizer SFS folder.
-     * @return project customizer for Karma
-     * @see ProjectCustomizer.CompositeCategoryProvider.Registration
-     */
-    public ProjectCustomizer.CompositeCategoryProvider createCustomizer() {
+    @Override
+    public void runTests(Project project, TestRunInfo runInfo) {
+        KarmaServers.getInstance().runTests(project);
+    }
+
+    @Override
+    public FileObject fromServer(Project project, URL serverUrl) {
         // XXX
-        if (!Boolean.getBoolean("nb.js.karma")) { // NOI18N
-            return null;
-        }
+        return null;
+    }
+
+    @Override
+    public URL toServer(Project project, FileObject projectFile) {
+        // XXX
+        return null;
+    }
+
+    @Override
+    public ProjectCustomizer.CompositeCategoryProvider createCustomizer(Project project) {
         return new KarmaCustomizer();
     }
 
-    /**
-     * Create Karma server node. Its properties can be customized
-     * using {@link #createCustomizer() project customizer}.
-     * @return Karma server node
-     * @see NodeFactory.Registration
-     */
-    public NodeFactory createNodeFactory() {
+    @Override
+    public void notifyEnabled(Project project, boolean enabled) {
         // XXX
-        if (!Boolean.getBoolean("nb.js.karma")) { // NOI18N
-            return null;
-        }
-        return new KarmaNodeFactory();
     }
 
-    /**
-     * Notify Karma that the given project is being opened.
-     * @param project project being opened
-     * @since 0.2
-     */
+    @Override
     public void projectOpened(Project project) {
         // noop
     }
 
-    /**
-     * Notify Karma that the given project is being closed.
-     * @param project project being closed
-     * @since 0.2
-     */
+    @Override
     public void projectClosed(Project project) {
         KarmaServers.getInstance().stopServer(project, true);
     }
 
-    //~ Inner classes
-
-    /**
-     * Provider for config folder.
-     * <p>
-     * Implementations must be put in project's lookup.
-     */
-    public interface ConfigFolderProvider {
-
-        /**
-         * Get configuration folder, does not need to exist.
-         * @return configuration folder; can be {@code null} for none, corrupted etc. folder
-         */
-        @CheckForNull
-        File getConfigFolder();
-
+    @Override
+    public NodeFactory createNodeFactory() {
+        return new KarmaNodeFactory();
     }
 
 }
