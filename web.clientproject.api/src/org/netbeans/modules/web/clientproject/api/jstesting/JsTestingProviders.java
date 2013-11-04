@@ -114,7 +114,6 @@ public final class JsTestingProviders {
         return SelectProviderPanel.open();
     }
 
-
     private void initProviders() {
         assert jsTestingProviders.isEmpty() : "Empty providers expected but: " + jsTestingProviders;
         jsTestingProviders.addAll(map(JS_TESTING_PROVIDERS.allInstances()));

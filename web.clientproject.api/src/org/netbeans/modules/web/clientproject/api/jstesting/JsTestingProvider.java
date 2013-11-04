@@ -221,14 +221,8 @@ public final class JsTestingProvider {
         delegate.projectClosed(project);
     }
 
-    /**
-     * Create JS testing provider node. This node can be visible/hidden based
-     * on e.g. {@link #notifyEnabled(Project, boolean)}.
-     * @return JS testing provider node, can be {@code null} if not supported
-     * @see NodeFactory.Registration
-     */
     @CheckForNull
-    public NodeFactory createNodeFactory() {
+    NodeFactory createNodeFactory() {
         return delegate.createNodeFactory();
     }
 
