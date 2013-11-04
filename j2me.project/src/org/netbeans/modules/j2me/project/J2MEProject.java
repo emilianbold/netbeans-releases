@@ -155,7 +155,7 @@ public class J2MEProject implements Project {
                 eval,
                 sourceRoots,
                 testRoots).
-            setPlatformType(J2MEProjectProperties.PLATFORM_TYPE_J2ME).
+            setBootClasspathProperties(J2MEProjectProperties.PROP_PLATFORM_BOOTCLASSPATH).
             build();
         this.lkp = createLookup(buildExtender, newProjectOperationsCallback(this, updates));
     }
