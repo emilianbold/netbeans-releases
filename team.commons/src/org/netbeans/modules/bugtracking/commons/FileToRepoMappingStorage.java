@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking;
+package org.netbeans.modules.bugtracking.commons;
 
 import java.io.File;
 import java.io.IOException;
@@ -54,17 +54,15 @@ import org.openide.util.NbPreferences;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.util.logging.Level.WARNING;
-import org.netbeans.modules.bugtracking.RepositoryRegistry;
-import org.netbeans.modules.bugtracking.RepositoryImpl;
 
 /**
  * Stores mappings between {@code File}s and bugtracking repositories.
  *
  * @author Marian Petras
  */
-class FileToRepoMappingStorage {
+public class FileToRepoMappingStorage {
 
-    private static Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.util.FileToRepoMappingStorage"); //NOI18N
+    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.util.FileToRepoMappingStorage"); //NOI18N
 
     private static final String REPOSITORY_FOR_FILE_PREFIX = "repository for "; //NOI18N
     private static final Boolean FIRM_ASSOCIATION = TRUE;
@@ -79,29 +77,29 @@ class FileToRepoMappingStorage {
         return instance;
     }
 
-    public void setFirmAssociation(File file, RepositoryImpl repository) {
-        setAssociation(file, repository, true);
+    public void setFirmAssociation(File file, String repositoryUrl) {
+        setAssociation(file, repositoryUrl, true);
     }
 
-    public boolean setLooseAssociation(File file, RepositoryImpl repository) {
-        RepositoryImpl firmlyAssociated = getFirmlyAssociatedRepository(file);
+    public boolean setLooseAssociation(File file, String repositoryUrl) {
+        String firmlyAssociated = getFirmlyAssociatedRepository(file);
         if (firmlyAssociated == null) {
-            setAssociation(file, repository, false);
+            setAssociation(file, repositoryUrl, false);
             return true;
         } else {
             return false;
         }
     }
 
-    public RepositoryImpl getRepository(File file) {
+    public String getRepository(File file) {
         return getAssociatedRepository(file, null);
     }
 
-    public RepositoryImpl getFirmlyAssociatedRepository(File file) {
+    public String getFirmlyAssociatedRepository(File file) {
         return getAssociatedRepository(file, FIRM_ASSOCIATION);
     }
 
-    public RepositoryImpl getLooselyAssociatedRepository(File file) {
+    public String getLooselyAssociatedRepository(File file) {
         return getAssociatedRepository(file, LOOSE_ASSOCIATION);
     }
 
@@ -124,7 +122,7 @@ class FileToRepoMappingStorage {
         return associatedUrls;
     }
 
-    private RepositoryImpl getAssociatedRepository(File file, Boolean reqAssociationType) {
+    private String getAssociatedRepository(File file, Boolean reqAssociationType) {
         String key = getPath(file);
         if (key == null) {
             return null;
@@ -153,29 +151,16 @@ class FileToRepoMappingStorage {
                 matches = false;
         }
 
-        return matches ? getRepositoryByUrl(value.substring(1))
-                       : null;
+        return matches ? value.substring(1) : null;
     }
 
-    private RepositoryImpl getRepositoryByUrl(String requestedUrl) {
-        Collection<RepositoryImpl> repositories = RepositoryRegistry.getInstance().getRepositories();
-        for (RepositoryImpl repository : repositories) {
-            String repositoryUrl = cutTrailingSlashes(repository.getUrl());
-            if (repositoryUrl.equals(requestedUrl)) {
-                return repository;
-            }
-        }
-
-        return null;
-    }
-
-    private void setAssociation(File file, RepositoryImpl repository, boolean firm) {
+    private void setAssociation(File file, String repositoryUrl, boolean firm) {
         String key = getPath(file);
         if (key == null) {
             return;
         }
 
-        String repositoryUrl = cutTrailingSlashes(repository.getUrl());
+        repositoryUrl = cutTrailingSlashes(repositoryUrl);
         String value = new StringBuilder(1 + repositoryUrl.length())
                 .append(firm ? '!' : '?')
                 .append(repositoryUrl)
@@ -207,7 +192,7 @@ class FileToRepoMappingStorage {
         return NbPreferences.forModule(FileToRepoMappingStorage.class);
     }
 
-    private static String cutTrailingSlashes(String url) {
+    public static String cutTrailingSlashes(String url) {
         int endIndex = url.length();
         while ((endIndex > 1) && url.charAt(endIndex - 1) == '/') {
             endIndex--;

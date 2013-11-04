@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.bugtracking;
 
+import org.netbeans.modules.bugtracking.commons.FileToRepoMappingStorage;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import java.io.File;
 import java.io.IOException;
@@ -51,9 +52,9 @@ import java.util.logging.Logger;
 import org.netbeans.api.queries.VersioningQuery;
 import org.netbeans.modules.team.ide.spi.ProjectServices;
 import org.netbeans.modules.team.spi.OwnerInfo;
-import org.netbeans.modules.bugtracking.ui.selectors.RepositorySelectorBuilder;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils;
+import org.netbeans.modules.bugtracking.ui.selectors.RepositorySelectorBuilder;
 import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -182,13 +183,13 @@ public class BugtrackingOwnerSupport {
 
         FileToRepoMappingStorage.getInstance().setFirmAssociation(
                 getLargerContext(files[0]),
-                repository);
+                repository.getUrl());
     }
 
     public void setFirmAssociation(File file, RepositoryImpl repository) {
         FileToRepoMappingStorage.getInstance().setFirmAssociation(
                 getLargerContext(file),
-                repository);
+                repository.getUrl());
     }
 
     public void setLooseAssociation(ContextType contextType, RepositoryImpl repository) {
@@ -212,7 +213,7 @@ public class BugtrackingOwnerSupport {
         if (context != null) {
             FileToRepoMappingStorage.getInstance().setLooseAssociation(
                     context,
-                    repository);
+                    repository.getUrl());
         }
     }
 
@@ -225,22 +226,23 @@ public class BugtrackingOwnerSupport {
     }
 
     protected RepositoryImpl getRepositoryForContext(File context, boolean askIfUnknown) {
-        RepositoryImpl repo = FileToRepoMappingStorage.getInstance()
+        String repoUrl = FileToRepoMappingStorage.getInstance()
                           .getFirmlyAssociatedRepository(context);
-        if (repo != null) {
+        if (repoUrl != null) {
             LOG.log(Level.FINER, 
                     " found stored repository [{0}] for directory {1}",     //NOI18N
-                    new Object[]{repo, context});
-            return repo;
+                    new Object[]{repoUrl, context});
+            return getRepositoryByUrl(repoUrl);
         }
 
-        RepositoryImpl suggestedRepository = FileToRepoMappingStorage.getInstance()
+        String suggestedRepositoryUrl = FileToRepoMappingStorage.getInstance()
                                          .getLooselyAssociatedRepository(context);
+        RepositoryImpl suggestedRepository = getRepositoryByUrl(suggestedRepositoryUrl);
         if (!askIfUnknown) {
             return suggestedRepository;
         }
 
-        repo = askUserToSpecifyRepository(suggestedRepository);
+        RepositoryImpl repo = askUserToSpecifyRepository(suggestedRepository);
         if (repo != null) {
             return repo;
         }
@@ -447,4 +449,14 @@ public class BugtrackingOwnerSupport {
         return projectServices != null ? projectServices.getOpenProjectsDirectories(): null;
     }
     
+    private RepositoryImpl getRepositoryByUrl(String requestedUrl) {
+        Collection<RepositoryImpl> repositories = RepositoryRegistry.getInstance().getRepositories();
+        for (RepositoryImpl repository : repositories) {
+            String repositoryUrl = FileToRepoMappingStorage.cutTrailingSlashes(repository.getUrl());
+            if (repositoryUrl.equals(requestedUrl)) {
+                return repository;
+            }
+        }
+        return null;
+    }    
 }
