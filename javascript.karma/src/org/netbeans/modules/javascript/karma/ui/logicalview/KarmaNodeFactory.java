@@ -192,8 +192,6 @@ public final class KarmaNodeFactory implements NodeFactory {
                 SystemAction.get(StopKarmaServerAction.class),
                 SystemAction.get(RestartKarmaServerAction.class),
                 null,
-                SystemAction.get(RunTestsKarmaServerAction.class),
-                null,
                 SystemAction.get(CustomizeKarmaAction.class),
             };
         }
@@ -304,27 +302,6 @@ public final class KarmaNodeFactory implements NodeFactory {
         @Override
         public String getName() {
             return Bundle.CustomizeKarmaAction_name();
-        }
-
-    }
-
-    // XXX
-    private static final class RunTestsKarmaServerAction extends BaseNodeAction {
-
-        @Override
-        protected void performAction(Project project) {
-            KarmaServers.getInstance().runTests(project);
-        }
-
-        @Override
-        protected boolean enable(Project project) {
-            return !KarmaServers.getInstance().isServerStarting(project);
-        }
-
-        @NbBundle.Messages("RunTestsKarmaServerAction.name=Run Tests")
-        @Override
-        public String getName() {
-            return Bundle.RunTestsKarmaServerAction_name();
         }
 
     }
