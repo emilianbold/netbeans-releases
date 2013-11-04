@@ -42,16 +42,30 @@
 
 package org.netbeans.modules.j2me.project;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.j2me.project.ui.customizer.J2MEProjectProperties;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
@@ -69,14 +83,21 @@ import static org.netbeans.spi.project.ActionProvider.COMMAND_PROFILE;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_REBUILD;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_RENAME;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_RUN;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Tomas Zezula
  */
-class J2MEActionProvider extends BaseActionProvider {
+final class J2MEActionProvider extends BaseActionProvider {
+
+    private static final Logger LOG = Logger.getLogger(J2MEActionProvider.class.getName());
+    private static final String MIDLET = "javax.microedition.midlet.MIDlet";    //NOI18N
 
     private static final String[] supportedActions = {
         COMMAND_BUILD,
@@ -131,6 +152,8 @@ class J2MEActionProvider extends BaseActionProvider {
         JavaProjectConstants.COMMAND_DEBUG_FIX
     )));
 
+    private final J2MEProject project;
+
     J2MEActionProvider(
         @NonNull final J2MEProject project,
         @NonNull final UpdateHelper updateHelper,
@@ -143,7 +166,8 @@ class J2MEActionProvider extends BaseActionProvider {
             src,
             test,
             updateHelper.getAntProjectHelper(),
-            new Provider(project));
+            new BaseActionProvider.CallbackImpl(project.getClassPathProvider()));
+        this.project = project;
     }
 
     @Override
@@ -181,34 +205,119 @@ class J2MEActionProvider extends BaseActionProvider {
         return supportedActions;
     }
 
-    private static final class Provider implements CustomPlatformCallback {
-
-        private final Callback delegate;
-        private final PropertyEvaluator eval;
-
-
-        Provider(@NonNull final J2MEProject prj) {
-            delegate = new BaseActionProvider.CallbackImpl(prj.getClassPathProvider());
-            eval = prj.evaluator();
-        }
-
-        @Override
-        public JavaPlatform getActivePlatform() {
-            return CommonProjectUtils.getActivePlatform(
-                    eval.getProperty(ProjectProperties.PLATFORM_ACTIVE),
-                    J2MEProjectProperties.PLATFORM_TYPE_J2ME);
-        }
-
-        @Override
-        public ClassPath getProjectSourcesClassPath(String type) {
-            return delegate.getProjectSourcesClassPath(type);
-        }
-
-        @Override
-        public ClassPath findClassPath(FileObject file, String type) {
-            return delegate.findClassPath(file, type);
-        }
-
+    @Override
+    @CheckForNull
+    protected JavaPlatform getProjectPlatform() {
+        return CommonProjectUtils.getActivePlatform(
+            project.evaluator().getProperty(ProjectProperties.PLATFORM_ACTIVE),
+            J2MEProjectProperties.PLATFORM_TYPE_J2ME);
     }
 
+    @Override
+    protected String getProjectMainClass(boolean verify) {
+        final String rawMidlets = project.evaluator().getProperty(J2MEProjectProperties.MANIFEST_MIDLETS);
+        if (rawMidlets == null || rawMidlets.isEmpty()) {
+            return null;
+        }
+        final List<String> midlets = new ArrayList<String>();
+        final StringTokenizer tk = new StringTokenizer(rawMidlets,"\n");  //NOI18N
+        while (tk.hasMoreTokens()) {
+            String line = tk.nextToken().trim();
+            String[] lineParts = line.split("\\s*,\\s*");
+            if (lineParts.length == 3) {
+                midlets.add(lineParts[2]);
+            }            
+        }
+
+        if (!verify) {
+            return midlets.isEmpty() ?
+                null :
+                midlets.iterator().next();
+        }
+        final FileObject[] sourcesRoots = project.getSourceRoots().getRoots();
+        ClassPath bootPath;
+        ClassPath sysPath;
+        ClassPath srcPath;
+        if (sourcesRoots.length > 0) {
+            LOG.log(
+                Level.FINE,
+                "Searching main class {0} using source root {1}",   //NOI18N
+                new Object[] {
+                    rawMidlets,
+                    FileUtil.getFileDisplayName(sourcesRoots[0])
+                });
+            bootPath = ClassPath.getClassPath (sourcesRoots[0], ClassPath.BOOT);            
+            if (bootPath == null) {
+                bootPath = project.getClassPathProvider().getProjectSourcesClassPath(ClassPath.BOOT);
+            }
+            sysPath = ClassPath.getClassPath(sourcesRoots[0], ClassPath.EXECUTE);
+            if (sysPath == null) {
+                sysPath = project.getClassPathProvider().getProjectSourcesClassPath(ClassPath.EXECUTE);
+            }
+            srcPath = ClassPath.getClassPath(sourcesRoots[0], ClassPath.SOURCE);
+        } else {
+            LOG.log(
+                Level.FINE,
+                "Searching main class {0} without source root",   //NOI18N
+                rawMidlets);
+            bootPath = project.getClassPathProvider().getProjectSourcesClassPath(ClassPath.BOOT);
+            sysPath = project.getClassPathProvider().getProjectSourcesClassPath(ClassPath.EXECUTE);
+            srcPath = project.getClassPathProvider().getProjectSourcesClassPath(ClassPath.SOURCE);   //Empty ClassPath
+        }
+        LOG.log(
+            Level.FINE,
+            "Classpaths used to resolve main class boot: {0}, exec: {1}, src: {2}",   //NOI18N
+            new Object[]{
+                bootPath,
+                sysPath,
+                srcPath
+            });
+        final JavaSource js = JavaSource.create(ClasspathInfo.create(bootPath, sysPath, srcPath));
+        if (js == null) {
+            return rawMidlets;
+        }
+        try {
+            final String[] res = new String[1];
+            js.runUserActionTask(new Task<CompilationController>() {
+                @Override
+                public void run(@NonNull final CompilationController cc) throws Exception {
+                    final Elements e = cc.getElements();
+                    final Types t = cc.getTypes();
+                    final TypeElement midlet = e.getTypeElement(MIDLET);
+                    if (midlet != null) {
+                        for (String fqn : midlets) {
+                            final TypeElement main = e.getTypeElement(fqn);
+                            if (main != null) {
+                                if (t.isSubtype(main.asType(), midlet.asType())) {
+                                   res[0] = fqn;
+                                   break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }, true);
+            LOG.log(
+                Level.FINE,
+                "Main class {0} valid: {1}",   //NOI18N
+                new Object[] {
+                    rawMidlets,
+                    res[0]});   //NOI18N
+            return res[0];
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return rawMidlets;
+        }        
+    }
+
+    @Override
+    protected boolean showMainClassSelector() {
+        NotifyDescriptor desc = new NotifyDescriptor.Message(
+            NbBundle.getMessage(
+                J2MEActionProvider.class,
+                "TXT_NoMIDlets"),
+                NotifyDescriptor.WARNING_MESSAGE);
+        DialogDisplayer.getDefault().notify(desc);
+        return false;
+    }
 }

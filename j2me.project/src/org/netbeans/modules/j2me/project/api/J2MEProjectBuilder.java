@@ -202,7 +202,6 @@ public final class J2MEProjectBuilder {
                         hasDefaultRoots ? "src" : null,     //NOI18N
                         buildXmlName,
                         distFolder,
-                        mainMIDlet,
                         manifest,
                         librariesDefinition,
                         toClassPathElements(compileLibraries),
@@ -416,7 +415,6 @@ public final class J2MEProjectBuilder {
             @NullAllowed String srcRoot,
             @NullAllowed String buildXmlName,
             @NullAllowed String distFolder,
-            @NullAllowed String startUpClass,
             @NullAllowed String manifestFile,
             @NullAllowed String librariesDefinition,
             @NonNull String[] compileClassPath,
@@ -467,12 +465,6 @@ public final class J2MEProjectBuilder {
         }, false);
         //Jar options
         ep.setProperty(ProjectProperties.JAR_COMPRESS, "false"); // NOI18N
-        //Main class
-        ep.setProperty(
-            ProjectProperties.MAIN_CLASS,
-            startUpClass != null ?
-                startUpClass :
-                "");    //NOI18N
         //Javac options
         ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_ENABLED, "true"); // NOI18N
         ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, "false"); // NOI18N
