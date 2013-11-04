@@ -66,6 +66,7 @@ public abstract class TeamAccessor {
 
     /**
      * Returns the opened projects from a team dashboard 
+     * @param onlyOpened
      * @return
      */
     public abstract TeamProject[] getDashboardProjects(boolean onlyOpened);
@@ -73,7 +74,7 @@ public abstract class TeamAccessor {
     /**
      * Returns a TeamProject for the given team vcs repository url
      *
-     * @param url
+     * @param repositoryUrl
      * @return
      * @throws IOException
      */

@@ -87,13 +87,17 @@ public final class TeamAccessorUtils {
      * Returns true if logged into a team server, otherwise false.
      *
      * @return
+     * @param url
      * @see isLoggedIn(java.lang.String)
      */
+ 
     public static boolean isLoggedIn(URL url) {
         return isLoggedIn(url.toString());
     }
 
     /**
+     * @param url
+     * @return 
      * @see TeamAccessor#isLoggedIn(java.lang.String)
      */
     public static boolean isLoggedIn(String url) {
@@ -106,6 +110,9 @@ public final class TeamAccessorUtils {
     }    
     
     /**
+     * @param url
+     * @param forceLogin
+     * @return 
      * @see TeamAccessor#getPasswordAuthentication(java.lang.String, boolean)
      */
     public static PasswordAuthentication getPasswordAuthentication(String url, boolean forceLogin) {
@@ -119,6 +126,8 @@ public final class TeamAccessorUtils {
     }
     
     /**
+     * @param kp
+     * @return 
      * @see TeamAccessor#getProjectMembers(org.netbeans.modules.bugtracking.team.spi.TeamProject)
      */
     public static Collection<RepositoryUser> getProjectMembers(TeamProject kp) {
@@ -136,6 +145,10 @@ public final class TeamAccessorUtils {
     }    
     
     /**
+     * @param url
+     * @param userName
+     * @param host
+     * @param chatMessage
      * @see TeamAccessor#createUserWidget(java.lang.String, java.lang.String, java.lang.String)
      * @return may return null
      */
@@ -146,6 +159,8 @@ public final class TeamAccessorUtils {
     }
 
     /**
+     * @param node
+     * @return 
      * @see TeamAccessor#getOwnerInfo(org.openide.nodes.Node)
      */
     public static OwnerInfo getOwnerInfo(Node node) {
@@ -159,6 +174,8 @@ public final class TeamAccessorUtils {
     }
 
     /**
+     * @param file
+     * @return 
      * @see TeamAccessor#getOwnerInfo(java.io.File)
      */
     public static OwnerInfo getOwnerInfo(File file) {
@@ -172,6 +189,8 @@ public final class TeamAccessorUtils {
     }
 
     /**
+     * @param url
+     * @param parameters
      * @see TeamAccessor#logTeamUsage(java.lang.Object[])
      */
     public static void logTeamUsage(String url, Object... parameters) {
@@ -182,6 +201,9 @@ public final class TeamAccessorUtils {
     }
 
     /**
+     * @param repositoryUrl
+     * @return 
+     * @throws java.io.IOException
      * @see TeamAccessor#getTeamProjectForRepository(java.lang.String)
      */
     public static TeamProject getTeamProjectForRepository(String repositoryUrl) throws IOException {
@@ -195,6 +217,10 @@ public final class TeamAccessorUtils {
     }    
     
     /**
+     * @param url
+     * @param projectName
+     * @return 
+     * @throws java.io.IOException
      * @see TeamAccessor#getTeamProject(java.lang.String, java.lang.String)
      */
     public static TeamProject getTeamProject(String url, String projectName) throws IOException {
@@ -208,6 +234,8 @@ public final class TeamAccessorUtils {
     }
 
     /**
+     * @param onlyOpened
+     * @return 
      * @see TeamAccessor#getDashboardProjects() 
      */
     public static TeamProject[] getDashboardProjects(boolean onlyOpened) {

@@ -55,14 +55,6 @@ public interface TeamBugtrackingConnector {
         ODCS
     }
         
-//    /**
-//     * Creates a {@link Repository} for the given {@link TeamProject}
-//     *
-//     * @param project
-//     * @return
-//     */
-//    public abstract Repository createRepository(TeamProject project);
-    
     /**
      * Creates a {@link RepositoryProvider} for the given {@link }
      *

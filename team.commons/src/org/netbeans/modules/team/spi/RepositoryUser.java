@@ -49,9 +49,9 @@ package org.netbeans.modules.team.spi;
  */
 public class RepositoryUser {
     /** User name (login) of the user. */
-    private String userName;
+    private final String userName;
     /** Full name of the user. */
-    private String fullName;
+    private final String fullName;
 
     /**
      * Creates new <code>RepositoryUser</code>.

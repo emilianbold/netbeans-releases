@@ -41,11 +41,11 @@
  */
 package org.netbeans.modules.team.spi;
 
-import org.netbeans.modules.team.spi.OwnerInfo;
-
 /**
  *
  * @author Tomas Stupka
+ * @param <Q>
+ * @param <I>
  */
 public interface TeamQueryProvider<Q, I> {
     

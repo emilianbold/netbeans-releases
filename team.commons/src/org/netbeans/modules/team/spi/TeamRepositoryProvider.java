@@ -51,5 +51,4 @@ package org.netbeans.modules.team.spi;
 public interface TeamRepositoryProvider<R, Q, I> {
     public Q getAllIssuesQuery(R repository);
     public Q getMyIssuesQuery(R repository);
-//    public TeamProject getTeamProject(R repository);
 }
