@@ -181,6 +181,13 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                                     highlights.put(LexUtilities.getLexerOffsets(result, object.getDeclarationName().getOffsetRange()), UNUSED_OBJECT_SET);
                                 } else {
                                     highlights.put(LexUtilities.getLexerOffsets(result, object.getDeclarationName().getOffsetRange()), ColoringAttributes.CLASS_SET);
+                                    TokenSequence<? extends JsTokenId> cts = LexUtilities.getJsTokenSequence(result.getSnapshot(), object.getDeclarationName().getOffsetRange().getStart());
+                                    for (Occurrence occurrence: object.getOccurrences()) {
+                                        cts.move(occurrence.getOffsetRange().getStart());
+                                        if (cts.moveNext() && cts.token().id() == JsTokenId.STRING && !occurrence.getOffsetRange().equals(object.getDeclarationName().getOffsetRange())) {
+                                            highlights.put(LexUtilities.getLexerOffsets(result, occurrence.getOffsetRange()), ColoringAttributes.CLASS_SET);
+                                        } 
+                                    }
                                 }
                             }
                         }
