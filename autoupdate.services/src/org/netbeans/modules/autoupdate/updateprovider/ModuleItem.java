@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -145,7 +145,17 @@ public class ModuleItem extends UpdateItemImpl {
     }
     
     public int getDownloadSize () {
-        return Integer.parseInt (downloadSize);
+        int parseInt = 0;
+        if (downloadSize == null || downloadSize.length() == 0) {
+            return parseInt;
+        }
+        try {
+            parseInt = Integer.parseInt (downloadSize);
+        } catch (NumberFormatException ex) {
+            Logger.getLogger(ModuleItem.class.getName()).log(Level.WARNING, "Module {0} has invalid value of downloadSize: {1}",
+                    new Object[]{this.codeName, downloadSize});
+        }
+        return parseInt;
     }
     
     public UpdateItemDeploymentImpl getUpdateItemDeploymentImpl () {
