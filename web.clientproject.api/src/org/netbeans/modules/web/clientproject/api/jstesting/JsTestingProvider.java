@@ -192,6 +192,7 @@ public final class JsTestingProvider {
      */
     @CheckForNull
     public ProjectCustomizer.CompositeCategoryProvider createCustomizer(@NonNull Project project) {
+        Parameters.notNull("project", project); // NOI18N
         return delegate.createCustomizer(project);
     }
 
@@ -202,6 +203,7 @@ public final class JsTestingProvider {
      * @param enabled {@code true} if enabled, {@code false} otherwise
      */
     public void notifyEnabled(@NonNull Project project, boolean enabled) {
+        Parameters.notNull("project", project); // NOI18N
         delegate.notifyEnabled(project, enabled);
     }
 
@@ -210,6 +212,7 @@ public final class JsTestingProvider {
      * @param project project being opened
      */
     public void projectOpened(@NonNull Project project) {
+        Parameters.notNull("project", project); // NOI18N
         delegate.projectOpened(project);
     }
 
@@ -218,6 +221,7 @@ public final class JsTestingProvider {
      * @param project project being closed
      */
     public void projectClosed(@NonNull Project project) {
+        Parameters.notNull("project", project); // NOI18N
         delegate.projectClosed(project);
     }
 
