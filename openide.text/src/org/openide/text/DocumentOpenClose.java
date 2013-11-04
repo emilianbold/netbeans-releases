@@ -362,7 +362,7 @@ final class DocumentOpenClose {
         }
     }
 
-    void reload() { // Schedule a reload in RP
+    void reload(JEditorPane[] openedPanes) { // Schedule a reload in RP
         Runnable reloadEDTTask = null;
         synchronized (lock) {
             switch (documentStatus) {
@@ -376,7 +376,7 @@ final class DocumentOpenClose {
                         StyledDocument reloadDoc = docRef.get();
                         if (reloadDoc != null) {
                             // Init the task but do not start it because "lock" is acquired
-                            initReloadTaskLA(reloadDoc);
+                            initReloadTaskLA(reloadDoc, openedPanes);
                             reloadEDTTask = activeReload;
                         }
                     }
@@ -439,12 +439,12 @@ final class DocumentOpenClose {
         RP.create(new DocumentOpenFire(activeOpen)).schedule(0);
     }
     
-    private void initReloadTaskLA(StyledDocument reloadDoc) { // Lock acquired mandatory
+    private void initReloadTaskLA(StyledDocument reloadDoc, JEditorPane[] openedPanes) { // Lock acquired mandatory
         assert (activeReload == null) : "Reload task already inited."; // NOI18N
         if (LOG.isLoggable(Level.FINER)) {
             LOG.finer("initLoadTaskLA(): Schedule reload task.\n"); // NOI18N
         }
-        activeReload = new DocumentLoad(reloadDoc);
+        activeReload = new DocumentLoad(reloadDoc, openedPanes);
     }
     
     void close() {
@@ -602,12 +602,13 @@ final class DocumentOpenClose {
             this.clearTaskVariables = clearTaskVariables;
         }
 
-        DocumentLoad(StyledDocument loadDoc) { // Constructor for existing document reload
+        DocumentLoad(StyledDocument loadDoc, JEditorPane[] reloadOpenPanes) {
             assert (loadDoc != null) : "loadDoc cannot be null for reload";
             this.reload = true;
             this.clearTaskVariables = true;
             this.preReloadInEDT = true;
             this.loadDoc = loadDoc;
+            this.reloadOpenPanes = reloadOpenPanes;
         }
         
         @Override
@@ -834,10 +835,9 @@ final class DocumentOpenClose {
             }
         }
 
-        void preReloadInEDT() { // Collect the panes in EDT to retain caret positions
+        void preReloadInEDT() {
             boolean success = false;
             try {
-                reloadOpenPanes = ces.getOpenedPanes();
                 loadDoc.render(new Runnable() {
                     @Override
                     public void run() {
