@@ -51,14 +51,12 @@ import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
 import org.netbeans.modules.team.spi.TeamBugtrackingConnector.BugtrackingType;
 import org.netbeans.modules.team.spi.TeamProject;
-import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
-import org.netbeans.modules.jira.issue.JiraIssueFinder;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
+import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -116,7 +114,7 @@ public class JiraConnector implements BugtrackingConnector, TeamBugtrackingConne
         TeamProject project = null;
         if(name != null) {
             try {
-                project = TeamUtil.getTeamProject(info.getUrl(), name);
+                project = TeamAccessorUtils.getTeamProject(info.getUrl(), name);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }

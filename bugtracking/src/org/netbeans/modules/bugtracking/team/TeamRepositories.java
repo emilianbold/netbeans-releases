@@ -67,12 +67,12 @@ import org.netbeans.modules.team.spi.TeamAccessor;
 import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
 import org.netbeans.modules.team.spi.TeamBugtrackingConnector.BugtrackingType;
 import org.netbeans.modules.team.spi.TeamProject;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils;
+import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -112,7 +112,7 @@ public abstract class TeamRepositories implements PropertyChangeListener {
 
     public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
         support.addPropertyChangeListener(listener);
-        TeamAccessor[] teamAccessors = TeamUtil.getTeamAccessors();
+        TeamAccessor[] teamAccessors = TeamAccessorUtils.getTeamAccessors();
         for (TeamAccessor teamAccessor : teamAccessors) {
             teamAccessor.addPropertyChangeListener(this);
         }        
@@ -120,7 +120,7 @@ public abstract class TeamRepositories implements PropertyChangeListener {
 
     public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
-        TeamAccessor[] teamAccessors = TeamUtil.getTeamAccessors();
+        TeamAccessor[] teamAccessors = TeamAccessorUtils.getTeamAccessors();
         for (TeamAccessor teamAccessor : teamAccessors) {
             teamAccessor.removePropertyChangeListener(this);
         }        
@@ -277,7 +277,7 @@ public abstract class TeamRepositories implements PropertyChangeListener {
 
             EnumSet<BugtrackingType> reluctantSupports = EnumSet.noneOf(BugtrackingType.class);
             for (TeamProject kp : teamProjects) {
-                if(onlyDashboardOpenProjects && !TeamUtil.isLoggedIn(kp.getWebLocation())) {
+                if(onlyDashboardOpenProjects && !TeamAccessorUtils.isLoggedIn(kp.getWebLocation())) {
                     continue;
                 }
                 if(kp.getType() == null) {
@@ -313,7 +313,7 @@ public abstract class TeamRepositories implements PropertyChangeListener {
         }
 
         private TeamProject[] getDashboardProjects(boolean onlyOpenProjects) {
-            return TeamUtil.getDashboardProjects(onlyOpenProjects);
+            return TeamAccessorUtils.getDashboardProjects(onlyOpenProjects);
         }
 
         private TeamProject[] getProjectsViewProjects() {
@@ -350,15 +350,15 @@ public abstract class TeamRepositories implements PropertyChangeListener {
             TeamProject teamProject = null;
             try {
                 if(NBBugzillaUtils.isNbRepository(url)) {
-                    OwnerInfo owner = TeamUtil.getOwnerInfo(FileUtil.toFile(rootDir));
+                    OwnerInfo owner = TeamAccessorUtils.getOwnerInfo(FileUtil.toFile(rootDir));
                     if(owner != null) {
-                        teamProject = TeamUtil.getTeamProject(url, owner.getOwner());
+                        teamProject = TeamAccessorUtils.getTeamProject(url, owner.getOwner());
                     } else {
                         // might be deactivated
                         BugtrackingManager.LOG.fine("team accessor not available");
                     }
                 } else {
-                    teamProject = TeamUtil.getTeamProjectForRepository(url);
+                    teamProject = TeamAccessorUtils.getTeamProjectForRepository(url);
                 }
 
             } catch (IOException ex) {

@@ -42,26 +42,15 @@
 
 package org.netbeans.modules.bugtracking.team.spi;
 
-import org.netbeans.modules.team.spi.TeamAccessor;
 import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
 import org.netbeans.modules.team.spi.TeamProject;
-import org.netbeans.modules.team.spi.RepositoryUser;
-import org.netbeans.modules.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.team.TeamRepositories;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.net.PasswordAuthentication;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import javax.swing.JLabel;
 import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.BugtrackingOwnerSupport;
@@ -80,7 +69,7 @@ import org.netbeans.modules.bugtracking.tasks.DashboardTopComponent;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
-import org.openide.nodes.Node;
+import org.netbeans.modules.team.spi.TeamAccessorUtils;
 
 /**
  *
@@ -88,82 +77,22 @@ import org.openide.nodes.Node;
  */
 public class TeamUtil {
 
-    public static TeamAccessor[] getTeamAccessors() {
-        return BugtrackingManager.getInstance().getTeamAccessors();
-    }
-
-    public static TeamAccessor getTeamAccessor (String url) {
-        TeamAccessor accessor = null;
-        for (TeamAccessor ka : getTeamAccessors()) {
-            if (ka.isOwner(url)) {
-                accessor = ka;
-                break;
-            }
-        }
-        return accessor;
-    }
-
     /**
-     * Returns true if logged into a team server, otherwise false.
-     *
-     * @return
-     * @see isLoggedIn(java.lang.String)
-     */
-    public static boolean isLoggedIn(URL url) {
-        return isLoggedIn(url.toString());
-    }
-
-    /**
-     * @see TeamAccessor#isLoggedIn(java.lang.String)
-     */
-    public static boolean isLoggedIn(String url) {
-        for (TeamAccessor ka : getTeamAccessors()) {
-            if (ka.isLoggedIn(url)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Returns true if the given repository is a Team repository
-     *
-     * @param repo
-     * @return
-     */
-    public static boolean isFromTeamServer(Repository repo) {
-        return APIAccessor.IMPL.getImpl(repo).isTeamRepository();
-    }
-
-    /**
-     * @see TeamAccessor#getPasswordAuthentication(java.lang.String, boolean)
-     */
-    public static PasswordAuthentication getPasswordAuthentication(String url, boolean forceLogin) {
-        for (TeamAccessor ka : getTeamAccessors()) {
-            PasswordAuthentication pa = ka.getPasswordAuthentication(url, forceLogin);
-            if (pa != null) {
-                return pa;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Returns a RepositoryProvider coresponding to the given team url and a name. The url
+     * Returns a Repository corresponding to the given team url and a name. The url
      * might be either a team vcs repository, an issue or the team server url.
      * @param repositoryUrl
      * @return
      * @throws IOException
      */
     public static Repository getRepository(String repositoryUrl) throws IOException {
-        TeamProject project = getTeamProjectForRepository(repositoryUrl);
+        TeamProject project = TeamAccessorUtils.getTeamProjectForRepository(repositoryUrl);
         return (project != null)
                ? getRepository(project)
                : null;        //not a team project repository
     }
 
     /**
-     * Returns a RepositoryProvider coresponding to the given team url and a name. The url
+     * Returns a RepositoryProvider corresponding to the given team url and a name. The url
      * might be either a team vcs repository, an issue or the team server url.
      *
      * @param url
@@ -172,7 +101,7 @@ public class TeamUtil {
      * @throws IOException
      */
     public static Repository getRepository(String url, String projectName) throws IOException {
-        TeamProject p = getTeamProject(url, projectName);
+        TeamProject p = TeamAccessorUtils.getTeamProject(url, projectName);
         return p != null ? getRepository(p) : null;
     }
 
@@ -205,156 +134,10 @@ public class TeamUtil {
         }
         return ret;
     }
-
-    /**
-     * @see TeamAccessor#getProjectMembers(org.netbeans.modules.bugtracking.team.spi.TeamProject)
-     */
-    public static Collection<RepositoryUser> getProjectMembers(TeamProject kp) {
-        for (TeamAccessor ka : getTeamAccessors()) {
-            try {
-                Collection<RepositoryUser> projectMembers = ka.getProjectMembers(kp);
-                if (projectMembers != null) {
-                    return projectMembers;
-                }
-            } catch (IOException ex) {
-                BugtrackingManager.LOG.log(Level.WARNING, null, ex);
-            }
-        }
-        return Collections.EMPTY_LIST;
-    }
-
-    public static String getChatLink(String id) {
-        return "ISSUE:" + id; // NOI18N
-    }
-    
-    /**
-     * @see TeamAccessor#isNetbeansTeamRegistered()
-     */
-    public static boolean isNBTeamServerRegistered() {
-        for (TeamAccessor ka : getTeamAccessors()) {
-            if (ka.isNBTeamServerRegistered()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * @see TeamAccessor#createUserWidget(java.lang.String, java.lang.String, java.lang.String)
-     * @return may return null
-     */
-    public static JLabel createUserWidget (String url, String userName, String host, String chatMessage) {
-        TeamAccessor ka = getTeamAccessor(url);
-        assert ka != null; 
-        return ka.createUserWidget(userName, host, chatMessage);
-    }
-
-    /**
-     * @see TeamAccessor#getOwnerInfo(org.openide.nodes.Node)
-     */
-    public static OwnerInfo getOwnerInfo(Node node) {
-        for (TeamAccessor ka : getTeamAccessors()) {
-            OwnerInfo ownerInfo = ka.getOwnerInfo(node);
-            if (ownerInfo != null) {
-                return ownerInfo;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * @see TeamAccessor#getOwnerInfo(java.io.File)
-     */
-    public static OwnerInfo getOwnerInfo(File file) {
-        for (TeamAccessor ka : getTeamAccessors()) {
-            OwnerInfo ownerInfo = ka.getOwnerInfo(file);
-            if (ownerInfo != null) {
-                return ownerInfo;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * @see TeamAccessor#logTeamUsage(java.lang.Object[])
-     */
-    public static void logTeamUsage(String url, Object... parameters) {
-        TeamAccessor ka = getTeamAccessor(url);
-        if(ka != null) {
-            ka.logTeamUsage(parameters);
-        }
-    }
-
-    /**
-     * @see TeamAccessor#getTeamProjectForRepository(java.lang.String)
-     */
-    public static TeamProject getTeamProjectForRepository(String repositoryUrl) throws IOException {
-        for (TeamAccessor ka : getTeamAccessors()) {
-            TeamProject kp = ka.getTeamProjectForRepository(repositoryUrl);
-            if (kp != null) {
-                return kp;
-            }
-        }
-        return null;
-    }
     
     public static TeamProject getTeamProject(Repository repo) {
         return TeamRepositories.getInstance().getTeamProject(APIAccessor.IMPL.getImpl(repo));
     }
-
-    /**
-     * @see TeamAccessor#getTeamProject(java.lang.String, java.lang.String)
-     */
-    public static TeamProject getTeamProject(String url, String projectName) throws IOException {
-        for (TeamAccessor ka : getTeamAccessors()) {
-            TeamProject kp = ka.getTeamProject(url, projectName);
-            if (kp != null) {
-                return kp;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * @see TeamAccessor#getDashboardProjects() 
-     */
-    public static TeamProject[] getDashboardProjects(boolean onlyOpened) {
-        List<TeamProject> projs = new LinkedList<TeamProject>();
-        for (TeamAccessor ka : getTeamAccessors()) {
-            projs.addAll(Arrays.asList(ka.getDashboardProjects(onlyOpened)));
-        }
-        return projs.toArray(new TeamProject[projs.size()]);
-    }
-
-    public static Repository findNBRepository() {
-        DelegatingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
-        for (DelegatingConnector c : connectors) {
-            BugtrackingConnector bugtrackingConnector = c.getDelegate();
-            if ((bugtrackingConnector instanceof TeamBugtrackingConnector)) {
-                TeamBugtrackingConnector teamConnector = (TeamBugtrackingConnector) bugtrackingConnector;
-                if(teamConnector.getType() == BugtrackingType.BUGZILLA) {
-                    String id = teamConnector.findNBRepository(); // ensure repository exists
-                    return RepositoryRegistry.getInstance().getRepository(c.getID(), id).getRepository();
-                }
-            }
-        }
-        return null;
-    }
-    
-    public static void addRepository(String connectorId, String repositoryId) {
-        RepositoryImpl impl = RepositoryRegistry.getInstance().getRepository(connectorId, repositoryId);
-        if(impl != null) {       
-            RepositoryRegistry.getInstance().addRepository(impl);
-        }
-    }
-    
-    public static void addRepository(Repository repository) {
-        RepositoryRegistry.getInstance().addRepository(APIAccessor.IMPL.getImpl(repository));
-    }
-    
-//    public static TeamProject getTeamProject(Repository repository) {
-//        return APIAccessor.IMPL.getImpl(repository).getTeamProject();
-//    }
 
     public static Query getAllIssuesQuery(Repository repository) {
         return APIAccessor.IMPL.getImpl(repository).getAllIssuesQuery();
@@ -381,23 +164,28 @@ public class TeamUtil {
         return null;
     }
 
+    // XXX replace with api call
     public static void closeQuery(Query query) {
         QueryAction.closeQuery(APIAccessor.IMPL.getImpl(query));
     }
 
+    // XXX replace with api call
     public static void createIssue(Repository repo) {
         IssueAction.createIssue(APIAccessor.IMPL.getImpl(repo));
     }
 
+    // XXX replace with api call
     public static void openNewQuery(Repository repository) {
         QueryAction.createNewQueryForRepo(APIAccessor.IMPL.getImpl(repository));
     }
     
+    // XXX replace with api call
     public static void openQuery(final Query query, final boolean suggestedSelectionOnly) {
         QueryImpl queryImpl = APIAccessor.IMPL.getImpl(query);
         DashboardTopComponent.findInstance().select(queryImpl, true);
     }
 
+    // XXX replace with api call
     public static Collection<Issue> getRecentIssues(Repository repo) {
         Collection<IssueImpl> c = BugtrackingManager.getInstance().getRecentIssues(APIAccessor.IMPL.getImpl(repo));
         List<Issue> ret = new ArrayList<Issue>(c.size());
@@ -407,6 +195,7 @@ public class TeamUtil {
         return ret;
     }
 
+    // XXX replace with api.RepositoryManager
     public static Collection<Repository> getKnownRepositories(boolean b) {
         Collection<RepositoryImpl> c = RepositoryRegistry.getInstance().getKnownRepositories(b);
         List<Repository> ret = new ArrayList<Repository>(c.size());
@@ -420,14 +209,6 @@ public class TeamUtil {
         BugtrackingOwnerSupport.getInstance().setFirmAssociations(files, APIAccessor.IMPL.getImpl(repository));
     }
     
-    public static void addCacheListener(Issue issue, PropertyChangeListener l) {
-        APIAccessor.IMPL.getImpl(issue).addIssueStatusListener(l);
-    }
-    
-    public static void removeCacheListener(Issue issue, PropertyChangeListener l) {
-        APIAccessor.IMPL.getImpl(issue).removeIssueStatusListener(l);
-    }
-
     public static boolean isOpen(Issue issue) {
         return isOpened(APIAccessor.IMPL.getImpl(issue));
     }

@@ -59,6 +59,7 @@ import org.netbeans.modules.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.ui.selectors.RepositorySelectorBuilder;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils;
+import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -378,12 +379,12 @@ public class BugtrackingOwnerSupport {
             if(NBBugzillaUtils.isNbRepository(url)) {
                 File file = FileUtil.toFile(fileObject);
                 if(file != null) {
-                    OwnerInfo ownerInfo = TeamUtil.getOwnerInfo(file);
+                    OwnerInfo ownerInfo = TeamAccessorUtils.getOwnerInfo(file);
                     if(ownerInfo != null) {
                         repository = APIAccessor.IMPL.getImpl(TeamUtil.getRepository(url, ownerInfo.getOwner()));
                     }
                     if(repository == null) {
-                        repository = APIAccessor.IMPL.getImpl(TeamUtil.findNBRepository());
+                        repository = APIAccessor.IMPL.getImpl(NBBugzillaUtils.findNBRepository());
                     }
                 }
             }

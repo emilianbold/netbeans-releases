@@ -179,14 +179,6 @@ public final class BugtrackingManager implements LookupListener {
         return Collections.unmodifiableMap(getRecentIssues());
     }
 
-    public TeamAccessor[] getTeamAccessors() {
-        if (teamAccessors == null) {
-            Collection<? extends TeamAccessor> coll = Lookup.getDefault().lookupAll(TeamAccessor.class);
-            teamAccessors = coll.toArray(new TeamAccessor[coll.size()]);
-        }
-        return teamAccessors;
-    }
-
     private Map<String, List<RecentIssue>> getRecentIssues() {
         if(recentIssues == null) {
             recentIssues = new HashMap<String, List<RecentIssue>>();

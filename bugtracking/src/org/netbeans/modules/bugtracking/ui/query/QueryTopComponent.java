@@ -90,6 +90,7 @@ import org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils;
 import org.netbeans.modules.bugtracking.commons.NoContentPanel;
 import org.netbeans.modules.bugtracking.team.TeamRepositories;
 import org.netbeans.modules.bugtracking.ui.repository.RepositoryComboSupport;
+import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.netbeans.modules.team.spi.TeamProject;
 import org.netbeans.spi.actions.AbstractSavable;
 import org.openide.DialogDisplayer;
@@ -599,7 +600,7 @@ public final class QueryTopComponent extends TopComponent
                     }
 
                     if(context != null && NBBugzillaUtils.isNbRepository(repo.getUrl())) {
-                        OwnerInfo ownerInfo = TeamUtil.getOwnerInfo(context);
+                        OwnerInfo ownerInfo = TeamAccessorUtils.getOwnerInfo(context);
                         if(ownerInfo != null) {
                             query.setContext(ownerInfo);
                         }

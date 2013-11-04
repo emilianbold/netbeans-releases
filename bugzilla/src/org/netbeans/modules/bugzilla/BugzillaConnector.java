@@ -52,11 +52,11 @@ import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugzilla.api.NBBugzillaUtils;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.repository.NBRepositorySupport;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.netbeans.modules.team.spi.TeamProject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -108,7 +108,7 @@ public class BugzillaConnector implements BugtrackingConnector, TeamBugtrackingC
         TeamProject project = null;
         if(name != null) {
             try {
-                project = TeamUtil.getTeamProject(info.getUrl(), name);
+                project = TeamAccessorUtils.getTeamProject(info.getUrl(), name);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }

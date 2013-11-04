@@ -124,7 +124,6 @@ import org.netbeans.modules.bugtracking.api.IssueQuickSearch;
 import org.netbeans.modules.team.spi.OwnerInfo;
 import org.netbeans.modules.team.spi.RepositoryUser;
 import org.netbeans.modules.team.spi.RepositoryUserRenderer;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.commons.AttachmentsPanel;
 import org.netbeans.modules.bugtracking.commons.LinkButton;
@@ -146,6 +145,7 @@ import org.netbeans.modules.bugzilla.util.NbBugzillaConstants;
 import org.netbeans.modules.mylyn.util.NbDateRange;
 import org.netbeans.modules.spellchecker.api.Spellchecker;
 import org.netbeans.modules.team.ide.spi.IDEServices;
+import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
@@ -650,7 +650,7 @@ public class IssuePanel extends javax.swing.JPanel {
                     int index = reporter.indexOf('@');
                     String userName = (index == -1) ? reporter : reporter.substring(0,index);
                     String host = ((KenaiRepository) issue.getRepository()).getHost();
-                    JLabel label = TeamUtil.createUserWidget(issue.getRepository().getUrl(), userName, host, TeamUtil.getChatLink(issue.getID()));
+                    JLabel label = TeamAccessorUtils.createUserWidget(issue.getRepository().getUrl(), userName, host, TeamAccessorUtils.getChatLink(issue.getID()));
                     if (label != null) {
                         label.setText(null);
                         ((GroupLayout) attributesSectionPanel.getLayout()).replace(reportedStatusLabel, label);
@@ -704,7 +704,7 @@ public class IssuePanel extends javax.swing.JPanel {
                 int index = assignee.indexOf('@');
                 String userName = (index == -1) ? assignee : assignee.substring(0,index);
                 String host = ((KenaiRepository) issue.getRepository()).getHost();
-                JLabel label = TeamUtil.createUserWidget(issue.getRepository().getUrl(), userName, host, TeamUtil.getChatLink(issue.getID()));
+                JLabel label = TeamAccessorUtils.createUserWidget(issue.getRepository().getUrl(), userName, host, TeamAccessorUtils.getChatLink(issue.getID()));
                 if (label != null) {
                     label.setText(null);
                     ((GroupLayout) attributesSectionPanel.getLayout()).replace(assignedToStatusLabel, label);

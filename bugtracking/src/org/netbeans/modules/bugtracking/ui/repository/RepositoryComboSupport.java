@@ -43,7 +43,6 @@
 package org.netbeans.modules.bugtracking.ui.repository;
 
 import org.netbeans.modules.bugtracking.BugtrackingOwnerSupport;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.openide.filesystems.FileObject;
 import java.awt.Component;
 import java.awt.EventQueue;
@@ -734,7 +733,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         String url = VersioningQuery.getRemoteLocation(referenceFile.toURI());
         if (url != null) {
             if(NBBugzillaUtils.isNbRepository(url)) {
-                TeamUtil.findNBRepository(); // ensure repository exists 
+                NBBugzillaUtils.findNBRepository(); // ensure repository exists 
             }
         }
     }

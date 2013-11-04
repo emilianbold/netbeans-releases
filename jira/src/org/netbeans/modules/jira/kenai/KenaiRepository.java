@@ -58,7 +58,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.netbeans.modules.team.spi.TeamAccessor;
 import org.netbeans.modules.team.spi.TeamProject;
 import org.netbeans.modules.team.spi.RepositoryUser;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.commons.TextUtils;
 import org.netbeans.modules.jira.JiraConnector;
@@ -66,6 +65,7 @@ import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
+import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -90,7 +90,7 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
         this.projectName = project;
         this.host = host;
         this.kenaiProject = kenaiProject;
-        TeamAccessor kenaiAccessor = TeamUtil.getTeamAccessor(url);
+        TeamAccessor kenaiAccessor = TeamAccessorUtils.getTeamAccessor(url);
         if (kenaiAccessor != null) {
             kenaiAccessor.addPropertyChangeListener(this, kenaiProject.getWebLocation().toString());
         }
@@ -247,7 +247,7 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
 
     @Override
     protected void getRemoteFilters() {
-        if(!TeamUtil.isLoggedIn(kenaiProject.getWebLocation())) {
+        if(!TeamAccessorUtils.isLoggedIn(kenaiProject.getWebLocation())) {
             return;
         }
         super.getRemoteFilters();
@@ -260,7 +260,7 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
     
     @Override
     public boolean authenticate(String errroMsg) {
-        PasswordAuthentication pa = TeamUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), true);
+        PasswordAuthentication pa = TeamAccessorUtils.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), true);
         if(pa == null) {
             return false;
         }
@@ -271,22 +271,6 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
         setCredentials(user, password);
 
         return true;
-    }
-
-    private static String getKenaiUser(TeamProject kenaiProject) {
-        PasswordAuthentication pa = TeamUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false);
-        if(pa != null) {
-            return pa.getUserName();
-        }
-        return "";                                                              // NOI18N
-    }
-
-    private static char[] getKenaiPassword(TeamProject kenaiProject) {
-        PasswordAuthentication pa = TeamUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false);
-        if(pa != null) {
-            return pa.getPassword();
-        }
-        return new char[0];                                                              
     }
 
     /**
@@ -325,7 +309,7 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
 
     @Override
     public Collection<RepositoryUser> getUsers() {
-         Collection<RepositoryUser> users = TeamUtil.getProjectMembers(kenaiProject);
+         Collection<RepositoryUser> users = TeamAccessorUtils.getProjectMembers(kenaiProject);
          if (users.isEmpty()) {
              // fallback - try cache
              users = super.getUsers();
@@ -350,7 +334,7 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
             String user;
             char[] psswd;
             PasswordAuthentication pa =
-                TeamUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false); // do not force login
+                TeamAccessorUtils.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false); // do not force login
             if(pa != null) {
                 user = pa.getUserName();
                 psswd = pa.getPassword();

@@ -45,11 +45,12 @@ package org.netbeans.modules.bugzilla.repository;
 import java.util.Collection;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils;
 import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.netbeans.modules.team.spi.TeamAccessor;
+import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.openide.util.NbBundle;
 
 /**
@@ -101,7 +102,7 @@ public class NBRepositorySupport extends BugzillaRepository {
                     }
                 }
                 if(!registered) {
-                    TeamUtil.addRepository(nbRepository);
+                    NBBugzillaUtils.addRepository(nbRepository);
                 }
             }
             return nbRepository;
@@ -114,7 +115,7 @@ public class NBRepositorySupport extends BugzillaRepository {
             }
         }
 
-        if(TeamUtil.isNBTeamServerRegistered()) {
+        if(isNBTeamServerRegistered()) {
             isTeam = true;
             // there is a nb team server registered in the ide
             // create a new repo but _do not register_ in services
@@ -127,7 +128,7 @@ public class NBRepositorySupport extends BugzillaRepository {
 
         if(nbRepository == null) {                              // no nb repo yet ...
             nbRepository = createRepositoryIntern();            // ... create ...
-            TeamUtil.addRepository(nbRepository); // ... and register in services/issue tracking
+            NBBugzillaUtils.addRepository(nbRepository); // ... and register in services/issue tracking
         } 
 
         return nbRepository;
@@ -161,4 +162,13 @@ public class NBRepositorySupport extends BugzillaRepository {
         bugzillaRepository = new BugzillaRepository(info); 
         return BugzillaUtil.getRepository(bugzillaRepository);
     }
+    
+    private static boolean isNBTeamServerRegistered() {
+        for (TeamAccessor ka : TeamAccessorUtils.getTeamAccessors()) {
+            if (ka.isNBTeamServerRegistered()) {
+                return true;
+            }
+        }
+        return false;
+    }    
 }

@@ -75,7 +75,6 @@ import org.eclipse.mylyn.tasks.core.TaskMapping;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.modules.team.spi.TeamAccessor;
 import org.netbeans.modules.team.spi.TeamProject;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
@@ -92,6 +91,7 @@ import org.netbeans.modules.odcs.tasks.util.ODCSUtil;
 import org.netbeans.modules.mylyn.util.UnsubmittedTasksContainer;
 import org.netbeans.modules.mylyn.util.commands.SimpleQueryCommand;
 import org.netbeans.modules.odcs.tasks.query.QueryParameters;
+import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -126,7 +126,7 @@ public class ODCSRepository implements PropertyChangeListener {
         this(createInfo(project.getDisplayName(), project.getFeatureLocation())); // use name as id - can't be changed anyway
         assert project != null;
         this.project = project;
-        TeamUtil.getTeamAccessor(project.getFeatureLocation()).addPropertyChangeListener(this, project.getWebLocation().toString());
+        TeamAccessorUtils.getTeamAccessor(project.getFeatureLocation()).addPropertyChangeListener(this, project.getWebLocation().toString());
     }
     
     public ODCSRepository() {
@@ -182,7 +182,7 @@ public class ODCSRepository implements PropertyChangeListener {
             String user;
             char[] psswd;
             PasswordAuthentication pa =
-                    TeamUtil.getPasswordAuthentication(project.getWebLocation().toString(), false); // do not force login
+                    TeamAccessorUtils.getPasswordAuthentication(project.getWebLocation().toString(), false); // do not force login
             if (pa != null) {
                 user = pa.getUserName();
                 psswd = pa.getPassword();
@@ -197,7 +197,7 @@ public class ODCSRepository implements PropertyChangeListener {
     
 
     public boolean authenticate (String errroMsg) {
-        PasswordAuthentication pa = TeamUtil.getPasswordAuthentication(project.getWebLocation().toString(), true);
+        PasswordAuthentication pa = TeamAccessorUtils.getPasswordAuthentication(project.getWebLocation().toString(), true);
         if(pa == null) {
             return false;
         }

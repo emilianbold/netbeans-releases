@@ -60,7 +60,6 @@ import org.netbeans.modules.team.spi.TeamAccessor;
 import org.netbeans.modules.team.spi.TeamProject;
 import org.netbeans.modules.team.spi.OwnerInfo;
 import org.netbeans.modules.team.spi.RepositoryUser;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.commons.TextUtils;
 import org.netbeans.modules.bugzilla.Bugzilla;
@@ -73,6 +72,7 @@ import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.repository.IssueField;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -113,7 +113,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
         this.host = host;
         assert kenaiProject != null;
         this.kenaiProject = kenaiProject;
-        TeamAccessor kenaiAccessor = TeamUtil.getTeamAccessor(url);
+        TeamAccessor kenaiAccessor = TeamAccessorUtils.getTeamAccessor(url);
         if (kenaiAccessor != null) {
             kenaiAccessor.addPropertyChangeListener(this, kenaiProject.getWebLocation().toString());
         }
@@ -251,7 +251,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
 
     @Override
     public boolean authenticate(String errroMsg) {
-        PasswordAuthentication pa = TeamUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), true);
+        PasswordAuthentication pa = TeamAccessorUtils.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), true);
         if(pa == null) {
             return false;
         }
@@ -273,7 +273,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
     }
 
     private static String getKenaiUser(TeamProject kenaiProject) {
-        PasswordAuthentication pa = TeamUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false);
+        PasswordAuthentication pa = TeamAccessorUtils.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false);
         if(pa != null) {
             return pa.getUserName();
         }
@@ -281,7 +281,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
     }
 
     private static char[] getKenaiPassword(TeamProject kenaiProject) {
-        PasswordAuthentication pa = TeamUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false);
+        PasswordAuthentication pa = TeamAccessorUtils.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false);
         if(pa != null) {
             return pa.getPassword();
         }
@@ -309,7 +309,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
 
     @Override
     public Collection<RepositoryUser> getUsers() {
-        return TeamUtil.getProjectMembers(kenaiProject);
+        return TeamAccessorUtils.getProjectMembers(kenaiProject);
     }
 
     public String getHost() {
@@ -329,7 +329,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
             String user;
             char[] psswd;
             PasswordAuthentication pa = 
-                    TeamUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false); // do not force login
+                    TeamAccessorUtils.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false); // do not force login
             if(pa != null) {
                 user = pa.getUserName();
                 psswd = pa.getPassword();

@@ -73,7 +73,6 @@ import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.team.spi.RepositoryUser;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.spi.*;
 import org.netbeans.modules.team.spi.OwnerInfo;
 import org.netbeans.modules.bugzilla.commands.BugzillaExecutor;
@@ -88,6 +87,7 @@ import org.netbeans.modules.mylyn.util.NbTask;
 import org.netbeans.modules.mylyn.util.commands.SimpleQueryCommand;
 import org.netbeans.modules.mylyn.util.commands.SynchronizeTasksCommand;
 import org.netbeans.modules.mylyn.util.UnsubmittedTasksContainer;
+import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -611,7 +611,7 @@ public class BugzillaRepository {
         }
         if(BugzillaUtil.isNbRepository(this)) {
             if(nodes != null && nodes.length > 0) {
-                OwnerInfo ownerInfo = TeamUtil.getOwnerInfo(nodes[0]);
+                OwnerInfo ownerInfo = TeamAccessorUtils.getOwnerInfo(nodes[0]);
                 if(ownerInfo != null /*&& ownerInfo.getOwner().equals(product)*/ ) {
                     return ownerInfo;
                 }

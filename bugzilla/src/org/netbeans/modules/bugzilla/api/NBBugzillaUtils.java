@@ -46,10 +46,8 @@ import java.io.File;
 import java.net.URL;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.Util;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.netbeans.modules.bugzilla.commands.ValidateCommand;
@@ -197,7 +195,7 @@ public class NBBugzillaUtils {
                 continue;
             }
             // everythings fine, store the credentials ...
-            TeamUtil.addRepository(BugzillaConnector.ID, repo.getID());
+            org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils.addRepository(BugzillaConnector.ID, repo.getID());
             return true;
         }
         repo.setCredentials(null, null, null, null); // reset

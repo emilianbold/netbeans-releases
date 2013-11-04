@@ -89,9 +89,9 @@ import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.commons.HyperlinkSupport;
 import org.netbeans.modules.bugtracking.commons.HyperlinkSupport.IssueRefProvider;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.util.*;
+import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.netbeans.spi.actions.AbstractSavable;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -400,7 +400,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                     ((DelegatingUndoRedoManager)getUndoRedo()).init();
                     
                     if(context != null && NBBugzillaUtils.isNbRepository(repo.getUrl())) {
-                        OwnerInfo ownerInfo = TeamUtil.getOwnerInfo(context);
+                        OwnerInfo ownerInfo = TeamAccessorUtils.getOwnerInfo(context);
                         if(ownerInfo != null) {
                             issue.setContext(ownerInfo);
                         }

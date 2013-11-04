@@ -47,9 +47,9 @@ import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
 import org.netbeans.modules.team.spi.TeamProject;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
 import org.netbeans.modules.odcs.tasks.util.ODCSUtil;
+import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.openide.util.Exceptions;
 
 /**
@@ -88,7 +88,7 @@ public class ODCSConnector implements BugtrackingConnector, TeamBugtrackingConne
         TeamProject project = null;
         if(name != null) {
             try {
-                project = TeamUtil.getTeamProject(info.getUrl(), name);
+                project = TeamAccessorUtils.getTeamProject(info.getUrl(), name);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
