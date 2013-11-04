@@ -105,6 +105,21 @@ is the proper place.
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
+        <change id="ClassPathProviderImpl-bootcp-props">
+            <api name="java-api-common"/>
+            <summary>Possibility to create project's boot classpath based on project properties</summary>
+            <version major="1" minor="67"/>
+            <date day="4" month="11" year="2013"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                   Added possibility to create project's boot classpath based on project properties
+                   rather than project's platform bootstrap libraries.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.classpath" name="ClassPathProviderImpl"/>
+        </change>
         <change id="BaseActionProvider-mainClass">
             <api name="java-api-common"/>
             <summary>Possibility to override main class check and main class selection</summary>
