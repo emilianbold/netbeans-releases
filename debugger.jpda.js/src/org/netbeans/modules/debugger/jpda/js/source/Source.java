@@ -62,6 +62,8 @@ import org.openide.util.Exceptions;
  */
 public final class Source {
     
+    public static final String URL_PROTOCOL = "js-scripts"; // NOI18N
+    
     private static final String SOURCE_CLASS = "jdk.nashorn.internal.runtime.Source";   // NOI18N
     private static final String SOURCE_FIELD = "source";    // NOI18N
     

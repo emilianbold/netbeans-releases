@@ -47,7 +47,13 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.modules.debugger.jpda.js.JSUtils;
+import org.netbeans.modules.debugger.jpda.js.source.SourceURLMapper;
+import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
 
 /**
@@ -72,21 +78,72 @@ public class JSLineBreakpoint extends JSBreakpoint {
         return line;
     }
     
+    private void setLine(Line line) {
+        this.line = line;
+    }
+    
     public int getLineNumber() {
         return line.getLineNumber() + 1;
     }
     
     public URL getURL() {
+        if (line instanceof FutureLine) {
+            return ((FutureLine) line).getURL();
+        }
         return line.getLookup().lookup(FileObject.class).toURL();
     }
 
+    @Override
+    protected FileObject getFileObject() {
+        if (line instanceof FutureLine) {
+            URL url = getURL();
+            FileObject fo = URLMapper.findFileObject(url);
+            if (fo != null) {
+                try {
+                    DataObject dobj = DataObject.find(fo);
+                    LineCookie lineCookie = dobj.getLookup().lookup(LineCookie.class);
+                    if (lineCookie == null) {
+                        return null;
+                    }
+                    Line l = lineCookie.getLineSet().getCurrent(getLineNumber() - 1);
+                    setLine(l);
+                } catch (DataObjectNotFoundException ex) {
+                }
+            }
+            return fo;
+        }
+        return line.getLookup().lookup(FileObject.class);
+    }
+    
     private LineBreakpoint createJavaLB(Line line) {
         FileObject fo = line.getLookup().lookup(FileObject.class);
-        String url = fo.toURL().toExternalForm();
+        String url;
+        String name;
+        if (fo != null) {
+            url = fo.toURL().toExternalForm();
+            name = fo.getName();
+        } else {
+            url = ((FutureLine) line).getURL().toExternalForm();
+            int i1 = url.lastIndexOf('/');
+            if (i1 < 0) {
+                i1 = 0;
+            } else {
+                i1++;
+            }
+            int i2 = url.lastIndexOf('.');
+            if (i2 < i1) {
+                i2 = url.length();
+            }
+            name = url.substring(i1, i2);
+            name = SourceURLMapper.percentDecode(name);
+        }
+        if ("<eval>".equals(name)) {        // NOI18N
+            name = "\\^eval\\_";            // NOI18N
+        }
         int lineNo = getLineNumber();
-        LineBreakpoint lb = LineBreakpoint.create(url, lineNo);
+        LineBreakpoint lb = LineBreakpoint.create("", lineNo);
         lb.setHidden(true);
-        lb.setPreferredClassName(JSUtils.NASHORN_SCRIPT + fo.getName());
+        lb.setPreferredClassName(JSUtils.NASHORN_SCRIPT + name);
         lb.setSuspend(JPDABreakpoint.SUSPEND_EVENT_THREAD);
         return lb;
     }
