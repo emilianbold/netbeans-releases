@@ -161,7 +161,21 @@ public class MavenWebProjectValidation extends WebProjectValidation {
 
     @Override
     public void waitBuildSuccessful() {
-        OutputTabOperator console = new OutputTabOperator(PROJECT_NAME);
+        new Action(Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle", "Menu/Window")
+                + "|" + Bundle.getStringTrimmed("org.netbeans.core.output2.Bundle", "OutputWindow"),
+                null).performMenu();
+        String outputName = PROJECT_NAME;
+        String runningTest = getName();
+        if (runningTest.contains("testRunJSP")) {
+            outputName = "pageRunJSP";
+        } else if (runningTest.contains("testViewServlet")) {
+            outputName = "pageViewServlet";
+        } else if (runningTest.contains("testRunServlet")) {
+            outputName = "Servlet1";
+        } else if (runningTest.contains("testRunTag")) {
+            outputName = "pageRunTag";
+        }
+        OutputTabOperator console = new OutputTabOperator(outputName);
         console.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 180000);
         console.waitText("BUILD SUCCESS");
     }
