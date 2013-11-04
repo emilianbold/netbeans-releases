@@ -93,7 +93,11 @@ final class LookupListenerList {
                 }
                 newArr[indx++] = arr[i];
             }
-            listeners = newArr;
+            if (newArr.length == 0) {
+                listeners = null;
+            } else {
+                listeners = newArr;
+            }
         }
     }
 
