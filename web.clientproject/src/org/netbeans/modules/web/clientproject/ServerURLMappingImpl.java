@@ -42,27 +42,22 @@
 
 package org.netbeans.modules.web.clientproject;
 
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLDecoder;
-import org.netbeans.modules.javascript.jstestdriver.api.JsTestDriver;
 import org.netbeans.modules.web.browser.api.WebBrowser;
+import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
 import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
 import org.netbeans.modules.web.common.api.WebServer;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 
 /**
  *
  */
 public class ServerURLMappingImpl implements ServerURLMappingImplementation {
 
-    private ClientSideProject project;
+    private final ClientSideProject project;
 
     public ServerURLMappingImpl(ClientSideProject project) {
         this.project = project;
@@ -90,7 +85,7 @@ public class ServerURLMappingImpl implements ServerURLMappingImplementation {
                 } else if (root.contains(":443/") && root.contains("https")) {
                     root = root.replace(":443/", "/");
                 }
-                
+
                 u = WebUtils.stringToUrl(root + relPath);
             }
             WebBrowser browser = project.getProjectWebBrowser();
@@ -99,7 +94,14 @@ public class ServerURLMappingImpl implements ServerURLMappingImplementation {
             }
             return u;
         } else {
-            return toJsTestDriverServer(projectFile);
+            JsTestingProvider testingProvider = project.getJsTestingProvider(false);
+            if (testingProvider != null) {
+                URL url = testingProvider.toServer(project, projectFile);
+                if (url != null) {
+                    return url;
+                }
+            }
+            return null;
         }
     }
 
@@ -152,48 +154,12 @@ public class ServerURLMappingImpl implements ServerURLMappingImplementation {
             }
         }
         if (fo == null) {
-            fo = fromJsTestDriverServer(serverURL);
-        }
-        return fo;
-    }
-
-    private URL toJsTestDriverServer(FileObject projectFile) {
-        String prefix = JsTestDriver.getServerURL();
-        if (!prefix.endsWith("/")) {
-            prefix += "/";
-        }
-        prefix += "test/";
-        String relativePath = FileUtil.getRelativePath(project.getProjectDirectory(), projectFile);
-        if (relativePath != null) {
-            try {
-                return new URL(prefix+relativePath);
-            } catch (MalformedURLException ex) {
-                Exceptions.printStackTrace(ex);
+            JsTestingProvider testingProvider = project.getJsTestingProvider(false);
+            if (testingProvider != null) {
+                fo = testingProvider.fromServer(project, serverURL);
             }
         }
-        return null;
-    }
-    
-    private FileObject fromJsTestDriverServer(URL serverURL) {
-        String serverU = WebUtils.urlToString(serverURL);
-        String prefix = JsTestDriver.getServerURL();
-        if (!prefix.endsWith("/")) {
-            prefix += "/";
-        }
-        prefix += "test/";
-        if (!serverU.startsWith(prefix)) {
-            return null;
-        }
-        String projectRelativePath = serverU.substring(prefix.length());
-        try {
-            projectRelativePath = URLDecoder.decode(projectRelativePath, "UTF-8");
-        } catch (UnsupportedEncodingException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        if (projectRelativePath.length() > 0) {
-            return project.getProjectDirectory().getFileObject(projectRelativePath);
-        }
-        return null;
+        return fo;
     }
 
 }
