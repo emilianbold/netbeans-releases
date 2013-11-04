@@ -125,8 +125,12 @@ public class BugzillaQueryProvider implements QueryProvider<BugzillaQuery, Bugzi
     }
     
     private boolean needsAndHasNoLogin(BugzillaQuery query) {
-        KenaiRepository repo = (KenaiRepository) query.getRepository();
-        return repo.isMyIssues(query) && !repo.isLoggedIn();
+        BugzillaRepository repo = query.getRepository();
+        if(repo instanceof KenaiRepository ) {
+            KenaiRepository kenaiRepo = (KenaiRepository) repo;
+            return kenaiRepo.isMyIssues(query) && !kenaiRepo.isLoggedIn();
+        }
+        return false;
     }
     
 }

@@ -119,7 +119,11 @@ public class JiraQueryProvider implements QueryProvider<JiraQuery, NbJiraIssue> 
      ********************************************************************************/
     
     private boolean needsAndHasNoLogin(JiraQuery query) {
-        KenaiRepository repo = (KenaiRepository) query.getRepository();
-        return repo.isMyIssues(query) && !repo.isLoggedIn();
+        JiraRepository repo =  query.getRepository();
+        if(repo instanceof KenaiRepository ) {
+            KenaiRepository kenaiRepo = (KenaiRepository) repo;
+            return kenaiRepo.isMyIssues(query) && !kenaiRepo.isLoggedIn();
+        }
+        return false;
     }    
 }
