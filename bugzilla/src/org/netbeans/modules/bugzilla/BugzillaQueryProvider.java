@@ -58,7 +58,7 @@ public class BugzillaQueryProvider implements QueryProvider<BugzillaQuery, Bugzi
     @Override
     public String getDisplayName(BugzillaQuery query) {
         String name = query.getDisplayName();
-        return name + (needsAndHasNoLogin(query) ? "" : " " +  NbBundle.getMessage(BugzillaQueryProvider.class, "LBL_NotLoggedIn"));
+        return name + (needsAndHasNoLogin(query) ? " " +  NbBundle.getMessage(BugzillaQueryProvider.class, "LBL_NotLoggedIn") : "");
     }
 
     @Override

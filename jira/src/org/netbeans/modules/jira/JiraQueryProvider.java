@@ -58,7 +58,7 @@ public class JiraQueryProvider implements QueryProvider<JiraQuery, NbJiraIssue> 
     @Override
     public String getDisplayName(JiraQuery query) {
         String name = query.getDisplayName();
-        return name + (needsAndHasNoLogin(query) ? "" : " " +  NbBundle.getMessage(JiraQueryProvider.class, "LBL_NotLoggedIn"));
+        return name + (needsAndHasNoLogin(query) ? " " +  NbBundle.getMessage(JiraQueryProvider.class, "LBL_NotLoggedIn") : "");
     }
 
     @Override
