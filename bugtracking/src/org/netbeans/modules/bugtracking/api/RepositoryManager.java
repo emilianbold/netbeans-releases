@@ -48,8 +48,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
+import org.netbeans.modules.bugtracking.team.TeamRepositories;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 
@@ -133,7 +135,16 @@ public final class RepositoryManager {
      */
     public Collection<Repository> getRepositories(String connectorId) {
         LinkedList<Repository> ret = new LinkedList<Repository>();
-        ret.addAll(TeamUtil.getRepositories(connectorId, false, true));
+        
+        // team repos (not registered by user)
+        Collection<RepositoryImpl> impls = TeamRepositories.getInstance().getRepositories(false, true);
+        for (RepositoryImpl impl : impls) {
+            if(connectorId.equals(impl.getConnectorId())) {
+                ret.add(impl.getRepository());
+            }
+        }
+        
+        // by user registered repos
         ret.addAll(toRepositories(registry.getRepositories(connectorId)));
         return ret;
     }

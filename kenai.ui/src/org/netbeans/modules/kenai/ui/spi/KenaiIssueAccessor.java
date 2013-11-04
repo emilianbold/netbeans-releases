@@ -122,14 +122,6 @@ public abstract class KenaiIssueAccessor {
         public abstract String getDisplayName();
 
         /**
-         * Determines whether this issues TopComponent is opened
-         *
-         * @return
-         * @see TopComponent#isOpened() 
-         */
-        public abstract boolean isOpened();
-
-        /**
          * Determines whether this issues TopComponent is showing on screen.
          *
          * @return

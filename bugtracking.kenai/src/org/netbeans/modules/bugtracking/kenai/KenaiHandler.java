@@ -59,6 +59,7 @@ import javax.swing.Action;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.kenai.api.Kenai;
@@ -290,7 +291,7 @@ class KenaiHandler {
                 Support.getInstance().post(new Runnable() { // XXX add post method to BM
                     @Override
                     public void run() {
-                        TeamUtil.openNewQuery(repo);
+                        Util.createNewQuery(repo);
                     }
                 });
             }
@@ -310,7 +311,7 @@ class KenaiHandler {
                 Support.getInstance().post(new Runnable() { // XXX add post method to BM
                     @Override
                     public void run() {
-                        TeamUtil.createIssue(repo);
+                        Util.createNewIssue(repo);
                     }
                 });
             }
@@ -356,7 +357,7 @@ class KenaiHandler {
         public void closeQueries() {
             for (QueryHandle qh : queries) {
                 if(qh instanceof QueryHandleImpl) {
-                    TeamUtil.closeQuery(((QueryHandleImpl) qh).getQuery());
+                    Util.closeQuery(((QueryHandleImpl) qh).getQuery());
                 }
             }
             synchronized (projectListeners) {

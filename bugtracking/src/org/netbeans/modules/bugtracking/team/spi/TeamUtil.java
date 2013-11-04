@@ -92,7 +92,7 @@ public class TeamUtil {
     }
 
     /**
-     * Returns a RepositoryProvider corresponding to the given team url and a name. The url
+     * Returns a Repository corresponding to the given team url and a name. The url
      * might be either a team vcs repository, an issue or the team server url.
      *
      * @param url
@@ -119,20 +119,6 @@ public class TeamUtil {
     public static Repository getRepository(TeamProject project, boolean forceCreate) {
         RepositoryImpl impl = TeamRepositories.getInstance().getRepository(project, forceCreate);
         return impl != null ? impl.getRepository() : null;
-    }
-    
-    /**
-     * @see TeamRepositories#getRepositories()
-     */
-    public static Collection<Repository> getRepositories(String connectorId, boolean pingOpenProjects, boolean onlyDashboardOpenProjects) {
-        Collection<RepositoryImpl> impls = TeamRepositories.getInstance().getRepositories(pingOpenProjects, onlyDashboardOpenProjects);
-        List<Repository> ret = new ArrayList<Repository>(impls.size());
-        for (RepositoryImpl impl : impls) {
-            if(connectorId.equals(impl.getConnectorId())) {
-                ret.add(impl.getRepository());
-            }
-        }
-        return ret;
     }
     
     public static TeamProject getTeamProject(Repository repo) {
@@ -163,75 +149,18 @@ public class TeamUtil {
         assert false : "no TeamSupport available for repository [" + repo.getDisplayName() + "]";  // NOI18N
         return null;
     }
-
-    // XXX replace with api call
-    public static void closeQuery(Query query) {
-        QueryAction.closeQuery(APIAccessor.IMPL.getImpl(query));
-    }
-
-    // XXX replace with api call
-    public static void createIssue(Repository repo) {
-        IssueAction.createIssue(APIAccessor.IMPL.getImpl(repo));
-    }
-
-    // XXX replace with api call
-    public static void openNewQuery(Repository repository) {
-        QueryAction.createNewQueryForRepo(APIAccessor.IMPL.getImpl(repository));
-    }
     
-    // XXX replace with api call
-    public static void openQuery(final Query query, final boolean suggestedSelectionOnly) {
-        QueryImpl queryImpl = APIAccessor.IMPL.getImpl(query);
-        DashboardTopComponent.findInstance().select(queryImpl, true);
-    }
-
-    // XXX replace with api call
-    public static Collection<Issue> getRecentIssues(Repository repo) {
-        Collection<IssueImpl> c = BugtrackingManager.getInstance().getRecentIssues(APIAccessor.IMPL.getImpl(repo));
-        List<Issue> ret = new ArrayList<Issue>(c.size());
-        for (IssueImpl impl : c) {
-            ret.add(impl.getIssue());
-        }
-        return ret;
-    }
-
-    // XXX replace with api.RepositoryManager
-    public static Collection<Repository> getKnownRepositories(boolean b) {
-        Collection<RepositoryImpl> c = RepositoryRegistry.getInstance().getKnownRepositories(b);
-        List<Repository> ret = new ArrayList<Repository>(c.size());
-        for (RepositoryImpl impl : c) {
-            ret.add(impl.getRepository());
-        }
-        return ret;
-    }
-
     public static void setFirmAssociations(File[] files, Repository repository) {
         BugtrackingOwnerSupport.getInstance().setFirmAssociations(files, APIAccessor.IMPL.getImpl(repository));
     }
     
-    public static boolean isOpen(Issue issue) {
-        return isOpened(APIAccessor.IMPL.getImpl(issue));
-    }
-    
     public static boolean isShowing(Issue issue) {
-        return isOpened(APIAccessor.IMPL.getImpl(issue));
+        IssueTopComponent tc = IssueTopComponent.find(APIAccessor.IMPL.getImpl(issue), false);
+        return tc != null ? tc.isOpened() : false;
     }
 
     public static void downloadAndInstallJira(String projectUrl) {
         JiraUpdater.getInstance().downloadAndInstall(projectUrl);
     }
-    
-    public static Map<String, List<RecentIssue>> getAllRecentIssues() {
-        return BugtrackingManager.getInstance().getAllRecentIssues();
-    }
 
-    /**
-     * Determines if the gives issue is opened in the editor area
-     * @param issue
-     * @return true in case the given issue is opened in the editor are, otherwise false
-     */
-    private static boolean isOpened(IssueImpl issue) {
-        IssueTopComponent tc = IssueTopComponent.find(issue, false);
-        return tc != null ? tc.isOpened() : false;
-    }    
 }

@@ -42,7 +42,17 @@
 package org.netbeans.modules.bugtracking.api;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.modules.bugtracking.APIAccessor;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.IssueImpl;
+import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.tasks.DashboardTopComponent;
+import org.netbeans.modules.bugtracking.team.spi.RecentIssue;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
@@ -80,7 +90,29 @@ public final class Util {
     }
     
     /**
+     * Opens the Tasks Dashboard and selects and expands the given Query in it.
+     * 
+     * @param query the Query to be selected in the Tasks Dasboard
+     */
+    public static void selectQuery(final Query query) {
+        QueryImpl queryImpl = APIAccessor.IMPL.getImpl(query);
+        DashboardTopComponent.findInstance().select(queryImpl, true);
+    }    
+    
+    /**
+     * Closes the given Query in case it is opened in a TopComponent the editor area.
+     * @param query 
+     */
+    public static void closeQuery(Query query) {
+        QueryAction.closeQuery(APIAccessor.IMPL.getImpl(query));
+    }
+        
+    /**
      * Creates a new Query and opens it in the Query editor TopComponent.
+     * <p>
+     * Once the Top Component was opened it is still possible for the user to 
+     * eventually select a different repository.
+     * </p>
      * 
      * @param repository the repository for which the Query is to be created.
      */
@@ -88,6 +120,23 @@ public final class Util {
         QueryAction.createNewQuery(repository.getImpl());
     }
 
+    /**
+     * Creates a new Query and opens it in the Query editor TopComponent. 
+     * 
+     * <p>
+     * Depending on <code>suggestedRepositoryOnly</code> it either is or isn't 
+     * possible for the user to eventually select a different repository in the 
+     * opened Top Component.
+     * </p>
+     * 
+     * @param repository the repository for which the Query is to be created.
+     * @param suggestedRepositoryOnly if <code>true</code> then it isn't 
+     * possible for the user to change the repository for which a new query is to be created..
+     */
+    public static void createNewQuery(Repository repository, boolean suggestedRepositoryOnly) {
+        QueryAction.createNewQuery(APIAccessor.IMPL.getImpl(repository), suggestedRepositoryOnly);
+    }
+    
     /**
      * Creates a new Issue and opens and opens it the Issue editor TopComponent.
      * 
@@ -174,4 +223,17 @@ public final class Util {
         return IssueFinderUtils.getIssueId(issueHyperlinkText);
     }  
     
+    /**
+     * Determines all issues which where recently opened (in this nb session).
+     * 
+     * @return recent issue
+     */
+    public static Collection<RecentIssue> getRecentIssues() {
+        Map<String, List<RecentIssue>> ris = BugtrackingManager.getInstance().getAllRecentIssues();
+        ArrayList ret = new ArrayList(ris.size());
+        for(Map.Entry<String, List<RecentIssue>> entry : ris.entrySet()) {
+            ret.addAll(entry.getValue());
+        }
+        return ret;
+    }    
 }

@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -108,54 +109,43 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
 
     @Override
     public IssueHandle[] getRecentIssues() {
-        Map<String, List<RecentIssue>> recentIssues = TeamUtil.getAllRecentIssues();
-        Collection<Repository> knownRepos = TeamUtil.getKnownRepositories(false);
-        Map<String, Repository> repoMap = new HashMap<String, Repository>(knownRepos.size());
-        for (Repository repository : knownRepos) {
-            repoMap.put(repository.getId(), repository);
-        }
+        Collection<RecentIssue> recentIssues = Util.getRecentIssues();
 
         Map<String, TeamProjectImpl> issueToKenaiProject = new HashMap<String, TeamProjectImpl>();
         List<RecentIssue> retIssues = new ArrayList<RecentIssue>(5);
-        for(Map.Entry<String, List<RecentIssue>> entry : recentIssues.entrySet()) {
-            Repository repo = repoMap.get(entry.getKey());
-            if(repo == null) {
-                Support.LOG.log(Level.FINE, "No repository available with ID {0}", entry.getKey()); // NOI18N
-                continue;
-            }
+        for(RecentIssue ri : recentIssues) {
+            Issue issue = ri.getIssue();
+            Repository repo = issue.getRepository();
             TeamProjectImpl kenaiProject = (TeamProjectImpl) TeamUtil.getTeamProject(repo);
             if(kenaiProject == null) {
                 continue;
             }
-
-            for(RecentIssue ri : entry.getValue()) {
-                if(retIssues.size() > 5) {
-                    retIssues.remove(5);
-                }
-                if(retIssues.isEmpty()) {
-                    retIssues.add(ri);
-                    issueToKenaiProject.put(ri.getIssue().getID(), kenaiProject);
-                } else {
-                    for (int i = 0; i < retIssues.size(); i++) {
-                        if(ri.getTimestamp() > retIssues.get(i).getTimestamp()) {
-                            retIssues.add(i, ri);
-                            issueToKenaiProject.put(ri.getIssue().getID(), kenaiProject);
-                            break;
-                        } else if (retIssues.size() < 5) {
-                            retIssues.add(retIssues.size(), ri);
-                            issueToKenaiProject.put(ri.getIssue().getID(), kenaiProject);
-                            break;
-                        }
+            if(retIssues.size() > 5) {
+                retIssues.remove(5);
+            }
+            if(retIssues.isEmpty()) {
+                retIssues.add(ri);
+                issueToKenaiProject.put(issue.getID(), kenaiProject);
+            } else {
+                for (int i = 0; i < retIssues.size(); i++) {
+                    if(ri.getTimestamp() > retIssues.get(i).getTimestamp()) {
+                        retIssues.add(i, ri);
+                        issueToKenaiProject.put(issue.getID(), kenaiProject);
+                        break;
+                    } else if (retIssues.size() < 5) {
+                        retIssues.add(retIssues.size(), ri);
+                        issueToKenaiProject.put(issue.getID(), kenaiProject);
+                        break;
                     }
                 }
             }
         }
 
         List<IssueHandle> ret = new ArrayList<IssueHandle>(retIssues.size());
-        for (RecentIssue recentIssue : retIssues) {
-            TeamProjectImpl kenaiProject = issueToKenaiProject.get(recentIssue.getIssue().getID());
+        for (RecentIssue ri : retIssues) {
+            TeamProjectImpl kenaiProject = issueToKenaiProject.get(ri.getIssue().getID());
             assert kenaiProject != null;
-            ret.add(new IssueHandleImpl(recentIssue.getIssue(), kenaiProject.getProject()));
+            ret.add(new IssueHandleImpl(ri.getIssue(), kenaiProject.getProject()));
         }
         return ret.toArray(new IssueHandle[ret.size()]);
     }
@@ -173,11 +163,19 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
             Support.LOG.log(Level.FINE, "No issue tracker available for the given kenai project [{0},{1}]", new Object[]{project.getName(), project.getDisplayName()}); // NOI18N
             return new IssueHandle[0];
         }
-        Collection<Issue> issues = TeamUtil.getRecentIssues(repo);
-        if(issues == null) {
+        Collection<RecentIssue> recentIssues = Util.getRecentIssues();
+        if(recentIssues == null) {
             return new IssueHandle[0];
         }
 
+        Collection<Issue> issues = new LinkedList<Issue>();
+        for (RecentIssue ri : recentIssues) {
+            Repository recentRepo = ri.getIssue().getRepository();
+            if(recentRepo.getId().equals(repo.getId()) && recentRepo.getUrl().equals(repo.getUrl())) {
+                issues.add(ri.getIssue());
+            }
+        }        
+                
         List<IssueHandle> ret = new ArrayList<IssueHandle>(issues.size());
         for (Issue issue : issues) {
             IssueHandleImpl ih = new IssueHandleImpl(issue, project);
@@ -213,11 +211,6 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
         @Override
         public String getDisplayName() {
             return issue.getDisplayName();
-        }
-
-        @Override
-        public boolean isOpened() {
-            return TeamUtil.isOpen(issue);
         }
 
         @Override

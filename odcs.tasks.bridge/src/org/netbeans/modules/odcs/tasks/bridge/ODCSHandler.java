@@ -58,6 +58,7 @@ import javax.swing.Action;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.odcs.api.ODCSServer;
 import org.netbeans.modules.odcs.api.ODCSProject;
@@ -262,7 +263,7 @@ public class ODCSHandler {
                 Support.getInstance().post(new Runnable() { // XXX add post method to BM
                     @Override
                     public void run () {
-                        TeamUtil.openNewQuery(repo);
+                        Util.createNewQuery(repo);
                     }
                 });
             }
@@ -279,7 +280,7 @@ public class ODCSHandler {
                 Support.getInstance().post(new Runnable() { // XXX add post method to BM
                     @Override
                     public void run () {
-                        TeamUtil.createIssue(repo);
+                        Util.createNewIssue(repo);
                     }
                 });
             }
@@ -338,7 +339,7 @@ public class ODCSHandler {
         public void closeQueries () {
             for (QueryHandle qh : queries) {
                 if (qh instanceof QueryHandleImpl) {
-                    TeamUtil.closeQuery(((QueryHandleImpl) qh).getQuery());
+                    Util.closeQuery(((QueryHandleImpl) qh).getQuery());
                 }
             }
             synchronized (projectListeners) {
