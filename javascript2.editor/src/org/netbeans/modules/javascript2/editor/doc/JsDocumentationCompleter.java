@@ -145,11 +145,16 @@ public class JsDocumentationCompleter {
                                 }
                             }
                             // when no code/object for doc comment found, generate just empty doc comment - issue #218945
-                            if (jsObject == null
-                            // do not generate doc comment when the object offset is lower than the current caret offset
-                                    || jsObject.getOffsetRange().getStart() < offset) {
+                            if (jsObject == null) {
                                 return;
                             }
+
+                            // do not generate doc comment when the object offset is lower than the current caret offset
+                            int originalStart = parserResult.getSnapshot().getOriginalOffset(jsObject.getOffsetRange().getStart());
+                            if (originalStart != -1 && originalStart < offset) {
+                                return;
+                            }
+
                             if (isField(jsObject)) {
                                 generateFieldComment(doc, offset, indent, jsParserResult, jsObject);
                             } else if (isFunction(jsObject)) {
