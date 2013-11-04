@@ -63,7 +63,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.queries.VisibilityQuery;
-import org.netbeans.modules.javascript.karma.api.Karma;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.api.remotefiles.RemoteFilesNodeFactory;
@@ -446,11 +445,6 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
     @NodeFactory.Registration(projectType="org-netbeans-modules-web-clientproject",position=537)
     public static NodeFactory createRemoteFiles() {
         return RemoteFilesNodeFactory.createRemoteFilesNodeFactory();
-    }
-
-    @NodeFactory.Registration(projectType = "org-netbeans-modules-web-clientproject", position = 1000)
-    public static NodeFactory createKarmaNode() {
-        return Karma.getDefault().createNodeFactory();
     }
 
     private static class ClientProjectNodeList implements NodeList<Key> {
