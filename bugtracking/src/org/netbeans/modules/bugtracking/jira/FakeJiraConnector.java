@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.bugtracking.jira;
@@ -46,8 +46,6 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import javax.swing.GroupLayout;
@@ -56,47 +54,24 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.DelegatingConnector;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.team.ide.spi.IDEServices;
-import org.netbeans.modules.bugtracking.spi.*;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.awt.HtmlBrowser;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
+import org.netbeans.modules.bugtracking.spi.BugtrackingSupport;
+import org.netbeans.modules.bugtracking.spi.RepositoryController;
+import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
+import org.netbeans.modules.bugtracking.commons.JiraUpdater;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
- * Notifies and eventually downloads a missing JIRA plugin from the Update Center
+ *
  * @author Tomas Stupka
  */
-public class JiraUpdater {
-
-    private static final String JIRA_CNB = "org.netbeans.modules.jira";         // NOI18N
-    
-    private static JiraUpdater instance;
-
-    
-    private DelegatingConnector connector;
-
-    private JiraUpdater() {
-    }
-
-    public synchronized static JiraUpdater getInstance() {
-        if(instance == null) {
-            instance = new JiraUpdater();
-        }
-        return instance;
-    }
-
-    public static boolean supportsDownload() {
-        IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
-        return ideServices != null && ideServices.providesPluginUpdate();
-    }
+public class FakeJiraConnector {
+    private static DelegatingConnector connector;
     
     /**
      * Returns a fake {@link BugtrackingConnector} to be shown in the create
@@ -105,144 +80,19 @@ public class JiraUpdater {
      *
      * @return
      */
-    public synchronized DelegatingConnector getConnector() {
+    public static synchronized DelegatingConnector getConnector() {
         if(connector == null) {
-            JiraProxyConector jpc = new JiraProxyConector();
-            return new DelegatingConnector(
-                    jpc, 
+            connector =  new DelegatingConnector(
+                    new JiraProxyConnector(), 
                     "fake.jira.connector",                                              // NOI18N
-                    NbBundle.getMessage(JiraUpdater.class, "LBL_FakeJiraName"),         // NOI18N
-                    NbBundle.getMessage(JiraUpdater.class, "LBL_FakeJiraNameTooltip"),  // NOI18N
+                    NbBundle.getMessage(FakeJiraConnector.class, "LBL_FakeJiraName"),         // NOI18N
+                    NbBundle.getMessage(FakeJiraConnector.class, "LBL_FakeJiraNameTooltip"),  // NOI18N
                     null);
         }
         return connector;
     }
-
-    /**
-     * Download and install the JIRA plugin from the Update Center
-     */
-    @NbBundle.Messages({"MSG_JiraPluginName=JIRA"})
-    public void downloadAndInstall(String projectUrl) {
-        if(projectUrl != null && !JiraUpdater.notifyJiraDownload(projectUrl)) {
-            return;
-        }
-        IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
-        if(ideServices != null) {
-            IDEServices.Plugin plugin = ideServices.getPluginUpdates(JIRA_CNB, Bundle.MSG_JiraPluginName());
-            if(plugin != null) {
-                plugin.installOrUpdate();
-            }
-        }
-    }
-
-    /**
-     * Determines if the jira plugin is instaled or not
-     *
-     * @return true if jira plugin is installed, otherwise false
-     */
-    public static boolean isJiraInstalled() {
-        DelegatingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
-        for (DelegatingConnector c : connectors) {
-            // XXX hack
-            if(c.getDelegate() != null && 
-               c.getDelegate().getClass().getName().startsWith("org.netbeans.modules.jira")) // NOI18N
-            {    
-                return true;
-            }
-        }
-        return false;
-    }
     
-    /**
-     * Notifies about the missing jira plugin and provides an option to choose
-     * if it should be downloaded
-     *
-     * @param url if not null a hyperlink is shown in the dialog
-     * 
-     * @return true if the user pushes the Download button, otherwise false
-     */
-    public static boolean notifyJiraDownload(String url) {
-        if(isJiraInstalled()) {
-           return false; 
-        }
-        final JButton download = new JButton(NbBundle.getMessage(JiraUpdater.class, "CTL_Action_Download"));     // NOI18N
-        JButton cancel = new JButton(NbBundle.getMessage(JiraUpdater.class, "CTL_Action_Cancel"));   // NOI18N
-
-        URL openURL = null;
-        if (url != null) {
-            try {
-                openURL = new URL(url);
-            } catch (MalformedURLException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        JPanel panel = createNotificationPanel(openURL);
-
-        DialogDescriptor dd =
-            new DialogDescriptor(
-                panel,
-                NbBundle.getMessage(JiraUpdater.class, "CTL_MissingJiraPlugin"),                    // NOI18N
-                true,
-                new Object[] {download, cancel},
-                download,
-                DialogDescriptor.DEFAULT_ALIGN,
-                new HelpCtx(JiraUpdater.class),
-                null);
-
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                download.requestFocusInWindow();
-            }
-        });
-        return DialogDisplayer.getDefault().notify(dd) == download;
-    }
-
-    private static JPanel createNotificationPanel(final URL url) {
-        JPanel panel = new JPanel();
-
-        JLabel msgLabel = new JLabel("<html>" + NbBundle.getMessage(JiraUpdater.class, "MSG_PROJECT_NEEDS_JIRA")); // NOI18N
-        JButton linkButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
-        org.openide.awt.Mnemonics.setLocalizedText(linkButton, NbBundle.getMessage(JiraUpdater.class, "MSG_PROJECT_NEEDS_JIRA_LINK")); // NOI18N
-        if (url != null) {
-            linkButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    HtmlBrowser.URLDisplayer displayer = HtmlBrowser.URLDisplayer.getDefault ();
-                    if (displayer != null) {
-                        displayer.showURL(url);
-                    } else {
-                        // XXX nice error message?
-                        BugtrackingManager.LOG.warning("No URLDisplayer found.");             // NOI18N
-                    }
-                }
-            });
-        } else {
-            linkButton.setVisible(false);
-        }
-
-        GroupLayout layout = new GroupLayout(panel);
-        panel.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addComponent(msgLabel, GroupLayout.PREFERRED_SIZE, 470, Short.MAX_VALUE)
-                    .addComponent(linkButton))
-                .addContainerGap()
-        );
-        layout.setVerticalGroup(
-            layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(msgLabel)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(linkButton)
-                .addContainerGap(25, Short.MAX_VALUE)
-        );
-
-        return panel;
-    }
-    
-    private class JiraProxyConector implements BugtrackingConnector {
+    private static class JiraProxyConnector implements BugtrackingConnector {
         private BugtrackingSupport<Object, Object, Object> f = new BugtrackingSupport<Object, Object, Object>(new JiraProxyRepositoryProvider(), null, null);
         @Override
         public Repository createRepository() {
@@ -253,7 +103,7 @@ public class JiraUpdater {
             throw new UnsupportedOperationException("Not supported yet.");      // NOI18N
         }
     }
-    private class JiraProxyRepositoryProvider implements RepositoryProvider<Object,Object,Object> {
+    private static class JiraProxyRepositoryProvider implements RepositoryProvider<Object,Object,Object> {
         @Override
         public Image getIcon(Object r) {
             return null;
@@ -306,7 +156,7 @@ public class JiraUpdater {
         }
     }
 
-    private class JiraProxyController implements RepositoryController {
+    private static class JiraProxyController implements RepositoryController {
         private JPanel panel;
         @Override
         public JComponent getComponent() {
@@ -327,17 +177,17 @@ public class JiraUpdater {
             JPanel controllerPanel = new JPanel();
 
             JLabel pane = new JLabel();
-            pane.setText(NbBundle.getMessage(JiraUpdater.class, "MSG_NOT_YET_INSTALLED")); // NOI18N
+            pane.setText(NbBundle.getMessage(FakeJiraConnector.class, "MSG_NOT_YET_INSTALLED")); // NOI18N
 
             JButton downloadButton = new JButton();
             downloadButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    downloadAndInstall(null);
+                    JiraUpdater.getInstance().downloadAndInstall(null);
                 }
             });
             
-            org.openide.awt.Mnemonics.setLocalizedText(downloadButton, org.openide.util.NbBundle.getMessage(JiraUpdater.class, "MissingJiraSupportPanel.downloadButton.text")); // NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(downloadButton, org.openide.util.NbBundle.getMessage(FakeJiraConnector.class, "MissingJiraSupportPanel.downloadButton.text")); // NOI18N
 
             GroupLayout layout = new GroupLayout(controllerPanel);
             controllerPanel.setLayout(layout);

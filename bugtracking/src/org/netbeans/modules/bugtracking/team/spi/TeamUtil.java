@@ -42,20 +42,17 @@
 
 package org.netbeans.modules.bugtracking.team.spi;
 
-import java.io.File;
 import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
 import org.netbeans.modules.team.spi.TeamProject;
 import org.netbeans.modules.bugtracking.team.TeamRepositories;
 import java.io.IOException;
 import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.DelegatingConnector;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.jira.JiraUpdater;
 import org.netbeans.modules.team.spi.TeamBugtrackingConnector.BugtrackingType;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
@@ -129,10 +126,6 @@ public class TeamUtil {
     public static boolean isShowing(Issue issue) {
         IssueTopComponent tc = IssueTopComponent.find(APIAccessor.IMPL.getImpl(issue), false);
         return tc != null ? tc.isOpened() : false;
-    }
-
-    public static void downloadAndInstallJira(String projectUrl) {
-        JiraUpdater.getInstance().downloadAndInstall(projectUrl);
     }
 
 }

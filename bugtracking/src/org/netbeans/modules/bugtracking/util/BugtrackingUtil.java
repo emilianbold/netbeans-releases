@@ -146,4 +146,23 @@ public class BugtrackingUtil {
         ProjectServices projectServices = BugtrackingManager.getInstance().getProjectServices();
         return projectServices != null ? projectServices.getCurrentSelection() : null;
     }
+    
+    /**
+     * Determines if the jira plugin is instaled or not
+     *
+     * @return true if jira plugin is installed, otherwise false
+     */
+    public static boolean isJiraInstalled() {
+        DelegatingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
+        for (DelegatingConnector c : connectors) {
+            // XXX hack
+            if(c.getDelegate() != null && 
+               c.getDelegate().getClass().getName().startsWith("org.netbeans.modules.jira")) // NOI18N
+            {    
+                return true;
+            }
+        }
+        return false;
+    }
+    
 }

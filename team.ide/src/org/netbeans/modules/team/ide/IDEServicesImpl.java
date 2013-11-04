@@ -298,6 +298,17 @@ public class IDEServicesImpl implements IDEServices {
         return new JXDatePickerImpl();
     }
 
+    @Override
+    public boolean isInstalled(String cnb) {
+        List<UpdateUnit> units = UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE);
+        for (UpdateUnit u : units) {
+            if(u.getCodeName().equals(cnb) && u.getInstalled() != null) {
+                return true;
+            }
+        }
+        return false;        
+    }
+
     private static class SwingXBusyIcon extends PainterIcon implements BusyIcon {
         private static final int SIZE = 16;
         private static final int POINTS = 8;

@@ -109,7 +109,16 @@ public interface IDEServices {
      * @return plugin or null if not available
      */
     public Plugin getPluginUpdates(String cnb, String pluginName);
-
+    
+    /**
+     * Returns a Plugin with the given code name base in case there is none installed, 
+     * or that the currently installed version is lesser than the installed.
+     * 
+     * @param cnb - the plugins code name base
+     * @return plugin or null if not available
+     */
+    public boolean isInstalled(String cnb);
+    
     /**
      * Determines whether patch relevant functionality is available.
      * 

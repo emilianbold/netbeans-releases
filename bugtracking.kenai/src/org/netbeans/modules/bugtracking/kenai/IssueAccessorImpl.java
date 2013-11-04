@@ -55,6 +55,7 @@ import org.netbeans.modules.bugtracking.team.spi.RecentIssue;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.Util;
+import org.netbeans.modules.bugtracking.commons.JiraUpdater;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor;
@@ -84,7 +85,7 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
         FakeJiraSupport support = FakeJiraSupport.get(project);
         if(support != null) {
             // this is a jira project
-            TeamUtil.downloadAndInstallJira(support.getIssueUrl(issueID));
+            JiraUpdater.getInstance().downloadAndInstall(support.getIssueUrl(issueID));
         }
 
         final ProgressHandle handle = ProgressHandleFactory.createHandle(LBL_GETTING_REPO());

@@ -44,19 +44,17 @@ package org.netbeans.modules.bugtracking.ui.selectors;
 
 
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.DelegatingConnector;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
-import org.netbeans.modules.bugtracking.jira.JiraUpdater;
+import org.netbeans.modules.bugtracking.jira.FakeJiraConnector;
 import org.netbeans.modules.bugtracking.tasks.DashboardTopComponent;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.team.ide.spi.IDEServices;
 
 /**
  *
@@ -113,13 +111,17 @@ public class RepositorySelector {
     }
 
     private DelegatingConnector[] addJiraProxyIfNeeded(DelegatingConnector[] connectors) {
-        if(!JiraUpdater.isJiraInstalled() && JiraUpdater.supportsDownload()) {
+        if(!BugtrackingUtil.isJiraInstalled() && supportsDownload()) {
             DelegatingConnector[] ret = new DelegatingConnector[connectors.length + 1];
             System.arraycopy(connectors, 0, ret, 0, connectors.length);
-            ret[ret.length - 1] = JiraUpdater.getInstance().getConnector();
+            ret[ret.length - 1] = FakeJiraConnector.getConnector();
             connectors = ret;
         }
         return connectors;
     }
 
+    static boolean supportsDownload() {
+        IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
+        return ideServices != null && ideServices.providesPluginUpdate();
+    }    
 }
