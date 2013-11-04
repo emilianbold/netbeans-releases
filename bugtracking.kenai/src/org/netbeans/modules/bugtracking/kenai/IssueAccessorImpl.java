@@ -64,6 +64,9 @@ import org.openide.util.RequestProcessor;
 import static org.netbeans.modules.bugtracking.kenai.Bundle.*;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
+import org.openide.windows.Mode;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -216,7 +219,14 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
 
         @Override
         public boolean isShowing() {
-            return TeamUtil.isShowing(issue);
+            Mode editor = WindowManager.getDefault().findMode("editor"); //NOI18N
+            TopComponent[] tcs = editor.getTopComponents();
+            for (TopComponent tc : tcs) {
+                if(issue == tc.getLookup().lookup(Issue.class)) {
+                    return tc.isShowing();
+                }
+            }
+            return false;
         }
 
     }

@@ -119,9 +119,4 @@ public class TeamUtil {
         return null;
     }
     
-    public static boolean isShowing(Issue issue) {
-        IssueTopComponent tc = IssueTopComponent.find(APIAccessor.IMPL.getImpl(issue), false);
-        return tc != null ? tc.isOpened() : false;
-    }
-
 }

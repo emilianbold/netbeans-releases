@@ -223,6 +223,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     void setIssue(IssueImpl issue) {
         assert (this.issue == null);
         this.issue = issue;
+        instanceContent.add(issue.getIssue());
         preparingLabel.setVisible(false);
         issuePanel.add(issue.getController().getComponent(), BorderLayout.CENTER);
         
@@ -391,11 +392,14 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                             controller.closed();
                         }
                         unregisterListeners();
+                        instanceContent.remove(issue.getIssue());
                     }
                     issue = repo.createNewIssue();
                     if (issue == null) {
                         return;
                     }
+                    instanceContent.add(issue.getIssue());
+                    
                     registerForIssue();
                     ((DelegatingUndoRedoManager)getUndoRedo()).init();
                     
