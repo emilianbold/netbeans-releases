@@ -42,10 +42,10 @@
 
 package org.netbeans.modules.bugtracking.team.spi;
 
+import java.io.File;
 import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
 import org.netbeans.modules.team.spi.TeamProject;
 import org.netbeans.modules.bugtracking.team.TeamRepositories;
-import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
@@ -66,20 +66,6 @@ import org.netbeans.modules.team.spi.TeamAccessorUtils;
  * @author Tomas Stupka, Jan Stola
  */
 public class TeamUtil {
-
-    /**
-     * Returns a Repository corresponding to the given team url and a name. The url
-     * might be either a team vcs repository, an issue or the team server url.
-     * @param repositoryUrl
-     * @return
-     * @throws IOException
-     */
-    public static Repository getRepository(String repositoryUrl) throws IOException {
-        TeamProject project = TeamAccessorUtils.getTeamProjectForRepository(repositoryUrl);
-        return (project != null)
-               ? getRepository(project)
-               : null;        //not a team project repository
-    }
 
     /**
      * Returns a Repository corresponding to the given team url and a name. The url
@@ -138,10 +124,6 @@ public class TeamUtil {
         }
         assert false : "no TeamSupport available for repository [" + repo.getDisplayName() + "]";  // NOI18N
         return null;
-    }
-    
-    public static void setFirmAssociations(File[] files, Repository repository) {
-        BugtrackingOwnerSupport.getInstance().setFirmAssociations(files, APIAccessor.IMPL.getImpl(repository));
     }
     
     public static boolean isShowing(Issue issue) {

@@ -46,8 +46,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.bugtracking.APIAccessor;
+import org.netbeans.modules.bugtracking.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.commons.FileToRepoMappingStorage;
+import org.netbeans.modules.bugtracking.commons.Util;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
+import static org.netbeans.modules.bugtracking.team.spi.TeamUtil.getRepository;
+import org.netbeans.modules.team.spi.TeamAccessorUtils;
+import org.netbeans.modules.team.spi.TeamProject;
 import org.netbeans.modules.versioning.util.VCSBugtrackingAccessor;
 
 /**
@@ -64,9 +71,16 @@ public class VCSBugtrackingSupportImpl extends VCSBugtrackingAccessor {
 
     @Override
     public void setFirmAssociations(File[] files, String url) {
+        if (files == null) {
+            throw new IllegalArgumentException("files is null");        //NOI18N
+        }
+        if (files.length == 0) {
+            return;
+        }
+        
         Repository repo;
         try {
-            repo = TeamUtil.getRepository(url);
+            repo = getRepository(url);
         } catch (IOException ex) {
             LOG.log(Level.WARNING, "No issue tracker available for the given vcs url " + url, ex);         // NOI18N
             return;
@@ -75,7 +89,29 @@ public class VCSBugtrackingSupportImpl extends VCSBugtrackingAccessor {
             LOG.log(Level.WARNING, "No issue tracker available for the given vcs url {0}", url);         // NOI18N
             return;
         }
-        TeamUtil.setFirmAssociations(files, repo);
+
+
+        FileToRepoMappingStorage.getInstance().setFirmAssociation(
+                Util.getLargerContext(files[0]),
+                repo.getUrl());
     }
+    
+    public static void setFirmAssociations(File[] files, Repository repository) {
+        BugtrackingOwnerSupport.getInstance().setFirmAssociations(files, APIAccessor.IMPL.getImpl(repository));
+    }
+    
+    /**
+     * Returns a Repository corresponding to the given team url and a name. The url
+     * might be either a team vcs repository, an issue or the team server url.
+     * @param repositoryUrl
+     * @return
+     * @throws IOException
+     */
+    private static Repository getRepository(String repositoryUrl) throws IOException {
+        TeamProject project = TeamAccessorUtils.getTeamProjectForRepository(repositoryUrl);
+        return (project != null)
+               ? TeamUtil.getRepository(project)
+               : null;        //not a team project repository
+    }    
 
 }

@@ -50,12 +50,15 @@ import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.queries.VersioningQuery;
+import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.commons.Util;
 import org.netbeans.modules.team.ide.spi.ProjectServices;
 import org.netbeans.modules.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils;
 import org.netbeans.modules.bugtracking.ui.selectors.RepositorySelectorBuilder;
 import org.netbeans.modules.team.spi.TeamAccessorUtils;
+import org.netbeans.modules.team.spi.TeamProject;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -130,7 +133,7 @@ public class BugtrackingOwnerSupport {
             return null;
         }
 
-        File context = getLargerContext(fileObject);
+        File context = Util.getLargerContext(fileObject);
         if (context != null) {
             return getRepositoryForContext(context, false);
         } else {
@@ -165,7 +168,7 @@ public class BugtrackingOwnerSupport {
             }
         }
 
-        File context = getLargerContext(file, fileObject);
+        File context = Util.getLargerContext(file, fileObject);
         if (context == null) {
             context = file;
         }
@@ -182,13 +185,13 @@ public class BugtrackingOwnerSupport {
         }
 
         FileToRepoMappingStorage.getInstance().setFirmAssociation(
-                getLargerContext(files[0]),
+                Util.getLargerContext(files[0]),
                 repository.getUrl());
     }
 
     public void setFirmAssociation(File file, RepositoryImpl repository) {
         FileToRepoMappingStorage.getInstance().setFirmAssociation(
-                getLargerContext(file),
+                Util.getLargerContext(file),
                 repository.getUrl());
     }
 
@@ -199,7 +202,7 @@ public class BugtrackingOwnerSupport {
             case MAIN_PROJECT_ONLY:
                 FileObject fo = getMainProjectDirectory();
                 if (fo != null) {
-                    context = getLargerContext(fo);
+                    context = Util.getLargerContext(fo);
                 }
                 break;
             case SELECTED_FILE_AND_ALL_PROJECTS:
@@ -253,7 +256,7 @@ public class BugtrackingOwnerSupport {
     private static File getLargerContext() {
         FileObject openFile = getOpenFileObj();
         if (openFile != null) {
-            File largerContext = getLargerContext(openFile);
+            File largerContext = Util.getLargerContext(openFile);
             if (largerContext != null) {
                 return largerContext;
             }
@@ -270,77 +273,7 @@ public class BugtrackingOwnerSupport {
 
         FileObject[] fos = getOpenProjectsDirectories();
         if ((fos != null) && (fos.length == 1)) {
-            return getLargerContext(fos[0]);
-        }
-
-        return null;
-    }
-
-    private static File getLargerContext(File file) {
-        return getLargerContext(file, null);
-    }
-
-    private static File getLargerContext(FileObject fileObj) {
-        return getLargerContext(null, fileObj);
-    }
-
-    private static File getLargerContext(File file, FileObject fileObj) {
-        if ((file == null) && (fileObj == null)) {
-            throw new IllegalArgumentException(
-                    "both File and FileObject are null");               //NOI18N
-        }
-
-        assert (file == null)
-               || (fileObj == null)
-               || FileUtil.toFileObject(file).equals(fileObj);
-
-        if (fileObj == null) {
-            fileObj = getFileObjForFileOrParent(file);
-        } else if (file == null) {
-            file = FileUtil.toFile(fileObj);
-        }
-
-        if (fileObj == null) {
-            return null;
-        }
-        if (!fileObj.isValid()) {
-            return null;
-        }
-
-        FileObject parentProjectFolder = BugtrackingUtil.getFileOwnerDirectory(fileObj);
-        if (parentProjectFolder != null) {
-            if (parentProjectFolder.equals(fileObj) && (file != null)) {
-                return file;
-            }
-            File folder = FileUtil.toFile(parentProjectFolder);
-            if (folder != null) {
-                return folder;
-            }
-        }
-
-        if (fileObj.isFolder()) {
-            return file;                        //whether it is null or non-null
-        } else {
-            fileObj = fileObj.getParent();
-            assert fileObj != null;      //every non-folder should have a parent
-            return FileUtil.toFile(fileObj);    //whether it is null or non-null
-        }
-    }
-
-
-    private static FileObject getFileObjForFileOrParent(File file) {
-        FileObject fileObj = FileUtil.toFileObject(file);
-        if (fileObj != null) {
-            return fileObj;
-        }
-
-        File closestParentFile = file.getParentFile();
-        while (closestParentFile != null) {
-            fileObj = FileUtil.toFileObject(closestParentFile);
-            if (fileObj != null) {
-                return fileObj;
-            }
-            closestParentFile = closestParentFile.getParentFile();
+            return Util.getLargerContext(fos[0]);
         }
 
         return null;
@@ -389,7 +322,7 @@ public class BugtrackingOwnerSupport {
                 return repository;
             }
             try {
-                repository = APIAccessor.IMPL.getImpl(TeamUtil.getRepository(url));
+                repository = APIAccessor.IMPL.getImpl(getRepository(url));
                 if (repository != null) {
                     return repository;
                 }
@@ -459,4 +392,12 @@ public class BugtrackingOwnerSupport {
         }
         return null;
     }    
+    
+    private static Repository getRepository(String repositoryUrl) throws IOException {
+        TeamProject project = TeamAccessorUtils.getTeamProjectForRepository(repositoryUrl);
+        return (project != null)
+               ? TeamUtil.getRepository(project)
+               : null;        //not a team project repository
+    }    
+
 }

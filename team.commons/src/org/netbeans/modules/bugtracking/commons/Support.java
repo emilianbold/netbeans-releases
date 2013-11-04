@@ -45,6 +45,7 @@ package org.netbeans.modules.bugtracking.commons;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.team.ide.spi.IDEServices;
+import org.netbeans.modules.team.ide.spi.ProjectServices;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
@@ -65,6 +66,7 @@ class Support {
         return instance;
     }
     private IDEServices ideServices;
+    private ProjectServices projectServices;
     
     synchronized IDEServices getIDEServices() {
         if(ideServices == null) {
@@ -72,7 +74,14 @@ class Support {
         }
         return ideServices;
     }
-    
+
+    synchronized ProjectServices getProjectServices() {
+        if(projectServices == null) {
+            projectServices = Lookup.getDefault().lookup(ProjectServices.class);
+        }
+        return projectServices;
+    }  
+
     static Preferences getPreferences() {
         return NbPreferences.forModule(Support.class);
     }    
@@ -83,4 +92,5 @@ class Support {
         }
         return parallelRP;
     }    
+      
 }

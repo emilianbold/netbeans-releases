@@ -125,7 +125,7 @@ public class BugtrackingUtil {
             return null;
         }
         for (FileObject fo : fos) {
-            FileObject ownerDirectory = BugtrackingUtil.getFileOwnerDirectory(fo);
+            FileObject ownerDirectory = getFileOwnerDirectory(fo);
             if (ownerDirectory != null) {
                 fo = ownerDirectory;
         }
