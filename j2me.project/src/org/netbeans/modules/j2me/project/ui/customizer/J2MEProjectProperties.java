@@ -236,8 +236,8 @@ public final class J2MEProjectProperties {
     String[] ATTRIBUTES_PROPERTY_NAMES = {MANIFEST_OTHERS, MANIFEST_JAD, MANIFEST_MANIFEST};
 
     //J2MEMIDletsPanel
-    J2MEMIDletsPanel.MIDletsTableModel MIDLETS_TABLE_MODEL;
-    String[] MIDLETS_PROPERTY_NAMES = {MANIFEST_MIDLETS};
+    public J2MEMIDletsPanel.MIDletsTableModel MIDLETS_TABLE_MODEL;
+    public String[] MIDLETS_PROPERTY_NAMES = {MANIFEST_MIDLETS};
 
     //J2MEAPIPermissionsPanel
     J2MEAPIPermissionsPanel.StorableTableModel API_PERMISSIONS_TABLE_MODEL;
@@ -268,7 +268,7 @@ public final class J2MEProjectProperties {
     /**
      * Creates a new instance of J2MEProjectProperties
      */
-    J2MEProjectProperties(@NonNull final J2MEProject project) {
+    public J2MEProjectProperties(@NonNull final J2MEProject project) {
         this.project = project;
         this.cs = new ClassPathSupport(getEvaluator(), project.getReferenceHelper(), project.getHelper(), project.getUpdateHelper(), null);
 
@@ -597,7 +597,7 @@ public final class J2MEProjectProperties {
         }
     }
 
-    private String encode(Object val) {
+    public String encode(Object val) {
         HashMap<String, String> map = (HashMap<String, String>) val;
         if (map == null) {
             return null;

@@ -72,7 +72,7 @@ import org.openide.util.NbBundle;
  * @author Theofanis Oikonomou
  */
 public class J2MEMIDletsPanel extends javax.swing.JPanel {
-    
+
     final private DefaultComboBoxModel cbmClassesForAdd, cbmIconsForAdd;
     protected HashSet<String> classes, icons;
     final private MIDletsTableModel model;
@@ -159,19 +159,19 @@ public class J2MEMIDletsPanel extends javax.swing.JPanel {
         };
         postInitComponents();
     }
-    
+
     private void postInitComponents() {
         classes = icons = null;
         final MIDletScanner scanner = MIDletScanner.getDefault(uiProperties);
         scanner.scan(cbmClassesForAdd, cbmIconsForAdd, changeListener);
-        
+
         String[] propertyNames = uiProperties.MIDLETS_PROPERTY_NAMES;
         String values[] = new String[propertyNames.length];
         for (int i = 0; i < values.length; i++) {
             values[i] = uiProperties.getEvaluator().getProperty(propertyNames[i]);
         }
         model.setDataDelegates(values);
-        
+
         midletsTable.setBackground(UIManager.getDefaults().getColor("Table.background")); //NOI18N
         listSelectionListener.valueChanged(null);
     }
@@ -345,8 +345,8 @@ public class J2MEMIDletsPanel extends javax.swing.JPanel {
         if (editedRow < 0) return;
         final String s[] = model.getRow(editedRow).split(",", 3); //NOI18N
         final AddMIDletPanel p = new AddMIDletPanel(s[0].trim(), s[2].trim(), s[1].trim(), cbmClassesForAdd, cbmIconsForAdd);
-        final DialogDescriptor desc = new DialogDescriptor(p, NbBundle.getMessage(J2MEMIDletsPanel.class, "Title_CustMIDlets_EditMIDlet"), true, 
-                NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, 
+        final DialogDescriptor desc = new DialogDescriptor(p, NbBundle.getMessage(J2MEMIDletsPanel.class, "Title_CustMIDlets_EditMIDlet"), true,
+                NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN,
                 new HelpCtx("org.netbeans.modules.j2me.project.ui.customizer.J2MEMIDletsPanel"), null); //NOI18N
         p.setDialogDescriptor(desc);
         if (NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(desc))) {
@@ -387,14 +387,14 @@ public class J2MEMIDletsPanel extends javax.swing.JPanel {
     private javax.swing.JButton upButton;
     // End of variables declaration//GEN-END:variables
 
-    static class MIDletsTableModel extends AbstractTableModel {
+    public static class MIDletsTableModel extends AbstractTableModel {
 
         public static final String PREFIX = "MIDlet-"; //NOI18N
 
         private HashMap<String, String> map = new HashMap<>();
         private int rows = 0;
         private static final int[] COLUMN_MAP = new int[]{0, 2, 1}; // name, class, icon
-        private static final String[] COLUMN_NAMES = new String[]{NbBundle.getMessage(J2MEMIDletsPanel.class, "LBL_CustMIDletsName_Name"), 
+        private static final String[] COLUMN_NAMES = new String[]{NbBundle.getMessage(J2MEMIDletsPanel.class, "LBL_CustMIDletsName_Name"),
             NbBundle.getMessage(J2MEMIDletsPanel.class, "LBL_CustMIDlets_Class"), NbBundle.getMessage(J2MEMIDletsPanel.class, "LBL_CustMIDlets_Icon")};
 
         private static final long serialVersionUID = -7485135564331430899L;

@@ -39,12 +39,17 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.j2me.project.ui;
 
+import java.awt.BorderLayout;
+import java.io.IOException;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2me.project.J2MEProject;
+import org.netbeans.modules.j2me.project.ui.customizer.J2MEMIDletsPanel;
+import org.netbeans.modules.j2me.project.ui.customizer.J2MEProjectProperties;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
@@ -53,23 +58,39 @@ import org.openide.util.Parameters;
 /**
  *
  * @author Tomas Zezula
+ * @author Roman Svitanic
  */
 public final class ManageMIDlets extends javax.swing.JPanel {
 
     private final J2MEProject project;
-    
+    private final J2MEMIDletsPanel midletsPanel;
+    private final J2MEProjectProperties properties;
+
     public ManageMIDlets(@NonNull final J2MEProject project) {
         Parameters.notNull("project", project); //NOI18N
         this.project = project;
+        this.properties = new J2MEProjectProperties(project);
+        this.midletsPanel = new J2MEMIDletsPanel(properties);
         initComponents();
+        panelMidletSelector.add(midletsPanel, BorderLayout.CENTER);
     }
 
-    public boolean store () {
+    public boolean store() {
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
                 @Override
                 public Void run() throws Exception {
-                    //TODO:
+                    final EditableProperties projectProperties = project.getUpdateHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                    Object[] dataDelegates = properties.MIDLETS_TABLE_MODEL.getDataDelegates();
+                    for (int i = 0; i < dataDelegates.length; i++) {
+                        projectProperties.put(properties.MIDLETS_PROPERTY_NAMES[i], properties.encode(dataDelegates[i]));
+                    }
+                    project.getUpdateHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
+                    try {
+                        ProjectManager.getDefault().saveProject(project);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                     return null;
                 }
             });
@@ -90,8 +111,11 @@ public final class ManageMIDlets extends javax.swing.JPanel {
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
+        panelMidletSelector = new javax.swing.JPanel();
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ManageMIDlets.class, "TXT_NoMIDlets")); // NOI18N
+
+        panelMidletSelector.setLayout(new java.awt.BorderLayout());
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -99,7 +123,9 @@ public final class ManageMIDlets extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(panelMidletSelector, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -107,12 +133,15 @@ public final class ManageMIDlets extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel1)
-                .addContainerGap(278, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(panelMidletSelector, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JPanel panelMidletSelector;
     // End of variables declaration//GEN-END:variables
 }
