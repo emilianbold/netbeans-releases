@@ -348,4 +348,23 @@ public class TooStrongCastTest extends NbTestCase {
             run(TooStrongCast.class).
             assertWarnings("5:33-5:45:verifier:Unnecessary cast to Serializable");
     }
+    
+    public void testNoHintInferredType() throws Exception {
+        HintTest.create().
+            input("package test;\n" +
+            "\n" +
+            "import java.util.ArrayList;\n" +
+            "import java.util.Collections;\n" +
+            "import java.util.List;\n" +
+            "\n" +
+            "class VarArgsCast {\n" +
+            "    void bu() {\n" +
+            "        List<String> strings = new ArrayList<String>();\n" +
+            "        strings.addAll(Collections.nCopies(10, (String)null));\n" +
+            "    }\n" +
+            "}\n" +
+            "").
+            run(TooStrongCast.class).
+            assertWarnings();
+    }
 }

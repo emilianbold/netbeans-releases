@@ -239,14 +239,16 @@ public class TooStrongCast {
         ExecutableElement el = (ExecutableElement)info.getTrees().getElement(parentExec);
         Tree leaf = parentExec.getLeaf();
         
-        Tree nt;
         List<? extends Tree> arguments;
+        TreePath origT = null;
+        TreePath newT = null;
         
         SourcePositions spos = info.getTrees().getSourcePositions();
         CharSequence altType = info.getTypeUtilities().getTypeName(casteeType, TypeUtilities.TypeNameOptions.PRINT_FQN);
         if (leaf instanceof MethodInvocationTree) {
             MethodInvocationTree mi = (MethodInvocationTree)leaf;
             arguments = mi.getArguments();
+            origT = new TreePath(parentExec, mi.getMethodSelect());
         } else {
             arguments = ((NewClassTree)leaf).getArguments();
         }
@@ -262,19 +264,38 @@ public class TooStrongCast {
         // argument.
         StringBuilder testStatement = new StringBuilder(exprEnd - exprStart);
         testStatement.append(text.subSequence(exprStart, argStart));
-        testStatement.append("(").append(altType).append(")"); // NOI18N
+        if (!(casteeType.getKind() == TypeKind.NULL || casteeType.getKind() == TypeKind.INTERSECTION)) {
+            testStatement.append("(").append(altType).append(")"); // NOI18N
+        }
         testStatement.append(text.subSequence(realArgStart, exprEnd));
 
         SourcePositions[] poss = new SourcePositions[1];
         ExpressionTree exp = info.getTreeUtilities().parseExpression(testStatement.toString(), poss);
         if (exp != null) {
-            Scope scope = info.getTrees().getScope(parentExec);
+            Scope scope = info.getTrees().getScope(parentExec.getParentPath());
             info.getTreeUtilities().attributeTree(exp, scope);
 
             // check that the proposed argument type does not make the resolver to select a different method.
             TreePath tp = new TreePath(parentExec.getParentPath(), exp);
+            if (exp instanceof MethodInvocationTree) {
+                newT = new TreePath(tp, ((MethodInvocationTree)exp).getMethodSelect());
+            }
+
             Element altEl = info.getTrees().getElement(tp);
-            return el != altEl;
+            if (altEl != el) {
+                return true;
+            }
+            // the new method does not resolve ?
+            if (origT != null && newT == null) {
+                return true;
+            }
+            // check the type of the result tree.
+            TypeMirror origType = info.getTrees().getTypeMirror(origT);
+            TypeMirror resType = info.getTrees().getTypeMirror(newT);
+            if (info.getTypes().isSameType(origType, resType)) {
+                // OK, gives the same methodtype.
+                return false;
+            }
         }
         return true;
     }
