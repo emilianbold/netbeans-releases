@@ -66,6 +66,8 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.j2me.project.ui.ManageMIDlets;
 import org.netbeans.modules.j2me.project.ui.customizer.J2MEProjectProperties;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
@@ -83,6 +85,7 @@ import static org.netbeans.spi.project.ActionProvider.COMMAND_PROFILE;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_REBUILD;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_RENAME;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_RUN;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -312,12 +315,20 @@ final class J2MEActionProvider extends BaseActionProvider {
 
     @Override
     protected boolean showMainClassSelector() {
-        NotifyDescriptor desc = new NotifyDescriptor.Message(
+        final ManageMIDlets mm = new ManageMIDlets(project);
+        DialogDescriptor dd = new DialogDescriptor(
+            mm,
             NbBundle.getMessage(
                 J2MEActionProvider.class,
-                "TXT_NoMIDlets"),
-                NotifyDescriptor.WARNING_MESSAGE);
-        DialogDisplayer.getDefault().notify(desc);
+                "TXT_RunProject",
+                ProjectUtils.getInformation(project).getDisplayName()),
+            true,
+            DialogDescriptor.OK_CANCEL_OPTION,
+            DialogDescriptor.OK_OPTION,
+            null);
+        if (DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION) {
+            return mm.store();
+        }
         return false;
     }
 }
