@@ -40,7 +40,8 @@ public class Wrapping1 extends DefaultTableModel {
     @MyAnot(a = 11111, b = "       ", c = "        ")
     public void method2() {
         method(1, 2, "string vararg", "string vararg");
-        method(1, 1, "").method(2, 2, "2").method(3, 3, "3");
+        method(1, 1, "").method(2, 2, "2").
+                method(3, 3, "3");
     }
 
     public void m() throws IOException, MalformedURLException {
@@ -51,10 +52,12 @@ public class Wrapping1 extends DefaultTableModel {
     String[] s = new String[]{"aaaaa", "bbbbb"};
 
     public void test() {
-        try (FileReader fr1 = new FileReader("");FileReader fr2 = new FileReader("")) {
+        try (FileReader fr1 = new FileReader(""); FileReader fr2 = new FileReader("")) {
             fr1.read();
         } catch (IOException | NullPointerException ex) {
-            Logger.getLogger(Wrapping1.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Wrapping1.class.
+                    getName()).
+                    log(Level.SEVERE, null, ex);
         }
 
     }
