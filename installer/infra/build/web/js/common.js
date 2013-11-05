@@ -389,8 +389,6 @@ function get_file_name_short(platform, option, language) {
     }
     if (platform == "windows") {
         file_name += ".exe";
-    } else if ((platform == "macosx-x86") || (platform == "macosx-ppc")) {
-        file_name += ".tgz";
     } else if (platform == "macosx") {
 	file_name += ".dmg";
     } else if(platform == "zip"){
