@@ -41,11 +41,11 @@
  */
 package org.netbeans.modules.versioning.core.spi;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import javax.swing.Action;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.util.ContextAwareAction;
 
 
 /**
@@ -142,7 +142,7 @@ public interface VCSHistoryProvider {
                 String revision, 
                 String revisionShort, 
                 Action[] actions, 
-                RevisionProvider rp) 
+                RevisionProvider revisionProvider) 
         {
             assert files != null && files.length > 0 : "a history entry must have at least one file"; // NOI18N
             assert revision != null && revision != null : "a history entry must have a revision";     // NOI18N
@@ -157,7 +157,7 @@ public interface VCSHistoryProvider {
             this.revision = revision;
             this.revisionShort = revisionShort;
             this.actions = actions;
-            this.revisionProvider = rp;
+            this.revisionProvider = revisionProvider;
         }
         
         /**
@@ -183,11 +183,11 @@ public interface VCSHistoryProvider {
                 String revision, 
                 String revisionShort, 
                 Action[] actions, 
-                RevisionProvider rp,
-                MessageEditProvider mep) 
+                RevisionProvider revisionProvider,
+                MessageEditProvider messageEditProvider) 
         {
-            this(files, dateTime, message, username, usernameShort, revision, revisionShort, actions, rp);
-            this.mep = mep;
+            this(files, dateTime, message, username, usernameShort, revision, revisionShort, actions, revisionProvider);
+            this.mep = messageEditProvider;
         }        
         
        /**
@@ -457,19 +457,18 @@ public interface VCSHistoryProvider {
         }
 
         /**
-         * Creates a new HistoryEvent
+         * Returns files which history has changed.
          * 
-         * @param source {@link VCSHistoryProvider} representing the versioning system in which a history change happened. 
-         * @param files the files which history has changed
-         */        
+         * @return files
+         */
         public VCSFileProxy[] getFiles() {
             return files;
         }
 
         /**
-         * Returns files which history has changed.
+         * Returns history provider owning the changed files.
          * 
-         * @return files
+         * @return history provider
          */        
         public VCSHistoryProvider getSource() {
             return source;
