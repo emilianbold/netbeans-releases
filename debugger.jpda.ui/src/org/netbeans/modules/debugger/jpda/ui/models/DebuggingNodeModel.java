@@ -348,13 +348,24 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         if (breakpoint instanceof LineBreakpoint) {
             LineBreakpoint lb = (LineBreakpoint) breakpoint;
             String fileName = null;
-            try {
-                FileObject fo = URLMapper.findFileObject(new URL(lb.getURL()));
-                if (fo != null) {
-                    fileName = fo.getNameExt();
+            String urlStr = lb.getURL();
+            if (urlStr.isEmpty()) {
+                fileName = lb.getPreferredClassName();
+                if (fileName != null) {
+                    int i = fileName.lastIndexOf('.');
+                    if (i > 0) {
+                        fileName = fileName.substring(i+1);
+                    }
                 }
-            } catch (MalformedURLException ex) {
-                ErrorManager.getDefault().notify(ex);
+            } else {
+                try {
+                    FileObject fo = URLMapper.findFileObject(new URL(urlStr));
+                    if (fo != null) {
+                        fileName = fo.getNameExt();
+                    }
+                } catch (MalformedURLException ex) {
+                    ErrorManager.getDefault().notify(ex);
+                }
             }
             if (fileName == null) fileName = lb.getURL();
             return NbBundle.getMessage(DebuggingNodeModel.class, "CTL_Thread_At_LineBreakpoint",
