@@ -107,6 +107,8 @@ public class FormInspectorNodePopupMenuTest extends ValidatePopupMenuOnNodes {
 
     @Override
     public void close() {
-        super.close();
+        if (dataObjectNode != null) {
+            super.close();
+        }
     }
 }
