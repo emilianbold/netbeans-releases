@@ -281,6 +281,10 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
     })
     private boolean isSupported() {
         String serverInstanceID = getServerInstanceID();
+        if (serverInstanceID == null) {
+            return false;
+        }
+
         ServerInstance serverInstance = Deployment.getDefault().getServerInstance(serverInstanceID);
         try {
             if (serverInstance != null && !DEV_NULL.equals(serverInstanceID)) {
