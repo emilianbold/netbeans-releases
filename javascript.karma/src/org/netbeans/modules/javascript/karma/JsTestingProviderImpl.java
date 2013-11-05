@@ -45,6 +45,7 @@ package org.netbeans.modules.javascript.karma;
 import java.net.URL;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.karma.exec.KarmaServers;
+import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
 import org.netbeans.modules.javascript.karma.ui.customizer.KarmaCustomizer;
 import org.netbeans.modules.javascript.karma.ui.logicalview.KarmaChildrenList;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
@@ -95,7 +96,7 @@ public class JsTestingProviderImpl implements JsTestingProviderImplementation {
 
     @Override
     public void notifyEnabled(Project project, boolean enabled) {
-        // XXX
+        KarmaPreferences.setEnabled(project, enabled);
     }
 
     @Override
@@ -105,6 +106,7 @@ public class JsTestingProviderImpl implements JsTestingProviderImplementation {
 
     @Override
     public void projectClosed(Project project) {
+        KarmaPreferences.removeFromCache(project);
         KarmaServers.getInstance().stopServer(project, true);
     }
 

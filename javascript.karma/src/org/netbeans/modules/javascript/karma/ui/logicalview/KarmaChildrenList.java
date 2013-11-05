@@ -90,7 +90,10 @@ public class KarmaChildrenList implements NodeList<Node>, PreferenceChangeListen
 
     @Override
     public List<Node> keys() {
-        return Collections.<Node>singletonList(KarmaNode.create(project));
+        if (KarmaPreferences.isEnabled(project)) {
+            return Collections.<Node>singletonList(KarmaNode.create(project));
+        }
+        return Collections.emptyList();
     }
 
     @Override
@@ -123,13 +126,16 @@ public class KarmaChildrenList implements NodeList<Node>, PreferenceChangeListen
         // possibly restart server
         if (KarmaServers.getInstance().isServerRunning(project)) {
             KarmaServers.getInstance().stopServer(project, false);
-            ValidationResult result = new KarmaPreferencesValidator()
-                    .validate(project)
-                    .getResult();
-            if (result.isFaultless()) {
-                KarmaServers.getInstance().startServer(project);
+            if (KarmaPreferences.isEnabled(project)) {
+                ValidationResult result = new KarmaPreferencesValidator()
+                        .validate(project)
+                        .getResult();
+                if (result.isFaultless()) {
+                    KarmaServers.getInstance().startServer(project);
+                }
             }
         }
+        changeSupport.fireChange();
     }
 
     //~ Inner classes
