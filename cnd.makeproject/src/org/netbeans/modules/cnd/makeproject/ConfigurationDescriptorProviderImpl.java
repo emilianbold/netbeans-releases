@@ -47,6 +47,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.openide.filesystems.FileObject;
 
@@ -93,8 +94,7 @@ public class ConfigurationDescriptorProviderImpl extends ConfigurationDescriptor
     }
 
     @Override
-    protected void opening() {
-        super.opening();
+    protected void opening(Interrupter interrupter) {
+        super.opening(interrupter);
     }
-   
 }
