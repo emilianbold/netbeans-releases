@@ -46,6 +46,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicLong;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
@@ -55,6 +57,7 @@ import org.netbeans.modules.web.clientproject.spi.jstesting.JsTestingProviderImp
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.nodes.Node;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -156,10 +159,12 @@ public final class JsTestingProviders {
 
     //~ Inner classes
 
-    private static final class ProxyNodeList implements NodeList<Node> {
+    private static final class ProxyNodeList implements NodeList<Node>, ChangeListener {
 
         private final Project project;
         private final List<NodeList<Node>> nodeList = new CopyOnWriteArrayList<>();
+        private final ChangeSupport changeSupport = new ChangeSupport(this);
+        private final AtomicLong listenerCounter = new AtomicLong(0);
 
 
         private ProxyNodeList(Project project) {
@@ -191,16 +196,22 @@ public final class JsTestingProviders {
 
         @Override
         public void addChangeListener(ChangeListener listener) {
-            for (NodeList<Node> list : nodeList) {
-                list.addChangeListener(listener);
+            if (listenerCounter.incrementAndGet() == 1) {
+                for (NodeList<Node> list : nodeList) {
+                    list.addChangeListener(this);
+                }
             }
+            changeSupport.addChangeListener(listener);
         }
 
         @Override
         public void removeChangeListener(ChangeListener listener) {
-            for (NodeList<Node> list : nodeList) {
-                list.removeChangeListener(listener);
+            if (listenerCounter.decrementAndGet() == 0) {
+                for (NodeList<Node> list : nodeList) {
+                    list.removeChangeListener(this);
+                }
             }
+            changeSupport.removeChangeListener(listener);
         }
 
         @Override
@@ -220,6 +231,11 @@ public final class JsTestingProviders {
             for (NodeList<Node> list : nodeList) {
                 list.removeNotify();
             }
+        }
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            changeSupport.fireChange();
         }
 
     }
