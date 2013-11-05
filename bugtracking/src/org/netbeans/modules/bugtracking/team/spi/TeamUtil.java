@@ -86,8 +86,4 @@ public class TeamUtil {
         return impl != null ? impl.getRepository() : null;
     }
     
-    public static TeamProject getTeamProject(Repository repo) {
-        return TeamRepositories.getInstance().getTeamProject(APIAccessor.IMPL.getImpl(repo));
-    }
-    
 }

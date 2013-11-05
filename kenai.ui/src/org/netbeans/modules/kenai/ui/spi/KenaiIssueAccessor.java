@@ -101,13 +101,6 @@ public abstract class KenaiIssueAccessor {
         public abstract String getID();
 
         /**
-         * Returns the project this issue belongs to
-         *
-         * @return
-         */
-        public abstract KenaiProject getProject();
-
-        /**
          * Returns the issues short display name
          *
          * @return

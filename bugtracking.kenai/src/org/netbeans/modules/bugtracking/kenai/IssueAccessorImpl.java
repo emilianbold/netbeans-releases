@@ -115,30 +115,20 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
     public IssueHandle[] getRecentIssues() {
         Collection<RecentIssue> recentIssues = Util.getRecentIssues();
 
-        Map<String, TeamProjectImpl> issueToKenaiProject = new HashMap<String, TeamProjectImpl>();
         List<RecentIssue> retIssues = new ArrayList<RecentIssue>(5);
         for(RecentIssue ri : recentIssues) {
-            Issue issue = ri.getIssue();
-            Repository repo = issue.getRepository();
-            TeamProjectImpl kenaiProject = (TeamProjectImpl) TeamUtil.getTeamProject(repo);
-            if(kenaiProject == null) {
-                continue;
-            }
             if(retIssues.size() > 5) {
                 retIssues.remove(5);
             }
             if(retIssues.isEmpty()) {
                 retIssues.add(ri);
-                issueToKenaiProject.put(issue.getID(), kenaiProject);
             } else {
                 for (int i = 0; i < retIssues.size(); i++) {
                     if(ri.getTimestamp() > retIssues.get(i).getTimestamp()) {
                         retIssues.add(i, ri);
-                        issueToKenaiProject.put(issue.getID(), kenaiProject);
                         break;
                     } else if (retIssues.size() < 5) {
                         retIssues.add(retIssues.size(), ri);
-                        issueToKenaiProject.put(issue.getID(), kenaiProject);
                         break;
                     }
                 }
@@ -147,9 +137,7 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
 
         List<IssueHandle> ret = new ArrayList<IssueHandle>(retIssues.size());
         for (RecentIssue ri : retIssues) {
-            TeamProjectImpl kenaiProject = issueToKenaiProject.get(ri.getIssue().getID());
-            assert kenaiProject != null;
-            ret.add(new IssueHandleImpl(ri.getIssue(), kenaiProject.getProject()));
+            ret.add(new IssueHandleImpl(ri.getIssue()));
         }
         return ret.toArray(new IssueHandle[ret.size()]);
     }
@@ -182,7 +170,7 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
                 
         List<IssueHandle> ret = new ArrayList<IssueHandle>(issues.size());
         for (Issue issue : issues) {
-            IssueHandleImpl ih = new IssueHandleImpl(issue, project);
+            IssueHandleImpl ih = new IssueHandleImpl(issue);
             ret.add(ih);
         }
         return ret.toArray(new IssueHandle[ret.size()]);
@@ -190,21 +178,14 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
 
     private class IssueHandleImpl extends IssueHandle {
         private final Issue issue;
-        private final KenaiProject project;
 
-        public IssueHandleImpl(Issue issue, KenaiProject project) {
+        public IssueHandleImpl(Issue issue) {
             this.issue = issue;
-            this.project = project;
         }
 
         @Override
         public String getID() {
             return issue.getID();
-        }
-
-        @Override
-        public KenaiProject getProject() {
-            return project;
         }
 
         @Override

@@ -87,7 +87,6 @@ public abstract class TeamRepositories implements PropertyChangeListener {
     private static TeamRepositories instance;
 
     private final Map<String, Object> teamLocks = new HashMap<String, Object>(1);
-    private final Map<RepositoryImpl, TeamProject> repoToTeam = new WeakHashMap<RepositoryImpl, TeamProject>(5);
 
     /**
      * Holds already created team repositories
@@ -173,10 +172,6 @@ public abstract class TeamRepositories implements PropertyChangeListener {
         }
     }
     
-    public TeamProject getTeamProject(RepositoryImpl repoImpl) {
-        return repoToTeam.get(repoImpl);
-    }
-    
     /**
      * Creates a {@link Repository} for the given {@link TeamProject}
      *
@@ -192,7 +187,6 @@ public abstract class TeamRepositories implements PropertyChangeListener {
                 info.putValue(TeamBugtrackingConnector.TEAM_PROJECT_NAME, project.getName());
                 Repository repo = (c).createRepository(info);
                 RepositoryImpl repoImpl = APIAccessor.IMPL.getImpl(repo);
-                repoToTeam.put(repoImpl, project);
                 return repoImpl;
             }
         }
