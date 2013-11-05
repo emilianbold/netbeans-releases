@@ -43,6 +43,7 @@ package org.netbeans.modules.maven.j2ee;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
@@ -245,10 +246,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
                     }
                 }
             }
-        } catch (Deployment.DeploymentException ex) {
-            ex.printStackTrace(err);
-            LOGGER.log(Level.FINE, "Exception occured wile deploying to Application Server.", ex); //NOI18N
-        } catch (Exception ex) {
+        } catch (Deployment.DeploymentException | MalformedURLException ex) {
             LOGGER.log(Level.FINE, "Exception occured wile deploying to Application Server.", ex); //NOI18N
         }
 
@@ -355,7 +353,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
 
     static class DLogger implements Deployment.Logger {
 
-        private OutputWriter logger;
+        private final OutputWriter logger;
 
         public DLogger(OutputWriter log) {
             logger = log;
