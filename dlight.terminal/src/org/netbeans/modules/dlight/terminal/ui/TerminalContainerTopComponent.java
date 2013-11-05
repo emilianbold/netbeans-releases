@@ -47,6 +47,8 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -162,6 +164,50 @@ public final class TerminalContainerTopComponent extends TopComponent {
                 "There seem to be multiple components with the '" + PREFERRED_ID // NOI18N
                 + "' ID. That is a potential source of errors and unexpected behavior.");// NOI18N
         return getDefault();
+    }
+
+    @Override
+    public SubComponent[] getSubComponents() {
+        ArrayList<JComponent> terminals = new ArrayList<JComponent>();
+        dfs(terminals, tc);
+
+        if (terminals.size() <= 1) {
+            return super.getSubComponents();
+        }
+
+        SubComponent[] subs = new SubComponent[terminals.size()];
+
+        for (int i = 0; i < terminals.size(); i++) {
+            final JComponent terminal = terminals.get(i);
+            String title = terminal.getName();
+
+            subs[i] = new SubComponent(
+                    title,
+                    new ActionListener() {
+
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            tc.ioContainer().select(terminal);
+                            requestActive();
+                        }
+
+                    },
+                    terminal == tc.ioContainer().getSelected());
+        }
+
+        return subs;
+    }
+
+    private void dfs(final List<JComponent> result, final JComponent parent) {
+        for (Component comp : parent.getComponents()) {
+            if (comp instanceof JComponent) {
+                JComponent jcomp = (JComponent) comp;
+                if (comp.getClass().getSimpleName().equals("Terminal")) {             // NOI18N
+                    result.add(jcomp);
+                }
+                dfs(result, jcomp);
+            }
+        }
     }
 
     @Override

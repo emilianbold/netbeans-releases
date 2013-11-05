@@ -79,6 +79,8 @@ class Screen extends JComponent implements Accessible {
         // setOpaque(true);	// see comment in Term.repaint()
 
         setGrabTab(true);
+        // Needed for ctrl+tab, ctrl+shift+tab switch
+        setFocusTraversalKeysEnabled(false);
 
         if (debug) {
             // Just turning our double buffering isn't enough, need to
