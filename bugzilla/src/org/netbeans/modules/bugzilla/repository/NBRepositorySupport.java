@@ -46,7 +46,7 @@ import java.util.Collection;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
-import org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils;
+import org.netbeans.modules.bugtracking.commons.NBBugzillaUtils;
 import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.team.spi.TeamAccessor;
@@ -102,7 +102,7 @@ public class NBRepositorySupport extends BugzillaRepository {
                     }
                 }
                 if(!registered) {
-                    NBBugzillaUtils.addRepository(nbRepository);
+                    NBBugzillaUtils.addRepository(BugzillaConnector.ID, nbRepository.getId());
                 }
             }
             return nbRepository;
@@ -128,7 +128,7 @@ public class NBRepositorySupport extends BugzillaRepository {
 
         if(nbRepository == null) {                              // no nb repo yet ...
             nbRepository = createRepositoryIntern();            // ... create ...
-            NBBugzillaUtils.addRepository(nbRepository); // ... and register in services/issue tracking
+            NBBugzillaUtils.addRepository(BugzillaConnector.ID, nbRepository.getId()); // ... and register in services/issue tracking
         } 
 
         return nbRepository;

@@ -74,7 +74,7 @@ import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.api.IssueQuickSearch.RepositoryFilter;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils;
+import org.netbeans.modules.bugtracking.commons.NBBugzillaUtils;
 
 /**
  * Loads the list of repositories and determines the default one off the AWT
@@ -733,7 +733,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         String url = VersioningQuery.getRemoteLocation(referenceFile.toURI());
         if (url != null) {
             if(NBBugzillaUtils.isNbRepository(url)) {
-                NBBugzillaUtils.findNBRepository(); // ensure repository exists 
+                BugtrackingUtil.findNBRepository(); // ensure repository exists 
             }
         }
     }

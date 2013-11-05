@@ -49,12 +49,12 @@ import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.DelegatingConnector;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.ui.selectors.RepositorySelector;
 import org.netbeans.modules.team.ide.spi.ProjectServices;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -164,5 +164,19 @@ public class BugtrackingUtil {
         }
         return false;
     }
-    
+
+    public static RepositoryImpl findNBRepository() {
+        DelegatingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
+        for (DelegatingConnector c : connectors) {
+            BugtrackingConnector bugtrackingConnector = c.getDelegate();
+            if ((bugtrackingConnector instanceof TeamBugtrackingConnector)) {
+                TeamBugtrackingConnector teamConnector = (TeamBugtrackingConnector) bugtrackingConnector;
+                if(teamConnector.getType() == TeamBugtrackingConnector.BugtrackingType.BUGZILLA) {
+                    String id = teamConnector.findNBRepository(); // ensure repository exists
+                    return RepositoryRegistry.getInstance().getRepository(c.getID(), id);
+                }
+            }
+        }
+        return null;
+    }        
 }

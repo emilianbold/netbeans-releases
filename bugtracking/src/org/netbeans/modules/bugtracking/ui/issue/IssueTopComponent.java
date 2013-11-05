@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.bugtracking.ui.issue;
 
-import org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils;
+import org.netbeans.modules.bugtracking.commons.NBBugzillaUtils;
 import org.netbeans.modules.bugtracking.ui.repository.RepositoryComboRenderer;
 import org.netbeans.modules.bugtracking.ui.repository.RepositoryComboSupport;
 import java.awt.BorderLayout;

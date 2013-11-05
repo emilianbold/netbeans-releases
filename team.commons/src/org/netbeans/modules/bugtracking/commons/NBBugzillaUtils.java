@@ -40,20 +40,14 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.team.spi;
+package org.netbeans.modules.bugtracking.commons;
 
+import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import org.netbeans.api.keyring.Keyring;
-import org.netbeans.modules.bugtracking.APIAccessor;
-import org.netbeans.modules.bugtracking.BugtrackingConfig;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.DelegatingConnector;
-import org.netbeans.modules.bugtracking.RepositoryImpl;
-import org.netbeans.modules.bugtracking.RepositoryRegistry;
-import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -90,10 +84,7 @@ public final class NBBugzillaUtils {
      * @return username
      */
     public static String getNBUsername() {
-        String user = BugtrackingConfig.getInstance().getPreferences().get(NB_BUGZILLA_USERNAME, ""); // NOI18N
-        if("".equals(user)) {                                                   // NOI18N    
-            user = RepositoryRegistry.getBugzillaNBUsername();
-        }
+        String user = getPreferences().get(NB_BUGZILLA_USERNAME, ""); // NOI18N
         return user.equals("") ? null : user;                                   // NOI18N
     }
 
@@ -106,7 +97,7 @@ public final class NBBugzillaUtils {
     public static char[] getNBPassword() {
         return Keyring.read(NB_BUGZILLA_PASSWORD);
     }
-
+    
     /**
      * Save the given username as a netbeans.org username.
      * Shouldn't be called in awt
@@ -116,7 +107,7 @@ public final class NBBugzillaUtils {
         if(username == null) {
             return;
         }
-        BugtrackingConfig.getInstance().getPreferences().put(NB_BUGZILLA_USERNAME, username);
+        getPreferences().put(NB_BUGZILLA_USERNAME, username);
     }
 
     /**
@@ -139,28 +130,17 @@ public final class NBBugzillaUtils {
     }
     
     public static void addRepository(String connectorId, String repositoryId) {
-        RepositoryImpl impl = RepositoryRegistry.getInstance().getRepository(connectorId, repositoryId);
-        if(impl != null) {       
-            RepositoryRegistry.getInstance().addRepository(impl);
+        RepositoryRegistryAccessor a = Lookup.getDefault().lookup(RepositoryRegistryAccessor.class);
+        if(a != null) {
+            a.addRepository(connectorId, repositoryId);
         }
     }
     
-    public static void addRepository(Repository repository) {
-        RepositoryRegistry.getInstance().addRepository(APIAccessor.IMPL.getImpl(repository));
-    }    
+    private static Preferences getPreferences() {
+        return NbPreferences.root().node("org/netbeans/modules/bugtracking"); // NOI18N
+    }
     
-    public static Repository findNBRepository() {
-        DelegatingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
-        for (DelegatingConnector c : connectors) {
-            BugtrackingConnector bugtrackingConnector = c.getDelegate();
-            if ((bugtrackingConnector instanceof TeamBugtrackingConnector)) {
-                TeamBugtrackingConnector teamConnector = (TeamBugtrackingConnector) bugtrackingConnector;
-                if(teamConnector.getType() == TeamBugtrackingConnector.BugtrackingType.BUGZILLA) {
-                    String id = teamConnector.findNBRepository(); // ensure repository exists
-                    return RepositoryRegistry.getInstance().getRepository(c.getID(), id).getRepository();
-                }
-            }
-        }
-        return null;
-    }    
+    public interface RepositoryRegistryAccessor {
+        public void addRepository(String connectorId, String repositoryId);
+    }
 }

@@ -62,9 +62,10 @@ import org.netbeans.modules.bugtracking.team.TeamRepositories;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.commons.LogUtils;
-import org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils;
+import org.netbeans.modules.bugtracking.commons.NBBugzillaUtils;
 import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.openide.util.NbPreferences;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
@@ -497,7 +498,7 @@ public class RepositoryRegistry {
         return NbPreferences.root().node("org/netbeans/modules/jira"); // NOI18N
     }
 
-    public static String getBugzillaNBUsername() {
+    private static String getBugzillaNBUsername() {
         String user = getBugzillaPreferences().get(NB_BUGZILLA_USERNAME, ""); // NOI18N
         return user;                         
     }
@@ -515,5 +516,15 @@ public class RepositoryRegistry {
             }
         }
     }
-    
+
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bugtracking.commons.NBBugzillaUtils.RepositoryRegistryAccessor.class)
+    public static class AccessorImpl implements NBBugzillaUtils.RepositoryRegistryAccessor {
+        @Override
+        public void addRepository(String connectorId, String repositoryId) {
+            RepositoryImpl impl = RepositoryRegistry.getInstance().getRepository(connectorId, repositoryId);
+            if(impl != null) {       
+                RepositoryRegistry.getInstance().addRepository(impl);
+            }
+        }
+    }
 }

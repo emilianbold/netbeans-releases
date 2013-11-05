@@ -54,8 +54,9 @@ import org.netbeans.modules.bugtracking.commons.Util;
 import org.netbeans.modules.bugtracking.team.TeamRepositories;
 import org.netbeans.modules.team.ide.spi.ProjectServices;
 import org.netbeans.modules.team.spi.OwnerInfo;
-import org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils;
+import org.netbeans.modules.bugtracking.commons.NBBugzillaUtils;
 import org.netbeans.modules.bugtracking.ui.selectors.RepositorySelectorBuilder;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.netbeans.modules.team.spi.TeamProject;
 import org.openide.DialogDescriptor;
@@ -313,7 +314,7 @@ public class BugtrackingOwnerSupport {
                         repository = TeamRepositories.getInstance().getRepository(url, ownerInfo.getOwner());
                     }
                     if(repository == null) {
-                        repository = APIAccessor.IMPL.getImpl(NBBugzillaUtils.findNBRepository());
+                        repository = BugtrackingUtil.findNBRepository();
                     }
                 }
             }

@@ -60,7 +60,7 @@ import javax.swing.JLabel;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.team.spi.TeamAccessor;
 import org.netbeans.modules.team.spi.RepositoryUser;
-import org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils;
+import org.netbeans.modules.bugtracking.commons.NBBugzillaUtils;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiManager;
