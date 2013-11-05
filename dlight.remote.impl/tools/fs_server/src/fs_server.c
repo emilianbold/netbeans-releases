@@ -678,9 +678,10 @@ static void main_loop() {
         report_error("error setting exit function: %s\n", strerror(errno));
     }
 
-    char raw_req_buffer[256 + PATH_MAX];
-    char req_buffer[256 + PATH_MAX];
-    while(fgets(raw_req_buffer, sizeof raw_req_buffer, stdin)) {
+    int buf_size = 256 + PATH_MAX;
+    char *raw_req_buffer = malloc(buf_size);
+    char *req_buffer = malloc(buf_size);
+    while(fgets(raw_req_buffer, buf_size, stdin)) {
         trace("raw request: %s", raw_req_buffer); // no LF since buffer ends it anyhow 
         log_print(raw_req_buffer);
         fs_request* request = decode_request(raw_req_buffer, (fs_request*) req_buffer);
@@ -717,6 +718,8 @@ static void main_loop() {
             trace("incorrect request \n");
        }
     }
+    free(req_buffer);
+    free(raw_req_buffer);
     state_set_proceed(false);
     blocking_queue_shutdown(&req_queue);
     trace("Max. requests queue size: %d\n", blocking_queue_max_size(&req_queue));
