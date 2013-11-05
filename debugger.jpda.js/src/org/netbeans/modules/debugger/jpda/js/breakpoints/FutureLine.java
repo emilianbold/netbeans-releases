@@ -39,61 +39,60 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.debugger.jpda.js.breakpoints;
 
-import org.netbeans.api.debugger.Breakpoint;
-import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.jpda.JPDABreakpoint;
-import org.openide.filesystems.FileObject;
+import java.net.URL;
+import org.openide.text.Line;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author Martin
  */
-public abstract class JSBreakpoint extends Breakpoint {
+public class FutureLine extends Line {
     
-    public static String PROP_CONDITION = "condition";
+    private final URL url;
+    private final int lineNumber;
     
-    private JPDABreakpoint javaBreakpoint;
-    private String condition;
-
-    protected final JPDABreakpoint getJavaBreakpoint() {
-        return javaBreakpoint;
-    }
-
-    protected final void setJavaBreakpoint(JPDABreakpoint javaBreakpoint) {
-        this.javaBreakpoint = javaBreakpoint;
-    }
-    
-    abstract protected FileObject getFileObject();
-    
-    @Override
-    public final boolean isEnabled() {
-        return javaBreakpoint.isEnabled();
+    public FutureLine(URL url, int lineNumber) {
+        super(Lookups.fixed());
+        this.url = url;
+        this.lineNumber = lineNumber;
     }
 
     @Override
-    public final void disable() {
-        javaBreakpoint.disable();
+    public int getLineNumber() {
+        return lineNumber;
+    }
+    
+    public URL getURL() {
+        return url;
     }
 
     @Override
-    public final void enable() {
-        javaBreakpoint.enable();
+    public void show(int kind, int column) {
     }
 
     @Override
-    protected void dispose() {
-        super.dispose();
-        DebuggerManager.getDebuggerManager().removeBreakpoint(javaBreakpoint);
+    public void setBreakpoint(boolean b) {
     }
 
-    public final String getCondition() {
-        return condition;
+    @Override
+    public boolean isBreakpoint() {
+        return false;
     }
 
-    public final void setCondition(String condition) {
-        this.condition = condition;
-    }
+    @Override
+    public void markError() {}
+
+    @Override
+    public void unmarkError() {}
+
+    @Override
+    public void markCurrentLine() {}
+
+    @Override
+    public void unmarkCurrentLine() {}
     
 }
