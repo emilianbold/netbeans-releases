@@ -42,13 +42,19 @@
 
 package org.netbeans.modules.team.ide;
 
+import java.awt.BorderLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Date;
 import javax.swing.JComponent;
+import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
+import org.jdesktop.swingx.JXMonthView;
 import org.netbeans.modules.team.ide.spi.IDEServices;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.ChangeSupport;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -144,5 +150,33 @@ public final class JXDatePickerImpl extends javax.swing.JPanel implements IDESer
     public void setEnabled (boolean enabled) {
         super.setEnabled(enabled);
         datePicker.setEnabled(enabled);
+    }
+
+    @Override
+    public boolean allowsOpeningDaySelector () {
+        return true;
+    }
+
+    @Override
+    @NbBundle.Messages({
+        "LBL_ChooseDate=Choose Date"
+    })
+    public boolean openDaySelector () {
+        JXMonthView monthView = datePicker.getMonthView();
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(monthView);
+        NotifyDescriptor nd = new NotifyDescriptor(
+                panel,
+                Bundle.LBL_ChooseDate(),
+                NotifyDescriptor.OK_CANCEL_OPTION,
+                NotifyDescriptor.PLAIN_MESSAGE,
+                null,
+                NotifyDescriptor.OK_OPTION);
+        if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {
+            setDate(monthView.getSelectionDate());
+            return true;
+        } else {
+            return false;
+        }
     }
 }
