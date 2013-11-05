@@ -50,6 +50,7 @@ import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.lib.terminalemulator.LineDiscipline;
@@ -435,16 +436,18 @@ public final class TermOptionsPanel extends JPanel {
 	    pe.setValue(termOptions.getFont());
 	    DialogDescriptor dd = new DialogDescriptor(pe.getCustomEditor(), FontChooser_title());
 
-	    String defaultFont = FontChooser_defaultFont_label();
+	    String defaultFontString = FontChooser_defaultFont_label();
 	    dd.setOptions(new Object[]{DialogDescriptor.OK_OPTION,
-		defaultFont, DialogDescriptor.CANCEL_OPTION});  //NOI18N
+		defaultFontString, DialogDescriptor.CANCEL_OPTION});  //NOI18N
 	    DialogDisplayer.getDefault().createDialog(dd).setVisible(true);
 	    if (dd.getValue() == DialogDescriptor.OK_OPTION) {
 		Font f = (Font) pe.getValue();
 		termOptions.setFont(f);
 		applyTermOptions();
-	    } else if (dd.getValue() == defaultFont) {
-		termOptions.setFont(null);
+	    } else if (dd.getValue() == defaultFontString) {
+		Font controlFont = UIManager.getFont("controlFont"); //NOI18N
+		int fontSize = (controlFont == null) ? 12 : controlFont.getSize();
+		termOptions.setFont(new Font("monospaced", Font.PLAIN, fontSize));
 	    }
 	}
     }//GEN-LAST:event_fontButtonActionPerformed
