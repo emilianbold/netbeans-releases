@@ -225,7 +225,11 @@ public class JiraRepository {
     synchronized void setInfoValues(String name, String url, String user, char[] password, String httpUser, char[] httpPassword) {
         setTaskRepository(name, url, user, password, httpUser, httpPassword);
         String id = info != null ? info.getId() : name + System.currentTimeMillis();
-        info = new RepositoryInfo(id, JiraConnector.ID, url, name, getTooltip(name, user, url), user, httpUser, password, httpPassword);
+        info = createInfo(id, url, name, user, httpUser, password, httpPassword);
+    }
+
+    protected RepositoryInfo createInfo(String id, String url, String name, String user, String httpUser, char[] password, char[] httpPassword) {
+        return new RepositoryInfo(id, JiraConnector.ID, url, name, getTooltip(name, user, url), user, httpUser, password, httpPassword);
     }
         
     public String getDisplayName() {

@@ -73,6 +73,7 @@ import org.netbeans.modules.bugzilla.repository.IssueField;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.team.spi.TeamAccessorUtils;
+import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -93,7 +94,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
     private final TeamProject kenaiProject;
 
     KenaiRepository(TeamProject kenaiProject, String repoName, String url, String host, String userName, char[] password, String urlParam, String product) {
-        super(createInfo(repoName, url)); // use name as id - can't be changed anyway
+        super(createInfo(repoName, url, kenaiProject)); // use name as id - can't be changed anyway
         this.urlParam = urlParam;        
         
         if (url.contains("netbeans.org")) { //NOI18N
@@ -394,9 +395,20 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
         return !"true".equals(provide);                                                             // NOI18N
     }
 
-    private static RepositoryInfo createInfo(String repoName, String url) {
+    private static RepositoryInfo createInfo(String repoName, String url, TeamProject project) {
         String id = getRepositoryId(repoName, url);
         String tooltip = NbBundle.getMessage(BugzillaRepository.class, "LBL_RepositoryTooltipNoUser", new Object[] {repoName, url}); // NOI18N
-        return new RepositoryInfo(id, BugzillaConnector.ID, url, repoName, tooltip);
+        RepositoryInfo i = new RepositoryInfo(id, BugzillaConnector.ID, url, repoName, tooltip);
+        i.putValue(TeamBugtrackingConnector.TEAM_PROJECT_NAME, project.getName());
+        return i;
     }
+
+    @Override
+    protected RepositoryInfo createInfo(String id, String url, String name, String user, String httpUser, char[] password, char[] httpPassword) {
+        RepositoryInfo i = super.createInfo(id, url, name, user, httpUser, password, httpPassword); 
+        i.putValue(TeamBugtrackingConnector.TEAM_PROJECT_NAME, kenaiProject.getName());
+        return i;
+    }
+    
+    
 }

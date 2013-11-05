@@ -92,6 +92,7 @@ import org.netbeans.modules.mylyn.util.UnsubmittedTasksContainer;
 import org.netbeans.modules.mylyn.util.commands.SimpleQueryCommand;
 import org.netbeans.modules.odcs.tasks.query.QueryParameters;
 import org.netbeans.modules.team.spi.TeamAccessorUtils;
+import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -123,7 +124,7 @@ public class ODCSRepository implements PropertyChangeListener {
     private final Object CACHE_LOCK = new Object();
     
     public ODCSRepository (TeamProject project) {
-        this(createInfo(project.getDisplayName(), project.getFeatureLocation())); // use name as id - can't be changed anyway
+        this(createInfo(project.getDisplayName(), project.getFeatureLocation(), project)); // use name as id - can't be changed anyway
         assert project != null;
         this.project = project;
         TeamAccessorUtils.getTeamAccessor(project.getFeatureLocation()).addPropertyChangeListener(this, project.getWebLocation().toString());
@@ -161,10 +162,12 @@ public class ODCSRepository implements PropertyChangeListener {
     }
 
     @NbBundle.Messages({"# {0} - repository name", "# {1} - url", "LBL_RepositoryTooltipNoUser={0} : {1}"})
-    private static RepositoryInfo createInfo (String repoName, String url) {
+    private static RepositoryInfo createInfo (String repoName, String url, TeamProject project) {
         String id = getRepositoryId(repoName, url);
         String tooltip = Bundle.LBL_RepositoryTooltipNoUser(repoName, url);
-        return new RepositoryInfo(id, ODCSConnector.ID, url, repoName, tooltip);
+        RepositoryInfo i = new RepositoryInfo(id, ODCSConnector.ID, url, repoName, tooltip);
+        i.putValue(TeamBugtrackingConnector.TEAM_PROJECT_NAME, project.getName());
+        return i;
     }
     
     private static String getRepositoryId (String name, String url) {
@@ -232,6 +235,7 @@ public class ODCSRepository implements PropertyChangeListener {
         setTaskRepository(name, url, user, password, httpUser, httpPassword);
         String id = info != null ? info.getId() : name + System.currentTimeMillis();
         info = new RepositoryInfo(id, ODCSConnector.ID, url, name, getTooltip(name, user, url), user, httpUser, password, httpPassword);
+        info.putValue(TeamBugtrackingConnector.TEAM_PROJECT_NAME, project.getName());
     }
     
     private void setTaskRepository(String name, String url, String user, char[] password, String httpUser, char[] httpPassword) {

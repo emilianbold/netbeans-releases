@@ -40,13 +40,10 @@ package org.netbeans.modules.jira;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
-import org.netbeans.modules.team.spi.TeamProject;
-import org.netbeans.modules.team.spi.TeamRepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
-import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.repository.JiraRepository;
 
@@ -54,7 +51,7 @@ import org.netbeans.modules.jira.repository.JiraRepository;
  *
  * @author Tomas Stupka
  */
-public class JiraRepositoryProvider implements RepositoryProvider<JiraRepository, JiraQuery, NbJiraIssue>, TeamRepositoryProvider<JiraRepository, JiraQuery, NbJiraIssue> {
+public class JiraRepositoryProvider implements RepositoryProvider<JiraRepository, JiraQuery, NbJiraIssue> {
 
     @Override
     public Image getIcon(JiraRepository r) {
@@ -115,29 +112,6 @@ public class JiraRepositoryProvider implements RepositoryProvider<JiraRepository
     public void addPropertyChangeListener(JiraRepository r, PropertyChangeListener listener) {
         r.addPropertyChangeListener(listener);
     }
-
-    /********************************************************************************
-     * Kenai
-     ********************************************************************************/
-    
-    @Override
-    public JiraQuery getAllIssuesQuery(JiraRepository repository) {
-        assert repository instanceof KenaiRepository;
-        return ((KenaiRepository)repository).getAllIssuesQuery();
-    }
-
-    @Override
-    public JiraQuery getMyIssuesQuery(JiraRepository repository) {
-        assert repository instanceof KenaiRepository;
-        return ((KenaiRepository)repository).getMyIssuesQuery();
-    }
-
-//    @Override
-//    public TeamProject getTeamProject(JiraRepository repository) {
-//        return repository instanceof KenaiRepository ? 
-//            ((KenaiRepository)repository).getKenaiProject() :
-//            null;
-//    }
 
     @Override
     public NbJiraIssue createIssue(JiraRepository r, String summary, String description) {

@@ -50,11 +50,9 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static org.netbeans.modules.bugtracking.BugtrackingOwnerSupport.ContextType.SELECTED_FILE_AND_ALL_PROJECTS;
-import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.team.spi.TeamProject;
-import org.netbeans.modules.team.spi.TeamRepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.*;
+import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
 
 
 /**
@@ -409,30 +407,10 @@ public final class RepositoryImpl<R, Q, I> {
         }
     }
 
-    public Query getAllIssuesQuery() {
-        assert TeamRepositoryProvider.class.isAssignableFrom(repositoryProvider.getClass());
-        Q q = ((TeamRepositoryProvider<R, Q, I>) repositoryProvider).getAllIssuesQuery(r);
-        QueryImpl queryImpl = getQuery(q);
-        return queryImpl != null ? queryImpl.getQuery() : null;
-    }
-
-    public Query getMyIssuesQuery() {
-        assert TeamRepositoryProvider.class.isAssignableFrom(repositoryProvider.getClass());
-        Q q = ((TeamRepositoryProvider<R, Q, I>) repositoryProvider).getMyIssuesQuery(r);
-        QueryImpl queryImpl = getQuery(q);
-        return queryImpl != null ? queryImpl.getQuery() : null;
-    }
-
     public boolean isTeamRepository() {
-        return repositoryProvider instanceof TeamRepositoryProvider;
+        return getInfo().getValue(TeamBugtrackingConnector.TEAM_PROJECT_NAME) != null;
     }
 
-//    public TeamProject getTeamProject() {
-//        return repositoryProvider instanceof TeamRepositoryProvider ?
-//                    ((TeamRepositoryProvider<R, Q, I>)repositoryProvider).getTeamProject(r) :
-//                    null;
-//    }
-    
     public boolean isMutable() {
         DelegatingConnector dc = BugtrackingManager.getInstance().getConnector(getConnectorId());
         assert dc != null;

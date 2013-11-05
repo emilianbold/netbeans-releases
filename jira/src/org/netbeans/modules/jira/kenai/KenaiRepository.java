@@ -66,6 +66,7 @@ import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.team.spi.TeamAccessorUtils;
+import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -85,7 +86,7 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
 
     public KenaiRepository(TeamProject kenaiProject, String repoName, String url, String host, String project) {
         // use name for id, can't be changed anyway
-        super(createInfo(repoName, url));
+        super(createInfo(repoName, url, kenaiProject));
         icon = ImageUtilities.loadImage(ICON_PATH, true);
         this.projectName = project;
         this.host = host;
@@ -361,9 +362,20 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
             setCredentials(user, psswd);
         }
     }
-    private static RepositoryInfo createInfo(String repoName, String url) {
+    private static RepositoryInfo createInfo(String repoName, String url, TeamProject project) {
         String id = getRepositoryId(repoName, url);
         String tooltip = NbBundle.getMessage(JiraRepository.class, "LBL_RepositoryTooltip", new Object[] {repoName, url}); // NOI18N
-        return new RepositoryInfo(id, JiraConnector.ID, url, repoName, tooltip);
+        RepositoryInfo i = new RepositoryInfo(id, JiraConnector.ID, url, repoName, tooltip);
+        i.putValue(TeamBugtrackingConnector.TEAM_PROJECT_NAME, project.getName());
+        return i;
     }
+
+    @Override
+    protected RepositoryInfo createInfo(String id, String url, String name, String user, String httpUser, char[] password, char[] httpPassword) {
+        RepositoryInfo i = super.createInfo(id, url, name, user, httpUser, password, httpPassword); 
+        i.putValue(TeamBugtrackingConnector.TEAM_PROJECT_NAME, kenaiProject.getName());
+        return i;
+    }
+    
+    
 }

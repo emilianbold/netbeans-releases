@@ -490,16 +490,17 @@ public class BugzillaRepository {
 
     public synchronized void setInfoValues(String user, char[] password) {
         setTaskRepository(info.getDisplayName(), info.getUrl(), user, password, null, null, Boolean.parseBoolean(info.getValue(IBugzillaConstants.REPOSITORY_SETTING_SHORT_LOGIN)));
-        info = new RepositoryInfo(
-                        info.getId(), info.getConnectorId(), 
-                        info.getUrl(), info.getDisplayName(), info.getTooltip(), 
-                        user, null, password, null);
+        info = createInfo(info.getId(), info.getUrl(), info.getDisplayName(), user, null, password, null);
     }
     
     synchronized void setInfoValues(String name, String url, String user, char[] password, String httpUser, char[] httpPassword, boolean localUserEnabled) {
         setTaskRepository(name, url, user, password, httpUser, httpPassword, localUserEnabled);
         String id = info != null ? info.getId() : name + System.currentTimeMillis();
-        info = new RepositoryInfo(id, BugzillaConnector.ID, url, name, getTooltip(name, user, url), user, httpUser, password, httpPassword);
+        info = createInfo(id, url, name, user, httpUser, password, httpPassword);
+    }
+
+    protected RepositoryInfo createInfo(String id, String url, String name, String user, String httpUser, char[] password, char[] httpPassword) {
+        return new RepositoryInfo(id, BugzillaConnector.ID, url, name, getTooltip(name, user, url), user, httpUser, password, httpPassword);
     }
     
     public void ensureCredentials() {
