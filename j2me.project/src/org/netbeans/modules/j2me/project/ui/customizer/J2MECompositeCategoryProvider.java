@@ -62,9 +62,11 @@ public class J2MECompositeCategoryProvider implements ProjectCustomizer.Composit
     private static final String PLATFORM = "Platform";
     public static final String RUN = "Run";
     private static final String APPLICATION_DESCRIPTOR = "Application Descriptor";
+    private static final String COMPILING = "Compiling";
+    private static final String JAVADOC = "Documenting";
     private static final String OBFUSCATING = "Obfuscating";
     private static final String SIGNING = "Signing";
-    private String name;
+    private final String name;
     private static final Map<String, J2MEProjectProperties> projectProperties = new HashMap<>();
 
     private J2MECompositeCategoryProvider(String name) {
@@ -77,6 +79,8 @@ public class J2MECompositeCategoryProvider implements ProjectCustomizer.Composit
         "LBL_Category_Platform=Platform",
         "LBL_Category_Run=Run",
         "LBL_Category_Application_Descriptor=Application Descriptor",
+        "LBL_Category_Compiling=Compiling",
+        "LBL_Category_JavaDoc=Documenting",
         "LBL_Category_Obfuscating=Obfuscating",
         "LBL_Category_Signing=Signing"})
     public ProjectCustomizer.Category createCategory(Lookup context) {
@@ -115,6 +119,18 @@ public class J2MECompositeCategoryProvider implements ProjectCustomizer.Composit
                         Bundle.LBL_Category_Application_Descriptor(),
                         null);
                 break;
+            case COMPILING:
+                toReturn = ProjectCustomizer.Category.create(
+                        COMPILING,
+                        Bundle.LBL_Category_Compiling(),
+                        null);
+                break;
+            case JAVADOC:
+                toReturn = ProjectCustomizer.Category.create(
+                        JAVADOC,
+                        Bundle.LBL_Category_JavaDoc(),
+                        null);
+                break;
             case OBFUSCATING:
                 toReturn = ProjectCustomizer.Category.create(
                         OBFUSCATING,
@@ -128,8 +144,8 @@ public class J2MECompositeCategoryProvider implements ProjectCustomizer.Composit
                         null);
                 break;
         }
-        assert toReturn != null : "No category for name:" + name;            
-        return toReturn;        
+        assert toReturn != null : "No category for name:" + name;
+        return toReturn;
     }
 
     @Override
@@ -143,7 +159,7 @@ public class J2MECompositeCategoryProvider implements ProjectCustomizer.Composit
             case LIBRARIES:
                 CustomizerProviderImpl.SubCategoryProvider prov = context.lookup(CustomizerProviderImpl.SubCategoryProvider.class);
                 assert prov != null : "Assuming CustomizerProviderImpl.SubCategoryProvider in customizer context";
-                return new J2MELibrarisPanel(uiProps, prov, category);
+                return new J2MELibrariesPanel(uiProps, prov, category);
             case PLATFORM:
                 return new J2MEPlatformPanel(uiProps);
             case RUN:
@@ -154,22 +170,33 @@ public class J2MECompositeCategoryProvider implements ProjectCustomizer.Composit
                 return new J2MEObfuscatingPanel(uiProps);
             case SIGNING:
                 return new J2MESigningPanel(uiProps);
+            case JAVADOC:
+                return new J2MEJavadocPanel(uiProps);
+            case COMPILING:
+                return new J2MECompilingPanel(uiProps);
         }
         return new JPanel();
-
     }
-    
+
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
-        projectType="org-netbeans-modules-j2me-project",
-        position=100
+            projectType = "org-netbeans-modules-j2me-project",
+            position = 100
     )
     public static J2MECompositeCategoryProvider createSources() {
         return new J2MECompositeCategoryProvider(SOURCES);
     }
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
-        projectType="org-netbeans-modules-j2me-project",
-        position=200
+            projectType = "org-netbeans-modules-j2me-project",
+            position = 200
+    )
+    public static J2MECompositeCategoryProvider createPlatform() {
+        return new J2MECompositeCategoryProvider(PLATFORM);
+    }
+
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+            projectType = "org-netbeans-modules-j2me-project",
+            position = 300
     )
     public static J2MECompositeCategoryProvider createLibraries() {
         return new J2MECompositeCategoryProvider(LIBRARIES);
@@ -177,21 +204,7 @@ public class J2MECompositeCategoryProvider implements ProjectCustomizer.Composit
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
             projectType = "org-netbeans-modules-j2me-project",
-            position = 305)
-    public static J2MECompositeCategoryProvider createPlatform() {
-        return new J2MECompositeCategoryProvider(PLATFORM);
-    }
-    
-    @ProjectCustomizer.CompositeCategoryProvider.Registration(
-            projectType = "org-netbeans-modules-j2me-project",
-            position = 306)
-    public static J2MECompositeCategoryProvider createRun() {
-        return new J2MECompositeCategoryProvider(RUN);
-    }
-
-    @ProjectCustomizer.CompositeCategoryProvider.Registration(
-            projectType = "org-netbeans-modules-j2me-project",
-            position = 310)
+            position = 400)
     public static J2MECompositeCategoryProvider createApplicationDescriptor() {
         return new J2MECompositeCategoryProvider(APPLICATION_DESCRIPTOR);
     }
@@ -199,7 +212,23 @@ public class J2MECompositeCategoryProvider implements ProjectCustomizer.Composit
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
             projectType = "org-netbeans-modules-j2me-project",
             category = BUILD,
-            position = 230)
+            position = 510)
+    public static J2MECompositeCategoryProvider createCompiling() {
+        return new J2MECompositeCategoryProvider(COMPILING);
+    }
+
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+            projectType = "org-netbeans-modules-j2me-project",
+            category = BUILD,
+            position = 520)
+    public static J2MECompositeCategoryProvider createSigning() {
+        return new J2MECompositeCategoryProvider(SIGNING);
+    }
+
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+            projectType = "org-netbeans-modules-j2me-project",
+            category = BUILD,
+            position = 530)
     public static J2MECompositeCategoryProvider createObfuscating() {
         return new J2MECompositeCategoryProvider(OBFUSCATING);
     }
@@ -207,8 +236,15 @@ public class J2MECompositeCategoryProvider implements ProjectCustomizer.Composit
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
             projectType = "org-netbeans-modules-j2me-project",
             category = BUILD,
-            position = 235)
-    public static J2MECompositeCategoryProvider createSigning() {
-        return new J2MECompositeCategoryProvider(SIGNING);
+            position = 540)
+    public static J2MECompositeCategoryProvider createJavadoc() {
+        return new J2MECompositeCategoryProvider(JAVADOC);
+    }
+
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+            projectType = "org-netbeans-modules-j2me-project",
+            position = 600)
+    public static J2MECompositeCategoryProvider createRun() {
+        return new J2MECompositeCategoryProvider(RUN);
     }
 }

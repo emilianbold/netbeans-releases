@@ -49,7 +49,7 @@
 @ProjectCustomizer.CompositeCategoryProvider.Registration(
     projectType="org-netbeans-modules-j2me-project",
     category=J2MECompositeCategoryProvider.BUILD,
-    position=300,
+    position=500,
     categoryLabel="#LBL_Category_Build"
 )
 @NbBundle.Messages("LBL_Category_Build=Build")

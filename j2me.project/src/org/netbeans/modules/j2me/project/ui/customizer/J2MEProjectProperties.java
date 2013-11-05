@@ -60,6 +60,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -101,6 +102,7 @@ import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import static org.netbeans.modules.java.api.common.project.ProjectProperties.JAVAC_DEBUG;
 import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.java.api.common.project.ui.customizer.ClassPathListCellRenderer;
 import org.netbeans.modules.java.api.common.project.ui.customizer.SourceRootsUi;
@@ -121,6 +123,7 @@ import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
+import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 
@@ -170,6 +173,9 @@ public final class J2MEProjectProperties {
     public static final String PROP_PLATFORM_BOOTCLASSPATH = "platform.bootcp"; //NOI18N
     public static final String PLATFORM_HOME = "platform.home"; //NOI18N
 
+    private static final Integer BOOLEAN_KIND_TF = new Integer(0);
+    private static final Integer BOOLEAN_KIND_YN = new Integer(1);
+    private static final Integer BOOLEAN_KIND_ED = new Integer(2);
 
     // MODELS FOR VISUAL CONTROLS
     // CustomizerSources
@@ -191,9 +197,6 @@ public final class J2MEProjectProperties {
     ListCellRenderer JAVAC_SOURCE_RENDERER;
     ListCellRenderer JAVAC_PROFILE_RENDERER;
     Document SHARED_LIBRARIES_MODEL;
-
-    // CustomizerCompile
-    ButtonModel NO_DEPENDENCIES_MODEL;
 
     //J2MEObfuscatingPanel
     Document ADDITIONAL_OBFUSCATION_SETTINGS_MODEL;
@@ -246,6 +249,32 @@ public final class J2MEProjectProperties {
     //J2MEPushRegistryPanel
     J2MEPushRegistryPanel.StorableTableModel PUSH_REGISTRY_TABLE_MODEL;
     String[] PUSH_REGISTRY_PROPERTY_NAMES = {MANIFEST_PUSHREGISTRY};
+
+    // CustomizerCompile
+    ButtonModel JAVAC_DEPRECATION_MODEL;
+    ButtonModel JAVAC_DEBUG_MODEL;
+    ButtonModel DO_DEPEND_MODEL;
+    ButtonModel NO_DEPENDENCIES_MODEL;
+    ButtonModel ENABLE_ANNOTATION_PROCESSING_MODEL;
+    ButtonModel ENABLE_ANNOTATION_PROCESSING_IN_EDITOR_MODEL;
+    DefaultListModel ANNOTATION_PROCESSORS_MODEL;
+    DefaultTableModel PROCESSOR_OPTIONS_MODEL;
+    Document JAVAC_COMPILER_ARG_MODEL;
+    private Integer javacDebugBooleanKind;
+
+    //J2MEJavadocPanel
+    ButtonModel JAVADOC_PRIVATE_MODEL;
+    ButtonModel JAVADOC_NO_TREE_MODEL;
+    ButtonModel JAVADOC_USE_MODEL;
+    ButtonModel JAVADOC_NO_NAVBAR_MODEL;
+    ButtonModel JAVADOC_NO_INDEX_MODEL;
+    ButtonModel JAVADOC_SPLIT_INDEX_MODEL;
+    ButtonModel JAVADOC_AUTHOR_MODEL;
+    ButtonModel JAVADOC_VERSION_MODEL;
+    Document JAVADOC_WINDOW_TITLE_MODEL;
+    ButtonModel JAVADOC_PREVIEW_MODEL;
+    Document JAVADOC_ADDITIONALPARAM_MODEL;
+    private Integer javadocPreviewBooleanKind;
 
     private final List<ActionListener> optionListeners = new CopyOnWriteArrayList<>();
     private Map<String, String> additionalProperties;
@@ -368,6 +397,64 @@ public final class J2MEProjectProperties {
         //J2MEPushRegistryPanel
         PUSH_REGISTRY_TABLE_MODEL = new J2MEPushRegistryPanel.StorableTableModel(this);
 
+        // J2MECompilingPanel
+        Integer[] kind = new Integer[1];
+        JAVAC_DEPRECATION_MODEL = projectGroup.createToggleButtonModel(evaluator, ProjectProperties.JAVAC_DEPRECATION);
+        JAVAC_DEBUG_MODEL = ModelHelper.createToggleButtonModel(evaluator, ProjectProperties.JAVAC_DEBUG, kind);
+        javacDebugBooleanKind = kind[0];
+        DO_DEPEND_MODEL = privateGroup.createToggleButtonModel(evaluator, ProjectProperties.DO_DEPEND);
+        ENABLE_ANNOTATION_PROCESSING_MODEL = projectGroup.createToggleButtonModel(evaluator, ProjectProperties.ANNOTATION_PROCESSING_ENABLED);
+        ENABLE_ANNOTATION_PROCESSING_IN_EDITOR_MODEL = projectGroup.createToggleButtonModel(evaluator, ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR);
+        String annotationProcessors = projectProperties.get(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST);
+        if (annotationProcessors == null) {
+            annotationProcessors = ""; //NOI18N
+        }
+        ANNOTATION_PROCESSORS_MODEL = ClassPathUiSupport.createListModel(
+                (annotationProcessors.length() > 0 ? Arrays.asList(annotationProcessors.split(",")) : Collections.emptyList()).iterator()); //NOI18N
+        String processorOptions = projectProperties.get(ProjectProperties.ANNOTATION_PROCESSING_PROCESSOR_OPTIONS);
+        if (processorOptions == null) {
+            processorOptions = ""; //NOI18N
+        }
+        PROCESSOR_OPTIONS_MODEL = new DefaultTableModel(new String[][]{}, new String[]{
+            NbBundle.getMessage(J2MECompilingPanel.class, "LBL_CustomizeCompile_Processor_Options_Key"), //NOI18N
+            NbBundle.getMessage(J2MECompilingPanel.class, "LBL_CustomizeCompile_Processor_Options_Value") //NOI18N
+        }) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        for (String option : processorOptions.split("\\s")) { //NOI18N
+            if (option.startsWith("-A") && option.length() > 2) { //NOI18N
+                int sepIndex = option.indexOf('='); //NOI18N
+                String key = null;
+                String value = null;
+                if (sepIndex == -1) {
+                    key = option.substring(2);
+                } else if (sepIndex >= 3) {
+                    key = option.substring(2, sepIndex);
+                    value = (sepIndex < option.length() - 1) ? option.substring(sepIndex + 1) : null;
+                }
+                PROCESSOR_OPTIONS_MODEL.addRow(new String[]{key, value});
+            }
+        }
+        JAVAC_COMPILER_ARG_MODEL = projectGroup.createStringDocument(evaluator, ProjectProperties.JAVAC_COMPILERARGS);
+
+        // J2MEJavadocPanel
+        JAVADOC_PRIVATE_MODEL = projectGroup.createToggleButtonModel(evaluator, ProjectProperties.JAVADOC_PRIVATE);
+        JAVADOC_NO_TREE_MODEL = projectGroup.createInverseToggleButtonModel(evaluator, ProjectProperties.JAVADOC_NO_TREE);
+        JAVADOC_USE_MODEL = projectGroup.createToggleButtonModel(evaluator, ProjectProperties.JAVADOC_USE);
+        JAVADOC_NO_NAVBAR_MODEL = projectGroup.createInverseToggleButtonModel(evaluator, ProjectProperties.JAVADOC_NO_NAVBAR);
+        JAVADOC_NO_INDEX_MODEL = projectGroup.createInverseToggleButtonModel(evaluator, ProjectProperties.JAVADOC_NO_INDEX);
+        JAVADOC_SPLIT_INDEX_MODEL = projectGroup.createToggleButtonModel(evaluator, ProjectProperties.JAVADOC_SPLIT_INDEX);
+        JAVADOC_AUTHOR_MODEL = projectGroup.createToggleButtonModel(evaluator, ProjectProperties.JAVADOC_AUTHOR);
+        JAVADOC_VERSION_MODEL = projectGroup.createToggleButtonModel(evaluator, ProjectProperties.JAVADOC_VERSION);
+        JAVADOC_WINDOW_TITLE_MODEL = projectGroup.createStringDocument(evaluator, ProjectProperties.JAVADOC_WINDOW_TITLE);
+        //Hotfix of the issue #70058
+        //Should use the StoreGroup when the StoreGroup SPI will be extended to allow false default value in ToggleButtonModel
+        JAVADOC_PREVIEW_MODEL = ModelHelper.createToggleButtonModel(evaluator, ProjectProperties.JAVADOC_PREVIEW, kind);
+        javadocPreviewBooleanKind = kind[0];
+        JAVADOC_ADDITIONALPARAM_MODEL = projectGroup.createStringDocument(evaluator, ProjectProperties.JAVADOC_ADDITIONALPARAM);
     }
 
     void collectData() {
@@ -558,6 +645,46 @@ public final class J2MEProjectProperties {
         projectProperties.put(OBFUSCATION_LEVEL, String.valueOf(OBFUSCATION_LEVEL_MODEL.getValue()));
         projectGroup.store(projectProperties);
 
+        //Save javac.debug
+        privateProperties.setProperty(JAVAC_DEBUG, encodeBoolean (JAVAC_DEBUG_MODEL.isSelected(), javacDebugBooleanKind));
+
+        //Save javadoc.preview
+        privateProperties.setProperty(ProjectProperties.JAVADOC_PREVIEW, encodeBoolean (JAVADOC_PREVIEW_MODEL.isSelected(), javadocPreviewBooleanKind));
+
+        //Save annotation processors
+        StringBuilder sb = new StringBuilder();
+        for (Enumeration elements = ANNOTATION_PROCESSORS_MODEL.elements(); elements.hasMoreElements();) {
+            sb.append(elements.nextElement());
+            if (elements.hasMoreElements()) {
+                sb.append(',');
+            }
+        }
+        if (sb.length() > 0) {
+            projectProperties.put(ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, encodeBoolean(false, BOOLEAN_KIND_TF));
+            projectProperties.put(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, sb.toString());
+        } else {
+            projectProperties.put(ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, encodeBoolean(true, BOOLEAN_KIND_TF));
+            projectProperties.put(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ""); // NOI18N
+        }
+
+        sb = new StringBuilder();
+        for (int i = 0; i < PROCESSOR_OPTIONS_MODEL.getRowCount(); i++) {
+            String key = (String) PROCESSOR_OPTIONS_MODEL.getValueAt(i, 0);
+            String value = (String) PROCESSOR_OPTIONS_MODEL.getValueAt(i, 1);
+            sb.append("-A").append(key); //NOI18N
+            if (value != null && value.length() > 0) {
+                sb.append('=').append(value); //NOI18N
+            }
+            if (i < PROCESSOR_OPTIONS_MODEL.getRowCount() - 1) {
+                sb.append(' '); //NOI18N
+            }
+        }
+        if (sb.length() > 0) {
+            projectProperties.put(ProjectProperties.ANNOTATION_PROCESSING_PROCESSOR_OPTIONS, sb.toString());
+        } else {
+            projectProperties.remove(ProjectProperties.ANNOTATION_PROCESSING_PROCESSOR_OPTIONS);
+        }
+
         // Store the property changes into the project
         project.getUpdateHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
         project.getUpdateHelper().putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
@@ -614,6 +741,16 @@ public final class J2MEProjectProperties {
             buffer.append(key).append(": ").append(value).append('\n'); //NOI18N
         }
         return buffer.toString();
+    }
+
+    private static String encodeBoolean(boolean value, Integer kind) {
+        if (kind == BOOLEAN_KIND_ED) {
+            return value ? "on" : "off"; // NOI18N
+        } else if (kind == BOOLEAN_KIND_YN) { // NOI18N
+            return value ? "yes" : "no";
+        } else {
+            return value ? "true" : "false"; // NOI18N
+        }
     }
 
     /**
@@ -1081,6 +1218,39 @@ public final class J2MEProjectProperties {
                 }
             }
             return model;
+        }
+
+        public static JToggleButton.ToggleButtonModel createToggleButtonModel(final PropertyEvaluator evaluator, final String propName, Integer[] kind) {
+            assert evaluator != null && propName != null && kind != null && kind.length == 1;
+            String value = evaluator.getProperty(propName);
+            boolean isSelected = false;
+            if (value == null) {
+                isSelected = true;
+            } else {
+                String lowercaseValue = value.toLowerCase();
+                switch (lowercaseValue) {
+                    case "yes":
+                    case "no":// NOI18N
+                        kind[0] = BOOLEAN_KIND_YN;
+                        break;
+                    case "on":
+                    case "off":// NOI18N
+                        kind[0] = BOOLEAN_KIND_ED;
+                        break;
+                    default:
+                        kind[0] = BOOLEAN_KIND_TF;
+                        break;
+                }
+
+                if (lowercaseValue.equals("true") || // NOI18N
+                        lowercaseValue.equals("yes") || // NOI18N
+                        lowercaseValue.equals("on")) {  // NOI18N
+                    isSelected = true;
+                }
+            }
+            JToggleButton.ToggleButtonModel bm = new JToggleButton.ToggleButtonModel();
+            bm.setSelected(isSelected);
+            return bm;
         }
     }
 
