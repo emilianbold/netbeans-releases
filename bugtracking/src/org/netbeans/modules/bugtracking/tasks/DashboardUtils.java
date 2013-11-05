@@ -46,6 +46,7 @@ import java.awt.FontMetrics;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.io.CharConversionException;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -86,7 +87,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.actions.FindAction;
 import org.openide.util.ChangeSupport;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
 import org.openide.util.actions.Presenter;
@@ -536,61 +536,81 @@ public class DashboardUtils {
         private final ChangeSupport support;
         private IssueScheduleInfo scheduleInfo;
 
+        @NbBundle.Messages({
+            "CTL_ChooseDate=Choose Date...",
+            "# {0} - date", "CTL_CustomDateChosen=Custom: {0}",
+            "CTL_ThisWeek=This Week",
+            "CTL_NextWeek=Next Week",
+            "# {0} - today's name", "CTL_Today={0} - Today",
+            "CTL_NotScheduled=Not Scheduled"
+        })
         public SchedulingMenu(final IssueScheduleInfo previousSchedule) {
             this.support = new ChangeSupport(this);
             this.menu = new JMenu(NbBundle.getMessage(DashboardUtils.class, "LBL_ScheduleFor"));
             this.menuItems = new ArrayList<JMenuItem>();
 
             for (int i = 0; i < 7; i++) {
-                final Calendar calendar = Calendar.getInstance();
+                final Calendar calendar = getTodayCalendar();
                 calendar.add(Calendar.DATE, i);
                 String itemName = calendar.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.LONG, Locale.getDefault());
                 if (i == 0) {
-                    itemName += " - " + NbBundle.getMessage(DashboardUtils.class, "CTL_Today");
+                    itemName = Bundle.CTL_Today(itemName);
                 }
                 JMenuItem item = new JCheckBoxMenuItem(new ScheduleItemAction(itemName, new IssueScheduleInfo(calendar.getTime())));
                 menu.add(item);
                 menuItems.add(item);
             }
             menu.addSeparator();
+            menuItems.add(null);
 
-            Calendar calendar = Calendar.getInstance();
+            Calendar calendar = getTodayCalendar();
             calendar.set(Calendar.DAY_OF_WEEK, calendar.getFirstDayOfWeek());
             JMenuItem thisWeek = new JCheckBoxMenuItem(new ScheduleItemAction(
-                    NbBundle.getMessage(DashboardUtils.class, "CTL_ThisWeek"),
+                    Bundle.CTL_ThisWeek(),
                     new IssueScheduleInfo(calendar.getTime(), 7)));
 
             menu.add(thisWeek);
             menuItems.add(thisWeek);
 
-            calendar = Calendar.getInstance();
+            calendar = getTodayCalendar();
             calendar.set(Calendar.DAY_OF_WEEK, calendar.getFirstDayOfWeek());
             calendar.add(Calendar.DATE, 7);
             JMenuItem nextWeek = new JCheckBoxMenuItem(new ScheduleItemAction(
-                    NbBundle.getMessage(DashboardUtils.class, "CTL_NextWeek"),
+                    Bundle.CTL_NextWeek(),
                     new IssueScheduleInfo(calendar.getTime(), 7)));
 
             menu.add(nextWeek);
             menuItems.add(nextWeek);
             menu.addSeparator();
+            menuItems.add(null);
 
-            JMenuItem chooseDate = new JCheckBoxMenuItem(new ScheduleItemAction(
-                    NbBundle.getMessage(DashboardUtils.class, "CTL_ChooseDate"),
-                    null) {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            Date date = showChooseDateDialog(previousSchedule == null ? new Date() : previousSchedule.getDate());
-                            if (date != null) {
-                                scheduleInfo = new IssueScheduleInfo(date);
-                                support.fireChange();
+            final IDEServices.DatePickerComponent picker = UIUtils.createDatePickerComponent();
+            JMenuItem chooseDate = null;
+            if (picker.allowsOpeningDaySelector()) {
+                chooseDate = new JCheckBoxMenuItem(new ScheduleItemAction(Bundle.CTL_ChooseDate(),
+                        null) {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                picker.setDate(previousSchedule == null ? new Date() : previousSchedule.getDate());
+                                if (picker.openDaySelector()) {
+                                    Date date = picker.getDate();
+                                    scheduleInfo = date == null ? null : new IssueScheduleInfo(date);
+                                    support.fireChange();
+                                }
                             }
-                        }
-                    });
-            menu.add(chooseDate);
-            menuItems.add(chooseDate);
+                        });
+            } else if (previousSchedule != null) {
+                chooseDate = new JCheckBoxMenuItem(Bundle.CTL_CustomDateChosen(
+                        DateFormat.getDateInstance(DateFormat.MEDIUM).format(previousSchedule.getDate())));
+                chooseDate.setEnabled(false);
+            }
+            if (chooseDate != null) {
+                menu.add(chooseDate);
+                menuItems.add(chooseDate);
+            }
 
             JMenuItem notScheduled = new JCheckBoxMenuItem(new ScheduleItemAction(
-                    NbBundle.getMessage(DashboardUtils.class, "CTL_NotScheduled"),
+                    Bundle.CTL_NotScheduled(),
                     null));
             menu.add(notScheduled);
             menuItems.add(notScheduled);
@@ -602,7 +622,7 @@ public class DashboardUtils {
             }
             boolean findPrevious = true;
             for (JMenuItem item : menuItems) {
-                if (item.getAction() instanceof ScheduleItemAction) {
+                if (item != null && item.getAction() instanceof ScheduleItemAction) {
                     IssueScheduleInfo assignedSchedule = ((ScheduleItemAction) item.getAction()).getAssignedSchedule();
                     if (findPrevious && isMatchingInterval(assignedSchedule, previousSchedule)) {
                         item.setSelected(true);
@@ -610,7 +630,9 @@ public class DashboardUtils {
                     }
                 }
             }
-            chooseDate.setSelected(true);
+            if (chooseDate != null) {
+                chooseDate.setSelected(true);
+            }
         }
 
         public Action getMenuAction() {
@@ -631,6 +653,15 @@ public class DashboardUtils {
 
         public void removeChangeListener(ChangeListener listener) {
             support.removeChangeListener(listener);
+        }
+
+        private Calendar getTodayCalendar () {
+            Calendar cal = Calendar.getInstance();
+            cal.set(Calendar.HOUR_OF_DAY, 0);
+            cal.set(Calendar.MINUTE, 0);
+            cal.set(Calendar.SECOND, 0);
+            cal.set(Calendar.MILLISECOND, 0);
+            return cal;
         }
 
         private class ScheduleItemAction extends AbstractAction {
@@ -672,31 +703,5 @@ public class DashboardUtils {
         public JMenuItem getPopupPresenter() {
             return menu;
         }
-    }
-
-    private static Date showChooseDateDialog(Date scheduled) {
-        IDEServices.DatePickerDialog dialog = createDatePickerDialog(scheduled);
-        NotifyDescriptor nd = new NotifyDescriptor(
-                dialog.getComponent(),
-                NbBundle.getMessage(DashboardUtils.class, "LBL_ChooseDate"),
-                NotifyDescriptor.OK_CANCEL_OPTION,
-                NotifyDescriptor.PLAIN_MESSAGE,
-                null,
-                NotifyDescriptor.OK_OPTION);
-        if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {
-            return dialog.getDate();
-        }
-        return null;
-    }
-
-    private static IDEServices.DatePickerDialog createDatePickerDialog(Date scheduled) {
-        IDEServices.DatePickerDialog dialog = null;
-        IDEServices services = Lookup.getDefault().lookup(IDEServices.class);
-        if (services != null) {
-            dialog = services.createDatePickerDialog(scheduled);
-        }
-        if (dialog == null) {
-        }
-        return dialog;
     }
 }

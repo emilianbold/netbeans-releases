@@ -62,7 +62,6 @@ import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -131,6 +130,7 @@ import org.netbeans.modules.bugtracking.commons.AttachmentsPanel;
 import org.netbeans.modules.bugtracking.commons.LinkButton;
 import org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils;
 import org.netbeans.modules.bugtracking.commons.UIUtils;
+import org.netbeans.modules.bugtracking.spi.SchedulingPicker;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue.Attachment;
@@ -208,7 +208,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private Action[] commentsSectionActions;
     private Action[] privateSectionActions;
     private final IDEServices.DatePickerComponent dueDatePicker;
-    private final IDEServices.DatePickerComponent scheduleDatePicker;
+    private final SchedulingPicker scheduleDatePicker;
     private static final NumberFormatter estimateFormatter = new NumberFormatter(new java.text.DecimalFormat("#0")) {
 
         @Override
@@ -270,7 +270,7 @@ public class IssuePanel extends javax.swing.JPanel {
         ((GroupLayout) attachmentsSectionPanel.getLayout()).replace(dummyAttachmentsPanel, attachmentsPanel);
         GroupLayout layout = (GroupLayout) privatePanel.getLayout();
         dueDatePicker = UIUtils.createDatePickerComponent();
-        scheduleDatePicker = UIUtils.createDatePickerComponent();
+        scheduleDatePicker = new SchedulingPicker();
         layout.replace(dummyDueDateField, dueDatePicker.getComponent());
         dueDateLabel.setLabelFor(dueDatePicker.getComponent());
         layout.replace(dummyScheduleDateField, scheduleDatePicker.getComponent());
@@ -667,7 +667,7 @@ public class IssuePanel extends javax.swing.JPanel {
                 privateNotesField.setText(issue.getPrivateNotes());
                 dueDatePicker.setDate(issue.getDueDate());
                 NbDateRange scheduleDate = issue.getScheduleDate();
-                scheduleDatePicker.setDate(scheduleDate == null ? null : scheduleDate.getStartDate().getTime());
+                scheduleDatePicker.setScheduleDate(scheduleDate == null ? null : scheduleDate.toSchedulingInfo());
                 estimateField.setValue(issue.getEstimate());
                 dueDatePicker.getComponent().setEnabled(!hasTimeTracking);
                 
@@ -3907,7 +3907,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
                 return true;
             }
         });
-        dueDatePicker.addChangeListener(new DatePickerListener(dueDatePicker,
+        dueDatePicker.addChangeListener(new DatePickerListener(dueDatePicker.getComponent(),
                 ATTRIBUTE_DUE_DATE, dueDateLabel) {
 
             @Override
@@ -3916,18 +3916,12 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
                 return true;
             }
         });
-        scheduleDatePicker.addChangeListener(new DatePickerListener(scheduleDatePicker,
+        scheduleDatePicker.addChangeListener(new DatePickerListener(scheduleDatePicker.getComponent(),
                 ATTRIBUTE_SCHEDULE_DATE, scheduleDateLabel) {
 
             @Override
             protected boolean storeValue () {
-                Date date = scheduleDatePicker.getDate();
-                Calendar cal = null;
-                if (date != null) {
-                    cal = Calendar.getInstance();
-                    cal.setTime(date);
-                }
-                issue.setTaskScheduleDate(cal == null ? null : new NbDateRange(cal).toSchedulingInfo(), false);
+                issue.setTaskScheduleDate(scheduleDatePicker.getScheduleDate(), false);
                 return true;
             }
         });
@@ -4306,10 +4300,10 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     private abstract class DatePickerListener implements ChangeListener {
 
         private final String attributeName;
-        private final IDEServices.DatePickerComponent component;
+        private final JComponent component;
         private final JComponent fieldLabel;
 
-        public DatePickerListener (IDEServices.DatePickerComponent component,
+        public DatePickerListener (JComponent component,
                 String attributeName, JComponent fieldLabel) {
             this.component = component;
             this.attributeName = attributeName;
@@ -4329,7 +4323,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         }
         
         public boolean isEnabled () {
-            return component.getComponent().isVisible() && component.getComponent().isEnabled();
+            return component.isVisible() && component.isEnabled();
         }
 
         protected final void updateDecorations () {
