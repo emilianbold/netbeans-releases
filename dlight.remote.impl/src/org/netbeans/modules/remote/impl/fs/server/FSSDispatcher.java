@@ -246,9 +246,9 @@ import org.openide.util.RequestProcessor;
         String toolPath = "";
         MacroExpanderFactory.MacroExpander macroExpander = MacroExpanderFactory.getExpander(env);
         try {
-            String toExpand = "bin/$osname-$platform" + 
-                    ((hostInfo.getOSFamily() == HostInfo.OSFamily.LINUX) ? "${_isa}" : "") +
-                    "/fs_server";
+            String toExpand = "bin/$osname-$platform" + // NOI18N
+                    ((hostInfo.getOSFamily() == HostInfo.OSFamily.LINUX) ? "${_isa}" : "") + // NOI18N
+                    "/fs_server"; // NOI18N
             toolPath = macroExpander.expandPredefinedMacros(toExpand);
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
