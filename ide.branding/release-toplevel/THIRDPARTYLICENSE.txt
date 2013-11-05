@@ -36,7 +36,7 @@ enterprise/modules/ext/jsf-1_2/commons-logging.jar                    Apache-2.0
 enterprise/modules/ext/jsf-2_2                                        CDDL-1.0 (see also enterprise/modules/ext/jsf-2_2/license.txt)
 enterprise/modules/ext/metro/webservices-rt.jar                       CDDL-1.0, incl. Apache-2.0
 enterprise/modules/ext/metro/webservices-tools.jar                    CDDL-1.0, incl. Apache-2.0
-enterprise/modules/ext/primefaces/primefaces-3.5.jar                  Apache-2.0
+enterprise/modules/ext/primefaces/primefaces-4.0.jar                  Apache-2.0
 enterprise/modules/ext/spring/spring-webmvc-2.5.6.SEC03.jar           Apache-2.0
 enterprise/modules/ext/struts/antlr-2.7.2.jar                         Apache-2.0
 enterprise/modules/ext/struts/bsf-2.3.0.jar                           Apache-2.0
@@ -100,7 +100,7 @@ ide/modules/ext/log4j-1.2.15.jar                                      Apache-2.0
 ide/modules/ext/lucene-core-3.5.0.jar                                 Apache-2.0
 ide/modules/ext/non-schema.jar                                        MIT-non-schema
 ide/modules/ext/postgresql-9.2-1002.jdbc4.jar                         BSD-postgresql
-ide/modules/ext/processtreekiller-1.0.1.jar                           MIT
+ide/modules/ext/processtreekiller-1.0.2.jar                           MIT
 ide/modules/ext/resolver-1.2.jar                                      Apache-2.0
 ide/modules/ext/saxon9B.jar                                           MPL-1.0
 ide/modules/ext/servlet-2.2.jar                                       Apache-1.1
@@ -159,9 +159,9 @@ java/modules/ext/beansbinding-1.2.1.jar                               LGPL-2.1
 java/modules/ext/cglib-2.2.jar                                        Apache-2.0
 java/modules/ext/eclipselink/eclipselink.jar                          EPL-v10 (see also about.html inside this JAR file)
 java/modules/ext/eclipselink/javax.persistence_2.1.0.v201304241213.jar  EPL-v10 (see also about.html inside this JAR file)
-java/modules/ext/eclipselink/org.eclipse.persistence.jpa.jpql_2.5.0.v20130507-3faac2b.jar  EPL-v10 (see also about.html inside this JAR file)
-java/modules/ext/eclipselink/org.eclipse.persistence.jpa.modelgen_2.5.0.v20130507-3faac2b.jar  EPL-v10 (see also about.html inside this JAR file)
-java/modules/ext/hibernate                                            LGPL-2.1, incl. BSD, Apache-2.0 (see also Hibernate 3.2.5 at http://hibernate.org)
+java/modules/ext/eclipselink/org.eclipse.persistence.jpa.jpql_2.5.1.v20130918-f2b9fc5.jar  EPL-v10 (see also about.html inside this JAR file)
+java/modules/ext/eclipselink/org.eclipse.persistence.jpa.modelgen_2.5.1.v20130918-f2b9fc5.jar  EPL-v10 (see also about.html inside this JAR file)
+java/modules/ext/hibernate4                                           LGPL-2.1 (see also Hibernate 4.2.6 at http://hibernate.org)
 java/modules/ext/jaxws22/stax2-api.jar                                BSD-woodstox
 java/modules/ext/jaxws22/woodstox-core-asl.jar                        Apache-2.0
 java/modules/ext/maven/indexer-artifact-5.1.1.jar                     Apache-2.0
