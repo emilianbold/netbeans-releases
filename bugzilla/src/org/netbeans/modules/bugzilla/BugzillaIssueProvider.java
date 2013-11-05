@@ -42,8 +42,6 @@ import java.io.File;
 import java.util.Collection;
 import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.team.spi.TeamIssueProvider;
-import org.netbeans.modules.team.spi.OwnerInfo;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.repository.IssueField;
 
@@ -51,7 +49,7 @@ import org.netbeans.modules.bugzilla.repository.IssueField;
  *
  * @author Tomas Stupka
  */
-public class BugzillaIssueProvider implements IssueProvider<BugzillaIssue>, TeamIssueProvider<BugzillaIssue> {
+public class BugzillaIssueProvider implements IssueProvider<BugzillaIssue> {
 
     @Override
     public String getDisplayName(BugzillaIssue data) {
@@ -117,14 +115,4 @@ public class BugzillaIssueProvider implements IssueProvider<BugzillaIssue>, Team
     public void addPropertyChangeListener(BugzillaIssue data, PropertyChangeListener listener) {
         data.addPropertyChangeListener(listener);
     }
-
-    /************************************************************************************
-     * Kenai
-     ************************************************************************************/
-    
-    @Override
-    public void setOwnerInfo(BugzillaIssue data, OwnerInfo info) {
-        data.setOwnerInfo(info);
-    }
-
 }

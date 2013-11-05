@@ -52,6 +52,8 @@ import java.util.logging.Logger;
 import static org.netbeans.modules.bugtracking.BugtrackingOwnerSupport.ContextType.SELECTED_FILE_AND_ALL_PROJECTS;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.*;
+import org.netbeans.modules.team.spi.NBRepositoryProvider;
+import org.netbeans.modules.team.spi.OwnerInfo;
 import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
 
 
@@ -318,6 +320,20 @@ public final class RepositoryImpl<R, Q, I> {
             icon = IssuePrioritySupport.getDefaultIcon();
         }
         return icon;
+    }
+    
+    public void setIssueContext(I i, OwnerInfo info) {
+        assert repositoryProvider instanceof NBRepositoryProvider;
+        if(repositoryProvider instanceof NBRepositoryProvider) {
+            ((NBRepositoryProvider<Q, I>)repositoryProvider).setIssueOwnerInfo(i, info);
+        }
+    }
+    
+    public void setQueryContext(Q q, OwnerInfo info) {
+        assert repositoryProvider instanceof NBRepositoryProvider;
+        if(repositoryProvider instanceof NBRepositoryProvider) {
+            ((NBRepositoryProvider<Q, I>)repositoryProvider).setQueryOwnerInfo(q, info);
+        }
     }
     
     /**

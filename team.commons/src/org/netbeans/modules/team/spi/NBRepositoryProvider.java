@@ -44,16 +44,30 @@ package org.netbeans.modules.team.spi;
 /**
  *
  * @author Tomas Stupka
+ * @param <Q>
  * @param <I>
  */
-public interface TeamIssueProvider<I> {
+public interface NBRepositoryProvider<Q, I> {
    
     /** 
-     * Provides owner (project/component/...) info to prefill the respective fields.
-     * Note that currently meant only for a NB issue
+     * Provides owner (project/component/...) info to prefill the respective 
+     * fields in an issue editor.
+     * <p>
+     * Note that this is currently meant only for a NB issue
      * 
-     * @param data
+     * @param i
      * @param info
      */
-    public void setOwnerInfo(I data, OwnerInfo info);   
+    public void setIssueOwnerInfo(I i, OwnerInfo info);   
+    
+    /**
+     * Provides owner (project/component/...) info to prefill the respective 
+     * fields in an query editor.
+     * <p>
+     * Note that this is currently meant only for a NB issue
+     * 
+     * @param q
+     * @param info 
+     */
+    public void setQueryOwnerInfo(Q q, OwnerInfo info);   
 }

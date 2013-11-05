@@ -48,7 +48,6 @@ import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import static java.lang.Character.isSpaceChar;
 import java.util.Date;
 import org.netbeans.modules.bugtracking.api.Issue;
-import org.netbeans.modules.team.spi.TeamIssueProvider;
 import org.netbeans.modules.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
@@ -179,10 +178,7 @@ public final class IssueImpl<R, I> {
     }
 
     public void setContext(OwnerInfo info) {
-        assert issueProvider instanceof TeamIssueProvider;
-        if(issueProvider instanceof TeamIssueProvider) {
-            ((TeamIssueProvider<I>)issueProvider).setOwnerInfo(data, info);
-        }
+        repo.setIssueContext(data, info);
     }
 
     public IssueController getController() {

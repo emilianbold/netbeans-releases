@@ -42,7 +42,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.bugtracking.api.Query;
-import org.netbeans.modules.team.spi.TeamQueryProvider;
 import org.netbeans.modules.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.QueryController;
@@ -57,7 +56,7 @@ public final class QueryImpl<Q, I>  {
     
     public final static String EVENT_QUERY_REFRESHED = QueryProvider.EVENT_QUERY_REFRESHED;
     
-    private final RepositoryImpl repository;
+    private final RepositoryImpl<?, Q, I> repository;
     private final QueryProvider<Q, I> queryProvider;
     private final IssueProvider<I> issueProvider;
     private Query query;
@@ -143,10 +142,7 @@ public final class QueryImpl<Q, I>  {
     }
 
     public void setContext(OwnerInfo info) {
-        assert (queryProvider instanceof TeamQueryProvider);
-        if((queryProvider instanceof TeamQueryProvider)) {
-            ((TeamQueryProvider<Q, I>)queryProvider).setOwnerInfo(data, info);
-        }
+        repository.setQueryContext(data, info);
     }
 
     public boolean isData(Object obj) {

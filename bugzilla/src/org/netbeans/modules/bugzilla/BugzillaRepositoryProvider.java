@@ -46,12 +46,14 @@ import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
+import org.netbeans.modules.team.spi.NBRepositoryProvider;
+import org.netbeans.modules.team.spi.OwnerInfo;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class BugzillaRepositoryProvider implements RepositoryProvider<BugzillaRepository, BugzillaQuery, BugzillaIssue> {
+public class BugzillaRepositoryProvider implements RepositoryProvider<BugzillaRepository, BugzillaQuery, BugzillaIssue>, NBRepositoryProvider<BugzillaQuery, BugzillaIssue> {
 
     @Override
     public Image getIcon(BugzillaRepository r) {
@@ -116,5 +118,19 @@ public class BugzillaRepositoryProvider implements RepositoryProvider<BugzillaRe
     @Override
     public BugzillaIssue createIssue(BugzillaRepository r, String summary, String description) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    /************************************************************************************
+     * NB Bugzilla
+     ************************************************************************************/
+    
+    @Override
+    public void setIssueOwnerInfo(BugzillaIssue i, OwnerInfo info) {
+        i.setOwnerInfo(info);
+    }
+
+    @Override
+    public void setQueryOwnerInfo(BugzillaQuery q, OwnerInfo info) {
+        q.setOwnerInfo(info);
     }
 }

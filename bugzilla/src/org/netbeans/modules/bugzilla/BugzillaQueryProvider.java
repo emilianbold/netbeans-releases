@@ -39,8 +39,6 @@ package org.netbeans.modules.bugzilla;
 
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
-import org.netbeans.modules.team.spi.TeamQueryProvider;
-import org.netbeans.modules.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
@@ -53,7 +51,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Stupka
  */
-public class BugzillaQueryProvider implements QueryProvider<BugzillaQuery, BugzillaIssue>, TeamQueryProvider<BugzillaQuery, BugzillaIssue> {
+public class BugzillaQueryProvider implements QueryProvider<BugzillaQuery, BugzillaIssue> {
 
     @Override
     public String getDisplayName(BugzillaQuery query) {
@@ -118,11 +116,6 @@ public class BugzillaQueryProvider implements QueryProvider<BugzillaQuery, Bugzi
     /************************************************************************************
      * Kenai
      ************************************************************************************/
-    
-    @Override
-    public void setOwnerInfo(BugzillaQuery q, OwnerInfo info) {
-        q.setOwnerInfo(info);
-    }
     
     private boolean needsAndHasNoLogin(BugzillaQuery query) {
         BugzillaRepository repo = query.getRepository();
