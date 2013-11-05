@@ -52,7 +52,6 @@ import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
 import org.openide.util.NbBundle;
 
@@ -69,11 +68,11 @@ public final class NBBugzillaUtils {
      * Determines wheter the given {@link RepositoryProvider} is the
      * repository hosting netbeans or not
      *
-     * @param repo
+     * @param url
      * @return true if the given repository is the netbenas bugzilla, otherwise false
      */
     public static boolean isNbRepository(String url) {
-        boolean ret = netbeansUrlPattern.matcher(url.toString()).matches();
+        boolean ret = netbeansUrlPattern.matcher(url).matches();
         if(ret) {
             return true;
         }
@@ -81,7 +80,7 @@ public final class NBBugzillaUtils {
         if(nbUrl == null || nbUrl.equals("")) {                      // NOI18N
             return false;
         }
-        return url.toString().startsWith(nbUrl);
+        return url.startsWith(nbUrl);
     }
     
     /**
@@ -111,6 +110,7 @@ public final class NBBugzillaUtils {
     /**
      * Save the given username as a netbeans.org username.
      * Shouldn't be called in awt
+     * @param username
      */
     public static void saveNBUsername(String username) {
         if(username == null) {
@@ -122,6 +122,7 @@ public final class NBBugzillaUtils {
     /**
      * Saves the given value as a netbeans.org password
      * Shouldn't be called in awt
+     * @param password
      */
     public static void saveNBPassword(char[] password) {
         if(password == null) {
@@ -131,7 +132,7 @@ public final class NBBugzillaUtils {
                 NB_BUGZILLA_PASSWORD,
                 password,
                 NbBundle.getMessage(
-                    BugtrackingUtil.class,
+                    NBBugzillaUtils.class,
                     "NBRepositorySupport.password_keyring_description"));       // NOI18N
 
         }
