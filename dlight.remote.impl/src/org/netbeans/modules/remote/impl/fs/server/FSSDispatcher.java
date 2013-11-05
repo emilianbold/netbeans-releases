@@ -43,27 +43,38 @@
 package org.netbeans.modules.remote.impl.fs.server;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ConnectException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fs.RefreshManager;
 import org.netbeans.modules.remote.impl.fs.RemoteFileObject;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemManager;
+import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -80,11 +91,7 @@ import org.openide.util.RequestProcessor;
     private final Map<Integer, FSSResponse> responses = new LinkedHashMap<Integer, FSSResponse>();
     private final Object responseLock = new Object();
 
-    // should we have a request queue as well?
-    private final LinkedList<FSSRequest> requestQueue = new LinkedList<FSSRequest>();
-    private final Object requestLock = new Object();
-    
-    private static final String SERVER_PATH = System.getProperty("remote.fs_server.path");
+    private static final String USER_DEFINED_SERVER_PATH = System.getProperty("remote.fs_server.path");
     public static final int REFRESH_INTERVAL = Integer.getInteger("remote.fs_server.refresh", 2); // NOI18N
     public static final boolean VERBOSE = Boolean.getBoolean("remote.fs_server.verbose");
     public static final boolean LOG = Boolean.getBoolean("remote.fs_server.log");
@@ -126,8 +133,16 @@ import org.openide.util.RequestProcessor;
             Thread.currentThread().setName("fs_server on-connect initialization for " + env); // NOI18N
             try {
                 getOrCreateServer();
+            } catch (ConnectException ex) {
+                ex.printStackTrace(System.err);
+            } catch (ConnectionManager.CancellationException ex) {
+                ex.printStackTrace(System.err);
             } catch (IOException ioe) {
                 ioe.printStackTrace(System.err);
+            } catch (InterruptedException ex) {
+                ex.printStackTrace(System.err);
+            } catch (ExecutionException ex) {
+                ex.printStackTrace(System.err);
             } finally {
                 Thread.currentThread().setName(oldThreadName);
             }
@@ -189,14 +204,20 @@ import org.openide.util.RequestProcessor;
     }
     
     
-    public FSSResponse dispatch(FSSRequest request) throws IOException {
+    public FSSResponse dispatch(FSSRequest request) throws IOException, ConnectException, 
+            CancellationException, InterruptedException, ExecutionException {
         FSSResponse response = new FSSResponse(request);
         synchronized (responseLock) {
             RemoteLogger.assertNull(responses.get(request.getId()),
                     "response should be null for id {0}", request.getId()); // NOI18N
             responses.put(request.getId(), response);
         }
-        FsServer srv = getOrCreateServer();
+        FsServer srv;
+        try {
+            srv = getOrCreateServer();
+        } catch (ConnectionManager.CancellationException ex) {
+            throw new java.util.concurrent.CancellationException(ex.getMessage());
+        }
         sendRequest(srv.getWriter(), request);
         return response;
     }
@@ -213,7 +234,50 @@ import org.openide.util.RequestProcessor;
         }
     }
     
-    private FsServer getOrCreateServer() throws IOException {        
+    private String checkServerSetup() throws ConnectException, IOException, 
+            ConnectionManager.CancellationException, InterruptedException, ExecutionException {
+
+        if (!ConnectionManager.getInstance().isConnectedTo(env)) {
+            throw new ConnectException();
+        }
+
+        HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
+
+        String toolPath = "";
+        MacroExpanderFactory.MacroExpander macroExpander = MacroExpanderFactory.getExpander(env);
+        try {
+            String toExpand = "bin/$osname-$platform" + // NOI18N
+                    ((hostInfo.getOSFamily() == HostInfo.OSFamily.LINUX) ? "${_isa}" : "") + // NOI18N
+                    "/fs_server"; // NOI18N
+            toolPath = macroExpander.expandPredefinedMacros(toExpand);
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        String remotePath = USER_DEFINED_SERVER_PATH;
+        if (remotePath == null) {
+            remotePath = hostInfo.getTempDir() + "/" + toolPath; // NOI18N
+        }
+        String remoteBase = PathUtilities.getDirName(remotePath);
+        
+        File localFile = InstalledFileLocator.getDefault().getDefault().locate(
+                toolPath, "org.netbeans.modules.remote.impl", false); // NOI18N
+        if (localFile != null && localFile.exists()) {
+            NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
+            npb.setExecutable("/bin/mkdir").setArguments("-p", remoteBase); // NOI18N
+            npb.call().waitFor();
+        }
+        Future<CommonTasksSupport.UploadStatus> copyTask;
+        copyTask = CommonTasksSupport.uploadFile(localFile, env, remotePath, 0755, true); // NOI18N
+        CommonTasksSupport.UploadStatus uploadStatus = copyTask.get(); // is it OK not to check upload exit code?
+        if (!uploadStatus.isOK()) {
+            throw new IOException(uploadStatus.getError());
+        }
+        return remotePath;
+    }
+    
+    private FsServer getOrCreateServer() throws IOException, ConnectException, 
+            ConnectionManager.CancellationException, InterruptedException, ExecutionException {
         synchronized (serverLock) {
             if (server != null) {
                 if (!ProcessUtils.isAlive(server.getProcess())) {
@@ -224,7 +288,8 @@ import org.openide.util.RequestProcessor;
                 if (!ConnectionManager.getInstance().isConnectedTo(env)) {
                     throw new ConnectException();
                 }
-                server = new FsServer();
+                String path = checkServerSetup();
+                server = new FsServer(path);
                 RP.post(new MainLoop());
                 RP.post(new ErrorReader(server.getProcess().getErrorStream()));
             }
@@ -271,16 +336,20 @@ import org.openide.util.RequestProcessor;
         private final PrintWriter writer;
         private final BufferedReader reader;
         private final NativeProcess process;
+        private final String path;
 
-        public FsServer() throws IOException {
+        public FsServer(String path) throws IOException {
+            this.path = path;
             NativeProcessBuilder processBuilder = NativeProcessBuilder.newProcessBuilder(env);
-            processBuilder.setExecutable(SERVER_PATH);
+            processBuilder.setExecutable(path);
             List<String> args = new ArrayList<String>();
             args.add("-t"); // NOI18N
             args.add("4"); // NOI18N
             args.add("-p"); // NOI18N
-            args.add("-r"); // NOI18N
-            args.add("" + REFRESH_INTERVAL);
+            if (REFRESH_INTERVAL > 0) {
+                args.add("-r"); // NOI18N
+                args.add("" + REFRESH_INTERVAL);
+            }
             if (VERBOSE) {
                 args.add("-v"); // NOI18N
             }
