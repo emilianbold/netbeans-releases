@@ -18,7 +18,7 @@
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
-    <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="4"/>
   </AuxValues>
 
   <Layout>
@@ -31,16 +31,18 @@
                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
                           <Component id="installationLocationLabel" linkSize="5" max="32767" attributes="0"/>
                           <Component id="domainsFolderLabel" linkSize="5" max="32767" attributes="0"/>
+                          <Component id="hostRemoteLabel" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="domainsFolderField" max="32767" attributes="0"/>
                           <Component id="installationLocationField" max="32767" attributes="0"/>
+                          <Component id="hostRemoteField" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="hostLabel" linkSize="1" alignment="0" min="-2" pref="59" max="-2" attributes="0"/>
+                          <Component id="hostLocalLabel" linkSize="1" alignment="0" min="-2" pref="59" max="-2" attributes="0"/>
                           <Component id="domainLabel" linkSize="1" alignment="0" min="-2" pref="59" max="-2" attributes="0"/>
                           <Component id="dasPortLabel" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="userNameLabel" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -48,7 +50,7 @@
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
-                              <Component id="hostField" max="32767" attributes="0"/>
+                              <Component id="hostLocalField" max="32767" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Component id="localIpCB" min="-2" max="-2" attributes="0"/>
                           </Group>
@@ -106,8 +108,13 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="hostLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="hostField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="hostRemoteLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="hostRemoteField" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="hostLocalLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="hostLocalField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="localIpCB" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -146,16 +153,16 @@
                   <Component id="jdbcDriverDeployment" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="startDerby" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="13" max="32767" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
   </Layout>
   <SubComponents>
-    <Component class="javax.swing.JLabel" name="hostLabel">
+    <Component class="javax.swing.JLabel" name="hostLocalLabel">
       <Properties>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="hostField"/>
+          <ComponentRef name="hostLocalField"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/glassfish/common/ui/Bundle.properties" key="InstanceLocalPanel.hostLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -172,7 +179,7 @@
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="localIpCBActionPerformed"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JComboBox" name="hostField">
+    <Component class="javax.swing.JComboBox" name="hostLocalField">
       <Properties>
         <Property name="editable" type="boolean" value="true"/>
         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
@@ -376,6 +383,23 @@
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/glassfish/common/ui/Bundle.properties" key="InstancePanel.passwordField.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="hostRemoteLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="domainsFolderField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/glassfish/common/ui/Bundle.properties" key="InstancePanel.hostRemoteLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="hostRemoteField">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/glassfish/common/ui/Bundle.properties" key="InstancePanel.hostRemoteField.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>

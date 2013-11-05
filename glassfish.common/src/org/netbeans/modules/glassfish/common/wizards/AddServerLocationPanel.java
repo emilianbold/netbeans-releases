@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -77,7 +77,8 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
     private ServerWizardIterator wizardIterator;
     private AddServerLocationVisualPanel component;
     private WizardDescriptor wizard;
-    private transient List<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
+    private transient List<ChangeListener> listeners
+            = new CopyOnWriteArrayList<>();
     
     /**
      * 
@@ -316,10 +317,15 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
     @Override
     public void storeSettings(Object settings) {
     }
-    
+
+    /**
+     * Domain attributes should be checked before finishing this wizard.
+     * <p/>
+     * @return Always returns <code>false</code>.
+     */
     @Override
     public boolean isFinishPanel() {
-        return wizardIterator.getHttpPort() != -1;
+        return false;
     }
     
     /**

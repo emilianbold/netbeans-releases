@@ -79,52 +79,99 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
     /** IP addresses selection content. */
     Set<? extends InetAddress> ips;
 
+    /** GlassFish server is local or remote. */
+    private boolean isLocal;
+
+    /** DAS port value to be set as default. */
+    private int defaultDasPort;
+
+    /** HTTP port value to be set as default. */
+    private int defaultHttpPort;
+
     /** Creates new form AddDomainLocationVisualPanel */
     public AddDomainLocationVisualPanel() {
         listeners = new CopyOnWriteArrayList<>();
         ips = NetUtils.getHostIP4s();
         initComponents();
-        registerLocalRB.setSelected(true);
-        registerRemoteRB.setSelected(false);
-        hostRemoteField.setEnabled(false);
         dasPortField.setEnabled(false);
         httpPortField.setEnabled(false);
+        defaultDasPort = GlassfishInstance.DEFAULT_ADMIN_PORT;
+        defaultHttpPort = GlassfishInstance.DEFAULT_HTTP_PORT;
         setName(NbBundle.getMessage(AddDomainLocationVisualPanel.class, "TITLE_DomainLocation")); // NOI18N
     }
     
-    void initModels(String gfRoot) {
-        // Put the choices into the combo box...
-        DefaultComboBoxModel model = new DefaultComboBoxModel();
-        File domainsDir = new File(gfRoot, GlassfishInstance.DEFAULT_DOMAINS_FOLDER); // NOI18N
-        File candidates[] = domainsDir.listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File dir) {
-                File logsDir = new File(dir, "logs"); // NOI18N
-                return Utils.canWrite(logsDir);
-            }
-            
-        });
-        if (null != candidates) {
-            for (File f : candidates) {
-                model.addElement(f.getName());
-            }
-        } 
-        if (model.getSize() == 0) {
-            FileObject userHome = FileUtil.toFileObject(
-                    FileUtil.normalizeFile(new File(System.getProperty("user.home"))));
-            String defaultItem = FileUtil.findFreeFolderName(userHome, "personal_domain");
-            model.addElement(System.getProperty("user.home")+File.separator+defaultItem);
+    void initModels(final String gfRoot, final boolean isLocal) {
+        if (isLocal) {
+            domainLocalLabel.setVisible(true);
+            domainLocalField.setVisible(true);
+            hostLocalLabel.setVisible(true);
+            hostLocalField.setVisible(true);
+            localIpCB.setVisible(true);
+            domainRemoteLabel.setVisible(false);
+            domainRemoteField.setVisible(false);
+            hostRemoteLabel.setVisible(false);
+            hostRemoteField.setVisible(false);
+        } else {
+            domainLocalLabel.setVisible(false);
+            domainLocalField.setVisible(false);
+            hostLocalLabel.setVisible(false);
+            hostLocalField.setVisible(false);
+            localIpCB.setVisible(false);
+            domainRemoteLabel.setVisible(true);
+            domainRemoteField.setVisible(true);
+            hostRemoteLabel.setVisible(true);
+            hostRemoteField.setVisible(true);            
         }
-        domainField.setModel(model);
         KeyListener kl = new MyKeyListener();
-        domainField.getEditor().getEditorComponent().addKeyListener(kl);
-        domainField.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                domainField.getEditor().setItem(domainField.getSelectedItem());
-                fireChangeEvent();
+        if (isLocal) {
+            // Put the choices into the combo box...
+            DefaultComboBoxModel model = new DefaultComboBoxModel();
+            File domainsDir = new File(
+                    gfRoot, GlassfishInstance.DEFAULT_DOMAINS_FOLDER);
+            File candidates[] = domainsDir.listFiles(new FileFilter() {
+                @Override
+                public boolean accept(File dir) {
+                    File logsDir = new File(dir, "logs"); // NOI18N
+                    return Utils.canWrite(logsDir);
+                }
+            });
+            if (null != candidates) {
+                for (File f : candidates) {
+                    model.addElement(f.getName());
+                }
             }
-        });
+            if (model.getSize() == 0) {
+                FileObject userHome = FileUtil.toFileObject(
+                        FileUtil.normalizeFile(
+                        new File(System.getProperty("user.home"))));
+                String defaultItem = FileUtil.findFreeFolderName(
+                        userHome, "personal_domain");
+                model.addElement(System.getProperty("user.home")
+                        + File.separator + defaultItem);
+            }
+            domainLocalField.setModel(model);
+            domainLocalField.getEditor()
+                    .getEditorComponent().addKeyListener(kl);
+            domainLocalField.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent arg0) {
+                    domainLocalField.getEditor().setItem(
+                            domainLocalField.getSelectedItem());
+                    fireChangeEvent();
+                }
+            });
+            localIpCB.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    updateLocalIpsCombobox();
+                    fireChangeEvent();
+                }
+            });
+            updateLocalIpsCombobox();
+        } else {
+            domainRemoteField.addKeyListener(kl);
+            hostRemoteField.addKeyListener(kl);
+        }
         useDefaultPortsCB.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -132,14 +179,6 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
                 fireChangeEvent();
             }
         });
-        useLocalIpCB.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                updateLocalIpsCombobox();
-                fireChangeEvent();
-            }
-        });
-        updateLocalIpsCombobox();
         boolean defaultPortsAreOpen = true;
         ServerSocket adminPort = null;
         ServerSocket httpPort = null;
@@ -163,23 +202,9 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
         }
         useDefaultPortsCB.setEnabled(defaultPortsAreOpen);
         useDefaultPortsCB.setSelected(defaultPortsAreOpen);
-        registerLocalRB.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                updateLocalRemoteFields();
-                fireChangeEvent();
-            }
-        });
-        registerRemoteRB.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                updateLocalRemoteFields();
-                fireChangeEvent();
-            }
-        });
-        hostRemoteField.addKeyListener(kl);
         dasPortField.addKeyListener(kl);
         httpPortField.addKeyListener(kl);
+        initPortsFields();
         // make sure the target field is ok...
         //
         if (ServerDetails.getVersionFromInstallDirectory(new File(gfRoot)) < 
@@ -195,14 +220,6 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
         passwordField.addKeyListener(kl);
     }
     
-    String getDomainField() {
-        return (String)domainField.getEditor().getItem();
-    }
-
-    String getHostName() {
-        return hostRemoteField.getText().trim();
-    }
-
     /**
      * Retrieve DAS port value stored in form.
      * <p/>
@@ -266,12 +283,39 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
     }
 
     /**
-     * Get local host IP selected.
+     * Get local host from form in local domain mode.
      * <p/>
-     * @return Raw local host IP selected object.
+     * @return Local host field value.
      */
-    Object getLocalHostIp() {
+    Object getLocalHost() {
         return hostLocalField.getEditor().getItem();
+    }
+
+    /**
+     * Get remote host from form in remote domain mode.
+     * <p/>
+     * @return Remote host field value.
+     */
+    String getRemoteHost() {
+        return hostRemoteField.getText().trim();
+    }
+
+    /**
+     * Get local domain name from form in remote domain mode.
+     * <p/>
+     * @return Local domain name field value.
+     */
+    String getLocalDomain() {
+        return (String)domainLocalField.getEditor().getItem();
+    }
+
+    /**
+     * Get remote domain name from form in remote domain mode.
+     * <p/>
+     * @return Remote domain name field value.
+     */
+    String getRemoteDomain() {
+        return domainRemoteField.getText().trim();
     }
 
     /**
@@ -280,7 +324,7 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
      * @return Default administrator's user name value.
      */
     private String initAdminPortValue() {
-        return Integer.toString(GlassfishInstance.DEFAULT_ADMIN_PORT);
+        return Integer.toString(defaultDasPort);
     }
 
     /**
@@ -289,7 +333,7 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
      * @return Default administrator's user name value.
      */
     private String initHttpPortValue() {
-        return Integer.toString(GlassfishInstance.DEFAULT_HTTP_PORT);
+        return Integer.toString(defaultHttpPort);
     }
 
     /**
@@ -343,7 +387,23 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
      *          action occurred.
      */
     private void updateLocalIpsCombobox() {
-        ((IpComboBox)hostLocalField).updateModel(ips, useLocalIpCB.isSelected());
+        ((IpComboBox)hostLocalField).updateModel(ips, localIpCB.isSelected());
+    }
+
+    /**
+     * Initialize content of port fields values depending
+     * on <code>Default</code> check box status.
+     */
+    private void initPortsFields() {
+        dasPortField.setText(initAdminPortValue());
+        httpPortField.setText(initHttpPortValue());
+        if (useDefaultPortsCB.isSelected()) {
+            dasPortField.setEnabled(false);
+            httpPortField.setEnabled(false);
+        } else {
+            dasPortField.setEnabled(true);
+            httpPortField.setEnabled(true);
+        }
     }
 
     /**
@@ -363,19 +423,61 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
     }
 
     /**
-     * Update local and remote fields availability depending on Local/Remote
-     * radio button value.
+     * Update ports fields to contain valid values and handle default ports
+     * check box depending on local domain availability.
+     * <p/>
+     * Default port values are updated to supplied values
+     * of <code>dasPort</code> and <code>httpPort</code>.
+     * <p/>
+     * @param dasPort             DAS port to be set in form.
+     * @param httpPort            HTTP port to be set in form.
+     * @param localExistindDomain Is local domain available?
      */
-    private void updateLocalRemoteFields() {
-        domainField.setEnabled(registerLocalRB.isSelected());
-        hostLocalField.setEnabled(registerLocalRB.isSelected());
-        useLocalIpCB.setEnabled(registerLocalRB.isSelected());
-        hostRemoteField.setEnabled(registerRemoteRB.isSelected());
+    void setPortsFields(final int dasPort, final int httpPort,
+            final boolean localExistindDomain) {
+        if (localExistindDomain) {
+            useDefaultPortsCB.setSelected(true);
+            useDefaultPortsCB.setEnabled(false);
+            if (dasPort >= 0) {
+                defaultDasPort = dasPort;
+            }
+            if (httpPort >= 0) {
+                defaultHttpPort = httpPort;
+            }
+        } else {
+            useDefaultPortsCB.setEnabled(true);
+            defaultDasPort = GlassfishInstance.DEFAULT_ADMIN_PORT;
+            defaultHttpPort = GlassfishInstance.DEFAULT_HTTP_PORT;            
+        }
+        updatePortsFields();
     }
 
-    boolean registerLocalDomain() {
-        return registerLocalRB.isSelected();
+    /**
+     * Update ports fields to contain valid values and handle default ports
+     * check box depending on local domain availability.
+     * <p/>
+     * Default port values are not updated.
+     * <p/>
+     * @param localExistindDomain Is local domain available?
+     */
+    void setPortsFields(final boolean localExistindDomain) {
+        setPortsFields(-1, -1, localExistindDomain);
     }
+
+//    /**
+//     * Update local and remote fields availability depending on Local/Remote
+//     * radio button value.
+//     */
+//    private void updateLocalRemoteFields() {
+//        domainLocalField.setEnabled(registerLocalRB.isSelected());
+//        hostLocalField.setEnabled(registerLocalRB.isSelected());
+//        localIpCB.setEnabled(registerLocalRB.isSelected());
+//        hostRemoteField.setEnabled(registerRemoteRB.isSelected());
+//    }
+
+//    boolean registerLocalDomain() {
+//        return registerLocalRB.isSelected();
+//    }
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -386,84 +488,29 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        buttonGroup1 = new javax.swing.ButtonGroup();
-        registerLocalRB = new javax.swing.JRadioButton();
-        localPanel = new javax.swing.JPanel();
-        domainFieldLabel = new javax.swing.JLabel();
-        domainField = new javax.swing.JComboBox();
-        useLocalIpCB = new javax.swing.JCheckBox();
-        hostLocalField = new IpComboBox(ips, useLocalIpCB.isSelected());
-        hostLocalFieldLabel = new javax.swing.JLabel();
         targetValueLabel = new javax.swing.JLabel();
         targetValueField = new javax.swing.JTextField();
         userNameLabel = new javax.swing.JLabel();
         userNameField = new javax.swing.JTextField();
         passwordLabel = new javax.swing.JLabel();
         passwordField = new javax.swing.JPasswordField();
-        registerRemoteRB = new javax.swing.JRadioButton();
         dasPortFieldLabel = new javax.swing.JLabel();
         dasPortField = new javax.swing.JTextField();
         httpPortFieldLabel = new javax.swing.JLabel();
         httpPortField = new javax.swing.JTextField();
         useDefaultPortsCB = new javax.swing.JCheckBox();
         remotePanel = new javax.swing.JPanel();
-        hostRemoteFieldLabel = new javax.swing.JLabel();
+        domainLocalLabel = new javax.swing.JLabel();
+        domainLocalField = new javax.swing.JComboBox();
+        hostLocalLabel = new javax.swing.JLabel();
+        localIpCB = new javax.swing.JCheckBox();
+        hostLocalField = new IpComboBox(ips, localIpCB.isSelected());
         hostRemoteField = new javax.swing.JTextField();
+        hostRemoteLabel = new javax.swing.JLabel();
+        domainRemoteLabel = new javax.swing.JLabel();
+        domainRemoteField = new javax.swing.JTextField();
 
         setPreferredSize(new java.awt.Dimension(438, 353));
-
-        buttonGroup1.add(registerLocalRB);
-        org.openide.awt.Mnemonics.setLocalizedText(registerLocalRB, org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.registerLocalRB.text")); // NOI18N
-
-        domainFieldLabel.setLabelFor(domainField);
-        org.openide.awt.Mnemonics.setLocalizedText(domainFieldLabel, org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.domainFieldLabel.text")); // NOI18N
-
-        domainField.setEditable(true);
-
-        useLocalIpCB.setSelected(true);
-        useLocalIpCB.setText(org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.useLocalIpCB.text")); // NOI18N
-
-        hostLocalField.setEditable(true);
-
-        hostLocalFieldLabel.setLabelFor(hostLocalField);
-        hostLocalFieldLabel.setText(org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.hostLocalFieldLabel.text")); // NOI18N
-        hostLocalFieldLabel.setMaximumSize(new java.awt.Dimension(62, 16));
-        hostLocalFieldLabel.setMinimumSize(new java.awt.Dimension(62, 16));
-        hostLocalFieldLabel.setPreferredSize(new java.awt.Dimension(62, 16));
-
-        javax.swing.GroupLayout localPanelLayout = new javax.swing.GroupLayout(localPanel);
-        localPanel.setLayout(localPanelLayout);
-        localPanelLayout.setHorizontalGroup(
-            localPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, localPanelLayout.createSequentialGroup()
-                .addGroup(localPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(domainFieldLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(hostLocalFieldLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(localPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(localPanelLayout.createSequentialGroup()
-                        .addComponent(hostLocalField, 0, 221, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(useLocalIpCB))
-                    .addComponent(domainField, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        localPanelLayout.setVerticalGroup(
-            localPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(localPanelLayout.createSequentialGroup()
-                .addGroup(localPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(domainField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(localPanelLayout.createSequentialGroup()
-                        .addGap(6, 6, 6)
-                        .addComponent(domainFieldLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(localPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(hostLocalFieldLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(hostLocalField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(useLocalIpCB)))
-        );
-
-        domainField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.domainField.AccessibleContext.accessibleDescription")); // NOI18N
 
         targetValueLabel.setLabelFor(dasPortField);
         org.openide.awt.Mnemonics.setLocalizedText(targetValueLabel, org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.targetValueLabel.text")); // NOI18N
@@ -478,163 +525,182 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
 
         passwordField.setText(initPasswordValue());
 
-        buttonGroup1.add(registerRemoteRB);
-        org.openide.awt.Mnemonics.setLocalizedText(registerRemoteRB, org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.registerRemoteRB.text")); // NOI18N
-
         dasPortFieldLabel.setLabelFor(dasPortField);
         org.openide.awt.Mnemonics.setLocalizedText(dasPortFieldLabel, org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.dasPortFieldLabel.text")); // NOI18N
 
+        dasPortField.setColumns(5);
         dasPortField.setText(initAdminPortValue());
 
         httpPortFieldLabel.setLabelFor(httpPortField);
         httpPortFieldLabel.setText(org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.httpPortFieldLabel.text")); // NOI18N
 
+        httpPortField.setColumns(5);
         httpPortField.setText(initHttpPortValue());
 
         org.openide.awt.Mnemonics.setLocalizedText(useDefaultPortsCB, org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.useDefaultPortsCB.text")); // NOI18N
         useDefaultPortsCB.setToolTipText(org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.useDefaultPortsCB.toolTipText")); // NOI18N
 
-        hostRemoteFieldLabel.setLabelFor(hostRemoteField);
-        org.openide.awt.Mnemonics.setLocalizedText(hostRemoteFieldLabel, org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.hostRemoteFieldLabel.text")); // NOI18N
-        hostRemoteFieldLabel.setMaximumSize(new java.awt.Dimension(62, 16));
-        hostRemoteFieldLabel.setMinimumSize(new java.awt.Dimension(62, 16));
-        hostRemoteFieldLabel.setPreferredSize(new java.awt.Dimension(62, 16));
-
-        hostRemoteField.setText(org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.hostRemoteField.text")); // NOI18N
-        hostRemoteField.setMaximumSize(new java.awt.Dimension(32767, 32767));
-        hostRemoteField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                hostRemoteFieldActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout remotePanelLayout = new javax.swing.GroupLayout(remotePanel);
         remotePanel.setLayout(remotePanelLayout);
         remotePanelLayout.setHorizontalGroup(
             remotePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(remotePanelLayout.createSequentialGroup()
-                .addComponent(hostRemoteFieldLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(hostRemoteField, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+            .addGap(0, 0, Short.MAX_VALUE)
         );
         remotePanelLayout.setVerticalGroup(
             remotePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, remotePanelLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(remotePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(hostRemoteField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(hostRemoteFieldLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18))
+            .addGap(0, 37, Short.MAX_VALUE)
         );
 
-        hostRemoteField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.hostRemoteField.AccessibleContext.accessibleDescription")); // NOI18N
+        domainLocalLabel.setLabelFor(domainLocalField);
+        org.openide.awt.Mnemonics.setLocalizedText(domainLocalLabel, org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.domainLocalLabel.text")); // NOI18N
+
+        domainLocalField.setEditable(true);
+
+        hostLocalLabel.setLabelFor(hostLocalField);
+        hostLocalLabel.setText(org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.hostLocalLabel.text")); // NOI18N
+        hostLocalLabel.setMaximumSize(new java.awt.Dimension(62, 16));
+        hostLocalLabel.setMinimumSize(new java.awt.Dimension(62, 16));
+        hostLocalLabel.setPreferredSize(new java.awt.Dimension(62, 16));
+
+        localIpCB.setSelected(true);
+        localIpCB.setText(org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.localIpCB.text")); // NOI18N
+
+        hostLocalField.setEditable(true);
+
+        hostRemoteField.setText(org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.hostRemoteField.text")); // NOI18N
+        hostRemoteField.setMaximumSize(new java.awt.Dimension(32767, 32767));
+
+        hostRemoteLabel.setLabelFor(hostRemoteField);
+        org.openide.awt.Mnemonics.setLocalizedText(hostRemoteLabel, org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.hostRemoteLabel.text")); // NOI18N
+        hostRemoteLabel.setMaximumSize(new java.awt.Dimension(62, 16));
+        hostRemoteLabel.setMinimumSize(new java.awt.Dimension(62, 16));
+        hostRemoteLabel.setPreferredSize(new java.awt.Dimension(62, 16));
+
+        domainRemoteLabel.setLabelFor(domainLocalField);
+        org.openide.awt.Mnemonics.setLocalizedText(domainRemoteLabel, org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.domainRemoteLabel.text")); // NOI18N
+
+        domainRemoteField.setText(org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.domainRemoteField.text")); // NOI18N
+        domainRemoteField.setMaximumSize(new java.awt.Dimension(32767, 32767));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(domainLocalLabel)
+                    .addComponent(domainRemoteLabel)
+                    .addComponent(hostLocalLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(hostRemoteLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(dasPortFieldLabel)
+                    .addComponent(targetValueLabel)
+                    .addComponent(userNameLabel)
+                    .addComponent(passwordLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(38, 38, 38)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(remotePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(localPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addComponent(hostLocalField, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(localIpCB))
+                    .addComponent(domainRemoteField, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(domainLocalField, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(hostRemoteField, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(12, 12, 12)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(registerRemoteRB)
-                            .addComponent(registerLocalRB)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(passwordField)
+                            .addComponent(userNameField, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(targetValueField, javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(passwordLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(passwordField, javax.swing.GroupLayout.DEFAULT_SIZE, 162, Short.MAX_VALUE))
-                                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                            .addComponent(userNameLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 86, Short.MAX_VALUE)
-                                            .addComponent(httpPortFieldLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                            .addComponent(dasPortFieldLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                            .addComponent(targetValueLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                            .addComponent(dasPortField)
-                                            .addComponent(httpPortField, javax.swing.GroupLayout.Alignment.TRAILING)
-                                            .addComponent(targetValueField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 162, Short.MAX_VALUE)
-                                            .addComponent(userNameField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 162, Short.MAX_VALUE))))
+                                .addComponent(dasPortField, javax.swing.GroupLayout.DEFAULT_SIZE, 93, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(useDefaultPortsCB, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
-                .addContainerGap())
+                                .addComponent(httpPortFieldLabel)))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(httpPortField, javax.swing.GroupLayout.DEFAULT_SIZE, 93, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(useDefaultPortsCB))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(112, 112, 112)
+                                .addComponent(remotePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))))
         );
+
+        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {dasPortFieldLabel, domainLocalLabel, domainRemoteLabel, hostLocalLabel, hostRemoteLabel, httpPortFieldLabel, passwordLabel, targetValueLabel, userNameLabel});
+
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(registerLocalRB)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(localPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(registerRemoteRB)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(remotePanel, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(domainLocalLabel)
+                    .addComponent(domainLocalField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(6, 6, 6)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(domainRemoteLabel)
+                    .addComponent(domainRemoteField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(6, 6, 6)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                    .addComponent(hostLocalLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(hostLocalField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(localIpCB))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(dasPortFieldLabel)
-                    .addComponent(dasPortField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(useDefaultPortsCB))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(httpPortFieldLabel)
-                    .addComponent(httpPortField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(targetValueField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(targetValueLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(userNameLabel)
-                    .addComponent(userNameField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(passwordLabel))
-                .addContainerGap(20, Short.MAX_VALUE))
+                    .addComponent(hostRemoteLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(hostRemoteField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(124, 124, 124)
+                        .addComponent(remotePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(dasPortField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(useDefaultPortsCB)
+                            .addComponent(dasPortFieldLabel)
+                            .addComponent(httpPortFieldLabel)
+                            .addComponent(httpPortField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(targetValueLabel)
+                            .addComponent(targetValueField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(userNameLabel)
+                            .addComponent(userNameField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(passwordLabel)
+                            .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))))
         );
 
-        registerLocalRB.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.registerLocalRB.AccessibleContext.accessibleDescription")); // NOI18N
-        registerRemoteRB.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.registerRemoteRB.AccessibleContext.accessibleDescription")); // NOI18N
         dasPortField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.dasPortField.AccessibleContext.accessibleDescription")); // NOI18N
         useDefaultPortsCB.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.useDefaultPortsCB.AccessibleContext.accessibleDescription")); // NOI18N
+        domainLocalField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.domainLocalField.AccessibleContext.accessibleDescription")); // NOI18N
+        hostRemoteField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.hostRemoteField.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-
-    private void hostRemoteFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hostRemoteFieldActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_hostRemoteFieldActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JTextField dasPortField;
     private javax.swing.JLabel dasPortFieldLabel;
-    private javax.swing.JComboBox domainField;
-    private javax.swing.JLabel domainFieldLabel;
+    private javax.swing.JComboBox domainLocalField;
+    private javax.swing.JLabel domainLocalLabel;
+    private javax.swing.JTextField domainRemoteField;
+    private javax.swing.JLabel domainRemoteLabel;
     private javax.swing.JComboBox hostLocalField;
-    private javax.swing.JLabel hostLocalFieldLabel;
+    private javax.swing.JLabel hostLocalLabel;
     private javax.swing.JTextField hostRemoteField;
-    private javax.swing.JLabel hostRemoteFieldLabel;
+    private javax.swing.JLabel hostRemoteLabel;
     private javax.swing.JTextField httpPortField;
     private javax.swing.JLabel httpPortFieldLabel;
-    private javax.swing.JPanel localPanel;
+    private javax.swing.JCheckBox localIpCB;
     private javax.swing.JPasswordField passwordField;
     private javax.swing.JLabel passwordLabel;
-    private javax.swing.JRadioButton registerLocalRB;
-    private javax.swing.JRadioButton registerRemoteRB;
     private javax.swing.JPanel remotePanel;
     private javax.swing.JTextField targetValueField;
     private javax.swing.JLabel targetValueLabel;
     private javax.swing.JCheckBox useDefaultPortsCB;
-    private javax.swing.JCheckBox useLocalIpCB;
     private javax.swing.JTextField userNameField;
     private javax.swing.JLabel userNameLabel;
     // End of variables declaration//GEN-END:variables

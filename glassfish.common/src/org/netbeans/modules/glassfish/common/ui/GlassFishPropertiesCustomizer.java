@@ -155,8 +155,8 @@ public class GlassFishPropertiesCustomizer extends JTabbedPane {
         customizerListener = new CustomizerListener(instance);
         addAncestorListener(customizerListener);
         JPanel commonCustomizer = instance.isRemote()
-                ? new InstanceCustomizer(instance)
-                : new InstancePanel(instance);
+                ? new InstanceRemotePanel(instance)
+                : new InstanceLocalPanel(instance);
         JPanel vmCustomizer = new VmCustomizer(instance);
 
         Collection<JPanel> pages = new LinkedList<>();

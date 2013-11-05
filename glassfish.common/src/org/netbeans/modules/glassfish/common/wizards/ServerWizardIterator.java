@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -83,7 +83,7 @@ public class ServerWizardIterator extends PortCollection implements WizardDescri
     private transient int index = 0;
     private transient WizardDescriptor.Panel[] panels = null;
         
-    private transient List<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
+    private transient List<ChangeListener> listeners = new CopyOnWriteArrayList<>();
     private String domainsDir;
     private String domainName;
     private ServerDetails sd;
@@ -155,7 +155,7 @@ public class ServerWizardIterator extends PortCollection implements WizardDescri
     
     @Override
     public Set instantiate() throws IOException {
-        Set<ServerInstance> result = new HashSet<ServerInstance>();
+        Set<ServerInstance> result = new HashSet<>();
         File ir = new File(installRoot);
         ensureExecutable(ir);
         if (null != domainsDir) {
@@ -257,6 +257,9 @@ public class ServerWizardIterator extends PortCollection implements WizardDescri
     private String installRoot;
     private String glassfishRoot;
     private String hostName;
+    /** GlassFish server is local or remote. Value is <code>true</code>
+     *  for local server and  <code>false</code> for remote server. */
+    private boolean isLocal;
     private boolean useDefaultPorts;
     private boolean defaultJavaSESupported;
 
@@ -274,6 +277,26 @@ public class ServerWizardIterator extends PortCollection implements WizardDescri
 
     public boolean isDefaultJavaSESupported() {
         return defaultJavaSESupported;
+    }
+
+    /**
+     * Is GlassFish server local or remote?
+     * <p/>
+     * @return Value is <code>true</code> for local server
+     *         and  <code>false</code> for remote server.
+     */
+    public boolean isLocal() {
+        return isLocal;
+    }
+
+    /**
+     * Set GlassFish server as local or remote.
+     * <p/>
+     * @param isLocal Value is <code>true</code> for local server
+     *                and  <code>false</code> for remote server.
+     */
+    public void setLocal(final boolean isLocal) {
+        this.isLocal = isLocal;
     }
 
     public String formatUri(String host, int port, String target,
@@ -357,6 +380,18 @@ public class ServerWizardIterator extends PortCollection implements WizardDescri
 
     }
 
+    /**
+     * Set values for remote domain.
+     * <p/>
+     * Domains directory shall be <code>null</code> for remote domains.
+     * <p/>
+     * @param domainName Domain name to set.
+     */
+    public void setRemoteDomain(final String domainName) {
+        this.domainsDir = null;
+        this.domainName = domainName;
+    }
+
     // expose for qa-functional tests
     public void setDomainLocation(String absolutePath) {
         if (null == absolutePath) {
@@ -381,7 +416,7 @@ public class ServerWizardIterator extends PortCollection implements WizardDescri
             return;
         }
 
-        List<File> binList = new ArrayList<File>();
+        List<File> binList = new ArrayList<>();
         for(String binPath: new String[] { "bin", "glassfish/bin", "javadb/bin", // NOI18N
                 "javadb/frameworks/NetworkServer/bin", "javadb/frameworks/embedded/bin" }) { // NOI18N
             File dir = new File(installDir, binPath);
@@ -406,7 +441,7 @@ public class ServerWizardIterator extends PortCollection implements WizardDescri
         if(chmod.isFile()) {
             try {
                 for(File binDir: binList) {
-                    List<String> argv = new ArrayList<String>();
+                    List<String> argv = new ArrayList<>();
                     argv.add(chmod.getAbsolutePath());
                     argv.add("u+rx"); // NOI18N
 
@@ -427,7 +462,7 @@ public class ServerWizardIterator extends PortCollection implements WizardDescri
                                 Retriever.class, "ERR_ChmodFailed", argv, chmoded)); // NOI18N
                     }
                 }
-            } catch (Exception ex) {
+            } catch (IOException | InterruptedException | MissingResourceException ex) {
                 Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex); // NOI18N
             }
         } else {
@@ -457,7 +492,7 @@ public class ServerWizardIterator extends PortCollection implements WizardDescri
         }
         if (!domainDir.exists() && AddServerLocationPanel.canCreate(domainDir)) {
             // Need to create a domain right here!
-            Map<String, String> ip = new HashMap<String, String>();
+            Map<String, String> ip = new HashMap<>();
             ip.put(GlassfishModule.INSTALL_FOLDER_ATTR, installRoot);
             ip.put(GlassfishModule.GLASSFISH_FOLDER_ATTR, glassfishRoot);
             ip.put(GlassfishModule.DISPLAY_NAME_ATTR, (String) wizard.getProperty("ServInstWizard_displayName")); // NOI18N
@@ -487,17 +522,15 @@ public class ServerWizardIterator extends PortCollection implements WizardDescri
     }
 
     private void handleRemoteDomains(Set<ServerInstance> result, File ir) {
-        // TODO - vbk : get the real port from the server. Doable, but hard to do right.
-        setHttpPort(8080);
         String hn = getHostName();
         if ("localhost".equals(hn)) {
             hn = "127.0.0.1";
         }
         GlassfishInstance instance = GlassfishInstance.create(
                 (String) wizard.getProperty("ServInstWizard_displayName"),   // NOI18N
-                installRoot, glassfishRoot, null, null,
+                installRoot, glassfishRoot, null, domainName,
                 getHttpPort(), getAdminPort(), userName, password, targetValue,
-                formatUri(hn, getAdminPort(), getTargetValue(),null,null), gip);
+                formatUri(hn, getAdminPort(), getTargetValue(),null, domainName), gip);
         result.add(instance.getCommonInstance());
     }
 

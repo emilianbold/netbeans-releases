@@ -1020,7 +1020,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
      * Set GlassFish server domains folder into stored properties.
      * <p/>
      * @param domainsFolder GlassFish server domains folder.
-     * @return Previous value of domains folder, or <code>null</code> if there
+     * @return Previous value of domains folder or <code>null</code> if there
      *         was no value of domains folder stored.
      */
     public String setDomainsFolder(String domainsFolder) {
@@ -1047,6 +1047,19 @@ public class GlassfishInstance implements ServerInstanceImplementation,
      */
     public String getTarget() {
         return properties.get(GlassfishModule.TARGET_ATTR);
+    }
+
+    /**
+     * Set GlassFish server target in domain (cluster or standalone
+     * server name).
+     * <p/>
+     * @param target GlassFish server target in domain (cluster or standalone
+     *               server name).
+     * @return Previous value of target or <code>null</code> if there
+     *         was no value of domains folder stored.
+     */
+    public String setTarget(final String target) {
+        return properties.put(GlassfishModule.TARGET_ATTR, target);
     }
 
     /**
@@ -1749,17 +1762,20 @@ public class GlassfishInstance implements ServerInstanceImplementation,
         if (null == other.getDeployerUri()) {
             return false;
         }
-        if (null == getDomainName()) {
-            return false;
-        }
-        if (null == getDomainName()) {
-            return false;
-        }
-        return getDeployerUri().replace("127.0.0.1", "localhost").
-                equals(other.getDeployerUri().
-                replace("127.0.0.1", "localhost"))
+        // Domain name can be null so we shall avoid NPE.
+        boolean domainName = (
+                getDomainName() == null && other.getDomainName() == null)
+                || ((getDomainName() != null && other.getDomainName() != null)
+                && getDomainName().equals(other.getDomainName()));
+        // Domains root can be null so we shall avoid NPE.
+        boolean domainsRoot = (
+                getDomainsRoot() == null && other.getDomainsRoot() == null)
+                || ((getDomainsRoot() != null && other.getDomainsRoot() != null)
+                && getDomainsRoot().equals(other.getDomainsRoot()));
+        return domainName && domainsRoot
+                && getDeployerUri().replace("127.0.0.1", "localhost").
+                equals(other.getDeployerUri().replace("127.0.0.1", "localhost"))
                 && getDomainName().equals(other.getDomainName()) 
-                && getDomainsRoot().equals(other.getDomainsRoot())
                 && getHttpPort().equals(other.getHttpPort());
     }
 

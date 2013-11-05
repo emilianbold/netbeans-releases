@@ -46,8 +46,6 @@ package org.netbeans.modules.glassfish.common.wizards;
 
 import java.awt.Component;
 import java.io.File;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.MissingResourceException;
@@ -110,7 +108,7 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
         if (isValidating.compareAndSet(false, true)) {
             try {
                 AddDomainLocationVisualPanel panel = (AddDomainLocationVisualPanel) getComponent();
-                if (panel.registerLocalDomain()) {
+                if (wizardIterator.isLocal()) {
                     return validateForLocalDomain(panel);
                 } else {
                     return validateForRemoteDomain(panel);
@@ -183,7 +181,8 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
             wizard = (WizardDescriptor) settings;
         }
         gfRoot = wizardIterator.getGlassfishRoot();
-        ((AddDomainLocationVisualPanel) getComponent()).initModels(gfRoot);
+        ((AddDomainLocationVisualPanel) getComponent())
+                .initModels(gfRoot, wizardIterator.isLocal());
 
         // Check if default Java SE platform is supported\
         // by selected GlassFish server.
@@ -228,33 +227,20 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
         if (rawHost instanceof IpComboBox.InetAddr) {
             return ((IpComboBox.InetAddr)rawHost).toString();
         } else if (rawHost instanceof String) {
-            InetAddress ip;
-            try {
-                ip = InetAddress.getByName(((String)rawHost).trim());
-            } catch (UnknownHostException | SecurityException ex) {
-                ip = null;
+            String host = (String)rawHost;
+            if (host.length() == 0) {
+                host = IpComboBox.IP_4_127_0_0_1_NAME;
             }
-            return ip != null ? (String)rawHost : "localhost";
+            return host;
         } else {
-            return "localhost";
+            return IpComboBox.IP_4_127_0_0_1_NAME;
         }
     }
     
     private boolean validateForLocalDomain(AddDomainLocationVisualPanel panel) throws MissingResourceException {
-        String domainField = panel.getDomainField().trim();
-        final Object rawHost = panel.getLocalHostIp();
+        String domainField = panel.getLocalDomain().trim();
         File domainDirCandidate = new File(gfRoot, GlassfishInstance.DEFAULT_DOMAINS_FOLDER + File.separator + domainField); // NOI18N
-        String host;
-        if (rawHost instanceof IpComboBox.InetAddr) {
-            host = ((IpComboBox.InetAddr)rawHost).toString();
-        } else if (rawHost instanceof String) {
-            host = (String)rawHost;
-            if (host.length() == 0) {
-                host = IpComboBox.IP_4_127_0_0_1_NAME;
-            }
-        } else {
-            host = IpComboBox.IP_4_127_0_0_1_NAME;
-        }
+        String host = validateLocalHost(panel.getLocalHost());
         if (domainField.length() < 1) {
             if (!Utils.canWrite(domainDirCandidate)) {
                 // the user needs to enter the name of a directory for
@@ -267,6 +253,7 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
             return false;
         }
         int dex = domainField.indexOf(File.separator);
+        // Existing domain
         if (AddServerLocationPanel.isRegisterableDomain(domainDirCandidate, wizardIterator)) {
             String uri = wizardIterator.formatUri(GlassfishInstance.DEFAULT_HOST_NAME, wizardIterator.getAdminPort(), panel.getTargetValue(),
                     new File(gfRoot, GlassfishInstance.DEFAULT_DOMAINS_FOLDER).getAbsolutePath(), domainField);
@@ -286,11 +273,13 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
             wizardIterator.setDomainLocation(domainDirCandidate.getAbsolutePath());
             // Let's believe to what user provided in UI
             wizardIterator.setHostName(host);
-            panel.setAdminPortValue(Integer.toString(wizardIterator.getAdminPort()));
-            panel.setHttpPortValue(Integer.toString(wizardIterator.getHttpPort()));
+            panel.setPortsFields(wizardIterator.getAdminPort(),
+                    wizardIterator.getHttpPort(), true);
             setGlobalValues(wizardIterator, panel);
             wizard.putProperty(PROP_INFO_MESSAGE, NbBundle.getMessage(this.getClass(), "MSG_RegisterExistingEmbedded", domainField)); // NOI18N
             return true;
+        } else {
+            panel.setPortsFields(false);
         }
         File domainsDir = domainDirCandidate.getParentFile();
         if (Utils.canWrite(domainsDir) && dex < 0 && !ServerUtilities.isTP2(gfRoot) &&
@@ -380,9 +369,15 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
         return sb.toString();
     }
     
+    /**
+     * There is not much to verify for remote domain.
+     * <p/>
+     * @param panel Domain specific attributes panel.
+     * @return Is form valid?
+     */
     private boolean validateForRemoteDomain(
             final AddDomainLocationVisualPanel panel) {
-        String host = panel.getHostName();
+        String host = panel.getRemoteHost();
         List<String> errors = new LinkedList<>();
         int dasPort = strToInt(panel.getAdminPortValue(),
                 "AddDomainLocationPanel.invalidDasPort", errors);
@@ -395,7 +390,7 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
         wizardIterator.setAdminPort(dasPort);
         wizardIterator.setHttpPort(httpPort);
         wizardIterator.setHostName(host);
-        wizardIterator.setDomainLocation(null);
+        wizardIterator.setRemoteDomain(panel.getRemoteDomain());
         setGlobalValues(wizardIterator, panel);
         wizard.putProperty(PROP_INFO_MESSAGE, NbBundle.getMessage(
                 this.getClass(), "AddDomainLocationPanel.remoteInstance",

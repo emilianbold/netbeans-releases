@@ -41,29 +41,24 @@
  */
 package org.netbeans.modules.glassfish.common.ui;
 
-import java.io.File;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.AbstractDocument;
 import org.glassfish.tools.ide.utils.NetUtils;
-import org.glassfish.tools.ide.utils.ServerUtils;
 import org.netbeans.modules.glassfish.common.GlassFishLogger;
 import org.netbeans.modules.glassfish.common.GlassFishSettings;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
-import org.netbeans.modules.glassfish.common.PortCollection;
-import org.netbeans.modules.glassfish.common.utils.Util;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.openide.util.NbBundle;
 
 /**
- * Local instance properties editor.
+ * Common instance properties editor.
  * <p/>
  * @author Tomas Kraus
  */
-public class InstancePanel extends javax.swing.JPanel {
+public abstract class InstancePanel extends javax.swing.JPanel {
 
     ////////////////////////////////////////////////////////////////////////////
     // Inner classes                                                          //
@@ -72,7 +67,7 @@ public class InstancePanel extends javax.swing.JPanel {
     /**
      * Properties for check box fields.
      */
-    private static class CheckBoxProperties {
+    protected static class CheckBoxProperties {
 
         /** Comet support property. */
         final String cometSupportProperty;
@@ -96,7 +91,7 @@ public class InstancePanel extends javax.swing.JPanel {
          * @param instance GlassFish instance object containing check box
          *        fields properties.
          */
-        private CheckBoxProperties(final GlassfishInstance instance) {
+        protected CheckBoxProperties(final GlassfishInstance instance) {
             String cometSupportPropertyTmp
                     = instance.getProperty(GlassfishModule.COMET_FLAG);
             cometSupportProperty = cometSupportPropertyTmp != null
@@ -122,7 +117,7 @@ public class InstancePanel extends javax.swing.JPanel {
          * @param value    GlassFish instance object property value.
          * @param instance GlassFish instance object to store properties.
          */
-        private void storeBooleanProperty(final String key, final boolean value,
+        protected void storeBooleanProperty(final String key, final boolean value,
                 final GlassfishInstance instance) {
             // Store true value as String property.
             if (value) {
@@ -145,7 +140,7 @@ public class InstancePanel extends javax.swing.JPanel {
          * @param instance                 GlassFish instance object to store
          *                                 check box fields properties.
          */
-        private void store(final boolean cometSupportFlag,
+        protected void store(final boolean cometSupportFlag,
                 final boolean httpMonitorFlag,
                 final boolean jdbcDriverDeploymentFlag,
                 final boolean preserveSessionsFlag,
@@ -180,7 +175,7 @@ public class InstancePanel extends javax.swing.JPanel {
          * <p/>
          * @return Comet support property.
          */
-        private boolean getCommetSupportProperty() {
+        protected boolean getCommetSupportProperty() {
             return Boolean.parseBoolean(cometSupportProperty);
         }
 
@@ -189,7 +184,7 @@ public class InstancePanel extends javax.swing.JPanel {
          * <p/>
          * @return HTTP monitor property.
          */
-        private boolean getHttpMonitorProperty() {
+        protected boolean getHttpMonitorProperty() {
             return Boolean.parseBoolean(httpMonitorProperty);
         }
 
@@ -198,7 +193,7 @@ public class InstancePanel extends javax.swing.JPanel {
          * <p/>
          * @return JDBC driver deployment property.
          */
-        private boolean getJdbcDriverDeploymentProperty() {
+        protected boolean getJdbcDriverDeploymentProperty() {
             return Boolean.parseBoolean(jdbcDriverDeploymentProperty);
         }
 
@@ -207,7 +202,7 @@ public class InstancePanel extends javax.swing.JPanel {
          * <p/>
          * @return Preserve sessions property.
          */
-        private boolean getPreserveSessionsProperty() {
+        protected boolean getPreserveSessionsProperty() {
             return Boolean.parseBoolean(preserveSessionsProperty);
         }
 
@@ -216,7 +211,7 @@ public class InstancePanel extends javax.swing.JPanel {
          * <p/>
          * @return Start Derby property.
          */
-        private boolean getStartDerbyProperty() {
+        protected boolean getStartDerbyProperty() {
             return Boolean.parseBoolean(startDerbyProperty);
         }
 
@@ -242,40 +237,68 @@ public class InstancePanel extends javax.swing.JPanel {
     ////////////////////////////////////////////////////////////////////////////
 
     /** GlassFish server instance to be modified. */
-    private final GlassfishInstance instance;
+    protected final GlassfishInstance instance;
     
     /** IP addresses selection content. */
-    private Set<? extends InetAddress> ips;
+    protected Set<? extends InetAddress> ips;
 
     /** Comet support flag. */
-    private boolean cometSupportFlag;
+    protected boolean cometSupportFlag;
 
     /** HTTP monitor flag. */
-    private boolean httpMonitorFlag;
+    protected boolean httpMonitorFlag;
 
     /** JDBC driver deployment flag. */
-    private boolean jdbcDriverDeploymentFlag;
+    protected boolean jdbcDriverDeploymentFlag;
 
     /** Show password text in this form flag. */
-    private boolean showPasswordFlag;
+    protected boolean showPasswordFlag;
 
     /** Preserve sessions flag. */
-    private boolean preserverSessionsFlag;
+    protected boolean preserverSessionsFlag;
 
     /** Start Derby flag. */
-    private boolean startDerbyFlag;
+    protected boolean startDerbyFlag;
 
     /** Configuration file <code>domain.xml</code> was parsed successfully. */
-    private boolean configFileParsed;
+    protected boolean configFileParsed;
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Abstract methods                                                       //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Host field initialization.
+     * <p/>
+     * Initialize proper host fields in child class.
+     */
+    protected abstract void initHost();
+
+    /**
+     * Port fields initialization.
+     * <p/>
+     * Initialize proper port fields in child class.
+     */
+    protected abstract void initPorts();
+
+    /**
+     * Get host field value to be stored into local GlassFish server instance
+     * object properties.
+     * <p/>
+     * @return Host field value converted to {@link String}.
+     */
+    protected abstract String getHost();
 
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Creates new form InstanceLocalPanel
+     * Creates an instance of common GlassFish server properties editor.
+     * <p/>
+     * @param instance GlassFish server instance to be modified.
      */
-    public InstancePanel(final GlassfishInstance instance) {
+    protected InstancePanel(final GlassfishInstance instance) {
         this.instance = instance;
         ips = NetUtils.getHostIP4s();
         initComponents();
@@ -286,91 +309,32 @@ public class InstancePanel extends javax.swing.JPanel {
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    // Methods                                                           //
+    // Methods                                                                //
     ////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Get host field value to be stored into local GlassFish server instance
-     * object properties.
-     * <p/>
-     * @return Host field value converted to {@link String}
-     */
-    private String getHost() {
-        Object hostValue = hostField.getEditor().getItem();
-        if (hostValue instanceof IpComboBox.InetAddr) {
-            return ((IpComboBox.InetAddr)hostValue).toString();
-        } else if (hostValue instanceof String) {
-            return (String)hostValue;
-        } else {
-            return IpComboBox.IP_4_127_0_0_1_NAME;
-        }
-    }
-
-    /**
-     * Read server configuration from <code>domain.xml</code> if exists
-     * and update corresponding fields.
-     * <p/>
-     * Port fields values can't be changed when values are coming from server's
-     * <code>domain.xml</code> file.
-     */
-    private void initFromServerConfig() {
-        PortCollection ports = new PortCollection();
-        String domainPath = ServerUtils.getDomainPath(instance);
-        if (configFileParsed
-                = Util.readServerConfiguration(new File(domainPath), ports)) {
-            dasPortField.setText(Integer.toString(ports.getAdminPort()));
-            httpPortField.setText(Integer.toString(ports.getHttpPort()));
-        } else {
-            dasPortField.setText(Integer.toString(instance.getAdminPort()));
-            httpPortField.setText(Integer.toString(instance.getPort()));
-        }
-    }
 
     /**
      * Installation and domain directories fields initialization.
      * <p/>
-     * Initialize installation root and domains directory fields  with values
-     * stored in GlassFish instance object.
+     * Initialize installation root and domains directory fields with values
+     * stored in GlassFish instance object. This code can be part of common
+     * initialization because for remote server domains folder is initialized
+     * as empty <code>String</code> and child class makes it just invisible.
      */
-    private void initDirectoriesFields() {
-        installationLocationField.setText(instance.getGlassfishRoot());
-        domainsFolderField.setText(instance.getDomainsFolder());
-    }
-
-    /**
-     * Host field initialization.
-     * <p/>
-     * Attempts to initialize host combo box to existing IP address. Host name
-     * string is used as a fallback.
-     */
-    private void initHost() {
-        String hostProperty = instance.getHost();
-        InetAddress addr;
-        try {
-            addr = InetAddress.getByName(hostProperty);
-            localIpCB.setSelected(addr.isLoopbackAddress());
-        } catch (UnknownHostException uhe) {
-            addr = null;
-            localIpCB.setSelected(true);
-            LOGGER.log(Level.INFO,
-                    NbBundle.getMessage(InstancePanel.class,
-                    "InstanceLocalPanel.initHost.unknownHost", hostProperty));
-        }
-        ((IpComboBox)hostField).updateModel(ips, localIpCB.isSelected());
-        if (addr != null && ips.contains(addr)) {
-            ((IpComboBox)hostField).setSelectedItem(addr);
-        } else {
-            ((IpComboBox)hostField).getEditor().setItem(hostProperty);
-        }
+    protected void initDirectoriesFields() {
+        String installationRoot = instance.getGlassfishRoot();
+        String domainsFolder = instance.getDomainsFolder();
+        installationLocationField.setText(
+                installationRoot != null ? installationRoot : "");
+        domainsFolderField.setText(domainsFolder != null ? domainsFolder : "");
     }
 
     /**
      * Domain name and target fields initialization.
      * <p/>
-     * initialize domain name and target fields with values stored in GlassFish
+     * Initialize domain name and target fields with values stored in GlassFish
      * instance object.
      */
-    private void initDomainAndTarget() {
+    protected void initDomainAndTarget() {
         String target = instance.getTarget();
         String domainName = instance.getDomainName();
         domainField.setText(domainName != null ? domainName : "");
@@ -383,7 +347,7 @@ public class InstancePanel extends javax.swing.JPanel {
      * Initialize user name and password fields with values stored in GlassFish
      * instance object.
      */
-    private void initCredentials() {
+    protected void initCredentials() {
         userNameField.setText(instance.getUserName());
         passwordField.setText(instance.getPassword());
     }
@@ -394,7 +358,7 @@ public class InstancePanel extends javax.swing.JPanel {
      * <p/>
      * @param properties GlassFish instance object properties for check boxes.
      */
-    private void initFlagsFromProperties(final CheckBoxProperties properties) {
+    protected void initFlagsFromProperties(final CheckBoxProperties properties) {
         cometSupportFlag = properties.getCommetSupportProperty();
         httpMonitorFlag = properties.getHttpMonitorProperty();
         jdbcDriverDeploymentFlag= properties.getJdbcDriverDeploymentProperty();
@@ -409,7 +373,7 @@ public class InstancePanel extends javax.swing.JPanel {
      * modification and allowing user to display password text in password
      * field.
      */
-    private void initCheckBoxes() {
+    protected void initCheckBoxes() {
         // Retrieve properties from GlassFish instance object.
         initFlagsFromProperties(new CheckBoxProperties(instance));
         // Initialize internal properties storage.
@@ -430,7 +394,7 @@ public class InstancePanel extends javax.swing.JPanel {
      * Store host field content when form fields value differs from GlassFish
      * instance property.
      */
-    private void storeHost() {
+    protected void storeHost() {
         String host = getHost();
         if (!host.equals(instance.getHost())) {
             instance.setHost(host);
@@ -444,7 +408,7 @@ public class InstancePanel extends javax.swing.JPanel {
      * and store current status of allowing user to display password text
      * in password field.
      */
-    private void storeCheckBoxes() {
+    protected void storeCheckBoxes() {
         CheckBoxProperties properties = new CheckBoxProperties(instance);
         properties.store(cometSupportFlag, httpMonitorFlag,
                 jdbcDriverDeploymentFlag, preserverSessionsFlag,
@@ -458,7 +422,7 @@ public class InstancePanel extends javax.swing.JPanel {
      * Validate and store DAS and HTTP ports fields when form fields values
      * differs from GlassFish instance properties.
      */
-    private void storePorts() {
+    protected void storePorts() {
         final String dasPortStr = dasPortField.getText().trim();
         final String httpPortStr = httpPortField.getText().trim();
         try {
@@ -499,12 +463,25 @@ public class InstancePanel extends javax.swing.JPanel {
     }
 
     /**
+     * Target field storage.
+     * <p/>
+     * Store target when form field value differs from GlassFish instance
+     * property.
+     */
+    protected void storeTarget() {
+        String target = targetField.getText().trim();
+        if (!target.equals(instance.getTarget())) {
+            instance.setTarget(target);
+        }
+    }
+
+    /**
      * Administrator user credentials storage.
      * <p/>
      * Store administrator user name and password when form fields values
      * differs from GlassFish instance properties.
      */
-    private void storeCredentials() {
+    protected void storeCredentials() {
         final String userName = userNameField.getText().trim();
         final String password = new String(passwordField.getPassword());
         if (!userName.equals(instance.getAdminUser())) {
@@ -522,14 +499,11 @@ public class InstancePanel extends javax.swing.JPanel {
      * is usually done after form has been initialized when all form fields
      * are currently disabled.
      */
-    private void enableFields() {
+    protected void enableFields() {
         if (!configFileParsed) {
             dasPortField.setEnabled(true);
             httpPortField.setEnabled(true);
         }
-        hostField.setEnabled(true);
-//      Not implemented yet
-//        domainField.setEnabled(true);
         targetField.setEnabled(true);
         userNameField.setEnabled(true);
         passwordField.setEnabled(true);
@@ -547,10 +521,12 @@ public class InstancePanel extends javax.swing.JPanel {
      * Set all form fields as disabled. This is usually done when form is being
      * initialized or stored.
      */
-    private void disableAllFields() {
+    protected void disableAllFields() {
         installationLocationField.setEnabled(false);
         domainsFolderField.setEnabled(false);
-        hostField.setEnabled(false);
+        hostLocalField.setEnabled(false);
+        localIpCB.setEnabled(false);
+        hostRemoteField.setEnabled(false);
         dasPortField.setEnabled(false);
         httpPortField.setEnabled(false);
         domainField.setEnabled(false);
@@ -570,9 +546,9 @@ public class InstancePanel extends javax.swing.JPanel {
      * <p/>
      * This is top level initialization method used when entering form.
      */
-    private void initFormFields() {
-        initFromServerConfig();
+    protected void initFormFields() {
         initDirectoriesFields();
+        initPorts();
         initHost();
         initDomainAndTarget();
         initCredentials();
@@ -585,9 +561,10 @@ public class InstancePanel extends javax.swing.JPanel {
      * <p/>
      * This is top level storage method used when leaving form.
      */
-    private void storeFormFields() {
+    protected void storeFormFields() {
         storeHost();
         storePorts();
+        storeTarget();
         storeCredentials();
         storeCheckBoxes();
     }
@@ -620,7 +597,7 @@ public class InstancePanel extends javax.swing.JPanel {
     /**
      * Show and hide password text depending on related check box.
      */
-    private void updatePasswordVisibility() {
+    protected void updatePasswordVisibility() {
         showPasswordFlag = showPassword.isSelected();
         passwordField.setEchoChar(showPasswordFlag ? '\0' : '*');        
     }
@@ -638,9 +615,9 @@ public class InstancePanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        hostLabel = new javax.swing.JLabel();
+        hostLocalLabel = new javax.swing.JLabel();
         localIpCB = new javax.swing.JCheckBox();
-        hostField = new IpComboBox(ips, localIpCB.isSelected());
+        hostLocalField = new IpComboBox(ips, localIpCB.isSelected());
         dasPortLabel = new javax.swing.JLabel();
         dasPortField = new javax.swing.JTextField();
         httpPortLabel = new javax.swing.JLabel();
@@ -663,12 +640,14 @@ public class InstancePanel extends javax.swing.JPanel {
         jdbcDriverDeployment = new javax.swing.JCheckBox();
         showPassword = new javax.swing.JCheckBox();
         passwordField = new javax.swing.JPasswordField();
+        hostRemoteLabel = new javax.swing.JLabel();
+        hostRemoteField = new javax.swing.JTextField();
 
         setName(org.openide.util.NbBundle.getMessage(InstancePanel.class, "InstanceLocalPanel.displayName")); // NOI18N
         setPreferredSize(new java.awt.Dimension(602, 304));
 
-        hostLabel.setLabelFor(hostField);
-        org.openide.awt.Mnemonics.setLocalizedText(hostLabel, org.openide.util.NbBundle.getMessage(InstancePanel.class, "InstanceLocalPanel.hostLabel")); // NOI18N
+        hostLocalLabel.setLabelFor(hostLocalField);
+        org.openide.awt.Mnemonics.setLocalizedText(hostLocalLabel, org.openide.util.NbBundle.getMessage(InstancePanel.class, "InstanceLocalPanel.hostLabel")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(localIpCB, org.openide.util.NbBundle.getMessage(InstancePanel.class, "InstanceLocalPanel.localIpCB")); // NOI18N
         localIpCB.addActionListener(new java.awt.event.ActionListener() {
@@ -677,7 +656,7 @@ public class InstancePanel extends javax.swing.JPanel {
             }
         });
 
-        hostField.setEditable(true);
+        hostLocalField.setEditable(true);
 
         dasPortLabel.setLabelFor(dasPortField);
         org.openide.awt.Mnemonics.setLocalizedText(dasPortLabel, org.openide.util.NbBundle.getMessage(InstancePanel.class, "InstanceLocalPanel.dasPortLabel")); // NOI18N
@@ -761,6 +740,11 @@ public class InstancePanel extends javax.swing.JPanel {
 
         passwordField.setText(org.openide.util.NbBundle.getMessage(InstancePanel.class, "InstancePanel.passwordField.text")); // NOI18N
 
+        hostRemoteLabel.setLabelFor(domainsFolderField);
+        org.openide.awt.Mnemonics.setLocalizedText(hostRemoteLabel, org.openide.util.NbBundle.getMessage(InstancePanel.class, "InstancePanel.hostRemoteLabel.text")); // NOI18N
+
+        hostRemoteField.setText(org.openide.util.NbBundle.getMessage(InstancePanel.class, "InstancePanel.hostRemoteField.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -771,21 +755,23 @@ public class InstancePanel extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                             .add(installationLocationLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(domainsFolderLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .add(domainsFolderLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(hostRemoteLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(domainsFolderField)
-                            .add(installationLocationField)))
+                            .add(installationLocationField)
+                            .add(hostRemoteField)))
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(hostLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 59, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(hostLocalLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 59, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(domainLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 59, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(dasPortLabel)
                             .add(userNameLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
-                                .add(hostField, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .add(hostLocalField, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(localIpCB))
                             .add(layout.createSequentialGroup()
@@ -816,7 +802,7 @@ public class InstancePanel extends javax.swing.JPanel {
                 .addContainerGap())
         );
 
-        layout.linkSize(new java.awt.Component[] {dasPortLabel, domainLabel, hostLabel, httpPortLabel, passwordLabel, targetLabel, userNameLabel}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+        layout.linkSize(new java.awt.Component[] {dasPortLabel, domainLabel, hostLocalLabel, httpPortLabel, passwordLabel, targetLabel, userNameLabel}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
 
         layout.linkSize(new java.awt.Component[] {domainsFolderLabel, installationLocationLabel}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
 
@@ -833,8 +819,12 @@ public class InstancePanel extends javax.swing.JPanel {
                     .add(domainsFolderField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(hostLabel)
-                    .add(hostField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(hostRemoteLabel)
+                    .add(hostRemoteField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(hostLocalLabel)
+                    .add(hostLocalField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(localIpCB))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
@@ -866,7 +856,7 @@ public class InstancePanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jdbcDriverDeployment)
                     .add(startDerby))
-                .addContainerGap(13, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -895,45 +885,47 @@ public class InstancePanel extends javax.swing.JPanel {
     }//GEN-LAST:event_startDerbyActionPerformed
 
     private void localIpCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_localIpCBActionPerformed
-        Object hostValue = hostField.getEditor().getItem();
-        hostField.setEnabled(false);
-        ((IpComboBox)hostField).updateModel(ips, localIpCB.isSelected());
+        Object hostValue = hostLocalField.getEditor().getItem();
+        hostLocalField.setEnabled(false);
+        ((IpComboBox)hostLocalField).updateModel(ips, localIpCB.isSelected());
         if (hostValue instanceof IpComboBox.InetAddr) {
-            ((IpComboBox)hostField).setSelectedIp(
+            ((IpComboBox)hostLocalField).setSelectedIp(
                     ((IpComboBox.InetAddr)hostValue).getIp());
         } else if (hostValue instanceof String) {
-            ((IpComboBox)hostField).getEditor().setItem((String)hostValue);
+            ((IpComboBox)hostLocalField).getEditor().setItem((String)hostValue);
         } else {
-            ((IpComboBox)hostField).setSelectedItem(null);
+            ((IpComboBox)hostLocalField).setSelectedItem(null);
         }
-        hostField.setEnabled(true);
+        hostLocalField.setEnabled(true);
     }//GEN-LAST:event_localIpCBActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox commetSupport;
-    private javax.swing.JTextField dasPortField;
-    private javax.swing.JLabel dasPortLabel;
-    private javax.swing.JTextField domainField;
-    private javax.swing.JLabel domainLabel;
-    private javax.swing.JTextField domainsFolderField;
-    private javax.swing.JLabel domainsFolderLabel;
-    private javax.swing.JComboBox hostField;
-    private javax.swing.JLabel hostLabel;
-    private javax.swing.JCheckBox httpMonitor;
-    private javax.swing.JTextField httpPortField;
-    private javax.swing.JLabel httpPortLabel;
-    private javax.swing.JTextField installationLocationField;
-    private javax.swing.JLabel installationLocationLabel;
-    private javax.swing.JCheckBox jdbcDriverDeployment;
-    private javax.swing.JCheckBox localIpCB;
-    private javax.swing.JPasswordField passwordField;
-    private javax.swing.JLabel passwordLabel;
-    private javax.swing.JCheckBox preserveSessions;
-    private javax.swing.JCheckBox showPassword;
-    private javax.swing.JCheckBox startDerby;
-    private javax.swing.JTextField targetField;
-    private javax.swing.JLabel targetLabel;
-    private javax.swing.JTextField userNameField;
-    private javax.swing.JLabel userNameLabel;
+    protected javax.swing.JCheckBox commetSupport;
+    protected javax.swing.JTextField dasPortField;
+    protected javax.swing.JLabel dasPortLabel;
+    protected javax.swing.JTextField domainField;
+    protected javax.swing.JLabel domainLabel;
+    protected javax.swing.JTextField domainsFolderField;
+    protected javax.swing.JLabel domainsFolderLabel;
+    protected javax.swing.JComboBox hostLocalField;
+    protected javax.swing.JLabel hostLocalLabel;
+    protected javax.swing.JTextField hostRemoteField;
+    protected javax.swing.JLabel hostRemoteLabel;
+    protected javax.swing.JCheckBox httpMonitor;
+    protected javax.swing.JTextField httpPortField;
+    protected javax.swing.JLabel httpPortLabel;
+    protected javax.swing.JTextField installationLocationField;
+    protected javax.swing.JLabel installationLocationLabel;
+    protected javax.swing.JCheckBox jdbcDriverDeployment;
+    protected javax.swing.JCheckBox localIpCB;
+    protected javax.swing.JPasswordField passwordField;
+    protected javax.swing.JLabel passwordLabel;
+    protected javax.swing.JCheckBox preserveSessions;
+    protected javax.swing.JCheckBox showPassword;
+    protected javax.swing.JCheckBox startDerby;
+    protected javax.swing.JTextField targetField;
+    protected javax.swing.JLabel targetLabel;
+    protected javax.swing.JTextField userNameField;
+    protected javax.swing.JLabel userNameLabel;
     // End of variables declaration//GEN-END:variables
 }
