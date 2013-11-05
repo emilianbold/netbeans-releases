@@ -45,6 +45,7 @@ package org.netbeans.performance.j2se.actions;
 
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.CloseViewAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
@@ -106,6 +107,7 @@ public class CloseEditorTabTest extends PerformanceTestCase {
 
     @Override
     public void shutdown() {
+        new ProjectsTabOperator().getProjectRootNode("PerformanceTestFoldersData").collapse();
         EditorOperator.closeDiscardAll();
     }
 
@@ -139,16 +141,16 @@ public class CloseEditorTabTest extends PerformanceTestCase {
 
     private static String[][] getTenSelectedFiles() {
         String[][] files_path = {
-            {"folders.javaFolder100", "SampleJavaClass099.java"},
-            {"folders.javaFolder100", "SampleJavaClass098.java"},
-            {"folders.javaFolder100", "SampleJavaClass097.java"},
-            {"folders.javaFolder100", "SampleJavaClass096.java"},
-            {"folders.javaFolder100", "SampleJavaClass095.java"},
             {"folders.javaFolder50", "SampleJavaClass000.java"},
             {"folders.javaFolder50", "SampleJavaClass001.java"},
             {"folders.javaFolder50", "SampleJavaClass002.java"},
             {"folders.javaFolder50", "SampleJavaClass003.java"},
-            {"folders.javaFolder50", "SampleJavaClass004.java"}
+            {"folders.javaFolder50", "SampleJavaClass004.java"},
+            {"folders.javaFolder50", "SampleJavaClass005.java"},
+            {"folders.javaFolder50", "SampleJavaClass006.java"},
+            {"folders.javaFolder50", "SampleJavaClass007.java"},
+            {"folders.javaFolder50", "SampleJavaClass008.java"},
+            {"folders.javaFolder50", "SampleJavaClass009.java"}
         };
         return files_path;
     }

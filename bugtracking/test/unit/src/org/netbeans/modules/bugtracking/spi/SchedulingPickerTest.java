@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,73 +37,42 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.Enumeration;
-import org.openide.util.Exceptions;
-import org.openide.util.Mutex;
+package org.netbeans.modules.bugtracking.spi;
+
+import java.util.Date;
+import junit.framework.Assert;
+import org.junit.Test;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Ondrej Vrabec
  */
-final class NetigsoLoader extends ClassLoader {
-    private final Module mi;
-
-    public NetigsoLoader(Module mi) {
-        this.mi = mi;
+public class SchedulingPickerTest {
+    
+    @Test
+    public void testSetInfo () {
+        SchedulingPicker picker = new SchedulingPicker();
+        Date date = new Date();
+        int interval = 7;
+        IssueScheduleInfo info = new IssueScheduleInfo(date, interval);
+        
+        // set to a specific value
+        picker.setScheduleDate(info);
+        Assert.assertEquals(info, picker.getScheduleDate());
+        
+        // set to not scheduled
+        picker.setScheduleDate(null);
+        Assert.assertNull(picker.getScheduleDate());
     }
 
-    @Override
-    public Class<?> loadClass(String string) throws ClassNotFoundException {
-        return getDelegate().loadClass(string);
-    }
-
-    @Override
-    protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-        ClassLoader d = getDelegate();
-        if (d instanceof ProxyClassLoader) {
-            return ((ProxyClassLoader)d).loadClass(name, resolve);
-        } else {
-            return d.loadClass(name);
-        }
-    }
-
-    @Override
-    public Enumeration<URL> getResources(String string) throws IOException {
-        return getDelegate().getResources(string);
-    }
-
-    @Override
-    public InputStream getResourceAsStream(String string) {
-        return getDelegate().getResourceAsStream(string);
-    }
-
-    @Override
-    public URL getResource(String string) {
-        return getDelegate().getResource(string);
-    }
-
-    private ClassLoader getDelegate() {
-        if (!mi.isEnabled()) {
-            Mutex.Privileged p = mi.getManager().mutexPrivileged();
-            try {
-                p.enterWriteAccess();
-                mi.getManager().enable(mi, false);
-            } catch (IllegalArgumentException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (InvalidException ex) {
-                Exceptions.printStackTrace(ex);
-            } finally {
-                p.exitWriteAccess();
-            }
-        }
-        return mi.getClassLoader();
+    @Test
+    public void testGetComponent () {
+        SchedulingPicker picker = new SchedulingPicker();
+        
+        Assert.assertNotNull(picker.getComponent());
     }
     
-} // end of DelegateLoader
+}

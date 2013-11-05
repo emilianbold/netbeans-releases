@@ -346,6 +346,9 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
                             firstFailure = match.group(1);
                         }
                     }
+                    //these two are a bit shaky and depend on output details that might not be available in the future.
+                    //however there's no other way to have the proper line marked as beginning of a section (as the event comes first)
+                    //without this, the last line of previous output would be marked as beginning of the fold.
                     if (addMojoFold && line.startsWith("[INFO] ---")) {     //NOI18N
                         currentTreeNode.startFold(inputOutput);
                         addMojoFold = false;

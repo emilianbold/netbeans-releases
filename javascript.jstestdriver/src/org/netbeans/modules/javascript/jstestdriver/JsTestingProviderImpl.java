@@ -58,10 +58,11 @@ import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo;
 import org.netbeans.modules.web.clientproject.spi.jstesting.JsTestingProviderImplementation;
 import org.netbeans.modules.web.common.api.WebUtils;
-import org.netbeans.spi.project.ui.support.NodeFactory;
+import org.netbeans.spi.project.ui.support.NodeList;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -160,7 +161,7 @@ public class JsTestingProviderImpl implements JsTestingProviderImplementation {
     }
 
     @Override
-    public NodeFactory createNodeFactory() {
+    public NodeList<Node> createNodeList(Project project) {
         return null;
     }
 

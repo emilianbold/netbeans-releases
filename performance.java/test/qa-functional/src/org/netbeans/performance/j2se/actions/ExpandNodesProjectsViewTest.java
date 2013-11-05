@@ -46,7 +46,6 @@ package org.netbeans.performance.j2se.actions;
 import junit.framework.Test;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.MaximizeWindowAction;
-import org.netbeans.jellytools.actions.RestoreWindowAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
@@ -168,6 +167,7 @@ public class ExpandNodesProjectsViewTest extends PerformanceTestCase {
         } else {
             nodeToBeExpanded = new Node(projectTab.getProjectRootNode(project), pathToFolderNode);
         }
+        nodeToBeExpanded.collapse();
     }
 
     @Override
@@ -186,6 +186,7 @@ public class ExpandNodesProjectsViewTest extends PerformanceTestCase {
     public void shutdown() {
         repaintManager().resetRegionFilters();
         projectTab.getProjectRootNode(project).collapse();
-        new RestoreWindowAction().performAPI(projectTab);
+        projectTab.close();
+        ProjectsTabOperator.invoke();
     }
 }

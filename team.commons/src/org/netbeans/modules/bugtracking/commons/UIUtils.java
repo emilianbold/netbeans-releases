@@ -67,7 +67,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
@@ -451,5 +450,14 @@ public class UIUtils {
             support.removeChangeListener(listener);
         }
 
+        @Override
+        public boolean allowsOpeningDaySelector () {
+            return false;
+        }
+        
+        @Override
+        public boolean openDaySelector () {
+            return false;
+        }
     }
 }
