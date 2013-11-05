@@ -52,6 +52,7 @@ import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.tasks.DashboardTopComponent;
+import org.netbeans.modules.bugtracking.team.TeamRepositories;
 import org.netbeans.modules.bugtracking.team.spi.RecentIssue;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
@@ -59,6 +60,7 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.IssueFinderUtils;
 import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
+import org.netbeans.modules.team.spi.TeamProject;
 
 /**
  * Bugtracking Utility methods.
@@ -175,6 +177,19 @@ public final class Util {
     public static Repository createRepository() {
         RepositoryImpl repoImpl = BugtrackingUtil.createRepository(false);
         return repoImpl != null ? repoImpl.getRepository() : null;
+    }
+    
+    /**
+     * Returns a Repository corresponding to the given team url and a name. 
+     *
+     * @param url a url comming from a Team Server - e.g. kenai or java.net. 
+     * Might be representing either a team vcs repository, an issue or a team server host.
+     * @param projectName the name of a particular Team Server project
+     * @return
+     */
+    public static Repository getTeamRepository(String url, String projectName) {
+        RepositoryImpl impl = TeamRepositories.getInstance().getRepository(url, projectName);
+        return impl != null ? impl.getRepository() : null;
     }
     
     /**

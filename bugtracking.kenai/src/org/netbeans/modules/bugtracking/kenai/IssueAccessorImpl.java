@@ -41,13 +41,10 @@
  */
 package org.netbeans.modules.bugtracking.kenai;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -56,13 +53,11 @@ import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.commons.JiraUpdater;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor;
 import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor.IssueHandle;
 import org.openide.util.RequestProcessor;
 import static org.netbeans.modules.bugtracking.kenai.Bundle.*;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
@@ -96,7 +91,7 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
         RequestProcessor.getDefault().post(new Runnable() {
             @Override
             public void run() {
-                final Repository repo = TeamUtil.getRepository(TeamProjectImpl.getInstance(project));
+                Repository repo = Util.getTeamRepository(project.getKenai().getUrl().toString(), project.getName());
                 handle.finish();
                 try {
                     if(issueID != null) {
@@ -148,10 +143,9 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
         if(project == null) {
             return new IssueHandle[0];
         }
-        Repository repo = TeamUtil.getRepository(TeamProjectImpl.getInstance(project), false);
+        Repository repo = Util.getTeamRepository(project.getKenai().getUrl().toString(), project.getName());
         if(repo == null) {
-            // looks like no repository was created for the project yet, and if there's no repository
-            // then there can't be any recent issue for it...
+            // ???
             Support.LOG.log(Level.FINE, "No issue tracker available for the given kenai project [{0},{1}]", new Object[]{project.getName(), project.getDisplayName()}); // NOI18N
             return new IssueHandle[0];
         }

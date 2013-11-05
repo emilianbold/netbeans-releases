@@ -43,7 +43,6 @@
 package org.netbeans.modules.bugtracking;
 
 import org.netbeans.modules.bugtracking.commons.FileToRepoMappingStorage;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
@@ -52,9 +51,9 @@ import java.util.logging.Logger;
 import org.netbeans.api.queries.VersioningQuery;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.commons.Util;
+import org.netbeans.modules.bugtracking.team.TeamRepositories;
 import org.netbeans.modules.team.ide.spi.ProjectServices;
 import org.netbeans.modules.team.spi.OwnerInfo;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils;
 import org.netbeans.modules.bugtracking.ui.selectors.RepositorySelectorBuilder;
 import org.netbeans.modules.team.spi.TeamAccessorUtils;
@@ -311,7 +310,7 @@ public class BugtrackingOwnerSupport {
                 if(file != null) {
                     OwnerInfo ownerInfo = TeamAccessorUtils.getOwnerInfo(file);
                     if(ownerInfo != null) {
-                        repository = APIAccessor.IMPL.getImpl(TeamUtil.getRepository(url, ownerInfo.getOwner()));
+                        repository = TeamRepositories.getInstance().getRepository(url, ownerInfo.getOwner());
                     }
                     if(repository == null) {
                         repository = APIAccessor.IMPL.getImpl(NBBugzillaUtils.findNBRepository());
@@ -395,9 +394,10 @@ public class BugtrackingOwnerSupport {
     
     private static Repository getRepository(String repositoryUrl) throws IOException {
         TeamProject project = TeamAccessorUtils.getTeamProjectForRepository(repositoryUrl);
-        return (project != null)
-               ? TeamUtil.getRepository(project)
-               : null;        //not a team project repository
+        RepositoryImpl repoImpl = (project != null)
+                ? TeamRepositories.getInstance().getRepository(project.getHost(), project.getName())
+                : null; //not a team project repository
+        return repoImpl != null ? repoImpl.getRepository() : null;
     }    
 
 }

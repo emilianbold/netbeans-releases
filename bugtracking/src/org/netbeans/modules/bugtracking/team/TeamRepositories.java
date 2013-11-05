@@ -129,7 +129,15 @@ public abstract class TeamRepositories implements PropertyChangeListener {
     private void fireProjectsChanged(Collection<RepositoryImpl> removed, Collection<RepositoryImpl> added) {
         support.firePropertyChange(RepositoryManager.EVENT_REPOSITORIES_CHANGED, removed, added);
     }
-    
+
+    public RepositoryImpl getRepository(String url, String projectName) {
+        TeamProject p = TeamAccessorUtils.getTeamProject(url, projectName);
+        if(p == null) {
+            return null;
+        }
+        return getRepository(url, projectName);
+    }
+
     /**
      * Returns a {@link Repository} representing the given {@link TeamProject}
      *

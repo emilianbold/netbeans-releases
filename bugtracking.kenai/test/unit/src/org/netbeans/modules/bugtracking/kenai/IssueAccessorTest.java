@@ -214,7 +214,7 @@ public class IssueAccessorTest extends NbTestCase {
 
         public IATestRepository(String name) throws IOException {
             KenaiProject kp = kenai.getProject(name);
-            delegate = APIAccessor.IMPL.getImpl(TeamUtil.getRepository(kp.getWebLocation().toString(), kp.getName()));
+            delegate = APIAccessor.IMPL.getImpl(TeamUtil.getTeamRepository(kp.getWebLocation().toString(), kp.getName()));
         }
 
         @Override

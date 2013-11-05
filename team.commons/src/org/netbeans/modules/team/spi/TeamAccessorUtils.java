@@ -55,6 +55,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JLabel;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -244,14 +245,17 @@ public final class TeamAccessorUtils {
      * @param url
      * @param projectName
      * @return 
-     * @throws java.io.IOException
      * @see TeamAccessor#getTeamProject(java.lang.String, java.lang.String)
      */
-    public static TeamProject getTeamProject(String url, String projectName) throws IOException {
+    public static TeamProject getTeamProject(String url, String projectName) {
         for (TeamAccessor ka : getTeamAccessors()) {
-            TeamProject kp = ka.getTeamProject(url, projectName);
-            if (kp != null) {
-                return kp;
+            try {
+                TeamProject kp = ka.getTeamProject(url, projectName);
+                if (kp != null) {
+                    return kp;
+                }                
+            } catch (IOException ex) {
+                Logger.getLogger(TeamAccessorUtils.class.getName()).log(Level.WARNING, url, ex);
             }
         }
         return null;

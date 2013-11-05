@@ -49,7 +49,6 @@ import java.util.logging.Logger;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.commons.FileToRepoMappingStorage;
 import org.netbeans.modules.bugtracking.commons.Util;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.netbeans.modules.team.spi.TeamProject;
 import org.netbeans.modules.versioning.util.VCSBugtrackingAccessor;
@@ -103,7 +102,7 @@ public class VCSBugtrackingSupportImpl extends VCSBugtrackingAccessor {
     private static Repository getRepository(String repositoryUrl) throws IOException {
         TeamProject project = TeamAccessorUtils.getTeamProjectForRepository(repositoryUrl);
         return (project != null)
-               ? TeamUtil.getRepository(project)
+               ? org.netbeans.modules.bugtracking.api.Util.getTeamRepository(project.getHost(), project.getName())
                : null;        //not a team project repository
     }    
 

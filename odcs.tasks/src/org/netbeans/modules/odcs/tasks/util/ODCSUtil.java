@@ -74,11 +74,9 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
+import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.team.spi.TeamProject;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.commons.ListValuePicker;
-import org.netbeans.modules.bugtracking.commons.SimpleIssueFinder;
-import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.odcs.tasks.ODCS;
 import org.netbeans.modules.odcs.tasks.ODCSConnector;
 import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
@@ -191,7 +189,7 @@ public class ODCSUtil {
         // be a teamProject available). 
         // for more info see o.n.m.bugtracking.DelegatingConnector#OVERRIDE_REPOSITORY_MANAGEMENT
         if(teamProject != null) {
-            repository = TeamUtil.getRepository(teamProject);
+            repository = Util.getTeamRepository(teamProject.getHost(), teamProject.getName());
         }
         if (repository == null) {
             repository = RepositoryManager.getInstance().getRepository(ODCSConnector.ID, odcsRepository.getID());

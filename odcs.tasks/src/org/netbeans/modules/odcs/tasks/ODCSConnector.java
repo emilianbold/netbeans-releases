@@ -87,11 +87,7 @@ public class ODCSConnector implements BugtrackingConnector, TeamBugtrackingConne
         String name = info.getValue(TeamBugtrackingConnector.TEAM_PROJECT_NAME);
         TeamProject project = null;
         if(name != null) {
-            try {
-                project = TeamAccessorUtils.getTeamProject(info.getUrl(), name);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            project = TeamAccessorUtils.getTeamProject(info.getUrl(), name);
         }
         if (project == null || 
             project.getType() != BugtrackingType.ODCS || 
