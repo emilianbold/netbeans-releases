@@ -46,10 +46,18 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicLong;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.jstesting.JsTestingProviderAccessor;
 import org.netbeans.modules.web.clientproject.jstesting.SelectProviderPanel;
 import org.netbeans.modules.web.clientproject.spi.jstesting.JsTestingProviderImplementation;
+import org.netbeans.spi.project.ui.support.NodeFactory;
+import org.netbeans.spi.project.ui.support.NodeList;
+import org.openide.nodes.Node;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -114,6 +122,15 @@ public final class JsTestingProviders {
         return SelectProviderPanel.open();
     }
 
+    public NodeFactory createJsTestingProvidersNodeFactory() {
+        return new NodeFactory() {
+            @Override
+            public NodeList<?> createNodes(Project project) {
+                return new ProxyNodeList(project);
+            }
+        };
+    }
+
     private void initProviders() {
         assert jsTestingProviders.isEmpty() : "Empty providers expected but: " + jsTestingProviders;
         jsTestingProviders.addAll(map(JS_TESTING_PROVIDERS.allInstances()));
@@ -138,6 +155,89 @@ public final class JsTestingProviders {
             result.add(JsTestingProviderAccessor.getDefault().create(provider));
         }
         return result;
+    }
+
+    //~ Inner classes
+
+    private static final class ProxyNodeList implements NodeList<Node>, ChangeListener {
+
+        private final Project project;
+        private final List<NodeList<Node>> nodeList = new CopyOnWriteArrayList<>();
+        private final ChangeSupport changeSupport = new ChangeSupport(this);
+        private final AtomicLong listenerCounter = new AtomicLong(0);
+
+
+        private ProxyNodeList(Project project) {
+            assert project != null;
+            this.project = project;
+            // XXX listen on provider changes
+            nodeList.addAll(initNodeList(project));
+        }
+
+        private List<NodeList<Node>> initNodeList(Project project) {
+            List<NodeList<Node>> result = new ArrayList<>();
+            for (JsTestingProvider provider : JsTestingProviders.getDefault().getJsTestingProviders()) {
+                NodeList<Node> providerNodeList = provider.createNodeList(project);
+                if (providerNodeList != null) {
+                    result.add(providerNodeList);
+                }
+            }
+            return result;
+        }
+
+        @Override
+        public List<Node> keys() {
+            List<Node> nodes = new ArrayList<>();
+            for (NodeList<Node> list : nodeList) {
+                nodes.addAll(list.keys());
+            }
+            return nodes;
+        }
+
+        @Override
+        public void addChangeListener(ChangeListener listener) {
+            if (listenerCounter.incrementAndGet() == 1) {
+                for (NodeList<Node> list : nodeList) {
+                    list.addChangeListener(this);
+                }
+            }
+            changeSupport.addChangeListener(listener);
+        }
+
+        @Override
+        public void removeChangeListener(ChangeListener listener) {
+            if (listenerCounter.decrementAndGet() == 0) {
+                for (NodeList<Node> list : nodeList) {
+                    list.removeChangeListener(this);
+                }
+            }
+            changeSupport.removeChangeListener(listener);
+        }
+
+        @Override
+        public Node node(Node node) {
+            return node;
+        }
+
+        @Override
+        public void addNotify() {
+            for (NodeList<Node> list : nodeList) {
+                list.addNotify();
+            }
+        }
+
+        @Override
+        public void removeNotify() {
+            for (NodeList<Node> list : nodeList) {
+                list.removeNotify();
+            }
+        }
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            changeSupport.fireChange();
+        }
+
     }
 
 }

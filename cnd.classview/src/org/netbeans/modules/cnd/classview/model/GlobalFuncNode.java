@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.classview.model;
 
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import org.openide.nodes.*;
 
@@ -61,25 +62,34 @@ public class GlobalFuncNode extends ObjectNode {
     }
     
     private void init(final CsmFunction fun){
-        CharSequence old = text;
+        final CharSequence old = text;
         text = CVUtil.getSignature(fun);
-        if ((old == null) || !old.equals(text)) {
-            fireNameChange(old == null ? null : old.toString(),
-                    text == null ? null : text.toString());
-            fireDisplayNameChange(old == null ? null : old.toString(),
-                    text == null ? null : text.toString());
-            fireShortDescriptionChange(old == null ? null : old.toString(),
-                    text == null ? null : text.toString());
-        }
-        RP.post(new Runnable() {
-
+        final Runnable runnable = new Runnable() {
+            
             @Override
             public void run() {
-                image = CsmImageLoader.getImage(fun);
-                fireIconChange();
-                fireOpenedIconChange();
+                if (SwingUtilities.isEventDispatchThread()) {
+                    if ((old == null) || !old.equals(text)) {
+                        fireNameChange(old == null ? null : old.toString(),
+                                text == null ? null : text.toString());
+                        fireDisplayNameChange(old == null ? null : old.toString(),
+                                text == null ? null : text.toString());
+                        fireShortDescriptionChange(old == null ? null : old.toString(),
+                                text == null ? null : text.toString());
+                    }
+                    fireIconChange();
+                    fireOpenedIconChange();
+                } else {
+                    resetIcon(CsmImageLoader.getImage(fun));
+                    SwingUtilities.invokeLater(this);
+                }
             }
-        });
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            RP.post(runnable);
+        } else {
+            runnable.run();
+        }
     }
 
     @Override
@@ -104,8 +114,6 @@ public class GlobalFuncNode extends ObjectNode {
             CsmFunction cls = (CsmFunction)o;
             setObject(cls);
             init(cls);
-            fireIconChange();
-            fireOpenedIconChange();
         } else if (o != null) {
             System.err.println("Expected CsmFunction. Actually event contains "+o.toString());
         }
