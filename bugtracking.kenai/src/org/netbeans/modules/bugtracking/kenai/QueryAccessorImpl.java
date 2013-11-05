@@ -44,6 +44,7 @@ package org.netbeans.modules.bugtracking.kenai;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.AbstractAction;
@@ -89,10 +90,19 @@ public class QueryAccessorImpl extends QueryAccessor<KenaiProject> {
 
         KenaiHandler handler = Support.getInstance().getKenaiHandler(projectHandle, this);
         handler.registerRepository(repo, projectHandle);
-        Query allIssuesQuery = TeamUtil.getAllIssuesQuery(repo);
+        
+        Query allIssuesQuery = null;
+        Collection<Query> qs = repo.getQueries();
+        for (Query q : qs) {
+            if(QueryHandleImpl.isAllIssues(q)) {
+                allIssuesQuery = q;
+                break;
+            }
+        }
         if(allIssuesQuery == null) {
             return null;
         }
+        
         List<QueryHandle> queries = handler.getQueryHandles(projectHandle, allIssuesQuery);
         assert queries.size() == 1;
         handler.registerProject(projectHandle, queries);

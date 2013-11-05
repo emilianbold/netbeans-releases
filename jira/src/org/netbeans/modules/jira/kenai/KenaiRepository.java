@@ -179,7 +179,7 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
                 fd.setStatusFilter(new StatusFilter(getOpenStatuses()));
                 myIssues =
                     new KenaiQuery(
-                        NbBundle.getMessage(KenaiRepository.class, "LBL_MyIssues"), // NOI18N
+                        TeamAccessorUtils.MY_ISSUES_QUERY_DISPLAY_NAME, 
                         this,
                         fd,
                         projectName,
@@ -207,7 +207,14 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
                 FilterDefinition fd = new FilterDefinition();
                 fd.setProjectFilter(new ProjectFilter(p));
                 fd.setStatusFilter(new StatusFilter(getOpenStatuses()));
-                allIssues = new KenaiQuery(NbBundle.getMessage(KenaiRepository.class, "LBL_AllIssues"), this, fd, projectName, true, true);
+                allIssues = 
+                    new KenaiQuery(
+                        TeamAccessorUtils.ALL_ISSUES_QUERY_DISPLAY_NAME, 
+                        this, 
+                        fd, 
+                        projectName, 
+                        true, 
+                        true);
             } 
         }
         return allIssues;

@@ -87,6 +87,7 @@ import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
 import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.mylyn.util.NbTask;
 import org.netbeans.modules.mylyn.util.commands.GetRepositoryTasksCommand;
+import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -375,23 +376,18 @@ public class ODCSUtil {
         return date;
     }
 
-    @NbBundle.Messages({"LBL_Mine=Assigned to me",
-                        "LBL_Related=Related to me",
-                        "LBL_Recent=Recently changed",
-                        "LBL_Open=Open tasks",
-                        "LBL_All=All tasks"})
     public static String getPredefinedQueryName(PredefinedTaskQuery ptq) {
         switch(ptq) {
             case ALL:
-                return Bundle.LBL_All();
+                return TeamAccessorUtils.ALL_ISSUES_QUERY_DISPLAY_NAME;
             case MINE:              
-                return Bundle.LBL_Mine();
+                return TeamAccessorUtils.MINE_ISSUES_QUERY_DISPLAY_NAME;
             case OPEN:              
-                return Bundle.LBL_Open();
+                return TeamAccessorUtils.OPEN_ISSUES_QUERY_DISPLAY_NAME;
             case RECENT:              
-                return Bundle.LBL_Recent();
+                return TeamAccessorUtils.RECENT_ISSUES_QUERY_DISPLAY_NAME;
             case RELATED:              
-                return Bundle.LBL_Related();
+                return TeamAccessorUtils.RELATED_ISSUES_QUERY_DISPLAY_NAME;
             default:
                 throw new IllegalStateException("unexpected PredefinedTaskQuery value [" + ptq + "]"); // NOI18N
         }

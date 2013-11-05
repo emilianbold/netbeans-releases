@@ -425,7 +425,7 @@ public class TeamAccessorImpl extends TeamAccessor {
                 Support.LOG.log(Level.FINER, "activated TC : {0}", tc); // NOI18N
                 final Lookup lookup = tc.getLookup();
                 Query query = lookup.lookup(Query.class);
-                if(query == null) {
+                if(query == null || !QueryHandleImpl.isAllIssues(query)) {
                     return;
                 }
                 TeamProject project = lookup.lookup(TeamProject.class);

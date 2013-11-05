@@ -171,9 +171,7 @@ class KenaiHandler {
     }
 
     private QueryHandleImpl createQueryHandle(Query q, boolean needsRefresh) {
-        Repository repo = q.getRepository();
-        boolean predefined = TeamUtil.getAllIssuesQuery(repo) == q || TeamUtil.getMyIssuesQuery(repo) == q;
-        return new QueryHandleImpl(q, needsRefresh, predefined);
+        return new QueryHandleImpl(q, needsRefresh);
     }
 
     List<QueryHandle> getQueryHandles(Repository repo, ProjectHandle projectHandle) {

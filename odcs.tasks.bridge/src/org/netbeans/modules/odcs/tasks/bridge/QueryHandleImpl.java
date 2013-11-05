@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.prefs.Preferences;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Util;
@@ -57,6 +58,8 @@ import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.team.server.ui.spi.QueryHandle;
 import org.netbeans.modules.team.server.ui.spi.QueryResultHandle;
+import org.netbeans.modules.team.spi.TeamAccessorUtils;
+import org.openide.util.NbPreferences;
 import org.openide.util.WeakListeners;
 
 /**
@@ -71,10 +74,10 @@ public class QueryHandleImpl extends QueryHandle implements QueryDescriptor, Act
     private String stringValue;
     protected boolean needsRefresh;
 
-    QueryHandleImpl(Query query, boolean needsRefresh, boolean predefined) {
+    QueryHandleImpl(Query query, boolean needsRefresh) {
         this.query = query;
         this.needsRefresh = needsRefresh;
-        this.predefined = predefined;
+        this.predefined = isPredefined(query);
         changeSupport = new PropertyChangeSupport(query);
         query.addPropertyChangeListener(WeakListeners.propertyChange(this, query));
     }
@@ -178,6 +181,27 @@ public class QueryHandleImpl extends QueryHandle implements QueryDescriptor, Act
 
     void fireQueryActivated() {
         changeSupport.firePropertyChange(QueryHandle.PROP_QUERY_ACTIVATED, null, null);
+    }
+
+    // XXX HACK!
+    private static boolean isPredefined(Query q) {
+        String displayName = q.getDisplayName();
+        if(displayName == null) {
+            return false;
+        }
+        return displayName.equals(TeamAccessorUtils.ALL_ISSUES_QUERY_DISPLAY_NAME) ||
+               displayName.equals(TeamAccessorUtils.MINE_ISSUES_QUERY_DISPLAY_NAME) || 
+               displayName.equals(TeamAccessorUtils.OPEN_ISSUES_QUERY_DISPLAY_NAME) || 
+               displayName.equals(TeamAccessorUtils.RECENT_ISSUES_QUERY_DISPLAY_NAME) || 
+               displayName.equals(TeamAccessorUtils.RELATED_ISSUES_QUERY_DISPLAY_NAME); 
+    }
+    
+    static boolean isAllIssues(Query q) {
+        String displayName = q.getDisplayName();
+        if(displayName == null) {
+            return false;
+        }
+        return displayName.equals(TeamAccessorUtils.ALL_ISSUES_QUERY_DISPLAY_NAME); 
     }
 
 }

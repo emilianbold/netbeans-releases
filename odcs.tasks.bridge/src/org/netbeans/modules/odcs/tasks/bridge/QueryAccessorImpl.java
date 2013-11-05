@@ -43,8 +43,7 @@ package org.netbeans.modules.odcs.tasks.bridge;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeListener;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.AbstractAction;
@@ -65,7 +64,6 @@ import org.openide.util.NbBundle;
  */
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.team.server.ui.spi.QueryAccessor.class)
 public class QueryAccessorImpl extends QueryAccessor<ODCSProject> {
-    private QueryHandle naQueryHandle;
 
     public QueryAccessorImpl () {
     }
@@ -84,10 +82,19 @@ public class QueryAccessorImpl extends QueryAccessor<ODCSProject> {
 
         ODCSHandler handler = Support.getInstance().getODCSHandler(projectHandle, this);
         handler.registerRepository(repo, projectHandle);
-        Query allIssuesQuery = TeamUtil.getAllIssuesQuery(repo);
+        
+        Query allIssuesQuery = null;
+        Collection<Query> qs = repo.getQueries();
+        for (Query q : qs) {
+            if(QueryHandleImpl.isAllIssues(q)) {
+                allIssuesQuery = q;
+                break;
+            }
+        }
         if (allIssuesQuery == null) {
             return null;
         }
+        
         List<QueryHandle> queries = handler.getQueryHandles(projectHandle, allIssuesQuery);
         assert queries.size() == 1;
         handler.registerProject(projectHandle, queries);

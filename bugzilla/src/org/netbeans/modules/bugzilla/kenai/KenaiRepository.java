@@ -193,7 +193,14 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
             url = new StringBuffer();
             url.append(urlParam);
             url.append(MessageFormat.format(BugzillaConstants.ALL_ISSUES_PARAMETERS, product));
-            allIssues = new KenaiQuery(NbBundle.getMessage(KenaiRepository.class, "LBL_AllIssues"), this, url.toString(), product, true, true); // NOI18N
+            allIssues = 
+                new KenaiQuery(
+                    TeamAccessorUtils.ALL_ISSUES_QUERY_DISPLAY_NAME, 
+                    this, 
+                    url.toString(), 
+                    product, 
+                    true, 
+                    true); 
         }
         return allIssues;
     }
@@ -204,7 +211,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
             String url = getMyIssuesQueryUrl();
             myIssues =
                 new KenaiQuery(
-                    NbBundle.getMessage(KenaiRepository.class, "LBL_MyIssues"), // NOI18N
+                    TeamAccessorUtils.MY_ISSUES_QUERY_DISPLAY_NAME, 
                     this,
                     url.toString(),
                     product,

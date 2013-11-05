@@ -182,10 +182,7 @@ public class ODCSHandler {
     }
 
     private QueryHandleImpl createQueryHandle (Query q, boolean needsRefresh) {
-        Repository repo = q.getRepository();
-        boolean predefined = false;
-        predefined = TeamUtil.getAllIssuesQuery(repo) == q || TeamUtil.getMyIssuesQuery(repo) == q;
-        return new QueryHandleImpl(q, needsRefresh, predefined);
+        return new QueryHandleImpl(q, needsRefresh);
     }
 
     private void sortQueries (List<QueryHandle> queryHandles) {

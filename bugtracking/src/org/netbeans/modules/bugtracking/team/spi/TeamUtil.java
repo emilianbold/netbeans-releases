@@ -98,14 +98,6 @@ public class TeamUtil {
         return TeamRepositories.getInstance().getTeamProject(APIAccessor.IMPL.getImpl(repo));
     }
 
-    public static Query getAllIssuesQuery(Repository repository) {
-        return APIAccessor.IMPL.getImpl(repository).getAllIssuesQuery();
-    }
-    
-    public static Query getMyIssuesQuery(Repository repository) {
-        return APIAccessor.IMPL.getImpl(repository).getMyIssuesQuery();
-    }
-
     public static BugtrackingType getType(Repository repo) {
         DelegatingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
         for (DelegatingConnector delegatingConnector : connectors) {

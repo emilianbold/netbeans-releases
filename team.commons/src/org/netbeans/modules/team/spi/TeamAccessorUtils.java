@@ -56,12 +56,27 @@ import java.util.logging.Logger;
 import javax.swing.JLabel;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Tomas Stupa
  */
+@NbBundle.Messages({"LBL_Mine=Assigned to me",
+                    "LBL_Related=Related to me",
+                    "LBL_Recent=Recently changed",
+                    "LBL_Open=Open Tasks",
+                    "LBL_All=All Tasks",
+                    "LBL_My=My Tasks"})
 public final class TeamAccessorUtils {
+    
+    public static final String ALL_ISSUES_QUERY_DISPLAY_NAME = Bundle.LBL_All();
+    public static final String MY_ISSUES_QUERY_DISPLAY_NAME = Bundle.LBL_My();
+    public static final String RELATED_ISSUES_QUERY_DISPLAY_NAME = Bundle.LBL_Related();
+    public static final String RECENT_ISSUES_QUERY_DISPLAY_NAME = Bundle.LBL_Recent();
+    public static final String MINE_ISSUES_QUERY_DISPLAY_NAME = Bundle.LBL_Mine();
+    public static final String OPEN_ISSUES_QUERY_DISPLAY_NAME = Bundle.LBL_Open();
+    
     private static TeamAccessor[] teamAccessors;
     
     public static TeamAccessor[] getTeamAccessors() {
