@@ -18,6 +18,9 @@
       </df>
     </df>
     <df root="." name="1">
+      <df name="test">
+        <in>test_read_path.dat</in>
+      </df>
     </df>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -91,6 +94,8 @@
         <cTool>
         </cTool>
       </item>
+      <item path="test/test_read_path.dat" ex="false" tool="3" flavor2="0">
+      </item>
     </conf>
     <conf name="Solaris-x86" type="0">
       <toolsSet>
@@ -144,6 +149,8 @@
         <cTool>
         </cTool>
       </item>
+      <item path="test/test_read_path.dat" ex="false" tool="3" flavor2="0">
+      </item>
     </conf>
     <conf name="Solaris_Townes" type="0">
       <toolsSet>
@@ -194,6 +201,8 @@
       <item path="test/test_main.c" ex="false" tool="0" flavor2="2">
         <cTool>
         </cTool>
+      </item>
+      <item path="test/test_read_path.dat" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
     <conf name="FreeBSD" type="0">
@@ -252,6 +261,8 @@
       <item path="test/test_main.c" ex="false" tool="0" flavor2="2">
         <cTool>
         </cTool>
+      </item>
+      <item path="test/test_read_path.dat" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
     <conf name="MacOS" type="0">
@@ -312,6 +323,8 @@
         <cTool>
         </cTool>
       </item>
+      <item path="test/test_read_path.dat" ex="false" tool="3" flavor2="0">
+      </item>
     </conf>
     <conf name="Test_on_Linux" type="0">
       <toolsSet>
@@ -326,7 +339,7 @@
           <buildCommandWorkingDir>test</buildCommandWorkingDir>
           <buildCommand>${MAKE} -f Makefile</buildCommand>
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
-          <executablePath>../../release/bin/Linux-x86_64/fs_server_test</executablePath>
+          <executablePath>dist/Linux-x86/fs_server_test</executablePath>
           <cTool>
             <preprocessorList>
               <Elem>LINUX</Elem>
@@ -364,6 +377,8 @@
       <item path="test/test_main.c" ex="false" tool="0" flavor2="9">
         <cTool>
         </cTool>
+      </item>
+      <item path="test/test_read_path.dat" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
     <conf name="Solaris-SPARC" type="0">
@@ -415,6 +430,8 @@
       <item path="test/test_main.c" ex="false" tool="0" flavor2="2">
         <cTool>
         </cTool>
+      </item>
+      <item path="test/test_read_path.dat" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
     <conf name="Linux64" type="0">
@@ -474,6 +491,8 @@
       <item path="test/test_main.c" ex="false" tool="0" flavor2="2">
         <cTool>
         </cTool>
+      </item>
+      <item path="test/test_read_path.dat" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
   </confs>

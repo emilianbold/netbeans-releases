@@ -815,7 +815,16 @@ int main(int argc, char* argv[]) {
     lock_or_unloock(true);
     if (log_flag) {
        log_open("log") ;
-       log_print("\n---------- ");
+       log_print("\n--------------------------------------\nfs_server started  ");
+       time_t t = time(NULL);
+       struct tm *tt = localtime(&t);
+       if (tt) {
+           log_print("%d/%02d/%02d %02d:%02d:%02d\n", 
+                   tt->tm_year+1900, tt->tm_mon + 1, tt->tm_mday, 
+                   tt->tm_hour, tt->tm_min, tt->tm_sec);
+       } else {
+           log_print("<error getting time: %s>\n", strerror(errno));
+       }       
        for (int i = 0; i < argc; i++) {
            log_print("%s ", argv[i]);
        }
