@@ -367,4 +367,107 @@ public class TooStrongCastTest extends NbTestCase {
             run(TooStrongCast.class).
             assertWarnings();
     }
+    
+    /**
+     * Checks that widening in arithmetic operation does not generate a hint. E.g. (float)a/b where a and b are int
+     * 
+     */
+    public void testArithmeticWidening() throws Exception {
+        HintTest.create().
+            input("package test;\n" +
+            "class Test {\n" +
+            "    void bu() {\n" +
+            "        int a = 2; int b = 5;\n" +
+            "        double y = ((double)a) / b;   \n" +
+            "    }\n" +
+            "}\n" +
+            "").
+            run(TooStrongCast.class).
+            assertWarnings();
+    }
+    
+    /**
+     * If one argument is casted to float and the other to double, it is not necessary to cast the operand to float,
+     * since using double promotes the other operand (to double, wider than float) automatically
+     */
+    public void testArithmeticRedundantWideningCast() throws Exception {
+        HintTest.create().
+            input("package test;\n" +
+            "class Test {\n" +
+            "    void bu() {\n" +
+            "        int a = 2; int b = 5;\n" +
+            "        double y = (double)a / (float)b;   \n" +
+            "    }\n" +
+            "}\n" +
+            "").
+            run(TooStrongCast.class).
+            assertWarnings("4:32-4:37:verifier:Unnecessary cast to float");
+    }
+    
+    /**
+     * If one argument is casted to float and the other is already typed as double, it is not necessary to cast the operand to float,
+     * since using double promotes the other operand (to double, wider than float) automatically
+     */
+    public void testArithmeticRedundantWideningType() throws Exception {
+        HintTest.create().
+            input("package test;\n" +
+            "class Test {\n" +
+            "    void bu() {\n" +
+            "        int a = 2; double b = 5;\n" +
+            "        double y = ((double)a) / b;   \n" +
+            "    }\n" +
+            "}\n" +
+            "").
+            run(TooStrongCast.class).
+            assertWarnings("4:21-4:27:verifier:Unnecessary cast to double");
+    }
+
+    public void testCharToCodeConversionInt() throws Exception {
+        HintTest.create().
+            input("package test;\n" +
+            "class Test {\n" +
+            "    void bu() {\n" +
+            "        char c = 'a';\n" +
+            "        String s = \"Character \" + c + \" has ASCII code \" + (int)c;\n" +
+            "    }\n" +
+            "}\n" +
+            "").
+            run(TooStrongCast.class).
+            assertWarnings();
+    }
+    
+    /**
+     * Prints the char's code but in floating point notation
+     */
+    public void testCharToCodeConversionFloat() throws Exception {
+        HintTest.create().
+            input("package test;\n" +
+            "class Test {\n" +
+            "    void bu() {\n" +
+            "        char c = 'a';\n" +
+            "        String s = \"Character \" + c + \" has ASCII code \" + (float)c;\n" +
+            "    }\n" +
+            "}\n" +
+            "").
+            run(TooStrongCast.class).
+            assertWarnings();
+    }
+
+    /**
+     * Should warn, char is not necessary to convert to double,
+     * float will also generate the same String representation
+     */
+    public void testCharToCodeConversionDouble() throws Exception {
+        HintTest.create().
+            input("package test;\n" +
+            "class Test {\n" +
+            "    void bu() {\n" +
+            "        char c = 'a';\n" +
+            "        String s = \"Character \" + c + \" has ASCII code \" + (double)c;\n" +
+            "    }\n" +
+            "}\n" +
+            "").
+            run(TooStrongCast.class).
+            assertWarnings("4:59-4:68:verifier:Type cast to double is too strong. float should be used instead");
+    }
 }

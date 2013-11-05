@@ -168,7 +168,7 @@ public class TooStrongCast {
                 }
             }
             TypeMirror tmErasure = info.getTypes().erasure(tm);
-            if (info.getTypes().isAssignable(casteeType, tm)) {
+            if (info.getTypes().isAssignable(casteeType, tm) && !exp.isNotRedundant()) {
                 boolean report = true;
                 // note: it is possible that the if the cast is not there, a method call becomes ambiguous. So in the
                 // case of method/constructor invocation, check if removing the cast will select exactly one method:
@@ -199,7 +199,9 @@ public class TooStrongCast {
                 !info.getTypeUtilities().isCastable(castType, tm)) {
                 continue;
             }
-            if (info.getTypes().isAssignable(tmErasure, castErasure)) {
+            if (exp.isNotRedundant() ? 
+                    info.getTypes().isSameType(tmErasure, castErasure) : 
+                    info.getTypes().isAssignable(tmErasure, castErasure)) {
                 return null;
             }
             filteredTypes.add(tm);
