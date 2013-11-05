@@ -49,6 +49,7 @@ import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.jellytools.NewWebProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.actions.CloseAction;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.performance.j2ee.setup.J2EEBaseSetup;
@@ -62,7 +63,7 @@ public class CreateJ2EEProjectTest extends PerformanceTestCase {
 
     private NewWebProjectNameLocationStepOperator wizard_location;
 
-    private String category, project, project_name;
+    private String category, project, projectType, projectName;
     private boolean createSubProjects = false;
     public static final String WEB_PROJECT_NAME = "WebApp";
 
@@ -102,7 +103,7 @@ public class CreateJ2EEProjectTest extends PerformanceTestCase {
     public void testCreateWebProject() {
         category = "Java Web";
         project = "Web Application";
-        project_name = "WebApp";
+        projectType = "WebApp";
         addEditorPhaseHandler();
         doMeasurement();
         removeEditorPhaseHandler();
@@ -111,7 +112,7 @@ public class CreateJ2EEProjectTest extends PerformanceTestCase {
     public void testCreateEnterpriseApplicationProject() {
         category = "Java EE";
         project = "Enterprise Application";
-        project_name = WEB_PROJECT_NAME;
+        projectType = WEB_PROJECT_NAME;
         createSubProjects = true;
         doMeasurement();
     }
@@ -119,7 +120,7 @@ public class CreateJ2EEProjectTest extends PerformanceTestCase {
     public void testCreateStandaloneEnterpriseApplicationProject() {
         category = "Java EE";
         project = "Enterprise Application";
-        project_name = "MyStandaloneApp";
+        projectType = "MyStandaloneApp";
         createSubProjects = false;
         doMeasurement();
     }
@@ -127,14 +128,14 @@ public class CreateJ2EEProjectTest extends PerformanceTestCase {
     public void testCreateEJBModuleProject() {
         category = "Java EE";
         project = "EJB Module";
-        project_name = "MyEJBModule";
+        projectType = "MyEJBModule";
         doMeasurement();
     }
 
     public void testCreateEnterpriseApplicationClient() {
         category = "Java EE";
         project = "Enterprise Application Client";
-        project_name = "MyEntAppClient";
+        projectType = "MyEntAppClient";
         addEditorPhaseHandler();
         doMeasurement();
         removeEditorPhaseHandler();
@@ -144,6 +145,7 @@ public class CreateJ2EEProjectTest extends PerformanceTestCase {
     public void initialize() {
     }
 
+    @Override
     public void prepare() {
         NewProjectWizardOperator wizard = NewProjectWizardOperator.invoke();
         wizard.selectCategory(category);
@@ -151,8 +153,8 @@ public class CreateJ2EEProjectTest extends PerformanceTestCase {
         wizard.next();
         wizard_location = new NewWebProjectNameLocationStepOperator();
         wizard_location.txtProjectLocation().setText(System.getProperty("nbjunit.workdir") + java.io.File.separator + "tmpdir");
-        project_name += CommonUtilities.getTimeIndex();
-        wizard_location.txtProjectName().setText(project_name);
+        projectName = projectType + CommonUtilities.getTimeIndex();
+        wizard_location.txtProjectName().setText(projectName);
         wizard_location.next();
         if (project.equals("Enterprise Application")) {
             JCheckBoxOperator createEjb = new JCheckBoxOperator(wizard_location, "Ejb");
@@ -162,15 +164,17 @@ public class CreateJ2EEProjectTest extends PerformanceTestCase {
         }
     }
 
+    @Override
     public ComponentOperator open() {
         wizard_location.finish();
         wizard_location.waitClosed();
-        new ProjectsTabOperator().getProjectRootNode(project_name);
+        new ProjectsTabOperator().getProjectRootNode(projectName);
         return null;
     }
 
     @Override
     public void close() {
+        new CloseAction().perform(new ProjectsTabOperator().getProjectRootNode(projectName));
         waitScanFinished();
     }
 
