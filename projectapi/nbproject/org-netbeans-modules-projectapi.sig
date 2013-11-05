@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.50.1
+#Version 1.54.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -94,10 +94,17 @@ hfds icon
 CLSS public org.netbeans.api.project.ProjectUtils
 meth public static boolean hasSubprojectCycles(org.netbeans.api.project.Project,org.netbeans.api.project.Project)
 meth public static java.util.prefs.Preferences getPreferences(org.netbeans.api.project.Project,java.lang.Class,boolean)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
 meth public static org.netbeans.api.project.ProjectInformation getInformation(org.netbeans.api.project.Project)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public static org.netbeans.api.project.Sources getSources(org.netbeans.api.project.Project)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public static org.netbeans.spi.project.AuxiliaryConfiguration getAuxiliaryConfiguration(org.netbeans.api.project.Project)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public static org.openide.filesystems.FileObject getCacheDirectory(org.netbeans.api.project.Project,java.lang.Class<?>) throws java.io.IOException
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
 supr java.lang.Object
 hfds LOG
 hcls AnnotateIconProxyProjectInformation,BasicInformation
