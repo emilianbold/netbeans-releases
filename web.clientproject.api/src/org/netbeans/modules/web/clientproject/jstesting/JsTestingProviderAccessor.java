@@ -47,9 +47,10 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
 import org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo;
 import org.netbeans.modules.web.clientproject.spi.jstesting.JsTestingProviderImplementation;
-import org.netbeans.spi.project.ui.support.NodeFactory;
+import org.netbeans.spi.project.ui.support.NodeList;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
+import org.openide.nodes.Node;
 
 public abstract class JsTestingProviderAccessor {
 
@@ -97,6 +98,6 @@ public abstract class JsTestingProviderAccessor {
 
     public abstract void projectClosed(JsTestingProvider jsTestingProvider, Project project);
 
-    public abstract NodeFactory createNodeFactory(JsTestingProvider jsTestingProvider);
+    public abstract NodeList<Node> createNodeList(JsTestingProvider jsTestingProvider, Project project);
 
 }
