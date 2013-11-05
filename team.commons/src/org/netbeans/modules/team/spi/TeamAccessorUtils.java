@@ -126,6 +126,15 @@ public final class TeamAccessorUtils {
     
     /**
      * @param url
+     * @return 
+     */
+    public static boolean showLogin(String url) {
+        TeamAccessor ka = getTeamAccessor(url);
+        return ka != null ? ka.showLogin() : false;
+    }    
+    
+    /**
+     * @param url
      * @param forceLogin
      * @return 
      * @see TeamAccessor#getPasswordAuthentication(java.lang.String, boolean)

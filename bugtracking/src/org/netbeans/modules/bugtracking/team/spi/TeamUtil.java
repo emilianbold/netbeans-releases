@@ -42,20 +42,12 @@
 
 package org.netbeans.modules.bugtracking.team.spi;
 
-import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
 import org.netbeans.modules.team.spi.TeamProject;
 import org.netbeans.modules.bugtracking.team.TeamRepositories;
 import java.io.IOException;
 import org.netbeans.modules.bugtracking.APIAccessor;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.DelegatingConnector;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
-import org.netbeans.modules.bugtracking.api.Issue;
-import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.team.spi.TeamBugtrackingConnector.BugtrackingType;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
 import org.netbeans.modules.team.spi.TeamAccessorUtils;
 
 /**
@@ -96,19 +88,6 @@ public class TeamUtil {
     
     public static TeamProject getTeamProject(Repository repo) {
         return TeamRepositories.getInstance().getTeamProject(APIAccessor.IMPL.getImpl(repo));
-    }
-
-    public static BugtrackingType getType(Repository repo) {
-        DelegatingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
-        for (DelegatingConnector delegatingConnector : connectors) {
-            if (delegatingConnector.getID().equals(APIAccessor.IMPL.getImpl(repo).getConnectorId())) {
-                BugtrackingConnector bugtrackignConnector = delegatingConnector.getDelegate();
-                assert bugtrackignConnector instanceof TeamBugtrackingConnector;
-                return ((TeamBugtrackingConnector)bugtrackignConnector).getType();
-            }
-        }
-        assert false : "no TeamSupport available for repository [" + repo.getDisplayName() + "]";  // NOI18N
-        return null;
     }
     
 }

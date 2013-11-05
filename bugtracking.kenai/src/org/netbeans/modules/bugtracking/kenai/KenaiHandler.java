@@ -266,12 +266,6 @@ class KenaiHandler {
         return new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(!TeamAccessorImpl.isLoggedIn(kenai) &&
-                    TeamBugtrackingConnector.BugtrackingType.JIRA == getBugtrackingType(repo) &&
-                   !TeamAccessorImpl.showLoginIntern())
-                {
-                    return;
-                }
                 Support.getInstance().post(new Runnable() { // XXX add post method to BM
                     @Override
                     public void run() {
@@ -286,12 +280,6 @@ class KenaiHandler {
         return new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(!TeamAccessorImpl.isLoggedIn(kenai) &&
-                    TeamBugtrackingConnector.BugtrackingType.JIRA == getBugtrackingType(repo) &&
-                   !TeamAccessorImpl.showLoginIntern())
-                {
-                    return;
-                }
                 Support.getInstance().post(new Runnable() { // XXX add post method to BM
                     @Override
                     public void run() {
@@ -300,10 +288,6 @@ class KenaiHandler {
                 });
             }
         };
-    }
-
-    private TeamBugtrackingConnector.BugtrackingType getBugtrackingType(Repository repo) {
-        return TeamUtil.getType(repo);
     }
 
     private class ProjectListener implements PropertyChangeListener {

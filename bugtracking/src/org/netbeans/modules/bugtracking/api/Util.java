@@ -57,6 +57,8 @@ import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.IssueFinderUtils;
+import org.netbeans.modules.team.spi.TeamAccessorUtils;
+import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
 
 /**
  * Bugtracking Utility methods.
@@ -117,6 +119,9 @@ public final class Util {
      * @param repository the repository for which the Query is to be created.
      */
     public static void createNewQuery(Repository repository) {
+        if(!checkTeamLogin(repository)) {
+            return;
+        }
         QueryAction.createNewQuery(repository.getImpl());
     }
 
@@ -143,6 +148,9 @@ public final class Util {
      * @param repository the repository for which the Issue is to be created.
      */
     public static void createNewIssue(Repository repository) {
+        if(!checkTeamLogin(repository)) {
+            return;
+        }
         IssueAction.createIssue(repository.getImpl());
     }
     
@@ -235,5 +243,16 @@ public final class Util {
             ret.addAll(entry.getValue());
         }
         return ret;
+    }    
+    
+    private static boolean checkTeamLogin(Repository repository) {
+        if (repository.getImpl().isTeamRepository() && 
+            !TeamAccessorUtils.isLoggedIn(repository.getUrl()) &&
+            repository.getImpl().getConnectorId().toLowerCase().contains("jira") &&
+            !TeamAccessorUtils.showLogin(repository.getUrl())) 
+        {
+            return false;
+        }
+        return true;
     }    
 }
