@@ -1,9 +1,10 @@
 #Signature file v4.1
-#Version 2.39.1
+#Version 2.45.1
 
 CLSS public abstract interface java.io.Serializable
 
 CLSS public java.lang.Exception
+cons protected init(java.lang.String,java.lang.Throwable,boolean,boolean)
 cons public init()
 cons public init(java.lang.String)
 cons public init(java.lang.String,java.lang.Throwable)
@@ -26,11 +27,14 @@ meth public int hashCode()
 meth public java.lang.String toString()
 
 CLSS public java.lang.Throwable
+cons protected init(java.lang.String,java.lang.Throwable,boolean,boolean)
 cons public init()
 cons public init(java.lang.String)
 cons public init(java.lang.String,java.lang.Throwable)
 cons public init(java.lang.Throwable)
 intf java.io.Serializable
+meth public final java.lang.Throwable[] getSuppressed()
+meth public final void addSuppressed(java.lang.Throwable)
 meth public java.lang.StackTraceElement[] getStackTrace()
 meth public java.lang.String getLocalizedMessage()
 meth public java.lang.String getMessage()
@@ -43,7 +47,8 @@ meth public void printStackTrace(java.io.PrintStream)
 meth public void printStackTrace(java.io.PrintWriter)
 meth public void setStackTrace(java.lang.StackTraceElement[])
 supr java.lang.Object
-hfds backtrace,cause,detailMessage,serialVersionUID,stackTrace
+hfds CAUSE_CAPTION,EMPTY_THROWABLE_ARRAY,NULL_CAUSE_MESSAGE,SELF_SUPPRESSION_MESSAGE,SUPPRESSED_CAPTION,SUPPRESSED_SENTINEL,UNASSIGNED_STACK,backtrace,cause,detailMessage,serialVersionUID,stackTrace,suppressedExceptions
+hcls PrintStreamOrWriter,SentinelHolder,WrappedPrintStream,WrappedPrintWriter
 
 CLSS public abstract interface java.lang.annotation.Annotation
 meth public abstract boolean equals(java.lang.Object)
@@ -236,7 +241,7 @@ hfds catchType,classExclusionFilters,classFilters,condition,exceptionClassName
 hcls ExceptionBreakpointImpl
 
 CLSS public abstract interface org.netbeans.api.debugger.jpda.Field
-intf org.netbeans.api.debugger.jpda.Variable
+intf org.netbeans.api.debugger.jpda.MutableVariable
 meth public abstract boolean isStatic()
 meth public abstract java.lang.String getClassName()
 meth public abstract java.lang.String getDeclaredType()
@@ -296,12 +301,14 @@ meth public boolean isEnabled()
 meth public boolean isHidden()
 meth public int getSuspend()
 meth public java.lang.String getPrintText()
+meth public org.netbeans.api.debugger.jpda.JPDADebugger getSession()
 meth public void addJPDABreakpointListener(org.netbeans.api.debugger.jpda.event.JPDABreakpointListener)
 meth public void disable()
 meth public void enable()
 meth public void removeJPDABreakpointListener(org.netbeans.api.debugger.jpda.event.JPDABreakpointListener)
 meth public void setHidden(boolean)
 meth public void setPrintText(java.lang.String)
+meth public void setSession(org.netbeans.api.debugger.jpda.JPDADebugger)
 meth public void setSuspend(int)
 supr org.netbeans.api.debugger.Breakpoint
 hfds EMPTY_CLASSPATH,breakpointListeners,enabled,engines,hidden,printText,session,suspend
@@ -325,6 +332,7 @@ fld public final static int STATE_STOPPED = 3
 fld public final static int SUSPEND_ALL = 2
 fld public final static int SUSPEND_EVENT_THREAD = 1
 fld public final static java.lang.String ENGINE_ID = "netbeans-JPDASession/Java"
+fld public final static java.lang.String PROP_BREAKPOINTS_ACTIVE = "breakpointsActive"
 fld public final static java.lang.String PROP_CLASSES_FIXED = "classesFixed"
 fld public final static java.lang.String PROP_CURRENT_CALL_STACK_FRAME = "currentCallStackFrame"
 fld public final static java.lang.String PROP_CURRENT_THREAD = "currentThread"
@@ -353,6 +361,7 @@ meth public abstract void setSuspend(int)
 meth public abstract void waitRunning() throws org.netbeans.api.debugger.jpda.DebuggerStartException
 meth public boolean canBeModified()
 meth public boolean canGetInstanceInfo()
+meth public boolean getBreakpointsActive()
 meth public java.util.List<org.netbeans.api.debugger.jpda.JPDAClassType> getAllClasses()
 meth public java.util.List<org.netbeans.api.debugger.jpda.JPDAClassType> getClassesByName(java.lang.String)
 meth public long[] getInstanceCounts(java.util.List<org.netbeans.api.debugger.jpda.JPDAClassType>)
@@ -364,6 +373,7 @@ meth public static org.netbeans.api.debugger.jpda.JPDADebugger attach(java.lang.
 meth public static org.netbeans.api.debugger.jpda.JPDADebugger listen(com.sun.jdi.connect.ListeningConnector,java.util.Map<java.lang.String,? extends com.sun.jdi.connect.Connector$Argument>,java.lang.Object[]) throws org.netbeans.api.debugger.jpda.DebuggerStartException
 meth public static void launch(java.lang.String,java.lang.String[],java.lang.String,boolean)
 meth public static void startListening(com.sun.jdi.connect.ListeningConnector,java.util.Map<java.lang.String,? extends com.sun.jdi.connect.Connector$Argument>,java.lang.Object[]) throws org.netbeans.api.debugger.jpda.DebuggerStartException
+meth public void setBreakpointsActive(boolean)
 supr java.lang.Object
 hcls ContextAware
 
@@ -445,7 +455,7 @@ meth public abstract void resume()
 meth public abstract void suspend()
 
 CLSS public abstract interface org.netbeans.api.debugger.jpda.JPDAWatch
-intf org.netbeans.api.debugger.jpda.Variable
+intf org.netbeans.api.debugger.jpda.MutableVariable
 meth public abstract java.lang.String getExceptionDescription()
 meth public abstract java.lang.String getExpression()
 meth public abstract java.lang.String getToStringValue() throws org.netbeans.api.debugger.jpda.InvalidExpressionException
@@ -515,7 +525,7 @@ supr org.netbeans.api.debugger.jpda.AbstractDICookie
 hfds args,isListening,listeningConnector
 
 CLSS public abstract interface org.netbeans.api.debugger.jpda.LocalVariable
-intf org.netbeans.api.debugger.jpda.Variable
+intf org.netbeans.api.debugger.jpda.MutableVariable
 meth public abstract java.lang.String getClassName()
 meth public abstract java.lang.String getDeclaredType()
 meth public abstract java.lang.String getName()
@@ -559,6 +569,11 @@ CLSS public abstract interface org.netbeans.api.debugger.jpda.MonitorInfo
 meth public abstract org.netbeans.api.debugger.jpda.CallStackFrame getFrame()
 meth public abstract org.netbeans.api.debugger.jpda.JPDAThread getThread()
 meth public abstract org.netbeans.api.debugger.jpda.ObjectVariable getMonitor()
+
+CLSS public abstract interface org.netbeans.api.debugger.jpda.MutableVariable
+intf org.netbeans.api.debugger.jpda.Variable
+meth public abstract void setFromMirrorObject(java.lang.Object) throws java.io.InvalidObjectException
+meth public abstract void setValue(java.lang.String) throws org.netbeans.api.debugger.jpda.InvalidExpressionException
 
 CLSS public abstract interface org.netbeans.api.debugger.jpda.ObjectVariable
 intf org.netbeans.api.debugger.jpda.Variable
@@ -621,6 +636,7 @@ supr java.lang.Object
 hfds pch
 
 CLSS public abstract interface org.netbeans.api.debugger.jpda.Variable
+meth public abstract java.lang.Object createMirrorObject()
 meth public abstract java.lang.String getType()
 meth public abstract java.lang.String getValue()
 
