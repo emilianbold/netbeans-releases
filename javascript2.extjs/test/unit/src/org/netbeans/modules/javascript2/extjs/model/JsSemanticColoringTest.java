@@ -39,61 +39,21 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.debugger.jpda.js.breakpoints;
+package org.netbeans.modules.javascript2.extjs.model;
 
-import org.netbeans.api.debugger.Breakpoint;
-import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.jpda.JPDABreakpoint;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.javascript2.editor.JsTestBase;
 
 /**
  *
- * @author Martin
+ * @author Petr Pisl
  */
-public abstract class JSBreakpoint extends Breakpoint {
-    
-    public static String PROP_CONDITION = "condition";
-    
-    private JPDABreakpoint javaBreakpoint;
-    private String condition;
+public class JsSemanticColoringTest extends JsTestBase {
 
-    protected final JPDABreakpoint getJavaBreakpoint() {
-        return javaBreakpoint;
-    }
-
-    protected final void setJavaBreakpoint(JPDABreakpoint javaBreakpoint) {
-        this.javaBreakpoint = javaBreakpoint;
+    public JsSemanticColoringTest(String testName) {
+        super(testName);
     }
     
-    abstract protected FileObject getFileObject();
-    
-    @Override
-    public final boolean isEnabled() {
-        return javaBreakpoint.isEnabled();
+    public void testIssue237938() throws Exception {
+        checkSemantic("testfiles/completion/defineMethod/issue237938.js"); 
     }
-
-    @Override
-    public final void disable() {
-        javaBreakpoint.disable();
-    }
-
-    @Override
-    public final void enable() {
-        javaBreakpoint.enable();
-    }
-
-    @Override
-    protected void dispose() {
-        super.dispose();
-        DebuggerManager.getDebuggerManager().removeBreakpoint(javaBreakpoint);
-    }
-
-    public final String getCondition() {
-        return condition;
-    }
-
-    public final void setCondition(String condition) {
-        this.condition = condition;
-    }
-    
 }

@@ -65,14 +65,12 @@ import org.openide.util.URLStreamHandlerRegistration;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
- *
+ * Support for URLs of the form js_sources://fs&lt;ID&gt;/folder/file
+ * 
  * @author Martin
  */
 @ServiceProvider(service=URLMapper.class)
 public final class SourceURLMapper extends URLMapper {
-    
-    // Support for URLs of the form memory://fs23/folder/file
-    private static final String PROTOCOL = "jssource"; // NOI18N
     
     private static final Map<Long,Reference<FileSystem>> filesystems = new HashMap<>(); // i.e. a sparse array by id
     
@@ -106,7 +104,7 @@ public final class SourceURLMapper extends URLMapper {
         }
         try {
             //return new URL(null, PROTOCOL + "://fs" + fs.getID() + "/" + path, new SourceURLHandler());
-            return new URL(PROTOCOL, "fs" + fs.getID(), -1, "/" + percentEncode(path), new SourceURLHandler());
+            return new URL(Source.URL_PROTOCOL, "fs" + fs.getID(), -1, "/" + percentEncode(path), new SourceURLHandler());
         } catch (MalformedURLException x) {
             throw new AssertionError(x);
         }
@@ -114,7 +112,7 @@ public final class SourceURLMapper extends URLMapper {
     
     private static final Pattern HOST = Pattern.compile("fs(\\d+)"); // NOI18N
     static FileObject find(URL url) {
-        if (!PROTOCOL.equals(url.getProtocol())) {
+        if (!Source.URL_PROTOCOL.equals(url.getProtocol())) {
             return null;
         }
         Matcher m = HOST.matcher(url.getHost());
@@ -142,7 +140,7 @@ public final class SourceURLMapper extends URLMapper {
         return f != null ? new FileObject[] {f} : null;
     }
     
-    private static String percentEncode(String text) {
+    public static String percentEncode(String text) {
         StringBuilder encoded = null;
         int li = 0;
         for (int i = 0; i < text.length(); i++) {
@@ -150,7 +148,8 @@ public final class SourceURLMapper extends URLMapper {
             int v = c;
             if (47 <= v && v <= 57 || // slash and 0-9
                 'A' <= v && v <= 'Z' ||
-                'a' <= v && v <= 'z') {
+                'a' <= v && v <= 'z' ||
+                v == '.') {
                 
                 continue;
             }
@@ -192,7 +191,7 @@ public final class SourceURLMapper extends URLMapper {
         return sb.toString();
     }
     
-    private static String percentDecode(String text) {
+    public static String percentDecode(String text) {
         int i = text.indexOf('%');
         if (i < 0) {
             return text;
@@ -233,7 +232,7 @@ public final class SourceURLMapper extends URLMapper {
     }
     
 
-    @URLStreamHandlerRegistration(protocol=PROTOCOL)
+    @URLStreamHandlerRegistration(protocol=Source.URL_PROTOCOL)
     public static final class SourceURLHandler extends URLStreamHandler {
         
         protected @Override URLConnection openConnection(URL u) throws IOException {

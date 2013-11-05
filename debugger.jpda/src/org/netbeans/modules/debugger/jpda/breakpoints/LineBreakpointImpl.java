@@ -210,13 +210,19 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         LineBreakpoint breakpoint = getBreakpoint();
         updateLineNumber();
         String[] preferredSourceRoot = new String[] { null };
-        String sourcePath = getDebugger().getEngineContext().getRelativePath(breakpoint.getURL(), '/', true);
-        if (sourcePath == null) {
-            String reason = NbBundle.getMessage(LineBreakpointImpl.class,
-                                                "MSG_NoSourceRoot",
-                                                breakpoint.getURL());
-            setInvalid(reason);
-            return ;
+        boolean isEmptyURL = breakpoint.getURL().isEmpty();
+        String sourcePath;
+        if (isEmptyURL) {
+            sourcePath = null;
+        } else {
+            sourcePath = getDebugger().getEngineContext().getRelativePath(breakpoint.getURL(), '/', true);
+            if (sourcePath == null) {
+                String reason = NbBundle.getMessage(LineBreakpointImpl.class,
+                                                    "MSG_NoSourceRoot",
+                                                    breakpoint.getURL());
+                setInvalid(reason);
+                return ;
+            }
         }
         String className = breakpoint.getPreferredClassName();
         if (className == null || className.isEmpty()) {
@@ -237,8 +243,8 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
             return ;
         }
 
-        boolean isInSources = false;
-        {
+        boolean isInSources = isEmptyURL;
+        if (!isEmptyURL) {
             String srcRoot = getSourceRoot();
             if (srcRoot != null) {
                 String[] sourceRoots = getDebugger().getEngineContext().getSourceRoots();
@@ -256,7 +262,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
                        new Object[]{breakpoint, breakpoint.getURL(), className});
             return ;
         }
-        if (isInSources && !isEnabled(sourcePath, preferredSourceRoot)) {
+        if (isInSources && sourcePath != null && !isEnabled(sourcePath, preferredSourceRoot)) {
             String reason = NbBundle.getMessage(LineBreakpointImpl.class,
                                                 "MSG_DifferentPrefferedSourceRoot",
                                                 preferredSourceRoot[0]);

@@ -90,7 +90,18 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
             JS_PROPERTY, 
             new Breakpoint [0]
         );
-        for (Breakpoint b : breakpoints) {
+        for (int i = 0; i < breakpoints.length; i++) {
+            Breakpoint b = breakpoints[i];
+            if (b == null) {
+                Breakpoint[] breakpoints2 = new Breakpoint[breakpoints.length - 1];
+                System.arraycopy(breakpoints, 0, breakpoints2, 0, i);
+                if (i < breakpoints.length - 1) {
+                    System.arraycopy(breakpoints, i + 1, breakpoints2, i, breakpoints.length - i - 1);
+                }
+                breakpoints = breakpoints2;
+                i--;
+                continue;
+            }
             b.addPropertyChangeListener(this);
         }
         return breakpoints;

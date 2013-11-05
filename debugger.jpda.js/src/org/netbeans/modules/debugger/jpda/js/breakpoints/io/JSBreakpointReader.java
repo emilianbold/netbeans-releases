@@ -53,9 +53,11 @@ import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.debugger.jpda.js.breakpoints.FutureLine;
 import org.netbeans.modules.debugger.jpda.js.breakpoints.JSBreakpoint;
 import org.netbeans.modules.debugger.jpda.js.breakpoints.JSLineBreakpoint;
 import org.netbeans.modules.debugger.jpda.js.breakpoints.io.BreakpointsFromGroup.TestGroupProperties;
+import org.netbeans.modules.debugger.jpda.js.source.Source;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
@@ -94,9 +96,15 @@ public class JSBreakpointReader implements Properties.Reader {
             String urlStr = properties.getString (JSLineBreakpoint.PROP_URL, null);
             int lineNumber = properties.getInt (JSLineBreakpoint.PROP_LINE_NUMBER, 1);
             try {
-                FileObject fo = URLMapper.findFileObject(new URL(urlStr));
+                URL url = new URL(urlStr);
+                FileObject fo = URLMapper.findFileObject(url);
                 if (fo == null) {
-                    return null;
+                    if (Source.URL_PROTOCOL.equals(url.getProtocol())) {
+                        Line line = new FutureLine(url, lineNumber - 1);
+                        return new JSLineBreakpoint(line);
+                    } else {
+                        return null;
+                    }
                 }
                 try {
                     DataObject dobj = DataObject.find(fo);
