@@ -47,9 +47,10 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo;
-import org.netbeans.spi.project.ui.support.NodeFactory;
+import org.netbeans.spi.project.ui.support.NodeList;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
+import org.openide.nodes.Node;
 
 /**
  * Interface for provider for JavaScript (unit) testing provider.
@@ -129,12 +130,13 @@ public interface JsTestingProviderImplementation {
     void projectClosed(@NonNull Project project);
 
     /**
-     * Create JS testing provider node. This node can be visible/hidden based
+     * Create JS testing provider nodes. These nodes can be visible/hidden based
      * on e.g. {@link #notifyEnabled(Project, boolean)}.
-     * @return JS testing provider node, can be {@code null} if not supported
-     * @see NodeFactory.Registration
+     * @param project project
+     * @return JS testing provider nodes, can be {@code null} if not supported
+     * @since 1.50
      */
     @CheckForNull
-    NodeFactory createNodeFactory();
+    NodeList<Node> createNodeList(@NonNull Project project);
 
 }

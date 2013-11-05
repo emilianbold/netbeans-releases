@@ -48,9 +48,10 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.jstesting.JsTestingProviderAccessor;
 import org.netbeans.modules.web.clientproject.spi.jstesting.JsTestingProviderImplementation;
-import org.netbeans.spi.project.ui.support.NodeFactory;
+import org.netbeans.spi.project.ui.support.NodeList;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
+import org.openide.nodes.Node;
 import org.openide.util.Parameters;
 
 /**
@@ -115,8 +116,8 @@ public final class JsTestingProvider {
             }
 
             @Override
-            public NodeFactory createNodeFactory(JsTestingProvider jsTestingProvider) {
-                return jsTestingProvider.createNodeFactory();
+            public NodeList<Node> createNodeList(JsTestingProvider jsTestingProvider, Project project) {
+                return jsTestingProvider.createNodeList(project);
             }
 
         });
@@ -226,8 +227,8 @@ public final class JsTestingProvider {
     }
 
     @CheckForNull
-    NodeFactory createNodeFactory() {
-        return delegate.createNodeFactory();
+    NodeList<Node> createNodeList(Project project) {
+        return delegate.createNodeList(project);
     }
 
 }
