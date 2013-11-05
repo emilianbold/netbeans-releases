@@ -61,7 +61,6 @@ import org.netbeans.modules.javascript.karma.preferences.KarmaPreferencesValidat
 import org.netbeans.modules.javascript.karma.ui.customizer.KarmaCustomizer;
 import org.netbeans.modules.javascript.karma.util.ValidationResult;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
-import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -75,75 +74,65 @@ import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
-public final class KarmaNodeFactory implements NodeFactory {
+public class KarmaChildrenList implements NodeList<Node>, PreferenceChangeListener {
 
-    static final Logger LOGGER = Logger.getLogger(KarmaNodeFactory.class.getName());
+    static final Logger LOGGER = Logger.getLogger(KarmaChildrenList.class.getName());
 
+    private final Project project;
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private final PreferenceChangeListener preferenceChangeListener = WeakListeners.create(PreferenceChangeListener.class, this, KarmaPreferences.class);
+
+
+    public KarmaChildrenList(Project project) {
+        assert project != null;
+        this.project = project;
+    }
 
     @Override
-    public NodeList<?> createNodes(Project project) {
-        return new KarmaChildrenList(project);
+    public List<Node> keys() {
+        return Collections.<Node>singletonList(KarmaNode.create(project));
+    }
+
+    @Override
+    public void addChangeListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
+    }
+
+    @Override
+    public void removeChangeListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
+    }
+
+    @Override
+    public Node node(Node key) {
+        return key;
+    }
+
+    @Override
+    public void addNotify() {
+        KarmaPreferences.addPreferenceChangeListener(project, preferenceChangeListener);
+    }
+
+    @Override
+    public void removeNotify() {
+        KarmaPreferences.removePreferenceChangeListener(project, preferenceChangeListener);
+    }
+
+    @Override
+    public void preferenceChange(PreferenceChangeEvent evt) {
+        // possibly restart server
+        if (KarmaServers.getInstance().isServerRunning(project)) {
+            KarmaServers.getInstance().stopServer(project, false);
+            ValidationResult result = new KarmaPreferencesValidator()
+                    .validate(project)
+                    .getResult();
+            if (result.isFaultless()) {
+                KarmaServers.getInstance().startServer(project);
+            }
+        }
     }
 
     //~ Inner classes
-
-    private static class KarmaChildrenList implements NodeList<Node>, PreferenceChangeListener {
-
-        private final Project project;
-        private final ChangeSupport changeSupport = new ChangeSupport(this);
-        private final PreferenceChangeListener preferenceChangeListener = WeakListeners.create(PreferenceChangeListener.class, this, KarmaPreferences.class);
-
-
-        KarmaChildrenList(Project project) {
-            assert project != null;
-            this.project = project;
-        }
-
-        @Override
-        public List<Node> keys() {
-            return Collections.<Node>singletonList(KarmaNode.create(project));
-        }
-
-        @Override
-        public void addChangeListener(ChangeListener listener) {
-            changeSupport.addChangeListener(listener);
-        }
-
-        @Override
-        public void removeChangeListener(ChangeListener listener) {
-            changeSupport.removeChangeListener(listener);
-        }
-
-        @Override
-        public Node node(Node key) {
-            return key;
-        }
-
-        @Override
-        public void addNotify() {
-            KarmaPreferences.addPreferenceChangeListener(project, preferenceChangeListener);
-        }
-
-        @Override
-        public void removeNotify() {
-            KarmaPreferences.removePreferenceChangeListener(project, preferenceChangeListener);
-        }
-
-        @Override
-        public void preferenceChange(PreferenceChangeEvent evt) {
-            // possibly restart server
-            if (KarmaServers.getInstance().isServerRunning(project)) {
-                KarmaServers.getInstance().stopServer(project, false);
-                ValidationResult result = new KarmaPreferencesValidator()
-                        .validate(project)
-                        .getResult();
-                if (result.isFaultless()) {
-                    KarmaServers.getInstance().startServer(project);
-                }
-            }
-        }
-
-    }
 
     private static final class KarmaNode extends AbstractNode implements KarmaServersListener {
 

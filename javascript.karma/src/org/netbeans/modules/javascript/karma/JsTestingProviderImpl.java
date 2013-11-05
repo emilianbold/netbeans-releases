@@ -46,13 +46,14 @@ import java.net.URL;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.karma.exec.KarmaServers;
 import org.netbeans.modules.javascript.karma.ui.customizer.KarmaCustomizer;
-import org.netbeans.modules.javascript.karma.ui.logicalview.KarmaNodeFactory;
+import org.netbeans.modules.javascript.karma.ui.logicalview.KarmaChildrenList;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo;
 import org.netbeans.modules.web.clientproject.spi.jstesting.JsTestingProviderImplementation;
-import org.netbeans.spi.project.ui.support.NodeFactory;
+import org.netbeans.spi.project.ui.support.NodeList;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -108,8 +109,8 @@ public class JsTestingProviderImpl implements JsTestingProviderImplementation {
     }
 
     @Override
-    public NodeFactory createNodeFactory() {
-        return new KarmaNodeFactory();
+    public NodeList<Node> createNodeList(Project project) {
+        return new KarmaChildrenList(project);
     }
 
 }
