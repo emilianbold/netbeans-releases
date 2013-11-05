@@ -46,13 +46,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.bugtracking.APIAccessor;
-import org.netbeans.modules.bugtracking.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.commons.FileToRepoMappingStorage;
 import org.netbeans.modules.bugtracking.commons.Util;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
-import static org.netbeans.modules.bugtracking.team.spi.TeamUtil.getRepository;
 import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.netbeans.modules.team.spi.TeamProject;
 import org.netbeans.modules.versioning.util.VCSBugtrackingAccessor;
@@ -94,10 +91,6 @@ public class VCSBugtrackingSupportImpl extends VCSBugtrackingAccessor {
         FileToRepoMappingStorage.getInstance().setFirmAssociation(
                 Util.getLargerContext(files[0]),
                 repo.getUrl());
-    }
-    
-    public static void setFirmAssociations(File[] files, Repository repository) {
-        BugtrackingOwnerSupport.getInstance().setFirmAssociations(files, APIAccessor.IMPL.getImpl(repository));
     }
     
     /**
