@@ -202,7 +202,7 @@ public final class TerminalSupportImpl {
                             npb.getEnvironment().put(commandName,
                                     (usrPrompt == null)
                                     ? promptCommand
-                                    : usrPrompt + ':' + promptCommand
+                                    : promptCommand + ';' + usrPrompt
                             );
                         }
 
