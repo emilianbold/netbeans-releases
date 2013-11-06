@@ -126,7 +126,7 @@ public class RemoteFXScreenshot {
         final Method convertImage = imageClass.concreteMethodByName("impl_toExternalImage", "(Ljava/lang/Object;)Ljava/lang/Object;");
         final Method renderImage = sceneClass.concreteMethodByName("renderToImage", "(Ljava/lang/Object;FZ)Ljava/lang/Object;");
         // FX 2.2 API (works in FX 8)
-        final Method fromFXImage = utilsClass.concreteMethodByName("fromFXImage", "(Ljavafx/scene/image/Image;Ljava/awt/image/BufferedImage;)Ljava/awt/image/BufferedImage;");
+        final Method fromFXImage = (utilsClass != null) ? utilsClass.concreteMethodByName("fromFXImage", "(Ljavafx/scene/image/Image;Ljava/awt/image/BufferedImage;)Ljava/awt/image/BufferedImage;") : null;
         final Method snapshot = sceneClass.concreteMethodByName("snapshot", "(Ljavafx/scene/image/WritableImage;)Ljavafx/scene/image/WritableImage;");
 
         ObjectReference scene = (ObjectReference) window.invokeMethod(tr, getScene, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
