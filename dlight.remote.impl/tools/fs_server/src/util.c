@@ -151,3 +151,80 @@ FILE* fopen600(const char* path) {
         return fdopen(fd, "w");
     }
 }
+
+/**
+ * escapre rules are:
+ * "\n" -> "\\n"
+ * "\" -> "\\\\"
+ */
+int escape_strlen(const char* s) {
+    if (!s) {
+        return 0;
+    }
+    int len = 0;  
+    for (const char *p = s; *p; p++) {
+        len += (*p == '\n' || *p == '\\') ? 2 : 1;
+    }
+    return len;
+}
+
+char *escape_strcpy(char *dst, const char *src) {
+    char* d = dst;
+    for (const char *p = src; *p; p++) {
+        if (*p == '\n') {
+            *d++ = '\\';
+            *d++ = 'n';
+        } else if (*p == '\\') {
+            *d++ = '\\';
+            *d++ = '\\';
+        } else {
+            *d++ = *p;
+        }
+    }
+    *d = 0;
+    return dst;
+}
+
+int unescape_strlen(const char* s) {    
+    bool escape = false;
+    int len = 0;
+    for (const char *p = s; *p; p++) {
+        if (escape) {
+            escape = false;
+            len++;
+        } else {
+            if (*p == '\\') {
+                escape = true;
+            } else {
+                len++;
+            }
+        }
+    }
+    return len;
+}
+
+char *unescape_strcpy(char *dst, const char *src) {
+    bool escape = false;
+    char *d = dst;
+    for (const char *p = src; *p; p++) {
+        if (escape) {
+            escape = false;
+            if (*p == '\\') {
+                *d++ = '\\';
+            } else if (*p == 'n') {
+                *d++ = '\n';
+            } else {
+                report_error("wrong character '%c' in line %s\n", *p, src);
+                *d++ = *p;
+            }
+        } else {
+            if (*p == '\\') {
+                escape = true;
+            } else {
+                *d++ = *p;
+            }
+        }
+    }
+    *d = 0;
+    return dst;
+}
