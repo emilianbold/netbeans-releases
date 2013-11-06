@@ -48,7 +48,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -62,7 +61,6 @@ import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
-import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
 /**
@@ -75,24 +73,22 @@ public class AngularJsIndexer extends EmbeddingIndexer{
     
     private static final Logger LOG = Logger.getLogger(AngularJsIndexer.class.getName());
     
-    private static final ThreadLocal<Map<URI, Collection<AngularJsController>>> controllers = new ThreadLocal<Map<URI, Collection<AngularJsController>>>();
+    private static final ThreadLocal<Map<URI, Collection<AngularJsController>>> controllers = new ThreadLocal<>();
     
     public static void addController(@NonNull final URI uri, @NonNull final AngularJsController controller) {
-        System.out.println("adding controller into AngularJsIndex");
         final Map<URI, Collection<AngularJsController>> map = controllers.get();
         
         if (map == null) {
             throw new IllegalStateException("AngularJsIndexer.addControllers can be called only from scanner thread.");  //NOI18N
         }
-        Collection<AngularJsController> controllers = map.get(uri);
-        if (controllers == null) {
-            controllers = new ArrayList<AngularJsController>();
-            controllers.add(controller);
-            map.put(uri, controllers);
+        Collection<AngularJsController> cons = map.get(uri);
+        if (cons == null) {
+            cons = new ArrayList<AngularJsController>();
+            cons.add(controller);
+            map.put(uri, cons);
         } else {
-            controllers.add(controller);
+            cons.add(controller);
         }
-        System.out.println("celkem ontrolleru: " + controllers.size());
         
     }
 
@@ -119,8 +115,7 @@ public class AngularJsIndexer extends EmbeddingIndexer{
     
     @Override
     protected void index(Indexable indexable, Parser.Result parserResult, Context context) {
-        System.out.println("&&&&&&&&&&&&&&&&&&&Angular Js Indexer called");
-        Collection<AngularJsController> controllers = null;
+        Collection<AngularJsController> cons = null;
         URI uri = null;
         try {
             uri = indexable.getURL().toURI();
@@ -128,8 +123,8 @@ public class AngularJsIndexer extends EmbeddingIndexer{
             LOG.log(Level.WARNING, null, ex);
         }
         if (uri != null) {
-            controllers = getControllers(uri);
-            if (controllers != null) {
+            cons = getControllers(uri);
+            if (cons != null) {
                 IndexingSupport support;
                 try {
                     support = IndexingSupport.getInstance(context);
@@ -138,9 +133,8 @@ public class AngularJsIndexer extends EmbeddingIndexer{
                     return;
                 }
                 IndexDocument elementDocument = support.createDocument(indexable);
-                for (AngularJsController controller : controllers) {
+                for (AngularJsController controller : cons) {
                     elementDocument.addPair(FIELD_CONTROLLER, controller.getName()+":"+controller.getFqn(), true, true);
-                    System.out.println("################## stored controller tto the index: " + controller.getName()+":"+controller.getFqn());
                 }
                 support.addDocument(elementDocument);
                 // remove the cache
@@ -202,14 +196,10 @@ public class AngularJsIndexer extends EmbeddingIndexer{
             return super.scanStarted(context);
         }
         
-        private int counter = 0;
          @Override
         public void scanFinished(Context context) {
             try {
-                counter ++;
-                System.out.println("##################postScanTask is runned. " + counter + " root: " + context.getRoot().getPath());
-                for (Runnable task : postScanTasks.get()) {
-                    
+                for (Runnable task : postScanTasks.get()) {            
                     task.run();
                 }
             } finally {
