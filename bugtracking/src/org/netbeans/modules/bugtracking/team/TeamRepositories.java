@@ -135,7 +135,7 @@ public abstract class TeamRepositories implements PropertyChangeListener {
         if(p == null) {
             return null;
         }
-        return getRepository(url, projectName);
+        return getRepository(p);
     }
 
     /**
