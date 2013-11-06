@@ -46,9 +46,9 @@ package org.netbeans.performance.web.actions;
 import junit.framework.Test;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.MaximizeWindowAction;
-import org.netbeans.jellytools.actions.RestoreWindowAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.web.setup.WebSetup;
 
@@ -112,7 +112,6 @@ public class ExpandNodesWebProjectsViewTest extends PerformanceTestCase {
         pathToFolderNode = "";
         project = testDataProject;
         WAIT_AFTER_OPEN = 1000;
-        WAIT_AFTER_PREPARE = 2000;
         doMeasurement();
     }
 
@@ -120,7 +119,6 @@ public class ExpandNodesWebProjectsViewTest extends PerformanceTestCase {
         pathToFolderNode = "Source Packages";
         project = testDataProject;
         WAIT_AFTER_OPEN = 1000;
-        WAIT_AFTER_PREPARE = 2000;
         doMeasurement();
     }
 
@@ -128,7 +126,6 @@ public class ExpandNodesWebProjectsViewTest extends PerformanceTestCase {
         pathToFolderNode = "Web Pages|jsp50";
         project = testDataProject;
         WAIT_AFTER_OPEN = 1000;
-        WAIT_AFTER_PREPARE = 2000;
         doMeasurement();
     }
 
@@ -136,7 +133,6 @@ public class ExpandNodesWebProjectsViewTest extends PerformanceTestCase {
         pathToFolderNode = "Web Pages|jsp100";
         project = testDataProject;
         WAIT_AFTER_OPEN = 1000;
-        WAIT_AFTER_PREPARE = 2000;
         doMeasurement();
     }
 
@@ -144,19 +140,17 @@ public class ExpandNodesWebProjectsViewTest extends PerformanceTestCase {
         pathToFolderNode = "Web Pages|jsp1000";
         project = testDataProject;
         WAIT_AFTER_OPEN = 1000;
-        WAIT_AFTER_PREPARE = 2000;
         doMeasurement();
     }
 
     @Override
     public void initialize() {
-        waitNoEvent(10000);
         projectTab = new ProjectsTabOperator();
         new MaximizeWindowAction().performAPI(projectTab);
         projectTab.getProjectRootNode("TestWebProject").collapse();
         projectTab.getProjectRootNode(testDataProject).collapse();
         System.setProperty("perf.dont.resolve.java.badges", "true");
-        repaintManager().addRegionFilter(repaintManager().EXPLORER_FILTER);
+        repaintManager().addRegionFilter(LoggingRepaintManager.EXPLORER_FILTER);
     }
 
     @Override
@@ -166,16 +160,11 @@ public class ExpandNodesWebProjectsViewTest extends PerformanceTestCase {
         } else {
             nodeToBeExpanded = new Node(projectTab.getProjectRootNode(project), pathToFolderNode);
         }
-        //repaintManager().setOnlyExplorer(true);
-
-//        nodeToBeExpanded.select();
+        nodeToBeExpanded.collapse();
     }
 
     @Override
     public ComponentOperator open() {
-//workaround for starting event:
-//        nodeToBeExpanded.tree().clickMouse(1);
-
         nodeToBeExpanded.tree().doExpandPath(nodeToBeExpanded.getTreePath());
         nodeToBeExpanded.expand();
         return null;
@@ -183,16 +172,15 @@ public class ExpandNodesWebProjectsViewTest extends PerformanceTestCase {
 
     @Override
     public void close() {
-        //repaintManager().setOnlyExplorer(true);
         nodeToBeExpanded.collapse();
     }
 
     @Override
     public void shutdown() {
-        super.shutdown();
         repaintManager().resetRegionFilters();
         System.setProperty("perf.dont.resolve.java.badges", "false");
-        projectTab.getProjectRootNode(testDataProject).collapse();
-        new RestoreWindowAction().performAPI(projectTab);
+        projectTab.getProjectRootNode(project).collapse();
+        projectTab.close();
+        ProjectsTabOperator.invoke();
     }
 }
