@@ -97,6 +97,9 @@ public class JsTestingProviderImpl implements JsTestingProviderImplementation {
     @Override
     public void notifyEnabled(Project project, boolean enabled) {
         KarmaPreferences.setEnabled(project, enabled);
+        if (!enabled) {
+            cleanup(project);
+        }
     }
 
     @Override
@@ -106,13 +109,17 @@ public class JsTestingProviderImpl implements JsTestingProviderImplementation {
 
     @Override
     public void projectClosed(Project project) {
-        KarmaPreferences.removeFromCache(project);
-        KarmaServers.getInstance().stopServer(project, true);
+        cleanup(project);
     }
 
     @Override
     public NodeList<Node> createNodeList(Project project) {
         return new KarmaChildrenList(project);
+    }
+
+    private void cleanup(Project project) {
+        KarmaPreferences.removeFromCache(project);
+        KarmaServers.getInstance().stopServer(project, true);
     }
 
 }
