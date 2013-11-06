@@ -205,7 +205,7 @@ public class ODCSUtil {
         return ODCS.getInstance().getBugtrackingFactory().createRepository(
                 odcsRepository,
                 ODCS.getInstance().getStatusProvider(),
-                null, 
+                ODCS.getInstance().getSchedulingProvider(),
                 ODCS.getInstance().getPriorityProvider(odcsRepository),
                 ODCS.getInstance().getODCSIssueFinder());
     }

@@ -46,6 +46,7 @@ import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 import oracle.eclipse.tools.cloud.dev.tasks.CloudDevClient;
@@ -57,6 +58,8 @@ import org.netbeans.modules.bugtracking.spi.BugtrackingSupport;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.bugtracking.spi.IssuePriorityInfo;
 import org.netbeans.modules.bugtracking.spi.IssuePriorityProvider;
+import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
+import org.netbeans.modules.bugtracking.spi.IssueSchedulingProvider;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
@@ -92,6 +95,7 @@ public class ODCS {
     private BugtrackingSupport<ODCSRepository, ODCSQuery, ODCSIssue> bf;
     private IssueNode.ChangesProvider<ODCSIssue> ocp;
     private IssueFinder issueFinder;
+    private IssueSchedulingProvider<ODCSIssue> ischp;
 
     private void init() {
         rc = MylynRepositoryConnectorProvider.getInstance().getConnector();
@@ -198,6 +202,44 @@ public class ODCS {
             };
         }
         return ipp;
+    }
+    
+    public IssueSchedulingProvider<ODCSIssue> getSchedulingProvider () {
+        if(ischp == null) {
+            ischp = new IssueSchedulingProvider<ODCSIssue>() {
+
+                @Override
+                public void setDueDate (ODCSIssue i, Date date) {
+                    i.setTaskDueDate(date, true);
+                }
+
+                @Override
+                public void setSchedule (ODCSIssue i, IssueScheduleInfo scheduleInfo) {
+                    i.setTaskScheduleDate(scheduleInfo, true);
+                }
+
+                @Override
+                public void setEstimate (ODCSIssue i, int hours) {
+                    i.setTaskEstimate(hours, true);
+                }
+
+                @Override
+                public Date getDueDate (ODCSIssue i) {
+                    return i.getPersistentDueDate();
+                }
+
+                @Override
+                public IssueScheduleInfo getSchedule (ODCSIssue i) {
+                    return i.getPersistentScheduleInfo();
+                }
+
+                @Override
+                public int getEstimate (ODCSIssue i) {
+                    return i.getPersistentEstimate();
+                }
+            };
+        }
+        return ischp;
     }
     
     public RequestProcessor getRequestProcessor() {
