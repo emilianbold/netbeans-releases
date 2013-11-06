@@ -54,7 +54,6 @@ import org.netbeans.jellytools.actions.NewFileAction;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 
 /**
@@ -127,8 +126,8 @@ public class CreateNewFileTest extends PerformanceTestCase {
     public void shutdown() {
     }
 
+    @Override
     public void prepare() {
-        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.QUEUE_MODEL_MASK);
         new NewFileAction().performMenu();
         wizard = new NewFileWizardOperator();
         wizard.selectProject(project);
@@ -142,11 +141,11 @@ public class CreateNewFileTest extends PerformanceTestCase {
             eBname = new JTextFieldOperator(wizard);
         }
         eBname.setText(fileName + CommonUtilities.getTimeIndex());
-        new JComboBoxOperator(wizard, 1).typeText(packageName);//.enterText(packageName);
-        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
+        new JComboBoxOperator(wizard, 1).getTextField().setText(packageName);
 
     }
 
+    @Override
     public ComponentOperator open() {
         repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);
         repaintManager().addRegionFilter(LoggingRepaintManager.IGNORE_STATUS_LINE_FILTER);
