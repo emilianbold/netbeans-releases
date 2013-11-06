@@ -86,7 +86,7 @@ public class PHP55UnhandledError extends UnhandledErrorRule {
     }
 
     private static class CheckVisitor extends DefaultVisitor {
-        private List<VerificationError> errors = new ArrayList<>();
+        private final List<VerificationError> errors = new ArrayList<>();
         private final FileObject fileObject;
 
         public CheckVisitor(FileObject fileObject) {

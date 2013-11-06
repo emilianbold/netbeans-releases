@@ -119,7 +119,7 @@ public class MavenWebProjectValidation extends WebProjectValidation {
         serverStep.finish();
         // need to increase time to wait for project node
         long oldTimeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 120000);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 240000);
         try {
             if (JAVA_EE_7.equals(getEEVersion())) {
                 verifyWebPagesNode("index.html");

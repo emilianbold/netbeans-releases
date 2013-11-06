@@ -463,6 +463,16 @@ public class WebProjectValidation extends J2eeTestCase {
     }
 
     public void testViewServlet() throws IOException {
+        // enable open browser on run
+        new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME).properties();
+        NbDialogOperator propertiesDialogOper = new NbDialogOperator(
+                Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_Customizer_Title"));
+        new Node(new JTreeOperator(propertiesDialogOper),
+                Bundle.getString("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_Config_Run")).select();
+        new JCheckBoxOperator(propertiesDialogOper,
+                Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.customizer.Bundle",
+                        "LBL_CustomizeRun_DisplayBrowser_JCheckBox")).setSelected(true);
+        propertiesDialogOper.ok();
         String jspCode = "new String().toString();";
         String runningViewServlet = "Running View Servlet";
         String filename = "pageViewServlet";
@@ -487,6 +497,16 @@ public class WebProjectValidation extends J2eeTestCase {
         }
         editor.close();
         servlet.close();
+        // disable open browser on run
+        new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME).properties();
+        propertiesDialogOper = new NbDialogOperator(
+                Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_Customizer_Title"));
+        new Node(new JTreeOperator(propertiesDialogOper),
+                Bundle.getString("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_Config_Run")).select();
+        new JCheckBoxOperator(propertiesDialogOper,
+                Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.customizer.Bundle",
+                        "LBL_CustomizeRun_DisplayBrowser_JCheckBox")).setSelected(false);
+        propertiesDialogOper.ok();
     }
 
     public void testRunServlet() {
