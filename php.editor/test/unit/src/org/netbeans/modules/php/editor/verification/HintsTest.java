@@ -283,4 +283,8 @@ public class HintsTest extends PHPHintsTestBase {
         checkHints(new UnnecessaryClosingDelimiterHint(), "testIssue237768.php");
     }
 
+    public void testWrongParamNameHint() throws Exception {
+        checkHints(new WrongParamNameHint(), "testWrongParamNameHint.php");
+    }
+
 }
