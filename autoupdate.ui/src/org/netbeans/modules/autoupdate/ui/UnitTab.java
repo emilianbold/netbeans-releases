@@ -1303,17 +1303,16 @@ public final class UnitTab extends javax.swing.JPanel {
             try {
                 wizardFinished = new InstallUnitWizard ().invokeWizard (OperationType.UPDATE, manager);
             } finally {
-                if (manager != null && manager.isClosing()) {
-                    return ;
+                if (manager == null || ! manager.isClosing()) {
+                    //must be called before restoreState
+                    fireUpdataUnitChange ();
+                    if (!wizardFinished) {
+                        UnitCategoryTableModel.restoreState (model.getUnits (), state, model.isMarkedAsDefault ());
+                    }
+                    restoreSelectedRow(row);                
+                    refreshState ();
+                    focusTable ();
                 }
-                //must be called before restoreState
-                fireUpdataUnitChange ();
-                if (!wizardFinished) {
-                    UnitCategoryTableModel.restoreState (model.getUnits (), state, model.isMarkedAsDefault ());
-                }
-                restoreSelectedRow(row);                
-                refreshState ();
-                focusTable ();
             }
         }
     }
@@ -1552,7 +1551,7 @@ public final class UnitTab extends javax.swing.JPanel {
                     if (!installed.getRelevantElement ().isEnabled ()) {
                         OperationInfo info = Containers.forEnable ().add (installed.updateUnit, installed.getRelevantElement ());
                         if (info ==  null) {
-                            Logger.getLogger(UnitTab.class.getName()).log(Level.WARNING, "Null OperationInfo for " + installed.getRelevantElement ());
+                            Logger.getLogger(UnitTab.class.getName()).log(Level.WARNING, "Null OperationInfo for {0}", installed.getRelevantElement());
                         }
                     }
                 }
