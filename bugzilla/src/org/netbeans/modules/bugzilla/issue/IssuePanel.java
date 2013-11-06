@@ -3398,13 +3398,13 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         try {
             saved = issue.save();
         } finally {
-            final boolean fSaved = saved;
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
                     clearUnsavedFields();
                     enableComponents(true);
                     updateFieldStatuses();
+                    cancelButton.setEnabled(issue.hasLocalEdits());
                     skipReload = false;
                 }
             });
@@ -3722,13 +3722,15 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     }
 
     private void persistSections () {
-        BugzillaConfig config = BugzillaConfig.getInstance();
-        String repositoryId = issue.getRepository().getID();
-        String taskId = issue.getID();
-        config.setEditorSectionCollapsed(repositoryId, taskId, SECTION_ATTRIBUTES, !attributesSection.isExpanded());
-        config.setEditorSectionCollapsed(repositoryId, taskId, SECTION_ATTACHMENTS, !attachmentsSection.isExpanded());
-        config.setEditorSectionCollapsed(repositoryId, taskId, SECTION_COMMENTS, !commentsSection.isExpanded());
-        config.setEditorSectionCollapsed(repositoryId, taskId, SECTION_PRIVATE, !privateSection.isExpanded());
+        if (!issue.isNew()) {
+            BugzillaConfig config = BugzillaConfig.getInstance();
+            String repositoryId = issue.getRepository().getID();
+            String taskId = issue.getID();
+            config.setEditorSectionCollapsed(repositoryId, taskId, SECTION_ATTRIBUTES, !attributesSection.isExpanded());
+            config.setEditorSectionCollapsed(repositoryId, taskId, SECTION_ATTACHMENTS, !attachmentsSection.isExpanded());
+            config.setEditorSectionCollapsed(repositoryId, taskId, SECTION_COMMENTS, !commentsSection.isExpanded());
+            config.setEditorSectionCollapsed(repositoryId, taskId, SECTION_PRIVATE, !privateSection.isExpanded());
+        }
     }
 
     private void restoreSections () {
