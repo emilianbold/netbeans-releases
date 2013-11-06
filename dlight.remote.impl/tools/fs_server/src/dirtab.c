@@ -125,37 +125,49 @@ static const dirtab_element *add_path(const char* path) {
 }
 
 static bool load_impl() {
-    FILE *fp = fopen(dirtab_file_path, "r");
-    if (!fp) {
+    FILE *f = fopen(dirtab_file_path, "r");
+    if (!f) {
         report_error("error opening %s: %s\n", dirtab_file_path, strerror(errno));
         return false;
     }
-    int buf_size = PATH_MAX + 40;
-    char *buf = malloc(buf_size);
+    int max_line = PATH_MAX + 40;
+    char *line = malloc(max_line);
     table.size = 0;
     table.next_index = 0;
-    while (!feof(fp)) {
-        int index;
-        if (!read_int(fp, &index)) {
-            return false;
-        }        
-        int path_len = read_path(fp, buf, buf_size);
-        if (path_len < 0) {
-            return false;
+    while (fgets(line, max_line, f)) {
+        int index = 0;
+        char* p = line;
+        while (isdigit(*p)) {
+            index *= 10;
+            index += (*p) - '0';
+            p++;
+        }
+        if (*p != ' ') {
+            report_error("error in file %s: index not followed by space in line '%s'\n", dirtab_file_path, line);
+            return false; //TODO: clear the table!
+        }
+        char* path = ++p;
+        // cut off '\n\ before trailing '\0'
+        while (*p++);
+        // p points to trailing '\0'
+        if (p >= path) {
+            p--;
+        }
+        if (p >= path) {
+            p--;
+        }
+        if (*p == '\n') {
+            *p = 0;
         }
         expand_table_if_needed();
-        table.paths[table.size] = new_dirtab_element(buf, index);
+        table.paths[table.size] = new_dirtab_element(path, index);
         table.size++;
         if (index + 1 > table.next_index) {
             table.next_index = index + 1;
         }
-        char c = fgetc(fp);
-        if (c != '\n' && c != EOF) {
-            report_error("wrong dirtab format: expected EOF or ''\\n'', got '%c'\n", c);
-        }
     }
-    free(buf);
-    if (fclose(fp) == 0) {
+    free(line);
+    if (fclose(f) == 0) {
         return true;
     } else {
         report_error("error closing %s: %s\n", dirtab_file_path, strerror(errno));
@@ -181,7 +193,7 @@ static bool flush_impl() {
     }
     int i;
     for (i = 0; i < table.size; i++) {
-        fprintf(f, "%d %li %s\n", table.paths[i]->index, (long) strlen(table.paths[i]->path), table.paths[i]->path);
+        fprintf(f, "%d %s\n", table.paths[i]->index, table.paths[i]->path);
     }
     if (fclose(f) == 0) {
         return true;

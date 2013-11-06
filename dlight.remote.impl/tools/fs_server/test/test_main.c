@@ -105,21 +105,6 @@ void test_dirtab_1() {
     assert_true(dirtab_flush());
 }
 
-static int string_comparator (const void *element1, const void *element2) {
-    const char *str1 = *((char**)element1);
-    const char *str2 = *((char**)element2);
-    int res = strcmp(str1, str2);
-    return res;
-}
-
-static const void *string_finder(const void *element, void* arg) {
-    const char *p = element;
-    if (strcmp(p, arg) == 0) {
-        return p;
-    }
-    return NULL;
-}
-
 static void test_array() {
     
    array a;
@@ -148,6 +133,12 @@ static void test_array() {
    assert_true(strcmp(array_get(&a, 2), "1") == 0);
    assert_true(strcmp(array_get(&a, 3), "3") == 0);
    
+   int string_comparator (const void *element1, const void *element2) {
+       const char *str1 = *((char**)element1);
+       const char *str2 = *((char**)element2);
+       int res = strcmp(str1, str2);
+       return res;
+   }
    array_qsort(&a, string_comparator);
 
    assert_true(strcmp(array_get(&a, 0), "1") == 0);
@@ -163,52 +154,18 @@ static void test_array() {
    array_add(&a, "z");
    array_qsort(&a, string_comparator);
 
-   assert_true(strcmp(array_iterate(&a, string_finder, "z"), "z") == 0); 
-}
-
-static void write_file(const char* path, const char* content) {
-    FILE* fp;
-    assert_true((fp = fopen(path, "w")) != NULL);
-    fprintf(fp, "%s", content);
-    fclose_if_not_null(fp);
-}
-
-static void test_read_path() {
-    const char* data_file_path = "/tmp/test_read_path.dat";
-    write_file(data_file_path, 
-            "4 /usr\n"
-            "22 /tmp/path with\nnewline\n"
-            "0\n"
-            );
-    FILE* fp;
-    assert_true((fp = fopen(data_file_path, "r")) != NULL);
-    const int buf_size = PATH_MAX;
-    char buf[buf_size];
-    int path_len;
-    
-    assert_true((path_len = read_path(fp, buf, buf_size)) > 0);
-    printf("%d %s\n", path_len, buf);
-    assert_true(path_len == 4);
-    assert_true(strcmp(buf, "/usr") == 0);
-    assert_true(fgetc(fp) == '\n');
-
-    assert_true((path_len = read_path(fp, buf, buf_size)) > 0);
-    printf("%d %s\n", path_len, buf);
-    assert_true(path_len == 22);
-    assert_true(strcmp(buf, "/tmp/path with\nnewline") == 0);
-    assert_true(fgetc(fp) == '\n');
-
-    assert_true((path_len = read_path(fp, buf, buf_size)) >= 0);
-    printf("%d %s\n", path_len, buf);
-    assert_true(path_len == 0);
-    assert_true(strcmp(buf, "") == 0);
-    //assert_true(fgetc(fp) == '\n');
-    
-    fclose_if_not_null(fp);
+   const void *finder(const void *element, void* arg) {
+       const char *p = element;
+       if (strcmp(p, arg) == 0) {
+           return p;
+       }
+       return NULL;
+   }
+   
+   assert_true(strcmp(array_iterate(&a, finder, "z"), "z") == 0);
 }
 
 int main(int argc, char** argv) {
-    test_read_path();
     test_array();
     test_list();
     test_dirtab_1();
