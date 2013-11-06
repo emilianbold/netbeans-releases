@@ -310,7 +310,7 @@ public abstract class PSR1Hint extends HintRule {
             private static final Pattern STUDLY_CAPS_PATTERN = Pattern.compile("[A-Z][a-zA-Z0-9]*"); //NOI18N
             private static final Pattern CAMEL_CASE_PATTERN = Pattern.compile("[a-z]+([A-Z][a-z0-9]*)*"); //NOI18N
             private static final Pattern UNDER_SCORE_PATTERN = Pattern.compile("[a-z]+(_[a-z0-9]*)*"); //NOI18N
-            private List<Pattern> possiblePatterns = new ArrayList<>();
+            private final List<Pattern> possiblePatterns = new ArrayList<>();
 
             public PropertyNameVisitor(PSR1Hint psr1hint, FileObject fileObject, BaseDocument baseDocument) {
                 super(psr1hint, fileObject, baseDocument);

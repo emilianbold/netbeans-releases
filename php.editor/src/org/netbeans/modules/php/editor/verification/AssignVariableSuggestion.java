@@ -117,11 +117,10 @@ public class AssignVariableSuggestion extends SuggestionRule {
     }
 
     private class IntroduceFixVisitor extends DefaultVisitor {
-
-        private BaseDocument doc;
-        private IntroduceFix fix;
-        private List<Variable> variables;
+        private final BaseDocument doc;
+        private final List<Variable> variables;
         private final OffsetRange lineBounds;
+        private IntroduceFix fix;
 
         IntroduceFixVisitor(BaseDocument doc, OffsetRange lineBounds) {
             this.doc = doc;
