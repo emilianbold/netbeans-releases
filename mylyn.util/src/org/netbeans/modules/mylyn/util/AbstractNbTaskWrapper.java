@@ -482,12 +482,15 @@ public abstract class AbstractNbTaskWrapper {
     public final IssueStatusProvider.Status getStatus () {
         switch (getSynchronizationState()) {
             case CONFLICT:
+                return IssueStatusProvider.Status.CONFLICT;
             case INCOMING:
                 return IssueStatusProvider.Status.INCOMING_MODIFIED;
             case INCOMING_NEW:
                 return IssueStatusProvider.Status.INCOMING_NEW;
             case OUTGOING:
+                return IssueStatusProvider.Status.OUTGOING_MODIFIED;
             case OUTGOING_NEW:
+                return IssueStatusProvider.Status.OUTGOING_NEW;
             case SYNCHRONIZED:
                 return IssueStatusProvider.Status.SEEN;
         }

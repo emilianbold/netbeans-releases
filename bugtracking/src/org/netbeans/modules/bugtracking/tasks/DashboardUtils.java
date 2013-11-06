@@ -102,7 +102,8 @@ public class DashboardUtils {
     private final static String BOLD_START_SUBSTITUTE = "$$$BOLD_START$$$"; //NOI18
     private final static String BOLD_END_SUBSTITUTE = "$$$BOLD_END$$$"; //NOI18
     private static final String NEW_COLOR = UIUtils.getColorString(UIUtils.getTaskNewColor());
-    private static final String mODIFIED_COLOR = UIUtils.getColorString(UIUtils.getTaskModifiedColor());
+    private static final String MODIFIED_COLOR = UIUtils.getColorString(UIUtils.getTaskModifiedColor());
+    private static final String CONFLICT_COLOR = UIUtils.getColorString(UIUtils.getTaskConflictColor());
 
     private static final Image SCHEDULE_ICON = ImageUtilities.loadImage("org/netbeans/modules/bugtracking/tasks/resources/schedule.png", true); //NOI18
     private static final Image SCHEDULE_WARNING_ICON = ImageUtilities.loadImage("org/netbeans/modules/bugtracking/tasks/resources/schedule_alarm.png", true); //NOI18
@@ -209,7 +210,9 @@ public class DashboardUtils {
         if (status == IssueStatusProvider.Status.INCOMING_NEW && !hasFocus) {
             text = "<html><font color=\"" + NEW_COLOR + "\">" + text + "</font></html>"; //NOI18N
         } else if (status == IssueStatusProvider.Status.INCOMING_MODIFIED && !hasFocus) {
-            text = "<html><font color=\"" + mODIFIED_COLOR + "\">" + text + "</font></html>"; //NOI18N
+            text = "<html><font color=\"" + MODIFIED_COLOR + "\">" + text + "</font></html>"; //NOI18N
+        } else if (status == IssueStatusProvider.Status.CONFLICT && !hasFocus) {
+            text = "<html><font color=\"" + CONFLICT_COLOR + "\">" + text + "</font></html>"; //NOI18N
         } else if (isHTML) {
             text = "<html>" + text + "</html>"; //NOI18N
         }
