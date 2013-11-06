@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.10.1
+#Version 1.18.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -119,6 +119,7 @@ supr java.lang.Enum<org.netbeans.spi.java.hints.Hint$Kind>
 
 CLSS public final static !enum org.netbeans.spi.java.hints.Hint$Options
  outer org.netbeans.spi.java.hints.Hint
+fld public final static org.netbeans.spi.java.hints.Hint$Options HEAVY
 fld public final static org.netbeans.spi.java.hints.Hint$Options NO_BATCH
 fld public final static org.netbeans.spi.java.hints.Hint$Options QUERY
 meth public static org.netbeans.spi.java.hints.Hint$Options valueOf(java.lang.String)
@@ -140,7 +141,7 @@ meth public org.netbeans.api.java.source.CompilationInfo getInfo()
 meth public org.netbeans.spi.editor.hints.Severity getSeverity()
 meth public void reportMessage(org.netbeans.spi.java.hints.HintContext$MessageKind,java.lang.String)
 supr java.lang.Object
-hfds bulkMode,cancel,caret,constraints,info,messages,metadata,multiVariables,path,preferences,severity,variableNames,variables
+hfds bulkMode,cancel,caret,constraints,info,messages,metadata,multiVariables,path,preferences,settings,severity,variableNames,variables
 
 CLSS public final static !enum org.netbeans.spi.java.hints.HintContext$MessageKind
  outer org.netbeans.spi.java.hints.HintContext
@@ -159,12 +160,31 @@ meth public static org.netbeans.spi.java.hints.HintSeverity valueOf(java.lang.St
 meth public static org.netbeans.spi.java.hints.HintSeverity[] values()
 supr java.lang.Enum<org.netbeans.spi.java.hints.HintSeverity>
 
+CLSS public abstract interface !annotation org.netbeans.spi.java.hints.IntegerOption
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[FIELD])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault int defaultValue()
+meth public abstract !hasdefault int maxValue()
+meth public abstract !hasdefault int minValue()
+meth public abstract !hasdefault int step()
+meth public abstract !hasdefault java.lang.String tooltip()
+meth public abstract java.lang.String displayName()
+
 CLSS public abstract org.netbeans.spi.java.hints.JavaFix
 cons protected init(org.netbeans.api.java.source.CompilationInfo,com.sun.source.util.TreePath)
  anno 1 org.netbeans.api.annotations.common.NonNull()
  anno 2 org.netbeans.api.annotations.common.NonNull()
+cons protected init(org.netbeans.api.java.source.CompilationInfo,com.sun.source.util.TreePath,java.lang.String)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NullAllowed()
 cons protected init(org.netbeans.api.java.source.TreePathHandle)
  anno 1 org.netbeans.api.annotations.common.NonNull()
+cons protected init(org.netbeans.api.java.source.TreePathHandle,java.lang.String)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NullAllowed()
 innr public final static TransformationContext
 meth protected abstract java.lang.String getText()
  anno 0 org.netbeans.api.annotations.common.NonNull()
@@ -172,7 +192,7 @@ meth protected abstract void performRewrite(org.netbeans.spi.java.hints.JavaFix$
  anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public final org.netbeans.spi.editor.hints.Fix toEditorFix()
 supr java.lang.Object
-hfds LOG,handle,options
+hfds handle,options,sortText
 
 CLSS public final static org.netbeans.spi.java.hints.JavaFix$TransformationContext
  outer org.netbeans.spi.java.hints.JavaFix

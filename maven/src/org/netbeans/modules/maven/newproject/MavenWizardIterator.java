@@ -132,7 +132,7 @@ public class MavenWizardIterator implements WizardDescriptor.BackgroundInstantia
             panels.add(new ChooseWizardPanel());
             steps.add(LBL_CreateProjectStep());
         }
-        panels.add(new BasicWizardPanel(vg, null, true, true));
+        panels.add(new BasicWizardPanel(vg, null, true, archetype == null)); //only download archetype (for additional props) when unknown archetype is used.
         steps.add(LBL_CreateProjectStep2());
         for (int i = 0; i < panels.size(); i++) {
             JComponent c = (JComponent) panels.get(i).getComponent();

@@ -46,8 +46,10 @@ import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -65,6 +67,7 @@ import org.netbeans.libs.git.GitPushResult;
 import org.netbeans.libs.git.GitRefUpdateResult;
 import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitRevisionInfo;
+import org.netbeans.libs.git.GitSubmoduleStatus;
 import org.netbeans.libs.git.GitTransportUpdate;
 import org.netbeans.libs.git.GitTransportUpdate.Type;
 import org.netbeans.libs.git.SearchCriteria;
@@ -154,8 +157,9 @@ public class PushAction extends SingleRepositoryAction {
         });
     }
     
-    public Task push (File repository, String remote, Collection<PushMapping> pushMappins, List<String> fetchRefSpecs) {
-        return push(repository, remote, pushMappins, fetchRefSpecs, null);
+    public Task push (File repository, String target, Collection<PushMapping> pushMappins,
+            List<String> fetchRefSpecs, String remoteNameToUpdate) {
+        return push(repository, target, pushMappins, fetchRefSpecs, remoteNameToUpdate, Collections.singleton(repository));
     }
     
     @NbBundle.Messages({
@@ -175,20 +179,29 @@ public class PushAction extends SingleRepositoryAction {
             + "New Id        : {2}\n"
             + "Result        : {3}",
         "# {0} - local branch name", "# {1} - tracked branch name",
-        "MSG_PushAction.trackingUpdated=Branch {0} set to track {1}"
+        "MSG_PushAction.trackingUpdated=Branch {0} set to track {1}",
+        "MSG_PushAction.pushing=pushing changes",
+        "# {0} - repository name",
+        "MSG_PushAction.push.submodules.text=Repository {0} references a local commit in submodules.\n"
+                + "Submodule changes have not yet been pushed and this will probably result in an inconsistent state.\n\n"
+                + "Do you really want to continue pushing before the changes in submodules are made public?",
+        "LBL_PushAction.push.submodules.title=Referenced Commit Not Pushed"
     })
-    public Task push (File repository, final String target, final Collection<PushMapping> pushMappins,
-    final List<String> fetchRefSpecs, final String remoteNameToUpdate) {
+    Task push (final File repository, final String target, final Collection<PushMapping> pushMappins,
+            final List<String> fetchRefSpecs, final String remoteNameToUpdate,
+            final Set<File> toPushRepositories) {
         GitProgressSupport supp = new GitProgressSupport() {
             @Override
             protected void perform () {
-                List<String> pushRefSpecs = new LinkedList<String>();
-                Set<String> newBranches = new HashSet<String>();
+                List<String> pushRefSpecs = new LinkedList<>();
+                Set<String> newBranches = new HashSet<>();
+                boolean pushingCurrent = false;
                 for (PushMapping b : pushMappins) {
                     pushRefSpecs.add(b.getRefSpec());
                     if (b.isCreateBranchMapping()) {
                         newBranches.add(b.getRemoteName());
                     }
+                    pushingCurrent |= isPushingCurrentBranch(b, repository);
                 }
                 final Set<String> toDelete = new HashSet<String>();
                 for(ListIterator<String> it = fetchRefSpecs.listIterator(); it.hasNext(); ) {
@@ -228,7 +241,15 @@ public class PushAction extends SingleRepositoryAction {
                             return;
                         }
                     }
+                    
+                    // check submodules
+                    pushSubmodules(toPushRepositories);
+                    if (isCanceled()) {
+                        return;
+                    }
+                    
                     // push
+                    setProgress(Bundle.MSG_PushAction_pushing());
                     GitPushResult result = client.push(target, pushRefSpecs, fetchRefSpecs, getProgressMonitor());
                     reportRemoteConflicts(result.getRemoteRepositoryUpdates());
                     logUpdates(getRepositoryRoot(), result.getRemoteRepositoryUpdates(),
@@ -490,6 +511,82 @@ public class PushAction extends SingleRepositoryAction {
                         getLogger().getOpenOutputAction().actionPerformed(new ActionEvent(PushAction.this, ActionEvent.ACTION_PERFORMED, null));
                     }
                 }
+            }
+            
+            private boolean isPushingCurrentBranch (PushMapping b, File repository) {
+                GitBranch currentBranch = RepositoryInfo.getInstance(repository).getActiveBranch();
+                return currentBranch.getName().equals(b.getLocalName());
+            }
+            
+            private void pushSubmodules (Set<File> toPushRepositories) throws GitException {
+                Map<File, GitSubmoduleStatus> submoduleStatuses = getClient().getSubmoduleStatus(new File[0], getProgressMonitor());
+                List<File> submodulesToPush = new ArrayList<>(submoduleStatuses.size());
+                for (Map.Entry<File, GitSubmoduleStatus> e : submoduleStatuses.entrySet()) {
+                    File submodule = e.getKey();
+                    if (!toPushRepositories.contains(submodule)) {
+                        // is not scheduled for push later
+                        String referencedCommit = e.getValue().getReferencedCommitId();
+                        if (isLocalCommit(submodule, referencedCommit)) {
+                            submodulesToPush.add(submodule);
+                        }
+                    }
+                }
+                
+                if (!submodulesToPush.isEmpty()) {
+                    if (askToPushSubmodules(submodulesToPush)) {
+                        // maybe later implement auto-push of submodules
+                    }
+                }
+            }
+            
+            private boolean isLocalCommit (File repo, String commit) {
+                if (commit == null) {
+                    return false;
+                }
+                boolean localCommit = false;
+                GitClient client = null;
+                try {
+                    client = Git.getInstance().getClient(repo);
+                    for (Map.Entry<String, GitBranch> e : client.getBranches(true, getProgressMonitor()).entrySet()) {
+                        if (isCanceled()) {
+                            return false;
+                        }
+                        if (e.getValue().isRemote()) {
+                            localCommit = true;
+                            // is the commit in any of the remote branches?
+                            GitRevisionInfo anc = client.getCommonAncestor(new String[] { commit, e.getKey() }, getProgressMonitor());
+                            if (anc != null && commit.equals(anc.getRevision())) {
+                                localCommit = false;
+                                LOG.log(Level.FINE, "Commit {0} found in submodule's {1} branch {2}", //NOI18N
+                                        new Object[] { commit, repo, e.getKey() });
+                                break;
+                            }
+                            LOG.log(Level.FINE, "Commit {0} not in submodule's {1} branch {2}", //NOI18N
+                                    new Object[] { commit, repo, e.getKey() });
+                        }
+                    }
+                } catch (GitException ex) {
+                    LOG.log(Level.INFO, null, ex);
+                } finally {
+                    if (client != null) {
+                        client.release();
+                    }
+                }
+                return localCommit;
+            }
+            
+            private boolean askToPushSubmodules (List<File> submodulesToPush) {
+                NotifyDescriptor desc = new NotifyDescriptor(
+                        Bundle.MSG_PushAction_push_submodules_text(getRepositoryRoot().getName()),
+                        Bundle.LBL_PushAction_push_submodules_title(),
+                        NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE,
+                        new Object[] { NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION },
+                        NotifyDescriptor.YES_OPTION);
+                Object retval = DialogDisplayer.getDefault().notify(desc);
+                if (retval == NotifyDescriptor.NO_OPTION) {
+                    cancel();
+                }
+                return false;
             }
         };
         return supp.start(Git.getInstance().getRequestProcessor(repository), repository, Bundle.LBL_PushAction_progressName(repository.getName()));

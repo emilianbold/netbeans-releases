@@ -43,7 +43,7 @@
 package org.netbeans.modules.bugtracking.ui.search;
 
 import org.netbeans.modules.bugtracking.IssueImpl;
-import org.netbeans.modules.bugtracking.util.TextUtils;
+import org.netbeans.modules.bugtracking.commons.TextUtils;
 
 /**
  *

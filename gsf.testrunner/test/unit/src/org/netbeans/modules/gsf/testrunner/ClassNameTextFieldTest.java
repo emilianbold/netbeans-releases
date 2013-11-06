@@ -138,6 +138,7 @@ public class ClassNameTextFieldTest extends TestCase {
                 new StringIntPair("A.b2", ClassNameTextField.STATUS_VALID_END_NOT_TEST),
                 new StringIntPair("A.b2Test", ClassNameTextField.STATUS_VALID),
                 new StringIntPair("a.b2", ClassNameTextField.STATUS_VALID_END_NOT_TEST),
+                new StringIntPair("A.b2IT", ClassNameTextField.STATUS_VALID),
         };
         assertEquals(
                 "check status if no parameter passed",

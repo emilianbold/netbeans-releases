@@ -56,13 +56,14 @@ import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.javascript.karma.api.Karma;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferencesValidator;
 import org.netbeans.modules.javascript.karma.util.ValidationResult;
+import org.netbeans.modules.web.clientproject.api.ProjectDirectoriesProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileChooserBuilder;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -85,8 +86,8 @@ public class CustomizerKarma extends JPanel {
 
     private void init() {
         // data
-        karmaTextField.setText(KarmaPreferences.getInstance().getKarma(project));
-        configTextField.setText(KarmaPreferences.getInstance().getConfig(project));
+        karmaTextField.setText(KarmaPreferences.getKarma(project));
+        configTextField.setText(KarmaPreferences.getConfig(project));
         // listeners
         addListeners();
         // initial validation
@@ -126,8 +127,8 @@ public class CustomizerKarma extends JPanel {
     }
 
     void storeData() {
-        KarmaPreferences.getInstance().setKarma(project, karmaTextField.getText());
-        KarmaPreferences.getInstance().setConfig(project, configTextField.getText());
+        KarmaPreferences.setKarma(project, karmaTextField.getText());
+        KarmaPreferences.setConfig(project, configTextField.getText());
     }
 
     private File getProjectDirectory() {
@@ -135,12 +136,12 @@ public class CustomizerKarma extends JPanel {
     }
 
     private File getConfigDirectory() {
-        Karma.ConfigFolderProvider configFolderProvider = project.getLookup().lookup(Karma.ConfigFolderProvider.class);
-        if (configFolderProvider != null) {
-            File configFolder = configFolderProvider.getConfigFolder();
-            if (configFolder != null
-                    && configFolder.isDirectory()) {
-                return configFolder;
+        ProjectDirectoriesProvider directoriesProvider = project.getLookup().lookup(ProjectDirectoriesProvider.class);
+        if (directoriesProvider != null) {
+            FileObject configDirectory = directoriesProvider.getConfigDirectory();
+            if (configDirectory != null
+                    && configDirectory.isValid()) {
+                return FileUtil.toFile(configDirectory);
             }
         }
         return getProjectDirectory();

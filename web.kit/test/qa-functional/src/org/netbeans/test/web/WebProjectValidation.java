@@ -41,9 +41,14 @@ package org.netbeans.test.web;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
+import java.net.URLConnection;
 import javax.swing.JTextField;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
@@ -187,6 +192,16 @@ public class WebProjectValidation extends J2eeTestCase {
             verifyWebPagesNode("WEB-INF|web.xml");
         }
         waitScanFinished();
+        // not display browser on run
+        new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME).properties();
+        NbDialogOperator propertiesDialogOper = new NbDialogOperator(
+                Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_Customizer_Title"));
+        new Node(new JTreeOperator(propertiesDialogOper),
+                Bundle.getString("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_Config_Run")).select();
+        new JCheckBoxOperator(propertiesDialogOper,
+                Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.customizer.Bundle",
+                        "LBL_CustomizeRun_DisplayBrowser_JCheckBox")).setSelected(false);
+        propertiesDialogOper.ok();
     }
 
     protected void verifyProjectNode(String nodePath) {
@@ -408,7 +423,6 @@ public class WebProjectValidation extends J2eeTestCase {
     }
 
     public void testRunProject() throws Exception {
-        initDisplayer();
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME);
         EditorOperator editor;
         if (JAVA_EE_7.equals(getEEVersion())) {
@@ -426,14 +440,13 @@ public class WebProjectValidation extends J2eeTestCase {
         }
         new Action(null, "Run").perform(rootNode);
         waitBuildSuccessful();
-        assertDisplayerContent("<title>SampleProject Index Page");
+        waitText(PROJECT_NAME, 24000, "<title>SampleProject Index Page");
         editor.replace("Running Project", "");
         editor.save();
         EditorOperator.closeDiscardAll();
     }
 
     public void testRunJSP() {
-        initDisplayer();
         String filename = "pageRunJSP";
         // create new .jsp
         new ActionNoBlock(null, "New|JSP").perform(new WebPagesNode(PROJECT_NAME));
@@ -445,12 +458,11 @@ public class WebProjectValidation extends J2eeTestCase {
         editor.save();
         new Action("Run|Run File", null).perform();
         waitBuildSuccessful();
-        assertDisplayerContent("<title>" + filename + "</title>");
+        waitText(PROJECT_NAME + "/" + filename + ".jsp", 24000, "<title>" + filename + "</title>");
         editor.close();
     }
 
     public void testViewServlet() throws IOException {
-        initDisplayer();
         String jspCode = "new String().toString();";
         String runningViewServlet = "Running View Servlet";
         String filename = "pageViewServlet";
@@ -466,7 +478,7 @@ public class WebProjectValidation extends J2eeTestCase {
         editor.save();
         new Action("Run|Run File", null).perform();
         waitBuildSuccessful();
-        assertDisplayerContent("<h1>" + filename + "</h1>");
+        waitText(PROJECT_NAME + "/" + filename + ".jsp", 24000, "<h1>" + filename + "</h1>");
         new Node(new WebPagesNode(PROJECT_NAME), filename).performPopupAction("View Servlet");
         EditorOperator servlet = new EditorOperator(filename + "_jsp.java");
         String text = "file: " + filename + "_jsp.java\n" + servlet.getText();
@@ -478,7 +490,6 @@ public class WebProjectValidation extends J2eeTestCase {
     }
 
     public void testRunServlet() {
-        initDisplayer();
         Node sourceNode = new SourcePackagesNode(PROJECT_NAME);
         new Node(sourceNode, "test1|Servlet1.java").performPopupAction("Open");
         EditorOperator editor = new EditorOperator("Servlet1.java");
@@ -493,7 +504,8 @@ public class WebProjectValidation extends J2eeTestCase {
         dialog.ok();
         waitBuildSuccessful();
         editor.close();
-        assertDisplayerContent("<title>Servlet with name=Servlet1</title>");
+        waitText(PROJECT_NAME + "/" + "Servlet1?name=Servlet1", 24000,
+                "<title>Servlet with name=Servlet1</title>");
     }
 
     public void testCreateTLD() {
@@ -549,7 +561,6 @@ public class WebProjectValidation extends J2eeTestCase {
             // servlet is not compilable with 1.4 source target
             return;
         }
-        initDisplayer();
         String filename = "pageRunTag";
         // create new .jsp
         new ActionNoBlock(null, "New|JSP").perform(new WebPagesNode(PROJECT_NAME));
@@ -564,7 +575,7 @@ public class WebProjectValidation extends J2eeTestCase {
         new Action(null, "Run File").perform(new Node(new WebPagesNode(PROJECT_NAME), filename));
         waitBuildSuccessful();
         editor.close();
-        assertDisplayerContent("<title>TagOutput</title>");
+        waitText(PROJECT_NAME + "/" + filename + ".jsp", 24000, "<title>TagOutput</title>");
     }
 
     public void testNewHTML() throws IOException {
@@ -666,7 +677,6 @@ public class WebProjectValidation extends J2eeTestCase {
     }
 
     public void testRunHTML() {
-        initDisplayer();
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME);
         new Node(rootNode, "Web Pages|HTML.html").performPopupAction("Open");
         new EditorOperator("HTML.html").replace("<title>TODO supply a title</title>",
@@ -674,7 +684,7 @@ public class WebProjectValidation extends J2eeTestCase {
         new Action("Run|Run File", null).perform();
         //waitBuildSuccessful();
         new EditorOperator("HTML.html").close();
-        assertDisplayerContent("<title>HTML Page</title>");
+        waitText(PROJECT_NAME + "/HTML.html" , 24000, "<title>HTML Page</title>");
     }
 
     public void testNewSegment() throws IOException {
@@ -786,6 +796,61 @@ public class WebProjectValidation extends J2eeTestCase {
 
     public void assertContains(String text, String value) {
         assertTrue("Assertation failed, cannot find:\n" + value + "\nin the following text:\n" + text, text.contains(value));
+    }
+    
+    /**
+     * Opens URL connection and waits for given text. It throws
+     * TimeoutExpiredException if timeout expires.
+     *
+     * @param urlSuffix suffix added to server URL
+     * @param timeout time to wait
+     * @param text text to be found
+     */
+    public static void waitText(final String urlSuffix, final long timeout, final String text) {
+        Waitable waitable = new Waitable() {
+            @Override
+            public Object actionProduced(Object obj) {
+                InputStream is = null;
+                try {
+                    URLConnection connection = new URI("http://localhost:8080/" + urlSuffix).toURL().openConnection();
+                    connection.setReadTimeout(Long.valueOf(timeout).intValue());
+                    is = connection.getInputStream();
+                    BufferedReader br = new BufferedReader(new InputStreamReader(is));
+                    String line = br.readLine();
+                    while (line != null) {
+                        if (line.indexOf(text) > -1) {
+                            return Boolean.TRUE;
+                        }
+                        line = br.readLine();
+                    }
+                    is.close();
+                } catch (Exception e) {
+                    //e.printStackTrace();
+                    return null;
+                } finally {
+                    if (is != null) {
+                        try {
+                            is.close();
+                        } catch (IOException e) {
+                            // ignore
+                        }
+                    }
+                }
+                return null;
+            }
+
+            @Override
+            public String getDescription() {
+                return ("Text \"" + text + "\" at http://localhost:8080/" + urlSuffix);
+            }
+        };
+        Waiter waiter = new Waiter(waitable);
+        waiter.getTimeouts().setTimeout("Waiter.WaitingTime", timeout);
+        try {
+            waiter.waitAction(null);
+        } catch (InterruptedException e) {
+            throw new JemmyException("Exception while waiting for connection.", e);
+        }
     }
 
     protected class ServerInstance {

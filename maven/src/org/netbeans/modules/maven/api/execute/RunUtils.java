@@ -63,6 +63,7 @@ import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.LifecycleManager;
 import org.openide.execution.ExecutionEngine;
 import org.openide.execution.ExecutorTask;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
 import org.openide.windows.WindowManager;
@@ -72,6 +73,8 @@ import org.openide.windows.WindowManager;
  * @author mkleint
  */
 public final class RunUtils {
+    
+    private final static RequestProcessor UPDATE_INDEX_RP = new RequestProcessor(RunUtils.class.getName(), 5);
     
     /** Creates a new instance of RunUtils */
     private RunUtils() {
@@ -124,6 +127,8 @@ public final class RunUtils {
      * Execute maven build in NetBeans execution engine.
      * Most callers should rather use {@link #run} as this variant does no (non-late-bound) prerequisite checks.
      * It is mostly suitable for cases where you need full control by the caller over the config, or want to rerun a previous execution.
+     * @param config
+     * @return 
      */
     public static ExecutorTask executeMaven(final RunConfig config) {
         // save all edited files.. maybe finetune for project's files only, however that would fail for multiprojects..
@@ -139,13 +144,18 @@ public final class RunUtils {
                 if (mp == null) {
                     return;
                 }
-                List<Artifact> arts = new ArrayList<Artifact>();
+                final List<Artifact> arts = new ArrayList<Artifact>();
                 Artifact main = mp.getArtifact();
                 if (main != null) { // #157572?
                     arts.add(main);
                 }
                 arts.addAll(mp.getArtifacts());
-                RepositoryIndexer.updateIndexWithArtifacts(RepositoryPreferences.getInstance().getLocalRepository(), arts);
+                UPDATE_INDEX_RP.post(new Runnable() { //a meager attempt to fix #234715 based on comment 13 in the issue.
+                    @Override
+                    public void run() {
+                        RepositoryIndexer.updateIndexWithArtifacts(RepositoryPreferences.getInstance().getLocalRepository(), arts);
+                    }
+                });
             }
         });
         return task;

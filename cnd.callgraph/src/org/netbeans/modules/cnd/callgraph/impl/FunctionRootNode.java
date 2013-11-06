@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.callgraph.impl;
 import java.awt.Image;
 import java.util.ArrayList;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.callgraph.api.Function;
 import org.openide.nodes.AbstractNode;
 import org.openide.util.ImageUtilities;
@@ -88,10 +89,14 @@ public class FunctionRootNode extends AbstractNode {
 
                 @Override
                 public void run() {
-                    Image icon = object.getIcon();
-                    image = mergeBadge(icon);
-                    fireIconChange();
-                    fireOpenedIconChange();
+                    if (SwingUtilities.isEventDispatchThread()) {
+                        fireIconChange();
+                        fireOpenedIconChange();
+                    } else {
+                        Image icon = object.getIcon();
+                        image = mergeBadge(icon);
+                        SwingUtilities.invokeLater(this);
+                    }
                 }
             });
         } else {

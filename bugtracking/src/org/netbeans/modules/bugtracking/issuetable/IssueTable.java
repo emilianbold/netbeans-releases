@@ -99,7 +99,7 @@ import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.spi.QueryController;
-import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.openide.awt.MouseUtils;
 import org.openide.explorer.view.TreeTableView;
 import org.openide.nodes.Node;

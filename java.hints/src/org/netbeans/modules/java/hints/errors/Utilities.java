@@ -1145,6 +1145,12 @@ public class Utilities {
         }
 
         @Override
+        public Boolean scan(TreePath path, Void p) {
+            seenTrees.add(path.getLeaf());
+            return super.scan(path, p);
+        }
+
+        @Override
         public Boolean scan(Tree tree, Void p) {
             seenTrees.add(tree);
             return super.scan(tree, p);

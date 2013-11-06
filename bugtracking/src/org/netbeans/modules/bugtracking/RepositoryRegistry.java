@@ -62,7 +62,7 @@ import org.netbeans.modules.bugtracking.team.TeamRepositories;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.util.LogUtils;
+import org.netbeans.modules.bugtracking.commons.LogUtils;
 import org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils;
 import org.openide.util.NbPreferences;
 

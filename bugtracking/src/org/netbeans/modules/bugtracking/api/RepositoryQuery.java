@@ -78,6 +78,7 @@ public final class RepositoryQuery {
      * than a modal Repository picker dialog will be presented.  
      * 
      * @return a Repository
+     * @see RepositoryQueryImplementation
      */
     public static Repository getRepository(FileObject fileObject, boolean askIfUnknown) {
         if(fileObject == null) {

@@ -56,7 +56,7 @@ import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.bugtracking.util.LinkButton;
+import org.netbeans.modules.bugtracking.commons.LinkButton;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.repository.NBRepositorySupport;

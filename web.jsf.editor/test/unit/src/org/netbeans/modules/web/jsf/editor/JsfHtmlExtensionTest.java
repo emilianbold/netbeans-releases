@@ -89,6 +89,11 @@ public class JsfHtmlExtensionTest extends TestBaseForTestProject {
         testCC("testWebProject/web/cctest_newns.xhtml", "<f:ajax immediate=\"|\"/>", new String[]{"true", "false"}, Match.EXACT);
     }
 
+    public void testSrcAttributeCompletion01() throws Exception {
+        // src attribute completion in ui:include element
+        testCC("testWebProject/web/cctest_newns.xhtml", "<ui:include src=\"|\"/>", new String[]{"index.xhtml", "ccusage.xhtml", "test.xhtml", "WEB-INF/"}, Match.CONTAINS);
+    }
+
     protected void testCC(String filePath, String testText, String[] expected, Match matchType) throws Exception {
         testCC(filePath, testText, expected, matchType, -1);
     }

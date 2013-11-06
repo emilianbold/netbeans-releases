@@ -42,13 +42,38 @@
 
 package org.netbeans.modules.javascript.karma.exec;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
+import org.netbeans.modules.gsf.testrunner.api.RerunType;
+import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
+import org.netbeans.modules.javascript.karma.run.RunInfo;
+import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.ChangeSupport;
 
 public final class KarmaServer {
+
+    static final Logger LOGGER = Logger.getLogger(KarmaServer.class.getName());
+
+    private static final String NETBEANS_KARMA_CONFIG_NAME = "netbeans-karma.conf.js"; // NOI18N
 
     private final int port;
     private final Project project;
@@ -59,6 +84,7 @@ public final class KarmaServer {
 
     volatile boolean started = false;
     volatile boolean starting = false;
+    private volatile File netBeansKarmaReporter = null;
 
 
     KarmaServer(int port, Project project) {
@@ -81,7 +107,13 @@ public final class KarmaServer {
             fireChange();
             return false;
         }
-        server = karmaExecutable.start(port, KarmaPreferences.getInstance().getConfig(project));
+        String projectConfigFile = getProjectConfigFile();
+        String netBeansConfigFile = getNetBeansConfigFile(projectConfigFile);
+        if (netBeansConfigFile == null) {
+            // some error
+            return false;
+        }
+        server = karmaExecutable.start(port, new RunInfo(project, new RerunHandlerImpl(this), netBeansConfigFile, projectConfigFile, null));
         starting = false;
         if (server != null) {
             started = true;
@@ -147,9 +179,124 @@ public final class KarmaServer {
         changeSupport.fireChange();
     }
 
+    @CheckForNull
+    private String getNetBeansConfigFile(String projectConfigFile) {
+        FileObject nbConfig = FileUtil.getConfigFile("Karma/karma-netbeans.conf.js"); // NOI18N
+        assert nbConfig != null;
+        try {
+            File tmpDir = new File(System.getProperty("java.io.tmpdir"), "netbeans-karma-" + getProjectName()); // NOI18N
+            tmpDir.mkdir();
+            File targetFile = new File(tmpDir, NETBEANS_KARMA_CONFIG_NAME);
+            if (targetFile.isFile()) {
+                targetFile.delete();
+            }
+            DataObject template = DataObject.find(nbConfig);
+            DataFolder targetDir = DataFolder.findFolder(FileUtil.toFileObject(tmpDir));
+            DataObject config = template.createFromTemplate(targetDir, NETBEANS_KARMA_CONFIG_NAME, getParams(projectConfigFile)); // NOI18N
+            return FileUtil.toFile(config.getPrimaryFile()).getAbsolutePath();
+        } catch (DataObjectNotFoundException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+            throw new IllegalStateException("Cannot find dataobject for fileobject", ex);
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
+        return null;
+    }
+
+    private Map<String, ? extends Object> getParams(String projectConfigFile) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("projectConfig", projectConfigFile); // NOI18N
+        Collection<FileObject> webRoots = ProjectWebRootQuery.getWebRoots(project);
+        if (webRoots.isEmpty()) {
+            throw new IllegalStateException("Project " + project.getClass().getName() + " must provide ProjectWebRootProvider in its lookup");
+        }
+        File webRoot = FileUtil.toFile(webRoots.iterator().next());
+        params.put("projectWebRoot", webRoot.getAbsolutePath()); // NOI18N
+        // XXX
+        params.put("coverage", false); // NOI18N
+        params.put("karmaNetbeansReporter", getNetBeansKarmaReporter().getAbsolutePath()); // NOI18N
+        params.put("fileSeparator", File.separator); // NOI18N
+        return params;
+    }
+
+    private String getProjectConfigFile() {
+        return KarmaPreferences.getConfig(project);
+    }
+
+    private File getNetBeansKarmaReporter() {
+        if (netBeansKarmaReporter == null) {
+            netBeansKarmaReporter = InstalledFileLocator.getDefault().locate(
+                    "karma/karma-netbeans-reporter", "org.netbeans.modules.javascript.karma", false); // NOI18N
+        }
+        return netBeansKarmaReporter;
+    }
+
+    private String getProjectName() {
+        return ProjectUtils.getInformation(project).getName();
+    }
+
     @Override
     public String toString() {
         return "KarmaServer{" + "port=" + port + ", project=" + project.getProjectDirectory() + '}'; // NOI18N
+    }
+
+    //~ Inner classes
+
+    private static final class RerunHandlerImpl implements RerunHandler {
+
+        private final KarmaServer karmaServer;
+        private final ChangeSupport changeSupport = new ChangeSupport(this);
+
+        private volatile boolean enabled = true;
+
+
+        public RerunHandlerImpl(KarmaServer karmaServer) {
+            assert karmaServer != null;
+            this.karmaServer = karmaServer;
+        }
+
+        @Override
+        public void rerun() {
+            setEnabled(false);
+            karmaServer.runTests();
+            setEnabled(true);
+        }
+
+        @Override
+        public void rerun(Set<Testcase> tests) {
+            throw new UnsupportedOperationException("Not supported by Karma");
+        }
+
+        @Override
+        public boolean enabled(RerunType type) {
+            switch (type) {
+                case ALL:
+                    return enabled;
+                case CUSTOM:
+                    return false;
+                default:
+                    assert false : "Unknown rerun type: " + type;
+            }
+            return false;
+        }
+
+        @Override
+        public void addChangeListener(ChangeListener listener) {
+            changeSupport.addChangeListener(listener);
+        }
+
+        @Override
+        public void removeChangeListener(ChangeListener listener) {
+            changeSupport.removeChangeListener(listener);
+        }
+
+        private void setEnabled(boolean newEnabled) {
+            if (enabled != newEnabled) {
+                enabled = newEnabled;
+                changeSupport.fireChange();
+            }
+        }
+
     }
 
 }

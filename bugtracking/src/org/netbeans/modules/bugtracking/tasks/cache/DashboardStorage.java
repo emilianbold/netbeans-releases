@@ -53,7 +53,7 @@ import java.util.zip.ZipOutputStream;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.tasks.cache.StorageUtils.FileLocks;
 import org.netbeans.modules.bugtracking.tasks.cache.StorageUtils.FileLocks.FileLock;
-import org.netbeans.modules.bugtracking.util.TextUtils;
+import org.netbeans.modules.bugtracking.commons.TextUtils;
 import org.openide.modules.Places;
 
 /**

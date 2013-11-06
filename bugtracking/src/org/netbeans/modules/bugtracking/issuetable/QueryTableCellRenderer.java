@@ -66,8 +66,8 @@ import org.netbeans.modules.bugtracking.issuetable.IssueNode.IssueProperty;
 import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
-import org.netbeans.modules.bugtracking.util.TextUtils;
-import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.netbeans.modules.bugtracking.commons.TextUtils;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
