@@ -64,6 +64,7 @@ import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
+import org.netbeans.modules.web.jsf.editor.actions.ImportData.VariantItem;
 import org.netbeans.modules.web.jsf.editor.hints.LibraryDeclarationChecker;
 import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 import org.netbeans.modules.web.jsfapi.api.Library;
@@ -98,6 +99,9 @@ class NamespaceProcessor {
     ImportData computeImportData() {
         final ImportData importData = new ImportData();
 
+        // use JSF 2.2 namespaces?
+        importData.isJsf22 = jsfSupport.isJsf22Plus();
+
         // unused declarations
         for (Attribute namespaceAttribute : resultCollector.getUnusedNamespaces()) {
             importData.addToRemove(namespaceAttribute);
@@ -105,7 +109,7 @@ class NamespaceProcessor {
 
         for (String prefix : resultCollector.getUnresolvedPrefixes()) {
             importData.shouldShowNamespacesPanel = true;
-            List<String> sortedVariants = getSortedVariants(prefix);
+            List<VariantItem> sortedVariants = getSortedVariants(prefix);
             importData.add(new ImportData.DataItem(
                     prefix,
                     sortedVariants,
@@ -147,8 +151,8 @@ class NamespaceProcessor {
         return result;
     }
 
-    private List<String> getSortedVariants(String prefix) {
-        List<String> result = new ArrayList<>();
+    private List<VariantItem> getSortedVariants(String prefix) {
+        List<VariantItem> result = new ArrayList<>();
         List<String> sortedList = new ArrayList<>(supportedLibraries.keySet());
         Collections.sort(sortedList);
 
@@ -157,14 +161,15 @@ class NamespaceProcessor {
             String ns = it.next();
             Library library = supportedLibraries.get(ns);
             if (prefix.equals(library.getDefaultPrefix())) {
-                result.add(ns);
+                result.add(new VariantItem(prefix, ns, library));
                 it.remove();
             }
         }
 
         // complete the remaining items
-        for (String string : sortedList) {
-            result.add(string);
+        for (String remainingNs : sortedList) {
+            Library library = supportedLibraries.get(remainingNs);
+            result.add(new VariantItem(library.getDefaultPrefix(), remainingNs, library));
         }
 
         return result;

@@ -50,6 +50,8 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
 import org.netbeans.modules.web.jsf.editor.PositionRange;
+import org.netbeans.modules.web.jsf.editor.actions.ImportData.VariantItem;
+import org.netbeans.modules.web.jsfapi.spi.LibraryUtils;
 import org.openide.util.Exceptions;
 
 /**
@@ -61,11 +63,11 @@ class FixNamespacesPerformer {
 
     private final HtmlParserResult parserResult;
     private final ImportData importData;
-    private final List<String> selections;
+    private final List<VariantItem> selections;
     private final boolean removeUnused;
     private BaseDocument baseDocument;
 
-    public FixNamespacesPerformer(HtmlParserResult parserResult, ImportData importData, List<String> selections, boolean removeUnused) {
+    public FixNamespacesPerformer(HtmlParserResult parserResult, ImportData importData, List<VariantItem> selections, boolean removeUnused) {
         this.parserResult = parserResult;
         this.importData = importData;
         this.selections = selections;
@@ -77,38 +79,47 @@ class FixNamespacesPerformer {
         if (document instanceof BaseDocument) {
             baseDocument = (BaseDocument) document;
 
-            if (removeUnused) {
-                removeUnusedNamespaces(importData);
-            }
+            baseDocument.runAtomic(new Runnable() {
+                @Override
+                public void run() {
+                    // import missing namespaces
+                    includeMissingNamespaces();
 
+                    // remove unused namespaces
+                    if (removeUnused) {
+                        removeUnusedNamespaces();
+                    }
+                }
+            });
         }
     }
 
-    private void removeUnusedNamespaces(final ImportData importData) {
-        baseDocument.runAtomic(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    List<PositionRange> ranges = new ArrayList<>(importData.getItemsToRemove().size());
-                    for (Attribute attribute : importData.getItemsToRemove()) {
-                        int from = attribute.from();
-                        int to = attribute.to();
-                        //check if the line before the area is white
-                        int lineBeginning = Utilities.getRowStart(baseDocument, attribute.from());
-                        int firstNonWhite = Utilities.getFirstNonWhiteBwd(baseDocument, attribute.from());
-                        if (lineBeginning > firstNonWhite) {
-                            //delete the white content before the area inclusing the newline
-                            from = lineBeginning - 1; // (-1 => includes the line end)
-                        }
-                        ranges.add(new PositionRange(baseDocument, from, to));
-                    }
-                    for (PositionRange positionRange : ranges) {
-                        baseDocument.remove(positionRange.getFrom(), positionRange.getTo() - positionRange.getFrom());
-                    }
-                } catch (BadLocationException ex) {
-                    Exceptions.printStackTrace(ex);
+    private void removeUnusedNamespaces() {
+        try {
+            List<PositionRange> ranges = new ArrayList<>(importData.getItemsToRemove().size());
+            for (Attribute attribute : importData.getItemsToRemove()) {
+                int from = attribute.from();
+                int to = attribute.to();
+                //check if the line before the area is white
+                int lineBeginning = Utilities.getRowStart(baseDocument, attribute.from());
+                int firstNonWhite = Utilities.getFirstNonWhiteBwd(baseDocument, attribute.from());
+                if (lineBeginning > firstNonWhite) {
+                    //delete the white content before the area inclusing the newline
+                    from = lineBeginning - 1; // (-1 => includes the line end)
                 }
+                ranges.add(new PositionRange(baseDocument, from, to));
             }
-        });
+            for (PositionRange positionRange : ranges) {
+                baseDocument.remove(positionRange.getFrom(), positionRange.getTo() - positionRange.getFrom());
+            }
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private void includeMissingNamespaces() {
+        for (VariantItem variant : selections) {
+            LibraryUtils.importLibrary(baseDocument, variant.getLibrary(), variant.getPrefix(), importData.isJsf22);
+        }
     }
 }

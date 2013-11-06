@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
+import org.netbeans.modules.web.jsfapi.api.Library;
 
 /**
  *
@@ -53,9 +54,12 @@ import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
 public class ImportData {
 
     public volatile boolean shouldShowNamespacesPanel;
+    public volatile boolean isJsf22;
+
     private final List<DataItem> dataItems = new ArrayList<>();
     private final List<DataItem> dataItemsToReplace = new ArrayList<>();
     private final List<Attribute> dataToRemove = new ArrayList<>();
+
 
     public void add(DataItem item) {
         dataItems.add(item);
@@ -81,8 +85,8 @@ public class ImportData {
         return new ArrayList<>(dataToRemove);
     }
 
-    public List<String> getDefaultVariants() {
-        List<String> result = new ArrayList<>();
+    public List<VariantItem> getDefaultVariants() {
+        List<VariantItem> result = new ArrayList<>();
         for (DataItem dataItem : dataItems) {
             result.add(dataItem.getDefaultVariant());
         }
@@ -92,10 +96,10 @@ public class ImportData {
     public static class DataItem {
 
         private final String prefix;
-        private final List<String> variants;
-        private final String defaultVariant;
+        private final List<VariantItem> variants;
+        private final VariantItem defaultVariant;
 
-        public DataItem(String prefix, List<String> variants, String defaultVariant) {
+        public DataItem(String prefix, List<VariantItem> variants, VariantItem defaultVariant) {
             this.prefix = prefix;
             this.variants = variants;
             this.defaultVariant = defaultVariant;
@@ -105,11 +109,11 @@ public class ImportData {
             return prefix;
         }
 
-        public List<String> getVariants() {
+        public List<VariantItem> getVariants() {
             return new ArrayList<>(variants);
         }
 
-        public String getDefaultVariant() {
+        public VariantItem getDefaultVariant() {
             return defaultVariant;
         }
 
@@ -142,5 +146,66 @@ public class ImportData {
             }
             return true;
         }
+    }
+
+    public static class VariantItem {
+
+        private final String prefix;
+        private final String namespace;
+        private final Library library;
+
+        public VariantItem(String prefix, String namespace, Library library) {
+            this.prefix = prefix;
+            this.namespace = namespace;
+            this.library = library;
+        }
+
+        public String getPrefix() {
+            return prefix;
+        }
+
+        public String getNamespace() {
+            return namespace;
+        }
+
+        public Library getLibrary() {
+            return library;
+        }
+
+        @Override
+        public String toString() {
+            return getNamespace();
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 67 * hash + Objects.hashCode(this.prefix);
+            hash = 67 * hash + Objects.hashCode(this.namespace);
+            hash = 67 * hash + Objects.hashCode(this.library);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final VariantItem other = (VariantItem) obj;
+            if (!Objects.equals(this.prefix, other.prefix)) {
+                return false;
+            }
+            if (!Objects.equals(this.namespace, other.namespace)) {
+                return false;
+            }
+            if (!Objects.equals(this.library, other.library)) {
+                return false;
+            }
+            return true;
+        }
+
     }
 }

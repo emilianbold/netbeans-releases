@@ -66,6 +66,7 @@ import javax.swing.JLabel;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import org.netbeans.modules.web.jsf.editor.actions.ImportData.DataItem;
+import org.netbeans.modules.web.jsf.editor.actions.ImportData.VariantItem;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -145,7 +146,7 @@ public class FixDuplicateImportStmts extends javax.swing.JPanel {
     }
 
     private JComboBox createComboBox(DataItem item, Font font, FocusListener listener) {
-        List<String> variants = item.getVariants();
+        List<VariantItem> variants = item.getVariants();
         JComboBox combo = new JComboBox(variants.toArray());
         combo.setSelectedItem(item.getDefaultVariant());
         combo.getAccessibleContext().setAccessibleDescription(getBundleString("FixDupImportStmts_Combo_ACSD")); //NOI18N
@@ -174,13 +175,13 @@ public class FixDuplicateImportStmts extends javax.swing.JPanel {
         checkUnusedImports.getAccessibleContext().setAccessibleDescription(getBundleString("FixDupImportStmts_checkUnusedImports_a11y")); // NOI18N
     }
 
-    public List<String> getSelections() {
-        List<String> result = new ArrayList<>();
+    public List<VariantItem> getSelections() {
+        List<VariantItem> result = new ArrayList<>();
         int numberOfCombos = combos == null ? 0 : combos.length;
         for (int i = 0; i < numberOfCombos; i++) {
             Object selectedItem = combos[i].getSelectedItem();
-            assert (selectedItem instanceof String);
-            result.add((String) selectedItem);
+            assert (selectedItem instanceof VariantItem);
+            result.add((VariantItem) selectedItem);
         }
         return result;
     }

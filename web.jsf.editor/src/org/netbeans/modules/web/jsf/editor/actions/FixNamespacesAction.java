@@ -67,6 +67,7 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.web.common.api.WebUtils;
+import org.netbeans.modules.web.jsf.editor.actions.ImportData.VariantItem;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Exceptions;
@@ -167,7 +168,7 @@ public class FixNamespacesAction extends BaseAction {
     private static void performFixNamespaces(
             final HtmlParserResult parserResult,
             final ImportData importData,
-            final List<String> selections,
+            final List<VariantItem> selections,
             final boolean removeUnused) {
         new FixNamespacesPerformer(parserResult, importData, selections, removeUnused).perform();
     }
@@ -205,7 +206,7 @@ public class FixNamespacesAction extends BaseAction {
             @Override
             public void actionPerformed(ActionEvent e) {
                 ok.setEnabled(false);
-                final List<String> selections = panel.getSelections();
+                final List<VariantItem> selections = panel.getSelections();
                 final boolean removeUnusedNamespaces = panel.getRemoveUnusedNamespaces();
                 RP.post(new Runnable() {
                     @Override
