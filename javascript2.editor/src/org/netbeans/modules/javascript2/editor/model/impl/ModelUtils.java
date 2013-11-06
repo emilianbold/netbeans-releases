@@ -178,6 +178,28 @@ public class ModelUtils {
                     break;
                 }
             }
+            if (object instanceof JsArray) {
+                JsArray array = (JsArray)object;
+                JsObject global = getGlobalObject(object);
+                for (TypeUsage type : array.getTypesInArray()) {
+                    if (type.getType().startsWith(SemiTypeResolverVisitor.ST_ANONYM)) {
+                        int anonymOffset = Integer.parseInt(type.getType().substring(SemiTypeResolverVisitor.ST_ANONYM.length()));
+                        if (anonymOffset > 0) {
+                            DeclarationScope scope = getDeclarationScope(array);
+                            for (JsObject property : ((JsObject)scope).getProperties().values()) {
+                                JsElement.Kind kind = property.getJSKind();
+                                if (kind == JsElement.Kind.ANONYMOUS_OBJECT) {
+                                    tmpObject = findJsObject(property, offset);
+                                }
+                                if (tmpObject != null) {
+                                    result = tmpObject;
+                                    break;
+                                }
+                            }
+                        }   
+                    }
+                }
+            }
         }
         return result;
     }
@@ -781,13 +803,22 @@ public class ModelUtils {
                             
                             for (TypeUsage typeUsage : typeFromWith) {
                                 String sType = typeUsage.getType();
-                            if (sType.startsWith("@exp;")) {
-                                sType = sType.substring(5);
-                                sType = sType.replace("@pro;", ".");
-                            }   
+                                if (sType.startsWith("@exp;")) {
+                                    sType = sType.substring(5);
+                                    sType = sType.replace("@pro;", ".");
+                                }   
                                 ModelUtils.resolveAssignments(model, jsIndex, sType, fromAssignments);
                                 for (TypeUsage typeUsage1 : fromAssignments) {
-                                    lastResolvedTypes.add(new TypeUsageImpl(typeUsage1.getType() + kind + ";" + name, typeUsage.getOffset(), false));
+                                    String localFqn = localObject != null ? localObject.getFullyQualifiedName() : null;
+                                    if (localFqn != null  && name.startsWith(localFqn) && name.length() > localFqn.length() ) {
+                                        lastResolvedTypes.add(new TypeUsageImpl(typeUsage1.getType() + kind + ";" + name.substring(localFqn.length() + 1), typeUsage.getOffset(), false));
+                                    } else {
+                                        if (!typeUsage1.getType().equals(name)) {
+                                            lastResolvedTypes.add(new TypeUsageImpl(typeUsage1.getType() + kind + ";" + name, typeUsage.getOffset(), false));
+                                        } else {
+                                            lastResolvedTypes.add(typeUsage1);
+                                        }
+                                    }
                                 }
                                 
                             }
@@ -870,8 +901,15 @@ public class ModelUtils {
                         if (jsIndex != null) {
                             // for the type build the prototype chain.
                             Collection<String> prototypeChain = new ArrayList<String>();
-                            prototypeChain.add(typeUsage.getType());
-                            prototypeChain.addAll(findPrototypeChain(typeUsage.getType(), jsIndex));
+                            String typeName = typeUsage.getType();
+                            if (typeName.contains(SemiTypeResolverVisitor.ST_EXP)) {
+                                typeName = typeName.substring(typeName.indexOf(SemiTypeResolverVisitor.ST_EXP) + SemiTypeResolverVisitor.ST_EXP.length());
+                            }
+                            if (typeName.contains(SemiTypeResolverVisitor.ST_PRO)) {
+                                typeName = typeName.replace(SemiTypeResolverVisitor.ST_PRO, ".");
+                            }
+                            prototypeChain.add(typeName);
+                            prototypeChain.addAll(findPrototypeChain(typeName, jsIndex));
 
                             Collection<? extends IndexResult> indexResults = null;
                             String propertyToCheck = null;
@@ -913,7 +951,7 @@ public class ModelUtils {
                                 }
                             }
                             if (checkProperty) {
-                                String propertyFQN = propertyToCheck != null ? propertyToCheck : typeUsage.getType() + "." + name;
+                                String propertyFQN = propertyToCheck != null ? propertyToCheck : typeName + "." + name;
                                 List<TypeUsage> fromAssignment = new ArrayList<TypeUsage>();
                                 resolveAssignments(model, jsIndex, propertyFQN, fromAssignment);
                                 if (fromAssignment.isEmpty()) {
