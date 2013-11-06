@@ -1,0 +1,24 @@
+ * @param type $wrongName
+               ----------
+HINT:Wrong Param Name
+FIX:Rename Param
+ * @param type $wrongName
+               ----------
+HINT:Wrong Param Name
+FIX:Rename Param
+ * @param type
+   
+HINT:Wrong Param Name
+FIX:Rename Param
+     * @param type $wrongName
+                   ----------
+HINT:Wrong Param Name
+FIX:Rename Param
+     * @param type $wrongName
+                   ----------
+HINT:Wrong Param Name
+FIX:Rename Param
+     * @param type
+       
+HINT:Wrong Param Name
+FIX:Rename Param

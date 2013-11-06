@@ -91,8 +91,8 @@ public class PHP53UnhandledError extends UnhandledErrorRule {
     }
 
     private static class CheckVisitor extends DefaultVisitor {
-        private List<Error> errors = new ArrayList<>();
-        private Stack<ASTNode> parent = new Stack<>();
+        private final List<Error> errors = new ArrayList<>();
+        private final Stack<ASTNode> parent = new Stack<>();
         private final FileObject fileObject;
 
         public CheckVisitor(FileObject fileObject) {
