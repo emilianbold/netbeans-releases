@@ -151,7 +151,9 @@ class NamespaceProcessor {
 
         private void initialize() {
             for (String prefix : parserResult.getNamespaces().values()) {
-                prefixMap.put(prefix, Boolean.FALSE);
+                if (prefix != null) {
+                    prefixMap.put(prefix, Boolean.FALSE);
+                }
             }
 
             // gather namespaces and jsf: namespace usage
@@ -172,7 +174,7 @@ class NamespaceProcessor {
             for (Map.Entry<String, Boolean> prefixEntry : prefixMap.entrySet()) {
                 if (!prefixEntry.getValue()) {
                     for (Map.Entry<String, String> nsEntry : nsCollector.namespaces.entrySet()) {
-                        if (nsEntry.getValue().equals(prefixEntry.getKey())) {
+                        if (prefixEntry.getKey().equals(nsEntry.getValue())) {
                             toRemove.add(nsCollector.namespace2Attribute.get(nsEntry.getKey()));
                         }
                     }
