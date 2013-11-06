@@ -41,28 +41,13 @@
  */
 package org.netbeans.modules.bugtracking.api;
 
-import java.awt.Dimension;
 import java.io.File;
-import java.util.ResourceBundle;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.LayoutStyle;
-import javax.swing.SwingConstants;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
 import org.netbeans.modules.bugtracking.ui.search.QuickSearchPanel;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 
 /**
  * Provides a UI Component to pick issues. 

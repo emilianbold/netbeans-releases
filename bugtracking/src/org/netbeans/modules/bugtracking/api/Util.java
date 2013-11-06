@@ -48,7 +48,6 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.tasks.DashboardTopComponent;
@@ -59,8 +58,6 @@ import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.IssueFinderUtils;
 import org.netbeans.modules.team.spi.TeamAccessorUtils;
-import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
-import org.netbeans.modules.team.spi.TeamProject;
 
 /**
  * Bugtracking Utility methods.

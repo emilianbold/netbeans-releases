@@ -47,9 +47,7 @@ import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.QueryImpl;
-import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
-import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 
 /**
  * Represents a bugtracking Query.
