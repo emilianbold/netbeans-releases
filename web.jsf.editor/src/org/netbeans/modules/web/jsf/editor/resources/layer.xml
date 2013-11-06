@@ -15,12 +15,17 @@
                 </file>
             </folder>
             <folder name="xhtml">
-		<folder name="RefactoringActions">
-		    <file name="org-netbeans-modules-web-jsf-editor-refactoring-actions-ConvertToCCAction.shadow">
-			<attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-web-jsf-editor-refactoring-actions-ConvertToCCAction.instance"/>
-			<attr name="position" intvalue="430"/>
-		    </file>
-		</folder>
+                <folder name="Popup">
+                    <file name="fix-namespaces">
+                        <attr name="position" intvalue="1360"/>
+                    </file>
+                </folder>
+                <folder name="RefactoringActions">
+                    <file name="org-netbeans-modules-web-jsf-editor-refactoring-actions-ConvertToCCAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-web-jsf-editor-refactoring-actions-ConvertToCCAction.instance"/>
+                        <attr name="position" intvalue="430"/>
+                    </file>
+                </folder>
                 <folder name="text">
                     <folder name="html">
                         <folder name="CodeGenerators">
@@ -34,8 +39,6 @@
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.html.palette.api.HtmlPaletteFolderProvider"/>
                 </file>
             </folder>
-            
-
         </folder>
     </folder>
 
@@ -44,7 +47,7 @@
             <file name="org-netbeans-modules-web-jsf-editor-refactoring-actions-ConvertToCCAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.jsf.editor.refactoring.actions.JsfRefactoringActionsFactory.convertToCCAction"/>
             </file>
-	</folder>
+        </folder>
     </folder>
 
     <folder name="XHTMLPalette">
