@@ -84,10 +84,4 @@ public abstract class TeamProject {
 
     public abstract String getHost();
 
-    /**
-     * Notifies team that a query was activated
-     * @param query
-     */
-//    public abstract void fireQueryActivated(Query query);
-
 }
