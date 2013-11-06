@@ -47,11 +47,11 @@ var NetBeansReporter = function(baseReporterDecorator) {
 
     this.BROWSER_START = '$NB$netbeans browserStart name=$NB$%s$NB$';
     this.BROWSER_END = '$NB$netbeans browserEnd name=$NB$%s$NB$';
-    this.SUITE_START = '$NB$netbeans testSuiteStarted name=$NB$%s$NB$';
-    this.SUITE_END = '$NB$netbeans testSuiteFinished name=$NB$%s$NB$';
-    this.TEST_PASSED = '$NB$netbeans testPassed name=$NB$%s$NB$ duration=$NB$%s$NB$';
-    this.TEST_IGNORED = '$NB$netbeans testIgnored name=$NB$%s$NB$';
-    this.TEST_FAILED = '$NB$netbeans testFailed name=$NB$%s$NB$ details=$NB$%s$NB$ duration=$NB$%s$NB$';
+    this.SUITE_START = '$NB$netbeans suiteStart name=$NB$%s$NB$';
+    this.SUITE_END = '$NB$netbeans suiteEnd name=$NB$%s$NB$';
+    this.TEST_PASS = '$NB$netbeans testPass name=$NB$%s$NB$ duration=$NB$%s$NB$';
+    this.TEST_IGNORE = '$NB$netbeans testIgnore name=$NB$%s$NB$';
+    this.TEST_FAILURE = '$NB$netbeans testFailure name=$NB$%s$NB$ details=$NB$%s$NB$ duration=$NB$%s$NB$';
 
 
     this.onRunStart = function(browsers) {
@@ -69,19 +69,19 @@ var NetBeansReporter = function(baseReporterDecorator) {
     this.specSuccess = function(browser, result) {
         this.checkBrowser(browser.id);
         this.checkSuite(browser, result);
-        this.printMessage(this.TEST_PASSED, result.description, result.time);
+        this.printMessage(this.TEST_PASS, result.description, result.time);
     };
 
     this.specFailure = function(browser, result) {
         this.checkBrowser(browser.id);
         this.checkSuite(browser, result);
-        this.printMessage(this.TEST_FAILED, result.description, JSON.stringify(result.log), result.time);
+        this.printMessage(this.TEST_FAILURE, result.description, JSON.stringify(result.log), result.time);
     };
 
     this.specSkipped = function(browser, result) {
         this.checkBrowser(browser.id);
         this.checkSuite(browser, result);
-        this.printMessage(this.TEST_IGNORED, result.description);
+        this.printMessage(this.TEST_IGNORE, result.description);
     };
 
     this.onRunComplete = function() {

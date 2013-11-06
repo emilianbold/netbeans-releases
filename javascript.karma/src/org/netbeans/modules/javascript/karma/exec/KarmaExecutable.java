@@ -60,6 +60,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferencesValidator;
+import org.netbeans.modules.javascript.karma.run.RunInfo;
+import org.netbeans.modules.javascript.karma.run.TestRunner;
 import org.netbeans.modules.javascript.karma.ui.customizer.KarmaCustomizer;
 import org.netbeans.modules.javascript.karma.util.ExternalExecutable;
 import org.netbeans.modules.javascript.karma.util.FileUtils;
@@ -110,10 +112,10 @@ public final class KarmaExecutable {
         "KarmaExecutable.start=Karma ({0})",
     })
     @CheckForNull
-    public Future<Integer> start(int port, String nbConfigFile, String projectConfigFile) {
+    public Future<Integer> start(int port, RunInfo runInfo) {
         List<String> params = new ArrayList<>(4);
         params.add(START_COMMAND);
-        params.add(nbConfigFile);
+        params.add(runInfo.getNbConfigFile());
         params.add(PORT_PARAMETER);
         params.add(Integer.toString(port));
         final CountDownLatch countDownLatch = new CountDownLatch(1);
@@ -125,7 +127,7 @@ public final class KarmaExecutable {
         };
         Future<Integer> task = getExecutable(Bundle.KarmaExecutable_start(ProjectUtils.getInformation(project).getDisplayName()), getProjectDir())
                 .additionalParameters(params)
-                .run(getStartDescriptor(nbConfigFile, projectConfigFile, countDownTask));
+                .run(getStartDescriptor(runInfo, countDownTask));
         assert task != null : karmaPath;
         try {
             countDownLatch.await(1, TimeUnit.MINUTES);
@@ -161,13 +163,13 @@ public final class KarmaExecutable {
                 .noOutput(false);
     }
 
-    private ExecutionDescriptor getStartDescriptor(String nbConfigFile, String projectConfigFile, Runnable serverStartTask) {
+    private ExecutionDescriptor getStartDescriptor(RunInfo runInfo, Runnable serverStartTask) {
         return new ExecutionDescriptor()
                 .frontWindow(false)
                 .frontWindowOnError(false)
                 .outLineBased(true)
                 .errLineBased(true)
-                .outConvertorFactory(new ServerLineConvertorFactory(nbConfigFile, projectConfigFile, serverStartTask));
+                .outConvertorFactory(new ServerLineConvertorFactory(runInfo, serverStartTask));
     }
 
     private ExecutionDescriptor getRunDescriptor() {
@@ -190,23 +192,18 @@ public final class KarmaExecutable {
 
     private static final class ServerLineConvertorFactory implements ExecutionDescriptor.LineConvertorFactory {
 
-        private final String nbConfigFile;
-        private final String projectConfigFile;
-        private final Runnable startFinishedTask;
+        private final LineConvertor serverLineConvertor;
 
 
-        public ServerLineConvertorFactory(String nbConfigFile, String projectConfigFile, Runnable startFinishedTask) {
-            assert nbConfigFile != null;
-            assert projectConfigFile != null;
+        public ServerLineConvertorFactory(RunInfo runInfo, Runnable startFinishedTask) {
+            assert runInfo != null;
             assert startFinishedTask != null;
-            this.nbConfigFile = nbConfigFile;
-            this.projectConfigFile = projectConfigFile;
-            this.startFinishedTask = startFinishedTask;
+            serverLineConvertor = new ServerLineConvertor(runInfo, startFinishedTask);
         }
 
         @Override
         public LineConvertor newLineConvertor() {
-            return new ServerLineConvertor(nbConfigFile, projectConfigFile, startFinishedTask);
+            return serverLineConvertor;
         }
 
     }
@@ -216,34 +213,31 @@ public final class KarmaExecutable {
         // XXX browser specific
         // e.g.: (/home/gapon/NetBeansProjects/angular.js/src/auto/injector.js:6:12604)
         static final Pattern FILE_PATTERN = Pattern.compile("\\((.+?):(\\d+):\\d+\\)"); // NOI18N
-        private static final String NB_LINE = "$NB$netbeans "; // NOI18N
 
-        private final String nbConfigFile;
-        private final String projectConfigFile;
+        private final RunInfo runInfo;
         private final Runnable startFinishedTask;
+        private final TestRunner testRunner;
 
         private boolean firstLine = true;
         private boolean startFinishedTaskRun = false;
 
 
-        public ServerLineConvertor(String nbConfigFile, String projectConfigFile, Runnable startFinishedTask) {
-            assert nbConfigFile != null;
-            assert projectConfigFile != null;
+        public ServerLineConvertor(RunInfo runInfo, Runnable startFinishedTask) {
+            assert runInfo != null;
             assert startFinishedTask != null;
-            this.nbConfigFile = nbConfigFile;
-            this.projectConfigFile = projectConfigFile;
+            this.runInfo = runInfo;
             this.startFinishedTask = startFinishedTask;
+            testRunner = new TestRunner(runInfo);
         }
-
 
         @Override
         public List<ConvertedLine> convert(String line) {
             // info
             if (firstLine
-                    && line.contains(nbConfigFile)) {
+                    && line.contains(runInfo.getNbConfigFile())) {
                 firstLine = false;
                 return Collections.singletonList(ConvertedLine.forText(
-                        line.replace(nbConfigFile, projectConfigFile), null));
+                        line.replace(runInfo.getNbConfigFile(), runInfo.getProjectConfigFile()), null));
             }
             // server start
             // XXX wait for start of all browsers
@@ -254,9 +248,8 @@ public final class KarmaExecutable {
                 startFinishedTaskRun = true;
             }
             // test result
-            if (line.startsWith(NB_LINE)) {
-                // XXX
-                System.out.println("------- nb test: " + line);
+            if (line.startsWith(TestRunner.NB_LINE)) {
+                testRunner.process(line);
                 return Collections.emptyList();
             }
             // karma log
