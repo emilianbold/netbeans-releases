@@ -53,7 +53,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Position;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -81,6 +80,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
 import org.netbeans.modules.web.jsf.editor.JsfUtils;
+import org.netbeans.modules.web.jsf.editor.PositionRange;
 import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.api.NamespaceUtils;
@@ -413,7 +413,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
     }
 
     private static PositionRange createPositionRange(RuleContext context, OffsetRange offsetRange) throws BadLocationException {
-        return new PositionRange(context, offsetRange.getStart(), offsetRange.getEnd());
+        return new PositionRange(context.doc, offsetRange.getStart(), offsetRange.getEnd());
     }
     
     private static Collection<PositionRange> createPositionRanges(RuleContext context, Collection<OffsetRange> offsetRanges) throws BadLocationException {
@@ -529,22 +529,4 @@ public class LibraryDeclarationChecker extends HintsProvider {
         }
     }
 
-    private static final class PositionRange {
-
-        private Position from, to;
-
-        public PositionRange(RuleContext context, int from, int to) throws BadLocationException {
-            //the constructor will simply throw BLE when the embedded to source offset conversion fails (returns -1)
-            this.from = context.doc.createPosition(from);
-            this.to = context.doc.createPosition(to);
-        }
-
-        public int getFrom() {
-            return from.getOffset();
-        }
-
-        public int getTo() {
-            return to.getOffset();
-        }
-    }
 }

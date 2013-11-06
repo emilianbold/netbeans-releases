@@ -45,11 +45,11 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.Position;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
+import org.netbeans.modules.web.jsf.editor.PositionRange;
 import org.netbeans.modules.web.jsf.editor.actions.ImportData.ItemVariant;
 import org.openide.util.Exceptions;
 
@@ -111,23 +111,5 @@ class FixNamespacesPerformer {
                 }
             }
         });
-    }
-
-    private static final class PositionRange {
-
-        private Position from, to;
-
-        public PositionRange(BaseDocument doc, int from, int to) throws BadLocationException {
-            this.from = doc.createPosition(from);
-            this.to = doc.createPosition(to);
-        }
-
-        public int getFrom() {
-            return from.getOffset();
-        }
-
-        public int getTo() {
-            return to.getOffset();
-        }
     }
 }
