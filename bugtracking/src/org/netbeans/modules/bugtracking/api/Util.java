@@ -45,14 +45,13 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.tasks.DashboardTopComponent;
 import org.netbeans.modules.bugtracking.team.TeamRepositories;
-import org.netbeans.modules.bugtracking.team.spi.RecentIssue;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
@@ -182,7 +181,8 @@ public final class Util {
      * @param url a url comming from a Team Server - e.g. kenai or java.net. 
      * Might be representing either a team vcs repository, an issue or a team server host.
      * @param projectName the name of a particular Team Server project
-     * @return
+     * 
+     * @return a team repository
      */
     public static Repository getTeamRepository(String url, String projectName) {
         RepositoryImpl impl = TeamRepositories.getInstance().getRepository(url, projectName);
@@ -244,17 +244,13 @@ public final class Util {
     }  
     
     /**
-     * Determines all issues which where recently opened (in this nb session).
+     * Determines all issues which where recently opened (in this nb session) 
+     * ordered by their recency.
      * 
-     * @return recent issue
+     * @return recent issues
      */
-    public static Collection<RecentIssue> getRecentIssues() {
-        Map<String, List<RecentIssue>> ris = BugtrackingManager.getInstance().getAllRecentIssues();
-        ArrayList ret = new ArrayList(ris.size());
-        for(Map.Entry<String, List<RecentIssue>> entry : ris.entrySet()) {
-            ret.addAll(entry.getValue());
-        }
-        return ret;
+    public static List<Issue> getRecentIssues() {
+        return toIssues(BugtrackingManager.getInstance().getAllRecentIssues());
     }    
     
     private static boolean checkTeamLogin(Repository repository) {
@@ -267,4 +263,12 @@ public final class Util {
         }
         return true;
     }    
+    
+    static List<Issue> toIssues(Collection<IssueImpl> c) {
+        List<Issue> ret = new ArrayList<Issue>(c.size());
+        for (IssueImpl i : c) {
+            ret.add(i.getIssue());
+        }
+        return ret;
+    }
 }

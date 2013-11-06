@@ -48,7 +48,6 @@ import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.bugtracking.team.spi.RecentIssue;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.Util;
@@ -108,31 +107,10 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
 
     @Override
     public IssueHandle[] getRecentIssues() {
-        Collection<RecentIssue> recentIssues = Util.getRecentIssues();
-
-        List<RecentIssue> retIssues = new ArrayList<RecentIssue>(5);
-        for(RecentIssue ri : recentIssues) {
-            if(retIssues.size() > 5) {
-                retIssues.remove(5);
-            }
-            if(retIssues.isEmpty()) {
-                retIssues.add(ri);
-            } else {
-                for (int i = 0; i < retIssues.size(); i++) {
-                    if(ri.getTimestamp() > retIssues.get(i).getTimestamp()) {
-                        retIssues.add(i, ri);
-                        break;
-                    } else if (retIssues.size() < 5) {
-                        retIssues.add(retIssues.size(), ri);
-                        break;
-                    }
-                }
-            }
-        }
-
-        List<IssueHandle> ret = new ArrayList<IssueHandle>(retIssues.size());
-        for (RecentIssue ri : retIssues) {
-            ret.add(new IssueHandleImpl(ri.getIssue()));
+        List<Issue> recentIssues = Util.getRecentIssues();
+        List<IssueHandle> ret = new LinkedList<IssueHandle>();
+        for (int i = 0; i < recentIssues.size() || i < 5; i++) {
+            ret.add(new IssueHandleImpl(recentIssues.get(i)));
         }
         return ret.toArray(new IssueHandle[ret.size()]);
     }
@@ -149,16 +127,16 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
             Support.LOG.log(Level.FINE, "No issue tracker available for the given kenai project [{0},{1}]", new Object[]{project.getName(), project.getDisplayName()}); // NOI18N
             return new IssueHandle[0];
         }
-        Collection<RecentIssue> recentIssues = Util.getRecentIssues();
+        Collection<Issue> recentIssues = Util.getRecentIssues();
         if(recentIssues == null) {
             return new IssueHandle[0];
         }
 
         Collection<Issue> issues = new LinkedList<Issue>();
-        for (RecentIssue ri : recentIssues) {
-            Repository recentRepo = ri.getIssue().getRepository();
+        for (Issue issue : recentIssues) {
+            Repository recentRepo = issue.getRepository();
             if(recentRepo.getId().equals(repo.getId()) && recentRepo.getUrl().equals(repo.getUrl())) {
-                issues.add(ri.getIssue());
+                issues.add(issue);
             }
         }        
                 

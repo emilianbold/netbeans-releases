@@ -94,7 +94,7 @@ public final class Query {
      * @return 
      */
     public Collection<Issue> getIssues() {
-        return toIssues(impl.getIssues());
+        return Util.toIssues(impl.getIssues());
     }
 
     /**
@@ -129,14 +129,6 @@ public final class Query {
      */
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         impl.removePropertyChangeListener(listener);
-    }
-    
-    private List<Issue> toIssues(Collection<IssueImpl> c) {
-        List<Issue> ret = new ArrayList<Issue>(c.size());
-        for (IssueImpl i : c) {
-            ret.add(i.getIssue());
-        }
-        return ret;
     }
     
     QueryImpl getImpl() {
