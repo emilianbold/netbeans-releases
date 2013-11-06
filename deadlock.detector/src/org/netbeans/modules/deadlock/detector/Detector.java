@@ -253,7 +253,7 @@ class Detector implements Runnable {
     }    
 
     /**
-     * Use exception reporter to report the stack trace of the deadlocked thrads.
+     * Use exception reporter to report the stack trace of the deadlocked threads.
      * @param deadlocked 
      */
     private void reportStackTrace(ThreadInfo[] deadlocked, File report) {
