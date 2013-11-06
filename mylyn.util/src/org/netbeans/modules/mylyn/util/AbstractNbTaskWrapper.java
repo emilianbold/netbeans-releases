@@ -59,7 +59,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
-import org.netbeans.modules.bugtracking.util.AttachmentsPanel;
+import org.netbeans.modules.bugtracking.commons.AttachmentsPanel;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
@@ -482,12 +482,15 @@ public abstract class AbstractNbTaskWrapper {
     public final IssueStatusProvider.Status getStatus () {
         switch (getSynchronizationState()) {
             case CONFLICT:
+                return IssueStatusProvider.Status.CONFLICT;
             case INCOMING:
                 return IssueStatusProvider.Status.INCOMING_MODIFIED;
             case INCOMING_NEW:
                 return IssueStatusProvider.Status.INCOMING_NEW;
             case OUTGOING:
+                return IssueStatusProvider.Status.OUTGOING_MODIFIED;
             case OUTGOING_NEW:
+                return IssueStatusProvider.Status.OUTGOING_NEW;
             case SYNCHRONIZED:
                 return IssueStatusProvider.Status.SEEN;
         }
@@ -740,31 +743,20 @@ public abstract class AbstractNbTaskWrapper {
         if (schedule == null) {
             return "";
         }
+        int interval = schedule.getEndDate().get(Calendar.DAY_OF_YEAR) - schedule.getStartDate().get(Calendar.DAY_OF_YEAR);
+        if (interval == 1) {
+            return formatDate(schedule.getStartDate());
+        }
         return formateDate(schedule.getStartDate(), schedule.getEndDate());
     }
 
     private String formatDate (Calendar date) {
-        Calendar now = Calendar.getInstance();
-        if (now.get(Calendar.YEAR) == date.get(Calendar.YEAR)) {
-            return DateFormat.getDateInstance(DateFormat.SHORT).format(date.getTime());
-        } else {
-            return DateFormat.getDateInstance(DateFormat.DEFAULT).format(date.getTime());
-        }
+        return DateFormat.getDateInstance(DateFormat.DEFAULT).format(date.getTime());
     }
 
     private String formateDate (Calendar start, Calendar end) {
-        Calendar now = Calendar.getInstance();
-        // one day range
-        if (start.get(Calendar.YEAR) == end.get(Calendar.YEAR) && start.get(Calendar.MONTH) == end.get(Calendar.MONTH) && start.get(Calendar.DAY_OF_MONTH) == end.get(Calendar.DAY_OF_MONTH)) {
-            return formatDate(start);
-        }
-        if (now.get(Calendar.YEAR) == start.get(Calendar.YEAR) && now.get(Calendar.YEAR) == end.get(Calendar.YEAR)) {
-            DateFormat format = DateFormat.getDateInstance(DateFormat.SHORT);
-            return format.format(start.getTime()) + " - " + format.format(end.getTime()); //NOI18N
-        } else {
-            DateFormat format = DateFormat.getDateInstance(DateFormat.DEFAULT);
-            return format.format(start.getTime()) + " - " + format.format(end.getTime()); //NOI18N
-        }
+        DateFormat format = DateFormat.getDateInstance(DateFormat.DEFAULT);
+        return format.format(start.getTime()) + " - " + format.format(end.getTime()); //NOI18N
     }
 
     private class TaskDataListenerImpl implements TaskDataListener {

@@ -62,7 +62,6 @@ import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -125,13 +124,13 @@ import org.netbeans.modules.bugtracking.api.IssueQuickSearch;
 import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.team.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.team.spi.RepositoryUserRenderer;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
-import org.netbeans.modules.bugtracking.util.AttachmentsPanel;
-import org.netbeans.modules.bugtracking.util.LinkButton;
+import org.netbeans.modules.bugtracking.commons.AttachmentsPanel;
+import org.netbeans.modules.bugtracking.commons.LinkButton;
 import org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils;
-import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
+import org.netbeans.modules.bugtracking.spi.SchedulingPicker;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue.Attachment;
@@ -209,7 +208,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private Action[] commentsSectionActions;
     private Action[] privateSectionActions;
     private final IDEServices.DatePickerComponent dueDatePicker;
-    private final IDEServices.DatePickerComponent scheduleDatePicker;
+    private final SchedulingPicker scheduleDatePicker;
     private static final NumberFormatter estimateFormatter = new NumberFormatter(new java.text.DecimalFormat("#0")) {
 
         @Override
@@ -270,8 +269,8 @@ public class IssuePanel extends javax.swing.JPanel {
         ((GroupLayout) attributesSectionPanel.getLayout()).replace(dummyTimetrackingPanel, timetrackingPanel);
         ((GroupLayout) attachmentsSectionPanel.getLayout()).replace(dummyAttachmentsPanel, attachmentsPanel);
         GroupLayout layout = (GroupLayout) privatePanel.getLayout();
-        dueDatePicker = BugtrackingUtil.createDatePickerComponent();
-        scheduleDatePicker = BugtrackingUtil.createDatePickerComponent();
+        dueDatePicker = UIUtils.createDatePickerComponent();
+        scheduleDatePicker = new SchedulingPicker();
         layout.replace(dummyDueDateField, dueDatePicker.getComponent());
         dueDateLabel.setLabelFor(dueDatePicker.getComponent());
         layout.replace(dummyScheduleDateField, scheduleDatePicker.getComponent());
@@ -668,7 +667,7 @@ public class IssuePanel extends javax.swing.JPanel {
                 privateNotesField.setText(issue.getPrivateNotes());
                 dueDatePicker.setDate(issue.getDueDate());
                 NbDateRange scheduleDate = issue.getScheduleDate();
-                scheduleDatePicker.setDate(scheduleDate == null ? null : scheduleDate.getStartDate().getTime());
+                scheduleDatePicker.setScheduleDate(scheduleDate == null ? null : scheduleDate.toSchedulingInfo());
                 estimateField.setValue(issue.getEstimate());
                 dueDatePicker.getComponent().setEnabled(!hasTimeTracking);
                 
@@ -1758,7 +1757,7 @@ public class IssuePanel extends javax.swing.JPanel {
         statusWhiteboardLabel = new javax.swing.JLabel();
         platformWarning = new javax.swing.JLabel();
         statusWarning = new javax.swing.JLabel();
-        urlLabel = new org.netbeans.modules.bugtracking.util.LinkButton();
+        urlLabel = new org.netbeans.modules.bugtracking.commons.LinkButton();
         priorityLabel = new javax.swing.JLabel();
         modifiedField = new javax.swing.JTextField();
         targetMilestoneLabel = new javax.swing.JLabel();
@@ -1848,7 +1847,7 @@ public class IssuePanel extends javax.swing.JPanel {
             }
         };
         attachLogCheckBox = new javax.swing.JCheckBox();
-        viewLogButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+        viewLogButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
         commentWarning = new javax.swing.JLabel();
         messagePanel = new javax.swing.JPanel();
         privatePanel = new javax.swing.JPanel();
@@ -1883,16 +1882,16 @@ public class IssuePanel extends javax.swing.JPanel {
         separatorLabel6 = new javax.swing.JLabel();
         separatorLabel3 = new javax.swing.JLabel();
         separatorDismissButton = new javax.swing.JLabel();
-        refreshButton = new org.netbeans.modules.bugtracking.util.LinkButton();
-        cancelButton = new org.netbeans.modules.bugtracking.util.LinkButton();
-        showInBrowserButton = new org.netbeans.modules.bugtracking.util.LinkButton();
-        submitButton = new org.netbeans.modules.bugtracking.util.LinkButton();
-        btnDeleteTask = new org.netbeans.modules.bugtracking.util.LinkButton();
+        refreshButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
+        cancelButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
+        showInBrowserButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
+        submitButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
+        btnDeleteTask = new org.netbeans.modules.bugtracking.commons.LinkButton();
         mainScrollPane = new javax.swing.JScrollPane();
         mainPanel = new javax.swing.JPanel();
-        attributesSection = new org.netbeans.modules.bugtracking.util.CollapsibleSectionPanel();
-        attachmentsSection = new org.netbeans.modules.bugtracking.util.CollapsibleSectionPanel();
-        newCommentSection = new org.netbeans.modules.bugtracking.util.SectionPanel();
+        attributesSection = new org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel();
+        attachmentsSection = new org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel();
+        newCommentSection = new org.netbeans.modules.bugtracking.commons.SectionPanel();
         jPanel1 = new javax.swing.JPanel() {
 
             @Override
@@ -1901,8 +1900,8 @@ public class IssuePanel extends javax.swing.JPanel {
             }
         }
         ;
-        commentsSection = new org.netbeans.modules.bugtracking.util.CollapsibleSectionPanel();
-        privateSection = new org.netbeans.modules.bugtracking.util.CollapsibleSectionPanel();
+        commentsSection = new org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel();
+        privateSection = new org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel();
 
         FormListener formListener = new FormListener();
 
@@ -3507,23 +3506,23 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     private javax.swing.JLabel assignedToStatusLabel;
     private javax.swing.JLabel assignedToWarning;
     private javax.swing.JCheckBox attachLogCheckBox;
-    private org.netbeans.modules.bugtracking.util.CollapsibleSectionPanel attachmentsSection;
+    private org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel attachmentsSection;
     private javax.swing.JPanel attachmentsSectionPanel;
     private javax.swing.JLabel attachmentsWarning;
-    private org.netbeans.modules.bugtracking.util.CollapsibleSectionPanel attributesSection;
+    private org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel attributesSection;
     private javax.swing.JPanel attributesSectionPanel;
     private javax.swing.JButton blocksButton;
     private javax.swing.JTextField blocksField;
     private javax.swing.JLabel blocksLabel;
     private javax.swing.JLabel blocksWarning;
-    private org.netbeans.modules.bugtracking.util.LinkButton btnDeleteTask;
+    private org.netbeans.modules.bugtracking.commons.LinkButton btnDeleteTask;
     private javax.swing.JPanel buttonsPanel;
-    private org.netbeans.modules.bugtracking.util.LinkButton cancelButton;
+    private org.netbeans.modules.bugtracking.commons.LinkButton cancelButton;
     private javax.swing.JTextField ccField;
     private javax.swing.JLabel ccLabel;
     private javax.swing.JLabel ccWarning;
     private javax.swing.JLabel commentWarning;
-    private org.netbeans.modules.bugtracking.util.CollapsibleSectionPanel commentsSection;
+    private org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel commentsSection;
     private javax.swing.JPanel commentsSectionPanel;
     private javax.swing.JTextField completeField;
     private javax.swing.JLabel completeLabel;
@@ -3579,7 +3578,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     private javax.swing.JLabel milestoneWarning;
     private javax.swing.JTextField modifiedField;
     private javax.swing.JLabel modifiedLabel;
-    private org.netbeans.modules.bugtracking.util.SectionPanel newCommentSection;
+    private org.netbeans.modules.bugtracking.commons.SectionPanel newCommentSection;
     private javax.swing.JPanel newCommentSectionPanel;
     private javax.swing.JLabel notesLabel;
     private javax.swing.JComboBox osCombo;
@@ -3592,7 +3591,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     private javax.swing.JTextArea privateNotesField;
     private javax.swing.JScrollPane privateNotesScrollPane;
     private javax.swing.JPanel privatePanel;
-    private org.netbeans.modules.bugtracking.util.CollapsibleSectionPanel privateSection;
+    private org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel privateSection;
     private javax.swing.JComboBox productCombo;
     private javax.swing.JTextField productField;
     private javax.swing.JLabel productLabel;
@@ -3600,7 +3599,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     private javax.swing.JTextField qaContactField;
     private javax.swing.JLabel qaContactLabel;
     private javax.swing.JLabel qaContactWarning;
-    private org.netbeans.modules.bugtracking.util.LinkButton refreshButton;
+    private org.netbeans.modules.bugtracking.commons.LinkButton refreshButton;
     private javax.swing.JTextField remainingField;
     private javax.swing.JLabel remainingLabel;
     private javax.swing.JLabel remainingWarning;
@@ -3618,14 +3617,14 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     private javax.swing.JLabel separatorLabel4;
     private javax.swing.JLabel separatorLabel6;
     private javax.swing.JComboBox severityCombo;
-    private org.netbeans.modules.bugtracking.util.LinkButton showInBrowserButton;
+    private org.netbeans.modules.bugtracking.commons.LinkButton showInBrowserButton;
     private javax.swing.JComboBox statusCombo;
     private javax.swing.JLabel statusLabel;
     private javax.swing.JLabel statusWarning;
     private javax.swing.JTextField statusWhiteboardField;
     private javax.swing.JLabel statusWhiteboardLabel;
     private javax.swing.JLabel statusWhiteboardWarning;
-    private org.netbeans.modules.bugtracking.util.LinkButton submitButton;
+    private org.netbeans.modules.bugtracking.commons.LinkButton submitButton;
     private javax.swing.JTextField summaryField;
     private javax.swing.JLabel summaryLabel;
     private javax.swing.JLabel summaryWarning;
@@ -3635,12 +3634,12 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     private javax.swing.JPanel timetrackingPanel;
     private javax.swing.JLabel timetrackingWarning;
     private javax.swing.JTextField urlField;
-    private org.netbeans.modules.bugtracking.util.LinkButton urlLabel;
+    private org.netbeans.modules.bugtracking.commons.LinkButton urlLabel;
     private javax.swing.JLabel urlWarning;
     private javax.swing.JComboBox versionCombo;
     private javax.swing.JLabel versionLabel;
     private javax.swing.JLabel versionWarning;
-    private org.netbeans.modules.bugtracking.util.LinkButton viewLogButton;
+    private org.netbeans.modules.bugtracking.commons.LinkButton viewLogButton;
     private javax.swing.JTextField workedField;
     private javax.swing.JLabel workedLabel;
     private javax.swing.JLabel workedSumField;
@@ -3908,7 +3907,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
                 return true;
             }
         });
-        dueDatePicker.addChangeListener(new DatePickerListener(dueDatePicker,
+        dueDatePicker.addChangeListener(new DatePickerListener(dueDatePicker.getComponent(),
                 ATTRIBUTE_DUE_DATE, dueDateLabel) {
 
             @Override
@@ -3917,18 +3916,12 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
                 return true;
             }
         });
-        scheduleDatePicker.addChangeListener(new DatePickerListener(scheduleDatePicker,
+        scheduleDatePicker.addChangeListener(new DatePickerListener(scheduleDatePicker.getComponent(),
                 ATTRIBUTE_SCHEDULE_DATE, scheduleDateLabel) {
 
             @Override
             protected boolean storeValue () {
-                Date date = scheduleDatePicker.getDate();
-                Calendar cal = null;
-                if (date != null) {
-                    cal = Calendar.getInstance();
-                    cal.setTime(date);
-                }
-                issue.setTaskScheduleDate(cal == null ? null : new NbDateRange(cal).toSchedulingInfo(), false);
+                issue.setTaskScheduleDate(scheduleDatePicker.getScheduleDate(), false);
                 return true;
             }
         });
@@ -4307,10 +4300,10 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     private abstract class DatePickerListener implements ChangeListener {
 
         private final String attributeName;
-        private final IDEServices.DatePickerComponent component;
+        private final JComponent component;
         private final JComponent fieldLabel;
 
-        public DatePickerListener (IDEServices.DatePickerComponent component,
+        public DatePickerListener (JComponent component,
                 String attributeName, JComponent fieldLabel) {
             this.component = component;
             this.attributeName = attributeName;
@@ -4330,7 +4323,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         }
         
         public boolean isEnabled () {
-            return component.getComponent().isVisible() && component.getComponent().isEnabled();
+            return component.isVisible() && component.isEnabled();
         }
 
         protected final void updateDecorations () {

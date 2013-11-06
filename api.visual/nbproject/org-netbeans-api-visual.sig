@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 2.36.1
+#Version 2.40.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -967,11 +967,13 @@ meth public abstract {org.netbeans.api.visual.graph.layout.UniversalGraph%0} get
 supr java.lang.Object
 
 CLSS public final org.netbeans.api.visual.laf.InputBindings
+meth public int getPanActionButton()
 meth public int getZoomActionModifiers()
 meth public static org.netbeans.api.visual.laf.InputBindings create()
+meth public void setPanActionButton(int)
 meth public void setZoomActionModifiers(int)
 supr java.lang.Object
-hfds zoomActionModifiers
+hfds panActionButton,zoomActionModifiers
 
 CLSS public abstract org.netbeans.api.visual.laf.LookFeel
 cons public init()

@@ -41,12 +41,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se.menus;
 
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.j2se.setup.J2SESetup;
-
+import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.actions.EditAction;
 import org.netbeans.jellytools.actions.OpenAction;
@@ -54,87 +51,94 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2se.setup.J2SESetup;
 
 /**
  * Test of popup menu on Source Editor pane.
  *
- * @author  mmirilovic@netbeans.org
+ * @author mmirilovic@netbeans.org
  */
 public class SourceEditorPopupMenuTest extends PerformanceTestCase {
-    
+
     private static EditorOperator editor;
     private static String fileName;
-    
-    
-    /** Creates a new instance of SourceEditorPopupMenu */
+
+    /**
+     * Creates a new instance of SourceEditorPopupMenu
+     *
+     * @param testName test name
+     */
     public SourceEditorPopupMenuTest(String testName) {
         super(testName);
         expectedTime = UI_RESPONSE;
         WAIT_AFTER_OPEN = 200;
     }
-    
-    /** Creates a new instance of SourceEditorPopupMenu */
+
+    /**
+     * Creates a new instance of SourceEditorPopupMenu
+     *
+     * @param testName test name
+     * @param performanceDataName data name
+     */
     public SourceEditorPopupMenuTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = UI_RESPONSE;
         WAIT_AFTER_OPEN = 200;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(SourceEditorPopupMenuTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(J2SESetup.class, "testCloseMemoryToolbar", "testOpenDataProject")
+                .addTest(SourceEditorPopupMenuTest.class)
+                .suite();
     }
 
-    
-    public void testPopupInTxt(){
+    public void testPopupInTxt() {
         fileName = "textfile.txt";
         doMeasurement();
     }
-    
-    public void testPopupInXml(){
+
+    public void testPopupInXml() {
         fileName = "xmlfile.xml";
         doMeasurement();
     }
-    
-    public void testPopupInJava(){
+
+    public void testPopupInJava() {
         fileName = "Main.java";
         doMeasurement();
     }
-   
-    
+
     @Override
-    public void initialize(){
+    public void initialize() {
         Node fileNode = new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|" + fileName);
-        
+
         if (fileName.endsWith("xml")) {
             new EditAction().performAPI(fileNode);
-        }
-        else {
+        } else {
             new OpenAction().performAPI(fileNode);
         }
         editor = new EditorOperator(fileName);
         waitNoEvent(5000);
     }
-    
-    public void prepare(){
+
+    @Override
+    public void prepare() {
     }
-    
-    public ComponentOperator open(){
+
+    @Override
+    public ComponentOperator open() {
         editor.pushKey(java.awt.event.KeyEvent.VK_F10, java.awt.event.KeyEvent.SHIFT_MASK);
         return new JPopupMenuOperator();
     }
 
+    @Override
     public void close() {
         editor.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
     }
-    
-    public void shutdown(){
-        editor.closeDiscardAll();
+
+    @Override
+    public void shutdown() {
+        EditorOperator.closeDiscardAll();
     }
-    
 }

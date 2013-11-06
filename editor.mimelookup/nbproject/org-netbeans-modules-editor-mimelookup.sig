@@ -1,9 +1,10 @@
 #Signature file v4.1
-#Version 1.29.1
+#Version 1.33.1
 
 CLSS public abstract interface !annotation java.lang.Deprecated
  anno 0 java.lang.annotation.Documented()
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[CONSTRUCTOR, FIELD, LOCAL_VARIABLE, METHOD, PACKAGE, PARAMETER, TYPE])
 intf java.lang.annotation.Annotation
 
 CLSS public java.lang.Object
@@ -59,9 +60,11 @@ hfds mimePathLookup
 CLSS public final org.netbeans.api.editor.mimelookup.MimePath
 fld public final static org.netbeans.api.editor.mimelookup.MimePath EMPTY
 meth public int size()
+meth public java.lang.String getInheritedType()
 meth public java.lang.String getMimeType(int)
 meth public java.lang.String getPath()
 meth public java.lang.String toString()
+meth public java.util.List<org.netbeans.api.editor.mimelookup.MimePath> getIncludedPaths()
 meth public org.netbeans.api.editor.mimelookup.MimePath getPrefix(int)
 meth public static boolean validate(java.lang.CharSequence)
 meth public static boolean validate(java.lang.CharSequence,java.lang.CharSequence)

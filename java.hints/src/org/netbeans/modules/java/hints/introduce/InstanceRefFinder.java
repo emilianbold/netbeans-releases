@@ -72,7 +72,7 @@ import org.netbeans.api.java.source.CompilationInfo;
  *
  * @author sdedic
  */
-class InstanceRefFinder extends TreePathScanner {
+public class InstanceRefFinder extends TreePathScanner {
     /**
      * The initial path for analysis
      */

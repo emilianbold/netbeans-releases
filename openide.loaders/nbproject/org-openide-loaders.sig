@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 7.44.1
+#Version 7.51.1
 
 CLSS public java.awt.Canvas
 cons public init()
@@ -254,6 +254,7 @@ meth public void resize(int,int)
  anno 0 java.lang.Deprecated()
 meth public void resize(java.awt.Dimension)
  anno 0 java.lang.Deprecated()
+meth public void revalidate()
 meth public void setBackground(java.awt.Color)
 meth public void setBounds(int,int,int,int)
 meth public void setBounds(java.awt.Rectangle)
@@ -287,8 +288,8 @@ meth public void transferFocusUpCycle()
 meth public void update(java.awt.Graphics)
 meth public void validate()
 supr java.lang.Object
-hfds FOCUS_TRAVERSABLE_DEFAULT,FOCUS_TRAVERSABLE_SET,FOCUS_TRAVERSABLE_UNKNOWN,LOCK,acc,accessibleContext,actionListenerK,adjustmentListenerK,appContext,background,backgroundEraseDisabled,boundsOp,bufferStrategy,changeSupport,coalesceEventsParams,coalesceMap,coalescingEnabled,componentListener,componentListenerK,componentOrientation,componentSerializedDataVersion,compoundShape,containerListenerK,cursor,dbg,dropTarget,enabled,eventCache,eventMask,focusListener,focusListenerK,focusLog,focusTraversalKeyPropertyNames,focusTraversalKeys,focusTraversalKeysEnabled,focusable,font,foreground,graphicsConfig,height,hierarchyBoundsListener,hierarchyBoundsListenerK,hierarchyListener,hierarchyListenerK,ignoreRepaint,incRate,inputMethodListener,inputMethodListenerK,isAddNotifyComplete,isFocusTraversableOverridden,isInc,isPacked,itemListenerK,keyListener,keyListenerK,locale,log,maxSize,maxSizeSet,minSize,minSizeSet,mixingCutoutRegion,mixingLog,mouseListener,mouseListenerK,mouseMotionListener,mouseMotionListenerK,mouseWheelListener,mouseWheelListenerK,name,nameExplicitlySet,nativeInLightFixer,newEventsOnly,objectLock,ownedWindowK,parent,peer,peerFont,popups,prefSize,prefSizeSet,privateKey,requestFocusController,serialVersionUID,textListenerK,valid,visible,width,windowClosingException,windowFocusListenerK,windowListenerK,windowStateListenerK,x,y
-hcls AWTTreeLock,BltSubRegionBufferStrategy,DummyRequestFocusController,FlipSubRegionBufferStrategy,NativeInLightFixer,ProxyCapabilities,SingleBufferStrategy
+hfds FOCUS_TRAVERSABLE_DEFAULT,FOCUS_TRAVERSABLE_SET,FOCUS_TRAVERSABLE_UNKNOWN,LOCK,acc,accessibleContext,actionListenerK,adjustmentListenerK,appContext,autoFocusTransferOnDisposal,background,backgroundEraseDisabled,boundsOp,bufferStrategy,changeSupport,coalesceEventsParams,coalesceMap,coalescingEnabled,componentListener,componentListenerK,componentOrientation,componentSerializedDataVersion,compoundShape,containerListenerK,cursor,dropTarget,enabled,eventCache,eventLog,eventMask,focusListener,focusListenerK,focusLog,focusTraversalKeyPropertyNames,focusTraversalKeys,focusTraversalKeysEnabled,focusable,font,foreground,graphicsConfig,height,hierarchyBoundsListener,hierarchyBoundsListenerK,hierarchyListener,hierarchyListenerK,ignoreRepaint,incRate,inputMethodListener,inputMethodListenerK,isAddNotifyComplete,isFocusTraversableOverridden,isInc,isPacked,itemListenerK,keyListener,keyListenerK,locale,log,maxSize,maxSizeSet,minSize,minSizeSet,mixingCutoutRegion,mixingLog,mouseListener,mouseListenerK,mouseMotionListener,mouseMotionListenerK,mouseWheelListener,mouseWheelListenerK,name,nameExplicitlySet,newEventsOnly,objectLock,ownedWindowK,parent,peer,peerFont,popups,prefSize,prefSizeSet,requestFocusController,serialVersionUID,textListenerK,valid,visible,width,windowClosingException,windowFocusListenerK,windowListenerK,windowStateListenerK,x,y
+hcls AWTTreeLock,BltSubRegionBufferStrategy,DummyRequestFocusController,FlipSubRegionBufferStrategy,ProxyCapabilities,SingleBufferStrategy
 
 CLSS public java.awt.Container
 cons public init()
@@ -304,6 +305,7 @@ meth public boolean isAncestorOf(java.awt.Component)
 meth public boolean isFocusCycleRoot()
 meth public boolean isFocusCycleRoot(java.awt.Container)
 meth public boolean isFocusTraversalPolicySet()
+meth public boolean isValidateRoot()
 meth public final boolean isFocusTraversalPolicyProvider()
 meth public final void setFocusTraversalPolicyProvider(boolean)
 meth public float getAlignmentX()
@@ -368,12 +370,11 @@ meth public void setFocusTraversalKeys(int,java.util.Set<? extends java.awt.AWTK
 meth public void setFocusTraversalPolicy(java.awt.FocusTraversalPolicy)
 meth public void setFont(java.awt.Font)
 meth public void setLayout(java.awt.LayoutManager)
-meth public void transferFocusBackward()
 meth public void transferFocusDownCycle()
 meth public void update(java.awt.Graphics)
 meth public void validate()
 supr java.awt.Component
-hfds EMPTY_ARRAY,INCLUDE_SELF,SEARCH_HEAVYWEIGHTS,component,containerListener,containerSerializedDataVersion,dbg,descendantsCount,dispatcher,focusCycleRoot,focusTraversalPolicy,focusTraversalPolicyProvider,layoutMgr,listeningBoundsChildren,listeningChildren,mixingLog,modalAppContext,modalComp,numOfHWComponents,numOfLWComponents,preserveBackgroundColor,printing,printingThreads,serialPersistentFields,serialVersionUID
+hfds EMPTY_ARRAY,INCLUDE_SELF,SEARCH_HEAVYWEIGHTS,component,containerListener,containerSerializedDataVersion,descendUnconditionallyWhenValidating,descendantsCount,dispatcher,eventLog,focusCycleRoot,focusTraversalPolicy,focusTraversalPolicyProvider,isJavaAwtSmartInvalidate,layoutMgr,listeningBoundsChildren,listeningChildren,log,mixingLog,modalAppContext,modalComp,numOfHWComponents,numOfLWComponents,preserveBackgroundColor,printing,printingThreads,serialPersistentFields,serialVersionUID
 hcls DropTargetEventTargetFilter,EventTargetFilter,MouseEventTargetFilter,WakingRunnable
 
 CLSS public java.awt.FlowLayout
@@ -478,6 +479,7 @@ meth public java.lang.Object getValue(java.lang.String)
 meth public java.lang.String getDisplayName()
 meth public java.lang.String getName()
 meth public java.lang.String getShortDescription()
+meth public java.lang.String toString()
 meth public java.util.Enumeration<java.lang.String> attributeNames()
 meth public void setDisplayName(java.lang.String)
 meth public void setExpert(boolean)
@@ -487,7 +489,7 @@ meth public void setPreferred(boolean)
 meth public void setShortDescription(java.lang.String)
 meth public void setValue(java.lang.String,java.lang.Object)
 supr java.lang.Object
-hfds classRef,displayName,expert,hidden,name,preferred,shortDescription,table
+hfds TRANSIENT,classRef,displayName,expert,hidden,name,preferred,shortDescription,table
 
 CLSS public abstract interface java.beans.PropertyChangeListener
 intf java.util.EventListener
@@ -520,6 +522,7 @@ meth public abstract int compareTo({java.lang.Comparable%0})
 CLSS public abstract interface !annotation java.lang.Deprecated
  anno 0 java.lang.annotation.Documented()
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[CONSTRUCTOR, FIELD, LOCAL_VARIABLE, METHOD, PACKAGE, PARAMETER, TYPE])
 intf java.lang.annotation.Annotation
 
 CLSS public abstract java.lang.Enum<%0 extends java.lang.Enum<{java.lang.Enum%0}>>
@@ -540,6 +543,7 @@ supr java.lang.Object
 hfds name,ordinal
 
 CLSS public java.lang.Exception
+cons protected init(java.lang.String,java.lang.Throwable,boolean,boolean)
 cons public init()
 cons public init(java.lang.String)
 cons public init(java.lang.String,java.lang.Throwable)
@@ -629,14 +633,18 @@ meth public void setContextClassLoader(java.lang.ClassLoader)
 meth public void setUncaughtExceptionHandler(java.lang.Thread$UncaughtExceptionHandler)
 meth public void start()
 supr java.lang.Object
-hfds EMPTY_STACK_TRACE,SUBCLASS_IMPLEMENTATION_PERMISSION,blocker,blockerLock,contextClassLoader,daemon,defaultUncaughtExceptionHandler,eetop,group,inheritableThreadLocals,inheritedAccessControlContext,me,name,nativeParkEventPointer,parkBlocker,priority,single_step,stackSize,stillborn,stopBeforeStart,subclassAudits,target,threadInitNumber,threadLocals,threadQ,threadSeqNumber,threadStatus,throwableFromStop,tid,uncaughtExceptionHandler
+hfds EMPTY_STACK_TRACE,SUBCLASS_IMPLEMENTATION_PERMISSION,blocker,blockerLock,contextClassLoader,daemon,defaultUncaughtExceptionHandler,eetop,group,inheritableThreadLocals,inheritedAccessControlContext,name,nativeParkEventPointer,parkBlocker,priority,single_step,stackSize,stillborn,target,threadInitNumber,threadLocals,threadQ,threadSeqNumber,threadStatus,tid,uncaughtExceptionHandler
+hcls Caches,WeakClassKey
 
 CLSS public java.lang.Throwable
+cons protected init(java.lang.String,java.lang.Throwable,boolean,boolean)
 cons public init()
 cons public init(java.lang.String)
 cons public init(java.lang.String,java.lang.Throwable)
 cons public init(java.lang.Throwable)
 intf java.io.Serializable
+meth public final java.lang.Throwable[] getSuppressed()
+meth public final void addSuppressed(java.lang.Throwable)
 meth public java.lang.StackTraceElement[] getStackTrace()
 meth public java.lang.String getLocalizedMessage()
 meth public java.lang.String getMessage()
@@ -649,7 +657,8 @@ meth public void printStackTrace(java.io.PrintStream)
 meth public void printStackTrace(java.io.PrintWriter)
 meth public void setStackTrace(java.lang.StackTraceElement[])
 supr java.lang.Object
-hfds backtrace,cause,detailMessage,serialVersionUID,stackTrace
+hfds CAUSE_CAPTION,EMPTY_THROWABLE_ARRAY,NULL_CAUSE_MESSAGE,SELF_SUPPRESSION_MESSAGE,SUPPRESSED_CAPTION,SUPPRESSED_SENTINEL,UNASSIGNED_STACK,backtrace,cause,detailMessage,serialVersionUID,stackTrace,suppressedExceptions
+hcls PrintStreamOrWriter,SentinelHolder,WrappedPrintStream,WrappedPrintWriter
 
 CLSS public abstract interface java.lang.annotation.Annotation
 meth public abstract boolean equals(java.lang.Object)
@@ -870,6 +879,7 @@ meth public abstract void setEnabled(boolean)
 CLSS public javax.swing.JButton
 cons public init()
 cons public init(java.lang.String)
+ anno 0 java.beans.ConstructorProperties(java.lang.String[] value=["text"])
 cons public init(java.lang.String,javax.swing.Icon)
 cons public init(javax.swing.Action)
 cons public init(javax.swing.Icon)
@@ -906,20 +916,20 @@ meth public void setState(boolean)
 supr javax.swing.JMenuItem
 hfds uiClassID
 
-CLSS public javax.swing.JComboBox
+CLSS public javax.swing.JComboBox<%0 extends java.lang.Object>
 cons public init()
-cons public init(java.lang.Object[])
-cons public init(java.util.Vector<?>)
-cons public init(javax.swing.ComboBoxModel)
+cons public init(java.util.Vector<{javax.swing.JComboBox%0}>)
+cons public init(javax.swing.ComboBoxModel<{javax.swing.JComboBox%0}>)
+cons public init({javax.swing.JComboBox%0}[])
 fld protected boolean isEditable
 fld protected boolean lightWeightPopupEnabled
 fld protected int maximumRowCount
 fld protected java.lang.Object selectedItemReminder
 fld protected java.lang.String actionCommand
 fld protected javax.swing.ComboBoxEditor editor
-fld protected javax.swing.ComboBoxModel dataModel
+fld protected javax.swing.ComboBoxModel<{javax.swing.JComboBox%0}> dataModel
 fld protected javax.swing.JComboBox$KeySelectionManager keySelectionManager
-fld protected javax.swing.ListCellRenderer renderer
+fld protected javax.swing.ListCellRenderer<? super {javax.swing.JComboBox%0}> renderer
 innr protected AccessibleJComboBox
 innr public abstract interface static KeySelectionManager
 intf java.awt.ItemSelectable
@@ -944,8 +954,6 @@ meth public int getMaximumRowCount()
 meth public int getSelectedIndex()
 meth public java.awt.event.ActionListener[] getActionListeners()
 meth public java.awt.event.ItemListener[] getItemListeners()
-meth public java.lang.Object getItemAt(int)
-meth public java.lang.Object getPrototypeDisplayValue()
 meth public java.lang.Object getSelectedItem()
 meth public java.lang.Object[] getSelectedObjects()
 meth public java.lang.String getActionCommand()
@@ -953,14 +961,14 @@ meth public java.lang.String getUIClassID()
 meth public javax.accessibility.AccessibleContext getAccessibleContext()
 meth public javax.swing.Action getAction()
 meth public javax.swing.ComboBoxEditor getEditor()
-meth public javax.swing.ComboBoxModel getModel()
+meth public javax.swing.ComboBoxModel<{javax.swing.JComboBox%0}> getModel()
 meth public javax.swing.JComboBox$KeySelectionManager getKeySelectionManager()
-meth public javax.swing.ListCellRenderer getRenderer()
+meth public javax.swing.ListCellRenderer<? super {javax.swing.JComboBox%0}> getRenderer()
 meth public javax.swing.event.PopupMenuListener[] getPopupMenuListeners()
 meth public javax.swing.plaf.ComboBoxUI getUI()
 meth public void actionPerformed(java.awt.event.ActionEvent)
 meth public void addActionListener(java.awt.event.ActionListener)
-meth public void addItem(java.lang.Object)
+meth public void addItem({javax.swing.JComboBox%0})
 meth public void addItemListener(java.awt.event.ItemListener)
 meth public void addPopupMenuListener(javax.swing.event.PopupMenuListener)
 meth public void configureEditor(javax.swing.ComboBoxEditor,java.lang.Object)
@@ -969,7 +977,7 @@ meth public void firePopupMenuCanceled()
 meth public void firePopupMenuWillBecomeInvisible()
 meth public void firePopupMenuWillBecomeVisible()
 meth public void hidePopup()
-meth public void insertItemAt(java.lang.Object,int)
+meth public void insertItemAt({javax.swing.JComboBox%0},int)
 meth public void intervalAdded(javax.swing.event.ListDataEvent)
 meth public void intervalRemoved(javax.swing.event.ListDataEvent)
 meth public void processKeyEvent(java.awt.event.KeyEvent)
@@ -987,15 +995,17 @@ meth public void setEnabled(boolean)
 meth public void setKeySelectionManager(javax.swing.JComboBox$KeySelectionManager)
 meth public void setLightWeightPopupEnabled(boolean)
 meth public void setMaximumRowCount(int)
-meth public void setModel(javax.swing.ComboBoxModel)
+meth public void setModel(javax.swing.ComboBoxModel<{javax.swing.JComboBox%0}>)
 meth public void setPopupVisible(boolean)
-meth public void setPrototypeDisplayValue(java.lang.Object)
-meth public void setRenderer(javax.swing.ListCellRenderer)
+meth public void setPrototypeDisplayValue({javax.swing.JComboBox%0})
+meth public void setRenderer(javax.swing.ListCellRenderer<? super {javax.swing.JComboBox%0}>)
 meth public void setSelectedIndex(int)
 meth public void setSelectedItem(java.lang.Object)
 meth public void setUI(javax.swing.plaf.ComboBoxUI)
 meth public void showPopup()
 meth public void updateUI()
+meth public {javax.swing.JComboBox%0} getItemAt(int)
+meth public {javax.swing.JComboBox%0} getPrototypeDisplayValue()
 supr javax.swing.JComponent
 hfds action,actionPropertyChangeListener,firingActionEvent,prototypeDisplayValue,selectingItem,uiClassID
 hcls ComboBoxActionPropertyChangeListener,DefaultKeySelectionManager
@@ -1012,6 +1022,7 @@ fld public final static int WHEN_IN_FOCUSED_WINDOW = 2
 fld public final static java.lang.String TOOL_TIP_TEXT_KEY = "ToolTipText"
 innr public abstract AccessibleJComponent
 intf java.io.Serializable
+meth protected boolean isPaintingOrigin()
 meth protected boolean processKeyBinding(javax.swing.KeyStroke,java.awt.event.KeyEvent,int,boolean)
 meth protected boolean requestFocusInWindow(boolean)
 meth protected java.awt.Graphics getComponentGraphics(java.awt.Graphics)
@@ -1108,6 +1119,8 @@ meth public void firePropertyChange(java.lang.String,boolean,boolean)
 meth public void firePropertyChange(java.lang.String,char,char)
 meth public void firePropertyChange(java.lang.String,int,int)
 meth public void grabFocus()
+meth public void hide()
+ anno 0 java.lang.Deprecated()
 meth public void paint(java.awt.Graphics)
 meth public void paintImmediately(int,int,int,int)
 meth public void paintImmediately(java.awt.Rectangle)
@@ -1155,14 +1168,14 @@ meth public void unregisterKeyboardAction(javax.swing.KeyStroke)
 meth public void update(java.awt.Graphics)
 meth public void updateUI()
 supr java.awt.Container
-hfds ACTIONMAP_CREATED,ANCESTOR_INPUTMAP_CREATED,ANCESTOR_NOTIFIER_KEY,ANCESTOR_USING_BUFFER,AUTOSCROLLS_SET,COMPLETELY_OBSCURED,CREATED_DOUBLE_BUFFER,DEBUG_GRAPHICS_LOADED,FOCUS_INPUTMAP_CREATED,FOCUS_TRAVERSAL_KEYS_BACKWARD_SET,FOCUS_TRAVERSAL_KEYS_FORWARD_SET,INHERITS_POPUP_MENU,INPUT_VERIFIER_KEY,INPUT_VERIFIER_SOURCE_KEY,IS_DOUBLE_BUFFERED,IS_OPAQUE,IS_PAINTING_TILE,IS_PRINTING,IS_PRINTING_ALL,IS_REPAINTING,KEYBOARD_BINDINGS_KEY,KEY_EVENTS_ENABLED,NEXT_FOCUS,NOT_OBSCURED,OPAQUE_SET,PARTIALLY_OBSCURED,REQUEST_FOCUS_DISABLED,RESERVED_1,RESERVED_2,RESERVED_3,RESERVED_4,RESERVED_5,RESERVED_6,TRANSFER_HANDLER_KEY,WHEN_IN_FOCUSED_WINDOW_BINDINGS,WIF_INPUTMAP_CREATED,WRITE_OBJ_COUNTER_FIRST,WRITE_OBJ_COUNTER_LAST,aaTextInfo,actionMap,alignmentX,alignmentY,ancestorInputMap,autoscrolls,border,clientProperties,componentObtainingGraphicsFrom,componentObtainingGraphicsFromLock,defaultLocale,flags,focusController,focusInputMap,inputVerifier,isAlignmentXSet,isAlignmentYSet,managingFocusBackwardTraversalKeys,managingFocusForwardTraversalKeys,paintingChild,popupMenu,readObjectCallbacks,tempRectangles,uiClassID,verifyInputWhenFocusTarget,vetoableChangeSupport,windowInputMap
+hfds ACTIONMAP_CREATED,ANCESTOR_INPUTMAP_CREATED,ANCESTOR_USING_BUFFER,AUTOSCROLLS_SET,COMPLETELY_OBSCURED,CREATED_DOUBLE_BUFFER,DEBUG_GRAPHICS_LOADED,FOCUS_INPUTMAP_CREATED,FOCUS_TRAVERSAL_KEYS_BACKWARD_SET,FOCUS_TRAVERSAL_KEYS_FORWARD_SET,INHERITS_POPUP_MENU,INPUT_VERIFIER_SOURCE_KEY,IS_DOUBLE_BUFFERED,IS_OPAQUE,IS_PAINTING_TILE,IS_PRINTING,IS_PRINTING_ALL,IS_REPAINTING,KEYBOARD_BINDINGS_KEY,KEY_EVENTS_ENABLED,NEXT_FOCUS,NOT_OBSCURED,OPAQUE_SET,PARTIALLY_OBSCURED,REQUEST_FOCUS_DISABLED,RESERVED_1,RESERVED_2,RESERVED_3,RESERVED_4,RESERVED_5,RESERVED_6,REVALIDATE_RUNNABLE_SCHEDULED,WHEN_IN_FOCUSED_WINDOW_BINDINGS,WIF_INPUTMAP_CREATED,WRITE_OBJ_COUNTER_FIRST,WRITE_OBJ_COUNTER_LAST,aaTextInfo,actionMap,alignmentX,alignmentY,ancestorInputMap,autoscrolls,border,clientProperties,componentObtainingGraphicsFrom,componentObtainingGraphicsFromLock,defaultLocale,flags,focusController,focusInputMap,inputVerifier,isAlignmentXSet,isAlignmentYSet,managingFocusBackwardTraversalKeys,managingFocusForwardTraversalKeys,paintingChild,popupMenu,readObjectCallbacks,tempRectangles,uiClassID,verifyInputWhenFocusTarget,vetoableChangeSupport,windowInputMap
 hcls ActionStandin,IntVector,KeyboardState,ReadObjectCallback
 
-CLSS public javax.swing.JList
+CLSS public javax.swing.JList<%0 extends java.lang.Object>
 cons public init()
-cons public init(java.lang.Object[])
-cons public init(java.util.Vector<?>)
-cons public init(javax.swing.ListModel)
+cons public init(java.util.Vector<? extends {javax.swing.JList%0}>)
+cons public init(javax.swing.ListModel<{javax.swing.JList%0}>)
+cons public init({javax.swing.JList%0}[])
 fld public final static int HORIZONTAL_WRAP = 2
 fld public final static int VERTICAL = 0
 fld public final static int VERTICAL_WRAP = 1
@@ -1204,14 +1217,14 @@ meth public java.awt.Color getSelectionForeground()
 meth public java.awt.Dimension getPreferredScrollableViewportSize()
 meth public java.awt.Point indexToLocation(int)
 meth public java.awt.Rectangle getCellBounds(int,int)
-meth public java.lang.Object getPrototypeCellValue()
-meth public java.lang.Object getSelectedValue()
 meth public java.lang.Object[] getSelectedValues()
+ anno 0 java.lang.Deprecated()
 meth public java.lang.String getToolTipText(java.awt.event.MouseEvent)
 meth public java.lang.String getUIClassID()
+meth public java.util.List<{javax.swing.JList%0}> getSelectedValuesList()
 meth public javax.accessibility.AccessibleContext getAccessibleContext()
-meth public javax.swing.ListCellRenderer getCellRenderer()
-meth public javax.swing.ListModel getModel()
+meth public javax.swing.ListCellRenderer<? super {javax.swing.JList%0}> getCellRenderer()
+meth public javax.swing.ListModel<{javax.swing.JList%0}> getModel()
 meth public javax.swing.ListSelectionModel getSelectionModel()
 meth public javax.swing.event.ListSelectionListener[] getListSelectionListeners()
 meth public javax.swing.plaf.ListUI getUI()
@@ -1221,15 +1234,15 @@ meth public void clearSelection()
 meth public void ensureIndexIsVisible(int)
 meth public void removeListSelectionListener(javax.swing.event.ListSelectionListener)
 meth public void removeSelectionInterval(int,int)
-meth public void setCellRenderer(javax.swing.ListCellRenderer)
+meth public void setCellRenderer(javax.swing.ListCellRenderer<? super {javax.swing.JList%0}>)
 meth public void setDragEnabled(boolean)
 meth public void setFixedCellHeight(int)
 meth public void setFixedCellWidth(int)
 meth public void setLayoutOrientation(int)
-meth public void setListData(java.lang.Object[])
-meth public void setListData(java.util.Vector<?>)
-meth public void setModel(javax.swing.ListModel)
-meth public void setPrototypeCellValue(java.lang.Object)
+meth public void setListData(java.util.Vector<? extends {javax.swing.JList%0}>)
+meth public void setListData({javax.swing.JList%0}[])
+meth public void setModel(javax.swing.ListModel<{javax.swing.JList%0}>)
+meth public void setPrototypeCellValue({javax.swing.JList%0})
 meth public void setSelectedIndex(int)
 meth public void setSelectedIndices(int[])
 meth public void setSelectedValue(java.lang.Object,boolean)
@@ -1242,6 +1255,8 @@ meth public void setUI(javax.swing.plaf.ListUI)
 meth public void setValueIsAdjusting(boolean)
 meth public void setVisibleRowCount(int)
 meth public void updateUI()
+meth public {javax.swing.JList%0} getPrototypeCellValue()
+meth public {javax.swing.JList%0} getSelectedValue()
 supr javax.swing.JComponent
 hfds cellRenderer,dataModel,dragEnabled,dropLocation,dropMode,fixedCellHeight,fixedCellWidth,horizontalScrollIncrement,layoutOrientation,prototypeCellValue,selectionBackground,selectionForeground,selectionListener,selectionModel,uiClassID,visibleRowCount
 hcls ListSelectionHandler
@@ -1541,8 +1556,8 @@ supr javax.swing.JComponent
 hfds floatable,margin,orientation,paintBorder,uiClassID
 hcls DefaultToolBarLayout
 
-CLSS public abstract interface javax.swing.ListCellRenderer
-meth public abstract java.awt.Component getListCellRendererComponent(javax.swing.JList,java.lang.Object,int,boolean,boolean)
+CLSS public abstract interface javax.swing.ListCellRenderer<%0 extends java.lang.Object>
+meth public abstract java.awt.Component getListCellRendererComponent(javax.swing.JList<? extends {javax.swing.ListCellRenderer%0}>,{javax.swing.ListCellRenderer%0},int,boolean,boolean)
 
 CLSS public abstract interface javax.swing.MenuElement
 meth public abstract java.awt.Component getComponent()
@@ -1726,6 +1741,7 @@ CLSS public abstract interface !annotation org.netbeans.api.templates.TemplateRe
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
  anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE, METHOD, PACKAGE])
 intf java.lang.annotation.Annotation
+meth public abstract !hasdefault boolean requireProject()
 meth public abstract !hasdefault int position()
 meth public abstract !hasdefault java.lang.String description()
 meth public abstract !hasdefault java.lang.String displayName()
@@ -1881,6 +1897,7 @@ fld public final static java.lang.String PROP_WARNING_MESSAGE = "WizardPanel_war
 innr public abstract interface static AsynchronousInstantiatingIterator
 innr public abstract interface static AsynchronousValidatingPanel
 innr public abstract interface static BackgroundInstantiatingIterator
+innr public abstract interface static ExtendedAsynchronousValidatingPanel
 innr public abstract interface static FinishPanel
 innr public abstract interface static FinishablePanel
 innr public abstract interface static InstantiatingIterator
@@ -2047,7 +2064,7 @@ meth public java.lang.String getName()
 meth public org.openide.util.HelpCtx getHelpCtx()
 meth public void performAction()
 supr org.openide.util.actions.CallableSystemAction
-hfds RP
+hfds NIMBUS_LAF,RP
 hcls HeapViewWrapper
 
 CLSS public org.openide.actions.GotoAction
@@ -2246,6 +2263,7 @@ meth protected void performAction(org.openide.nodes.Node[])
 meth public java.lang.String getName()
 meth public org.openide.util.HelpCtx getHelpCtx()
 supr org.openide.util.actions.NodeAction
+hfds RP
 
 CLSS public org.openide.actions.ReorderAction
 cons public init()
@@ -2774,12 +2792,31 @@ supr java.lang.Object
 CLSS public abstract org.openide.awt.NotificationDisplayer
 cons public init()
 innr public final static !enum Priority
+innr public final static Category
 meth public abstract org.openide.awt.Notification notify(java.lang.String,javax.swing.Icon,java.lang.String,java.awt.event.ActionListener,org.openide.awt.NotificationDisplayer$Priority)
 meth public abstract org.openide.awt.Notification notify(java.lang.String,javax.swing.Icon,javax.swing.JComponent,javax.swing.JComponent,org.openide.awt.NotificationDisplayer$Priority)
 meth public org.openide.awt.Notification notify(java.lang.String,javax.swing.Icon,java.lang.String,java.awt.event.ActionListener)
+meth public org.openide.awt.Notification notify(java.lang.String,javax.swing.Icon,java.lang.String,java.awt.event.ActionListener,org.openide.awt.NotificationDisplayer$Priority,java.lang.String)
+meth public org.openide.awt.Notification notify(java.lang.String,javax.swing.Icon,java.lang.String,java.awt.event.ActionListener,org.openide.awt.NotificationDisplayer$Priority,org.openide.awt.NotificationDisplayer$Category)
+meth public org.openide.awt.Notification notify(java.lang.String,javax.swing.Icon,javax.swing.JComponent,javax.swing.JComponent,org.openide.awt.NotificationDisplayer$Priority,java.lang.String)
+meth public org.openide.awt.Notification notify(java.lang.String,javax.swing.Icon,javax.swing.JComponent,javax.swing.JComponent,org.openide.awt.NotificationDisplayer$Priority,org.openide.awt.NotificationDisplayer$Category)
 meth public static org.openide.awt.NotificationDisplayer getDefault()
 supr java.lang.Object
 hcls NotificationImpl,SimpleNotificationDisplayer
+
+CLSS public final static org.openide.awt.NotificationDisplayer$Category
+ outer org.openide.awt.NotificationDisplayer
+fld public final static org.openide.awt.NotificationDisplayer$Category ERROR
+fld public final static org.openide.awt.NotificationDisplayer$Category INFO
+fld public final static org.openide.awt.NotificationDisplayer$Category WARNING
+intf java.lang.Comparable<org.openide.awt.NotificationDisplayer$Category>
+meth public int compareTo(org.openide.awt.NotificationDisplayer$Category)
+meth public java.lang.String getDescription()
+meth public java.lang.String getDisplayName()
+meth public java.lang.String getName()
+meth public static java.util.List<org.openide.awt.NotificationDisplayer$Category> getCategories()
+supr java.lang.Object
+hfds description,displayName,index,name
 
 CLSS public final static !enum org.openide.awt.NotificationDisplayer$Priority
  outer org.openide.awt.NotificationDisplayer
@@ -2787,9 +2824,11 @@ fld public final static org.openide.awt.NotificationDisplayer$Priority HIGH
 fld public final static org.openide.awt.NotificationDisplayer$Priority LOW
 fld public final static org.openide.awt.NotificationDisplayer$Priority NORMAL
 fld public final static org.openide.awt.NotificationDisplayer$Priority SILENT
+meth public javax.swing.Icon getIcon()
 meth public static org.openide.awt.NotificationDisplayer$Priority valueOf(java.lang.String)
 meth public static org.openide.awt.NotificationDisplayer$Priority[] values()
 supr java.lang.Enum<org.openide.awt.NotificationDisplayer$Priority>
+hfds icon
 
 CLSS public org.openide.awt.QuickSearch
 innr public abstract interface static Callback
@@ -3125,9 +3164,10 @@ meth public void removeAll()
 meth public void removeNotify()
 meth public void setDisplayOverflowOnHover(boolean)
 meth public void setOrientation(int)
+meth public void updateUI()
 meth public void validate()
 supr javax.swing.JToolBar
-hfds PROP_DRAGGER,PROP_JDEV_DISABLE_OVERFLOW,PROP_PREF_ICON_SIZE,awtEventListener,componentAdapter,displayOverflowOnHover,overflowButton,overflowToolbar,popup,toolbarArrowHorizontal,toolbarArrowVertical
+hfds PROP_DRAGGER,PROP_JDEV_DISABLE_OVERFLOW,PROP_PREF_ICON_SIZE,awtEventListener,componentAdapter,displayOverflowOnHover,overflowButton,overflowToolbar,popup,showingPopup,toolbarArrowHorizontal,toolbarArrowVertical
 
 CLSS public abstract interface org.openide.awt.UndoRedo
 fld public final static org.openide.awt.UndoRedo NONE
@@ -3351,7 +3391,6 @@ meth protected void createPasteTypes(java.awt.datatransfer.Transferable,java.uti
 meth public <%0 extends org.openide.nodes.Node$Cookie> {%%0} getCookie(java.lang.Class<{%%0}>)
 meth public java.awt.Image getIcon(int)
 meth public java.awt.Image getOpenedIcon(int)
-meth public java.lang.Object getValue(java.lang.String)
 meth public javax.swing.Action getPreferredAction()
 meth public org.openide.util.datatransfer.NewType[] getNewTypes()
 meth public void setName(java.lang.String)
@@ -3455,6 +3494,7 @@ meth public java.awt.Image getIcon(int)
 meth public java.awt.Image getOpenedIcon(int)
 meth public java.awt.datatransfer.Transferable clipboardCopy() throws java.io.IOException
 meth public java.awt.datatransfer.Transferable clipboardCut() throws java.io.IOException
+meth public java.lang.Object getValue(java.lang.String)
 meth public java.lang.String getDisplayName()
 meth public java.lang.String getHtmlDisplayName()
 meth public javax.swing.Action getPreferredAction()
@@ -3543,8 +3583,8 @@ meth public void removeVetoableChangeListener(java.beans.VetoableChangeListener)
 meth public void setModified(boolean)
 meth public void setValid(boolean) throws java.beans.PropertyVetoException
 supr java.lang.Object
-hfds EA_ASSIGNED_LOADER,EA_ASSIGNED_LOADER_MODULE,LOG,OBJ_LOG,REGISTRY_INSTANCE,changeSupport,item,listenersMethodLock,loader,modif,modified,nodeCreationLock,nodeDelegate,serialVersionUID,syncModified,synchObject,vetoableChangeSupport,warnedClasses
-hcls CreateAction,DOSavable,ModifiedRegistry,Replace
+hfds EA_ASSIGNED_LOADER,EA_ASSIGNED_LOADER_MODULE,LOG,OBJ_LOG,PROGRESS_INFO_TL,REGISTRY_INSTANCE,changeSupport,item,listenersMethodLock,loader,modif,modified,nodeCreationLock,nodeDelegate,serialVersionUID,syncModified,synchObject,vetoableChangeSupport,warnedClasses
+hcls CreateAction,DOSavable,ModifiedRegistry,ProgressInfo,Replace
 
 CLSS public abstract interface static org.openide.loaders.DataObject$Container
  outer org.openide.loaders.DataObject
@@ -3623,7 +3663,7 @@ meth public static org.openide.loaders.DataShadow create(org.openide.loaders.Dat
 meth public void refresh()
 supr org.openide.loaders.MultiDataObject
 hfds MUTEX,RP,SFS_NAME,SHADOW_EXTENSION,allDataShadows,lastTask,lookup,nodes,origL,original,serialVersionUID
-hcls DSLookup,DSWeakReference,OrigL
+hcls CreateShadow,DSLookup,DSWeakReference,OrigL
 
 CLSS protected static org.openide.loaders.DataShadow$ShadowNode
  outer org.openide.loaders.DataShadow
@@ -3798,7 +3838,7 @@ meth public static org.openide.loaders.InstanceDataObject find(org.openide.loade
 meth public static org.openide.loaders.InstanceDataObject find(org.openide.loaders.DataFolder,java.lang.String,java.lang.String)
 supr org.openide.loaders.MultiDataObject
 hfds CLOSE,EA_INSTANCE_CLASS,EA_INSTANCE_CREATE,EA_INSTANCE_OF,EA_NAME,EA_PROVIDER_PATH,EA_SUBCLASSES,ICON_NAME,IDO_LOCK,INIT_LOOKUP,MAX_FILENAME_LENGTH,OPEN,PROCESSOR,SAVE_DELAY,SER_EXT,XML_EXT,cookieResult,cookiesLkp,cookiesLsnr,createdIDOs,err,fileLock,lkp,nameCache,nodeLsnr,nodeResult,savingCanceled,ser,serialVersionUID,un,warnedAboutBrackets
-hcls CookieAdjustingFilter,Creator,FileObjectContext,Ser,UnrecognizedSettingNode,UpdatableNode,WriterProvider
+hcls CookieAdjustingFilter,Creator,Creator2,FileObjectContext,Ser,UnrecognizedSettingNode,UpdatableNode,WriterProvider
 
 CLSS public org.openide.loaders.InstanceSupport
 cons public init(org.openide.loaders.MultiDataObject$Entry)
@@ -4402,7 +4442,7 @@ meth public void setName(java.lang.String)
 meth public void setShortDescription(java.lang.String)
 supr java.beans.FeatureDescriptor
 hfds INIT_LOCK,LOCK,TEMPL_COOKIE,err,hierarchy,listeners,lookups,parent,warnedBadProperties
-hcls LookupEventList
+hcls LookupEventList,PropertyEditorRef
 
 CLSS public abstract interface static org.openide.nodes.Node$Cookie
  outer org.openide.nodes.Node
@@ -4533,8 +4573,7 @@ meth public void requestFocus()
 meth public void updateName()
 meth public void writeExternal(java.io.ObjectOutput) throws java.io.IOException
 supr org.openide.windows.CloneableTopComponent
-hfds CLOSE_LAST_LOCK,HELP_ID,LOG,RP,RPPostprocessing,TIMER,cursorPosition,customComponent,customToolbar,doInitialize,finishedList,initVisualFinished,initialized,isComponentOpened,isDocLoadingCanceled,isModalDialog,serialVersionUID,support,tbdList,waitingOnInitVisual
-hcls AWTQuery,DoInitialize
+hfds CLOSE_LAST_LOCK,HELP_ID,LOG,componentCreated,cursorPosition,customComponent,initializer,serialVersionUID,support
 
 CLSS public abstract org.openide.text.CloneableEditorSupport
 cons public init(org.openide.text.CloneableEditorSupport$Env)
@@ -4578,6 +4617,7 @@ meth public final org.openide.text.PositionRef createPositionRef(int,javax.swing
 meth public final void addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public final void removePropertyChangeListener(java.beans.PropertyChangeListener)
 meth public java.io.InputStream getInputStream() throws java.io.IOException
+meth public java.lang.String toString()
 meth public javax.swing.JEditorPane[] getOpenedPanes()
 meth public javax.swing.text.StyledDocument getDocument()
 meth public javax.swing.text.StyledDocument openDocument() throws java.io.IOException
@@ -4593,8 +4633,8 @@ meth public void removeChangeListener(javax.swing.event.ChangeListener)
 meth public void saveDocument() throws java.io.IOException
 meth public void setMIMEType(java.lang.String)
 supr org.openide.windows.CloneableOpenSupport
-hfds DOCUMENT_LOADING,DOCUMENT_NO,DOCUMENT_READY,DOCUMENT_RELOADING,ERR,LOCAL_CLOSE_DOCUMENT,LOCAL_LOAD_TASK,LOCK_NOTIFY_MODIFIED,LOCK_PRINTING,LOCK_STRONG_REF,PROP_PANE,RP,alreadyModified,annotationsLoaded,counterGetDocument,counterOpenAtImpl,counterOpenDocument,counterPrepareDocument,doc,docFilter,documentReloading,documentStatus,inUserQuestionExceptionHandler,isStrongSet,kit,lastReusable,lastSaveTime,lastSelected,lineSet,lineSetWHM,listener,listeners,lookup,mimeType,positionManager,prepareDocumentRuntimeException,prepareTask,printing,propertyChangeSupport,reloadDialogOpened,reloadDocumentFireDocumentChangeClose,reloadDocumentFireDocumentChangeOpen,undoRedo,warnedClasses
-hcls DelegateIOExc,DocFilter,Listener,PlainEditorKit,StrongRef
+hfds ERR,LOCAL_CLOSE_DOCUMENT,LOCK_PRINTING,PROP_PANE,alreadyModified,annotationsLoaded,checkModificationLock,docFilter,inUserQuestionExceptionHandler,kit,lastReusable,lastSaveTime,lastSelected,lineSet,lineSetWHM,listener,listeners,listeningOnEnv,lookup,mimeType,openClose,positionManager,preventModification,printing,propertyChangeSupport,reloadDialogOpened,undoRedo,warnedClasses
+hcls DocFilter,Listener,PlainEditorKit
 
 CLSS public abstract interface static org.openide.text.CloneableEditorSupport$Env
  outer org.openide.text.CloneableEditorSupport
@@ -4665,7 +4705,7 @@ meth public java.util.Date getTime()
 meth public void markModified() throws java.io.IOException
 meth public void unmarkModified()
 supr org.openide.loaders.OpenSupport$Env
-hfds action,canWrite,fileLock,fileObject,serialVersionUID,warnedFiles
+hfds BIG_FILE_THRESHOLD_MB,action,canWrite,fileLock,fileObject,serialVersionUID,warnedFiles
 hcls ME,SaveAsCapableImpl
 
 CLSS public abstract org.openide.text.DocumentLine

@@ -325,6 +325,9 @@ public class ToolbarTabDisplayerUI extends AbstractTabDisplayerUI {
 
         public void paintComponent (Graphics g) {
             super.paintComponent(g);
+            
+            ColorUtil.setupAntialiasing(g);
+            
             String s = doGetText();
             
             Insets ins = getInsets();

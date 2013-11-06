@@ -201,7 +201,7 @@ public class JiraUpdater {
         JPanel panel = new JPanel();
 
         JLabel msgLabel = new JLabel("<html>" + NbBundle.getMessage(JiraUpdater.class, "MSG_PROJECT_NEEDS_JIRA")); // NOI18N
-        JButton linkButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+        JButton linkButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
         org.openide.awt.Mnemonics.setLocalizedText(linkButton, NbBundle.getMessage(JiraUpdater.class, "MSG_PROJECT_NEEDS_JIRA_LINK")); // NOI18N
         if (url != null) {
             linkButton.addActionListener(new ActionListener() {
