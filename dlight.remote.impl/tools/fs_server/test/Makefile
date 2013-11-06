@@ -11,12 +11,12 @@ PNAME=fs_server_test
 CC=gcc
 
 SOURCES=\
-	$(ROOT_DIR)/test/test_main.c \
 	$(ROOT_DIR)/src/queue.c \
 	$(ROOT_DIR)/src/blocking_queue.c \
 	$(ROOT_DIR)/src/util.c \
 	$(ROOT_DIR)/src/dirtab.c \
-	$(ROOT_DIR)/src/array.c
+	$(ROOT_DIR)/src/array.c \
+	$(ROOT_DIR)/test/test_main.c
 
 SRC_DIRS=\
 	$(ROOT_DIR)/src $(ROOT_DIR)/test
