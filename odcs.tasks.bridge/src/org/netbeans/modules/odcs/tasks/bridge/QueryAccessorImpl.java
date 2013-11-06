@@ -195,7 +195,7 @@ public class QueryAccessorImpl extends QueryAccessor<ODCSProject> {
     
     private Repository getRepository(ProjectHandle<ODCSProject> projectHandle) {
         ODCSProject p = projectHandle.getTeamProject();
-        Repository repo = Util.getTeamRepository(p.getServer().getUrl().toString(), p.getName());
+        Repository repo = Util.getTeamRepository(p.getServer().getUrl().toString(), p.getId());
         return repo;
     }
 

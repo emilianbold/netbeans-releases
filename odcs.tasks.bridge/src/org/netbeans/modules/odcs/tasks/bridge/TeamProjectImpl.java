@@ -112,12 +112,12 @@ class TeamProjectImpl extends org.netbeans.modules.team.spi.TeamProject {
 
     @Override
     public String getName() {
-        return project.getName();
+        return project.getId();
     }
 
     @Override
     public String getDisplayName() {
-        return getName();
+        return project.getName();
     }
 
     @Override
