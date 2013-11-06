@@ -51,12 +51,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.ProtectionDomain;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.util.Exceptions;
 import org.openide.util.WeakSet;
 
 /**
@@ -65,20 +65,39 @@ import org.openide.util.WeakSet;
  */
 final class NbInstrumentation implements Instrumentation {
     private static final Logger LOG = Logger.getLogger(NbInstrumentation.class.getName());
-    private static final Collection<NbInstrumentation> ACTIVE = new WeakSet<NbInstrumentation>();
+    private static final Object LOCK = new Object();
+    private static volatile Collection<NbInstrumentation> ACTIVE;
+
     private final List<ClassFileTransformer> transformers = new CopyOnWriteArrayList<ClassFileTransformer>();
+    private static final ThreadLocal<Boolean> IN = new ThreadLocal<Boolean>();
     
-    public static void registerAgent(ClassLoader l, String agentClassName) {
+    static NbInstrumentation registerAgent(ClassLoader l, String agentClassName) {
         try {
-            registerImpl(agentClassName, l);
+            return registerImpl(agentClassName, l);
         } catch (Throwable ex) {
             LOG.log(Level.WARNING, "Cannot register " + agentClassName, ex);
+            return null;
         }
     }
-
+    static void unregisterAgent(NbInstrumentation instr) {
+        synchronized (LOCK) {
+            if (ACTIVE != null) {
+                Collection<NbInstrumentation> clone = new WeakSet<NbInstrumentation>(ACTIVE);
+                clone.remove(instr);
+                ACTIVE = clone;
+            }
+        }
+    }
     private static NbInstrumentation registerImpl(String agentClassName, ClassLoader l) throws ClassNotFoundException, IllegalArgumentException, NoSuchMethodException, SecurityException, IllegalAccessException, InvocationTargetException {
         final NbInstrumentation inst = new NbInstrumentation();
-        ACTIVE.add(inst);
+        synchronized (LOCK) {
+            if (ACTIVE == null) {
+                ACTIVE = new WeakSet<NbInstrumentation>();
+            } else {
+                ACTIVE = new WeakSet<NbInstrumentation>(ACTIVE);
+            }
+            ACTIVE.add(inst);
+        }
         Class<?> agentClass = Class.forName(agentClassName, true, l);
         try {
             Method m = agentClass.getMethod("agentmain", String.class, Instrumentation.class); // NOI18N
@@ -91,10 +110,21 @@ final class NbInstrumentation implements Instrumentation {
     }
     
     public static byte[] patchByteCode(ClassLoader l, String className, ProtectionDomain pd, byte[] arr) throws IllegalClassFormatException {
-        for (NbInstrumentation inst : ACTIVE) {
-            for (ClassFileTransformer t : inst.transformers) {
-                arr = t.transform(l, className, null, pd, arr);
+        if (ACTIVE == null) {
+            return arr;
+        }
+        if (Boolean.TRUE.equals(IN.get())) {
+            return arr;
+        }
+        try {
+            IN.set(Boolean.TRUE);
+            for (NbInstrumentation inst : ACTIVE) {
+                for (ClassFileTransformer t : inst.transformers) {
+                    arr = t.transform(l, className, null, pd, arr);
+                }
             }
+        } finally {
+            IN.set(null);
         }
         return arr;
     }

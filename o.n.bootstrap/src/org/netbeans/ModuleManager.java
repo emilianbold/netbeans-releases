@@ -1199,7 +1199,7 @@ public final class ModuleManager extends Modules {
         for (Module m : toEnable) {
             final String agentClass = m.data().getAgentClass();
             if (agentClass != null) {
-                NbInstrumentation.registerAgent(m.getClassLoader(), agentClass);
+                m.assignInstrumentation(NbInstrumentation.registerAgent(m.getClassLoader(), agentClass));
             }
         }
         {
@@ -1250,6 +1250,7 @@ public final class ModuleManager extends Modules {
             for (Module m : toDisable) {
                 installer.dispose(m);
                 m.setEnabled(false);
+                m.unregisterInstrumentation();
                 m.classLoaderDown();
             }
             System.gc(); // hope OneModuleClassLoader.finalize() is called...
