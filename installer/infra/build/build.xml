@@ -1424,24 +1424,6 @@ jarsigner.storepass=${jarsigner.storepass}
 	    <param name="bundle.platform"  value="linux"/>
 	    <param name="bundle.extension" value="sh"/>
         </antcall>
-	<antcall target="generate-netbeans-javase-bundle">	
-	    <param name="bundle.platform"  value="solaris-x86"/>
-	    <param name="bundle.extension" value="sh"/>
-        </antcall>
-	<antcall target="generate-netbeans-javase-bundle">	
-	    <param name="bundle.platform"  value="solaris-sparc"/>
-	    <param name="bundle.extension" value="sh"/>
-        </antcall>
-        <!--
-	<antcall target="generate-netbeans-javase-bundle">	
-	    <param name="bundle.platform"  value="macosx-x86"/>
-	    <param name="bundle.extension" value="zip"/>
-        </antcall>
-	<antcall target="generate-netbeans-javase-bundle">	
-	    <param name="bundle.platform"  value="macosx-ppc"/>
-	    <param name="bundle.extension" value="zip"/>
-        </antcall>
-        -->
     </target>
 
 
@@ -1455,24 +1437,6 @@ jarsigner.storepass=${jarsigner.storepass}
 	    <param name="bundle.platform"  value="linux"/>
 	    <param name="bundle.extension" value="sh"/>
         </antcall>
-	<antcall target="generate-netbeans-javaee-bundle">	
-	    <param name="bundle.platform"  value="solaris-x86"/>
-	    <param name="bundle.extension" value="sh"/>
-        </antcall>
-	<antcall target="generate-netbeans-javaee-bundle">	
-	    <param name="bundle.platform"  value="solaris-sparc"/>
-	    <param name="bundle.extension" value="sh"/>
-        </antcall>
-        <!--
-	<antcall target="generate-netbeans-javaee-bundle">	
-	    <param name="bundle.platform"  value="macosx-x86"/>
-	    <param name="bundle.extension" value="zip"/>
-        </antcall>
-	<antcall target="generate-netbeans-javaee-bundle">	
-	    <param name="bundle.platform"  value="macosx-ppc"/>
-	    <param name="bundle.extension" value="zip"/>
-        </antcall>
-        -->
     </target>
 
 
@@ -1486,24 +1450,6 @@ jarsigner.storepass=${jarsigner.storepass}
 	    <param name="bundle.platform"  value="linux"/>
 	    <param name="bundle.extension" value="sh"/>
         </antcall>
-	<antcall target="generate-netbeans-java-bundle">	
-	    <param name="bundle.platform"  value="solaris-x86"/>
-	    <param name="bundle.extension" value="sh"/>
-        </antcall>
-	<antcall target="generate-netbeans-java-bundle">	
-	    <param name="bundle.platform"  value="solaris-sparc"/>
-	    <param name="bundle.extension" value="sh"/>
-        </antcall>
-        <!--
-	<antcall target="generate-netbeans-java-bundle">	
-	    <param name="bundle.platform"  value="macosx-x86"/>
-	    <param name="bundle.extension" value="zip"/>
-        </antcall>
-	<antcall target="generate-netbeans-java-bundle">	
-	    <param name="bundle.platform"  value="macosx-ppc"/>
-	    <param name="bundle.extension" value="zip"/>
-        </antcall>
-        -->
     </target>
 
 
@@ -1559,24 +1505,6 @@ jarsigner.storepass=${jarsigner.storepass}
 	    <param name="bundle.platform"  value="linux"/>
 	    <param name="bundle.extension" value="sh"/>
         </antcall>
-	<antcall target="generate-netbeans-cpp-bundle">	
-	    <param name="bundle.platform"  value="solaris-x86"/>
-	    <param name="bundle.extension" value="sh"/>
-        </antcall>
-	<antcall target="generate-netbeans-cpp-bundle">	
-	    <param name="bundle.platform"  value="solaris-sparc"/>
-	    <param name="bundle.extension" value="sh"/>
-        </antcall>
-        <!--
-	<antcall target="generate-netbeans-cpp-bundle">	
-	    <param name="bundle.platform"  value="macosx-x86"/>
-	    <param name="bundle.extension" value="zip"/>
-        </antcall>
-	<antcall target="generate-netbeans-cpp-bundle">	
-	    <param name="bundle.platform"  value="macosx-ppc"/>
-	    <param name="bundle.extension" value="zip"/>
-        </antcall>
-        -->
     </target>
 
     
@@ -1590,24 +1518,6 @@ jarsigner.storepass=${jarsigner.storepass}
 	    <param name="bundle.platform"  value="linux"/>
 	    <param name="bundle.extension" value="sh"/>
         </antcall>
-	<antcall target="generate-netbeans-php-bundle">	
-	    <param name="bundle.platform"  value="solaris-x86"/>
-	    <param name="bundle.extension" value="sh"/>
-        </antcall>
-	<antcall target="generate-netbeans-php-bundle">	
-	    <param name="bundle.platform"  value="solaris-sparc"/>
-	    <param name="bundle.extension" value="sh"/>
-        </antcall>
-        <!--
-	<antcall target="generate-netbeans-php-bundle">	
-	    <param name="bundle.platform"  value="macosx-x86"/>
-	    <param name="bundle.extension" value="zip"/>
-        </antcall>
-	<antcall target="generate-netbeans-php-bundle">	
-	    <param name="bundle.platform"  value="macosx-ppc"/>
-	    <param name="bundle.extension" value="zip"/>
-        </antcall>
-        -->
     </target>
 
 
@@ -1621,24 +1531,6 @@ jarsigner.storepass=${jarsigner.storepass}
 	    <param name="bundle.platform"  value="linux"/>
 	    <param name="bundle.extension" value="sh"/>
         </antcall>
-	<antcall target="generate-netbeans-full-bundle">	
-	    <param name="bundle.platform"  value="solaris-x86"/>
-	    <param name="bundle.extension" value="sh"/>
-        </antcall>
-	<antcall target="generate-netbeans-full-bundle">	
-	    <param name="bundle.platform"  value="solaris-sparc"/>
-	    <param name="bundle.extension" value="sh"/>
-        </antcall>
-        <!--
-	<antcall target="generate-netbeans-full-bundle">	
-	    <param name="bundle.platform"  value="macosx-x86"/>
-	    <param name="bundle.extension" value="zip"/>
-        </antcall>
-	<antcall target="generate-netbeans-full-bundle">	
-	    <param name="bundle.platform"  value="macosx-ppc"/>
-	    <param name="bundle.extension" value="zip"/>
-        </antcall>
-        -->
     </target>
 
   

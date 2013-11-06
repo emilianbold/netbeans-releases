@@ -43,6 +43,7 @@ package org.netbeans.modules.remote.impl.fs.server;
  */
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -51,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -64,6 +66,7 @@ import org.netbeans.modules.remote.impl.fs.RemoteFileObject;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemManager;
 import org.openide.modules.OnStart;
 import org.openide.modules.OnStop;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -128,6 +131,7 @@ public class DirectoryReaderFS implements DirectoryReader {
         FSSRequest request = new FSSRequest(FSSRequestKind.RECURSE, path);
         List<String> paths = new ArrayList<String>();
         long time = System.currentTimeMillis();
+        AtomicInteger realCnt = new AtomicInteger(0);
         try {
             RemoteLogger.finest("Sending recursive request #{0} for directry {1} to fs_server", 
                     request.getId(), path);
@@ -146,14 +150,24 @@ public class DirectoryReaderFS implements DirectoryReader {
                     assert respId == request.getId();
                     String serverPath = buf.getString();
                     int cnt = buf.getInt();
-                    List<DirEntry> entries = readEntries(response, serverPath, cnt, request.getId());
+                    List<DirEntry> entries = readEntries(response, serverPath, cnt, request.getId(), realCnt);
                     cache.put(serverPath, entries);
                     paths.add(serverPath);
                 }
             }
+        } catch (CancellationException ex) {
+            // don't report CancellationException
+            synchronized (lock) { 
+                cache.clear();
+                return;
+            }
+        } catch (ConnectException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ExecutionException ex) {
+            ex.printStackTrace(System.err);
         } finally {
-            RemoteLogger.finest("Communication #{0} with fs_server for directry {1} took {2} ms",
-                    request.getId(), path, System.currentTimeMillis() - time);
+            RemoteLogger.finest("Communication #{0} with fs_server for directry {1}: ({2} entries) took {3} ms",
+                    request.getId(), path, realCnt.get(), System.currentTimeMillis() - time);
         }
 
         time = System.currentTimeMillis();
@@ -192,6 +206,7 @@ public class DirectoryReaderFS implements DirectoryReader {
         FSSRequest request = new FSSRequest(FSSRequestKind.LS, path);
         long time = System.currentTimeMillis();
         RemoteStatistics.ActivityID activityID = RemoteStatistics.startChannelActivity("fs_server_ls", path); // NOI18N
+        AtomicInteger realCnt = new AtomicInteger(0);
         try {
             RemoteLogger.finest("Sending request #{0} for directry {1} to fs_server", 
                     request.getId(), path);
@@ -207,35 +222,35 @@ public class DirectoryReaderFS implements DirectoryReader {
                 String serverPath = buf.getString();
                 assert serverPath.equals(path);
                 int cnt = buf.getInt();
-                return readEntries(response, path, cnt, request.getId());
+                return readEntries(response, path, cnt, request.getId(), realCnt);
             }
         } finally {
             RemoteStatistics.stopChannelActivity(activityID, 0);
-            RemoteLogger.finest("Communication #{0} with fs_server for directry {1} took {2} ms",
-                    request.getId(), path, System.currentTimeMillis() - time);
+            RemoteLogger.finest("Communication #{0} with fs_server for directry {1} ({2} entries read) took {3} ms",
+                    request.getId(), path, realCnt.get(), System.currentTimeMillis() - time);
         }
     }
 
-    private List<DirEntry> readEntries(FSSResponse response, String path, int cnt, long reqId) 
+    private List<DirEntry> readEntries(FSSResponse response, String path, int cnt, long reqId, AtomicInteger realCnt) 
             throws IOException, InterruptedException {
         try {
-            int realCnt = 0;
             RemoteLogger.finest("Reading response #{0} from fs_server for directry {1})",
                     reqId, path);
             List<FSSResponse.Package> packages = new ArrayList<FSSResponse.Package>(cnt);
             for (FSSResponse.Package pkg = response.getNextPackage(); 
                     pkg.getKind() != FSSResponseKind.END; 
                     pkg = response.getNextPackage()) {
-                if (VERBOSE_RESPONSE) {
-                    RemoteLogger.finest("\tfs_server response #{0}: [{1}] {2}",
-                            reqId, ++realCnt, pkg.getData());
-                }
                 if (pkg.getKind() == FSSResponseKind.END) {
                     break;
                 }
+                realCnt.incrementAndGet();
+                if (VERBOSE_RESPONSE) {
+                    RemoteLogger.finest("\tfs_server response #{0}: [{1}] {2}",
+                            reqId, realCnt.get(), pkg.getData());
+                }
                 packages.add(pkg);
             }
-            RemoteLogger.finest("Proceeing response #{0} from fs_server for directry {1}",
+            RemoteLogger.finest("Processing response #{0} from fs_server for directry {1}",
                     reqId, path);
             List<DirEntry> result = new ArrayList<DirEntry>(cnt);
             for (FSSResponse.Package pkg : packages) {

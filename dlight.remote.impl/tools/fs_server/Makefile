@@ -42,8 +42,8 @@ SRC_DIRS=\
 
 MKDIR=mkdir -p
 OBJ_DIR=$(ROOT_DIR)/build/$(CONF)
-DIST_DIR=$(ROOT_DIR)/dist/$(CONF)
-INSTALL_DIR=../../release/bin/nativeexecution/$(CONF)
+DIST_DIR=$(ROOT_DIR)/../../release/bin/$(CONF)
+INSTALL_DIR=../../../nbbuild/netbeans/dlight/bin$(CONF)
 LINE=sh $(ROOT_DIR)/make/line
 
 EXEC=$(DIST_DIR)/$(PNAME)
@@ -74,7 +74,8 @@ LDFLAGS=$(LF_$(CONF)) -lpthread
 
 all: $(EXEC)
 	@$(LINE) =
-	@echo $(EXEC); echo
+	@(cd `dirname $(EXEC)`; echo "`pwd`/`basename $(EXEC)`"); echo
+	@#echo $(EXEC); echo
 	@ls -la $(EXEC) | sed "s#$(EXEC)##"
 	@FILE=`(ls /bin/file || ls /usr/bin/file) 2>/dev/null`; \
 	   if [ -n "$${FILE}" ]; then $${FILE} ${EXEC} | sed "s#$(EXEC):.##"; fi

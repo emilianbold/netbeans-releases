@@ -164,7 +164,9 @@ public final class KarmaServers {
         KarmaServerInfo serverInfo = karmaServers.get(project);
         assert serverInfo != null;
         KarmaServer karmaServer = serverInfo.getServer();
-        karmaServer.runTests();
+        if (karmaServer != null) {
+            karmaServer.runTests();
+        }
     }
 
     public boolean isServerStarting(Project project) {

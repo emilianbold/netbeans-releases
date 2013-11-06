@@ -43,6 +43,8 @@
 package org.netbeans.modules.javascript.karma.preferences;
 
 import java.io.File;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -57,11 +59,23 @@ import org.openide.filesystems.FileUtil;
  */
 public final class KarmaPreferences {
 
+    private static final String ENABLED = "enabled"; // NOI18N
     private static final String KARMA = "karma"; // NOI18N
     private static final String CONFIG = "config"; // NOI18N
 
+    // @GuardedBy("CACHE")
+    private static final Map<Project, Preferences> CACHE = new WeakHashMap<>();
+
 
     private KarmaPreferences() {
+    }
+
+    public static boolean isEnabled(Project project) {
+        return getPreferences(project).getBoolean(ENABLED, false);
+    }
+
+    public static void setEnabled(Project project, boolean enabled) {
+        getPreferences(project).putBoolean(ENABLED, enabled);
     }
 
     @CheckForNull
@@ -90,9 +104,24 @@ public final class KarmaPreferences {
         getPreferences(project).removePreferenceChangeListener(listener);
     }
 
+    public static void removeFromCache(Project project) {
+        synchronized (CACHE) {
+            CACHE.remove(project);
+        }
+    }
+
     private static Preferences getPreferences(Project project) {
         assert project != null;
-        return ProjectUtils.getPreferences(project, KarmaPreferences.class, false);
+        Preferences preferences;
+        synchronized (CACHE) {
+            preferences = CACHE.get(project);
+            if (preferences == null) {
+                preferences = ProjectUtils.getPreferences(project, KarmaPreferences.class, false);
+                CACHE.put(project, preferences);
+            }
+        }
+        assert preferences != null;
+        return preferences;
     }
 
     private static String relativizePath(Project project, String filePath) {

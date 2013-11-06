@@ -57,8 +57,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.ParseException;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -111,6 +109,7 @@ import org.netbeans.modules.localtasks.task.LocalTask.Attachment;
 import org.netbeans.modules.localtasks.task.LocalTask.TaskReference;
 import org.netbeans.modules.bugtracking.commons.AttachmentsPanel;
 import org.netbeans.modules.bugtracking.commons.UIUtils;
+import org.netbeans.modules.bugtracking.spi.SchedulingPicker;
 import org.netbeans.modules.mylyn.util.NbDateRange;
 import org.netbeans.modules.mylyn.util.localtasks.IssueField;
 import org.netbeans.modules.spellchecker.api.Spellchecker;
@@ -151,7 +150,7 @@ final class TaskPanel extends javax.swing.JPanel {
     private final AttachmentsPanel attachmentsPanel;
     private static final Logger LOG = LocalRepository.LOG;
     private final IDEServices.DatePickerComponent dueDatePicker;
-    private final IDEServices.DatePickerComponent scheduleDatePicker;
+    private final SchedulingPicker scheduleDatePicker;
     private static final NumberFormatter estimateFormatter = new NumberFormatter(new java.text.DecimalFormat("#0")) {
 
         @Override
@@ -198,7 +197,7 @@ final class TaskPanel extends javax.swing.JPanel {
         
         GroupLayout layout = (GroupLayout) attributesPanel.getLayout();
         dueDatePicker = UIUtils.createDatePickerComponent();
-        scheduleDatePicker = UIUtils.createDatePickerComponent();
+        scheduleDatePicker = new SchedulingPicker();
         layout.replace(dummyDueDateField, dueDatePicker.getComponent());
         dueDateLabel.setLabelFor(dueDatePicker.getComponent());
         layout.replace(dummyScheduleDateField, scheduleDatePicker.getComponent());
@@ -236,7 +235,7 @@ final class TaskPanel extends javax.swing.JPanel {
         privateNotesField.setText(task.getPrivateNotes());
         dueDatePicker.setDate(task.getDueDate());
         NbDateRange scheduleDate = task.getScheduleDate();
-        scheduleDatePicker.setDate(scheduleDate == null ? null : scheduleDate.getStartDate().getTime());
+        scheduleDatePicker.setScheduleDate(scheduleDate == null ? null : scheduleDate.toSchedulingInfo());
         estimateField.setValue(task.getEstimate());
 
         boolean finished = task.isFinished();
@@ -992,7 +991,7 @@ final class TaskPanel extends javax.swing.JPanel {
                 return true;
             }
         });
-        dueDatePicker.addChangeListener(new DatePickerListener(dueDatePicker,
+        dueDatePicker.addChangeListener(new DatePickerListener(dueDatePicker.getComponent(),
                 ATTRIBUTE_DUE_DATE, dueDateLabel) {
 
             @Override
@@ -1001,18 +1000,12 @@ final class TaskPanel extends javax.swing.JPanel {
                 return true;
             }
         });
-        scheduleDatePicker.addChangeListener(new DatePickerListener(scheduleDatePicker,
+        scheduleDatePicker.addChangeListener(new DatePickerListener(scheduleDatePicker.getComponent(),
                 ATTRIBUTE_SCHEDULE_DATE, scheduleDateLabel) {
 
             @Override
             protected boolean storeValue () {
-                Date date = scheduleDatePicker.getDate();
-                Calendar cal = null;
-                if (date != null) {
-                    cal = Calendar.getInstance();
-                    cal.setTime(date);
-                }
-                task.setTaskScheduleDate(cal == null ? null : new NbDateRange(cal).toSchedulingInfo(), false);
+                task.setTaskScheduleDate(scheduleDatePicker.getScheduleDate(), false);
                 return true;
             }
         });
@@ -1387,10 +1380,10 @@ final class TaskPanel extends javax.swing.JPanel {
     private abstract class DatePickerListener implements ChangeListener {
 
         private final String attributeName;
-        private final IDEServices.DatePickerComponent component;
+        private final JComponent component;
         private final JComponent fieldLabel;
 
-        public DatePickerListener (IDEServices.DatePickerComponent component,
+        public DatePickerListener (JComponent component,
                 String attributeName, JComponent fieldLabel) {
             this.component = component;
             this.attributeName = attributeName;
@@ -1410,7 +1403,7 @@ final class TaskPanel extends javax.swing.JPanel {
         }
         
         public boolean isEnabled () {
-            return component.getComponent().isVisible() && component.getComponent().isEnabled();
+            return component.isVisible() && component.isEnabled();
         }
 
         protected final void updateDecorations () {

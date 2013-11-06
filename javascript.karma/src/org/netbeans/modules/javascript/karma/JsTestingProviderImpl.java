@@ -45,14 +45,16 @@ package org.netbeans.modules.javascript.karma;
 import java.net.URL;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.karma.exec.KarmaServers;
+import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
 import org.netbeans.modules.javascript.karma.ui.customizer.KarmaCustomizer;
-import org.netbeans.modules.javascript.karma.ui.logicalview.KarmaNodeFactory;
+import org.netbeans.modules.javascript.karma.ui.logicalview.KarmaChildrenList;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo;
 import org.netbeans.modules.web.clientproject.spi.jstesting.JsTestingProviderImplementation;
-import org.netbeans.spi.project.ui.support.NodeFactory;
+import org.netbeans.spi.project.ui.support.NodeList;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -94,7 +96,10 @@ public class JsTestingProviderImpl implements JsTestingProviderImplementation {
 
     @Override
     public void notifyEnabled(Project project, boolean enabled) {
-        // XXX
+        KarmaPreferences.setEnabled(project, enabled);
+        if (!enabled) {
+            cleanup(project);
+        }
     }
 
     @Override
@@ -104,12 +109,17 @@ public class JsTestingProviderImpl implements JsTestingProviderImplementation {
 
     @Override
     public void projectClosed(Project project) {
-        KarmaServers.getInstance().stopServer(project, true);
+        cleanup(project);
     }
 
     @Override
-    public NodeFactory createNodeFactory() {
-        return new KarmaNodeFactory();
+    public NodeList<Node> createNodeList(Project project) {
+        return new KarmaChildrenList(project);
+    }
+
+    private void cleanup(Project project) {
+        KarmaPreferences.removeFromCache(project);
+        KarmaServers.getInstance().stopServer(project, true);
     }
 
 }
