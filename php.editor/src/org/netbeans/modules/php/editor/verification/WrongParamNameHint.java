@@ -54,6 +54,7 @@ import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
@@ -140,7 +141,7 @@ public class WrongParamNameHint extends HintRule {
             if (parameterNameExpression instanceof Variable) {
                 Variable parameterVariable = (Variable) parameterNameExpression;
                 String parameterName = CodeUtils.extractVariableName(parameterVariable);
-                if (paramVariableName != null && !paramVariableName.equals(parameterName)) {
+                if (StringUtils.hasText(paramVariableName) && !paramVariableName.equals(parameterName)) {
                     createHint(paramVariable, parameterName);
                 }
             }
