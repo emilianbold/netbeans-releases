@@ -50,7 +50,6 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
 import org.netbeans.modules.web.jsf.editor.PositionRange;
-import org.netbeans.modules.web.jsf.editor.actions.ImportData.ItemVariant;
 import org.openide.util.Exceptions;
 
 /**
@@ -62,11 +61,11 @@ class FixNamespacesPerformer {
 
     private final HtmlParserResult parserResult;
     private final ImportData importData;
-    private final List<ItemVariant> selections;
+    private final List<String> selections;
     private final boolean removeUnused;
     private BaseDocument baseDocument;
 
-    public FixNamespacesPerformer(HtmlParserResult parserResult, ImportData importData, List<ItemVariant> selections, boolean removeUnused) {
+    public FixNamespacesPerformer(HtmlParserResult parserResult, ImportData importData, List<String> selections, boolean removeUnused) {
         this.parserResult = parserResult;
         this.importData = importData;
         this.selections = selections;

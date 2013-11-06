@@ -81,8 +81,8 @@ public class ImportData {
         return new ArrayList<>(dataToRemove);
     }
 
-    public List<ItemVariant> getDefaultVariants() {
-        List<ItemVariant> result = new ArrayList<>();
+    public List<String> getDefaultVariants() {
+        List<String> result = new ArrayList<>();
         for (DataItem dataItem : dataItems) {
             result.add(dataItem.getDefaultVariant());
         }
@@ -92,10 +92,10 @@ public class ImportData {
     public static class DataItem {
 
         private final String prefix;
-        private final List<ItemVariant> variants;
-        private final ItemVariant defaultVariant;
+        private final List<String> variants;
+        private final String defaultVariant;
 
-        public DataItem(String prefix, List<ItemVariant> variants, ItemVariant defaultVariant) {
+        public DataItem(String prefix, List<String> variants, String defaultVariant) {
             this.prefix = prefix;
             this.variants = variants;
             this.defaultVariant = defaultVariant;
@@ -105,11 +105,11 @@ public class ImportData {
             return prefix;
         }
 
-        public List<ItemVariant> getVariants() {
+        public List<String> getVariants() {
             return new ArrayList<>(variants);
         }
 
-        public ItemVariant getDefaultVariant() {
+        public String getDefaultVariant() {
             return defaultVariant;
         }
 
@@ -138,74 +138,6 @@ public class ImportData {
                 return false;
             }
             if (!Objects.equals(this.defaultVariant, other.defaultVariant)) {
-                return false;
-            }
-            return true;
-        }
-    }
-
-    public static class ItemVariant {
-
-        public static enum UsagePolicy {
-
-            CAN_BE_USED() {
-                @Override
-                boolean canBeUsed() {
-                    return true;
-                }
-            },
-            CAN_NOT_BE_USED() {
-                @Override
-                boolean canBeUsed() {
-                    return false;
-                }
-            };
-
-            abstract boolean canBeUsed();
-        }
-        private final String namespace;
-        private final UsagePolicy usagePolicy;
-
-        public ItemVariant(String namespace, UsagePolicy usagePolicy) {
-            assert namespace != null;
-            this.namespace = namespace;
-            this.usagePolicy = usagePolicy;
-        }
-
-        public String getName() {
-            return namespace;
-        }
-
-        public boolean canBeUsed() {
-            return usagePolicy.canBeUsed();
-        }
-
-        @Override
-        public String toString() {
-            return getName();
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 3;
-            hash = 31 * hash + Objects.hashCode(this.namespace);
-            hash = 31 * hash + Objects.hashCode(this.usagePolicy);
-            return hash;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            final ItemVariant other = (ItemVariant) obj;
-            if (!Objects.equals(this.namespace, other.namespace)) {
-                return false;
-            }
-            if (this.usagePolicy != other.usagePolicy) {
                 return false;
             }
             return true;

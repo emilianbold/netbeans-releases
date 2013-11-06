@@ -43,9 +43,12 @@ package org.netbeans.modules.web.jsf.editor.actions;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
@@ -54,11 +57,13 @@ import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementVisitor;
+import org.netbeans.modules.html.editor.lib.api.elements.Named;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
+import org.netbeans.modules.web.jsf.editor.hints.LibraryDeclarationChecker;
 import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.api.NamespaceUtils;
@@ -97,6 +102,14 @@ class NamespaceProcessor {
             importData.addToRemove(namespaceAttribute);
         }
 
+        for (String prefix : resultCollector.getUnresolvedPrefixes()) {
+            importData.shouldShowNamespacesPanel = true;
+            importData.add(new ImportData.DataItem(
+                    prefix,
+                    new ArrayList<>(supportedLibraries.keySet()),
+                    findDefaultNamespace(prefix)));
+        }
+
         return importData;
     }
 
@@ -132,6 +145,16 @@ class NamespaceProcessor {
         return result;
     }
 
+    private String findDefaultNamespace(String prefix) {
+        for (Map.Entry<String, Library> entry : supportedLibraries.entrySet()) {
+            Library library = entry.getValue();
+            if (prefix.equals(library.getDefaultPrefix())) {
+                return entry.getKey();
+            }
+        }
+        return supportedLibraries.keySet().iterator().next();
+    }
+
     private class ResultCollector {
 
         /**
@@ -141,11 +164,13 @@ class NamespaceProcessor {
         private final HtmlParserResult parserResult;
         private final NamespaceCollector nsCollector;
         private final ComponentCollector compCollector;
+        private final UnresolvedCollector unresolvedCollector;
 
         private ResultCollector(HtmlParserResult parserResult) {
             this.parserResult = parserResult;
             this.nsCollector = new NamespaceCollector(parserResult);
             this.compCollector = new ComponentCollector(parserResult, prefixMap);
+            this.unresolvedCollector = new UnresolvedCollector(parserResult);
             initialize();
         }
 
@@ -167,6 +192,9 @@ class NamespaceProcessor {
                     ElementUtils.visitChildren(root, compCollector, ElementType.OPEN_TAG);
                 }
             }
+
+            // gather unresolved prefixes
+            ElementUtils.visitChildren(parserResult.rootOfUndeclaredTagsParseTree(), unresolvedCollector, ElementType.OPEN_TAG);
         }
 
         public List<Attribute> getUnusedNamespaces() {
@@ -181,6 +209,10 @@ class NamespaceProcessor {
                 }
             }
             return toRemove;
+        }
+
+        public Set<String> getUnresolvedPrefixes() {
+            return unresolvedCollector.getUndeclaredPrefixes();
         }
     }
 
@@ -262,5 +294,32 @@ class NamespaceProcessor {
                 }
             }
         }
+    }
+
+    /**
+     * Collects all unresolved prefixes within the Facelet.
+     */
+    private class UnresolvedCollector implements ElementVisitor {
+
+        private final HtmlParserResult parserResult;
+        private final Set<Named> undeclaredNodes = new HashSet<>();
+
+        public UnresolvedCollector(HtmlParserResult result) {
+            this.parserResult = result;
+        }
+
+        @Override
+        public void visit(Element node) {
+            OpenTag openTag = (OpenTag) node;
+            undeclaredNodes.addAll(LibraryDeclarationChecker.parseForUndeclaredElements(parserResult, openTag));
+        }
+
+         public Set<String> getUndeclaredPrefixes() {
+             Set<String> result = new HashSet<>();
+             for (Named named : undeclaredNodes) {
+                 result.add(CharSequenceUtilities.toString(named.namespacePrefix()));
+             }
+             return result;
+         }
     }
 }

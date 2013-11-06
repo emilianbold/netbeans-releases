@@ -373,7 +373,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
         return undeclaredNamespaces;
     }
 
-    private static Set<Named> parseForUndeclaredElements(HtmlParserResult result, OpenTag openTag) {
+    public static Set<Named> parseForUndeclaredElements(HtmlParserResult result, OpenTag openTag) {
         Set<Named> undeclaredEntries = new HashSet<>();
 
         // don't check root tags - issue #231536

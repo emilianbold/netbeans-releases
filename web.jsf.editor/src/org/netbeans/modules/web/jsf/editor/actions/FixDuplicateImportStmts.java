@@ -59,17 +59,13 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.AbstractAction;
-import javax.swing.Icon;
 import javax.swing.InputMap;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.KeyStroke;
-import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
 import org.netbeans.modules.web.jsf.editor.actions.ImportData.DataItem;
-import org.netbeans.modules.web.jsf.editor.actions.ImportData.ItemVariant;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -149,7 +145,7 @@ public class FixDuplicateImportStmts extends javax.swing.JPanel {
     }
 
     private JComboBox createComboBox(DataItem item, Font font, FocusListener listener) {
-        List<ItemVariant> variants = item.getVariants();
+        List<String> variants = item.getVariants();
         JComboBox combo = new JComboBox(variants.toArray());
         combo.setSelectedItem(item.getDefaultVariant());
         combo.getAccessibleContext().setAccessibleDescription(getBundleString("FixDupImportStmts_Combo_ACSD")); //NOI18N
@@ -178,13 +174,13 @@ public class FixDuplicateImportStmts extends javax.swing.JPanel {
         checkUnusedImports.getAccessibleContext().setAccessibleDescription(getBundleString("FixDupImportStmts_checkUnusedImports_a11y")); // NOI18N
     }
 
-    public List<ItemVariant> getSelections() {
-        List<ItemVariant> result = new ArrayList<>();
+    public List<String> getSelections() {
+        List<String> result = new ArrayList<>();
         int numberOfCombos = combos == null ? 0 : combos.length;
         for (int i = 0; i < numberOfCombos; i++) {
             Object selectedItem = combos[i].getSelectedItem();
-            assert (selectedItem instanceof ItemVariant);
-            result.add((ItemVariant) selectedItem);
+            assert (selectedItem instanceof String);
+            result.add((String) selectedItem);
         }
         return result;
     }
@@ -260,6 +256,7 @@ public class FixDuplicateImportStmts extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     private static class TogglePopupAction extends AbstractAction {
+        private static final long serialVersionUID = 1L;
         @Override
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() instanceof JComboBox) {
