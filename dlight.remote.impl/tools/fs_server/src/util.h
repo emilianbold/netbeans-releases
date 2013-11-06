@@ -44,12 +44,6 @@ char *replace_first(char *s, char c, char replacement);
 /** opens a file in write-only exclusive mode with O_CREAT flag and mode 600 */
 FILE* fopen600(const char* path);
 
-bool read_int(FILE* fp, int *value);
-bool read_uint(FILE* fp, unsigned int *value);
-bool read_long(FILE* fp, long *value);
-
-int read_path(FILE* fp, char* buffer, int max_size);
-
 #ifdef	__cplusplus
 }
 #endif

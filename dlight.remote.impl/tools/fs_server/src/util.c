@@ -1,5 +1,4 @@
 #include "fs_common.h"
-#include "fs_common.h"
 #include "util.h"
 #include "exitcodes.h"
 
@@ -13,7 +12,6 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <sys/time.h>
-#include <ctype.h>
 
 static bool trace_flag = false;
 static FILE *log_file = NULL;
@@ -152,82 +150,4 @@ FILE* fopen600(const char* path) {
     } else {
         return fdopen(fd, "w");
     }
-}
-
-bool read_int(FILE* fp, int *value) {
-    *value = 0;
-    char c;
-    while ((c = fgetc(fp)) != EOF && isdigit(c)) {
-        *value *= 10;
-        *value += c - '0';
-    }
-    if (!feof(fp) && c != ' ') {
-        report_error("protocol error: integer should be followed by space\n");
-        return false;
-    }
-    return true;
-}
-
-
-bool read_uint(FILE* fp, unsigned int *value) {
-    *value = 0;
-    char c;
-    while ((c = fgetc(fp)) != EOF && isdigit(c)) {
-        *value *= 10;
-        *value += c - '0';
-    }
-    if (!feof(fp) && c != ' ') {
-        report_error("protocol error: integer should be followed by space\n");
-        return false;
-    }
-    return true;
-}
-
-bool read_long(FILE* fp, long *value) {
-    *value = 0;
-    char c;
-    while ((c = fgetc(fp)) != EOF && isdigit(c)) {
-        *value *= 10;
-        *value += c - '0';
-    }
-    if (!feof(fp) && c != ' ') {
-        report_error("protocol error: integer should be followed by space\n");
-        return false;
-    }
-    return true;
-}
-
-int read_path(FILE* fp, char* buffer, int max_size) {
-    int size = 0;
-    char c;
-    while ((c = fgetc(fp)) != EOF && isdigit(c)) {
-        size *= 10;
-        size += c - '0';
-    }
-    if (feof(fp)) {
-        if (size == 0) {
-            return 0;
-        } else {
-            return -1;
-        }
-    }
-    if (c != ' ' && size > 0) {
-        report_error("path len should followed by space\n");
-        return -1;
-    }
-    if (size > max_size) {
-        report_error("path too long\n");
-        return -1;
-    }
-    char *p = buffer;
-    for (int i = 0; i < size; i++) {
-        c = fgetc(fp);
-        if (c == EOF) {
-            report_error("unexpected EOF\n");
-            return -1;
-        }
-        *p++ = c;
-    }
-    *p = 0;
-    return size;
 }

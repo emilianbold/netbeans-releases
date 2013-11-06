@@ -39,7 +39,7 @@ static bool statistics = false;
 static int refresh_sleep = 1;
 
 #define FS_SERVER_MAJOR_VERSION 1
-#define FS_SERVER_MINOR_VERSION 4
+#define FS_SERVER_MINOR_VERSION 3
 
 typedef struct fs_entry {
     int /*short?*/ name_len;
@@ -78,6 +78,54 @@ static void state_init() {
     state_set_proceed(true);
 }
 
+static const char* decode_int(const char* text, int* result) {
+    *result = 0;
+    const char* p = text;
+    while (p - text < 12) {
+        char c = *(p++);
+        if (isdigit(c)) {
+            *result *= 10; 
+            *result += c - '0';
+        } else if (c == 0 || isspace(c)) {
+            return p;
+        }
+    }
+    report_error("unexpected numeric value: '%s'\n", text);
+    return NULL;
+}
+
+static const char* decode_uint(const char* text, unsigned int* result) {
+    *result = 0;
+    const char* p = text;
+    while (p - text < 12) {
+        char c = *(p++);
+        if (isdigit(c)) {
+            *result *= 10; 
+            *result += c - '0';
+        } else if (c == 0 || isspace(c)) {
+            return p;
+        }
+    }
+    report_error("unexpected numeric value: '%s'\n", text);
+    return NULL;
+}
+
+static const char* decode_long(const char* text, long* result) {
+    *result = 0;
+    const char* p = text;
+    while (p - text < 24) {
+        char c = *(p++);
+        if (isdigit(c)) {
+            *result *= 10; 
+            *result += c - '0';
+        } else if (c == 0 || isspace(c)) {
+            return p;
+        }
+    }
+    report_error("unexpected numeric value: '%s'\n", text);
+    return NULL;
+}
+
 static bool is_prohibited(const char* abspath) {
     if (strcmp("/proc", abspath) == 0) {
         return true;
@@ -92,58 +140,33 @@ static bool is_prohibited(const char* abspath) {
     return false;
 }
 
-static void skip_rest_of_line(FILE* fp) {
-    while (!feof(fp)) {
-        char c = fgetc(fp);
-        if (c == '\n') {
-            break;
-        }
+/** 
+ * Decodes in-place fs_raw_request into fs_request
+ */
+static fs_request* decode_request(char* raw_request, fs_request* request) {
+    const char* p = raw_request + 2;
+    //soft_assert(*p == ' ', "incorrect request format: '%s'", request);
+    //p++;
+    int id;
+    p = decode_int(p, &id);
+    if (p == NULL) {
+        return NULL;
     }
-}
-
-/** read request, returns its size or NULL on error */
-static bool read_request(FILE *fp, fs_request* request, int req_size, char* work_buffer, int work_size) {
-    // request example: "l 29 4 /usr\n"
-    char kind = fgetc(fp);
-    if (kind == EOF) {
-        return false; // no error message, just EOF
-    }
-    char c = fgetc(fp);
-    if (feof(fp) || c == '\n') { // could be in case of FS_REQ_QUIT request
-        request->kind = kind;
-        request->id = 0;
-        request->len = 0;
-        request->size = sizeof(fs_request) + 1;
-        request->path[0] = 0;
-        return true;
-    }
-    if (c != ' ') {
-        report_error("wrong request format\n");
-        skip_rest_of_line(fp);
-        return false;
-    }
-    unsigned int id;
-    if (!read_uint(fp, &id)) {
-        report_error("wrong request format\n");
-        skip_rest_of_line(fp);
-        return false;
-    }
-    int len = read_path(fp, work_buffer, work_size);
-    
-    c = fgetc(fp);
-    if (!feof(fp) && c != '\n') {
-        report_error("wrong request format: should be followed by ''\\n''\n");
-        skip_rest_of_line(fp);
-        return false;        
-    }
-    
-    request->kind = kind;
-    request->id = id;
-    strncpy(request->path, work_buffer, len);
+    //soft_assert(*p == ' ', "incorrect request format: '%s'", request);
+    int len;
+    p = decode_int(p, &len);
+    if (p == NULL) {
+        return NULL;
+    }   
+    //fs_request->kind = request->kind;
+    //soft_assert(*p == ' ', "incorrect request format: '%s'", request);
+    request->kind = raw_request[0];
+    strncpy(request->path, p, len);
     request->path[len] = 0;
+    request->id = id;
     request->len = len;
-    request->size = offsetof(fs_request, path)+len+1; //(request->path-&request)+len+1;  
-    return true;
+    request->size = offsetof(fs_request, path)+len+1; //(request->path-&request)+len+1;
+    return request;
 }
 
 static fs_entry* create_fs_entry(fs_entry *entry2clone) {
@@ -171,76 +194,44 @@ static fs_entry* create_fs_entry(fs_entry *entry2clone) {
 
 
 /** allocates fs_entry on heap */
-static fs_entry *read_entry_from_cache(FILE* fp, char* buf, int buf_size) {
+static fs_entry *decode_entry_response(const char* buf) {
     // format: name_len name uid gid mode size mtime link_len link
     fs_entry tmp; // a temporary one since we don't know names size
-    tmp.name_len = read_path(fp, buf, buf_size);
-    if (tmp.name_len < 0) {
-        skip_rest_of_line(fp);
-        return NULL;
-    }
-    if (tmp.name_len == 0) {
-        if (feof(fp)) {
-            return NULL;
-        }
-    }
-    tmp.name = buf;
-    char c = fgetc(fp);
-    if (c != ' ') {
-        report_error("wrong cache format: path should be followed by space\n");
-    }    
-    if (!read_uint(fp, &tmp.uid) ||
-        !read_uint(fp, &tmp.gid) ||
-        !read_uint(fp, &tmp.mode) || 
-        !read_long(fp, &tmp.size) ||
-        !read_long(fp, &tmp.mtime)) {
-        skip_rest_of_line(fp);
-        return NULL;        
-    }
-    tmp.link = buf + tmp.name_len + 1;
-    tmp.link_len = read_path(fp, tmp.link, buf_size - tmp.name_len - 1);
-    if (tmp.link_len < 0) {
-        skip_rest_of_line(fp);
-        return NULL;        
-    }
-    c = fgetc(fp);
-    if (c != '\n' && c != EOF) {
-        report_error("wrong cache format: element should be followed by ''\\n''\n");
-    }    
+    const char* p = decode_int(buf, &tmp.name_len);
+    tmp.name = (char*) p;
+    p += tmp.name_len + 1;
+    p = decode_uint(p, &tmp.uid);
+    p = decode_uint(p, &tmp.gid);
+    p = decode_uint(p, &tmp.mode);
+    p = decode_long(p, &tmp.size);
+    p = decode_long(p, &tmp.mtime);
+    p = decode_int(p, &tmp.link_len);
+    tmp.link = (char*) p;
     return create_fs_entry(&tmp);
 }
 
-static void read_entries_from_cache(array/*<fs_entry>*/ *entries, const char* cache_path, const char* path) {
-    trace("reading entries from %s\n", cache_path);
+static void read_entries_from_cache(array/*<fs_entry>*/ *entries, const char* cache, const char* path) {
     array_init(entries, 100);
-    FILE *fp = NULL;
-    fp = fopen(cache_path, "r");
-    if (fp) {
+    FILE *f = NULL;
+    f = fopen(cache, "r");
+    if (f) {
         int buf_size = PATH_MAX + 40;
         char *buf = malloc(buf_size);
-        if (read_path(fp, buf, buf_size) == -1) {
-            report_error("error reading cache'%s/%s': %s\n", dirtab_get_basedir(), cache_path, strerror(errno));
+        if (!fgets(buf, buf_size, f)) {
+            report_error("error reading cache'%s/%s': %s\n", dirtab_get_basedir(), cache, strerror(errno));
         }
         if (strncmp(path, buf, strlen(path)) != 0) {
-            report_error("error: first line in file '%s/%s' is not '%s', but is '%s'", dirtab_get_basedir(), cache_path, path, buf);
+            report_error("error: first line in file '%s/%s' is not '%s', but is '%s'", dirtab_get_basedir(), cache, path, buf);
         }
-        char c = fgetc(fp);
-        if (c != '\n' && c != EOF) {
-            report_error("path in %s should be followed by ''\\n''\n", cache_path);
+        while (fgets(buf, buf_size, f)) {
+            fs_entry *entry = decode_entry_response(buf);
+            array_add(entries, entry);
         }
-        while (!feof(fp)) {
-            fs_entry *entry = read_entry_from_cache(fp, buf, buf_size);
-            if (entry) {
-                trace("\tentry: %s %u %u %u %li %li %i %s\n", 
-                        entry->name, entry->uid, entry->gid, entry->mode, entry->size, entry->mtime, entry->link_len, entry->link);
-                array_add(entries, entry);
-            }
-        }
-        if (!feof(fp)) {
-            report_error("error reading '%s/%s': %s\n", dirtab_get_basedir(), cache_path, strerror(errno));
+        if (!feof(f)) {
+            report_error("error reading '%s/%s': %s\n", dirtab_get_basedir(), cache, strerror(errno));
         }
         free(buf);
-        fclose(fp);
+        fclose(f);
     }
     array_truncate(entries);
 }
@@ -363,7 +354,7 @@ static void response_ls(int request_id, const char* path, bool recursive, int ne
     }
     
     DIR *d = NULL;
-    FILE *cache_fp = NULL;
+    FILE *f = NULL;
     struct dirent *entry;
     
     union {
@@ -379,10 +370,10 @@ static void response_ls(int request_id, const char* path, bool recursive, int ne
     d = opendir(path);
     if (d) {
         if (persistence) {
-            const char *cache_path = dirtab_get_cache(path);
-            cache_fp = fopen600(cache_path);
-            if (!cache_fp) {
-                report_error("error opening file %s: %s\n", cache_path, strerror(errno));
+            const char *cache = dirtab_get_cache(path);
+            f = fopen600(cache);
+            if (!f) {
+                report_error("error opening file %s: %s\n", cache, strerror(errno));
             }
         }        
         int cnt = 0;
@@ -406,8 +397,8 @@ static void response_ls(int request_id, const char* path, bool recursive, int ne
         rewinddir(d);
         fprintf(stdout, "%c %d %li %s %d\n", (recursive ? FS_RSP_RECURSIVE_LS : FS_RSP_LS),
                 request_id, (long) strlen(path), path, cnt);
-        if (cache_fp) {
-            fprintf(cache_fp, "%li %s\n", (long) strlen(path), path);
+        if (f) {
+            fprintf(f, "%s\n", path);
         }        
         int base_len = strlen(path);
         strcpy(abspath, path);
@@ -436,8 +427,8 @@ static void response_ls(int request_id, const char* path, bool recursive, int ne
             strcpy(abspath + base_len + 1, entry->d_name);
             if (form_entry_response(buf, buf_size, abspath, entry, link_buf, PATH_MAX)) {
                 fprintf(stdout, "%c %d %s", FS_RSP_ENTRY, request_id, buf);
-                if (cache_fp) {
-                    fprintf(cache_fp, "%s",buf); // trailing '\n' already there, added by form_entry_response
+                if (f) {
+                    fprintf(f, "%s",buf); // trailing '\n' already there, added by form_entry_response
                 }
             } else {
                 report_error("error getting stat for '%s': %s\n", abspath, strerror(errno));
@@ -474,7 +465,7 @@ static void response_ls(int request_id, const char* path, bool recursive, int ne
     } else {
         report_error("error opening directory '%s': %s\n", path, strerror(errno));
     }
-    fclose_if_not_null(cache_fp);
+    fclose_if_not_null(f);
     closedir_if_not_null(d);
     free(link_buf);
     free(abspath);
@@ -688,11 +679,13 @@ static void main_loop() {
     }
 
     int buf_size = 256 + PATH_MAX;
-    char *work_buffer = malloc(buf_size);
-    fs_request *request = malloc(buf_size);
-    while(!feof(stdin)) {
-        if (read_request(stdin, request, buf_size, work_buffer, buf_size)) {
-            log_print("%c %d %d %s\n", request->kind, request->id, request->len, request->path);
+    char *raw_req_buffer = malloc(buf_size);
+    char *req_buffer = malloc(buf_size);
+    while(fgets(raw_req_buffer, buf_size, stdin)) {
+        trace("raw request: %s", raw_req_buffer); // no LF since buffer ends it anyhow 
+        log_print(raw_req_buffer);
+        fs_request* request = decode_request(raw_req_buffer, (fs_request*) req_buffer);
+        if (request) {
             trace("decoded request #%d sz=%d kind=%c len=%d path=%s\n", request->id, request->size, request->kind, request->len, request->path);
             if (request->kind == FS_REQ_QUIT) {
                 break;
@@ -725,8 +718,8 @@ static void main_loop() {
             trace("incorrect request \n");
        }
     }
-    free(request);
-    free(work_buffer);
+    free(req_buffer);
+    free(raw_req_buffer);
     state_set_proceed(false);
     blocking_queue_shutdown(&req_queue);
     trace("Max. requests queue size: %d\n", blocking_queue_max_size(&req_queue));
