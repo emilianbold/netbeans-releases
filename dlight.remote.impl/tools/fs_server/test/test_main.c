@@ -105,6 +105,21 @@ void test_dirtab_1() {
     assert_true(dirtab_flush());
 }
 
+static int string_comparator (const void *element1, const void *element2) {
+    const char *str1 = *((char**)element1);
+    const char *str2 = *((char**)element2);
+    int res = strcmp(str1, str2);
+    return res;
+}
+
+static const void *string_finder(const void *element, void* arg) {
+    const char *p = element;
+    if (strcmp(p, arg) == 0) {
+        return p;
+    }
+    return NULL;
+}
+
 static void test_array() {
     
    array a;
@@ -133,12 +148,6 @@ static void test_array() {
    assert_true(strcmp(array_get(&a, 2), "1") == 0);
    assert_true(strcmp(array_get(&a, 3), "3") == 0);
    
-   int string_comparator (const void *element1, const void *element2) {
-       const char *str1 = *((char**)element1);
-       const char *str2 = *((char**)element2);
-       int res = strcmp(str1, str2);
-       return res;
-   }
    array_qsort(&a, string_comparator);
 
    assert_true(strcmp(array_get(&a, 0), "1") == 0);
@@ -153,16 +162,8 @@ static void test_array() {
    array_add(&a, "c");
    array_add(&a, "z");
    array_qsort(&a, string_comparator);
-
-   const void *finder(const void *element, void* arg) {
-       const char *p = element;
-       if (strcmp(p, arg) == 0) {
-           return p;
-       }
-       return NULL;
-   }
    
-   assert_true(strcmp(array_iterate(&a, finder, "z"), "z") == 0);
+   assert_true(strcmp(array_iterate(&a, string_finder, "z"), "z") == 0);
 }
 
 int main(int argc, char** argv) {
