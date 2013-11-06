@@ -67,6 +67,8 @@ public interface APTTraceFlags {
     public static final boolean TRACE_APT_CACHE = Boolean.getBoolean("cnd.apt.cache.hits"); // NOI18N
     public static final boolean USE_SOFT_APT_CACHE = DebugUtils.getBoolean("cnd.apt.cache.soft", true); // NOI18N
 
+    public static final boolean USE_INCLIDE_RESOLVER_CACHE = DebugUtils.getBoolean("cnd.apt.include.resolver.cache", false); // NOI18N
+
     public static final boolean USE_APT_TEST_TOKEN = Boolean.getBoolean("cnd.apt.apttoken"); // NOI18N
 
     public static final boolean TEST_APT_SERIALIZATION = DebugUtils.getBoolean("cnd.cache.apt", false); // NOI18N
