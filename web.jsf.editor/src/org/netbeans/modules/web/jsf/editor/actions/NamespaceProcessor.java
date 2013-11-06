@@ -44,8 +44,10 @@ package org.netbeans.modules.web.jsf.editor.actions;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -104,10 +106,11 @@ class NamespaceProcessor {
 
         for (String prefix : resultCollector.getUnresolvedPrefixes()) {
             importData.shouldShowNamespacesPanel = true;
+            List<String> sortedVariants = getSortedVariants(prefix);
             importData.add(new ImportData.DataItem(
                     prefix,
-                    new ArrayList<>(supportedLibraries.keySet()),
-                    findDefaultNamespace(prefix)));
+                    sortedVariants,
+                    sortedVariants.get(0)));
         }
 
         return importData;
@@ -145,14 +148,27 @@ class NamespaceProcessor {
         return result;
     }
 
-    private String findDefaultNamespace(String prefix) {
-        for (Map.Entry<String, Library> entry : supportedLibraries.entrySet()) {
-            Library library = entry.getValue();
+    private List<String> getSortedVariants(String prefix) {
+        List<String> result = new ArrayList<>();
+        List<String> sortedList = new ArrayList<>(supportedLibraries.keySet());
+        Collections.sort(sortedList);
+
+        // add namespaces of the same default prefix
+        for (Iterator<String> it = sortedList.iterator(); it.hasNext();) {
+            String ns = it.next();
+            Library library = supportedLibraries.get(ns);
             if (prefix.equals(library.getDefaultPrefix())) {
-                return entry.getKey();
+                result.add(ns);
+                it.remove();
             }
         }
-        return supportedLibraries.keySet().iterator().next();
+
+        // complete the remaining items
+        for (String string : sortedList) {
+            result.add(string);
+        }
+
+        return result;
     }
 
     private class ResultCollector {
@@ -211,8 +227,10 @@ class NamespaceProcessor {
             return toRemove;
         }
 
-        public Set<String> getUnresolvedPrefixes() {
-            return unresolvedCollector.getUndeclaredPrefixes();
+        public List<String> getUnresolvedPrefixes() {
+            List<String> prefixes = new ArrayList<>(unresolvedCollector.getUndeclaredPrefixes());
+            Collections.sort(prefixes);
+            return prefixes;
         }
     }
 
