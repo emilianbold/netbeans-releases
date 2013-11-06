@@ -97,7 +97,7 @@ public class PageUpPageDownInJspEditorTest extends PerformanceTestCase {
     }
 
     private void init() {
-        expectedTime = UI_RESPONSE;
+        expectedTime = 200;
         WAIT_AFTER_OPEN = 200;
     }
 

@@ -90,7 +90,7 @@ public class JSPCompletionInJspEditorTest extends PerformanceTestCase {
     public JSPCompletionInJspEditorTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN = 6000;
+        WAIT_AFTER_OPEN = 2000;
     }
 
     /**
@@ -102,7 +102,7 @@ public class JSPCompletionInJspEditorTest extends PerformanceTestCase {
     public JSPCompletionInJspEditorTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN = 6000;
+        WAIT_AFTER_OPEN = 2000;
     }
 
     public static Test suite() {
@@ -177,8 +177,6 @@ public class JSPCompletionInJspEditorTest extends PerformanceTestCase {
         new OpenAction().performAPI(new Node(new ProjectsTabOperator().
                 getProjectRootNode("TestWebProject"), "Web Pages|index.jsp"));
         editorOperator = EditorWindowOperator.getEditor("index.jsp");
-        waitNoEvent(1000);
-        waitNoEvent(2000);
     }
 
     @Override
@@ -204,7 +202,6 @@ public class JSPCompletionInJspEditorTest extends PerformanceTestCase {
 
     @Override
     public void close() {
-        //repaintManager().setRegionFilter(null);
         repaintManager().resetRegionFilters();
         new ActionNoBlock(null, null, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0)).perform(editorOperator);
         clearTestLine();

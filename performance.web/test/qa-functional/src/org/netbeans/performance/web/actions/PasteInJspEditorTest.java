@@ -56,6 +56,7 @@ import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.web.setup.WebSetup;
 
@@ -98,9 +99,8 @@ public class PasteInJspEditorTest extends PerformanceTestCase {
     }
 
     private void init() {
-        expectedTime = UI_RESPONSE;
-        WAIT_AFTER_PREPARE = 1000;
-        WAIT_AFTER_OPEN = 200;
+        expectedTime = 1300;
+        WAIT_AFTER_OPEN = 2000;
     }
 
     public void testPasteInJspEditor() {

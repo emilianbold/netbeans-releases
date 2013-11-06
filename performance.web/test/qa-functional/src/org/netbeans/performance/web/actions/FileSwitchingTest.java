@@ -169,6 +169,7 @@ public class FileSwitchingTest extends PerformanceTestCase {
     @Override
     protected void shutdown() {
         new RestoreWindowAction().performAPI();
+        EditorOperator.closeDiscardAll();
         repaintManager().resetRegionFilters();
         CommonUtilities.setSpellcheckerEnabled(true);
     }

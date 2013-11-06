@@ -93,9 +93,8 @@ public class TypingInJspEditorTest extends PerformanceTestCase {
     }
 
     private void init() {
-        expectedTime = UI_RESPONSE;
-        WAIT_AFTER_PREPARE = 3000;
-        WAIT_AFTER_OPEN = 100;
+        expectedTime = 1500;
+        WAIT_AFTER_OPEN = 2000;
         line = 10;
     }
 
