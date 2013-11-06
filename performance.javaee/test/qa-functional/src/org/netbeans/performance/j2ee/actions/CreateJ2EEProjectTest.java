@@ -152,7 +152,12 @@ public class CreateJ2EEProjectTest extends PerformanceTestCase {
         wizard.selectProject(project);
         wizard.next();
         wizard_location = new NewWebProjectNameLocationStepOperator();
-        wizard_location.txtProjectLocation().setText(System.getProperty("nbjunit.workdir") + java.io.File.separator + "tmpdir");
+        if (System.getProperty("os.name", "").contains("Windows")) {
+            // #238007 - wizard too wide
+            wizard_location.txtProjectLocation().setText("C:\\tmp");
+        } else {
+            wizard_location.txtProjectLocation().setText(System.getProperty("nbjunit.workdir") + java.io.File.separator + "tmpdir");
+        }
         projectName = projectType + CommonUtilities.getTimeIndex();
         wizard_location.txtProjectName().setText(projectName);
         wizard_location.next();
