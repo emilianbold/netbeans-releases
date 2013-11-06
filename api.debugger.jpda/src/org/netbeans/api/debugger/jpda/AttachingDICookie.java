@@ -84,8 +84,8 @@ public final class AttachingDICookie extends AbstractDICookie {
     
     private static final Logger logger = Logger.getLogger(AttachingDICookie.class.getName());
 
-    private AttachingConnector attachingConnector;
-    private Map<String,? extends Argument> args;
+    private final AttachingConnector attachingConnector;
+    private final Map<String,? extends Argument> args;
 
     
     private AttachingDICookie (
@@ -221,7 +221,10 @@ public final class AttachingDICookie extends AbstractDICookie {
      * Creates a new instance of VirtualMachine for this DebuggerInfo Cookie.
      *
      * @return a new instance of VirtualMachine for this DebuggerInfo Cookie
+     * @throws java.io.IOException when unable to attach.
+     * @throws IllegalConnectorArgumentsException when some connector argument is invalid.
      */
+    @Override
     public VirtualMachine getVirtualMachine () throws IOException,
     IllegalConnectorArgumentsException {
         try {
