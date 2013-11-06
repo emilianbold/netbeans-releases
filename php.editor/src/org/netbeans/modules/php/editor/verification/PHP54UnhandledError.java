@@ -89,10 +89,10 @@ public class PHP54UnhandledError extends UnhandledErrorRule {
     }
 
     private static class CheckVisitor extends DefaultVisitor {
-        private List<VerificationError> errors = new ArrayList<>();
         private static final String BINARY_PREFIX = "0b"; //NOI18N
-        private boolean checkAnonymousObjectVariable;
+        private final List<VerificationError> errors = new ArrayList<>();
         private final FileObject fileObject;
+        private boolean checkAnonymousObjectVariable;
 
         public CheckVisitor(FileObject fileObject) {
             this.fileObject = fileObject;
