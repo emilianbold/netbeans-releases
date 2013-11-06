@@ -41,91 +41,101 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.web.actions;
 
+import junit.framework.Test;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.EditorWindowOperator;
+import static org.netbeans.jellytools.JellyTestCase.emptyConfiguration;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.actions.OpenAction;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
-
+import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.web.setup.WebSetup;
 
 /**
  * Test of typing in opened source editor.
  *
- * @author  anebuzelsky@netbeans.org
+ * @author anebuzelsky@netbeans.org
  */
 public class TypingInJspEditorTest extends PerformanceTestCase {
+
     private String file;
     private int line;
-    
-    
-    /** Creates a new instance of TypingInEditor */
+
+    /**
+     * Creates a new instance of TypingInEditor
+     *
+     * @param testName test name
+     */
     public TypingInJspEditorTest(String testName) {
         super(testName);
         init();
     }
-    
-    /** Creates a new instance of TypingInEditor */
+
+    /**
+     * Creates a new instance of TypingInEditor
+     *
+     * @param testName test name
+     * @param performanceDataName data name
+     */
     public TypingInJspEditorTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         init();
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(WebSetup.class)
-             .addTest(TypingInJspEditorTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(WebSetup.class)
+                .addTest(TypingInJspEditorTest.class)
+                .suite();
     }
-    
-    protected void init() {
+
+    private void init() {
         expectedTime = UI_RESPONSE;
         WAIT_AFTER_PREPARE = 3000;
         WAIT_AFTER_OPEN = 100;
-        line=10;
+        line = 10;
     }
-    
+
     private EditorOperator editorOperator;
-    
+
     public void testTypingInJspEditor() {
         file = "Test.jsp";
         doMeasurement();
     }
-    
 
     public void testTypingInJspEditorWithLargeFile() {
         file = "BigJSP.jsp";
         doMeasurement();
     }
 
+    @Override
     protected void initialize() {
-        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("TestWebProject"),"Web Pages|"+file));
-        editorOperator = new EditorWindowOperator().getEditor(file);
+        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("TestWebProject"), "Web Pages|" + file));
+        editorOperator = new EditorOperator(file);
         editorOperator.setCaretPositionToLine(line);
     }
-    
+
+    @Override
     public void prepare() {
-   }
-    
-    public ComponentOperator open(){
-        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
+    }
+
+    @Override
+    public ComponentOperator open() {
+        repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);
         editorOperator.typeKey('a');
         return null;
     }
-    
+
+    @Override
     public void close() {
         repaintManager().resetRegionFilters();
-       
+
     }
-    
+
+    @Override
     protected void shutdown() {
         editorOperator.closeDiscard();
         super.shutdown();

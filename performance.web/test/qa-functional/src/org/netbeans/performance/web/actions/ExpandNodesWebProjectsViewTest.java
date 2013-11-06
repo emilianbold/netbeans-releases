@@ -41,68 +41,74 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.web.actions;
 
+import junit.framework.Test;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.MaximizeWindowAction;
 import org.netbeans.jellytools.actions.RestoreWindowAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
-
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.web.setup.WebSetup;
 
 /**
  * Test of expanding nodes/folders in the Explorer.
  *
- * @author  mmirilovic@netbeans.org
+ * @author mmirilovic@netbeans.org
  */
 public class ExpandNodesWebProjectsViewTest extends PerformanceTestCase {
-    /** Name of the folder which test creates and expands */
+
+    /**
+     * Name of the folder which test creates and expands
+     */
     private static String project;
-    /** Path to the folder which test creates and expands */
+    /**
+     * Path to the folder which test creates and expands
+     */
     private static String pathToFolderNode;
-    /** Node represantation of the folder which test creates and expands */
+    /**
+     * Node representation of the folder which test creates and expands
+     */
     private static Node nodeToBeExpanded;
-    /** Projects tab */
+    /**
+     * Projects tab
+     */
     private static ProjectsTabOperator projectTab;
-    /** Project with data for these tests */
+    /**
+     * Project with data for these tests
+     */
     private static String testDataProject = "PerformanceTestFolderWebApp";
-    
-   
+
     /**
      * Creates a new instance of ExpandNodesInExplorer
+     *
      * @param testName the name of the test
      */
     public ExpandNodesWebProjectsViewTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
-//        init();
     }
-    
+
     /**
      * Creates a new instance of ExpandNodesInExplorer
+     *
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
      */
     public ExpandNodesWebProjectsViewTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
-//        init();
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(WebSetup.class)
-             .addTest(ExpandNodesWebProjectsViewTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(WebSetup.class)
+                .addTest(ExpandNodesWebProjectsViewTest.class)
+                .suite();
     }
 
-    public void testExpandProjectNode(){
+    public void testExpandProjectNode() {
         pathToFolderNode = "";
         project = testDataProject;
         WAIT_AFTER_OPEN = 1000;
@@ -110,23 +116,23 @@ public class ExpandNodesWebProjectsViewTest extends PerformanceTestCase {
         doMeasurement();
     }
 
-    public void testExpandSourcePackagesNode(){
+    public void testExpandSourcePackagesNode() {
         pathToFolderNode = "Source Packages";
         project = testDataProject;
         WAIT_AFTER_OPEN = 1000;
         WAIT_AFTER_PREPARE = 2000;
         doMeasurement();
     }
-    
-    public void testExpandFolderWith50JspFiles(){
+
+    public void testExpandFolderWith50JspFiles() {
         pathToFolderNode = "Web Pages|jsp50";
         project = testDataProject;
         WAIT_AFTER_OPEN = 1000;
         WAIT_AFTER_PREPARE = 2000;
         doMeasurement();
     }
-    
-    public void testExpandFolderWith100JspFiles(){
+
+    public void testExpandFolderWith100JspFiles() {
         pathToFolderNode = "Web Pages|jsp100";
         project = testDataProject;
         WAIT_AFTER_OPEN = 1000;
@@ -134,7 +140,7 @@ public class ExpandNodesWebProjectsViewTest extends PerformanceTestCase {
         doMeasurement();
     }
 
-    public void testExpandFolderWith1000JspFiles(){
+    public void testExpandFolderWith1000JspFiles() {
         pathToFolderNode = "Web Pages|jsp1000";
         project = testDataProject;
         WAIT_AFTER_OPEN = 1000;
@@ -142,7 +148,8 @@ public class ExpandNodesWebProjectsViewTest extends PerformanceTestCase {
         doMeasurement();
     }
 
-    public void initialize(){
+    @Override
+    public void initialize() {
         waitNoEvent(10000);
         projectTab = new ProjectsTabOperator();
         new MaximizeWindowAction().performAPI(projectTab);
@@ -151,18 +158,21 @@ public class ExpandNodesWebProjectsViewTest extends PerformanceTestCase {
         System.setProperty("perf.dont.resolve.java.badges", "true");
         repaintManager().addRegionFilter(repaintManager().EXPLORER_FILTER);
     }
-        
+
+    @Override
     public void prepare() {
-        if(pathToFolderNode.equals(""))
+        if (pathToFolderNode.equals("")) {
             nodeToBeExpanded = projectTab.getProjectRootNode(project);
-        else
-	    nodeToBeExpanded = new Node(projectTab.getProjectRootNode(project), pathToFolderNode);
+        } else {
+            nodeToBeExpanded = new Node(projectTab.getProjectRootNode(project), pathToFolderNode);
+        }
         //repaintManager().setOnlyExplorer(true);
 
 //        nodeToBeExpanded.select();
     }
-    
-    public ComponentOperator open(){
+
+    @Override
+    public ComponentOperator open() {
 //workaround for starting event:
 //        nodeToBeExpanded.tree().clickMouse(1);
 
@@ -170,12 +180,14 @@ public class ExpandNodesWebProjectsViewTest extends PerformanceTestCase {
         nodeToBeExpanded.expand();
         return null;
     }
-    
-    public void close(){
+
+    @Override
+    public void close() {
         //repaintManager().setOnlyExplorer(true);
         nodeToBeExpanded.collapse();
     }
-    
+
+    @Override
     public void shutdown() {
         super.shutdown();
         repaintManager().resetRegionFilters();
