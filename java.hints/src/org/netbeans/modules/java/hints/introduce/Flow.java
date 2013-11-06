@@ -337,7 +337,7 @@ public class Flow {
             }
 
             State s = v.variable2State.get(var);
-            if (!s.assignments.contains(null)) {
+            if (s != null && !s.assignments.contains(null)) {
                 return reassignAllowed || !s.reassigned;
             }
         }
