@@ -161,7 +161,13 @@ public class ModelUtils {
     }
     
     public static JsObject findJsObject(JsObject object, int offset) {
+        HashSet<String> visited = new HashSet<String>();
+        return findJsObject(object, offset, visited);
+    }
+    
+    public static JsObject findJsObject(JsObject object, int offset, Set<String> visited) {
         JsObjectImpl jsObject = (JsObjectImpl)object;
+        visited.add(jsObject.getFullyQualifiedName());
         JsObject result = null;
         JsObject tmpObject = null;
         if (jsObject.getOffsetRange().containsInclusive(offset)) {
@@ -171,7 +177,9 @@ public class ModelUtils {
                 if (kind == JsElement.Kind.OBJECT || kind == JsElement.Kind.ANONYMOUS_OBJECT || kind == JsElement.Kind.OBJECT_LITERAL
                         || kind == JsElement.Kind.FUNCTION || kind == JsElement.Kind.METHOD || kind == JsElement.Kind.CONSTRUCTOR
                         || kind == JsElement.Kind.WITH_OBJECT) {
-                    tmpObject = findJsObject(property, offset);
+                    if (!visited.contains(property.getFullyQualifiedName())) {
+                        tmpObject = findJsObject(property, offset, visited);
+                    }
                 }
                 if (tmpObject != null) {
                     result = tmpObject;
@@ -188,8 +196,8 @@ public class ModelUtils {
                             DeclarationScope scope = getDeclarationScope(array);
                             for (JsObject property : ((JsObject)scope).getProperties().values()) {
                                 JsElement.Kind kind = property.getJSKind();
-                                if (kind == JsElement.Kind.ANONYMOUS_OBJECT) {
-                                    tmpObject = findJsObject(property, offset);
+                                if (kind == JsElement.Kind.ANONYMOUS_OBJECT && !visited.contains(property.getFullyQualifiedName())) { 
+                                    tmpObject = findJsObject(property, offset, visited);
                                 }
                                 if (tmpObject != null) {
                                     result = tmpObject;
