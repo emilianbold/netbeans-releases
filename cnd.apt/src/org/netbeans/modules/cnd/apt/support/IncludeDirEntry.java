@@ -46,6 +46,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
+import org.netbeans.modules.cnd.apt.impl.support.ResolverResultsCache;
 import org.netbeans.modules.cnd.apt.impl.support.SupportAPIAccessor;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
@@ -84,12 +85,14 @@ public final class IncludeDirEntry {
     private final boolean isFramework;
     private final CharSequence asCharSeq;
     private final FileSystem fileSystem;
+    private final int hashCode;
 
-    private IncludeDirEntry(boolean exists, boolean framework, FileSystem fileSystem, CharSequence asCharSeq) {
+    private IncludeDirEntry(boolean exists, boolean framework, FileSystem fileSystem, CharSequence asCharSeq, int hashCode) {
         this.exists = exists;
         this.isFramework = framework;
         this.fileSystem = fileSystem;
         this.asCharSeq = asCharSeq;
+        this.hashCode = hashCode;
     }
 
     public static IncludeDirEntry get(FileSystem fs, String dir) {
@@ -129,13 +132,40 @@ public final class IncludeDirEntry {
             synchronized (delegate) {
                 out = delegate.get(key);
                 if (out == null) {
-                    out = new IncludeDirEntry(exists, framework, entryFS, asCharSeq);
+                    out = new IncludeDirEntry(exists, framework, entryFS, asCharSeq, key.hashCode());
                     delegate.put(key, out);
                 }
             } 
         }
         return out;
     }
+
+    @Override
+    public int hashCode() {
+        return hashCode;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final IncludeDirEntry other = (IncludeDirEntry) obj;
+        if (this.isFramework != other.isFramework) {
+            return false;
+        }
+        if (this.asCharSeq != other.asCharSeq && (this.asCharSeq == null || !this.asCharSeq.equals(other.asCharSeq))) {
+            return false;
+        }
+        if (this.fileSystem != other.fileSystem && (this.fileSystem == null || !this.fileSystem.equals(other.fileSystem))) {
+            return false;
+        }
+        return true;
+    }
+
 
     public CharSequence getAsSharedCharSequence() {
         return asCharSeq;
@@ -174,6 +204,7 @@ public final class IncludeDirEntry {
     
     /*package*/static void disposeCache() {
         storage.dispose();
+        ResolverResultsCache.clearCache();
     }
 
     /*package*/static void invalidateCache() {
@@ -184,6 +215,7 @@ public final class IncludeDirEntry {
                 }
             }
         }
+        ResolverResultsCache.clearCache();
     }
     
     /*package*/static void invalidateFileBasedCache(String file) {
@@ -195,6 +227,7 @@ public final class IncludeDirEntry {
                 prev.invalidateDirExistence();
             }
         }
+        ResolverResultsCache.clearCache();
     }
     
     private static final class IncludeDirStorage {
