@@ -392,7 +392,7 @@ static void response_ls(int request_id, const char* path, bool recursive, int ne
     int response_buf_size = PATH_MAX * 2; // TODO: accurate size calculation
     char* response_buf = malloc(response_buf_size); 
     char* abspath = malloc(PATH_MAX);
-    int work_buf_size = (PATH_MAX + NAME_MAX) * 2 + 2;
+    int work_buf_size = (PATH_MAX + MAXNAMLEN) * 2 + 2;
     char* work_buf = malloc(work_buf_size);
     d = opendir(path);
     if (d) {
