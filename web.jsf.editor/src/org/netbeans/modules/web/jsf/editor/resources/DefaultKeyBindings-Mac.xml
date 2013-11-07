@@ -52,5 +52,5 @@ made subject to such option by the copyright holder.
 -->
 
 <bindings>
-    <bind actionName="fix-namespaces" key="DS-I"/>
+    <bind actionName="fix-imports" key="DS-I"/>
 </bindings>

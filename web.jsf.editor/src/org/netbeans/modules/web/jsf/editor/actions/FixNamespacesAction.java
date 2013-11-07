@@ -98,7 +98,7 @@ public class FixNamespacesAction extends BaseAction {
     private static final String KEY_REMOVE_UNUSED_NS = "remove.unused.namespaces"; //NOI18N
     private static final boolean REMOVE_UNUSED_NS_DEFAULT = true;
 
-    static final String ACTION_NAME = "fix-namespaces"; //NOI18N
+    static final String ACTION_NAME = "fix-imports"; //NOI18N
 
     public FixNamespacesAction() {
         super(MAGIC_POSITION_RESET | UNDO_MERGE_RESET);
