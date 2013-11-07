@@ -120,7 +120,7 @@ void stopwatch_start() {
     if (trace_flag) {
         struct timeval curr_time;
         gettimeofday(&curr_time, 0);
-        stopwatch_start_time = curr_time.tv_sec * 1000 + curr_time.tv_usec;
+        stopwatch_start_time = curr_time.tv_sec * 1000 + curr_time.tv_usec / 1000;
     }
 }
 
@@ -128,7 +128,7 @@ void stopwatch_stop(const char* message) {
     if (trace_flag) {
         struct timeval curr_time;
         gettimeofday(&curr_time, 0);
-        long end_time = curr_time.tv_sec * 1000 + curr_time.tv_usec;
+        long end_time = curr_time.tv_sec * 1000 + curr_time.tv_usec / 1000;
         trace("%s took %d ms\n", message, end_time - stopwatch_start_time);
     }    
 }
