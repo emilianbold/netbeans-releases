@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.html.angular;
 
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -49,19 +49,22 @@ import java.util.List;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.html.angular.index.AngularJsController;
+import org.netbeans.modules.html.angular.index.AngularJsIndex;
+import org.netbeans.modules.html.angular.index.AngularJsIndexer;
 import org.netbeans.modules.html.angular.model.AngularModel;
 import org.netbeans.modules.html.angular.model.Directive;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.spi.embedding.JsEmbeddingProviderPlugin;
-import org.netbeans.modules.javascript2.editor.index.IndexedElement;
 import org.netbeans.modules.javascript2.editor.index.JsIndex;
-import static org.netbeans.modules.javascript2.editor.model.JsElement.Kind.METHOD;
-import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -101,6 +104,9 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
 
     @Override
     public boolean startProcessing(HtmlParserResult parserResult, Snapshot snapshot, TokenSequence<HTMLTokenId> tokenSequence, List<Embedding> embeddings) {
+        if (AngularJsIndexer.Factory.isScannerThread()) {
+            return false;
+        }
         this.snapshot = snapshot;
         this.tokenSequence = tokenSequence;
         this.embeddings = embeddings;
@@ -162,7 +168,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                     switch (interestedAttr) {
                         case controller:
                             processed = processController(value);
-                            stack.push(new StackItem(lastTagOpen, "});\n")); //NOI18N
+                            stack.push(new StackItem(lastTagOpen, "}\n});\n")); //NOI18N
                             break;
                         case model:
                         case disabled:
@@ -236,62 +242,35 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
     
     private boolean processController(String controllerName) {
         StringBuilder sb = new StringBuilder();
-        sb.append("(function () { // generated function for scope ");   //NOI18N
-        if (!controllerName.trim().isEmpty()) {
-            sb.append(controllerName).append("\n");  //NOI18N
+        
+        sb.append("(function () {\n$scope = "); //NOI18N
+        
+        Project project = FileOwnerQuery.getOwner(snapshot.getSource().getFileObject());
+        String fqn = controllerName.trim();
+        AngularJsIndex index = null;
+        try {
+             index = AngularJsIndex.get(project);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
+        if (index != null) {
+            Collection<AngularJsController> controllers = index.getControllers(controllerName, true);
+            for (AngularJsController controller : controllers) {
+                if (controller.getName().equals(controllerName)) {
+                    fqn = controller.getFqn();
+                    break;
+                }
+            }
+        }
+        
+        if (!fqn.isEmpty()) {
+            sb.append(fqn);
+            sb.append(".");
+        }
+        sb.append("$scope;\n");   //NOI18N
         embeddings.add(snapshot.create(sb.toString(), Constants.JAVASCRIPT_MIMETYPE));
         embeddings.add(snapshot.create(tokenSequence.offset() + 1, controllerName.length(), Constants.JAVASCRIPT_MIMETYPE));
-        sb = new StringBuilder();
-        sb.append("();\n"); //NOI18N
-        Collection<IndexedElement> properties = index.getProperties(controllerName + ".$scope"); //NOI18N
-        for (IndexedElement indexedElement : properties) {
-            propertyToFqn.put(indexedElement.getName(), controllerName);
-            sb.append("var ");  //NOI18N
-            sb.append(indexedElement.getName());
-
-            switch (indexedElement.getJSKind()) {
-                case METHOD:
-                    IndexedElement.FunctionIndexedElement function = (IndexedElement.FunctionIndexedElement) indexedElement;
-                    sb.append(" = function(");  //NOI18N
-                    boolean first = true;
-                    for (String param : function.getParameters().keySet()) {
-                        if (!first) {
-                            sb.append(", ");    //NOI18N
-                        } else {
-                            first = false;
-                        }
-                        sb.append(param);
-                    }
-
-                    sb.append("){}");   //NOI18N
-                    break;
-
-                default:
-                    //try to obtain the element type from the stored
-                    //assignment
-                    List<TypeUsage> typeUsages = new ArrayList<>(indexedElement.getAssignments());
-                    if (!typeUsages.isEmpty()) {
-                        //use the last assignment
-                        TypeUsage typeUsage = typeUsages.get(typeUsages.size() - 1);
-                        String type = typeUsage.getType();
-                        if (type.indexOf('@') == -1) {
-                            // don't use unresolved types
-                            // TODO there should be the unresolved type resolved
-                            sb.append(" = new ");   //NOI18N
-                            sb.append(type);
-                            sb.append("()");    //NOI18N
-                        }
-
-                    } else {
-                        sb.append(" = "); //NOI18N
-                        sb.append(indexedElement.getFQN());
-                    }
-            }
-            sb.append(";\n");   //NOI18N
-        }
-
-        embeddings.add(snapshot.create(sb.toString(), Constants.JAVASCRIPT_MIMETYPE));
+        embeddings.add(snapshot.create("\nwith ($scope) { \n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
         return true;
     }
     
@@ -301,50 +280,52 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
             embeddings.add(snapshot.create(tokenSequence.offset() + 1, 0, Constants.JAVASCRIPT_MIMETYPE));
             embeddings.add(snapshot.create(";})();\n", Constants.JAVASCRIPT_MIMETYPE));
         } else {
-            int parenStart = value.indexOf('('); //NOI18N
-            String name = value;
-            int nameStart = 0;
-            int lenght = name.length();
-            if (parenStart > -1) {
-                name = name.substring(0, parenStart).trim();
-            }
-            if (name.indexOf('=') > -1) {
-                name = name.substring(0, name.indexOf('=')).trim();
-            }
-            if (name.charAt(0) == '!') {
-                name = name.substring(1);
-                nameStart = 1;
-            }
-            if (propertyToFqn.containsKey(name)) {
-                embeddings.add(snapshot.create(propertyToFqn.get(name) + ".$scope.", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
-                
-                if(parenStart > -1) {
-                    int parenEnd = parenStart;
-                    int balance = 1;
-                    while (balance > 0 && parenEnd < value.length()) {
-                        char ch = value.charAt(parenEnd);
-                        if (ch == '(') {
-                            balance++;
-                        } else if (ch == ')') {
-                            balance--;
-                        }
-                        if (balance > 0) {
-                            parenEnd++;
-                        }
-                    }
-                    embeddings.add(snapshot.create(tokenSequence.offset() + 1, parenEnd, Constants.JAVASCRIPT_MIMETYPE));
-                } else {
-                    embeddings.add(snapshot.create(tokenSequence.offset() + 1, lenght, Constants.JAVASCRIPT_MIMETYPE));
-                } 
-                embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
-            }  else {
-                // need to create local variable
-                if (value.indexOf(' ') == -1 && parenStart == -1 && value.indexOf('.') == -1) {
-                    embeddings.add(snapshot.create("var ", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
-                }
-                embeddings.add(snapshot.create(tokenSequence.offset() + 1 + nameStart, value.length() - nameStart, Constants.JAVASCRIPT_MIMETYPE));
-                embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
-            }
+             embeddings.add(snapshot.create(tokenSequence.offset() + 1, value.length(), Constants.JAVASCRIPT_MIMETYPE));
+             embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+//            int parenStart = value.indexOf('('); //NOI18N
+//            String name = value;
+//            int nameStart = 0;
+//            int lenght = name.length();
+//            if (parenStart > -1) {
+//                name = name.substring(0, parenStart).trim();
+//            }
+//            if (name.indexOf('=') > -1) {
+//                name = name.substring(0, name.indexOf('=')).trim();
+//            }
+//            if (name.charAt(0) == '!') {
+//                name = name.substring(1);
+//                nameStart = 1;
+//            }
+//            if (propertyToFqn.containsKey(name)) {
+//                embeddings.add(snapshot.create(propertyToFqn.get(name) + ".$scope.", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+//                
+//                if(parenStart > -1) {
+//                    int parenEnd = parenStart;
+//                    int balance = 1;
+//                    while (balance > 0 && parenEnd < value.length()) {
+//                        char ch = value.charAt(parenEnd);
+//                        if (ch == '(') {
+//                            balance++;
+//                        } else if (ch == ')') {
+//                            balance--;
+//                        }
+//                        if (balance > 0) {
+//                            parenEnd++;
+//                        }
+//                    }
+//                    embeddings.add(snapshot.create(tokenSequence.offset() + 1, parenEnd, Constants.JAVASCRIPT_MIMETYPE));
+//                } else {
+//                    embeddings.add(snapshot.create(tokenSequence.offset() + 1, lenght, Constants.JAVASCRIPT_MIMETYPE));
+//                } 
+//                embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+//            }  else {
+//                // need to create local variable
+//                if (value.indexOf(' ') == -1 && parenStart == -1 && value.indexOf('.') == -1) {
+//                    embeddings.add(snapshot.create("var ", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+//                }
+//                embeddings.add(snapshot.create(tokenSequence.offset() + 1 + nameStart, value.length() - nameStart, Constants.JAVASCRIPT_MIMETYPE));
+//                embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+//            }
         }
         return true;
     }
