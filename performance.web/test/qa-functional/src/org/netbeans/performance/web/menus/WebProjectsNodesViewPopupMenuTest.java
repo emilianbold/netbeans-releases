@@ -123,16 +123,8 @@ public class WebProjectsNodesViewPopupMenuTest extends PerformanceTestCase {
         testNode(new Node(getProjectNode(), "Web Pages" + '|' + "WEB-INF"));
     }
 
-    public void testMetaInfPopupMenuProjects() {
-        testNode(new Node(getProjectNode(), "Web Pages" + '|' + "META-INF"));
-    }
-
     public void testWebXmlFilePopupMenuProjects() {
         testNode(new Node(getProjectNode(), "Web Pages" + '|' + "WEB-INF" + '|' + "web.xml"));
-    }
-
-    public void testContextXmlFilePopupMenuProjects() {
-        testNode(new Node(getProjectNode(), "Web Pages" + '|' + "META-INF" + '|' + "context.xml"));
     }
 
     public void testTagFilePopupMenuProjects() {
