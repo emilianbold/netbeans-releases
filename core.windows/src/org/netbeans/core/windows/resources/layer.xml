@@ -278,6 +278,10 @@ made subject to such option by the copyright holder.
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseAllButThisAction.instance"/>
                 <attr name="position" intvalue="20600"/>
             </file>
+            <file name="GroupsMenuAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.core.windows.documentgroup.GroupsMenuAction.create"/>
+                <attr name="position" intvalue="20650"/>
+            </file>
             <file name="DocumentsAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-DocumentsAction.instance"/>
                 <attr name="position" intvalue="20700"/>
