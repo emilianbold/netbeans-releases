@@ -86,12 +86,12 @@ public class EmbeddedSanityTest extends GeneralJSP {
 
     public void openProject() throws Exception {
         startTest();
-        CompletionSanityTest.current_project = "sampleJSP";
-        openProject(CompletionSanityTest.current_project);
-        resolveServer(CompletionSanityTest.current_project);
-        openFile("embedded.jsp", CompletionSanityTest.current_project);
+        EmbeddedSanityTest.current_project = "sampleJSP";
+        openProject(EmbeddedSanityTest.current_project);
+        resolveServer(EmbeddedSanityTest.current_project);
+        openFile("embedded.jsp", EmbeddedSanityTest.current_project);
         EditorOperator eo = new EditorOperator("embedded.jsp");
-        CompletionSanityTest.original_content = eo.getText();
+        EmbeddedSanityTest.original_content = eo.getText();
         endTest();
     }
 
