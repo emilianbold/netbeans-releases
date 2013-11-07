@@ -337,7 +337,7 @@ public class Flow {
             }
 
             State s = v.variable2State.get(var);
-            if (!s.assignments.contains(null)) {
+            if (s != null && !s.assignments.contains(null)) {
                 return reassignAllowed || !s.reassigned;
             }
         }
@@ -1007,6 +1007,21 @@ public class Flow {
             
             return null;
         }
+        
+        /**
+         * Removes definitions of variables, as a result of e.g. return, throw or System.exit.
+         */
+        private void removeAllDefinitions() {
+            variable2State = new HashMap< Element, State>(variable2State);
+            for (Iterator< Element> it = variable2State.keySet().iterator(); it.hasNext();) {
+                 Element k = it.next();
+                
+                if (!k.getKind().isField() &&
+                    !isUndefinedVariable(k)) {
+                    it.remove();
+                }
+            }
+        }
 
         public Boolean visitReturn(ReturnTree node, ConstructorData p) {
             super.visitReturn(node, p);
@@ -1020,17 +1035,8 @@ public class Flow {
             }
             
             resumeAfter(nearestMethod, variable2State);
-            
-            variable2State = new HashMap< Element, State>(variable2State);
-            for (Iterator< Element> it = variable2State.keySet().iterator(); it.hasNext();) {
-                 Element k = it.next();
-                
-                if (!k.getKind().isField() &&
-                    !isUndefinedVariable(k)) {
-                    it.remove();
-                }
-            }
-            
+
+            removeAllDefinitions();
             return null;
         }
 
@@ -1164,15 +1170,19 @@ public class Flow {
             return null;
         }
 
+        @Override
         public Boolean visitMethodInvocation(MethodInvocationTree node, ConstructorData p) {
             super.visitMethodInvocation(node, p);
 
             Element invoked = info.getTrees().getElement(getCurrentPath());
-
             if (invoked != null && invoked.getKind() == ElementKind.METHOD) {
-                recordResumeOnExceptionHandler((ExecutableElement) invoked);
+                // Special handling for System.exit: no defined value will escape this code path.
+                if (Utilities.isSystemExit(info, invoked)) {
+                    removeAllDefinitions();
+                    return null;
+                }
+                recordResumeOnExceptionHandler((ExecutableElement) invoked);    
             }
-
             return null;
         }
 

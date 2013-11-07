@@ -571,14 +571,17 @@ public final class FoldOperationImpl {
                 if (nextInfo != null) {
                     f = nextInfo;
                     nextInfo = null;
-                    return f;
-                } else if (infoIt.hasNext()) {
+                    if (isValidFold(f)) {
+                        return f;
+                    }
+                } 
+                if (infoIt.hasNext()) {
                     f = infoIt.next();
                 } else {
                     return null;
                 }
                 // ignore folds with invalid boundaries
-            } while (f.getStart() >= f.getEnd());
+            } while (!isValidFold(f));
             return f;
         }
         
@@ -635,6 +638,23 @@ public final class FoldOperationImpl {
             return f;
         }
         
+        /**
+         * Validates the FoldInfo. Because of issue #237964, #237576 and similar, it is better 
+         * to check that the FoldInfo does not contain invalid data centrally. The original idea was
+         * to inform the fold manager early, but the issue seems hardly fixable at source
+         * @param fi fold info to check
+         * @return true, if the info is valid and should proceed to fold creation / update
+         */
+        private boolean isValidFold(FoldInfo fi) {
+            // disallow zero-length folds and reversed folds.
+            if (fi.getStart() >= fi.getEnd()) {
+                return false;
+            }
+            int glen = fi.getTemplate().getGuardedEnd() + fi.getTemplate().getGuardedStart();
+            // disallow folds, whiose length is less than the length of start/end guarded areas.
+            return (fi.getStart() + glen <= fi.getEnd());
+        }
+        
         public void run() throws BadLocationException {
             // first order the supplied folds:
             List ll = new ArrayList<FoldInfo>(foldInfos);
@@ -644,7 +664,7 @@ public final class FoldOperationImpl {
             infoIt = ll.iterator();
             
             Fold f = foldIt.hasNext() ? foldIt.next() : null;
-            FoldInfo i = infoIt.hasNext() ? infoIt.next() : null;
+            FoldInfo i = ni();
             
             tran = openTransaction();
             Document d = getDocument();
@@ -721,6 +741,8 @@ public final class FoldOperationImpl {
                             // invalid fold info; possibly document has changed from the time FoldInfo was created.
                             continue;
                         }
+                        /*
+                        FoldInfos which do not satisfy this condition are filtered out in isValidFold()
                         if ((info.getEnd() - info.getStart()) < (info.getTemplate().getGuardedStart() + info.getTemplate().getGuardedEnd())) {
                             Element rootEl = DocumentUtilities.getParagraphRootElement(d);
                             int startLine = rootEl.getElementIndex(info.getStart());
@@ -744,6 +766,7 @@ public final class FoldOperationImpl {
                                         text.substring(end)
                                     });
                         }
+                        */
                         currentFolds.put(info, getOperation().addToHierarchy(
                                 info.getType(), 
                                 info.getStart(), info.getEnd(),
@@ -773,7 +796,7 @@ public final class FoldOperationImpl {
             if (info.getStart() > len || info.getEnd() > len) {
                 // no update done, new values are not valid
                 return f;
-            }
+            } 
             if (info.getStart() != soffs) {
                 acc.foldSetStartOffset(f, getDocument(), info.getStart());
                 FoldStateChange state = getFSCH(f);
