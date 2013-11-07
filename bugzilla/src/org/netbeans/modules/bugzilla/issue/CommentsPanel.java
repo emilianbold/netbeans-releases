@@ -86,7 +86,6 @@ import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.commons.IssueSettingsStorage;
 import org.netbeans.modules.bugtracking.commons.HyperlinkSupport;
 import org.netbeans.modules.bugtracking.commons.LinkButton;
@@ -94,6 +93,7 @@ import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.repository.IssueField;
+import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -244,7 +244,7 @@ public class CommentsPanel extends JPanel {
             int index = author.indexOf('@'); // NOI18N
             String userName = (index == -1) ? author : author.substring(0,index);
             String host = ((KenaiRepository) issue.getRepository()).getHost();
-            stateLabel = TeamUtil.createUserWidget(issue.getRepository().getUrl(), userName, host, TeamUtil.getChatLink(issue.getID()));
+            stateLabel = TeamAccessorUtils.createUserWidget(issue.getRepository().getUrl(), userName, host, TeamAccessorUtils.getChatLink(issue.getID()));
             if (stateLabel != null) {
                 stateLabel.setText(null);
             }

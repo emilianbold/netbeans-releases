@@ -96,8 +96,8 @@ public class QueryAction extends SystemAction {
         openQuery(null, repositoryToSelect, false, QueryMode.EDIT, true);
     }
     
-    public static void createNewQueryForRepo(RepositoryImpl repositoryToSelect) {
-        openQuery(null, repositoryToSelect, true, QueryMode.EDIT, true);
+    public static void createNewQuery(RepositoryImpl repositoryToSelect, boolean suggestedSelectionOnly) {
+        openQuery(null, repositoryToSelect, suggestedSelectionOnly, QueryMode.EDIT, true);
     }
 
     public static void openQuery(QueryImpl query, RepositoryImpl repository, QueryMode mode) {

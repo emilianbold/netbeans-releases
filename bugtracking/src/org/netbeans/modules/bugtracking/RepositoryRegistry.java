@@ -59,12 +59,13 @@ import org.netbeans.api.keyring.Keyring;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.bugtracking.team.TeamRepositories;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.commons.LogUtils;
-import org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils;
+import org.netbeans.modules.bugtracking.commons.NBBugzillaUtils;
+import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.openide.util.NbPreferences;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
@@ -150,7 +151,7 @@ public class RepositoryRegistry {
      */
     public void addRepository(RepositoryImpl repository) {
         assert repository != null;
-        if(TeamUtil.isFromTeamServer(repository.getRepository()) && !NBBugzillaUtils.isNbRepository(repository.getUrl())) {
+        if(repository.isTeamRepository() && !NBBugzillaUtils.isNbRepository(repository.getUrl())) {
             // we don't store team repositories - XXX  shouldn't be even called
             return;        
         }
@@ -497,7 +498,7 @@ public class RepositoryRegistry {
         return NbPreferences.root().node("org/netbeans/modules/jira"); // NOI18N
     }
 
-    public static String getBugzillaNBUsername() {
+    private static String getBugzillaNBUsername() {
         String user = getBugzillaPreferences().get(NB_BUGZILLA_USERNAME, ""); // NOI18N
         return user;                         
     }
@@ -510,10 +511,20 @@ public class RepositoryRegistry {
         for (RepositoryImpl repositoryImpl : ret) {
             LogUtils.logRepositoryUsage(repositoryImpl.getConnectorId(), repositoryImpl.getUrl());
             // log team usage
-            if (TeamUtil.isFromTeamServer(repositoryImpl.getRepository())) {
-                TeamUtil.logTeamUsage(repositoryImpl.getUrl(), "ISSUE_TRACKING", LogUtils.getBugtrackingType(repositoryImpl.getConnectorId())); //NOI18N
+            if (repositoryImpl.isTeamRepository()) {
+                TeamAccessorUtils.logTeamUsage(repositoryImpl.getUrl(), "ISSUE_TRACKING", LogUtils.getBugtrackingType(repositoryImpl.getConnectorId())); //NOI18N
             }
         }
     }
-    
+
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bugtracking.commons.NBBugzillaUtils.RepositoryRegistryAccessor.class)
+    public static class AccessorImpl implements NBBugzillaUtils.RepositoryRegistryAccessor {
+        @Override
+        public void addRepository(String connectorId, String repositoryId) {
+            RepositoryImpl impl = RepositoryRegistry.getInstance().getRepository(connectorId, repositoryId);
+            if(impl != null) {       
+                RepositoryRegistry.getInstance().addRepository(impl);
+            }
+        }
+    }
 }

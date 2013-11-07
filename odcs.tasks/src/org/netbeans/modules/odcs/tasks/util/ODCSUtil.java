@@ -74,11 +74,9 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
-import org.netbeans.modules.bugtracking.team.spi.TeamProject;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
+import org.netbeans.modules.bugtracking.api.Util;
+import org.netbeans.modules.team.spi.TeamProject;
 import org.netbeans.modules.bugtracking.commons.ListValuePicker;
-import org.netbeans.modules.bugtracking.commons.SimpleIssueFinder;
-import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.odcs.tasks.ODCS;
 import org.netbeans.modules.odcs.tasks.ODCSConnector;
 import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
@@ -87,6 +85,7 @@ import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
 import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.mylyn.util.NbTask;
 import org.netbeans.modules.mylyn.util.commands.GetRepositoryTasksCommand;
+import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -190,7 +189,7 @@ public class ODCSUtil {
         // be a teamProject available). 
         // for more info see o.n.m.bugtracking.DelegatingConnector#OVERRIDE_REPOSITORY_MANAGEMENT
         if(teamProject != null) {
-            repository = TeamUtil.getRepository(teamProject);
+            repository = Util.getTeamRepository(teamProject.getHost(), teamProject.getName());
         }
         if (repository == null) {
             repository = RepositoryManager.getInstance().getRepository(ODCSConnector.ID, odcsRepository.getID());
@@ -205,7 +204,7 @@ public class ODCSUtil {
         return ODCS.getInstance().getBugtrackingFactory().createRepository(
                 odcsRepository,
                 ODCS.getInstance().getStatusProvider(),
-                null, 
+                ODCS.getInstance().getSchedulingProvider(),
                 ODCS.getInstance().getPriorityProvider(odcsRepository),
                 ODCS.getInstance().getODCSIssueFinder());
     }
@@ -375,23 +374,18 @@ public class ODCSUtil {
         return date;
     }
 
-    @NbBundle.Messages({"LBL_Mine=Assigned to me",
-                        "LBL_Related=Related to me",
-                        "LBL_Recent=Recently changed",
-                        "LBL_Open=Open tasks",
-                        "LBL_All=All tasks"})
     public static String getPredefinedQueryName(PredefinedTaskQuery ptq) {
         switch(ptq) {
             case ALL:
-                return Bundle.LBL_All();
+                return TeamAccessorUtils.ALL_ISSUES_QUERY_DISPLAY_NAME;
             case MINE:              
-                return Bundle.LBL_Mine();
+                return TeamAccessorUtils.MINE_ISSUES_QUERY_DISPLAY_NAME;
             case OPEN:              
-                return Bundle.LBL_Open();
+                return TeamAccessorUtils.OPEN_ISSUES_QUERY_DISPLAY_NAME;
             case RECENT:              
-                return Bundle.LBL_Recent();
+                return TeamAccessorUtils.RECENT_ISSUES_QUERY_DISPLAY_NAME;
             case RELATED:              
-                return Bundle.LBL_Related();
+                return TeamAccessorUtils.RELATED_ISSUES_QUERY_DISPLAY_NAME;
             default:
                 throw new IllegalStateException("unexpected PredefinedTaskQuery value [" + ptq + "]"); // NOI18N
         }

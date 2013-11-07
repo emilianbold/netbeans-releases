@@ -41,59 +41,67 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.web.actions;
 
+import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
-
+import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.web.setup.WebSetup;
 
 /**
  * Test of opening files.
  *
- * @author  mmirilovic@netbeans.org
+ * @author mmirilovic@netbeans.org
  */
 public class OpenServletFileTest extends PerformanceTestCase {
-    
-    /** Node to be opened/edited */
-    public static Node openNode ;
-    
-    /** Folder with data */
+
+    /**
+     * Node to be opened/edited
+     */
+    public static Node openNode;
+
+    /**
+     * Folder with data
+     */
     public static String fileProject;
-    
-    /** Folder with data  */
+
+    /**
+     * Folder with data
+     */
     public static String filePackage;
-    
-    /** Name of file to open */
+
+    /**
+     * Name of file to open
+     */
     public static String fileName;
-    
-    /** Menu item name that opens the editor */
+
+    /**
+     * Menu item name that opens the editor
+     */
     public static String menuItem;
-    
+
     protected static String OPEN = "Open"; //NOI18N
-    
+
     protected static String EDIT = "Edit"; //NOI18N
-    
-   
-    
+
     /**
      * Creates a new instance of OpenFiles
+     *
      * @param testName the name of the test
      */
     public OpenServletFileTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
-    
+
     /**
      * Creates a new instance of OpenFiles
+     *
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
      */
@@ -102,16 +110,14 @@ public class OpenServletFileTest extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
 
-
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(WebSetup.class)
-             .addTest(OpenServletFileTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(WebSetup.class)
+                .addTest(OpenServletFileTest.class)
+                .suite();
     }
 
-    public void testOpeningServletFile(){
+    public void testOpeningServletFile() {
         WAIT_AFTER_OPEN = 2000;
         fileProject = "TestWebProject";
         filePackage = "test";
@@ -120,51 +126,54 @@ public class OpenServletFileTest extends PerformanceTestCase {
         doMeasurement();
     }
 
-    public void initialize(){
+    @Override
+    public void initialize() {
         EditorOperator.closeDiscardAll();
         disableEditorCaretBlinking();
     }
 
-    public void shutdown(){
+    @Override
+    public void shutdown() {
         EditorOperator.closeDiscardAll();
         removeEditorPhaseHandler();
     }
-    
-    public void prepare(){
+
+    @Override
+    public void prepare() {
         addEditorPhaseHandler();
-        this.openNode = new Node(new ProjectsTabOperator().getProjectRootNode(fileProject),"Source Packages" + '|' +  filePackage + '|' + fileName);
-        
-        if (this.openNode == null) {
-            fail ("Cannot find node ["+"Source Packages" + '|' +  filePackage + '|' + fileName + "] in project [" + fileProject + "]");
+        openNode = new Node(new ProjectsTabOperator().getProjectRootNode(fileProject), "Source Packages" + '|' + filePackage + '|' + fileName);
+
+        if (openNode == null) {
+            fail("Cannot find node [" + "Source Packages" + '|' + filePackage + '|' + fileName + "] in project [" + fileProject + "]");
         }
-        log("========== Open file path ="+this.openNode.getPath());
+        log("========== Open file path =" + openNode.getPath());
     }
-    
-    public ComponentOperator open(){
-        JPopupMenuOperator popup =  this.openNode.callPopup();
+
+    @Override
+    public ComponentOperator open() {
+        JPopupMenuOperator popup = openNode.callPopup();
         if (popup == null) {
-            fail ("Cannot get context menu for node ["+"Source Packages" + '|' +  filePackage + '|' + fileName + "] in project [" + fileProject + "]");
-        }
-        log("------------------------- after popup invocation ------------");
-        try {
-        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
-            popup.pushMenu(this.menuItem);
-        }
-        catch (org.netbeans.jemmy.TimeoutExpiredException tee) {
-            fail ("Cannot push menu item "+this.menuItem+" of node ["+"Source Packages" + '|' +  filePackage + '|' + fileName + "] in project [" + fileProject + "]");
+            fail("Cannot get context menu for node [" + "Source Packages" + '|' + filePackage + '|' + fileName + "] in project [" + fileProject + "]");
+        } else {
+            log("------------------------- after popup invocation ------------");
+            try {
+                repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);
+                popup.pushMenu(menuItem);
+            } catch (org.netbeans.jemmy.TimeoutExpiredException tee) {
+                fail("Cannot push menu item " + menuItem + " of node [" + "Source Packages" + '|' + filePackage + '|' + fileName + "] in project [" + fileProject + "]");
+            }
         }
         log("------------------------- after open ------------");
-        return new EditorOperator(this.fileName);
+        return new EditorOperator(fileName);
     }
-    
-    public void close(){
+
+    @Override
+    public void close() {
         repaintManager().resetRegionFilters(); // added - was missing
         if (testedComponentOperator != null) {
-            ((EditorOperator)testedComponentOperator).closeDiscard();
-        }
-        else {
-            fail ("no component to close");
+            ((EditorOperator) testedComponentOperator).closeDiscard();
+        } else {
+            fail("no component to close");
         }
     }
-    
 }

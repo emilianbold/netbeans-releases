@@ -43,6 +43,8 @@
  */
 package org.netbeans.modules.subversion.client;
 
+import java.awt.EventQueue;
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -50,7 +52,10 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.security.InvalidKeyException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.net.ssl.SSLKeyException;
@@ -60,6 +65,8 @@ import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.Cancellable;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -78,26 +85,65 @@ public class SvnClientInvocationHandler implements InvocationHandler {
     protected static final String GET_INFO_FROM_WORKING_COPY = "getInfoFromWorkingCopy"; // NOI18N
     protected static final String CANCEL_OPERATION = "cancel"; //NOI18N
     private static final String DISPOSE_METHOD = "dispose"; //NOI18N
-    private static final HashSet<String> PARALLELIZABLE_METHODS = new HashSet<String>(Arrays.asList(new String[] {
-        "setConfigDirectory",                                           //NOI18N
-        "getSvnUrl",                                                    //NOI18N
-        "addNotifyListener",                                            //NOI18N
-        "getIgnoredPatterns",                                           //NOI18N
-        "getStatus",                                                    //NOI18N
-        "removeNotifyListener",                                         //NOI18N
+    private static final String CHECKOUT_METHOD = "checkout"; //NOI18N
+    private static final Set<String> ADMINISTRATIVE_METHODS = new HashSet<>(Arrays.asList(
+        "addConflictResolutionCallback", //NOI18N
+        "addNotifyListener", //NOI18N
+        "addPasswordCallback", //NOI18N
+        "cancelOperation", //NOI18N
+        "canCommitAcrossWC", //NOI18N
+        "dispose", //NOI18N
+        "getAdminDirectoryName", //NOI18N
+        "getNotificationHandler", //NOI18N
+        "getPostCommitError", //NOI18N
+        "getSvnUrl", //NOI18N
+        "isAdminDirectory", //NOI18N
+        "isThreadsafe", //NOI18N
+        "removeNotifyListener", //NOI18N
+        "setConfigDirectory", //NOI18N
+        "setProgressListener", //NOI18N
+        "setPassword", //NOI18N
+        "setUsername", //NOI18N
+        "statusReturnsRemoteInfo", //NOI18N
+        "suggestMergeSources", //NOI18N
+        CANCEL_OPERATION,
         DISPOSE_METHOD
+    ));
+    private static final Set<String> READ_ONLY_METHODS = new HashSet<>(Arrays.asList(new String[] {
+        "annotate", //NOI18N
+        "createPatch", //NOI18N
+        "diff", //NOI18N
+        "diffSummarize", //NOI18N
+        "doImport", //NOI18N - does nothing with WC
+        "doExport", //NOI18N - does nothing with WC
+        "getContent", //NOI18N
+        "getDirEntry", //NOI18N
+        "getIgnoredPatterns", //NOI18N
+        "getInfo", //NOI18N
+        "getInfoFromWorkingCopy", //NOI18N
+        "getKeywords", //NOI18N
+        "getList", //NOI18N
+        "getListWithLocks", //NOI18N
+        "getLogMessages", //NOI18N
+        "getMergeInfo", //NOI18N
+        "getMergeinfoLog", //NOI18N
+        "getProperties", //NOI18N
+        "getRevProperties", //NOI18N
+        "getRevProperty", //NOI18N
+        "getSingleStatus", //NOI18N
+        "getStatus", //NOI18N
+        "propertyGet" //NOI18N
     }));
     
-    private static final Object semaphor = new Object();
-
     private final ISVNClientAdapter adapter;
     private final SvnClientDescriptor desc;
-    private Cancellable cancellable;
+    private final Cancellable cancellable;
     private SvnProgressSupport support;
     private final int handledExceptions;
     private static boolean metricsAlreadyLogged = false;
     private final ConnectionType connectionType;
     private volatile boolean disposed;
+    private static final Map<String, Mutex> locks = new HashMap<>(5);
     
     public SvnClientInvocationHandler (ISVNClientAdapter adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions, SvnClientFactory.ConnectionType connType) {
         
@@ -160,11 +206,24 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             if (DISPOSE_METHOD.equals(method.getName())) {
                 disposed = true;
             }
-            if(parallelizable(method, args)) {
+            Mutex mutex = getLock(method, args);
+            if (mutex == null) {
                 return invokeMethod(method, args);
             } else {
-                synchronized (semaphor) {
-                    return invokeMethod(method, args);
+                Mutex.ExceptionAction<Object> action = new Mutex.ExceptionAction<Object>() {
+                    @Override
+                    public Object run () throws Exception {
+                        return invokeMethod(method, args);
+                    }
+                };
+                try {
+                    if (isReadMethod(method)) {
+                        return mutex.readAccess(action);
+                    } else {
+                        return mutex.writeAccess(action);
+                    }
+                } catch (MutexException ex) {
+                    throw ex.getException();
                 }
             }
         } catch (Exception e) {
@@ -266,19 +325,73 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         metricsAlreadyLogged = true;
     }
     
-    private boolean parallelizable(Method method, Object[] args) {
-        return isLocalReadCommand(method, args) || isCancelCommand(method, args)
-                || PARALLELIZABLE_METHODS.contains(method.getName());
-    }
-    
-    protected boolean isLocalReadCommand(Method method, Object[] args) {
+    private boolean parallelizable (Method method) {
         String methodName = method.getName();
-        return methodName.equals(GET_SINGLE_STATUS) ||
-               methodName.equals(GET_INFO_FROM_WORKING_COPY) ||
-               (method.getName().equals(GET_STATUS) && method.getParameterTypes().length == 3);
+        return isClientAdministrativMethod(methodName)
+                || isCancelCommand(method)
+                || methodName.equals(GET_SINGLE_STATUS)
+                || methodName.equals(GET_INFO_FROM_WORKING_COPY)
+                || methodName.equals(GET_STATUS)
+                || "getIgnoredPatterns".equals(methodName); //NOI18N
     }
 
-    protected boolean isCancelCommand(final Method method, Object[] args) {
+    private Mutex getLock (Method method, Object[] args) {
+        if (EventQueue.isDispatchThread() && parallelizable(method)
+                || args == null || isClientAdministrativMethod(method.getName())) {
+            return null;
+        } else {
+            File root = null;
+            for (Object o : args) {
+                if (o instanceof File) {
+                    File f = (File) o;
+                    root = getRoot(method.getName(), f);
+                } else if (o instanceof File[]) {
+                    for (File f : (File[]) o) {
+                        root = getRoot(method.getName(), f);
+                        if (root != null) {
+                            break;
+                        }
+                    }
+                }
+                if (root != null) {
+                    break;
+                }
+            }
+            if (root != null) {
+                return getLock(root.getAbsolutePath());
+            }
+        }
+        return null;
+    }
+
+    private static File getRoot (String methodName, File f) {
+        if (CHECKOUT_METHOD.equals(methodName)) {
+            return f;
+        } else {
+            return Subversion.getInstance().getTopmostManagedAncestor(f);
+        }
+    }
+
+    private Mutex getLock (String key) {
+        synchronized (locks) {
+            Mutex mutex = locks.get(key);
+            if (mutex == null) {
+                mutex = new Mutex();
+                locks.put(key, mutex);
+            }
+            return mutex;
+        }
+    }
+
+    private boolean isClientAdministrativMethod (String name) {
+        return ADMINISTRATIVE_METHODS.contains(name);
+    }
+
+    private boolean isReadMethod (Method method) {
+        return READ_ONLY_METHODS.contains(method.getName());
+    }
+
+    protected boolean isCancelCommand (final Method method) {
         String methodName = method.getName();
         return Cancellable.class.isAssignableFrom(method.getDeclaringClass())
                 && methodName.equals(CANCEL_OPERATION);
@@ -321,7 +434,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             // save the proxy settings into the svn servers file                
             if(desc != null && desc.getSvnUrl() != null) {
                 SvnConfigFiles.getInstance().storeSvnServersSettings(desc.getSvnUrl(), connectionType);
-                if (!parallelizable(proxyMethod, args) && !"getInfo".equals(proxyMethod.getName())) { //NOI18N
+                if (!parallelizable(proxyMethod) && !"getInfo".equals(proxyMethod.getName())) { //NOI18N
                     // all svn actions running against a remote repository (commit, update, diff)
                     String url = desc.getSvnUrl().toString();
                     if (url.startsWith("file://")) { // NOI18N

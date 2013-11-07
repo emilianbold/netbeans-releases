@@ -83,4 +83,4 @@ public class VcsHyperlinkProviderImpl extends VCSHyperlinkProvider {
         });
     }
 
-        }
+}

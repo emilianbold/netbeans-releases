@@ -64,6 +64,7 @@ import org.openide.util.Lookup;
  * </p>
  * 
  * @author Tomas Stupka
+ * @since 1.85
  */
 public final class RepositoryQuery {
     private static RepositoryQuery instance;
@@ -79,6 +80,7 @@ public final class RepositoryQuery {
      * 
      * @return a Repository
      * @see RepositoryQueryImplementation
+     * @since 1.85
      */
     public static Repository getRepository(FileObject fileObject, boolean askIfUnknown) {
         if(fileObject == null) {

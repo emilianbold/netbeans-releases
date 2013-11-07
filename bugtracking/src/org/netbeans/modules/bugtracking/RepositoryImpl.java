@@ -50,11 +50,11 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static org.netbeans.modules.bugtracking.BugtrackingOwnerSupport.ContextType.SELECTED_FILE_AND_ALL_PROJECTS;
-import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.team.spi.TeamProject;
-import org.netbeans.modules.bugtracking.team.spi.TeamRepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.*;
+import org.netbeans.modules.team.spi.NBRepositoryProvider;
+import org.netbeans.modules.team.spi.OwnerInfo;
+import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
 
 
 /**
@@ -322,6 +322,20 @@ public final class RepositoryImpl<R, Q, I> {
         return icon;
     }
     
+    public void setIssueContext(I i, OwnerInfo info) {
+        assert repositoryProvider instanceof NBRepositoryProvider;
+        if(repositoryProvider instanceof NBRepositoryProvider) {
+            ((NBRepositoryProvider<Q, I>)repositoryProvider).setIssueOwnerInfo(i, info);
+        }
+    }
+    
+    public void setQueryContext(Q q, OwnerInfo info) {
+        assert repositoryProvider instanceof NBRepositoryProvider;
+        if(repositoryProvider instanceof NBRepositoryProvider) {
+            ((NBRepositoryProvider<Q, I>)repositoryProvider).setQueryOwnerInfo(q, info);
+        }
+    }
+    
     /**
      * Notify listeners on this repository that a query was either removed or saved
      * XXX make use of new/old value
@@ -409,26 +423,10 @@ public final class RepositoryImpl<R, Q, I> {
         }
     }
 
-    public Query getAllIssuesQuery() {
-        assert TeamRepositoryProvider.class.isAssignableFrom(repositoryProvider.getClass());
-        Q q = ((TeamRepositoryProvider<R, Q, I>) repositoryProvider).getAllIssuesQuery(r);
-        QueryImpl queryImpl = getQuery(q);
-        return queryImpl != null ? queryImpl.getQuery() : null;
+    public boolean isTeamRepository() {
+        return getInfo().getValue(TeamBugtrackingConnector.TEAM_PROJECT_NAME) != null;
     }
 
-    public Query getMyIssuesQuery() {
-        assert TeamRepositoryProvider.class.isAssignableFrom(repositoryProvider.getClass());
-        Q q = ((TeamRepositoryProvider<R, Q, I>) repositoryProvider).getMyIssuesQuery(r);
-        QueryImpl queryImpl = getQuery(q);
-        return queryImpl != null ? queryImpl.getQuery() : null;
-    }
-
-    public TeamProject getTeamProject() {
-        return repositoryProvider instanceof TeamRepositoryProvider ?
-                    ((TeamRepositoryProvider<R, Q, I>)repositoryProvider).getTeamProject(r) :
-                    null;
-    }
-    
     public boolean isMutable() {
         DelegatingConnector dc = BugtrackingManager.getInstance().getConnector(getConnectorId());
         assert dc != null;
@@ -481,6 +479,6 @@ public final class RepositoryImpl<R, Q, I> {
     private void setLooseAssociation() {
         BugtrackingOwnerSupport.getInstance().setLooseAssociation(SELECTED_FILE_AND_ALL_PROJECTS, this);
     }
-    
+
 }
 

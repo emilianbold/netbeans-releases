@@ -47,19 +47,19 @@ import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.QueryImpl;
-import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
-import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 
 /**
  * Represents a bugtracking Query.
  * 
  * @author Tomas Stupka
+ * @since 1.85
  */
 public final class Query {
     
     /**
      * Fired after the Query was refreshed. 
+     * @since 1.85
      */
     public final static String EVENT_QUERY_REFRESHED = QueryProvider.EVENT_QUERY_REFRESHED;
     
@@ -77,6 +77,7 @@ public final class Query {
      * Returns the tooltip text describing this Query.
      * 
      * @return the tooltip
+     * @since 1.85
      */
     public String getTooltip() {
         return impl.getTooltip();
@@ -86,6 +87,7 @@ public final class Query {
      * Returns this Queries display name. 
      * 
      * @return display name
+     * @since 1.85
      */
     public String getDisplayName() {
         return impl.getDisplayName();
@@ -93,14 +95,16 @@ public final class Query {
     
     /**
      * The Issues returned by this Query.
-     * @return 
+     * @return issues from this query
+     * @since 1.85
      */
     public Collection<Issue> getIssues() {
-        return toIssues(impl.getIssues());
+        return Util.toIssues(impl.getIssues());
     }
 
     /**
      * Refreshes this query.
+     * @since 1.85
      */
     public void refresh() {
         impl.refresh();
@@ -110,6 +114,7 @@ public final class Query {
      * Returns the Repository this Query belongs to.
      * 
      * @return repository
+     * @since 1.85
      */
     public Repository getRepository() {
         return impl.getRepositoryImpl().getRepository();
@@ -119,6 +124,7 @@ public final class Query {
      * Registers a PropertyChangeListener.
      * 
      * @param listener 
+     * @since 1.85
      */
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         impl.addPropertyChangeListener(listener);
@@ -128,17 +134,10 @@ public final class Query {
      * Unregisters a PropertyChangeListener.
      * 
      * @param listener 
+     * @since 1.85
      */
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         impl.removePropertyChangeListener(listener);
-    }
-    
-    private List<Issue> toIssues(Collection<IssueImpl> c) {
-        List<Issue> ret = new ArrayList<Issue>(c.size());
-        for (IssueImpl i : c) {
-            ret.add(i.getIssue());
-        }
-        return ret;
     }
     
     QueryImpl getImpl() {

@@ -61,7 +61,10 @@ import org.openide.util.NbBundle;
  */
 public class JiraIssueNode extends IssueNode<NbJiraIssue> {
     public JiraIssueNode(NbJiraIssue issue) {
-        super(JiraUtils.getRepository(issue.getRepository()), issue, Jira.getInstance().getChangesProvider());
+        super(issue, 
+              Jira.getInstance().getIssueProvider(),
+              Jira.getInstance().getStatusProvider(),
+              Jira.getInstance().getChangesProvider());
     }
 
     NbJiraIssue getNbJiraIssue() {
@@ -108,12 +111,12 @@ public class JiraIssueNode extends IssueNode<NbJiraIssue> {
             return getNbJiraIssue().getRepositoryFieldValue(IssueField.KEY);
         }
         @Override
-        public int compareTo(IssueProperty p) {
+        public int compareTo(IssueNode<NbJiraIssue>.IssueProperty<String> p) {
             if(p == null) {
                 return 1;
             }
-            String id = getIssue().getID();
-            String pid = p.getIssue().getID();
+            String id = getIssueData().getID();
+            String pid = p.getIssueData().getID();
             int idx = id.lastIndexOf("-");      // NOI18N
             int pidx = pid.lastIndexOf("-");    // NOI18N
 

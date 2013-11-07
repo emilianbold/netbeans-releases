@@ -56,9 +56,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import javax.swing.JLabel;
-import org.netbeans.modules.bugtracking.team.spi.TeamAccessor;
-import org.netbeans.modules.bugtracking.team.spi.TeamProject;
-import org.netbeans.modules.bugtracking.team.spi.RepositoryUser;
+import org.netbeans.modules.bugtracking.api.Query;
+import org.netbeans.modules.team.spi.TeamAccessor;
+import org.netbeans.modules.team.spi.TeamProject;
+import org.netbeans.modules.team.spi.RepositoryUser;
 import org.netbeans.modules.odcs.api.ODCSServer;
 import org.netbeans.modules.odcs.api.ODCSManager;
 import org.netbeans.modules.odcs.api.ODCSProject;
@@ -72,6 +73,9 @@ import org.netbeans.modules.team.server.ui.spi.TeamServer;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.windows.TopComponent;
+import org.openide.windows.TopComponent.Registry;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -106,6 +110,7 @@ public class TeamAccessorImpl extends TeamAccessor {
                 }
             }
         });
+        WindowManager.getDefault().getRegistry().addPropertyChangeListener(new ActivatedTCListener());
     }
     
     static TeamAccessorImpl getInstance() {
@@ -171,12 +176,12 @@ public class TeamAccessorImpl extends TeamAccessor {
     }
 
     @Override
-    public org.netbeans.modules.bugtracking.team.spi.OwnerInfo getOwnerInfo(Node node) {
+    public org.netbeans.modules.team.spi.OwnerInfo getOwnerInfo(Node node) {
         return null; // available only for netbeans.org 
     }
 
     @Override
-    public org.netbeans.modules.bugtracking.team.spi.OwnerInfo getOwnerInfo(File file) {
+    public org.netbeans.modules.team.spi.OwnerInfo getOwnerInfo(File file) {
         return null; // available only for netbeans.org 
     }
 
@@ -337,7 +342,7 @@ public class TeamAccessorImpl extends TeamAccessor {
         }
     }
     
-    private class OwnerInfoImpl extends org.netbeans.modules.bugtracking.team.spi.OwnerInfo {
+    private class OwnerInfoImpl extends org.netbeans.modules.team.spi.OwnerInfo {
         private final OwnerInfo delegate;
 
         public OwnerInfoImpl(OwnerInfo delegate) {
@@ -410,4 +415,24 @@ public class TeamAccessorImpl extends TeamAccessor {
             }
         }
     }
+    
+    private class ActivatedTCListener implements PropertyChangeListener {
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            Registry registry = WindowManager.getDefault().getRegistry();
+            if (Registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
+                TopComponent tc = registry.getActivated();
+                Support.LOG.log(Level.FINER, "activated TC : {0}", tc); // NOI18N
+                final Lookup lookup = tc.getLookup();
+                Query query = lookup.lookup(Query.class);
+                if(query == null || !QueryHandleImpl.isAllIssues(query)) {
+                    return;
+                }
+                TeamProject project = lookup.lookup(TeamProject.class);
+                if(project instanceof TeamProjectImpl) {
+                    ((TeamProjectImpl)project).fireQueryActivated(query);
+                }
+            }
+        }
+    }    
 }

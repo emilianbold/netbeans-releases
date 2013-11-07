@@ -70,14 +70,11 @@ import oracle.eclipse.tools.cloud.dev.tasks.CloudDevConstants;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
-import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
-import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.TaskMapping;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
-import org.netbeans.modules.bugtracking.team.spi.TeamAccessor;
-import org.netbeans.modules.bugtracking.team.spi.TeamProject;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
+import org.netbeans.modules.team.spi.TeamAccessor;
+import org.netbeans.modules.team.spi.TeamProject;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
@@ -94,12 +91,12 @@ import org.netbeans.modules.odcs.tasks.util.ODCSUtil;
 import org.netbeans.modules.mylyn.util.UnsubmittedTasksContainer;
 import org.netbeans.modules.mylyn.util.commands.SimpleQueryCommand;
 import org.netbeans.modules.odcs.tasks.query.QueryParameters;
+import org.netbeans.modules.team.spi.TeamAccessorUtils;
+import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
-import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -112,7 +109,6 @@ public class ODCSRepository implements PropertyChangeListener {
     private RepositoryInfo info;
     private ODCSRepositoryController controller;
     private TaskRepository taskRepository;
-    private Lookup lookup;
     private Cache cache;
     private ODCSExecutor executor;
     private Map<PredefinedTaskQuery, ODCSQuery> predefinedQueries;
@@ -128,10 +124,10 @@ public class ODCSRepository implements PropertyChangeListener {
     private final Object CACHE_LOCK = new Object();
     
     public ODCSRepository (TeamProject project) {
-        this(createInfo(project.getDisplayName(), project.getFeatureLocation())); // use name as id - can't be changed anyway
+        this(createInfo(project.getDisplayName(), project.getFeatureLocation(), project)); // use name as id - can't be changed anyway
         assert project != null;
         this.project = project;
-        TeamUtil.getTeamAccessor(project.getFeatureLocation()).addPropertyChangeListener(this, project.getWebLocation().toString());
+        TeamAccessorUtils.getTeamAccessor(project.getFeatureLocation()).addPropertyChangeListener(this, project.getWebLocation().toString());
     }
     
     public ODCSRepository() {
@@ -166,10 +162,12 @@ public class ODCSRepository implements PropertyChangeListener {
     }
 
     @NbBundle.Messages({"# {0} - repository name", "# {1} - url", "LBL_RepositoryTooltipNoUser={0} : {1}"})
-    private static RepositoryInfo createInfo (String repoName, String url) {
+    private static RepositoryInfo createInfo (String repoName, String url, TeamProject project) {
         String id = getRepositoryId(repoName, url);
         String tooltip = Bundle.LBL_RepositoryTooltipNoUser(repoName, url);
-        return new RepositoryInfo(id, ODCSConnector.ID, url, repoName, tooltip);
+        RepositoryInfo i = new RepositoryInfo(id, ODCSConnector.ID, url, repoName, tooltip);
+        i.putValue(TeamBugtrackingConnector.TEAM_PROJECT_NAME, project.getName());
+        return i;
     }
     
     private static String getRepositoryId (String name, String url) {
@@ -187,7 +185,7 @@ public class ODCSRepository implements PropertyChangeListener {
             String user;
             char[] psswd;
             PasswordAuthentication pa =
-                    TeamUtil.getPasswordAuthentication(project.getWebLocation().toString(), false); // do not force login
+                    TeamAccessorUtils.getPasswordAuthentication(project.getWebLocation().toString(), false); // do not force login
             if (pa != null) {
                 user = pa.getUserName();
                 psswd = pa.getPassword();
@@ -202,7 +200,7 @@ public class ODCSRepository implements PropertyChangeListener {
     
 
     public boolean authenticate (String errroMsg) {
-        PasswordAuthentication pa = TeamUtil.getPasswordAuthentication(project.getWebLocation().toString(), true);
+        PasswordAuthentication pa = TeamAccessorUtils.getPasswordAuthentication(project.getWebLocation().toString(), true);
         if(pa == null) {
             return false;
         }
@@ -237,6 +235,7 @@ public class ODCSRepository implements PropertyChangeListener {
         setTaskRepository(name, url, user, password, httpUser, httpPassword);
         String id = info != null ? info.getId() : name + System.currentTimeMillis();
         info = new RepositoryInfo(id, ODCSConnector.ID, url, name, getTooltip(name, user, url), user, httpUser, password, httpPassword);
+        info.putValue(TeamBugtrackingConnector.TEAM_PROJECT_NAME, project.getName());
     }
     
     private void setTaskRepository(String name, String url, String user, char[] password, String httpUser, char[] httpPassword) {
@@ -405,13 +404,6 @@ public class ODCSRepository implements PropertyChangeListener {
         }
         return false;
     }    
-
-    public Lookup getLookup() {
-        if(lookup == null) {
-            lookup = Lookups.fixed(new Object[] { getIssueCache(), project });
-        }
-        return lookup;
-    }
 
     public Collection<ODCSQuery> getQueries() {
         List<ODCSQuery> ret = new ArrayList<ODCSQuery>();
@@ -673,6 +665,16 @@ public class ODCSRepository implements PropertyChangeListener {
             ODCS.LOG.log(Level.INFO, null, ex);
             return Collections.<ODCSIssue>emptyList();
         }
+    }
+
+    public TeamProject getTeamProject() {
+        return project;
+    }
+
+    public boolean needsAndHasNoLogin(ODCSQuery q) {
+        return (q != getPredefinedQuery(PredefinedTaskQuery.ALL)
+               || q != getPredefinedQuery(PredefinedTaskQuery.RECENT))
+            && !TeamAccessorUtils.isLoggedIn(project.getWebLocation());
     }
     
     public class Cache {

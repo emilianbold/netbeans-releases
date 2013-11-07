@@ -43,7 +43,6 @@
 package org.netbeans.modules.bugtracking.ui.repository;
 
 import org.netbeans.modules.bugtracking.BugtrackingOwnerSupport;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.openide.filesystems.FileObject;
 import java.awt.Component;
 import java.awt.EventQueue;
@@ -75,7 +74,7 @@ import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.api.IssueQuickSearch.RepositoryFilter;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils;
+import org.netbeans.modules.bugtracking.commons.NBBugzillaUtils;
 
 /**
  * Loads the list of repositories and determines the default one off the AWT
@@ -734,7 +733,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         String url = VersioningQuery.getRemoteLocation(referenceFile.toURI());
         if (url != null) {
             if(NBBugzillaUtils.isNbRepository(url)) {
-                TeamUtil.findNBRepository(); // ensure repository exists 
+                BugtrackingUtil.findNBRepository(); // ensure repository exists 
             }
         }
     }

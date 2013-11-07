@@ -42,16 +42,27 @@
 package org.netbeans.modules.bugtracking.api;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import org.netbeans.modules.bugtracking.APIAccessor;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.IssueImpl;
+import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.tasks.DashboardTopComponent;
+import org.netbeans.modules.bugtracking.team.TeamRepositories;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.IssueFinderUtils;
+import org.netbeans.modules.team.spi.TeamAccessorUtils;
 
 /**
  * Bugtracking Utility methods.
  * 
  * @author Tomas Stupka
+ * @since 1.85
  */
 public final class Util {
     
@@ -62,6 +73,7 @@ public final class Util {
      * 
      * @param repository the repository where where the given issueId originates from
      * @param issueId the issue id
+     * @since 1.85
      */
     public static void openIssue(Repository repository, String issueId) {
         IssueAction.openIssue(repository.getImpl(), issueId);
@@ -74,26 +86,77 @@ public final class Util {
      *                In case there is no such association yet, than 
      *                a modal Repository picker dialog will be presented.
      * @param issueId issue id
+     * @since 1.85
      */
     public static void openIssue(File context, String issueId) {
         IssueAction.openIssue(context, issueId);
     }
     
     /**
+     * Opens the Tasks Dashboard and selects and expands the given Query in it.
+     * 
+     * @param query the Query to be selected in the Tasks Dasboard
+     * @since 1.85
+     */
+    public static void selectQuery(final Query query) {
+        QueryImpl queryImpl = APIAccessor.IMPL.getImpl(query);
+        DashboardTopComponent.findInstance().select(queryImpl, true);
+    }    
+    
+    /**
+     * Closes the given Query in case it is opened in a TopComponent the editor area.
+     * @param query 
+     * @since 1.85
+     */
+    public static void closeQuery(Query query) {
+        QueryAction.closeQuery(APIAccessor.IMPL.getImpl(query));
+    }
+        
+    /**
      * Creates a new Query and opens it in the Query editor TopComponent.
+     * <p>
+     * Once the Top Component was opened it is still possible for the user to 
+     * eventually select a different repository.
+     * </p>
      * 
      * @param repository the repository for which the Query is to be created.
+     * @since 1.85
      */
     public static void createNewQuery(Repository repository) {
+        if(!checkTeamLogin(repository)) {
+            return;
+        }
         QueryAction.createNewQuery(repository.getImpl());
     }
 
     /**
+     * Creates a new Query and opens it in the Query editor TopComponent. 
+     * 
+     * <p>
+     * Depending on <code>suggestedRepositoryOnly</code> it either is or isn't 
+     * possible for the user to eventually select a different repository in the 
+     * opened Top Component.
+     * </p>
+     * 
+     * @param repository the repository for which the Query is to be created.
+     * @param suggestedRepositoryOnly if <code>true</code> then it isn't 
+     * possible for the user to change the repository for which a new query is to be created..
+     * @since 1.85
+     */
+    public static void createNewQuery(Repository repository, boolean suggestedRepositoryOnly) {
+        QueryAction.createNewQuery(APIAccessor.IMPL.getImpl(repository), suggestedRepositoryOnly);
+    }
+    
+    /**
      * Creates a new Issue and opens and opens it the Issue editor TopComponent.
      * 
      * @param repository the repository for which the Issue is to be created.
+     * @since 1.85
      */
     public static void createNewIssue(Repository repository) {
+        if(!checkTeamLogin(repository)) {
+            return;
+        }
         IssueAction.createIssue(repository.getImpl());
     }
     
@@ -104,6 +167,7 @@ public final class Util {
      * @param repository the repository for which the Issue is to be created.
      * @param summary the summary text
      * @param description the description text
+     * @since 1.85
      */
     public static void createIssue(Repository repository, String summary, String description) {
         repository.getImpl().createNewIssue(summary, description);
@@ -114,6 +178,7 @@ public final class Util {
      * Blocks until the dialog isn't closed. 
      * 
      * @return a repository in case it was properly specified, otherwise null
+     * @since 1.85
      */
     public static Repository createRepository() {
         RepositoryImpl repoImpl = BugtrackingUtil.createRepository(false);
@@ -121,10 +186,26 @@ public final class Util {
     }
     
     /**
+     * Returns a Repository corresponding to the given team url and a name. 
+     *
+     * @param url a url comming from a Team Server - e.g. kenai or java.net. 
+     * Might be representing either a team vcs repository, an issue or a team server host.
+     * @param projectName the name of a particular Team Server project
+     * 
+     * @return a team repository
+     * @since 1.85
+     */
+    public static Repository getTeamRepository(String url, String projectName) {
+        RepositoryImpl impl = TeamRepositories.getInstance().getRepository(url, projectName);
+        return impl != null ? impl.getRepository() : null;
+    }
+    
+    /**
      * Opens a modal edit repository dialog.<br>
      * Blocks until the dialog isn't closed.
      * 
      * @param repository the repository to be edited
+     * @since 1.85
      */
     public static void edit(Repository repository) { 
         BugtrackingUtil.editRepository(repository);
@@ -155,6 +236,7 @@ public final class Util {
      * @param  text  text to be searched for references
      * @return  non-{@code null} array of boundaries of hyperlink references
      *          in the given text
+     * @since 1.85
      */
     public static int[] getIssueSpans(String text) {
         return IssueFinderUtils.getIssueSpans(text);
@@ -169,9 +251,39 @@ public final class Util {
      * 
      * @param  issueHyperlinkText  text that refers to a bug/issue
      * @return  unique identifier of the bug/issue or null
+     * @since 1.85
      */
     public static String getIssueId(String issueHyperlinkText) {        
         return IssueFinderUtils.getIssueId(issueHyperlinkText);
     }  
     
+    /**
+     * Determines all issues which where recently opened (in this nb session) 
+     * ordered by their recency.
+     * 
+     * @return recent issues
+     * @since 1.85
+     */
+    public static List<Issue> getRecentIssues() {
+        return toIssues(BugtrackingManager.getInstance().getAllRecentIssues());
+    }    
+    
+    private static boolean checkTeamLogin(Repository repository) {
+        if (repository.getImpl().isTeamRepository() && 
+            !TeamAccessorUtils.isLoggedIn(repository.getUrl()) &&
+            repository.getImpl().getConnectorId().toLowerCase().contains("jira") &&
+            !TeamAccessorUtils.showLogin(repository.getUrl())) 
+        {
+            return false;
+        }
+        return true;
+    }    
+    
+    static List<Issue> toIssues(Collection<IssueImpl> c) {
+        List<Issue> ret = new ArrayList<Issue>(c.size());
+        for (IssueImpl i : c) {
+            ret.add(i.getIssue());
+        }
+        return ret;
+    }
 }

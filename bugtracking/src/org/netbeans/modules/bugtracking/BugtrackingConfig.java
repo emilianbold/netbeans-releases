@@ -56,8 +56,6 @@ public class BugtrackingConfig {
 
     private static BugtrackingConfig instance = null;
     private static final String ARCHIVED_TTL_KEY  = "bugtracking.archived_time_to_live";      // NOI18N
-    private static final String COLUMN_WIDTH_PREFIX  = "bugtracking.issuetable.columnwidth";  // NOI18N
-    private static final String COLUMN_SORTING_PREFIX = "bugtracking.issuetable.columnsorting";  // NOI18N
     private static final long DEFAULT_ARCHIVED_TTL  = 7; // days
 
     private BugtrackingConfig() { }
@@ -81,44 +79,5 @@ public class BugtrackingConfig {
         return getPreferences().getLong(ARCHIVED_TTL_KEY, DEFAULT_ARCHIVED_TTL);
     }
 
-    public void storeColumns(String key, String columns) {
-        getPreferences().put(COLUMN_WIDTH_PREFIX + "." + key, columns); // NOI18N
-    }
-
-    public String getColumns(String key) {
-        return getPreferences().get(COLUMN_WIDTH_PREFIX + "." + key, ""); // NOI18N
-    }
-
-    @Deprecated
-    public int[] getColumnWidths(String key) {
-        List<Integer> retval = new ArrayList<Integer>();
-        try {
-            String[] keys = getPreferences().keys();
-            for (int i = 0; i < keys.length; i++) {
-                String k = keys[i];
-                if (k != null && k.startsWith(COLUMN_WIDTH_PREFIX + "." + key + ".")) { // NOI18N
-                    int idx = Integer.parseInt(k.substring(k.lastIndexOf('.') + 1));    // NOI18N
-                    int value = getPreferences().getInt(k, -1);
-                    retval.add(idx, value);
-                    getPreferences().remove(k);
-                }
-            }
-            int[] ret = new int[retval.size()];
-            for (int i = 0; i < ret.length; i++) {
-                ret[i] = retval.get(i);
-            }
-            return ret;
-        } catch (Exception ex) {
-            BugtrackingManager.LOG.log(Level.INFO, null, ex);
-            return new int[0];
-        }
-    }
-
-    public void storeColumnSorting(String columnsKey, String sorting) {
-        getPreferences().put(COLUMN_SORTING_PREFIX + "." + columnsKey, sorting); // NOI18N
-    }
-
-    public String getColumnSorting(String key) {
-        return getPreferences().get(COLUMN_SORTING_PREFIX + "." + key, ""); // NOI18N
-    }
+ 
 }

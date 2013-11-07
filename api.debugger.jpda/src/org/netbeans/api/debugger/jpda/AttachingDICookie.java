@@ -52,6 +52,8 @@ import com.sun.jdi.connect.IllegalConnectorArgumentsException;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -79,9 +81,11 @@ public final class AttachingDICookie extends AbstractDICookie {
      * Public ID used for registration in Meta-inf/debugger.
      */
     public static final String ID = "netbeans-jpda-AttachingDICookie";
+    
+    private static final Logger logger = Logger.getLogger(AttachingDICookie.class.getName());
 
-    private AttachingConnector attachingConnector;
-    private Map<String,? extends Argument> args;
+    private final AttachingConnector attachingConnector;
+    private final Map<String,? extends Argument> args;
 
     
     private AttachingDICookie (
@@ -217,10 +221,19 @@ public final class AttachingDICookie extends AbstractDICookie {
      * Creates a new instance of VirtualMachine for this DebuggerInfo Cookie.
      *
      * @return a new instance of VirtualMachine for this DebuggerInfo Cookie
+     * @throws java.io.IOException when unable to attach.
+     * @throws IllegalConnectorArgumentsException when some connector argument is invalid.
      */
+    @Override
     public VirtualMachine getVirtualMachine () throws IOException,
     IllegalConnectorArgumentsException {
-        return attachingConnector.attach (args);
+        try {
+            return attachingConnector.attach (args);
+        } catch (IOException ioex) {
+            String msg = "Attaching Connector = "+attachingConnector+", arguments = "+args; // NOI18N
+            logger.log(Level.INFO, msg, ioex);
+            throw ioex;
+        }
     }
     
     

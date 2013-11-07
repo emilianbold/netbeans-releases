@@ -86,7 +86,7 @@ import org.netbeans.modules.bugtracking.commons.SaveQueryPanel.QueryNameValidato
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
-import org.netbeans.modules.bugtracking.team.spi.TeamProject;
+import org.netbeans.modules.team.spi.TeamProject;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryController.QueryMode;
 import org.netbeans.modules.odcs.tasks.ODCS;
@@ -126,7 +126,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
     private final Object CRITERIA_LOCK = new Object();
     private final Semaphore querySemaphore = new Semaphore(1);
     
-    private final IssueTable<ODCSQuery> issueTable;
+    private final IssueTable issueTable;
     private boolean modifiable;
     private Criteria criteria;
     private Criteria originalCriteria;
@@ -139,7 +139,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
         this.modifiable = modifiable;
         this.criteria = criteria;
         
-        issueTable = new IssueTable<>(ODCSUtil.getRepository(repository), query, query.getColumnDescriptors(), query.isSaved());
+        issueTable = new IssueTable(repository.getID(), query.getDisplayName(), this, query.getColumnDescriptors(), query.isSaved());
         setupRenderer(issueTable);
         panel = new QueryPanel(issueTable.getComponent());
 
@@ -696,7 +696,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
     }
 
     private void onWeb() {
-        TeamProject kp = repository.getLookup().lookup(TeamProject.class);
+        TeamProject kp = repository.getTeamProject();
         assert kp != null; // all odcs repositories should come from team support
         if (kp == null) {
             return;

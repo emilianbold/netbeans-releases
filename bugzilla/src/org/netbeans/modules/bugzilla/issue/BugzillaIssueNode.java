@@ -44,7 +44,7 @@ package org.netbeans.modules.bugzilla.issue;
 
 import java.util.List;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
-import org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils;
+import org.netbeans.modules.bugtracking.commons.NBBugzillaUtils;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.IssueField;
@@ -58,7 +58,10 @@ import org.openide.util.NbBundle;
  */
 public class BugzillaIssueNode extends IssueNode<BugzillaIssue> {
     public BugzillaIssueNode(BugzillaIssue issue) {
-        super(BugzillaUtil.getRepository(issue.getRepository()), issue, Bugzilla.getInstance().getChangesProvider());
+        super(issue, 
+              Bugzilla.getInstance().getIssueProvider(), 
+              Bugzilla.getInstance().getStatusProvider(), 
+              Bugzilla.getInstance().getChangesProvider());
     }
 
     BugzillaIssue getBugzillaIssue() {
@@ -155,13 +158,15 @@ public class BugzillaIssueNode extends IssueNode<BugzillaIssue> {
         public String getValue() {
             return getBugzillaIssue().getID();
         }
+        
         @Override
-        public int compareTo(IssueProperty p) {
+        public int compareTo(IssueNode<BugzillaIssue>.IssueProperty<String> p) {
             if(p == null) return 1;
-            Integer i1 = Integer.parseInt(getIssue().getID());
-            Integer i2 = Integer.parseInt(p.getIssue().getID());
+            Integer i1 = Integer.parseInt(getIssueData().getID());
+            Integer i2 = Integer.parseInt(p.getIssueData().getID());
             return i1.compareTo(i2);
         }
+
     }
 
     private class SeverityProperty extends IssueNode<BugzillaIssue>.IssueProperty<String> {

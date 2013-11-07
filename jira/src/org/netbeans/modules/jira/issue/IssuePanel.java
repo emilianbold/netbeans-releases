@@ -131,11 +131,10 @@ import javax.swing.text.DateFormatter;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.issuetable.TableSorter;
-import org.netbeans.modules.bugtracking.team.spi.RepositoryUser;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
+import org.netbeans.modules.team.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.commons.LinkButton;
-import org.netbeans.modules.bugtracking.team.spi.RepositoryUserRenderer;
+import org.netbeans.modules.team.spi.RepositoryUserRenderer;
 import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.issue.NbJiraIssue.IssueField;
@@ -150,6 +149,7 @@ import org.netbeans.modules.jira.util.StatusRenderer;
 import org.netbeans.modules.jira.util.TypeRenderer;
 import org.netbeans.modules.mylyn.util.AbstractNbTaskWrapper;
 import org.netbeans.modules.spellchecker.api.Spellchecker;
+import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
@@ -726,7 +726,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         boolean isKenaiRepository = (issue.getRepository() instanceof KenaiRepository);
         if (isKenaiRepository && (assignee.trim().length() > 0) && (force || !selectedAssignee.equals(assignee))) {
             String host = ((KenaiRepository) issue.getRepository()).getHost();
-            JLabel label = TeamUtil.createUserWidget(issue.getRepository().getUrl(), assignee, host, TeamUtil.getChatLink(issue.getKey()));
+            JLabel label = TeamAccessorUtils.createUserWidget(issue.getRepository().getUrl(), assignee, host, TeamAccessorUtils.getChatLink(issue.getKey()));
             if (label != null) {
                 label.setText(null);
                 ((GroupLayout)getLayout()).replace(assigneeStatusLabel, label);
@@ -776,7 +776,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             fixPrefSize(createdField);
             if ((reporterStatusLabel.getIcon() == null) && isKenaiRepository) {
                 String host = ((KenaiRepository) issue.getRepository()).getHost();
-                JLabel label = TeamUtil.createUserWidget(issue.getRepository().getUrl(), reporter, host, TeamUtil.getChatLink(issue.getKey()));
+                JLabel label = TeamAccessorUtils.createUserWidget(issue.getRepository().getUrl(), reporter, host, TeamAccessorUtils.getChatLink(issue.getKey()));
                 if (label != null) {
                     label.setText(null);
                     ((GroupLayout)getLayout()).replace(reporterStatusLabel, label);
