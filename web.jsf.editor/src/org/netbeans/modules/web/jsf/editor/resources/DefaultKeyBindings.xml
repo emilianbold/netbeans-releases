@@ -52,5 +52,5 @@ See http://wiki.netbeans.info/wiki/view/DevFaqLogicalKeybindings for action name
 
 -->
 <bindings>
-    <bind actionName="fix-namespaces" key="DS-I"/>
+    <bind actionName="fix-imports" key="DS-I"/>
 </bindings>
