@@ -55,6 +55,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.mylyn.internal.tasks.core.AbstractTask;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
@@ -243,6 +244,9 @@ public abstract class AbstractNbTaskWrapper {
                 if (readPending) {
                     // make sure remote changes are not lost and still highlighted in the editor
                     setUpToDate(false, false);
+                    if (task.getDelegate() instanceof AbstractTask) {
+                        ((AbstractTask) task.getDelegate()).setMarkReadPending(false);
+                    }
                 }
                 model = task.getTaskDataModel();
                 if (model == null) {
