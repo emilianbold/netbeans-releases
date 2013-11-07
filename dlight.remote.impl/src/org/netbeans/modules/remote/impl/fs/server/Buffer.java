@@ -50,10 +50,10 @@ import java.nio.BufferUnderflowException;
  */
 
 /*package*/ final class Buffer {
-    private final String text;
+    private final CharSequence text;
     private int curr;
 
-    public Buffer(String text) {
+    public Buffer(CharSequence text) {
         this.text = text;
         curr = 0;
     }
