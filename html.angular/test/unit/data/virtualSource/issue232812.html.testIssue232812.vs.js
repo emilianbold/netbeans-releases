@@ -1,2 +1,2 @@
-var imageTitle;
+!imageTitle;
 uploadFile();;

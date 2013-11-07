@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.angular;
+package org.netbeans.modules.javascript2.editor.navigation;
 
 import java.io.File;
 import java.util.Collections;
@@ -47,7 +47,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.javascript2.editor.JsCodeCompletionBase;
+import org.netbeans.modules.javascript2.editor.JsTestBase;
 import static org.netbeans.modules.javascript2.editor.JsTestBase.JS_SOURCE_ID;
 import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -58,23 +58,30 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Petr Pisl
  */
-public class AngularCodeCompletionTest extends JsCodeCompletionBase {
+public class With01Test extends JsTestBase{
 
-    public AngularCodeCompletionTest(String testName) {
+    public With01Test(String testName) {
         super(testName);
     }
     
-    public void testControllersProperty_01() throws Exception {
-        // TODO it works in ide, not in test now
-//        checkCompletion("completion/simpleController/index.html", "                    {{or^}}", false);
+    public void testWith_01() throws Exception {
+        checkDeclaration("/testfiles/navigation/testWith01/testA.js", "for (var fw in framewo^rks) {", "testB.js", 53);
     }
     
+
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
+        List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
+        
+        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/testfiles/navigation/testWith01")));
         return Collections.singletonMap(
             JS_SOURCE_ID,
-            ClassPathSupport.createClassPath(new FileObject[] {
-                FileUtil.toFileObject(new File(getDataDir(), "/completion/simpleController"))})
+            ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))
         );
+    }
+
+    @Override
+    protected boolean classPathContainsBinaries() {
+        return true;
     }
 }
