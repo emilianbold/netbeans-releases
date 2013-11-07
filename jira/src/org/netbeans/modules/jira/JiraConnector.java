@@ -67,7 +67,8 @@ import org.openide.util.NbBundle;
 @BugtrackingConnector.Registration (
         id=JiraConnector.ID,
         displayName="#LBL_ConnectorName",
-        tooltip="#LBL_ConnectorTooltip"
+        tooltip="#LBL_ConnectorTooltip",
+        iconPath = "org/netbeans/modules/bugzilla/resources/repository.png"
 )    
 public class JiraConnector implements BugtrackingConnector, TeamBugtrackingConnector {
 

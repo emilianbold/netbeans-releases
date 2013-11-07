@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.bugzilla;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
@@ -58,7 +57,6 @@ import org.netbeans.modules.bugzilla.repository.NBRepositorySupport;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.netbeans.modules.team.spi.TeamProject;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -68,7 +66,8 @@ import org.openide.util.NbBundle;
 @BugtrackingConnector.Registration (
         id=BugzillaConnector.ID,
         displayName="#LBL_ConnectorName",
-        tooltip="#LBL_ConnectorTooltip"
+        tooltip="#LBL_ConnectorTooltip",
+        iconPath = "org/netbeans/modules/bugzilla/resources/repository.png"
 )    
 public class BugzillaConnector implements BugtrackingConnector, TeamBugtrackingConnector {
 
