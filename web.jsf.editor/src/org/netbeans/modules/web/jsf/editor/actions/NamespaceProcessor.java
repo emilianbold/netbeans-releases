@@ -161,6 +161,9 @@ class NamespaceProcessor {
             String ns = it.next();
             Library library = supportedLibraries.get(ns);
             if (prefix.equals(library.getDefaultPrefix())) {
+                if (jsfSupport.isJsf22Plus()) {
+                    ns = library.getNamespace();
+                }
                 result.add(new VariantItem(prefix, ns, library));
                 it.remove();
             }
@@ -169,6 +172,9 @@ class NamespaceProcessor {
         // complete the remaining items
         for (String remainingNs : sortedList) {
             Library library = supportedLibraries.get(remainingNs);
+            if (jsfSupport.isJsf22Plus()) {
+                    remainingNs = library.getNamespace();
+                }
             result.add(new VariantItem(library.getDefaultPrefix(), remainingNs, library));
         }
 
