@@ -38,6 +38,7 @@
 package org.netbeans.modules.profiler.drilldown;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import static org.junit.Assert.*;
 import org.netbeans.junit.NbTestCase;
@@ -141,7 +142,8 @@ public class DrillDownTest extends NbTestCase {
         System.out.println("getSubCategories");
         List expResult = Arrays.asList(cont1, leaf1, self1);
         List result = instance.getSubCategories();
-        assertArrayEquals(expResult.toArray(new Object[expResult.size()]), result.toArray(new Object[result.size()]));
+        assertEquals(self1, result.get(result.size()-1));
+        assertEquals(new HashSet(expResult), new HashSet(result));
     }
 
     public void testCanDrilldownTrue() {
