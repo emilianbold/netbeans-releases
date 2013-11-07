@@ -74,6 +74,10 @@ public final class WeakContainer<T> {
         }
     }
 
+    public Key getKey() {
+        return storageKey;
+    }
+    
     @SuppressWarnings("unchecked")
     public T getContainer() {
         T container = getFromRef();
