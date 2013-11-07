@@ -45,6 +45,7 @@ package org.netbeans.performance.j2se.menus;
 
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.actions.EditAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
@@ -111,6 +112,7 @@ public class SourceEditorPopupMenuTest extends PerformanceTestCase {
 
     @Override
     public void initialize() {
+        MainWindowOperator.getDefault().pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
         Node fileNode = new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|" + fileName);
 
         if (fileName.endsWith("xml")) {
@@ -119,7 +121,7 @@ public class SourceEditorPopupMenuTest extends PerformanceTestCase {
             new OpenAction().performAPI(fileNode);
         }
         editor = new EditorOperator(fileName);
-        waitNoEvent(5000);
+        waitNoEvent(2000);
     }
 
     @Override
@@ -139,6 +141,7 @@ public class SourceEditorPopupMenuTest extends PerformanceTestCase {
 
     @Override
     public void shutdown() {
+        MainWindowOperator.getDefault().pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
         EditorOperator.closeDiscardAll();
     }
 }
