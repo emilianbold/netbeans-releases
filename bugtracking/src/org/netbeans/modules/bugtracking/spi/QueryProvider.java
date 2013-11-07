@@ -52,93 +52,106 @@ import java.util.Collection;
  * 
  * @param <Q> the implementation specific query type
  * @param <I> the implementation specific issue type
+ * @since 1.85
  */
 public interface QueryProvider<Q, I> {
 
     /**
      * Fired when a queries list of issue was changed.
+     * @since 1.85
      */
     public final static String EVENT_QUERY_REFRESHED = "bugtracking.query.refreshed";   // NOI18N
 
     /**
      * Returns the queries display name
-     * @param q
-     * @return
+     * @param q the particular query instance
+     * @return the display name
+     * @since 1.85
      */
     public String getDisplayName(Q q);
 
     /**
      * Returns the queries tooltip
-     * @param q 
-     * @return
+     * @param q the particular query instance
+     * @return 
+     * @since 1.85
      */
     public String getTooltip(Q q);
 
     /**
      * Returns the {@link QueryController} for this query
      * @param q the implementation specific query type
-     * @return
+     * @return a controller for the given query
+     * @since 1.85
      */
     public QueryController getController(Q q);
 
     /**
      * Determines whether it is possible to remove the given Query.
      * 
-     * @param q 
-     * @return  
+     * @param q the particular query instance
+     * @return  <code>true</code> in case it is possible to remove the query, otherwise <code>fasle</code>
+     * @since 1.85
      */
     public boolean canRemove(Q q);
     
     /** 
      * Removes the given query.
      * 
-     * @param q 
+     * @param q the particular query instance
+     * @since 1.85
      */
     public void remove(Q q);
     
     /**
      * Determines whether it is possible to rename the given Query
-     * @param q
-     * @return 
+     * @param q the particular query instance
+     * @return <code>true</code> in case it is possible to rename the query, otherwise <code>fasle</code>
+     * @since 1.85
      */
     public boolean canRename(Q q);
     
     /**
      * Renames the given query.
      * 
-     * @param q 
-     * @param newName 
+     * @param q the particular query instance
+     * @param newName new name
+     * @since 1.85
      */
     public void rename(Q q, String newName);
     
     /**
      * Returns all issues from this queries last refresh.
      * 
-     * @param q
-     * @return 
+     * @param q the particular query instance
+     * @return issues from the given query
+     * @since 1.85
      */
     public Collection<I> getIssues(Q q);
 
     /**
      * Refreshes the given query
      * 
-     * @param query
+     * @param q the particular query instance
+     * @since 1.85
      */
-    public void refresh(Q query);
+    public void refresh(Q q);
     
     /**
      * Remove a PropertyChangeListener from the given query.
      * 
-     * @param q
-     * @param listener 
+     * @param q the particular query instance
+     * @param listener a PropertyChangeListener
+     * @since 1.85
      */
     public void removePropertyChangeListener(Q q, PropertyChangeListener listener);
 
     /**
      * Add a PropertyChangeListener to the given query.
      * 
-     * @param q
-     * @param listener 
+     * @param q the particular query instance
+     * @param listener a PropertyChangeListener
+     * @since 1.85
      */
     public void addPropertyChangeListener(Q q, PropertyChangeListener listener);
 

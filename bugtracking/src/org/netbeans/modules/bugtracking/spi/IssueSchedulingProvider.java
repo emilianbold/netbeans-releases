@@ -67,6 +67,7 @@ import java.util.Date;
  * 
  * @author Tomas Stupka
  * @param <I> the implementation specific issue type
+ * @since 1.85
  */
 public interface IssueSchedulingProvider<I> {
         
@@ -78,6 +79,7 @@ public interface IssueSchedulingProvider<I> {
      * 
      * @param i an implementation specific issue instance
      * @param date 
+     * @since 1.85
      */
     public void setDueDate(I i, Date date);
 
@@ -90,6 +92,7 @@ public interface IssueSchedulingProvider<I> {
      * 
      * @param i an implementation specific issue instance
      * @param scheduleInfo a ScheduleInfo describing the Issues scheduling 
+     * @since 1.85
      */
     public void setSchedule(I i, IssueScheduleInfo scheduleInfo);
 
@@ -98,6 +101,7 @@ public interface IssueSchedulingProvider<I> {
      * 
      * @param i an implementation specific issue instance
      * @param hours the Issues estimate
+     * @since 1.85
      */
     public void setEstimate(I i, int hours); 
 
@@ -110,6 +114,7 @@ public interface IssueSchedulingProvider<I> {
      * 
      * @param i an implementation specific issue instance
      * @return the Issues due date
+     * @since 1.85
      */
     public Date getDueDate(I i);
 
@@ -123,6 +128,7 @@ public interface IssueSchedulingProvider<I> {
      * 
      * @param i an implementation specific issue instance
      * @return the Issues schedule info
+     * @since 1.85
      */
     public IssueScheduleInfo getSchedule(I i);
 
@@ -131,6 +137,7 @@ public interface IssueSchedulingProvider<I> {
      * 
      * @param i an implementation specific issue instance
      * @return the Issues estimate
+     * @since 1.85
      */
     public int getEstimate(I i); 
     

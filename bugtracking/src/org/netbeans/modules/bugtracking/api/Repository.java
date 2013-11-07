@@ -57,16 +57,19 @@ import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
  * Represents a bugtracking Repository.
  * 
  * @author Tomas Stupka
+ * @since 1.85
  */
 public final class Repository {
     
     /**
      * A query from this repository was saved or removed.
+     * @since 1.85
      */
     public final static String EVENT_QUERY_LIST_CHANGED = RepositoryProvider.EVENT_QUERY_LIST_CHANGED;
 
     /**
      * RepositoryProvider's attributes have changed, e.g. name, url, etc.
+     * @since 1.85
      */
     public final static String EVENT_ATTRIBUTES_CHANGED = RepositoryImpl.EVENT_ATTRIBUTES_CHANGED;
 
@@ -89,6 +92,7 @@ public final class Repository {
      * Returns the icon for this repository.
      * 
      * @return the icon
+     * @since 1.85
      */
     public Image getIcon() {
         return impl.getIcon();
@@ -98,6 +102,7 @@ public final class Repository {
      * Returns the display name for this repository.
      * 
      * @return the display name
+     * @since 1.85
      */
     public String getDisplayName() {
         return impl.getDisplayName();
@@ -107,6 +112,7 @@ public final class Repository {
      * Returns the tooltip describing this repository.
      * 
      * @return the tooltip
+     * @since 1.85
      */
     public String getTooltip() {
         return impl.getTooltip();
@@ -116,6 +122,7 @@ public final class Repository {
      * Returns a unique id associated with this repository.
      * 
      * @return id
+     * @since 1.85
      */
     public String getId() {
         return impl.getId();
@@ -125,6 +132,7 @@ public final class Repository {
      * Returns this repositories url.
      * 
      * @return url
+     * @since 1.85
      */
     public String getUrl() {
         return impl.getUrl();
@@ -133,7 +141,8 @@ public final class Repository {
     /**
      * Returns a list of all saved queries for this repository.
      * 
-     * @return 
+     * @return queries
+     * @since 1.85
      */
     public Collection<Query> getQueries() {
         Collection<QueryImpl> c = impl.getQueries();
@@ -149,6 +158,7 @@ public final class Repository {
      * 
      * @return <code>true</code> if this repository can be deleted or changed by 
      *         the user. Otherwise <code>false</code>.
+     * @since 1.85
      */
     public boolean isMutable() {
         return impl.isMutable();
@@ -158,6 +168,7 @@ public final class Repository {
      * Determines whether it is possible to attach files to Issues from this repository.
      * 
      * @return <code>true</code> in case it is possible to attach files, otherwise <code>false</code>
+     * @since 1.85
      */
     public boolean canAttachFiles() {
         return impl.canAttachFiles();
@@ -165,6 +176,7 @@ public final class Repository {
     
     /**
      * Removes this repository.
+     * @since 1.85
      */
     public void remove() {
         impl.remove();
@@ -174,6 +186,7 @@ public final class Repository {
      * Registers a PropertyChangeListener.
      * 
      * @param listener 
+     * @since 1.85
      */
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         impl.addPropertyChangeListener(listener);
@@ -183,6 +196,7 @@ public final class Repository {
      * Unregisters a PropertyChangeListener. 
      * 
      * @param listener 
+     * @since 1.85
      */
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         impl.removePropertyChangeListener(listener);
@@ -192,7 +206,8 @@ public final class Repository {
      * Returns the issue with the given id or null in case such doesn't exist.
      * 
      * @param ids
-     * @return 
+     * @return issues
+     * @since 1.85
      */
     public Issue[] getIssues(String... ids) {
         Collection<IssueImpl> impls = impl.getIssueImpls(ids);

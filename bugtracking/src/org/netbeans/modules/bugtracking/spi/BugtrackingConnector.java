@@ -67,6 +67,7 @@ import org.netbeans.modules.bugtracking.api.Repository;
  * </pre>
  * 
  * @author Tomas Stupka
+ * @since 1.85
  */
 public interface BugtrackingConnector {
 
@@ -77,6 +78,7 @@ public interface BugtrackingConnector {
      * 
      * @return a {@link Repository} instance.
      * @see BugtrackingFactory
+     * @since 1.85
      */
     public Repository createRepository(RepositoryInfo info);  
     
@@ -85,6 +87,7 @@ public interface BugtrackingConnector {
      * 
      * @return the created repository
      * @see BugtrackingFactory
+     * @since 1.85
      */
     public Repository createRepository();
 
@@ -93,6 +96,7 @@ public interface BugtrackingConnector {
      * 
      * @author Tomas Stupka
      * @see org.openide.util.lookup.ServiceProvider
+     * @since 1.85
      */
     @Retention(RetentionPolicy.SOURCE)
     @Target({ElementType.TYPE, ElementType.METHOD})
@@ -101,14 +105,16 @@ public interface BugtrackingConnector {
         /**
          * Returns a unique ID for this connector
          *
-         * @return
+         * @return id
+         * @since 1.85
          */
         public String id();
 
         /**
          * Returns the icon path for this connector
          *
-         * @return
+         * @return the icon path
+         * @since 1.85
          */
         public String iconPath() default "";
 
@@ -116,6 +122,7 @@ public interface BugtrackingConnector {
          * Returns the display name for this connector
          *
          * @return the display name for this connector
+         * @since 1.85
          */
         public String displayName();
 
@@ -123,6 +130,7 @@ public interface BugtrackingConnector {
          * Returns tooltip for this connector
          *
          * @return tooltip for this connector
+         * @since 1.85
          */
         public String tooltip();    
         
@@ -134,6 +142,7 @@ public interface BugtrackingConnector {
          * </p>
          * @return <code>true</code> if this connector provides the possibility 
          *         to create, edit or removal of repositories. Otherwise <code>false</code>.
+         * @since 1.85
          */
         public boolean providesRepositoryManagement() default true;
         

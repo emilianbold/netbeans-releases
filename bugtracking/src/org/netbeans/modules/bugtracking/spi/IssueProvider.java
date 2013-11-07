@@ -50,11 +50,13 @@ import java.util.Collection;
  *
  * @author Tomas Stupka
  * @param <I> the implementation specific issue type
+ * @since 1.85
  */
 public interface IssueProvider<I> {
 
     /**
      * Issue data were changed. Fire this to notify e.g. Issue nodes in Tasks Dashboard.
+     * @since 1.85
      */
     public static final String EVENT_ISSUE_DATA_CHANGED = "issue.data_changed"; // NOI18N
 
@@ -63,6 +65,7 @@ public interface IssueProvider<I> {
      * 
      * @param i an implementation specific issue instance
      * @return the display name for the given Issue
+     * @since 1.85
      */
     public String getDisplayName(I i);
 
@@ -71,6 +74,7 @@ public interface IssueProvider<I> {
      * 
      * @param i an implementation specific issue instance
      * @return tooltip for the given Issue
+     * @since 1.85
      */
     public String getTooltip(I i);
 
@@ -79,6 +83,7 @@ public interface IssueProvider<I> {
      * 
      * @param i an implementation specific issue instance
      * @return id of the given Issue
+     * @since 1.85
      */
     public String getID(I i);
     
@@ -89,6 +94,7 @@ public interface IssueProvider<I> {
      * 
      * @param i an implementation specific issue instance
      * @return id-s of subtasks for the given Issue
+     * @since 1.85
      */
     public Collection<String> getSubtasks(I i);
 
@@ -96,7 +102,8 @@ public interface IssueProvider<I> {
      * Returns this issues summary.
      * 
      * @param i an implementation specific issue instance
-     * @return
+     * @return summary
+     * @since 1.85
      */
     public String getSummary(I i);
 
@@ -105,6 +112,7 @@ public interface IssueProvider<I> {
      * 
      * @param i an implementation specific issue instance
      * @return <code>true</code> in case the given Issue exists only locally and wasn't submitted yet.
+     * @since 1.85
      */
     public boolean isNew(I i);
     
@@ -115,6 +123,7 @@ public interface IssueProvider<I> {
      * 
      * @param i an implementation specific issue instance
      * @return <code>true</code> if finished, otherwise <code>false</code>
+     * @since 1.85
      */
     public boolean isFinished(I i);
 
@@ -128,6 +137,7 @@ public interface IssueProvider<I> {
      * 
      * @param i an implementation specific issue instance
      * @return <code>true</code> if the issue was refreshed, otherwise <code>false</code>
+     * @since 1.85
      */
     public boolean refresh(I i);
 
@@ -144,6 +154,7 @@ public interface IssueProvider<I> {
      * @param i an implementation specific issue instance
      * @param comment a comment to be added to the issue
      * @param close close the issue if <code>true</code>
+     * @since 1.85
      */
     public void addComment(I i, String comment, boolean close);
 
@@ -165,6 +176,7 @@ public interface IssueProvider<I> {
      * @param isPatch <code>true</code> in case the given file is a patch, otherwise <code>false</code>
      * 
      * @see RepositoryProvider#canAttachFile(java.lang.Object) 
+     * @since 1.85
      */
     public void attachFile(I i, File file, String description, boolean isPatch);
 
@@ -173,6 +185,7 @@ public interface IssueProvider<I> {
      * 
      * @param i an implementation specific issue instance
      * @return an IssueController for the given issue
+     * @since 1.85
      */
     public IssueController getController(I i);
 
@@ -181,6 +194,7 @@ public interface IssueProvider<I> {
      * 
      * @param i an implementation specific issue instance
      * @param listener a PropertyChangeListener
+     * @since 1.85
      */
     public void removePropertyChangeListener(I i, PropertyChangeListener listener);
 
@@ -189,6 +203,7 @@ public interface IssueProvider<I> {
      * 
      * @param i an implementation specific issue instance
      * @param listener a PropertyChangeListener
+     * @since 1.85
      */
     public void addPropertyChangeListener(I i, PropertyChangeListener listener);
     

@@ -73,16 +73,19 @@ import org.openide.util.HelpCtx;
  * </p>
  * 
  * @author Tomas Stupka
+ * @since 1.85
  */
 public interface QueryController {
 
     /**
      * The Issue UI contains unsaved changes.
+     * @since 1.85
      */
     public static String PROPERTY_QUERY_CHANGED = "bugtracking.query.changed";
     
     /**
      * The Issue UI does not contain unsaved changes.
+     * @since 1.85
      */
     public static String PROPERTY_QUERY_SAVED = "bugtracking.query.saved";
     
@@ -90,14 +93,17 @@ public interface QueryController {
      * The mode in which this controllers component is shown.
      * 
      * @see #providesMode(org.netbeans.modules.bugtracking.spi.QueryController.QueryMode) 
+     * @since 1.85
      */
     public enum QueryMode {
         /**
          * Determines the Controller Component to create or edit a Query.
+         * @since 1.85
          */
         EDIT,
         /**
          * Determines the Controller Component to view the Query results. 
+         * @since 1.85
          */
         VIEW
     }
@@ -108,7 +114,9 @@ public interface QueryController {
      * enabled on a query node in the TasksDashboard.
      * 
      * @param mode
-     * @return 
+     * @return <code>true</code> if the given mode is provided by the particular 
+     * implementation, otherwise false</code>
+     * @since 1.85
      */
     public boolean providesMode(QueryMode mode);
 
@@ -117,22 +125,26 @@ public interface QueryController {
      * 
      * @param mode
      * @return a visual component representing a bugtracking query
+     * @since 1.85
      */
     public JComponent getComponent(QueryMode mode);
     
     /**
      * Returns the help context associated with this controllers visual component
-     * @return
+     * @return help context
+     * @since 1.85
      */
     public HelpCtx getHelpCtx();
 
     /**
      * Called when the component returned by this controller was opened.
+     * @since 1.85
      */
     public void opened();
 
     /**
      * Called when the component returned by this controller was closed.
+     * @since 1.85
      */
     public void closed();
 
@@ -141,6 +153,7 @@ public interface QueryController {
      * Save was chosen on close of an Query TopComponent.
      * 
      * @return <code>true</code> in case the save worked, otherwise <code>false</code>
+     * @since 1.85
      */
     public boolean saveChanges();
 
@@ -148,6 +161,7 @@ public interface QueryController {
      * This method is called when Discard was chosen on close of an Query TopComponent.
      * 
      * @return <code>true</code> in case the discard worked, otherwise <code>false</code>
+     * @since 1.85
      */
     public boolean discardUnsavedChanges();
 
@@ -155,6 +169,7 @@ public interface QueryController {
      * Registers a PropertyChangeListener.
      * 
      * @param l a PropertyChangeListener
+     * @since 1.85
      */
     public void addPropertyChangeListener(PropertyChangeListener l);
 
@@ -162,6 +177,7 @@ public interface QueryController {
      * Unregisters a PropertyChangeListener.
      * 
      * @param l a PropertyChangeListener
+     * @since 1.85
      */
     public void removePropertyChangeListener(PropertyChangeListener l);        
 
