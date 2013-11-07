@@ -42,10 +42,7 @@
 package org.netbeans.modules.bugtracking.api;
 
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
-import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 
@@ -104,6 +101,12 @@ public final class Query {
 
     /**
      * Refreshes this query.
+     * 
+     * <p>
+     * Please <b>note</b> that this method might block for a longer time. Do not 
+     * execute in AWT. 
+     * <p>
+     * 
      * @since 1.85
      */
     public void refresh() {

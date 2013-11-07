@@ -188,6 +188,11 @@ public final class Util {
     /**
      * Returns a Repository corresponding to the given team url and a name. 
      *
+     * <p>
+     * Please <b>note</b> that this method might block for a longer time. Do not 
+     * execute in AWT. 
+     * <p>
+     * 
      * @param url a url comming from a Team Server - e.g. kenai or java.net. 
      * Might be representing either a team vcs repository, an issue or a team server host.
      * @param projectName the name of a particular Team Server project

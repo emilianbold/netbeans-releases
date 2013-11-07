@@ -51,7 +51,9 @@ import javax.swing.event.ChangeListener;
 import javax.swing.text.JTextComponent;
 
 /**
- *
+ * Provides access to various IDE services so that the expected consumers (bugtracking and team modules) 
+ * are able to independently access different IDE infrastructures (like e.g. NetBeans or JDev). 
+ * 
  * @author Tomas Stupka
  */
 public interface IDEServices {
