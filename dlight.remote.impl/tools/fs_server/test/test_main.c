@@ -79,7 +79,7 @@ static void test_dirtab_2() {
     fprintf(stdout, "testing dirtab persistence...\n");
     dirtab_init();
     assert_true(chdir(dirtab_get_basedir())== 0);
-    test_dirtab_get_cache("/home/xxx123", "1024", 3);
+    test_dirtab_get_cache("/home/xxx123", "cache/1024", 3);
 }
 
 static void test_dirtab_1() {
@@ -87,18 +87,18 @@ static void test_dirtab_1() {
     fprintf(stdout, "testing dirtab...\n");
     dirtab_init();
     assert_true(chdir(dirtab_get_basedir())== 0);
-    test_dirtab_get_cache("/home", "0", 2);
+    test_dirtab_get_cache("/home", "cache/0", 2);
     
     int i;
     for (i = 1; i < 1024; i++) {
         char path[32];
         sprintf(path, "/home/%d", i);
         char reference_cache_path[32];
-        sprintf(reference_cache_path, "%d", i);
+        sprintf(reference_cache_path, "cache/%d", i);
         test_dirtab_get_cache(path, reference_cache_path, 3);
     }
     
-    test_dirtab_get_cache("/home/xxx123", "1024", 3);
+    test_dirtab_get_cache("/home/xxx123", "cache/1024", 3);
        
     fprintf(stdout, "storing dirtab...\n");
     fflush(stdout);
@@ -236,10 +236,10 @@ static void test_secapes() {
 
 int main(int argc, char** argv) {
     test_secapes();
-//    test_array();
-//    test_list();
-//    test_dirtab_1();
-//    test_dirtab_2();
+    test_array();
+    test_list();
+    test_dirtab_1();
+    test_dirtab_2();
     return (EXIT_SUCCESS);
 }
 
