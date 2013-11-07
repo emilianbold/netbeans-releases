@@ -141,6 +141,11 @@ public final class Repository {
     /**
      * Returns a list of all saved queries for this repository.
      * 
+     * <p>
+     * Please <b>note</b> that in some cases this method might block for a longer time. Do not 
+     * execute in AWT. 
+     * <p>
+     * 
      * @return queries
      * @since 1.85
      */
@@ -176,6 +181,7 @@ public final class Repository {
     
     /**
      * Removes this repository.
+     * 
      * @since 1.85
      */
     public void remove() {
@@ -204,6 +210,11 @@ public final class Repository {
 
     /**
      * Returns the issue with the given id or null in case such doesn't exist.
+     * 
+     * <p>
+     * Please <b>note</b> that this method might block for a longer time. Do not 
+     * execute in AWT. 
+     * <p>
      * 
      * @param ids
      * @return issues

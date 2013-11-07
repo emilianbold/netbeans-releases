@@ -45,9 +45,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.commons.LogUtils;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
-import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 
 /**
  * Represents a bugtracking Issue.
@@ -158,7 +156,10 @@ public final class Issue {
 
     /**
      * Refresh the issues state from the remote repository.
-     * 
+     * <p>
+     * Please <b>note</b> that this method might block for a longer time. Do not 
+     * execute in AWT. 
+     * <p>
      * @return <code>true</code> in case the Issue was successfully refreshed, 
      * otherwise <code>false</code>
      * @since 1.85
@@ -266,11 +267,18 @@ public final class Issue {
     }
     
     /**
-     * Attaches a file to the issue. 
+     * Attaches a file to the issue. The changes are 
+     * expected to be immediately propagated to the remote repository. 
+     * 
+     * <p>
+     * Please <b>note</b> that this method might block for a longer time. Do not 
+     * execute in AWT. 
+     * <p>
      * 
      * @param file the file to be attached
      * @param description a description of the attached file 
      * @param isPatch <code>true</code> if the file is a patch.
+     * @see org.netbeans.modules.bugtracking.spi.IssueProvider#attachFile(java.lang.Object, java.io.File, java.lang.String, boolean) 
      * @since 1.85
      */
     public void attachFile(File file, String description, boolean isPatch) {
@@ -278,10 +286,17 @@ public final class Issue {
     }
     
     /**
-     * Adds a comment to the Issue and closes it eventually.
+     * Adds a comment to the Issue and closes it eventually. The changes are 
+     * expected to be immediately propagated to the remote repository. 
+     * 
+     * <p>
+     * Please <b>note</b> that this method might block for a longer time. Do not 
+     * execute in AWT. 
+     * <p>
      * 
      * @param comment the comment
      * @param close <code>true<code> in case this issue should be closed.
+     * @see org.netbeans.modules.bugtracking.spi.IssueProvider#addComment(java.lang.Object, java.lang.String, boolean) 
      * @since 1.85
      */
     public void addComment(String comment, boolean close) {
