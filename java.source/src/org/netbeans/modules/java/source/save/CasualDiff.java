@@ -88,6 +88,7 @@ import java.util.Map.Entry;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.indent.api.Indent;
 
@@ -689,11 +690,26 @@ public class CasualDiff {
         PositionEstimator est = EstimatorFactory.members(filteredOldTDefs, filteredNewTDefs, diffContext);
         if (localPointer < insertHint)
             copyTo(localPointer, insertHint);
-        if ((newT.mods.flags & Flags.ENUM) != 0 && filteredOldTDefs.isEmpty() && !filteredNewTDefs.isEmpty() && !isEnum(filteredNewTDefs.get(0)) && !newT.getSimpleName().isEmpty()) {
-            printer.blankline();
-            printer.toLeftMargin();
-            printer.print(";"); //NOI18N
-            printer.newline();
+        if ((newT.mods.flags & Flags.ENUM) != 0 && !filteredNewTDefs.isEmpty()) {
+            // also cover the case when the last const is removed for some reason, the semicolon should auto appear
+            boolean constMissing = filteredOldTDefs.isEmpty();
+            boolean firstDiff = false;
+            boolean oldEnum = constMissing;
+            if (!constMissing) {
+                firstDiff = (oldEnum = isEnum(filteredOldTDefs.get(0))) != isEnum(filteredNewTDefs.get(0));
+            }
+            if ((constMissing || firstDiff) && !newT.getSimpleName().isEmpty()) {
+                if (oldEnum) {
+                    printer.blankline();
+                    printer.toLeftMargin();
+                    printer.print(";"); //NOI18N
+                    printer.newline();
+                } else {
+                    // there's probably a semicolon before the 1st member, which must be removed before the 1st constant
+                    // is created.
+                    removeExtraEnumSemicolon(insertHint);
+                }
+            }
         }
         localPointer = diffList(filteredOldTDefs, filteredNewTDefs, insertHint, est, Measure.REAL_MEMBER, printer);
         printer.enclClassName = origName;
@@ -708,6 +724,72 @@ public class CasualDiff {
             copyTo(localPointer, bounds[1]);
         }
         return bounds[1];
+    }
+    
+    /**
+     * When the enumeration contains just methods, it is necessary to preced them with single ;. If a constant is
+     * inserted, it must be inserted first; and the semicolon should be removed. This method will attempt to remove entire 
+     * lines of whitespace around the semicolon. Preceding or following comments are preserved.
+     * 
+     * @param insertHint the local Pointer value
+     * @return new localPointer value
+     */
+    private int removeExtraEnumSemicolon(int insertHint) {
+        int startWS = -1;
+        int rewind = tokenSequence.offset();
+        tokenSequence.move(insertHint);
+        tokenSequence.moveNext();
+        boolean semi = false;
+        out: do {
+            Token<JavaTokenId> t = tokenSequence.token();
+            switch (t.id()) {
+                case WHITESPACE:
+                    if (semi) {
+                        // after semicolon, find the last newline
+                        int nl = t.text().toString().lastIndexOf('\n');
+                        if (nl == -1) {
+                            startWS = tokenSequence.offset();
+                        } else {
+                            startWS = tokenSequence.offset() + nl + 1;
+                        }
+                    } else {
+                        // before semicolon, select the 1st complete line.
+                        if (startWS == -1) {
+                            startWS = t.text().toString().indexOf('\n');
+                            if (startWS == -1) {
+                                startWS = tokenSequence.offset();
+                            } else {
+                                startWS += tokenSequence.offset() + 1;
+                            }
+                        }
+                    }
+                break;
+                case SEMICOLON:
+                    if (startWS >= 0) {
+                        // copy up to the WS immediately preceding the semicolon.
+                        copyTo(insertHint, startWS);
+                        insertHint = tokenSequence.offset() + t.length();
+                    }
+                    startWS = -1;
+                    semi = true;
+                    break;
+
+                case LINE_COMMENT: case BLOCK_COMMENT: case JAVADOC_COMMENT:
+                    if (semi) {
+                        break out;
+                    }
+                    startWS = -1;
+                    break;
+                default:
+                    break out;
+            }
+        } while (tokenSequence.moveNext());
+        if (semi && startWS > -1) {
+            insertHint = startWS;
+        }
+        tokenSequence.move(rewind);
+        tokenSequence.moveNext();
+        return insertHint;
     }
         
     private boolean isEnum(Tree tree) {
