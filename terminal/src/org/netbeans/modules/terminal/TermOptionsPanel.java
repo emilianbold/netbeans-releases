@@ -445,9 +445,9 @@ public final class TermOptionsPanel extends JPanel {
 		termOptions.setFont(f);
 		applyTermOptions();
 	    } else if (dd.getValue() == defaultFontString) {
-		Font controlFont = UIManager.getFont("controlFont"); //NOI18N
+		Font controlFont = UIManager.getFont("controlFont");			//NOI18N
 		int fontSize = (controlFont == null) ? 12 : controlFont.getSize();
-		termOptions.setFont(new Font("monospaced", Font.PLAIN, fontSize));
+		termOptions.setFont(new Font("monospaced", Font.PLAIN, fontSize));	//NOI18N
 	    }
 	}
     }//GEN-LAST:event_fontButtonActionPerformed
