@@ -39,7 +39,7 @@ static bool statistics = false;
 static int refresh_sleep = 1;
 
 #define FS_SERVER_MAJOR_VERSION 1
-#define FS_SERVER_MINOR_VERSION 3
+#define FS_SERVER_MINOR_VERSION 4
 
 typedef struct fs_entry {
     int /*short?*/ name_len;
@@ -163,6 +163,8 @@ static fs_request* decode_request(char* raw_request, fs_request* request) {
     request->kind = raw_request[0];
     strncpy(request->path, p, len);
     request->path[len] = 0;
+    unescape_strcpy(request->path, request->path);
+    len = strlen(request->path);
     request->id = id;
     request->len = len;
     request->size = offsetof(fs_request, path)+len+1; //(request->path-&request)+len+1;
@@ -220,10 +222,12 @@ static void read_entries_from_cache(array/*<fs_entry>*/ *entries, const char* ca
         if (!fgets(buf, buf_size, f)) {
             report_error("error reading cache'%s/%s': %s\n", dirtab_get_basedir(), cache, strerror(errno));
         }
+        unescape_strcpy(buf, buf);
         if (strncmp(path, buf, strlen(path)) != 0) {
             report_error("error: first line in file '%s/%s' is not '%s', but is '%s'", dirtab_get_basedir(), cache, path, buf);
         }
         while (fgets(buf, buf_size, f)) {
+            unescape_strcpy(buf, buf);
             fs_entry *entry = decode_entry_response(buf);
             array_add(entries, entry);
         }
@@ -316,29 +320,51 @@ static void read_entries_from_dir(array/*<fs_entry>*/ *entries, const char* path
     array_truncate(entries);
 }
 
-static bool form_entry_response(char* buf, const int buf_size, const char *abspath, const struct dirent *entry, char* link_buf, int link_buf_size) {
+static bool form_entry_response(char* response_buf, const int response_buf_size, 
+        const char *abspath, const struct dirent *entry, 
+        char* work_buf, int work_buf_size) {
     struct stat stat_buf;
     if (lstat(abspath, &stat_buf) == 0) {
+        
+        //int escaped_name_size = escape_strlen(entry->d_name);
+        escape_strcpy(work_buf, entry->d_name);
+        char *escaped_name = work_buf;
+        int escaped_name_size = strlen(escaped_name);
+        work_buf_size -= (escaped_name_size + 1);
+        
         bool link_flag = S_ISLNK(stat_buf.st_mode);
+
+        int escaped_link_size = 0;
+        char* escaped_link = "";
+        
         if (link_flag) {
-            ssize_t sz = readlink(abspath, link_buf, link_buf_size);
+            char* link = work_buf + escaped_name_size + 1; 
+            ssize_t sz = readlink(abspath, link, work_buf_size);
             if (sz == -1) {
                 report_error("error performing readlink for %s: %s\n", abspath, strerror(errno));
-                strcpy(link_buf, "?");
+                strcpy(work_buf, "?");
             } else {
-                link_buf[sz] = 0;
+                link[sz] = 0;
+                escaped_link_size = escape_strlen(link);
+                work_buf_size -= (sz + escaped_link_size + 1);
+                if (work_buf_size < 0) {
+                    report_error("insufficient space in buffer for %s\n", abspath);
+                    return false;
+                }
+                escaped_link = link + sz + 1;
+                escape_strcpy(escaped_link, link);
             }
         }
-        snprintf(buf, buf_size, "%li %s %li %li %li %li %li %li %s\n",
-                (long) strlen(entry->d_name),
-                entry->d_name,
+        snprintf(response_buf, response_buf_size, "%i %s %li %li %li %li %li %i %s\n",
+                escaped_name_size,
+                escaped_name,
                 (long) stat_buf.st_uid,
                 (long) stat_buf.st_gid,
                 (long) stat_buf.st_mode,
                 (long) stat_buf.st_size,
                 (long) stat_buf.st_mtime,
-                (long) (link_flag ? strlen(link_buf) : 0),
-                (link_flag ? link_buf : ""));
+                escaped_link_size,
+                escaped_link);
         return true;
     } else {
         report_error("error getting stat for '%s': %s\n", abspath, strerror(errno));
@@ -354,7 +380,7 @@ static void response_ls(int request_id, const char* path, bool recursive, int ne
     }
     
     DIR *d = NULL;
-    FILE *f = NULL;
+    FILE *cache_fp = NULL;
     struct dirent *entry;
     
     union {
@@ -363,18 +389,21 @@ static void response_ls(int request_id, const char* path, bool recursive, int ne
     } entry_buf;    
     entry_buf.d.d_reclen = MAXNAMLEN + sizeof(struct dirent);
     
-    int buf_size = PATH_MAX * 2; // TODO: accurate size calculation
-    char* buf = malloc(buf_size); 
+    int response_buf_size = PATH_MAX * 2; // TODO: accurate size calculation
+    char* response_buf = malloc(response_buf_size); 
     char* abspath = malloc(PATH_MAX);
-    char* link_buf = malloc(PATH_MAX);
+    int work_buf_size = (PATH_MAX + NAME_MAX) * 2 + 2;
+    char* work_buf = malloc(work_buf_size);
     d = opendir(path);
     if (d) {
         if (persistence) {
-            const char *cache = dirtab_get_cache(path);
-            f = fopen600(cache);
-            if (!f) {
-                report_error("error opening file %s: %s\n", cache, strerror(errno));
+            const char *cache_path = dirtab_get_cache(path);
+            cache_fp = fopen600(cache_path);
+            if (!cache_fp) {
+                report_error("error opening file %s: %s\n", cache_path, strerror(errno));
             }
+            escape_strcpy(work_buf, path);
+            fprintf(cache_fp, "%s\n", work_buf);
         }        
         int cnt = 0;
         while (true) {
@@ -397,9 +426,6 @@ static void response_ls(int request_id, const char* path, bool recursive, int ne
         rewinddir(d);
         fprintf(stdout, "%c %d %li %s %d\n", (recursive ? FS_RSP_RECURSIVE_LS : FS_RSP_LS),
                 request_id, (long) strlen(path), path, cnt);
-        if (f) {
-            fprintf(f, "%s\n", path);
-        }        
         int base_len = strlen(path);
         strcpy(abspath, path);
         abspath[base_len] = '/';
@@ -425,13 +451,13 @@ static void response_ls(int request_id, const char* path, bool recursive, int ne
                 continue;
             }
             strcpy(abspath + base_len + 1, entry->d_name);
-            if (form_entry_response(buf, buf_size, abspath, entry, link_buf, PATH_MAX)) {
-                fprintf(stdout, "%c %d %s", FS_RSP_ENTRY, request_id, buf);
-                if (f) {
-                    fprintf(f, "%s",buf); // trailing '\n' already there, added by form_entry_response
+            if (form_entry_response(response_buf, response_buf_size, abspath, entry, work_buf, work_buf_size)) {
+                fprintf(stdout, "%c %d %s", FS_RSP_ENTRY, request_id, response_buf);
+                if (cache_fp) {
+                    fprintf(cache_fp, "%s",response_buf); // trailing '\n' already there, added by form_entry_response
                 }
             } else {
-                report_error("error getting stat for '%s': %s\n", abspath, strerror(errno));
+                report_error("error forming entry response for '%s'\n", abspath);
             }
         }
         fprintf(stdout, "%c %d %li %s\n", FS_RSP_END, request_id, (long) strlen(path), path);
@@ -465,11 +491,11 @@ static void response_ls(int request_id, const char* path, bool recursive, int ne
     } else {
         report_error("error opening directory '%s': %s\n", path, strerror(errno));
     }
-    fclose_if_not_null(f);
+    fclose_if_not_null(cache_fp);
     closedir_if_not_null(d);
-    free(link_buf);
+    free(work_buf);
     free(abspath);
-    free(buf);
+    free(response_buf);
 }
 
 static void response_stat(int request_id, const char* path) {
