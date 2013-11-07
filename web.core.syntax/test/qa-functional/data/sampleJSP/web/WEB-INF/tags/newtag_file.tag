@@ -1,8 +1,3 @@
-<%-- 
-    Document   : newtag_file
-    Created on : Nov 6, 2013, 3:54:09 PM
-    Author     : vriha
---%>
 
 <%@tag description="put the tag description here" pageEncoding="UTF-8"%>
 
