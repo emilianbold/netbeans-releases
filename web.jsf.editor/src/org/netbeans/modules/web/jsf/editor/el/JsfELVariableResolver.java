@@ -97,6 +97,9 @@ public final class JsfELVariableResolver implements ELVariableResolver {
     private static final String ATTR_NAME__ATTRS = "attrs"; //NOI18N
     private static final String ATTR_NAME__ID = "id"; //NOI18N
     private static final String ATTR_NAME__RENDERED = "rendered"; //NOI18N
+
+    private static final String ATTR_NAME = "name"; //NOI18N
+    private static final String ATTR_TYPE = "type"; //NOI18N
     
     private static final VariableInfo VARIABLE_INFO__ATTRS = VariableInfo.createResolvedVariable(ATTR_NAME__ATTRS, Object.class.getName());
     private static final VariableInfo VARIABLE_INFO__ID = VariableInfo.createResolvedVariable(ATTR_NAME__ID, Object.class.getName());
@@ -188,11 +191,11 @@ public final class JsfELVariableResolver implements ELVariableResolver {
                     //the page represents a composite component
                     Collection<Map<String, String>> allCCInterfaceAttrs = ccmodel.getExistingInterfaceAttributes();
                     for (Map<String, String> attrsMap : allCCInterfaceAttrs) {
-                        String name = attrsMap.get("name"); //NOI18N
+                        String name = attrsMap.get(ATTR_NAME); //NOI18N
                         if (name == null) {
                             continue;
                         }
-                        String clazz = attrsMap.get("class") == null ? Object.class.getName() : attrsMap.get("class"); //NOI18N
+                        String clazz = attrsMap.get(ATTR_TYPE) == null ? Object.class.getName() : attrsMap.get(ATTR_TYPE); //NOI18N
                         variables.add(VariableInfo.createResolvedVariable(name, clazz));
                     }
                 }
