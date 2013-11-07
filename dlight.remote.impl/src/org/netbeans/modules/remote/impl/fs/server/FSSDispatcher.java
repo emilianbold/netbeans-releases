@@ -167,6 +167,7 @@ import org.openide.util.RequestProcessor;
                         RemoteLogger.info("error: empty line for " + traceName);
                         continue;
                     }
+                    line = unescape(line);
                     Buffer buf = new Buffer(line);
                     char respKind = buf.getChar();
                     int respId = buf.getInt();
@@ -223,8 +224,9 @@ import org.openide.util.RequestProcessor;
     }
     
     /*package*/ static void sendRequest(PrintWriter writer, FSSRequest request) {
+        String escapedPath = escape(request.getPath());
         writer.printf("%c %d %d %s\n", request.getKind().getChar(), // NOI18N
-                request.getId(), request.getPath().length(), request.getPath());
+                request.getId(), escapedPath.length(), escapedPath);
         writer.flush();        
     }
 
@@ -260,7 +262,7 @@ import org.openide.util.RequestProcessor;
         }
         String remoteBase = PathUtilities.getDirName(remotePath);
         
-        File localFile = InstalledFileLocator.getDefault().getDefault().locate(
+        File localFile = InstalledFileLocator.getDefault().locate(
                 toolPath, "org.netbeans.modules.remote.impl", false); // NOI18N
         if (localFile != null && localFile.exists()) {
             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
@@ -276,6 +278,22 @@ import org.openide.util.RequestProcessor;
         return remotePath;
     }
     
+    private static String unescape(String line) {
+        if (line.indexOf('\\') == -1) {
+            return line;
+        } else {
+            return  line.replace("\\n", "\n").replace("\\\\", "\\");
+        }
+    }
+    
+    private static String escape(String line) {
+        if (line.indexOf('\n') == -1 && line.indexOf('\\') == -1) {
+            return line;
+        } else {
+            return  line.replace("\n", "\\n").replace("\\", "\\\\");
+        }
+    }
+
     private FsServer getOrCreateServer() throws IOException, ConnectException, 
             ConnectionManager.CancellationException, InterruptedException, ExecutionException {
         synchronized (serverLock) {
