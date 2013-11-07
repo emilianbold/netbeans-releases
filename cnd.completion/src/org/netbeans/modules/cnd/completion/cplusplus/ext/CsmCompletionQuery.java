@@ -2070,7 +2070,9 @@ abstract public class CsmCompletionQuery {
                     if (resolve(item.getTokenOffset(0), operatorPrefix, false)) {
                         res = compResolver.getResult();
                     }
-                    res.addResulItemsToCol(mtdList);
+                    if (res != null) {
+                        res.addResulItemsToCol(mtdList);
+                    }
                     result = new CsmCompletionResult(component, getBaseDocument(), res, operatorPrefix, item, endOffset, 0, 0, isProjectBeeingParsed(), contextElement, instantiateTypes); // NOI18N
                     lastType = null;
                     switch (item.getTokenID(0)) {
