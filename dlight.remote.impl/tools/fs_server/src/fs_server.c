@@ -88,9 +88,12 @@ static const char* decode_int(const char* text, int* result) {
             *result += c - '0';
         } else if (c == 0 || isspace(c)) {
             return p;
+        } else {
+            report_error("unexpected numeric value: '%c'\n", c);
+            return NULL;
         }
     }
-    report_error("unexpected numeric value: '%s'\n", text);
+    report_error("numeric value too long: '%s'\n", text);
     return NULL;
 }
 
@@ -104,9 +107,12 @@ static const char* decode_uint(const char* text, unsigned int* result) {
             *result += c - '0';
         } else if (c == 0 || isspace(c)) {
             return p;
+        } else {
+            report_error("unexpected numeric value: '%c'\n", c);
+            return NULL;
         }
     }
-    report_error("unexpected numeric value: '%s'\n", text);
+    report_error("numeric value too long: '%s'\n", text);
     return NULL;
 }
 
@@ -120,9 +126,12 @@ static const char* decode_long(const char* text, long* result) {
             *result += c - '0';
         } else if (c == 0 || isspace(c)) {
             return p;
+        } else {
+            report_error("unexpected numeric value: '%c'\n", c);
+            return NULL;
         }
     }
-    report_error("unexpected numeric value: '%s'\n", text);
+    report_error("numeric value too long: '%s'\n", text);
     return NULL;
 }
 
@@ -143,7 +152,7 @@ static bool is_prohibited(const char* abspath) {
 /** 
  * Decodes in-place fs_raw_request into fs_request
  */
-static fs_request* decode_request(char* raw_request, fs_request* request) {
+static fs_request* decode_request(char* raw_request, fs_request* request, int request_size) {
     const char* p = raw_request + 2;
     //soft_assert(*p == ' ', "incorrect request format: '%s'", request);
     //p++;
@@ -158,6 +167,14 @@ static fs_request* decode_request(char* raw_request, fs_request* request) {
     if (p == NULL) {
         return NULL;
     }   
+    if (!len) {
+        report_error("wrong (zero path) request: %s", raw_request);
+        return NULL;
+    }
+    if (len > (request_size - sizeof(fs_request) - 1)) {
+        report_error("wrong (too long path) request: %s", raw_request);
+        return NULL;
+    }
     //fs_request->kind = request->kind;
     //soft_assert(*p == ' ', "incorrect request format: '%s'", request);
     request->kind = raw_request[0];
@@ -197,18 +214,43 @@ static fs_entry* create_fs_entry(fs_entry *entry2clone) {
 
 /** allocates fs_entry on heap */
 static fs_entry *decode_entry_response(const char* buf) {
+
     // format: name_len name uid gid mode size mtime link_len link
     fs_entry tmp; // a temporary one since we don't know names size
+
     const char* p = decode_int(buf, &tmp.name_len);
+    if (!p) { return NULL; }; // decode_int already printed error message
+    
     tmp.name = (char*) p;
     p += tmp.name_len + 1;
+
     p = decode_uint(p, &tmp.uid);
+    if (!p) { return NULL; }; // decode_int already printed error message
+    
     p = decode_uint(p, &tmp.gid);
+    if (!p) { return NULL; };
+    
     p = decode_uint(p, &tmp.mode);
+    if (!p) { return NULL; };
+    
     p = decode_long(p, &tmp.size);
+    if (!p) { return NULL; };
+    
     p = decode_long(p, &tmp.mtime);
+    if (!p) { return NULL; };
+    
     p = decode_int(p, &tmp.link_len);
+    if (!p) { return NULL; };
+    
     tmp.link = (char*) p;
+    if (tmp.name_len > MAXNAMLEN) {
+        report_error("wrong entry format: too long (%i) file name: %s", tmp.name_len, buf);
+        return NULL;
+    }
+    if (tmp.link_len > PATH_MAX) {
+        report_error("wrong entry format: too long (%i) link name: %s", tmp.link_len, buf);
+        return NULL;
+    }
     return create_fs_entry(&tmp);
 }
 
@@ -229,7 +271,11 @@ static void read_entries_from_cache(array/*<fs_entry>*/ *entries, const char* ca
         while (fgets(buf, buf_size, f)) {
             unescape_strcpy(buf, buf);
             fs_entry *entry = decode_entry_response(buf);
-            array_add(entries, entry);
+            if (entry) {
+                array_add(entries, entry);
+            } else {
+                report_error("error reading entry from cache: %s\n", buf);
+            }
         }
         if (!feof(f)) {
             report_error("error reading '%s/%s': %s\n", dirtab_get_basedir(), cache, strerror(errno));
@@ -310,7 +356,12 @@ static bool fs_entry_creating_visitor(char* name, struct stat *stat_buf, char* l
     bool is_link = S_ISLNK(stat_buf->st_mode);
     tmp.link_len = is_link ? strlen(link) : 0;
     tmp.link = is_link ? link : "";
-    array_add((array*)data, create_fs_entry(&tmp));
+    fs_entry* new_entry = create_fs_entry(&tmp);
+    if (new_entry) {
+        array_add((array*)data, new_entry);
+    } else {
+        report_error("error creating entry for %s\n", abspath);
+    }
     return true;
 }
 
@@ -710,7 +761,7 @@ static void main_loop() {
     while(fgets(raw_req_buffer, buf_size, stdin)) {
         trace("raw request: %s", raw_req_buffer); // no LF since buffer ends it anyhow 
         log_print(raw_req_buffer);
-        fs_request* request = decode_request(raw_req_buffer, (fs_request*) req_buffer);
+        fs_request* request = decode_request(raw_req_buffer, (fs_request*) req_buffer, buf_size);
         if (request) {
             trace("decoded request #%d sz=%d kind=%c len=%d path=%s\n", request->id, request->size, request->kind, request->len, request->path);
             if (request->kind == FS_REQ_QUIT) {
@@ -741,7 +792,7 @@ static void main_loop() {
                 process_request(request);
             }
        } else {
-            trace("incorrect request \n");
+            report_error("incorrect request: %s", raw_req_buffer);
        }
     }
     free(req_buffer);
