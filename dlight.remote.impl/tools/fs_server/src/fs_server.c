@@ -256,19 +256,19 @@ static fs_entry *decode_entry_response(const char* buf) {
 
 static void read_entries_from_cache(array/*<fs_entry>*/ *entries, const char* cache, const char* path) {
     array_init(entries, 100);
-    FILE *f = NULL;
-    f = fopen(cache, "r");
-    if (f) {
+    FILE *fp = NULL;
+    fp = fopen(cache, "r");
+    if (fp) {
         int buf_size = PATH_MAX + 40;
         char *buf = malloc(buf_size);
-        if (!fgets(buf, buf_size, f)) {
+        if (!fgets(buf, buf_size, fp)) {
             report_error("error reading cache'%s/%s': %s\n", dirtab_get_basedir(), cache, strerror(errno));
         }
         unescape_strcpy(buf, buf);
         if (strncmp(path, buf, strlen(path)) != 0) {
             report_error("error: first line in file '%s/%s' is not '%s', but is '%s'", dirtab_get_basedir(), cache, path, buf);
         }
-        while (fgets(buf, buf_size, f)) {
+        while (fgets(buf, buf_size, fp)) {
             unescape_strcpy(buf, buf);
             fs_entry *entry = decode_entry_response(buf);
             if (entry) {
@@ -277,11 +277,11 @@ static void read_entries_from_cache(array/*<fs_entry>*/ *entries, const char* ca
                 report_error("error reading entry from cache: %s\n", buf);
             }
         }
-        if (!feof(f)) {
+        if (!feof(fp)) {
             report_error("error reading '%s/%s': %s\n", dirtab_get_basedir(), cache, strerror(errno));
         }
         free(buf);
-        fclose(f);
+        fclose(fp);
     }
     array_truncate(entries);
 }
