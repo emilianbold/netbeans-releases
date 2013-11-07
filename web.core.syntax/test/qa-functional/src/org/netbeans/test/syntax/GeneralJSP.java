@@ -241,6 +241,21 @@ public class GeneralJSP extends J2eeTestCase {
         }
     }
 
+    protected void checkCompletionMatchesPrefix(List list, String prefix) {
+        StringBuilder sb = new StringBuilder();
+        String item;
+        for (int i = 0; i < list.size(); i++) {
+            item = list.get(i).toString();
+            if(!item.toLowerCase().startsWith(prefix) && !item.equalsIgnoreCase("$color_chooser")){
+                sb.append(item).append("\n");
+            }
+        }
+
+        if (sb.toString().length() > 1) {
+            fail("Completion contains nonmatching items for prefix " + prefix + ". Completion list is " + sb.toString());
+        }
+    }
+    
     protected void checkCompletionItems(
             CompletionInfo jlist,
             String[] asIdeal) {
