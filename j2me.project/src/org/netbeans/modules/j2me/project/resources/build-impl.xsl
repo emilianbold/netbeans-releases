@@ -112,7 +112,7 @@ is divided into following sections:
                     </loadproperties>
                 </target>
             </xsl:if>
-            
+
             <target name="-check-platform-home" depends="-pre-init,-init-private">
                 <condition property="has.platform.home">
                     <and>
@@ -827,7 +827,7 @@ is divided into following sections:
             </target>
 
             <target name="jar">
-                <xsl:attribute name="depends">init,compile,-pre-jar,-do-jar,-post-jar,create-jad</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,obfuscate,-pre-jar,-do-jar,-post-jar,create-jad</xsl:attribute>
                 <xsl:attribute name="description">Build JAR.</xsl:attribute>
             </target>
 
@@ -889,6 +889,46 @@ is divided into following sections:
 
             <xsl:comment>
                 =================
+                OBFUSCATING SECTION
+                =================
+            </xsl:comment>
+
+            <target name="-pre-obfuscate"/>
+
+            <target name="-post-obfuscate"/>
+
+            <target name="obfuscate">
+                <xsl:attribute name="depends">compile,-pre-obfuscate,-do-obfuscate,-post-obfuscate</xsl:attribute>
+                <xsl:attribute name="description">Obfuscate project classes.</xsl:attribute>
+            </target>
+
+            <target name="-init-obfuscate">
+                <property name="obfuscation.level" value="0"/>
+                <condition property="no.obfusc">
+                    <equals arg1="${{obfuscation.level}}" arg2="0"/>
+                </condition>
+            </target>
+
+            <target name="-do-obfuscate">
+                <xsl:attribute name="depends">-init-obfuscate</xsl:attribute>
+                <xsl:attribute name="unless">no.obfusc</xsl:attribute>
+                <property name="obfuscator.classpath" value=""/>
+                <property name="obfuscation.custom" value=""/>
+                <property name="obfuscator.srcjar" value="${{build.dir}}/unobfuscated.jar"/>
+                <property name="obfuscator.destjar" value="${{build.dir}}/obfuscated.jar"/>
+                <jar jarfile="${{obfuscator.srcjar}}" basedir="${{build.classes.dir}}"/>
+                <nb-obfuscate srcjar="${{obfuscator.srcjar}}" destjar="${{obfuscator.destjar}}" obfuscatorclasspath="${{obfuscator.classpath}}" classpath="${{platform.bootcp}}:${{extra.classpath}}" obfuscationLevel="${{obfuscation.level}}" extraScript="${{obfuscation.custom}}"/>
+                <delete includeEmptyDirs="true">
+                    <fileset dir="${{build.classes.dir}}" includes="**/*" defaultexcludes="no"/>
+                </delete>
+                <unjar src="${{obfuscator.destjar}}" dest="${{build.classes.dir}}"/>
+                <delete dir="${{build.classes.dir}}/META-INF"/>
+                <delete file="${{obfuscator.srcjar}}"/>
+                <delete file="${{obfuscator.destjar}}"/>
+            </target>
+
+            <xsl:comment>
+                =================
                 EXECUTION SECTION
                 =================
             </xsl:comment>
@@ -904,11 +944,11 @@ is divided into following sections:
             </xsl:comment>
 
             <target name="debug">
-                <xsl:attribute name="if">netbeans.home</xsl:attribute>                
+                <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">-debug-javame</xsl:attribute>
                 <xsl:attribute name="description">Debug project in IDE.</xsl:attribute>
             </target>
-                        
+
             <target name="-pre-debug-fix">
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <fail unless="fix.includes">Must set fix.includes</fail>
