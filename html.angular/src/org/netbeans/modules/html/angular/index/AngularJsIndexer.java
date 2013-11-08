@@ -44,6 +44,7 @@ package org.netbeans.modules.html.angular.index;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -118,7 +119,10 @@ public class AngularJsIndexer extends EmbeddingIndexer{
         Collection<AngularJsController> cons = null;
         URI uri = null;
         try {
-            uri = indexable.getURL().toURI();
+            URL url = indexable.getURL();
+            if ( url != null) {
+                uri = url.toURI();
+            }
         } catch (URISyntaxException ex) {
             LOG.log(Level.WARNING, null, ex);
         }

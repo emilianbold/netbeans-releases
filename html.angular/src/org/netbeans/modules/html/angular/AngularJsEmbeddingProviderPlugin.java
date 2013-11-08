@@ -90,7 +90,6 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
     private TokenSequence<HTMLTokenId> tokenSequence;
     private Snapshot snapshot;
     private List<Embedding> embeddings;
-    private JsIndex index;
   
     private Directive interestedAttr;
     /** keeps mapping from simple property name to the object fqn 
@@ -120,8 +119,6 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
         if (file == null) {
             return false;
         }
-
-        this.index = JsIndex.get(file);
         
         return true;
     }

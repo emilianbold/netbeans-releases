@@ -54,6 +54,7 @@ import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionArgument;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionInterceptor;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -105,6 +106,7 @@ public class AngularModuleInterceptor implements FunctionInterceptor{
                     functionName = ((List<String>)fArgument.getValue()).get(0);
                     functionOffset = fArgument.getOffset();
                     break;
+                default:
             }
             if (controllerName != null && functionName != null) {
                 // we probably found the name of the controller and also the function definition
@@ -116,8 +118,10 @@ public class AngularModuleInterceptor implements FunctionInterceptor{
             JsObject controllerDecl = ModelUtils.findJsObject(globalObject, functionOffset);
             if (controllerDecl != null && controllerDecl instanceof JsFunction && controllerDecl.isDeclared()) {
                 fqnOfController = controllerDecl.getFullyQualifiedName();
-                AngularJsIndexer.addController(globalObject.getFileObject().toURI(), new AngularJsController(controllerName, fqnOfController, globalObject.getFileObject().getPath()));
-                Collection<? extends JsObject> parameters = ((JsFunction)controllerDecl).getParameters();
+                FileObject fo = globalObject.getFileObject();
+                if (fo != null) {
+                    AngularJsIndexer.addController(fo.toURI(), new AngularJsController(controllerName, fqnOfController, fo.getPath()));
+                }
             }
             
         }
