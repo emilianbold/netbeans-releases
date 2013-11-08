@@ -750,7 +750,6 @@ static void exit_function() {
 static void main_loop() {
     //TODO: handshake with version    
     
-    trace("Version %d.%d\n", FS_SERVER_MAJOR_VERSION, FS_SERVER_MINOR_VERSION);
     if (rp_thread_count > 1) {
         blocking_queue_init(&req_queue);
         trace("Staring %d threads\n", rp_thread_count);
@@ -893,6 +892,8 @@ static bool print_visitor(const char* path, int index, dirtab_element* el) {
 }
 
 int main(int argc, char* argv[]) {
+    trace("Version %d.%d\n", FS_SERVER_MAJOR_VERSION, FS_SERVER_MINOR_VERSION);    
+    lock_or_unloock(true);
     process_options(argc, argv);
     state_init();
     dirtab_init();
@@ -905,7 +906,6 @@ int main(int argc, char* argv[]) {
         report_error("cannot change current directory to %s: %s\n", basedir, strerror(errno));
         exit(FAILED_CHDIR);
     }
-    lock_or_unloock(true);
     if (log_flag) {
        log_open("log") ;
        log_print("\n--------------------------------------\nfs_server started  ");
