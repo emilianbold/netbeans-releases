@@ -63,7 +63,6 @@ import org.netbeans.modules.javascript.karma.preferences.KarmaPreferencesValidat
 import org.netbeans.modules.javascript.karma.util.FileUtils;
 import org.netbeans.modules.javascript.karma.util.KarmaUtils;
 import org.netbeans.modules.javascript.karma.util.ValidationResult;
-import org.netbeans.modules.web.clientproject.api.ProjectDirectoriesProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
@@ -138,18 +137,6 @@ public class CustomizerKarma extends JPanel {
 
     private File getProjectDirectory() {
         return FileUtil.toFile(project.getProjectDirectory());
-    }
-
-    private File getConfigDirectory() {
-        ProjectDirectoriesProvider directoriesProvider = project.getLookup().lookup(ProjectDirectoriesProvider.class);
-        if (directoriesProvider != null) {
-            FileObject configDirectory = directoriesProvider.getConfigDirectory();
-            if (configDirectory != null
-                    && configDirectory.isValid()) {
-                return FileUtil.toFile(configDirectory);
-            }
-        }
-        return getProjectDirectory();
     }
 
     /**
@@ -269,7 +256,7 @@ public class CustomizerKarma extends JPanel {
         File file = new FileChooserBuilder(CustomizerKarma.class)
                 .setTitle(Bundle.CustomizerKarma_chooser_config())
                 .setFilesOnly(true)
-                .setDefaultWorkingDirectory(getConfigDirectory())
+                .setDefaultWorkingDirectory(KarmaUtils.getConfigDir(project))
                 .forceUseOfDefaultWorkingDirectory(true)
                 .showOpenDialog();
         if (file != null) {
@@ -299,7 +286,7 @@ public class CustomizerKarma extends JPanel {
 
     @NbBundle.Messages("CustomizerKarma.config.none=No Karma configuration was found.")
     private void configSearchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_configSearchButtonActionPerformed
-        List<File> configs = KarmaUtils.findKarmaConfigs(getConfigDirectory());
+        List<File> configs = KarmaUtils.findKarmaConfigs(KarmaUtils.getConfigDir(project));
         if (!configs.isEmpty()) {
             configTextField.setText(configs.get(0).getAbsolutePath());
             return;

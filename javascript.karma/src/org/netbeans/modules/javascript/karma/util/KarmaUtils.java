@@ -47,6 +47,10 @@ import java.io.FilenameFilter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.clientproject.api.ProjectDirectoriesProvider;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 public final class KarmaUtils {
 
@@ -60,6 +64,18 @@ public final class KarmaUtils {
 
 
     private KarmaUtils() {
+    }
+
+    public static File getConfigDir(Project project) {
+        ProjectDirectoriesProvider directoriesProvider = project.getLookup().lookup(ProjectDirectoriesProvider.class);
+        if (directoriesProvider != null) {
+            FileObject configDirectory = directoriesProvider.getConfigDirectory();
+            if (configDirectory != null
+                    && configDirectory.isValid()) {
+                return FileUtil.toFile(configDirectory);
+            }
+        }
+        return FileUtil.toFile(project.getProjectDirectory());
     }
 
     public static List<File> findKarmaConfigs(File configDir) {
