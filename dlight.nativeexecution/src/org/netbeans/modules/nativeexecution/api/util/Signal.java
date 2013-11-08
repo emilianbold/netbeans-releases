@@ -107,4 +107,13 @@ public enum Signal {
     int getID() {
         return id;
     }
+    
+    public static Signal valueOf(int id) {
+        for (Signal signal : Signal.values()) {
+            if (signal.getID() == id) {
+                return signal;
+            }
+        }
+        return NULL;
+    }
 }
