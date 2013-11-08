@@ -105,7 +105,7 @@ public class JiraUpdater {
      */
     public static boolean isJiraInstalled() {
         IDEServices ideServices = Support.getInstance().getIDEServices();
-        return ideServices != null && ideServices.isInstalled(JIRA_CNB);
+        return ideServices != null && ideServices.isPluginInstalled(JIRA_CNB);
     }
     
     /**

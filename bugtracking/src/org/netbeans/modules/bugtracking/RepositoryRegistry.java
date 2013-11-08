@@ -517,14 +517,4 @@ public class RepositoryRegistry {
         }
     }
 
-    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bugtracking.commons.NBBugzillaUtils.RepositoryRegistryAccessor.class)
-    public static class AccessorImpl implements NBBugzillaUtils.RepositoryRegistryAccessor {
-        @Override
-        public void addRepository(String connectorId, String repositoryId) {
-            RepositoryImpl impl = RepositoryRegistry.getInstance().getRepository(connectorId, repositoryId);
-            if(impl != null) {       
-                RepositoryRegistry.getInstance().addRepository(impl);
-            }
-        }
-    }
 }
