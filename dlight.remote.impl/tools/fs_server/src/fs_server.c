@@ -39,7 +39,7 @@ static bool statistics = false;
 static int refresh_sleep = 1;
 
 #define FS_SERVER_MAJOR_VERSION 1
-#define FS_SERVER_MINOR_VERSION 4
+#define FS_SERVER_MINOR_VERSION 5
 
 typedef struct fs_entry {
     int /*short?*/ name_len;
@@ -254,21 +254,19 @@ static fs_entry *decode_entry_response(const char* buf) {
     return create_fs_entry(&tmp);
 }
 
-static void read_entries_from_cache(array/*<fs_entry>*/ *entries, const char* cache, const char* path) {
+static void read_entries_from_cache(array/*<fs_entry>*/ *entries, FILE *cache_fp, const char* path) {
     array_init(entries, 100);
-    FILE *fp = NULL;
-    fp = fopen(cache, "r");
-    if (fp) {
+    if (cache_fp) {
         int buf_size = PATH_MAX + 40;
         char *buf = malloc(buf_size);
-        if (!fgets(buf, buf_size, fp)) {
-            report_error("error reading cache'%s/%s': %s\n", dirtab_get_basedir(), cache, strerror(errno));
+        if (!fgets(buf, buf_size, cache_fp)) {
+            report_error("error reading cache for %s: %s\n", path, strerror(errno));
         }
         unescape_strcpy(buf, buf);
         if (strncmp(path, buf, strlen(path)) != 0) {
-            report_error("error: first line in file '%s/%s' is not '%s', but is '%s'", dirtab_get_basedir(), cache, path, buf);
+            report_error("error: first line in cache for %s is not '%s', but is '%s'", path, path, buf);
         }
-        while (fgets(buf, buf_size, fp)) {
+        while (fgets(buf, buf_size, cache_fp)) {
             unescape_strcpy(buf, buf);
             fs_entry *entry = decode_entry_response(buf);
             if (entry) {
@@ -277,11 +275,11 @@ static void read_entries_from_cache(array/*<fs_entry>*/ *entries, const char* ca
                 report_error("error reading entry from cache: %s\n", buf);
             }
         }
-        if (!feof(fp)) {
-            report_error("error reading '%s/%s': %s\n", dirtab_get_basedir(), cache, strerror(errno));
+        if (!feof(cache_fp)) {
+            report_error("error reading cache for %s: %s\n", path, strerror(errno));
         }
         free(buf);
-        fclose(fp);
+        // do not close cache_fp, it's caller's responsibility
     }
     array_truncate(entries);
 }
@@ -442,16 +440,17 @@ static void response_ls(int request_id, const char* path, bool recursive, int ne
     
     int response_buf_size = PATH_MAX * 2; // TODO: accurate size calculation
     char* response_buf = malloc(response_buf_size); 
-    char* abspath = malloc(PATH_MAX);
+    char* child_abspath = malloc(PATH_MAX);
     int work_buf_size = (PATH_MAX + MAXNAMLEN) * 2 + 2;
     char* work_buf = malloc(work_buf_size);
     d = opendir(path);
     if (d) {
+        dirtab_element *el = NULL;
         if (persistence) {
-            const char *cache_path = dirtab_get_cache(path);
-            cache_fp = fopen600(cache_path);
+            el = dirtab_get_element(path);
+            cache_fp = dirtab_get_element_cache(el, true);
             if (!cache_fp) {
-                report_error("error opening file %s: %s\n", cache_path, strerror(errno));
+                report_error("error opening cache file for %s: %s\n", path, strerror(errno));
             }
             escape_strcpy(work_buf, path);
             fprintf(cache_fp, "%s\n", work_buf);
@@ -478,8 +477,8 @@ static void response_ls(int request_id, const char* path, bool recursive, int ne
         fprintf(stdout, "%c %d %li %s %d\n", (recursive ? FS_RSP_RECURSIVE_LS : FS_RSP_LS),
                 request_id, (long) strlen(path), path, cnt);
         int base_len = strlen(path);
-        strcpy(abspath, path);
-        abspath[base_len] = '/';
+        strcpy(child_abspath, path);
+        child_abspath[base_len] = '/';
         while (true) {
             if (readdir_r(d, &entry_buf.d, &entry)) {
                 report_error("error reading directory %s: %s\n", path, strerror(errno));
@@ -501,14 +500,14 @@ static void response_ls(int request_id, const char* path, bool recursive, int ne
                 report_error("skipping entry %s\n", entry->d_name);
                 continue;
             }
-            strcpy(abspath + base_len + 1, entry->d_name);
-            if (form_entry_response(response_buf, response_buf_size, abspath, entry, work_buf, work_buf_size)) {
+            strcpy(child_abspath + base_len + 1, entry->d_name);
+            if (form_entry_response(response_buf, response_buf_size, child_abspath, entry, work_buf, work_buf_size)) {
                 fprintf(stdout, "%c %d %s", FS_RSP_ENTRY, request_id, response_buf);
                 if (cache_fp) {
                     fprintf(cache_fp, "%s",response_buf); // trailing '\n' already there, added by form_entry_response
                 }
             } else {
-                report_error("error forming entry response for '%s'\n", abspath);
+                report_error("error forming entry response for '%s'\n", child_abspath);
             }
         }
         fprintf(stdout, "%c %d %li %s\n", FS_RSP_END, request_id, (long) strlen(path), path);
@@ -526,11 +525,11 @@ static void response_ls(int request_id, const char* path, bool recursive, int ne
                 if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
                     continue;
                 }
-                strcpy(abspath + base_len + 1, entry->d_name);
+                strcpy(child_abspath + base_len + 1, entry->d_name);
                 struct stat stat_buf;
-                if (lstat(abspath, &stat_buf) == 0) {
+                if (lstat(child_abspath, &stat_buf) == 0) {
                     if (S_ISDIR(stat_buf.st_mode)) {
-                        response_ls(request_id, abspath, true, nesting_level+1);
+                        response_ls(request_id, child_abspath, true, nesting_level+1);
                     }
                 }
             }
@@ -538,14 +537,16 @@ static void response_ls(int request_id, const char* path, bool recursive, int ne
                 fprintf(stdout, "%c %d %li %s\n", FS_RSP_END, request_id, (long) strlen(path), path);
                 fflush(stdout);
             }
-        }                
+        }
+        if (cache_fp) {
+            dirtab_release_element_cache(el);
+        }
     } else {
         report_error("error opening directory '%s': %s\n", path, strerror(errno));
     }
-    fclose_if_not_null(cache_fp);
     closedir_if_not_null(d);
     free(work_buf);
-    free(abspath);
+    free(child_abspath);
     free(response_buf);
 }
 
@@ -577,7 +578,7 @@ static int entry_comparator(const void *element1, const void *element2) {
     return res;
 }
 
-static bool refresh_visitor(const char* path, int index, const char* cache) {
+static bool refresh_visitor(const char* path, int index, dirtab_element* el) {
     if (is_prohibited(path)) {
         trace("refresh manager: skipping %s\n", path);
         return true;
@@ -586,7 +587,14 @@ static bool refresh_visitor(const char* path, int index, const char* cache) {
     
     array/*<fs_entry>*/ old_entries;
     array/*<fs_entry>*/ new_entries;
-    read_entries_from_cache(&old_entries, cache, path);
+    FILE* cache_fp = dirtab_get_element_cache(el, false);
+    if (cache_fp) {
+        read_entries_from_cache(&old_entries, cache_fp, path);
+        dirtab_release_element_cache(el);
+    } else {
+        report_error("error refreshing %s: can't open cache\n", path);
+        return true;
+    }
     read_entries_from_dir(&new_entries, path);
 
     array_qsort(&old_entries, entry_comparator);
@@ -871,8 +879,8 @@ void process_options(int argc, char* argv[]) {
     }
 }
 
-static bool print_visitor(const char* path, int index, const char* cache) {
-    trace("%s %d %s \n", path, index, cache);
+static bool print_visitor(const char* path, int index, dirtab_element* el) {
+    trace("%d %s\n", index, path);
     return true;
 }
 

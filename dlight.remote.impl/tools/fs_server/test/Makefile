@@ -14,7 +14,6 @@ SOURCES=\
 	$(ROOT_DIR)/src/queue.c \
 	$(ROOT_DIR)/src/blocking_queue.c \
 	$(ROOT_DIR)/src/util.c \
-	$(ROOT_DIR)/src/dirtab.c \
 	$(ROOT_DIR)/src/array.c \
 	$(ROOT_DIR)/test/test_main.c
 
@@ -31,7 +30,7 @@ EXEC=$(DIST_DIR)/$(PNAME)
 
 
 #CF_COMMON         = --std=c99 -s -O2
-CF_COMMON         = --std=c99 -g -Wall
+CF_COMMON         = --std=c99 -g -Wall -DTEST
 CF_Linux-x86      = $(CF_COMMON) -DLINUX   -D_GNU_SOURCE -D_XOPEN_SOURCE=700 -m32
 CF_Linux-x86_64   = $(CF_COMMON) -DLINUX   -D_GNU_SOURCE -D_XOPEN_SOURCE=700 -m64
 CF_MacOSX-x86     = $(CF_COMMON) -DMAXOSX  -D_DARWIN_C_SOURCE -m32
