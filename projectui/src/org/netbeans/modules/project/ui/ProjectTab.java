@@ -987,37 +987,28 @@ public class ProjectTab extends TopComponent
             String text = "";
             Node projectNode = null;
             if( selectedNodes != null && selectedNodes.length > 0 ) {
-                Project projectOwner = null;
                 Node selectedNode = selectedNodes[0];
-                while ( (projectOwner = selectedNode.getLookup().lookup(Project.class)) == null) {
+                Node rootNode = ProjectTab.this.manager.getRootContext();
+                while ( !selectedNode.getParentNode().equals(rootNode)) {
                     selectedNode = selectedNode.getParentNode();
                 }
+                projectNode = selectedNode;
                 //Tests whether other selected items have same project owner
                 if( selectedNodes.length > 1 ) {
-                    Project projectOwnerTmp = null;
                     for ( int i = 1; i < selectedNodes.length; i ++) {
                         selectedNode = selectedNodes[i];
-                        while ( (projectOwnerTmp = selectedNode.getLookup().lookup(Project.class)) == null) {
+                        while ( !selectedNode.getParentNode().equals(rootNode) ) {
                             selectedNode = selectedNode.getParentNode();
                         }
-                        if ( !projectOwner.equals(projectOwnerTmp) ) {
-                            projectOwner = null;
+                        if ( !projectNode.equals(selectedNode) ) {
+                            projectNode = null;
                             text = Bundle.MSG_nodes_from_more_projects();
                             break;
                         }
                     }
                 }
-                if ( projectOwner != null ) {
-                    //Iteratively finding Project node, b/c selected node counldn't be the one
-                    for (Node node : ProjectTab.this.manager.getRootContext().getChildren().getNodes(true)) {
-                        if(projectOwner.equals(node.getLookup().lookup(Project.class))) {
-                            projectNode = node;
-                            break;
-                        }
-                    }
-                    if ( projectNode != null ) {
-                        text = projectNode.getDisplayName();
-                    }
+                if ( projectNode != null ) {
+                    text = projectNode.getDisplayName();
                 }
             } else {
                 text = Bundle.MSG_none_node_selected();
