@@ -2222,3 +2222,27 @@ org.netbeans.modules.parsing.spi.indexing.ConstrainedBinaryIndexer
 org.netbeans.modules.project.ui.Bundle
 org.netbeans.modules.project.ui.actions.Bundle
 
+
+# OK on Nov 5, 2013
+com.sun.tools.javac.code.Type$JCPrimitiveType
+com.sun.tools.javac.code.Type$JCVoidType
+com.sun.tools.javac.code.Type$UnknownType
+com.sun.tools.javac.code.TypeAnnotations
+com.sun.tools.javac.code.Types$LooseSameTypeVisitor
+com.sun.tools.javac.code.Types$SignatureGenerator
+com.sun.tools.javac.comp.CompileStates
+com.sun.tools.javac.comp.CompileStates$CompileState
+com.sun.tools.javac.comp.DeferredAttr$DeferredStuckPolicy
+com.sun.tools.javac.comp.LambdaToMethod$LambdaAnalyzerPreprocessor
+com.sun.tools.javac.jvm.ClassWriter$CWSignatureGenerator
+com.sun.tools.javac.jvm.LVTRanges
+com.sun.tools.javac.util.BaseFileManager
+org.netbeans.lib.nbjavac.services.NBResolve
+
+org.netbeans.core.impl.InitUI
+org.netbeans.swing.tabcontrol.plaf.BasicScrollingTabDisplayerUI$Autoscroller
+org.openide.awt.ToolbarWithOverflow$SafePopupMenu
+org.openide.awt.ToolbarWithOverflow$SafeToolBar
+
+org.netbeans.modules.masterfs.filebasedfs.children.ChildrenSupport$2IOJob
+org.netbeans.modules.masterfs.watcher.nio2.NioNotifier
