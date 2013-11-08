@@ -60,6 +60,8 @@ import org.netbeans.modules.web.clientproject.spi.jstesting.JsTestingProviderImp
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
@@ -83,13 +85,15 @@ public class JsTestingProviderImpl implements JsTestingProviderImplementation {
         return Bundle.JsTestingProviderImpl_displayName();
     }
 
+    @NbBundle.Messages("JsTestingProviderImpl.error.config=Cannot run tests, no jsTestDriver.conf found.")
     @Override
     public void runTests(Project project, TestRunInfo runInfo) {
         assert !EventQueue.isDispatchThread();
         FileObject configFile = getConfigFolder(project).getFileObject("jsTestDriver.conf"); // NOI18N
         if (configFile == null) {
-            // XXX inform user, show dialog etc.
             LOGGER.log(Level.INFO, "Cannot run tests for \"{0}\" project, no jsTestDriver.conf found", ProjectUtils.getInformation(project).getName());
+            DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(
+                    Bundle.JsTestingProviderImpl_error_config(), NotifyDescriptor.INFORMATION_MESSAGE));
             return;
         }
         try {
