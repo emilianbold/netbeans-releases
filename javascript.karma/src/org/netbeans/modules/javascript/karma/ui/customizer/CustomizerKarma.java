@@ -61,6 +61,7 @@ import org.netbeans.modules.javascript.karma.exec.KarmaExecutable;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferencesValidator;
 import org.netbeans.modules.javascript.karma.util.FileUtils;
+import org.netbeans.modules.javascript.karma.util.KarmaUtils;
 import org.netbeans.modules.javascript.karma.util.ValidationResult;
 import org.netbeans.modules.web.clientproject.api.ProjectDirectoriesProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
@@ -296,8 +297,15 @@ public class CustomizerKarma extends JPanel {
         StatusDisplayer.getDefault().setStatusText(Bundle.CustomizerKarma_karma_none());
     }//GEN-LAST:event_karmaSearchButtonActionPerformed
 
+    @NbBundle.Messages("CustomizerKarma.config.none=No Karma configuration was found.")
     private void configSearchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_configSearchButtonActionPerformed
-        // TODO add your handling code here:
+        List<File> configs = KarmaUtils.findKarmaConfigs(getConfigDirectory());
+        if (!configs.isEmpty()) {
+            configTextField.setText(configs.get(0).getAbsolutePath());
+            return;
+        }
+        // no config found
+        StatusDisplayer.getDefault().setStatusText(Bundle.CustomizerKarma_config_none());
     }//GEN-LAST:event_configSearchButtonActionPerformed
 
 
