@@ -212,8 +212,11 @@ static fs_entry* create_fs_entry(fs_entry *entry2clone) {
 }
 
 
-/** allocates fs_entry on heap */
-static fs_entry *decode_entry_response(const char* buf) {
+/** 
+ * Creates a fs_entry on heap.
+ * NB: modifies buf: can unescape and zero-terminate strings
+ */
+static fs_entry *decode_entry_response(char* buf) {
 
     // format: name_len name uid gid mode size mtime link_len link
     fs_entry tmp; // a temporary one since we don't know names size
@@ -222,7 +225,10 @@ static fs_entry *decode_entry_response(const char* buf) {
     if (!p) { return NULL; }; // decode_int already printed error message
     
     tmp.name = (char*) p;
+    tmp.name[tmp.name_len] = 0;
+    unescape_strcpy(tmp.name, tmp.name);
     p += tmp.name_len + 1;
+    tmp.name_len = strlen(tmp.name);
 
     p = decode_uint(p, &tmp.uid);
     if (!p) { return NULL; }; // decode_int already printed error message
@@ -243,6 +249,9 @@ static fs_entry *decode_entry_response(const char* buf) {
     if (!p) { return NULL; };
     
     tmp.link = (char*) p;
+    tmp.link[tmp.link_len] = 0;
+    unescape_strcpy(tmp.link, tmp.link);
+    tmp.link_len = strlen(tmp.link);
     if (tmp.name_len > MAXNAMLEN) {
         report_error("wrong entry format: too long (%i) file name: %s", tmp.name_len, buf);
         return NULL;
@@ -267,7 +276,6 @@ static void read_entries_from_cache(array/*<fs_entry>*/ *entries, FILE *cache_fp
             report_error("error: first line in cache for %s is not '%s', but is '%s'", path, path, buf);
         }
         while (fgets(buf, buf_size, cache_fp)) {
-            unescape_strcpy(buf, buf);
             fs_entry *entry = decode_entry_response(buf);
             if (entry) {
                 array_add(entries, entry);
