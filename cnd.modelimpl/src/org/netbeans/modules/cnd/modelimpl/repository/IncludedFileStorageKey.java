@@ -87,33 +87,20 @@ public final class IncludedFileStorageKey extends ProjectContainerKey {
     public String toString() {
 	return "IncludedFileContainerKey (" + getProjectName() + ", " + KeyUtilities.getUnitName(this.includedUnitIndex) + ")"; // NOI18N
     }
+  
 
-    @Override
-    public int hashCode() {
-        return 19*includedUnitIndex + super.hashCode();
+      @Override
+    public int hashCode(int unitID) {
+        return 19*includedUnitIndex + super.hashCode(unitID);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (!super.equals(obj)) {
-            return false;
-        }
-        final IncludedFileStorageKey other = (IncludedFileStorageKey) obj;
-        return this.includedUnitIndex == other.includedUnitIndex;
-    }
-        
-    @Override
-    public int hashCode(UnitsConverter unitsConverter) {
-        return 19*RepositoryUtils.clientToLayer(unitsConverter, includedUnitIndex) + super.hashCode(unitsConverter);
-    }
-
-    @Override
-    public boolean equals(UnitsConverter unitsConverter, Key object) {
-        if (!super.equals(unitsConverter, object)) {
+    public boolean equals(int thisUnitID, Key object, int objectUnitID) {
+        if (!super.equals(thisUnitID, object, objectUnitID)) {
             return false;
         }
         final IncludedFileStorageKey other = (IncludedFileStorageKey) object;
-        return RepositoryUtils.clientToLayer(unitsConverter, includedUnitIndex) == RepositoryUtils.clientToLayer(unitsConverter, other.includedUnitIndex);
+        return this.includedUnitIndex == other.includedUnitIndex;
     }
 
     @Override

@@ -109,14 +109,10 @@ public class TestKey implements Key, SelfPersistent {
     }
 
     @Override
-    public final boolean equals(UnitsConverter unitsConverter, Key object) {
+    public final boolean equals(int thisUnitID, Key object, int objectUnitID) {
         if (object == null || (this.getClass() != object.getClass())) {
             return false;
         }        
-        if ((unitsConverter != null  && unitsConverter.clientToLayer(unitId) != unitsConverter.clientToLayer(object.getUnitId())) || 
-                unitsConverter == null && unitId != ((TestKey)object).unitId) {
-            return false;
-        }
         final TestKey other = (TestKey) object;
         if (this.key != other.key && (this.key == null || !this.key.equals(other.key))) {
             return false;
@@ -147,19 +143,16 @@ public class TestKey implements Key, SelfPersistent {
     }
 
     @Override
-    public final int hashCode(UnitsConverter unitsConverter) {
+    public final int hashCode(int unitID) {
         int hash = this.key != null ? this.key.hashCode() : 0;
         hash = 59 * hash + (this.unit != null ? this.unit.hashCode() : 0);
         hash = 59 * hash + (this.behavior != null ? this.behavior.hashCode() : 0);
-        return hash + (unitsConverter == null ? unitId : unitsConverter.clientToLayer(unitId));
+        return hash + unitID;
     }
 
     @Override
     public final int hashCode() {
-        int hash = this.key != null ? this.key.hashCode() : 0;
-        hash = 59 * hash + (this.unit != null ? this.unit.hashCode() : 0);
-        hash = 59 * hash + (this.behavior != null ? this.behavior.hashCode() : 0);
-        return hash + unitId;
+         return hashCode(unitId);
     }
     
     @Override
