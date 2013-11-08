@@ -65,7 +65,6 @@ import org.netbeans.modules.bugtracking.commons.LogUtils;
 import org.netbeans.modules.bugtracking.commons.NBBugzillaUtils;
 import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.openide.util.NbPreferences;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
@@ -79,7 +78,7 @@ public class RepositoryRegistry {
      */
     public final static String EVENT_REPOSITORIES_CHANGED = RepositoryManager.EVENT_REPOSITORIES_CHANGED; // NOI18N
     
-    private PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
+    private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
     
     private static final String BUGTRACKING_REPO  = "bugracking.repository_";   // NOI18N
     private static final String DELIMITER         = "<=>";                      // NOI18N    
