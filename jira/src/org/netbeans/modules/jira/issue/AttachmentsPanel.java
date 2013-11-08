@@ -121,7 +121,7 @@ public class AttachmentsPanel extends JPanel {
         createNewButton.getAccessibleContext().setAccessibleDescription(bundle.getString("AttachmentsPanel.createNewButton.AccessibleContext.accessibleDescription")); // NOI18N
     }
 
-    public void setIssue(NbJiraIssue issue) {
+    public void setIssue(NbJiraIssue issue, NbJiraIssue.Attachment[] attachments) {
         newAttachments.clear();
         removeAll();
 
@@ -131,7 +131,6 @@ public class AttachmentsPanel extends JPanel {
         ResourceBundle bundle = NbBundle.getBundle(AttachmentsPanel.class);
         GroupLayout.SequentialGroup newVerticalGroup = layout.createSequentialGroup();
 
-        NbJiraIssue.Attachment[] attachments = issue.getAttachments();
         hadNoAttachments = (attachments.length == 0);
         horizontalGroup.addGroup(layout.createSequentialGroup()
             .addComponent(noneLabel)
@@ -239,6 +238,13 @@ public class AttachmentsPanel extends JPanel {
 
     public void removeChangeListener (ChangeListener changeListener) {
         supp.removeChangeListener(changeListener);
+    }
+    
+    /**
+     * Programmatically calls create new attachment method
+     */
+    final void createAttachment () {
+        createNewButton.doClick();
     }
 
     private JPopupMenu menuFor(NbJiraIssue.Attachment attachment) {

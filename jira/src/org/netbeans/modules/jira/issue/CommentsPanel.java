@@ -49,10 +49,12 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.text.DateFormat;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -96,6 +98,7 @@ public class CommentsPanel extends JPanel {
     private NewCommentHandler newCommentHandler;
 
     private Set<Long> collapsedComments = Collections.synchronizedSet(new HashSet<Long>());
+    private List<ExpandLabel> sections;
 
     private static Color blueBackground = null;
     private static Color greyForeground = null;
@@ -136,7 +139,9 @@ public class CommentsPanel extends JPanel {
         }
         String description = issue.getFieldValue(NbJiraIssue.IssueField.DESCRIPTION);
         String reporter = issue.getRepository().getConfiguration().getUser(issue.getFieldValue(NbJiraIssue.IssueField.REPORTER)).getFullName();
-        addSection(
+        NbJiraIssue.Comment[] comments = issue.getComments();
+        this.sections = new ArrayList<>(comments.length);
+        sections.add(addSection(
                 layout, 
                 new Long(0),    
                 description, 
@@ -144,18 +149,18 @@ public class CommentsPanel extends JPanel {
                 creationTxt, 
                 horizontalGroup, 
                 verticalGroup, 
-                true);
-        for (NbJiraIssue.Comment comment : issue.getComments()) {
+                true));
+        for (NbJiraIssue.Comment comment : comments) {
             Date date = comment.getWhen();
             String when = (date == null) ? "" : format.format(date); // NOI18N
-            addSection(
+            sections.add(addSection(
                     layout, 
                     comment.getNumber(),
                     comment.getText(), 
                     comment.getWho(), 
                     when, 
                     horizontalGroup, 
-                    verticalGroup, false);
+                    verticalGroup, false));
         }
         verticalGroup.addContainerGap();
         setLayout(layout);
@@ -165,7 +170,7 @@ public class CommentsPanel extends JPanel {
         newCommentHandler = handler;
     }
 
-    private void addSection(GroupLayout layout, Long number, String text, String author, String dateTimeString,
+    private ExpandLabel addSection(GroupLayout layout, Long number, String text, String author, String dateTimeString,
             GroupLayout.ParallelGroup horizontalGroup, GroupLayout.SequentialGroup verticalGroup, boolean description) {
         
         JTextPane textPane = new JTextPane();
@@ -251,6 +256,7 @@ public class CommentsPanel extends JPanel {
             .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
                 .addComponent(placeholder)
                 .addComponent(textPane, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE));
+        return iconLabel;
     }
 
     private JPanel createTextPanelPlaceholder() {
@@ -337,6 +343,18 @@ public class CommentsPanel extends JPanel {
             };
         }
         return replyListener;
+    }
+
+    void collapseAll () {
+        for (ExpandLabel lbl : sections) {
+            lbl.setState(true);
+        }
+    }
+
+    void expandAll () {
+        for (ExpandLabel lbl : sections) {
+            lbl.setState(false);
+        }
     }
 
     public interface NewCommentHandler {

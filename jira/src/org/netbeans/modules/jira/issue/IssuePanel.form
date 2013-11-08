@@ -40,6 +40,998 @@
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="assigneeComboActionPerformed"/>
       </Events>
     </Component>
+    <Container class="javax.swing.JPanel" name="attributesSectionPanel">
+      <Properties>
+        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="31" green="1e" id="TextArea.background" palette="3" red="12" type="palette"/>
+        </Property>
+      </Properties>
+
+      <Layout>
+        <DimensionLayout dim="0">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="102" attributes="0">
+                  <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="1" attributes="0">
+                          <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                          <Component id="workLogWarning" min="-2" pref="16" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
+                          <Component id="logWorkButton2" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <Group type="102" alignment="0" attributes="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="remainingEstimateWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                              <Component id="timeSpentWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                              <Component id="originalEstimateWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="timeSpentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="remainingEstimateLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="originalEstimateLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace min="-2" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="timeSpentField" linkSize="4" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="timeSpentPanel" max="32767" attributes="0"/>
+                              </Group>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="remainingEstimateField" linkSize="4" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="remainingEstimatePanel" max="32767" attributes="0"/>
+                              </Group>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="originalEstimateField" linkSize="4" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="originalEstimatePanel" max="32767" attributes="0"/>
+                              </Group>
+                          </Group>
+                      </Group>
+                      <Group type="102" alignment="0" attributes="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="summaryWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                      <Component id="environmentWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                      <Component id="originalEstimateNewWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace min="5" pref="5" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="originalEstimateLabelNew" alignment="0" pref="119" max="32767" attributes="1"/>
+                                      <Component id="environmentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="summaryLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="issueLinksLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="customFieldPanelLeft" max="32767" attributes="1"/>
+                                  <EmptySpace min="-2" pref="79" max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="environmentScrollPane" max="32767" attributes="0"/>
+                              <Component id="summaryField" alignment="0" max="32767" attributes="0"/>
+                              <Component id="originalEstimateHint" alignment="0" max="32767" attributes="1"/>
+                              <Component id="dummyIssueLinksPanel" alignment="0" max="32767" attributes="0"/>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="originalEstimateFieldNew" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                              </Group>
+                              <Component id="customFieldPanelRight" alignment="0" max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                      <Group type="102" attributes="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="projectWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                              <Component id="issueTypeWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                              <Component id="statusWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                              <Component id="resolutionWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                              <Component id="priorityWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="priorityLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="resolutionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="statusLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="issueTypeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="projectLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace min="-2" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="statusCombo" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="issueTypeCombo" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="projectCombo" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="resolutionCombo" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="priorityCombo" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="assigneeWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                              <Component id="dueWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="assigneeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="dueLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="updatedLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="createdLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="assigneeField" linkSize="8" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="dueField" linkSize="8" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="updatedField" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="createdField" alignment="0" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="assigneeStatusLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="reporterStatusLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                      </Group>
+                      <Group type="102" alignment="0" attributes="0">
+                          <Component id="componentWarning" min="-2" pref="16" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="componentScrollPane" linkSize="2" min="-2" max="-2" attributes="0"/>
+                              <Component id="componentLabel" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
+                          <Component id="affectsVersionWarning" min="-2" pref="16" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="affectsVersionScrollPane" linkSize="2" min="-2" max="-2" attributes="0"/>
+                              <Component id="affectsVersionLabel" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
+                          <Component id="fixVersionWarning" min="-2" pref="16" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="fixVersionScrollPane" linkSize="2" min="-2" max="-2" attributes="0"/>
+                              <Component id="fixVersionLabel" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace pref="339" max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                  <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
+              </Group>
+          </Group>
+        </DimensionLayout>
+        <DimensionLayout dim="1">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="102" attributes="0">
+                  <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="projectLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="projectCombo" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="createdLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="createdField" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="reporterStatusLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="projectWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="2" attributes="0">
+                              <Component id="issueTypeLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                              <Component id="issueTypeCombo" alignment="2" min="-2" max="-2" attributes="0"/>
+                              <Component id="updatedLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                              <Component id="issueTypeWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
+                              <Component id="updatedField" alignment="2" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="2" attributes="0">
+                              <Component id="statusWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
+                              <Component id="statusLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                              <Component id="statusCombo" alignment="2" min="-2" max="-2" attributes="0"/>
+                              <Component id="dueLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                              <Component id="dueWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
+                              <Component id="dueField" alignment="2" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="2" attributes="0">
+                              <Component id="resolutionWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
+                              <Component id="resolutionLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                              <Component id="resolutionCombo" alignment="2" min="-2" max="-2" attributes="0"/>
+                              <Component id="assigneeWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
+                              <Component id="assigneeLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                              <Component id="assigneeField" alignment="2" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="2" attributes="0">
+                              <Component id="priorityWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
+                              <Component id="priorityLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                              <Component id="priorityCombo" alignment="2" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace type="separate" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="2" attributes="0">
+                              <Component id="componentLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                              <Component id="componentWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
+                              <Component id="affectsVersionWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
+                              <Component id="affectsVersionLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                              <Component id="fixVersionWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
+                              <Component id="fixVersionLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="componentScrollPane" min="-2" max="-2" attributes="0"/>
+                              <Component id="affectsVersionScrollPane" min="-2" max="-2" attributes="0"/>
+                              <Component id="fixVersionScrollPane" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                      </Group>
+                      <Component id="assigneeStatusLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace type="separate" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="2" attributes="0">
+                      <Component id="originalEstimateWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
+                      <Component id="originalEstimateLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                      <Component id="originalEstimatePanel" linkSize="5" alignment="2" min="-2" max="-2" attributes="0"/>
+                      <Component id="originalEstimateField" linkSize="5" alignment="2" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="2" attributes="0">
+                      <Component id="remainingEstimateWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
+                      <Component id="remainingEstimateLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                      <Component id="remainingEstimatePanel" linkSize="9" alignment="2" min="-2" max="-2" attributes="0"/>
+                      <Component id="remainingEstimateField" linkSize="9" alignment="2" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="2" attributes="0">
+                      <Component id="timeSpentWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
+                      <Component id="timeSpentLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                      <Component id="timeSpentPanel" linkSize="7" alignment="2" min="-2" max="-2" attributes="0"/>
+                      <Component id="timeSpentField" linkSize="7" alignment="2" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="2" attributes="0">
+                      <Component id="workLogWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
+                      <Component id="logWorkButton2" alignment="2" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="dummyIssueLinksPanel" min="-2" max="-2" attributes="0"/>
+                      <Component id="issueLinksLabel" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="2" attributes="0">
+                      <Component id="summaryWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
+                      <Component id="summaryLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                      <Component id="summaryField" alignment="2" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="environmentLabel" min="-2" max="-2" attributes="0"/>
+                      <Component id="environmentScrollPane" min="-2" max="-2" attributes="0"/>
+                      <Component id="environmentWarning" min="-2" pref="16" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="customFieldPanelLeft" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="customFieldPanelRight" alignment="0" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="originalEstimateFieldNew" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="originalEstimateLabelNew" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace min="-2" max="-2" attributes="0"/>
+                          <Component id="originalEstimateHint" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <Component id="originalEstimateNewWarning" min="-2" pref="16" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
+              </Group>
+          </Group>
+        </DimensionLayout>
+      </Layout>
+      <SubComponents>
+        <Container class="javax.swing.JPanel" name="dummyIssueLinksPanel">
+
+          <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
+        </Container>
+        <Container class="javax.swing.JPanel" name="customFieldPanelLeft">
+
+          <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
+        </Container>
+        <Container class="javax.swing.JPanel" name="customFieldPanelRight">
+
+          <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
+        </Container>
+        <Component class="javax.swing.JLabel" name="projectLabel">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.projectLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JComboBox" name="projectCombo">
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="projectComboActionPerformed"/>
+          </Events>
+        </Component>
+        <Component class="javax.swing.JLabel" name="issueTypeLabel">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.issueTypeLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JComboBox" name="issueTypeCombo">
+        </Component>
+        <Component class="javax.swing.JLabel" name="statusLabel">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.statusLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JComboBox" name="statusCombo">
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="statusComboActionPerformed"/>
+          </Events>
+        </Component>
+        <Component class="javax.swing.JLabel" name="resolutionLabel">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.resolutionLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JComboBox" name="resolutionCombo">
+        </Component>
+        <Component class="javax.swing.JLabel" name="priorityLabel">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.priorityLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JComboBox" name="priorityCombo">
+        </Component>
+        <Component class="javax.swing.JLabel" name="createdLabel">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.createdLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JTextField" name="createdField">
+          <Properties>
+            <Property name="editable" type="boolean" value="false"/>
+            <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+              <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+              </Border>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="updatedLabel">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.updatedLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JTextField" name="updatedField">
+          <Properties>
+            <Property name="editable" type="boolean" value="false"/>
+            <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+              <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+              </Border>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="dueLabel">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.dueLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JFormattedTextField" name="dueField">
+          <Properties>
+            <Property name="formatterFactory" type="javax.swing.JFormattedTextField$AbstractFormatterFactory" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="new javax.swing.text.DefaultFormatterFactory(dueDateFormatter)" type="code"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="assigneeLabel">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.assigneeLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JTextField" name="assigneeField">
+          <Properties>
+            <Property name="columns" type="int" value="15"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="componentLabel">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.componentLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Container class="javax.swing.JScrollPane" name="componentScrollPane">
+          <AuxValues>
+            <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+          </AuxValues>
+
+          <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+          <SubComponents>
+            <Component class="javax.swing.JList" name="componentList">
+              <Properties>
+                <Property name="model" type="javax.swing.ListModel" editor="org.netbeans.modules.form.editors2.ListModelEditor">
+                  <StringArray count="1">
+                    <StringItem index="0" value="Dummy"/>
+                  </StringArray>
+                </Property>
+              </Properties>
+            </Component>
+          </SubComponents>
+        </Container>
+        <Component class="javax.swing.JLabel" name="affectsVersionLabel">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.affectsVersionLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Container class="javax.swing.JScrollPane" name="affectsVersionScrollPane">
+          <AuxValues>
+            <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+          </AuxValues>
+
+          <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+          <SubComponents>
+            <Component class="javax.swing.JList" name="affectsVersionList">
+              <Properties>
+                <Property name="model" type="javax.swing.ListModel" editor="org.netbeans.modules.form.editors2.ListModelEditor">
+                  <StringArray count="1">
+                    <StringItem index="0" value="Dummy"/>
+                  </StringArray>
+                </Property>
+              </Properties>
+            </Component>
+          </SubComponents>
+        </Container>
+        <Component class="javax.swing.JLabel" name="fixVersionLabel">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.fixVersionLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Container class="javax.swing.JScrollPane" name="fixVersionScrollPane">
+          <AuxValues>
+            <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+          </AuxValues>
+
+          <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+          <SubComponents>
+            <Component class="javax.swing.JList" name="fixVersionList">
+              <Properties>
+                <Property name="model" type="javax.swing.ListModel" editor="org.netbeans.modules.form.editors2.ListModelEditor">
+                  <StringArray count="1">
+                    <StringItem index="0" value="Dummy"/>
+                  </StringArray>
+                </Property>
+              </Properties>
+            </Component>
+          </SubComponents>
+        </Container>
+        <Component class="javax.swing.JLabel" name="originalEstimateLabel">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.originalEstimateLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JTextField" name="originalEstimateField">
+          <Properties>
+            <Property name="editable" type="boolean" value="false"/>
+            <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+              <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+              </Border>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="remainingEstimateLabel">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.remainingEstimateLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JTextField" name="remainingEstimateField">
+          <Properties>
+            <Property name="editable" type="boolean" value="false"/>
+            <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+              <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+              </Border>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="timeSpentLabel">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.timeSpentLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JTextField" name="timeSpentField">
+          <Properties>
+            <Property name="editable" type="boolean" value="false"/>
+            <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+              <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+              </Border>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="summaryLabel">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.summaryLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JTextField" name="summaryField">
+        </Component>
+        <Component class="javax.swing.JLabel" name="environmentLabel">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.environmentLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Container class="javax.swing.JScrollPane" name="environmentScrollPane">
+          <AuxValues>
+            <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+          </AuxValues>
+
+          <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+          <SubComponents>
+            <Component class="javax.swing.JTextArea" name="environmentArea">
+              <Properties>
+                <Property name="lineWrap" type="boolean" value="true"/>
+                <Property name="rows" type="int" value="5"/>
+              </Properties>
+            </Component>
+          </SubComponents>
+        </Container>
+        <Container class="javax.swing.JScrollPane" name="environmentScrollPane1">
+          <AuxValues>
+            <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+          </AuxValues>
+
+          <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+          <SubComponents>
+            <Component class="javax.swing.JTextArea" name="environmentArea1">
+              <Properties>
+                <Property name="lineWrap" type="boolean" value="true"/>
+                <Property name="rows" type="int" value="5"/>
+              </Properties>
+            </Component>
+          </SubComponents>
+        </Container>
+        <Container class="javax.swing.JPanel" name="originalEstimatePanel">
+          <Properties>
+            <Property name="opaque" type="boolean" value="false"/>
+          </Properties>
+
+          <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
+        </Container>
+        <Container class="javax.swing.JPanel" name="remainingEstimatePanel">
+          <Properties>
+            <Property name="opaque" type="boolean" value="false"/>
+          </Properties>
+
+          <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
+        </Container>
+        <Container class="javax.swing.JPanel" name="timeSpentPanel">
+          <Properties>
+            <Property name="opaque" type="boolean" value="false"/>
+          </Properties>
+
+          <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
+        </Container>
+        <Component class="javax.swing.JTextField" name="originalEstimateFieldNew">
+          <Properties>
+            <Property name="columns" type="int" value="15"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="originalEstimateLabelNew">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.originalEstimateLabelNew.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="originalEstimateHint">
+          <Properties>
+            <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
+              <FontInfo relative="true">
+                <Font component="originalEstimateHint" property="font" relativeSize="true" size="-2"/>
+              </FontInfo>
+            </Property>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.originalEstimateHint.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="logWorkButton2">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.logWorkButton2.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="logWorkButtonActionPerformed"/>
+          </Events>
+        </Component>
+        <Component class="javax.swing.JLabel" name="reporterStatusLabel">
+        </Component>
+        <Component class="javax.swing.JLabel" name="assigneeStatusLabel">
+        </Component>
+        <Component class="javax.swing.JLabel" name="issueLinksLabel">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.issueLinksLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="projectWarning">
+        </Component>
+        <Component class="javax.swing.JLabel" name="issueTypeWarning">
+        </Component>
+        <Component class="javax.swing.JLabel" name="componentWarning">
+        </Component>
+        <Component class="javax.swing.JLabel" name="affectsVersionWarning">
+        </Component>
+        <Component class="javax.swing.JLabel" name="fixVersionWarning">
+        </Component>
+        <Component class="javax.swing.JLabel" name="statusWarning">
+        </Component>
+        <Component class="javax.swing.JLabel" name="resolutionWarning">
+        </Component>
+        <Component class="javax.swing.JLabel" name="priorityWarning">
+        </Component>
+        <Component class="javax.swing.JLabel" name="dueWarning">
+        </Component>
+        <Component class="javax.swing.JLabel" name="assigneeWarning">
+        </Component>
+        <Component class="javax.swing.JLabel" name="originalEstimateWarning">
+        </Component>
+        <Component class="javax.swing.JLabel" name="remainingEstimateWarning">
+        </Component>
+        <Component class="javax.swing.JLabel" name="timeSpentWarning">
+        </Component>
+        <Component class="javax.swing.JLabel" name="summaryWarning">
+        </Component>
+        <Component class="javax.swing.JLabel" name="environmentWarning">
+        </Component>
+        <Component class="javax.swing.JLabel" name="originalEstimateNewWarning">
+        </Component>
+        <Component class="javax.swing.JLabel" name="workLogWarning">
+        </Component>
+      </SubComponents>
+    </Container>
+    <Container class="javax.swing.JPanel" name="attachmentsSectionPanel">
+      <Properties>
+        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="31" green="1e" id="TextArea.background" palette="3" red="12" type="palette"/>
+        </Property>
+      </Properties>
+
+      <Layout>
+        <DimensionLayout dim="0">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="102" attributes="0">
+                  <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
+                  <Component id="attachmentsWarning" min="-2" pref="16" max="-2" attributes="0"/>
+                  <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
+                  <Component id="dummyAttachmentPanel" max="32767" attributes="0"/>
+                  <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
+              </Group>
+          </Group>
+        </DimensionLayout>
+        <DimensionLayout dim="1">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="102" attributes="0">
+                  <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                      <Component id="attachmentsWarning" max="32767" attributes="0"/>
+                      <Component id="dummyAttachmentPanel" max="32767" attributes="0"/>
+                  </Group>
+                  <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
+              </Group>
+          </Group>
+        </DimensionLayout>
+      </Layout>
+      <SubComponents>
+        <Component class="javax.swing.JLabel" name="attachmentsWarning">
+        </Component>
+        <Container class="javax.swing.JPanel" name="dummyAttachmentPanel">
+          <Properties>
+            <Property name="opaque" type="boolean" value="false"/>
+          </Properties>
+
+          <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
+        </Container>
+      </SubComponents>
+    </Container>
+    <Container class="javax.swing.JPanel" name="subtasksSectionpanel">
+      <Properties>
+        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="31" green="1e" id="TextArea.background" palette="3" red="12" type="palette"/>
+        </Property>
+      </Properties>
+
+      <Layout>
+        <DimensionLayout dim="0">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="102" attributes="0">
+                  <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
+                  <Component id="dummySubtaskPanel" pref="696" max="32767" attributes="0"/>
+                  <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
+              </Group>
+          </Group>
+        </DimensionLayout>
+        <DimensionLayout dim="1">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="102" attributes="0">
+                  <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
+                  <Component id="dummySubtaskPanel" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
+              </Group>
+          </Group>
+        </DimensionLayout>
+      </Layout>
+      <SubComponents>
+        <Container class="javax.swing.JPanel" name="dummySubtaskPanel">
+          <Properties>
+            <Property name="opaque" type="boolean" value="false"/>
+          </Properties>
+
+          <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
+        </Container>
+      </SubComponents>
+    </Container>
+    <Container class="javax.swing.JPanel" name="newCommentSectionPanel">
+      <Properties>
+        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="31" green="1e" id="TextArea.background" palette="3" red="12" type="palette"/>
+        </Property>
+      </Properties>
+
+      <Layout>
+        <DimensionLayout dim="0">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="102" attributes="0">
+                  <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
+                  <Component id="addCommentWarning" min="-2" pref="16" max="-2" attributes="0"/>
+                  <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
+                  <Component id="addCommentScrollPane" max="32767" attributes="0"/>
+                  <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
+              </Group>
+          </Group>
+        </DimensionLayout>
+        <DimensionLayout dim="1">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="102" attributes="0">
+                  <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="addCommentScrollPane" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="addCommentWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
+              </Group>
+          </Group>
+        </DimensionLayout>
+      </Layout>
+      <SubComponents>
+        <Container class="javax.swing.JScrollPane" name="addCommentScrollPane">
+          <Properties>
+            <Property name="verticalScrollBarPolicy" type="int" value="21"/>
+          </Properties>
+          <AuxValues>
+            <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+          </AuxValues>
+
+          <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+          <SubComponents>
+            <Component class="javax.swing.JTextArea" name="addCommentArea">
+              <Properties>
+                <Property name="lineWrap" type="boolean" value="true"/>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JTextArea() {&#xa;    @Override&#xa;    public Dimension getPreferredScrollableViewportSize() {&#xa;        Dimension dim = super.getPreferredScrollableViewportSize();&#xa;        JScrollPane scrollPane = (JScrollPane)SwingUtilities.getAncestorOfClass(JScrollPane.class, this);&#xa;        int delta = 0;&#xa;        if (scrollPane != null) {&#xa;            Component comp = scrollPane.getHorizontalScrollBar();&#xa;            delta = comp.isVisible() ? comp.getHeight() : 0;&#xa;        }&#xa;        Insets insets = getInsets();&#xa;        int prefHeight = 5 * getRowHeight() + insets.top + insets.bottom;&#xa;        dim = new Dimension(dim.width, delta + ((dim.height &lt; prefHeight) ? prefHeight : dim.height));&#xa;        return dim;&#xa;    }&#xa;}"/>
+              </AuxValues>
+            </Component>
+          </SubComponents>
+        </Container>
+        <Component class="javax.swing.JLabel" name="addCommentWarning">
+        </Component>
+      </SubComponents>
+    </Container>
+    <Container class="javax.swing.JPanel" name="privateSectionPanel">
+      <Properties>
+        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="31" green="1e" id="TextArea.background" palette="3" red="12" type="palette"/>
+        </Property>
+      </Properties>
+
+      <Layout>
+        <DimensionLayout dim="0">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="102" attributes="0">
+                  <Component id="privateNotesLabel" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="jScrollPane1" max="32767" attributes="0"/>
+              </Group>
+              <Group type="102" attributes="0">
+                  <Component id="privateDueDateLabel" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="privateDummyDueDateField" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                  <Component id="scheduleDateLabel" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="dummyScheduleDateField" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                  <Component id="privateEstimateLabel" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="privateEstimateField" min="-2" pref="65" max="-2" attributes="0"/>
+              </Group>
+          </Group>
+        </DimensionLayout>
+        <DimensionLayout dim="1">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="102" alignment="0" attributes="0">
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="privateDueDateLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="privateDummyDueDateField" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="scheduleDateLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="dummyScheduleDateField" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="privateEstimateLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="privateEstimateField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace type="separate" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="privateNotesLabel" min="-2" max="-2" attributes="0"/>
+                      <Component id="jScrollPane1" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+              </Group>
+          </Group>
+        </DimensionLayout>
+      </Layout>
+      <SubComponents>
+        <Component class="javax.swing.JLabel" name="privateDueDateLabel">
+          <Properties>
+            <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+              <ComponentRef name="privateDummyDueDateField"/>
+            </Property>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.privateDueDateLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+            <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.privateDueDateLabel.TTtext" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JTextField" name="privateDummyDueDateField">
+        </Component>
+        <Component class="javax.swing.JLabel" name="scheduleDateLabel">
+          <Properties>
+            <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+              <ComponentRef name="dummyScheduleDateField"/>
+            </Property>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.scheduleDateLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+            <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.scheduleDateLabel.TTtext" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JTextField" name="dummyScheduleDateField">
+        </Component>
+        <Component class="javax.swing.JLabel" name="privateEstimateLabel">
+          <Properties>
+            <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+              <ComponentRef name="privateEstimateField"/>
+            </Property>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.privateEstimateLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+            <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.privateEstimateLabel.TTtext" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JFormattedTextField" name="privateEstimateField">
+          <Properties>
+            <Property name="formatterFactory" type="javax.swing.JFormattedTextField$AbstractFormatterFactory" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="new javax.swing.text.DefaultFormatterFactory(estimateFormatter)" type="code"/>
+            </Property>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.privateEstimateField.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="privateNotesLabel">
+          <Properties>
+            <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+              <ComponentRef name="privateNotesField"/>
+            </Property>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.privateNotesLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+            <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.privateNotesLabel.TTtext" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Container class="javax.swing.JScrollPane" name="jScrollPane1">
+          <AuxValues>
+            <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+          </AuxValues>
+
+          <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+          <SubComponents>
+            <Component class="javax.swing.JTextArea" name="privateNotesField">
+              <Properties>
+                <Property name="columns" type="int" value="20"/>
+                <Property name="lineWrap" type="boolean" value="true"/>
+                <Property name="wrapStyleWord" type="boolean" value="true"/>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JTextArea() {&#xa;    @Override&#xa;    public Dimension getPreferredScrollableViewportSize() {&#xa;        Dimension dim = super.getPreferredScrollableViewportSize();&#xa;        JScrollPane scrollPane = (JScrollPane)SwingUtilities.getAncestorOfClass(JScrollPane.class, this);&#xa;        int delta = 0;&#xa;        if (scrollPane != null) {&#xa;            Component comp = scrollPane.getHorizontalScrollBar();&#xa;            delta = comp.isVisible() ? comp.getHeight() : 0;&#xa;        }&#xa;        Insets insets = getInsets();&#xa;        int prefHeight = 5 * getRowHeight() + insets.top + insets.bottom;&#xa;        dim = new Dimension(0, delta + ((dim.height &lt; prefHeight) ? prefHeight : dim.height));&#xa;        return dim;&#xa;    }&#xa;}"/>
+              </AuxValues>
+            </Component>
+          </SubComponents>
+        </Container>
+      </SubComponents>
+    </Container>
+    <Container class="javax.swing.JPanel" name="commentsSectionPanel">
+      <Properties>
+        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="31" green="1e" id="TextArea.background" palette="3" red="12" type="palette"/>
+        </Property>
+      </Properties>
+
+      <Layout>
+        <DimensionLayout dim="0">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <Component id="dummyCommentPanel" alignment="0" pref="696" max="32767" attributes="0"/>
+          </Group>
+        </DimensionLayout>
+        <DimensionLayout dim="1">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <Component id="dummyCommentPanel" min="-2" max="-2" attributes="0"/>
+          </Group>
+        </DimensionLayout>
+      </Layout>
+      <SubComponents>
+        <Container class="javax.swing.JPanel" name="dummyCommentPanel">
+
+          <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
+        </Container>
+      </SubComponents>
+    </Container>
   </NonVisualComponents>
   <Properties>
     <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
@@ -61,757 +1053,41 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="separator" alignment="0" max="32767" attributes="0"/>
-          <Component id="dummyCommentPanel" alignment="0" max="32767" attributes="0"/>
-          <Group type="102" alignment="1" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="1" attributes="0">
-                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                      <Component id="workLogWarning" min="-2" pref="16" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
-                      <Component id="logWorkButton2" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="remainingEstimateWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                          <Component id="timeSpentWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                          <Component id="originalEstimateWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="timeSpentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="remainingEstimateLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="originalEstimateLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="timeSpentField" linkSize="4" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="timeSpentPanel" max="32767" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="remainingEstimateField" linkSize="4" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="remainingEstimatePanel" max="32767" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="originalEstimateField" linkSize="4" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="originalEstimatePanel" max="32767" attributes="0"/>
-                          </Group>
-                      </Group>
-                  </Group>
-                  <Group type="102" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="headerLabel" alignment="0" max="32767" attributes="0"/>
-                          <Component id="parentHeaderPanel" max="32767" attributes="0"/>
-                          <Group type="102" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="projectWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                          <Component id="issueTypeWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                          <Component id="statusWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                          <Component id="resolutionWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                          <Component id="priorityWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                      </Group>
-                                      <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="priorityLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          <Component id="resolutionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          <Component id="statusLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          <Component id="issueTypeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          <Component id="projectLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      </Group>
-                                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="priorityCombo" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          <Group type="102" alignment="0" attributes="0">
-                                              <Group type="103" groupAlignment="0" attributes="0">
-                                                  <Component id="projectCombo" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
-                                                  <Component id="issueTypeCombo" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
-                                                  <Component id="statusCombo" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
-                                                  <Component id="resolutionCombo" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
-                                              </Group>
-                                              <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
-                                              <Group type="103" groupAlignment="0" attributes="0">
-                                                  <Component id="dueWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                                  <Component id="assigneeWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                              </Group>
-                                              <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
-                                              <Group type="103" groupAlignment="0" attributes="0">
-                                                  <Component id="createdLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                                  <Component id="updatedLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                                  <Component id="dueLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                                  <Component id="assigneeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                              </Group>
-                                              <EmptySpace max="-2" attributes="0"/>
-                                              <Group type="103" groupAlignment="0" attributes="0">
-                                                  <Group type="102" alignment="0" attributes="0">
-                                                      <Component id="assigneeField" linkSize="8" min="-2" max="-2" attributes="0"/>
-                                                      <EmptySpace max="-2" attributes="0"/>
-                                                      <Component id="assigneeStatusLabel" min="-2" max="-2" attributes="0"/>
-                                                  </Group>
-                                                  <Component id="updatedField" alignment="0" min="-2" max="-2" attributes="0"/>
-                                                  <Group type="102" alignment="0" attributes="0">
-                                                      <Component id="createdField" min="-2" max="-2" attributes="0"/>
-                                                      <EmptySpace max="-2" attributes="0"/>
-                                                      <Component id="reporterStatusLabel" min="-2" max="-2" attributes="0"/>
-                                                  </Group>
-                                                  <Component id="dueField" linkSize="8" alignment="0" min="-2" max="-2" attributes="0"/>
-                                              </Group>
-                                          </Group>
-                                      </Group>
-                                  </Group>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="componentWarning" min="-2" pref="16" max="-2" attributes="0"/>
-                                      <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="componentScrollPane" linkSize="2" min="-2" max="-2" attributes="0"/>
-                                          <Component id="componentLabel" min="-2" max="-2" attributes="0"/>
-                                      </Group>
-                                      <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
-                                      <Component id="affectsVersionWarning" min="-2" pref="16" max="-2" attributes="0"/>
-                                      <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="affectsVersionScrollPane" linkSize="2" min="-2" max="-2" attributes="0"/>
-                                          <Component id="affectsVersionLabel" min="-2" max="-2" attributes="0"/>
-                                      </Group>
-                                      <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
-                                      <Component id="fixVersionWarning" min="-2" pref="16" max="-2" attributes="0"/>
-                                      <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="fixVersionScrollPane" linkSize="2" min="-2" max="-2" attributes="0"/>
-                                          <Component id="fixVersionLabel" min="-2" max="-2" attributes="0"/>
-                                      </Group>
-                                  </Group>
-                              </Group>
-                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                          </Group>
-                      </Group>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Component id="actionPanel" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="summaryWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                  <Component id="environmentWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                  <Component id="addCommentWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                  <Component id="originalEstimateNewWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                  <Component id="attachmentsWarning" alignment="1" min="-2" pref="16" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace min="5" pref="5" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="originalEstimateLabelNew" alignment="0" max="32767" attributes="1"/>
-                                  <Component id="addCommentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="environmentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="summaryLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="subtaskLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="attachmentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="issueLinksLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" attributes="0">
-                              <Component id="customFieldPanelLeft" max="32767" attributes="1"/>
-                              <EmptySpace min="-2" pref="79" max="-2" attributes="0"/>
-                          </Group>
-                      </Group>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="environmentScrollPane" max="32767" attributes="0"/>
-                          <Component id="summaryField" alignment="0" max="32767" attributes="0"/>
-                          <Component id="addCommentScrollPane" alignment="0" max="32767" attributes="0"/>
-                          <Component id="dummyAttachmentPanel" alignment="0" max="32767" attributes="0"/>
-                          <Component id="dummySubtaskPanel" alignment="0" max="32767" attributes="0"/>
-                          <Component id="originalEstimateHint" alignment="0" pref="0" max="32767" attributes="1"/>
-                          <Component id="dummyIssueLinksPanel" alignment="0" max="32767" attributes="0"/>
-                          <Group type="102" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="originalEstimateFieldNew" min="-2" max="-2" attributes="0"/>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="submitButton" linkSize="3" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="cancelButton" linkSize="3" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="btnDeleteTask" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                              </Group>
-                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                          </Group>
-                          <Component id="customFieldPanelRight" alignment="0" max="32767" attributes="0"/>
-                      </Group>
-                  </Group>
-              </Group>
-              <EmptySpace max="-2" attributes="0"/>
-          </Group>
+          <Component id="headerPanel" max="32767" attributes="0"/>
+          <Component id="mainScrollPane" alignment="0" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
-              <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" attributes="0">
-                      <Component id="parentHeaderPanel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                      <Component id="headerLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="projectLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="projectCombo" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="createdLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="createdField" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="reporterStatusLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="projectWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="2" attributes="0">
-                          <Component id="issueTypeWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
-                          <Component id="issueTypeLabel" alignment="2" min="-2" max="-2" attributes="0"/>
-                          <Component id="issueTypeCombo" alignment="2" min="-2" max="-2" attributes="0"/>
-                          <Component id="updatedLabel" alignment="2" min="-2" max="-2" attributes="0"/>
-                          <Component id="updatedField" alignment="2" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="2" attributes="0">
-                          <Component id="statusWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
-                          <Component id="statusLabel" alignment="2" min="-2" max="-2" attributes="0"/>
-                          <Component id="statusCombo" alignment="2" min="-2" max="-2" attributes="0"/>
-                          <Component id="dueWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
-                          <Component id="dueLabel" alignment="2" min="-2" max="-2" attributes="0"/>
-                          <Component id="dueField" alignment="2" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="2" attributes="0">
-                          <Component id="resolutionWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
-                          <Component id="resolutionLabel" alignment="2" min="-2" max="-2" attributes="0"/>
-                          <Component id="resolutionCombo" alignment="2" min="-2" max="-2" attributes="0"/>
-                          <Component id="assigneeWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
-                          <Component id="assigneeLabel" alignment="2" min="-2" max="-2" attributes="0"/>
-                          <Component id="assigneeField" alignment="2" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="2" attributes="0">
-                          <Component id="priorityWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
-                          <Component id="priorityLabel" alignment="2" min="-2" max="-2" attributes="0"/>
-                          <Component id="priorityCombo" alignment="2" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="2" attributes="0">
-                          <Component id="componentLabel" alignment="2" min="-2" max="-2" attributes="0"/>
-                          <Component id="componentWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
-                          <Component id="affectsVersionWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
-                          <Component id="affectsVersionLabel" alignment="2" min="-2" max="-2" attributes="0"/>
-                          <Component id="fixVersionWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
-                          <Component id="fixVersionLabel" alignment="2" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="componentScrollPane" min="-2" max="-2" attributes="0"/>
-                          <Component id="affectsVersionScrollPane" min="-2" max="-2" attributes="0"/>
-                          <Component id="fixVersionScrollPane" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                  </Group>
-                  <Component id="actionPanel" min="-2" max="-2" attributes="0"/>
-                  <Group type="102" attributes="0">
-                      <EmptySpace min="103" pref="103" max="-2" attributes="0"/>
-                      <Component id="assigneeStatusLabel" min="-2" max="-2" attributes="0"/>
-                  </Group>
-              </Group>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="2" attributes="0">
-                  <Component id="originalEstimateWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
-                  <Component id="originalEstimateLabel" alignment="2" min="-2" max="-2" attributes="0"/>
-                  <Component id="originalEstimatePanel" linkSize="5" alignment="2" min="-2" max="-2" attributes="0"/>
-                  <Component id="originalEstimateField" linkSize="5" alignment="2" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="2" attributes="0">
-                  <Component id="remainingEstimateWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
-                  <Component id="remainingEstimateLabel" alignment="2" min="-2" max="-2" attributes="0"/>
-                  <Component id="remainingEstimatePanel" linkSize="9" alignment="2" min="-2" max="-2" attributes="0"/>
-                  <Component id="remainingEstimateField" linkSize="9" alignment="2" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="2" attributes="0">
-                  <Component id="timeSpentWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
-                  <Component id="timeSpentLabel" alignment="2" min="-2" max="-2" attributes="0"/>
-                  <Component id="timeSpentPanel" linkSize="7" alignment="2" min="-2" max="-2" attributes="0"/>
-                  <Component id="timeSpentField" linkSize="7" alignment="2" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="2" attributes="0">
-                  <Component id="workLogWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
-                  <Component id="logWorkButton2" alignment="2" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="dummyIssueLinksPanel" min="-2" max="-2" attributes="0"/>
-                  <Component id="issueLinksLabel" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="attachmentLabel" min="-2" max="-2" attributes="0"/>
-                  <Component id="dummyAttachmentPanel" min="-2" max="-2" attributes="0"/>
-                  <Component id="attachmentsWarning" min="-2" pref="16" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="subtaskLabel" min="-2" max="-2" attributes="0"/>
-                  <Component id="dummySubtaskPanel" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="2" attributes="0">
-                  <Component id="summaryWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
-                  <Component id="summaryLabel" alignment="2" min="-2" max="-2" attributes="0"/>
-                  <Component id="summaryField" alignment="2" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="environmentLabel" min="-2" max="-2" attributes="0"/>
-                  <Component id="environmentScrollPane" min="-2" max="-2" attributes="0"/>
-                  <Component id="environmentWarning" min="-2" pref="16" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" attributes="0">
-                      <Component id="customFieldPanelLeft" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="addCommentScrollPane" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="addCommentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="addCommentWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <Group type="103" groupAlignment="3" attributes="0">
-                                  <Component id="originalEstimateFieldNew" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="originalEstimateLabelNew" alignment="3" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="originalEstimateHint" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="3" attributes="0">
-                                  <Component id="submitButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="cancelButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="btnDeleteTask" alignment="3" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                          </Group>
-                          <Component id="originalEstimateNewWarning" min="-2" pref="16" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="separator" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Component id="dummyCommentPanel" max="32767" attributes="0"/>
-                  </Group>
-                  <Group type="102" attributes="0">
-                      <Component id="customFieldPanelRight" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                  </Group>
-              </Group>
+              <Component id="headerPanel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
+              <Component id="mainScrollPane" pref="1179" max="32767" attributes="0"/>
+              <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
   </Layout>
   <SubComponents>
-    <Container class="javax.swing.JPanel" name="dummyIssueLinksPanel">
-
-      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
-    </Container>
-    <Container class="javax.swing.JPanel" name="parentHeaderPanel">
-
-      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
-    </Container>
-    <Container class="javax.swing.JPanel" name="customFieldPanelLeft">
-
-      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
-    </Container>
-    <Container class="javax.swing.JPanel" name="customFieldPanelRight">
-
-      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
-    </Container>
-    <Component class="javax.swing.JLabel" name="headerLabel">
-    </Component>
-    <Component class="javax.swing.JLabel" name="projectLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.projectLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JComboBox" name="projectCombo">
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="projectComboActionPerformed"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JLabel" name="issueTypeLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.issueTypeLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JComboBox" name="issueTypeCombo">
-    </Component>
-    <Component class="javax.swing.JLabel" name="statusLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.statusLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JComboBox" name="statusCombo">
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="statusComboActionPerformed"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JLabel" name="resolutionLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.resolutionLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JComboBox" name="resolutionCombo">
-    </Component>
-    <Component class="javax.swing.JLabel" name="priorityLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.priorityLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JComboBox" name="priorityCombo">
-    </Component>
-    <Component class="javax.swing.JLabel" name="createdLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.createdLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JTextField" name="createdField">
-      <Properties>
-        <Property name="editable" type="boolean" value="false"/>
-        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
-            <EmptyBorder bottom="0" left="0" right="0" top="0"/>
-          </Border>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="updatedLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.updatedLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JTextField" name="updatedField">
-      <Properties>
-        <Property name="editable" type="boolean" value="false"/>
-        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
-            <EmptyBorder bottom="0" left="0" right="0" top="0"/>
-          </Border>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="dueLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.dueLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JFormattedTextField" name="dueField">
-      <Properties>
-        <Property name="formatterFactory" type="javax.swing.JFormattedTextField$AbstractFormatterFactory" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="new javax.swing.text.DefaultFormatterFactory(dueDateFormatter)" type="code"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="assigneeLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.assigneeLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JTextField" name="assigneeField">
-      <Properties>
-        <Property name="columns" type="int" value="15"/>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="componentLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.componentLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Container class="javax.swing.JScrollPane" name="componentScrollPane">
-      <AuxValues>
-        <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
-      </AuxValues>
-
-      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
-      <SubComponents>
-        <Component class="javax.swing.JList" name="componentList">
-          <Properties>
-            <Property name="model" type="javax.swing.ListModel" editor="org.netbeans.modules.form.editors2.ListModelEditor">
-              <StringArray count="1">
-                <StringItem index="0" value="Dummy"/>
-              </StringArray>
-            </Property>
-          </Properties>
-        </Component>
-      </SubComponents>
-    </Container>
-    <Component class="javax.swing.JLabel" name="affectsVersionLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.affectsVersionLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Container class="javax.swing.JScrollPane" name="affectsVersionScrollPane">
-      <AuxValues>
-        <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
-      </AuxValues>
-
-      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
-      <SubComponents>
-        <Component class="javax.swing.JList" name="affectsVersionList">
-          <Properties>
-            <Property name="model" type="javax.swing.ListModel" editor="org.netbeans.modules.form.editors2.ListModelEditor">
-              <StringArray count="1">
-                <StringItem index="0" value="Dummy"/>
-              </StringArray>
-            </Property>
-          </Properties>
-        </Component>
-      </SubComponents>
-    </Container>
-    <Component class="javax.swing.JLabel" name="fixVersionLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.fixVersionLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Container class="javax.swing.JScrollPane" name="fixVersionScrollPane">
-      <AuxValues>
-        <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
-      </AuxValues>
-
-      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
-      <SubComponents>
-        <Component class="javax.swing.JList" name="fixVersionList">
-          <Properties>
-            <Property name="model" type="javax.swing.ListModel" editor="org.netbeans.modules.form.editors2.ListModelEditor">
-              <StringArray count="1">
-                <StringItem index="0" value="Dummy"/>
-              </StringArray>
-            </Property>
-          </Properties>
-        </Component>
-      </SubComponents>
-    </Container>
-    <Component class="javax.swing.JLabel" name="originalEstimateLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.originalEstimateLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JTextField" name="originalEstimateField">
-      <Properties>
-        <Property name="editable" type="boolean" value="false"/>
-        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
-            <EmptyBorder bottom="0" left="0" right="0" top="0"/>
-          </Border>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="remainingEstimateLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.remainingEstimateLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JTextField" name="remainingEstimateField">
-      <Properties>
-        <Property name="editable" type="boolean" value="false"/>
-        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
-            <EmptyBorder bottom="0" left="0" right="0" top="0"/>
-          </Border>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="timeSpentLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.timeSpentLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JTextField" name="timeSpentField">
-      <Properties>
-        <Property name="editable" type="boolean" value="false"/>
-        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
-            <EmptyBorder bottom="0" left="0" right="0" top="0"/>
-          </Border>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="attachmentLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.attachmentLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="subtaskLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.subtaskLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="summaryLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.summaryLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JTextField" name="summaryField">
-    </Component>
-    <Component class="javax.swing.JLabel" name="environmentLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.environmentLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Container class="javax.swing.JScrollPane" name="environmentScrollPane">
-      <AuxValues>
-        <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
-      </AuxValues>
-
-      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
-      <SubComponents>
-        <Component class="javax.swing.JTextArea" name="environmentArea">
-          <Properties>
-            <Property name="lineWrap" type="boolean" value="true"/>
-            <Property name="rows" type="int" value="5"/>
-          </Properties>
-        </Component>
-      </SubComponents>
-    </Container>
-    <Component class="javax.swing.JLabel" name="addCommentLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.addCommentLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Container class="javax.swing.JScrollPane" name="addCommentScrollPane">
-      <Properties>
-        <Property name="verticalScrollBarPolicy" type="int" value="21"/>
-      </Properties>
-      <AuxValues>
-        <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
-      </AuxValues>
-
-      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
-      <SubComponents>
-        <Component class="javax.swing.JTextArea" name="addCommentArea">
-          <Properties>
-            <Property name="lineWrap" type="boolean" value="true"/>
-          </Properties>
-          <AuxValues>
-            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JTextArea() {&#xa;    @Override&#xa;    public Dimension getPreferredScrollableViewportSize() {&#xa;        Dimension dim = super.getPreferredScrollableViewportSize();&#xa;        JScrollPane scrollPane = (JScrollPane)SwingUtilities.getAncestorOfClass(JScrollPane.class, this);&#xa;        int delta = 0;&#xa;        if (scrollPane != null) {&#xa;            Component comp = scrollPane.getHorizontalScrollBar();&#xa;            delta = comp.isVisible() ? comp.getHeight() : 0;&#xa;        }&#xa;        Insets insets = getInsets();&#xa;        int prefHeight = 5 * getRowHeight() + insets.top + insets.bottom;&#xa;        dim = new Dimension(dim.width, delta + ((dim.height &lt; prefHeight) ? prefHeight : dim.height));&#xa;        return dim;&#xa;    }&#xa;}"/>
-          </AuxValues>
-        </Component>
-      </SubComponents>
-    </Container>
-    <Component class="javax.swing.JSeparator" name="separator">
-    </Component>
-    <Component class="javax.swing.JButton" name="submitButton">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.submitButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="submitButtonActionPerformed"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JButton" name="cancelButton">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.cancelButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cancelButtonActionPerformed"/>
-      </Events>
-    </Component>
-    <Container class="javax.swing.JPanel" name="dummyCommentPanel">
-
-      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
-    </Container>
-    <Container class="javax.swing.JPanel" name="dummySubtaskPanel">
-      <Properties>
-        <Property name="opaque" type="boolean" value="false"/>
-      </Properties>
-
-      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
-    </Container>
-    <Container class="javax.swing.JPanel" name="dummyAttachmentPanel">
-      <Properties>
-        <Property name="opaque" type="boolean" value="false"/>
-      </Properties>
-
-      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
-    </Container>
-    <Container class="javax.swing.JPanel" name="actionPanel">
+    <Container class="javax.swing.JPanel" name="headerPanel">
       <Properties>
         <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-          <Color blue="f5" green="ec" red="e9" type="rgb"/>
+          <Color blue="31" green="1e" id="TextArea.background" palette="3" red="12" type="palette"/>
         </Property>
       </Properties>
 
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" attributes="0">
+              <Group type="102" alignment="0" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="actionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                      <Component id="startProgressButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                      <Component id="resolveIssueButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                      <Component id="createSubtaskButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                      <Component id="convertToSubtaskButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                      <Component id="refreshButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                      <Component id="stopProgressButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                      <Component id="closeIssueButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                      <Component id="reopenIssueButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                      <Component id="addToCategoryButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                      <Component id="showInBrowserButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="parentHeaderPanel" max="32767" attributes="0"/>
+                      <Component id="headerLabel" alignment="0" max="32767" attributes="0"/>
                   </Group>
-                  <EmptySpace pref="13" max="32767" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="buttonsPanel" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -819,260 +1095,351 @@
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="actionLabel" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="startProgressButton" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="stopProgressButton" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="reopenIssueButton" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="resolveIssueButton" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="closeIssueButton" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="createSubtaskButton" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="32767" attributes="0"/>
-                  <Component id="convertToSubtaskButton" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="addToCategoryButton" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="showInBrowserButton" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="refreshButton" min="-2" max="-2" attributes="0"/>
+                  <Component id="parentHeaderPanel" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="2" attributes="0">
+                      <Component id="headerLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                      <Component id="buttonsPanel" alignment="2" min="-2" max="-2" attributes="0"/>
+                  </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
       </Layout>
       <SubComponents>
-        <Component class="javax.swing.JLabel" name="actionLabel">
+        <Container class="javax.swing.JPanel" name="parentHeaderPanel">
+
+          <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
+        </Container>
+        <Component class="javax.swing.JLabel" name="headerLabel">
+        </Component>
+        <Container class="javax.swing.JPanel" name="buttonsPanel">
           <Properties>
-            <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
-              <FontInfo relative="true">
-                <Font bold="true" component="actionLabel" property="font" relativeSize="true" size="0"/>
-              </FontInfo>
-            </Property>
-            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.actionLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+              <Color blue="31" green="1e" id="TextArea.background" palette="3" red="12" type="palette"/>
             </Property>
           </Properties>
-        </Component>
-        <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="startProgressButton">
-          <Properties>
-            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.startProgressButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-            </Property>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="startProgressButtonActionPerformed"/>
-          </Events>
-        </Component>
-        <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="stopProgressButton">
-          <Properties>
-            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.stopProgressButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-            </Property>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="stopProgressButtonActionPerformed"/>
-          </Events>
-        </Component>
-        <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="resolveIssueButton">
-          <Properties>
-            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.resolveIssueButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-            </Property>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="resolveIssueButtonActionPerformed"/>
-          </Events>
-        </Component>
-        <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="closeIssueButton">
-          <Properties>
-            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.closeIssueButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-            </Property>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="closeIssueButtonActionPerformed"/>
-          </Events>
-        </Component>
-        <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="createSubtaskButton">
-          <Properties>
-            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.createSubtaskButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-            </Property>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="createSubtaskButtonActionPerformed"/>
-          </Events>
-        </Component>
-        <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="convertToSubtaskButton">
-          <Properties>
-            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.convertToSubtaskButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-            </Property>
-          </Properties>
-        </Component>
-        <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="refreshButton">
-          <Properties>
-            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.refreshButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-            </Property>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="refreshButtonActionPerformed"/>
-          </Events>
-        </Component>
-        <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="reopenIssueButton">
-          <Properties>
-            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.reopenIssueButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-            </Property>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="reopenIssueButtonActionPerformed"/>
-          </Events>
-        </Component>
-        <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="addToCategoryButton">
-          <Properties>
-            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.tasklistButton.add" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-            </Property>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addToCategoryButtonActionPerformed"/>
-          </Events>
-        </Component>
-        <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="showInBrowserButton">
-          <Properties>
-            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.showInBrowserButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-            </Property>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="showInBrowserButtonActionPerformed"/>
-          </Events>
-        </Component>
+
+          <Layout>
+            <DimensionLayout dim="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="refreshButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="separatorLabelRefresh" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="showInBrowserButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="separatorLabelShowInBrowser" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="submitButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="separatorLabelSubmit" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="cancelButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="separatorLabelCancel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="btnDeleteTask" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="separatorLabelDismiss" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="btnMoreActions" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+            <DimensionLayout dim="1">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="2" attributes="0">
+                          <Component id="refreshButton" alignment="2" min="-2" max="-2" attributes="0"/>
+                          <Component id="separatorLabelRefresh" alignment="2" max="32767" attributes="0"/>
+                          <Component id="showInBrowserButton" alignment="2" min="-2" max="-2" attributes="0"/>
+                          <Component id="separatorLabelShowInBrowser" alignment="2" max="32767" attributes="0"/>
+                          <Component id="submitButton" alignment="2" min="-2" max="-2" attributes="0"/>
+                          <Component id="separatorLabelSubmit" alignment="2" max="32767" attributes="0"/>
+                          <Component id="cancelButton" alignment="2" min="-2" max="-2" attributes="0"/>
+                          <Component id="separatorLabelCancel" alignment="2" max="32767" attributes="0"/>
+                          <Component id="btnDeleteTask" alignment="2" min="-2" max="-2" attributes="0"/>
+                          <Component id="separatorLabelDismiss" alignment="2" max="32767" attributes="0"/>
+                          <Component id="btnMoreActions" alignment="2" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+          </Layout>
+          <SubComponents>
+            <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="refreshButton">
+              <Properties>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.refreshButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="refreshButtonActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JLabel" name="separatorLabelRefresh">
+              <Properties>
+                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                  <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
+                    <LineBorder/>
+                  </Border>
+                </Property>
+              </Properties>
+            </Component>
+            <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="showInBrowserButton">
+              <Properties>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.showInBrowserButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="showInBrowserButtonActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JLabel" name="separatorLabelShowInBrowser">
+              <Properties>
+                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                  <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
+                    <LineBorder/>
+                  </Border>
+                </Property>
+              </Properties>
+            </Component>
+            <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="submitButton">
+              <Properties>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.submitButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="submitButtonActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JLabel" name="separatorLabelSubmit">
+              <Properties>
+                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                  <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
+                    <LineBorder/>
+                  </Border>
+                </Property>
+              </Properties>
+            </Component>
+            <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="cancelButton">
+              <Properties>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.cancelButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cancelButtonActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JLabel" name="separatorLabelCancel">
+              <Properties>
+                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                  <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
+                    <LineBorder/>
+                  </Border>
+                </Property>
+              </Properties>
+            </Component>
+            <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="btnDeleteTask">
+              <Properties>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.btnDeleteTask.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+                <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.btnDeleteTask.TTtext" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnDeleteTaskActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JLabel" name="separatorLabelDismiss">
+              <Properties>
+                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                  <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
+                    <LineBorder/>
+                  </Border>
+                </Property>
+              </Properties>
+            </Component>
+            <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="btnMoreActions">
+              <Properties>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.btnMoreActions.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+                <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.btnMoreActions.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnMoreActionsActionPerformed"/>
+              </Events>
+            </Component>
+          </SubComponents>
+        </Container>
       </SubComponents>
     </Container>
-    <Container class="javax.swing.JPanel" name="originalEstimatePanel">
+    <Container class="javax.swing.JScrollPane" name="mainScrollPane">
       <Properties>
-        <Property name="opaque" type="boolean" value="false"/>
+        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+          <Border info="null"/>
+        </Property>
       </Properties>
 
-      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
-    </Container>
-    <Container class="javax.swing.JPanel" name="remainingEstimatePanel">
-      <Properties>
-        <Property name="opaque" type="boolean" value="false"/>
-      </Properties>
+      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+      <SubComponents>
+        <Container class="javax.swing.JPanel" name="mainPanel">
+          <Properties>
+            <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+              <Color blue="31" green="1e" id="TextArea.background" palette="3" red="12" type="palette"/>
+            </Property>
+          </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JPanel() {&#xa;    &#xa;    @Override&#xa;    public Dimension getPreferredSize () {&#xa;        return super.getMinimumSize();&#xa;    }&#xa;}"/>
+          </AuxValues>
 
-      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
+          <Layout>
+            <DimensionLayout dim="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" attributes="0">
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="attributesSection" alignment="0" max="32767" attributes="0"/>
+                          <Component id="attachmentsSection" alignment="0" max="32767" attributes="0"/>
+                          <Component id="subtasksSection" alignment="0" max="32767" attributes="0"/>
+                          <Component id="commentsSection" alignment="0" max="32767" attributes="0"/>
+                          <Component id="privateSection" alignment="0" max="32767" attributes="0"/>
+                          <Component id="newCommentSection" alignment="0" max="32767" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+            <DimensionLayout dim="1">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="attributesSection" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="attachmentsSection" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="subtasksSection" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="privateSection" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="newCommentSection" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="commentsSection" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+          </Layout>
+          <SubComponents>
+            <Component class="org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel" name="attributesSection">
+              <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="31" green="1e" id="TextArea.background" palette="3" red="12" type="palette"/>
+                </Property>
+                <Property name="content" type="javax.swing.JComponent" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                  <ComponentRef name="attributesSectionPanel"/>
+                </Property>
+                <Property name="label" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.attributesSection.label" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </Properties>
+            </Component>
+            <Component class="org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel" name="attachmentsSection">
+              <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="31" green="1e" id="TextArea.background" palette="3" red="12" type="palette"/>
+                </Property>
+                <Property name="actions" type="[Ljavax.swing.Action;" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                  <Connection code="getAttachmentsSectionActions()" type="code"/>
+                </Property>
+                <Property name="content" type="javax.swing.JComponent" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                  <ComponentRef name="attachmentsSectionPanel"/>
+                </Property>
+                <Property name="expanded" type="boolean" value="false"/>
+                <Property name="label" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.attachmentsLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;, 0)"/>
+                </Property>
+              </Properties>
+            </Component>
+            <Component class="org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel" name="subtasksSection">
+              <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="31" green="1e" id="TextArea.background" palette="3" red="12" type="palette"/>
+                </Property>
+                <Property name="actions" type="[Ljavax.swing.Action;" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                  <Connection code="getSubtasksSectionActions()" type="code"/>
+                </Property>
+                <Property name="content" type="javax.swing.JComponent" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                  <ComponentRef name="subtasksSectionpanel"/>
+                </Property>
+                <Property name="expanded" type="boolean" value="false"/>
+                <Property name="label" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.subtasksSection.label" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;, 0)"/>
+                </Property>
+              </Properties>
+            </Component>
+            <Component class="org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel" name="commentsSection">
+              <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="31" green="1e" id="TextArea.background" palette="3" red="12" type="palette"/>
+                </Property>
+                <Property name="actions" type="[Ljavax.swing.Action;" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                  <Connection code="getCommentsSectionActions()" type="code"/>
+                </Property>
+                <Property name="content" type="javax.swing.JComponent" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                  <ComponentRef name="commentsSectionPanel"/>
+                </Property>
+                <Property name="label" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.commentsSection.label" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;, 0)"/>
+                </Property>
+              </Properties>
+            </Component>
+            <Component class="org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel" name="privateSection">
+              <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="31" green="1e" id="TextArea.background" palette="3" red="12" type="palette"/>
+                </Property>
+                <Property name="actions" type="[Ljavax.swing.Action;" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                  <Connection code="getPrivateSectionActions()" type="code"/>
+                </Property>
+                <Property name="content" type="javax.swing.JComponent" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                  <ComponentRef name="privateSectionPanel"/>
+                </Property>
+                <Property name="expanded" type="boolean" value="false"/>
+                <Property name="label" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.privateSection.label" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </Properties>
+            </Component>
+            <Component class="org.netbeans.modules.bugtracking.commons.SectionPanel" name="newCommentSection">
+              <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="31" green="1e" id="TextArea.background" palette="3" red="12" type="palette"/>
+                </Property>
+                <Property name="content" type="javax.swing.JComponent" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                  <ComponentRef name="newCommentSectionPanel"/>
+                </Property>
+                <Property name="label" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.newCommentsSection.label" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </Properties>
+            </Component>
+          </SubComponents>
+        </Container>
+      </SubComponents>
     </Container>
-    <Container class="javax.swing.JPanel" name="timeSpentPanel">
-      <Properties>
-        <Property name="opaque" type="boolean" value="false"/>
-      </Properties>
-
-      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
-    </Container>
-    <Component class="javax.swing.JTextField" name="originalEstimateFieldNew">
-      <Properties>
-        <Property name="columns" type="int" value="15"/>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="originalEstimateLabelNew">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.originalEstimateLabelNew.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="originalEstimateHint">
-      <Properties>
-        <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
-          <FontInfo relative="true">
-            <Font component="originalEstimateHint" property="font" relativeSize="true" size="-2"/>
-          </FontInfo>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.originalEstimateHint.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="logWorkButton2">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.logWorkButton2.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="logWorkButtonActionPerformed"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JLabel" name="reporterStatusLabel">
-    </Component>
-    <Component class="javax.swing.JLabel" name="assigneeStatusLabel">
-    </Component>
-    <Component class="javax.swing.JLabel" name="issueLinksLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.issueLinksLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JButton" name="btnDeleteTask">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.btnDeleteTask.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.btnDeleteTask.TTtext" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnDeleteTaskActionPerformed"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JLabel" name="projectWarning">
-    </Component>
-    <Component class="javax.swing.JLabel" name="issueTypeWarning">
-    </Component>
-    <Component class="javax.swing.JLabel" name="componentWarning">
-    </Component>
-    <Component class="javax.swing.JLabel" name="affectsVersionWarning">
-    </Component>
-    <Component class="javax.swing.JLabel" name="fixVersionWarning">
-    </Component>
-    <Component class="javax.swing.JLabel" name="statusWarning">
-    </Component>
-    <Component class="javax.swing.JLabel" name="resolutionWarning">
-    </Component>
-    <Component class="javax.swing.JLabel" name="priorityWarning">
-    </Component>
-    <Component class="javax.swing.JLabel" name="dueWarning">
-    </Component>
-    <Component class="javax.swing.JLabel" name="assigneeWarning">
-    </Component>
-    <Component class="javax.swing.JLabel" name="originalEstimateWarning">
-    </Component>
-    <Component class="javax.swing.JLabel" name="remainingEstimateWarning">
-    </Component>
-    <Component class="javax.swing.JLabel" name="timeSpentWarning">
-    </Component>
-    <Component class="javax.swing.JLabel" name="summaryWarning">
-    </Component>
-    <Component class="javax.swing.JLabel" name="environmentWarning">
-    </Component>
-    <Component class="javax.swing.JLabel" name="addCommentWarning">
-    </Component>
-    <Component class="javax.swing.JLabel" name="originalEstimateNewWarning">
-    </Component>
-    <Component class="javax.swing.JLabel" name="workLogWarning">
-    </Component>
-    <Component class="javax.swing.JLabel" name="attachmentsWarning">
-    </Component>
   </SubComponents>
 </Form>

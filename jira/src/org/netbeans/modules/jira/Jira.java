@@ -48,12 +48,15 @@ import com.atlassian.connector.eclipse.internal.jira.core.model.Priority;
 import com.atlassian.connector.eclipse.internal.jira.core.service.JiraClient;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
+import java.util.Date;
 import java.util.logging.Logger;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.BugtrackingSupport;
 import org.netbeans.modules.bugtracking.spi.IssuePriorityInfo;
 import org.netbeans.modules.bugtracking.spi.IssuePriorityProvider;
+import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
+import org.netbeans.modules.bugtracking.spi.IssueSchedulingProvider;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.query.JiraQuery;
@@ -82,6 +85,7 @@ public class Jira {
     private IssueStatusProvider<JiraRepository, NbJiraIssue> isp;
     private IssueNode.ChangesProvider<NbJiraIssue> jcp;
     private IssuePriorityProvider<NbJiraIssue> ipp;
+    private IssueSchedulingProvider<NbJiraIssue> ischp;
     
     
     private Jira() {
@@ -234,4 +238,42 @@ public class Jira {
         }
         return jcp;
     }    
+    
+    public IssueSchedulingProvider<NbJiraIssue> getSchedulingProvider () {
+        if(ischp == null) {
+            ischp = new IssueSchedulingProvider<NbJiraIssue>() {
+
+                @Override
+                public void setDueDate (NbJiraIssue i, Date date) {
+                    i.setTaskDueDate(date, true);
+                }
+
+                @Override
+                public void setSchedule (NbJiraIssue i, IssueScheduleInfo scheduleInfo) {
+                    i.setTaskScheduleDate(scheduleInfo, true);
+                }
+
+                @Override
+                public void setEstimate (NbJiraIssue i, int hours) {
+                    i.setTaskEstimate(hours, true);
+                }
+
+                @Override
+                public Date getDueDate (NbJiraIssue i) {
+                    return i.getPersistentDueDate();
+                }
+
+                @Override
+                public IssueScheduleInfo getSchedule (NbJiraIssue i) {
+                    return i.getPersistentScheduleInfo();
+                }
+
+                @Override
+                public int getEstimate (NbJiraIssue i) {
+                    return i.getPersistentEstimate();
+                }
+            };
+        }
+        return ischp;
+    } 
 }
