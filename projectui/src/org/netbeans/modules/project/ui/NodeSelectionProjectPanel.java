@@ -72,7 +72,7 @@ public class NodeSelectionProjectPanel extends javax.swing.JPanel implements Pre
     public static final boolean SHOW_ACTUALSELECTIONPROJECT = true;
     private boolean enabled;
 
-    public static final int COMPONENT_HEIGHT = 30;
+    public static final int COMPONENT_HEIGHT = 22;
     private static final int BORDER_WIDTH = 1;
     
     /**

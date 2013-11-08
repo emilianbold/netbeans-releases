@@ -51,7 +51,6 @@ import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.Rectangle;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -82,9 +81,6 @@ import java.util.prefs.Preferences;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -109,9 +105,6 @@ import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
-import org.openide.awt.CloseButtonFactory;
-import org.openide.awt.DynamicMenuContent;
-import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
 import org.openide.awt.UndoRedo;
 import org.openide.explorer.ExplorerManager;
@@ -140,7 +133,6 @@ import org.openide.util.RequestProcessor.Task;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.BooleanStateAction;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -1046,7 +1038,7 @@ public class ProjectTab extends TopComponent
             } else {
                 this.actualProjectLabel.setIcon(null);
             }
-            this.actualProjectLabel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 0));
+            this.actualProjectLabel.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 0));
         }
     }
     
