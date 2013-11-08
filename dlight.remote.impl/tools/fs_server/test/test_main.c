@@ -8,7 +8,7 @@
 
 #include "../src/fs_common.h"
 #include "../src/queue.h"
-#include "../src/dirtab.h"
+#include "../src/dirtab.c"
 #include "../src/array.h"
 
 static void _assert_true(bool condition, const char* conditionText) {
@@ -65,10 +65,10 @@ static void test_list() {
 //    assert_true(strcmp(l.tail->data, "c") == 0);
 }
 
-void test_dirtab_get_cache(const char* path, const char* reference_cache_path, int passes) {
+static void test_dirtab_get_cache(const char* path, const char* reference_cache_path, int passes) {
     int i;
     for (i = 0; i < passes; i++) {
-        const char *cache_path = dirtab_get_cache(path);
+        const char *cache_path = get_cache_path(path);
         fprintf(stdout, "%s -> %s\n", path, cache_path);
         assert_true(strcmp(cache_path, reference_cache_path) == 0);        
     }
