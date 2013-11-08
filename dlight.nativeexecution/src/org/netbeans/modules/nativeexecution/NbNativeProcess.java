@@ -106,6 +106,9 @@ public abstract class NbNativeProcess extends AbstractNativeProcess {
             command.add("--no-pty"); // NOI18N
         } else {
             Pty pty = info.getPty();
+            if (FIX_ERASE_KEY_IN_TERMINAL) {
+                command.add("--set-erase-key");
+            }
             if (pty != null) {
                 command.add("-p"); // NOI18N
                 command.add(pty.getSlaveName());
