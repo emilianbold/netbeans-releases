@@ -130,7 +130,7 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Boolean>, Ov
     
     public List<Fix> run(final CompilationInfo info, String diagnosticKey, final int offset, TreePath treePath, Data<Boolean> data) {
         final List<Fix> result = new ArrayList<Fix>();
-        if (Boolean.TRUE == data.getData()) {
+        if (data != null && Boolean.TRUE == data.getData()) {
             return null;
         }
         analyze(offset, info, new Performer() {
