@@ -226,5 +226,9 @@ public class DarkNimbusTheme {
         UIManager.put( "List[Selected].textForeground", UIManager.getColor( "nimbusSelectedText" ) );
 
         UIManager.put( "nb.explorer.noFocusSelectionBackground", UIManager.get( "nimbusSelectionBackground") );
+
+        //search in projects
+        UIManager.put("nb.search.sandbox.highlight", new Color(104, 93, 156));
+        UIManager.put("nb.search.sandbox.regexp.wrong", new Color(255, 71, 71));
    }
 }
