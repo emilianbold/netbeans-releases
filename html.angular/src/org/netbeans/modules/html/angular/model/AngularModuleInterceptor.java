@@ -106,6 +106,7 @@ public class AngularModuleInterceptor implements FunctionInterceptor{
                     functionName = ((List<String>)fArgument.getValue()).get(0);
                     functionOffset = fArgument.getOffset();
                     break;
+                default:
             }
             if (controllerName != null && functionName != null) {
                 // we probably found the name of the controller and also the function definition
