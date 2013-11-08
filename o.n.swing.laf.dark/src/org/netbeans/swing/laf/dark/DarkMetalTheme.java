@@ -224,6 +224,10 @@ public class DarkMetalTheme extends MetalTheme {
         //browser picker
         UIManager.put( "Nb.browser.picker.background.light", new Color(41, 41, 45));
         UIManager.put( "Nb.browser.picker.foreground.light", new Color(172,172,172));
+
+        //search in projects
+        UIManager.put("nb.search.sandbox.highlight", new Color(104, 93, 156));
+        UIManager.put("nb.search.sandbox.regexp.wrong", new Color(255, 71, 71));
     }
 
     @Override
