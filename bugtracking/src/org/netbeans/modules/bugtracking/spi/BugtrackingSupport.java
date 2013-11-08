@@ -41,6 +41,7 @@ import java.awt.Image;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.*;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.commons.NBBugzillaUtils;
 import org.netbeans.modules.bugtracking.tasks.DashboardTopComponent;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 
@@ -125,6 +126,15 @@ public final class BugtrackingSupport<R, Q, I> {
             return repo;
         }
         RepositoryImpl<R, Q, I> impl = new RepositoryImpl<R, Q, I>(r, repositoryProvider, queryProvider, issueProvider, issueStatusProvider, issueSchedulingProvider, issuePriorityProvider, issueFinder);
+        if(NBBugzillaUtils.isNbRepository(impl.getUrl())) { 
+            // might be we just automatically generated a nb repository,
+            // in such a case it also has to be added to the registry 
+            // as otherwise it happens only on manul repositoy creation
+            RepositoryRegistry registry = RepositoryRegistry.getInstance();
+            if(registry.getRepository(impl.getConnectorId(), impl.getId()) == null) {
+                registry.addRepository(impl);
+            }
+        }
         return impl.getRepository();
     }
     

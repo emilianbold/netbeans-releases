@@ -53,6 +53,7 @@ import org.openide.nodes.*;
 import org.openide.util.lookup.Lookups;
 import javax.swing.*;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
@@ -77,6 +78,9 @@ public abstract class IssueNode<I> extends AbstractNode {
     public static final String LABEL_RECENT_CHANGES = "issue.recent_changes";         // NOI18N
 
     public static final String LABEL_NAME_SUMMARY          = "issue.summary";     // NOI18N
+    private final String repositoryID;
+    private final String connectorID;
+    private Repository repository;
 
     public interface ChangesProvider<I> {
         public String getRecentChanges(I i);
@@ -88,22 +92,27 @@ public abstract class IssueNode<I> extends AbstractNode {
     private Action preferedAction = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
-            
-//            issueImpl.open();
+            Repository repo = getRepository();
+            Util.openIssue(repo, issueImpl.getID());
         }
     };
     private final ChangesProvider<I> changesProvider;
 
     /**
      * Creates a {@link IssueNode}
+     * 
+     * @param connectorID
+     * @param repositoryID
      * @param i
      * @param issueProvider
      * @param statusProvider
      * @param changesProvider
      */
-    public IssueNode(I i, IssueProvider<I> issueProvider, IssueStatusProvider<?, I> statusProvider, ChangesProvider<I> changesProvider) {
+    public IssueNode(String connectorID, String repositoryID, I i, IssueProvider<I> issueProvider, IssueStatusProvider<?, I> statusProvider, ChangesProvider<I> changesProvider) {
         super(Children.LEAF);
         this.issueImpl = new IssueImpl(i, issueProvider, statusProvider);
+        this.repositoryID = repositoryID;
+        this.connectorID = connectorID;
         this.changesProvider = changesProvider;
         initProperties();
         refreshHtmlDisplayName();
@@ -330,6 +339,13 @@ public abstract class IssueNode<I> extends AbstractNode {
         }
     }
 
+    private Repository getRepository() {
+        if(repository == null) {
+            repository = RepositoryManager.getInstance().getRepository(connectorID, repositoryID);
+        }
+        return repository;
+    }
+        
     private class IssueImpl {
         private final I i;
         private final IssueProvider<I> provider;
@@ -359,6 +375,10 @@ public abstract class IssueNode<I> extends AbstractNode {
 
         private void setSeen(boolean b) {
             statusProvider.setSeenIncoming(i, b);
+        }
+
+        private String getID() {
+            return provider.getID(i);
         }
     }
 }

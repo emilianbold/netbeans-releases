@@ -43,11 +43,14 @@
 package org.netbeans.modules.bugzilla.repository;
 
 import java.util.Collection;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.commons.NBBugzillaUtils;
 import org.netbeans.modules.bugzilla.BugzillaConnector;
+import org.netbeans.modules.bugzilla.commands.ValidateCommand;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.team.spi.TeamAccessor;
 import org.netbeans.modules.team.spi.TeamAccessorUtils;
@@ -88,13 +91,13 @@ public class NBRepositorySupport extends BugzillaRepository {
      *
      * @return a BugzillaRepository
      */
-    public Repository getNBRepository() {
+    public Repository getNBRepository(boolean checkLogin) {
         Collection<Repository> repos;
+        boolean registered = false;
         if(nbRepository != null) {
             // check if repository wasn't removed since the last time it was used
             if(!isTeam) {
                 repos = RepositoryManager.getInstance().getRepositories(BugzillaConnector.ID);
-                boolean registered = false;
                 for (Repository repo : repos) {
                     if(NBBugzillaUtils.isNbRepository(repo.getUrl())) {
                         registered = true;
@@ -102,10 +105,12 @@ public class NBRepositorySupport extends BugzillaRepository {
                     }
                 }
                 if(!registered) {
-                    NBBugzillaUtils.addRepository(BugzillaConnector.ID, nbRepository.getId());
+                    nbRepository = null; // create a new one
                 }
             }
-            return nbRepository;
+            if(registered) {
+                return nbRepository;
+            }
         }
         repos = RepositoryManager.getInstance().getRepositories(BugzillaConnector.ID);
         for (Repository repo : repos) {
@@ -119,7 +124,7 @@ public class NBRepositorySupport extends BugzillaRepository {
             isTeam = true;
             // there is a nb team server registered in the ide
             // create a new repo but _do not register_ in services
-            nbRepository = createRepositoryIntern(); // XXX for now we keep a repository for each
+            nbRepository = createRepositoryIntern(checkLogin); // XXX for now we keep a repository for each
                                                      //     nb team project. there will be no need
                                                      //     to create a new instance as soon as we will
                                                      //     have only one repository instance for all
@@ -127,8 +132,7 @@ public class NBRepositorySupport extends BugzillaRepository {
         }
 
         if(nbRepository == null) {                              // no nb repo yet ...
-            nbRepository = createRepositoryIntern();            // ... create ...
-            NBBugzillaUtils.addRepository(BugzillaConnector.ID, nbRepository.getId()); // ... and register in services/issue tracking
+            nbRepository = createRepositoryIntern(checkLogin);            // ... create ...
         } 
 
         return nbRepository;
@@ -138,14 +142,14 @@ public class NBRepositorySupport extends BugzillaRepository {
         bugzillaRepository = repo;
     }
 
-    public BugzillaRepository getNBBugzillaRepository() {
+    public BugzillaRepository getNBBugzillaRepository(boolean checkLogin) {
         if(bugzillaRepository == null) {
-            getNBRepository(); // invoke creation
+            getNBRepository(checkLogin); // invoke creation
         }
         return bugzillaRepository;
     }
             
-    private Repository createRepositoryIntern() {
+    private Repository createRepositoryIntern(boolean checkLogin) {
         char[] password = NBBugzillaUtils.getNBPassword();
         final String username = NBBugzillaUtils.getNBUsername();
         String name = NbBundle.getMessage(NBRepositorySupport.class, "LBL_NBRepository"); // NOI18N
@@ -159,7 +163,11 @@ public class NBRepositorySupport extends BugzillaRepository {
                 null, 
                 password, 
                 null);
-        bugzillaRepository = new BugzillaRepository(info); 
+        BugzillaRepository repo = new BugzillaRepository(info); 
+        if(checkLogin != checkLogin(repo)) {
+            return null;
+        }
+        bugzillaRepository = repo;
         return BugzillaUtil.getRepository(bugzillaRepository);
     }
     
@@ -171,4 +179,30 @@ public class NBRepositorySupport extends BugzillaRepository {
         }
         return false;
     }    
+    
+    private static boolean checkLogin(final BugzillaRepository repo) {
+        if(repo.getUsername() != null && !repo.getUsername().equals("")) { // NOI18N
+            return true;
+        }
+
+        String errorMsg = NbBundle.getMessage(NBLoginPanel.class, "MSG_MISSING_USERNAME_PASSWORD");  // NOI18N
+        while(NBLoginPanel.show(repo, errorMsg)) {
+
+            ValidateCommand cmd = new ValidateCommand(repo.getTaskRepository());
+            ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(NBLoginPanel.class, "MSG_CONNECTING_2_NBORG")); // NOI18N
+            handle.start();
+            try {
+                repo.getExecutor().execute(cmd, false, false, false);
+            } finally {
+                handle.finish();
+            }
+            if(cmd.hasFailed()) {
+                errorMsg = cmd.getErrorMessage();
+                continue;
+            }
+            return true;
+        }
+        repo.setCredentials(null, null, null, null); // reset
+        return false;
+    }
 }
