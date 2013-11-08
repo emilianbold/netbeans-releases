@@ -43,13 +43,10 @@
 package org.netbeans.modules.maven.newproject.idenative;
 
 import java.io.File;
-import java.util.Collections;
-import java.util.List;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.maven.api.archetype.ArchetypeWizards;
-import org.netbeans.modules.maven.model.ModelOperation;
-import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.maven.api.archetype.ProjectInfo;
 import static org.netbeans.modules.maven.newproject.idenative.Bundle.LBL_Maven_Quickstart_Archetype;
 import org.openide.util.NbBundle.Messages;
 
@@ -66,18 +63,24 @@ public class SimpleJavaNativeMWI extends IDENativeMavenWizardIterator {
     }
 
     @Override
-    protected List<ModelOperation<POMModel>> getOperations(Context context) {
-        return Collections.emptyList();
-    }
+    protected CreateProjectBuilder createBuilder(File projFile, ProjectInfo vi, ProgressHandle handle) {
+        return super.createBuilder(projFile, vi, handle).setAdditionalNonPomWork(new CreateProjectBuilder.AdditionalChangeHandle() {
+            @Override
+            public Runnable createAdditionalChange(final CreateProjectBuilder.Context context) {
+                return new Runnable() {
 
-    @Override
-    protected void afterProjectCreatedActions(Context context, ProgressHandle handle) {
-        File src = new File(context.projectDirectory, "src" + File.separator + "main" + File.separator + "java");
-        src.mkdirs();
-        String path = context.projectInfo.packageName.replace(".", File.separator);
-        new File(src, path).mkdirs();
+                    @Override
+                    public void run() {
+                        File src = new File(context.getProjectDirectory(), "src" + File.separator + "main" + File.separator + "java");
+                        src.mkdirs();
+                        if (context.getPackageName() != null) {
+                            String path = context.getPackageName().replace(".", File.separator);
+                            new File(src, path).mkdirs();
+                        }
+                    }
+                };
+            }
+        });
     }
-
-    
     
 }

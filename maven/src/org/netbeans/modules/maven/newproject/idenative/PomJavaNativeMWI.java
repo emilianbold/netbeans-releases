@@ -42,13 +42,8 @@
 
 package org.netbeans.modules.maven.newproject.idenative;
 
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.maven.api.archetype.ArchetypeWizards;
-import org.netbeans.modules.maven.model.ModelOperation;
-import org.netbeans.modules.maven.model.pom.POMModel;
 import static org.netbeans.modules.maven.newproject.idenative.Bundle.LBL_Maven_POM_Archetype;
 import org.openide.util.NbBundle;
 
@@ -63,16 +58,4 @@ public class PomJavaNativeMWI extends IDENativeMavenWizardIterator {
     public PomJavaNativeMWI() {
         super(LBL_Maven_POM_Archetype(), "org.codehaus.mojo.archetypes:pom-root:1.1", "pom");
     }
-
-    @Override
-    protected List<ModelOperation<POMModel>> getOperations(IDENativeMavenWizardIterator.Context context) {
-        return Collections.emptyList();
-    }
-
-    @Override
-    protected void afterProjectCreatedActions(IDENativeMavenWizardIterator.Context context, ProgressHandle handle) {
-    }
-
-    
-    
 }
