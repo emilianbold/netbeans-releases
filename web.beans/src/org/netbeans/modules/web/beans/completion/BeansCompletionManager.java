@@ -49,8 +49,6 @@ import java.util.Map;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.modules.xml.text.syntax.SyntaxElement;
 import org.netbeans.modules.xml.text.syntax.dom.StartTag;
-import org.netbeans.modules.xml.text.syntax.dom.Tag;
-import org.w3c.dom.Text;
 
 /**
  * This class figures out the completion items for various attributes
@@ -69,11 +67,11 @@ public final class BeansCompletionManager {
 
 
         // Items for property names 
-        BeansCompletor.EntityClassCompletor javaClassCompletor = new BeansCompletor.EntityClassCompletor();
+        BeansCompletor.JavaClassesCompletor javaClassCompletor = new BeansCompletor.JavaClassesCompletor(BeansCompletor.TAG.CLASS);
         registerCompletor(BeansXmlConstants.CLASS, null, javaClassCompletor);
         
-        BeansCompletor.EntityClassCompletor stereotypeClassCompletor = new BeansCompletor.EntityClassCompletor();
-        registerCompletor(BeansXmlConstants.STEREOTYPE, null, javaClassCompletor);
+        BeansCompletor.JavaClassesCompletor stereotypeClassCompletor = new BeansCompletor.JavaClassesCompletor(BeansCompletor.TAG.STEREOTYPE);
+        registerCompletor(BeansXmlConstants.STEREOTYPE, null, stereotypeClassCompletor);
     }
     
     private static final BeansCompletionManager INSTANCE = new BeansCompletionManager();
@@ -109,7 +107,6 @@ public final class BeansCompletionManager {
         DocumentContext docContext = context.getDocumentContext();
         SyntaxElement curElem = docContext.getCurrentElement();
         SyntaxElement prevElem = docContext.getCurrentElement().getPrevious();
-        Tag propTag;
 
         String tagName = (curElem instanceof StartTag) ? ((StartTag) curElem).getTagName() : ((prevElem instanceof StartTag) ? ((StartTag) prevElem).getTagName() : null);
         BeansCompletor completor = locateCompletor(tagName, null);
@@ -118,43 +115,7 @@ public final class BeansCompletionManager {
              if (completor.getAnchorOffset() != -1) {
                 anchorOffset = completor.getAnchorOffset();
             }
-        } else {
-
-            // If current element is a start tag and its tag is <property>
-            // or the current element is text and its prev is a start <property> tag,
-            // then do the code completion
-            if ((curElem instanceof StartTag) && ((StartTag) curElem).getTagName().equalsIgnoreCase(BeansXmlConstants.STEREOTYPE)) {
-                propTag = (StartTag) curElem;
-            } /*else if ((curElem instanceof Text) && (prevElem instanceof StartTag) &&
-                    ((StartTag) prevElem).getTagName().equalsIgnoreCase(BeansXmlConstants.ALTERNATIVES)) {
-                propTag = (StartTag) prevElem;
-            } */else {
-                return anchorOffset;
-            }
-
-            String propName = "";//JPAEditorUtil.getPersistencePropertyName(propTag);
-            int caretOffset = context.getCaretOffset();
-            String typedChars = context.getTypedPrefix();
-
-            Object possibleValue = null;//PersistenceCfgProperties.getPossiblePropertyValue(null, propName);
-
-            if (possibleValue instanceof String[]) {
-
-                // Add the values in the String[] as completion items
-                String[] values = (String[])possibleValue;
-
-                for (int i = 0; i < values.length; i++) {
-                    if (values[i].startsWith(typedChars.trim())
-                            || values[i].startsWith( "org.hibernate.dialect." + typedChars.trim()) ) { // NOI18N
-                        BeansCompletionItem item = 
-                                BeansCompletionItem.createHbPropertyValueItem(caretOffset-typedChars.length(), values[i]);
-                        valueItems.add(item);
-                    }
-                }
-
-                anchorOffset = context.getCurrentToken().getPrevious().getOffset() + 1;
-            }
-        }
+        } 
         return anchorOffset;
     }
 
