@@ -77,7 +77,7 @@ public class DirectoryReaderFS implements DirectoryReader {
     private static final Map<ExecutionEnvironment, DirectoryReaderFS> instances = new HashMap<ExecutionEnvironment, DirectoryReaderFS>();
     private static final Object instancesLock = new Object();
     
-    public static final boolean USE_FS_SERVER = Boolean.getBoolean("remote.fs_server");
+    public static final boolean USE_FS_SERVER = getBoolean("remote.fs_server", false);
     public static final boolean VERBOSE_RESPONSE = Boolean.getBoolean("remote.fs_server.verbose.response");
 
     private final ExecutionEnvironment env;
@@ -290,6 +290,14 @@ public class DirectoryReaderFS implements DirectoryReader {
         dispatcher.connected();
     }
     
+    private static boolean getBoolean(String name, boolean result) {
+        String text = System.getProperty(name);
+        if (text != null) {
+            result = Boolean.parseBoolean(text);
+        }
+        return result;
+    }    
+
     @OnStop
     public static class Closer implements Runnable {
         @Override
