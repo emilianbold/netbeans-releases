@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.maven.newproject.idenative;
 
-import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.progress.ProgressHandle;
@@ -50,32 +49,28 @@ import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.maven.api.archetype.ArchetypeWizards;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.pom.POMModel;
-import static org.netbeans.modules.maven.newproject.idenative.Bundle.LBL_Maven_Quickstart_Archetype;
-import org.openide.util.NbBundle.Messages;
+import static org.netbeans.modules.maven.newproject.idenative.Bundle.LBL_Maven_POM_Archetype;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author mkleint
  */
-@TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=100, displayName="#LBL_Maven_Quickstart_Archetype", iconBase="org/netbeans/modules/maven/resources/jaricon.png", description="quickstart.html")
-@Messages("LBL_Maven_Quickstart_Archetype=Java Application")
-public class SimpleJavaNativeMWI extends IDENativeMavenWizardIterator {
+@TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=980, displayName="#LBL_Maven_POM_Archetype", iconBase="org/netbeans/modules/maven/resources/Maven2Icon.gif", description="pom-root.html")
+@NbBundle.Messages("LBL_Maven_POM_Archetype=POM Project")
+public class PomJavaNativeMWI extends IDENativeMavenWizardIterator {
 
-    public SimpleJavaNativeMWI() {
-        super(LBL_Maven_Quickstart_Archetype(), "org.apache.maven.archetypes:maven-archetype-quickstart:1.1", "jar");
+    public PomJavaNativeMWI() {
+        super(LBL_Maven_POM_Archetype(), "org.codehaus.mojo.archetypes:pom-root:1.1", "pom");
     }
 
     @Override
-    protected List<ModelOperation<POMModel>> getOperations(Context context) {
+    protected List<ModelOperation<POMModel>> getOperations(IDENativeMavenWizardIterator.Context context) {
         return Collections.emptyList();
     }
 
     @Override
-    protected void afterProjectCreatedActions(Context context, ProgressHandle handle) {
-        File src = new File(context.projectDirectory, "src" + File.separator + "main" + File.separator + "java");
-        src.mkdirs();
-        String path = context.projectInfo.packageName.replace(".", File.separator);
-        new File(src, path).mkdirs();
+    protected void afterProjectCreatedActions(IDENativeMavenWizardIterator.Context context, ProgressHandle handle) {
     }
 
     

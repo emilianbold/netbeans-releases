@@ -90,11 +90,11 @@ public class MavenWizardIterator implements WizardDescriptor.BackgroundInstantia
         this.titlename = titleName;
     }
 
-    @TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=100, displayName="#LBL_Maven_Quickstart_Archetype", iconBase="org/netbeans/modules/maven/resources/jaricon.png", description="quickstart.html")
-    @Messages("LBL_Maven_Quickstart_Archetype=Java Application")
-    public static WizardDescriptor.InstantiatingIterator<?> quickstart() {
-        return ArchetypeWizards.definedArchetype("org.apache.maven.archetypes", "maven-archetype-quickstart", "1.1", null, LBL_Maven_Quickstart_Archetype());
-    }
+//    @TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=100, displayName="#LBL_Maven_Quickstart_Archetype", iconBase="org/netbeans/modules/maven/resources/jaricon.png", description="quickstart.html")
+//    @Messages("LBL_Maven_Quickstart_Archetype=Java Application")
+//    public static WizardDescriptor.InstantiatingIterator<?> quickstart() {
+//        return ArchetypeWizards.definedArchetype("org.apache.maven.archetypes", "maven-archetype-quickstart", "1.1", null, LBL_Maven_Quickstart_Archetype());
+//    }
     
     @TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=120, displayName="#LBL_Maven_JavaFx_Archetype", iconBase="org/netbeans/modules/maven/resources/jaricon.png", description="javafx.html")
     @Messages("LBL_Maven_JavaFx_Archetype=JavaFX Application")
@@ -108,11 +108,11 @@ public class MavenWizardIterator implements WizardDescriptor.BackgroundInstantia
         return ArchetypeWizards.definedArchetype("org.codehaus.mojo.archetypes", "sample-javafx", "0.1", null, LBL_Maven_JavaFx_Sample_Archetype());
     }
 
-    @TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=980, displayName="#LBL_Maven_POM_Archetype", iconBase="org/netbeans/modules/maven/resources/Maven2Icon.gif", description="pom-root.html")
-    @Messages("LBL_Maven_POM_Archetype=POM Project")
-    public static WizardDescriptor.InstantiatingIterator<?> pomRoot() {
-        return ArchetypeWizards.definedArchetype("org.codehaus.mojo.archetypes", "pom-root", "1.1", null, LBL_Maven_POM_Archetype());
-    }
+//    @TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=980, displayName="#LBL_Maven_POM_Archetype", iconBase="org/netbeans/modules/maven/resources/Maven2Icon.gif", description="pom-root.html")
+//    @Messages("LBL_Maven_POM_Archetype=POM Project")
+//    public static WizardDescriptor.InstantiatingIterator<?> pomRoot() {
+//        return ArchetypeWizards.definedArchetype("org.codehaus.mojo.archetypes", "pom-root", "1.1", null, LBL_Maven_POM_Archetype());
+//    }
 
     public @Override Set<FileObject> instantiate() throws IOException {
         return ArchetypeWizardUtils.instantiate(wiz);

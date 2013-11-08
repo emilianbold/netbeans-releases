@@ -96,10 +96,12 @@ public abstract class IDENativeMavenWizardIterator implements WizardDescriptor.I
     private final AtomicBoolean hasNextCalled = new AtomicBoolean(); //#216236
     private final String titlename;
     private final String log;
+    private final String packaging;
 
-    public IDENativeMavenWizardIterator(String title, String log) {
+    public IDENativeMavenWizardIterator(String title, String log, String packaging) {
         this.titlename = title;
         this.log = log;
+        this.packaging = packaging;
     }
     
     @Override
@@ -235,7 +237,7 @@ public abstract class IDENativeMavenWizardIterator implements WizardDescriptor.I
     
     public @Override void removeChangeListener(ChangeListener l) {}
 
-    private static class BasicPropertiesOperation implements ModelOperation<POMModel> {
+    private class BasicPropertiesOperation implements ModelOperation<POMModel> {
         private final @NullAllowed MavenProject parent;
         private final ProjectInfo vi;
         private final File projectDir;
@@ -250,14 +252,6 @@ public abstract class IDENativeMavenWizardIterator implements WizardDescriptor.I
         public void performOperation(POMModel model) {
             org.netbeans.modules.maven.model.pom.Project root = model.getProject();
             if (root != null) {
-                root.setArtifactId(vi.artifactId);
-                if (parent == null || !vi.groupId.equals(parent.getGroupId())) {
-                    root.setGroupId(vi.groupId);
-                }
-                if (parent == null || !vi.version.equals(parent.getVersion())) {
-                    root.setVersion(vi.version);
-                }
-                
                 if (parent != null) {
                     Parent parentpom = model.getFactory().createParent();
                     parentpom.setGroupId(parent.getGroupId());
@@ -277,6 +271,15 @@ public abstract class IDENativeMavenWizardIterator implements WizardDescriptor.I
                     root.setPomParent(parentpom);
                     
                 }
+                if (parent == null || !vi.groupId.equals(parent.getGroupId())) {
+                    root.setGroupId(vi.groupId);
+                }
+                root.setArtifactId(vi.artifactId);
+                if (parent == null || !vi.version.equals(parent.getVersion())) {
+                    root.setVersion(vi.version);
+                }
+                root.setPackaging(packaging);
+                
                 boolean setEncoding = true;
                 if (parent != null) {
                     java.util.Properties parentprops = parent.getProperties();
