@@ -79,13 +79,15 @@ public class AngularModuleInterceptor implements FunctionInterceptor{
         String controllerName = null;
         String functionName = null;
         int functionOffset = -1;
-        String fqnOfController = null;
+        int nameOffset = -1;
+        String fqnOfController;
         for (FunctionArgument fArgument : args) {
             switch (fArgument.getKind()) {
                 case STRING :
                     if (controllerName == null) {
                         // we expect that the first string parameter is the name of the conroller
                         controllerName = (String)fArgument.getValue();
+                        nameOffset = fArgument.getOffset();
                     }
                     break;
                 case ARRAY:
@@ -120,7 +122,7 @@ public class AngularModuleInterceptor implements FunctionInterceptor{
                 fqnOfController = controllerDecl.getFullyQualifiedName();
                 FileObject fo = globalObject.getFileObject();
                 if (fo != null) {
-                    AngularJsIndexer.addController(fo.toURI(), new AngularJsController(controllerName, fqnOfController, fo.getPath()));
+                    AngularJsIndexer.addController(fo.toURI(), new AngularJsController(controllerName, fqnOfController, fo.toURL(), nameOffset));
                 }
             }
             
