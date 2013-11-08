@@ -43,6 +43,7 @@ package org.netbeans.modules.html.angular.editor;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -164,8 +165,8 @@ public class AngularJsCodeCompletion implements CompletionProvider {
             for (AngularJsController controller : controllers) {
                 int anchor = ccContext.getCaretOffset() - ccContext.getPrefix().length();
                 String name = controller.getName();
-                String fileName = controller.getDeclarationFile();
-                File file = new File(fileName);
+                URL url = controller.getDeclarationFile();
+                File file = new File(url.toString());
                 AngularJsElement element = new AngularJsElement(name, ElementKind.METHOD);
                 result.add(new AngularJsCompletionItem.AngularFOCompletionItem(element, anchor, FileUtil.toFileObject(file)));
             }

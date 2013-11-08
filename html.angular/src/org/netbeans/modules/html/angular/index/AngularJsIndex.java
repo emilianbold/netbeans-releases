@@ -115,7 +115,8 @@ public class AngularJsIndex {
         for (String value : values) {
             if (value != null && !value.isEmpty() && value.indexOf(':') > 0) {
                 String[] split = value.split(":");
-                result.add(new AngularJsController(split[0], split[1], indexResult.getFile().getPath()));
+                int offset = Integer.parseInt(split[2]);
+                result.add(new AngularJsController(split[0], split[1], indexResult.getFile().toURL(), offset));
             }
         }
         return result;

@@ -138,7 +138,11 @@ public class AngularJsIndexer extends EmbeddingIndexer{
                 }
                 IndexDocument elementDocument = support.createDocument(indexable);
                 for (AngularJsController controller : cons) {
-                    elementDocument.addPair(FIELD_CONTROLLER, controller.getName()+":"+controller.getFqn(), true, true);
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(controller.getName()).append(":");
+                    sb.append(controller.getFqn()).append(":");
+                    sb.append(controller.getOffset());
+                    elementDocument.addPair(FIELD_CONTROLLER, sb.toString() , true, true);
                 }
                 support.addDocument(elementDocument);
                 // remove the cache
@@ -149,7 +153,7 @@ public class AngularJsIndexer extends EmbeddingIndexer{
     
     public static final class Factory extends EmbeddingIndexerFactory {
         public static final String NAME = "angular"; // NOI18N
-        public static final int VERSION = 1;
+        public static final int VERSION = 2;
         
         private static final ThreadLocal<Collection<Runnable>> postScanTasks = new ThreadLocal<Collection<Runnable>>();
         
