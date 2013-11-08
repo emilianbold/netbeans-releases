@@ -105,6 +105,7 @@ public class AngularJsCodeCompletion implements CompletionProvider {
                         result.addAll(findControllerNames(ccContext));
                     }
                     break;
+                default:
             }
         }
         
