@@ -39,7 +39,7 @@ static bool statistics = false;
 static int refresh_sleep = 1;
 
 #define FS_SERVER_MAJOR_VERSION 1
-#define FS_SERVER_MINOR_VERSION 5
+#define FS_SERVER_MINOR_VERSION 6
 
 typedef struct fs_entry {
     int /*short?*/ name_len;
@@ -167,7 +167,7 @@ static fs_request* decode_request(char* raw_request, fs_request* request, int re
     if (p == NULL) {
         return NULL;
     }   
-    if (!len) {
+    if (!len && *raw_request != FS_REQ_QUIT) {
         report_error("wrong (zero path) request: %s", raw_request);
         return NULL;
     }
