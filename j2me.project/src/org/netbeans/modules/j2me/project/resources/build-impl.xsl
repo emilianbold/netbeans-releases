@@ -201,15 +201,6 @@ is divided into following sections:
                         <istrue value="${{jar.archive.disabled}}"/>  <!-- Disables archive creation when archiving is overriden by an extension -->
                     </not>
                 </condition>
-                <condition property="do.mkdist">
-                    <and>
-                        <isset property="do.archive"/>
-                        <isset property="libs.CopyLibs.classpath"/>
-                        <not>
-                            <istrue value="${{mkdist.disabled}}"/>
-                        </not>
-                    </and>
-                </condition>
                 <condition property="do.archive+manifest.available">
                     <and>
                         <isset property="manifest.available"/>
@@ -273,7 +264,6 @@ is divided into following sections:
                 </condition>
                 <property name="jar.index" value="false"/>
                 <property name="jar.index.metainf" value="${{jar.index}}"/>
-                <property name="copylibs.rebase" value="true"/>
             </target>
 
             <target name="-post-init">
@@ -562,46 +552,6 @@ is divided into following sections:
                 </macrodef>
             </target>
 
-            <target name="-init-macrodef-copylibs">
-                <macrodef>
-                    <xsl:attribute name="name">copylibs</xsl:attribute>
-                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2me-embedded-project/1</xsl:attribute>
-                    <attribute>
-                        <xsl:attribute name="name">manifest</xsl:attribute>
-                        <xsl:attribute name="default">${manifest.file}</xsl:attribute>
-                    </attribute>
-                    <element>
-                        <xsl:attribute name="name">customize</xsl:attribute>
-                        <xsl:attribute name="optional">true</xsl:attribute>
-                    </element>
-                    <sequential>
-                        <property location="${{build.classes.dir}}" name="build.classes.dir.resolved"/>
-                        <pathconvert property="run.classpath.without.build.classes.dir">
-                            <path path="${{run.classpath}}"/>
-                            <map from="${{build.classes.dir.resolved}}" to=""/>
-                        </pathconvert>
-                        <pathconvert pathsep=" " property="jar.classpath">
-                            <path path="${{run.classpath.without.build.classes.dir}}"/>
-                            <chainedmapper>
-                                <flattenmapper/>
-                                <filtermapper>
-                                    <replacestring from=" " to="%20"/>
-                                </filtermapper>
-                                <globmapper from="*" to="lib/*"/>
-                            </chainedmapper>
-                        </pathconvert>
-                        <taskdef classname="org.netbeans.modules.java.j2seproject.copylibstask.CopyLibs" classpath="${{libs.CopyLibs.classpath}}" name="copylibs"/>
-                        <copylibs rebase="${{copylibs.rebase}}" compress="${{jar.compress}}" jarfile="${{dist.jar}}" manifest="@{{manifest}}" runtimeclasspath="${{run.classpath.without.build.classes.dir}}" index="${{jar.index}}" indexMetaInf="${{jar.index.metainf}}" excludeFromCopy="${{copylibs.excludes}}">
-                            <fileset dir="${{build.classes.dir}}" excludes="${{dist.archive.excludes}}"/>
-                            <manifest>
-                                <attribute name="Class-Path" value="${{jar.classpath}}"/>
-                                <customize/>
-                            </manifest>
-                        </copylibs>
-                    </sequential>
-                </macrodef>
-            </target>
-
             <target name="-init-presetdef-jar">
                 <presetdef>
                     <xsl:attribute name="name">jar</xsl:attribute>
@@ -787,34 +737,26 @@ is divided into following sections:
                 <copy file="${{manifest.file}}" tofile="${{tmp.manifest.file}}"/>
             </target>
 
-
-            <target name="-do-jar-copylibs">
-                <xsl:attribute name="depends">init,-init-macrodef-copylibs,compile,-pre-pre-jar,-pre-jar,-do-jar-create-manifest,-do-jar-copy-manifest</xsl:attribute>
-                <xsl:attribute name="if">do.mkdist</xsl:attribute>
-                <j2meproject1:copylibs manifest="${{tmp.manifest.file}}"/>
-            </target>
-
             <target name="-do-jar-jar">
-                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar,-do-jar-create-manifest,-do-jar-copy-manifest</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar,-do-jar-create-manifest,-do-jar-copy-manifest,-do-jar-extract-libs</xsl:attribute>
                 <xsl:attribute name="if">do.archive</xsl:attribute>
-                <xsl:attribute name="unless">do.mkdist</xsl:attribute>
                 <j2meproject1:jar manifest="${{tmp.manifest.file}}"/>
             </target>
 
+            <target name="-do-jar-extract-libs" description="Extracts all bundled libraries.">
+                <mkdir dir="${{build.classes.dir}}"/>
+                <nb-extract dir="${{build.classes.dir}}" excludeManifest="true" classpath="${{javac.classpath}}" excludeclasspath="${{extra.classpath}}"/>
+            </target>
+
             <target name="-do-jar-delete-manifest" >
-                <xsl:attribute name="depends">-do-jar-copylibs</xsl:attribute>
                 <xsl:attribute name="if">do.archive</xsl:attribute>
                 <delete>
                     <fileset file="${{tmp.manifest.file}}"/>
                 </delete>
             </target>
 
-
-            <target name="-do-jar-without-libraries">
-                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar,-do-jar-create-manifest,-do-jar-copy-manifest,-do-jar-jar,-do-jar-delete-manifest</xsl:attribute>
-            </target>
             <target name="-do-jar-with-libraries">
-                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar,-do-jar-create-manifest,-do-jar-copy-manifest,-do-jar-copylibs,-do-jar-delete-manifest</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar,-do-jar-create-manifest,-do-jar-copy-manifest,-do-jar-jar,-do-jar-delete-manifest</xsl:attribute>
             </target>
 
             <target name="-post-jar">
@@ -823,7 +765,7 @@ is divided into following sections:
             </target>
 
             <target name="-do-jar">
-                <xsl:attribute name="depends">init,compile,-do-jar-update-manifest,-pre-jar,-do-jar-without-libraries,-do-jar-with-libraries,-post-jar</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,-do-jar-update-manifest,-pre-jar,-do-jar-with-libraries,-post-jar</xsl:attribute>
             </target>
 
             <target name="jar">
