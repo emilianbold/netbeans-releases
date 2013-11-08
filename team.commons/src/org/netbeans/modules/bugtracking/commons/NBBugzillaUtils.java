@@ -129,18 +129,7 @@ public final class NBBugzillaUtils {
         }
     }
     
-    public static void addRepository(String connectorId, String repositoryId) {
-        RepositoryRegistryAccessor a = Lookup.getDefault().lookup(RepositoryRegistryAccessor.class);
-        if(a != null) {
-            a.addRepository(connectorId, repositoryId);
-        }
-    }
-    
     private static Preferences getPreferences() {
         return NbPreferences.root().node("org/netbeans/modules/bugtracking"); // NOI18N
-    }
-    
-    public interface RepositoryRegistryAccessor {
-        public void addRepository(String connectorId, String repositoryId);
     }
 }
