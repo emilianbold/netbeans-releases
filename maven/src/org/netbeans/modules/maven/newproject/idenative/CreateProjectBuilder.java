@@ -49,7 +49,6 @@ import java.util.List;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -141,7 +140,10 @@ public class CreateProjectBuilder {
 
             List<ModelOperation<POMModel>> pomOpers = new ArrayList<ModelOperation<POMModel>>();
             //TODO is FOQ too adventurous, maybe just ProjectManager.findProject on parent is better heuristics?
-            Project parentPrj = FileOwnerQuery.getOwner(org.openide.util.Utilities.toURI(projectDirectory));
+            Project parentPrj = parentProject;
+            if (parentPrj == null) {
+                parentPrj = FileOwnerQuery.getOwner(org.openide.util.Utilities.toURI(projectDirectory));
+            }
             MavenProject parent = null;
             if (parentPrj != null) {
                 NbMavenProject nbMavenParent = parentPrj.getLookup().lookup(NbMavenProject.class);
