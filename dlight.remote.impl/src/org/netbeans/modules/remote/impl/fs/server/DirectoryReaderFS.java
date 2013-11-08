@@ -106,6 +106,10 @@ public class DirectoryReaderFS implements DirectoryReader {
         this.env = env;
         this.dispatcher = new FSSDispatcher(env);
     }
+    
+    public boolean isValid() {
+        return dispatcher.isValid();
+    }
 
     public void warmap(String path) {
         long time = System.currentTimeMillis();
@@ -161,9 +165,7 @@ public class DirectoryReaderFS implements DirectoryReader {
                 cache.clear();
                 return;
             }
-        } catch (ConnectException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (ExecutionException ex) {
+        } catch (ConnectException | ExecutionException ex) {
             ex.printStackTrace(System.err);
         } finally {
             RemoteLogger.finest("Communication #{0} with fs_server for directry {1}: ({2} entries) took {3} ms",
@@ -232,7 +234,7 @@ public class DirectoryReaderFS implements DirectoryReader {
     }
 
     private List<DirEntry> readEntries(FSSResponse response, String path, int cnt, long reqId, AtomicInteger realCnt) 
-            throws IOException, InterruptedException {
+            throws IOException, InterruptedException, ExecutionException {
         try {
             RemoteLogger.finest("Reading response #{0} from fs_server for directry {1})",
                     reqId, path);
@@ -323,7 +325,10 @@ public class DirectoryReaderFS implements DirectoryReader {
         @Override
         public void connected(ExecutionEnvironment env) {
             if (USE_FS_SERVER) {
-                getInstance(env).connected();
+                DirectoryReaderFS instance = getInstance(env);
+                if (instance != null) {
+                    instance.connected();
+                }
             }
         }
 

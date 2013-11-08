@@ -60,6 +60,8 @@ import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -106,6 +108,12 @@ import org.openide.util.RequestProcessor;
     private final Object serverLock = new Object();
     
     private final String traceName;
+    
+    private volatile boolean valid = true;
+    private final AtomicInteger attempts = new AtomicInteger();
+    private static final int MAX_ATTEMPTS = Integer.getInteger("remote.fs_server.attempts", 3);
+    
+    private final AtomicReference<String> lastErrorMessage = new AtomicReference<String>();
 
     public FSSDispatcher(ExecutionEnvironment env) {
         this.env = env;
@@ -123,7 +131,7 @@ import org.openide.util.RequestProcessor;
         }
     }
 
-    void connected() {
+    public void connected() {
         RP.post(new ConnectTask());
     }
 
@@ -140,10 +148,12 @@ import org.openide.util.RequestProcessor;
                 ex.printStackTrace(System.err);
             } catch (IOException ioe) {
                 ioe.printStackTrace(System.err);
+                setInvalid(false);
             } catch (InterruptedException ex) {
                 ex.printStackTrace(System.err);
             } catch (ExecutionException ex) {
                 ex.printStackTrace(System.err);
+                setInvalid(false);
             } finally {
                 Thread.currentThread().setName(oldThreadName);
             }
@@ -200,12 +210,56 @@ import org.openide.util.RequestProcessor;
             } catch (IOException ioe) {
                 ioe.printStackTrace(System.err);
             } finally {
+                try {
+                    checkValid();
+                } catch (ExecutionException ex) {
+                    ex.printStackTrace(System.err);
+                }
                 Thread.currentThread().setName(oldThreadName);
             }
         }
     }
+
+    public boolean isValid() {
+        return valid;
+    }
     
+    private void setInvalid(boolean force) {
+        if (force) {
+            valid = false;
+        } else {
+            if (attempts.incrementAndGet() > MAX_ATTEMPTS) {
+                valid = false;
+            }
+        }
+    }
     
+    private void checkValid() throws ExecutionException {
+        if (ConnectionManager.getInstance().isConnectedTo(env)) {
+            FsServer srv = getServer();
+            if (srv != null) {
+                NativeProcess process = srv.getProcess();
+                if (!ProcessUtils.isAlive(process)) {
+                    try {
+                        int rc = process.exitValue();
+                        if (rc != 0) {
+                            setInvalid(false);
+                        }
+                        ExecutionException exception = new ExecutionException(lastErrorMessage.get(), null);
+                        synchronized (responseLock) {
+                            for (FSSResponse rsp : responses.values()) {                                
+                                rsp.failed(exception);
+                            }
+                        }
+                        throw exception;
+                    } catch (IllegalThreadStateException ex) {
+                        ex.printStackTrace(System.err);
+                    }
+                }
+            }
+        }
+    }
+
     public FSSResponse dispatch(FSSRequest request) throws IOException, ConnectException, 
             CancellationException, InterruptedException, ExecutionException {
         FSSResponse response = new FSSResponse(request);
@@ -219,8 +273,15 @@ import org.openide.util.RequestProcessor;
             srv = getOrCreateServer();
         } catch (ConnectionManager.CancellationException ex) {
             throw new java.util.concurrent.CancellationException(ex.getMessage());
+        } catch (IOException | ExecutionException ex) {
+            setInvalid(false);
+            throw ex;
         }
-        sendRequest(srv.getWriter(), request);
+        PrintWriter writer = srv.getWriter();
+        sendRequest(writer, request);
+        if(writer.checkError()) { // should we use just input stream instead of writer?
+            checkValid();
+        }     
         return response;
     }
     
@@ -228,7 +289,7 @@ import org.openide.util.RequestProcessor;
         String escapedPath = escape(request.getPath());
         writer.printf("%c %d %d %s\n", request.getKind().getChar(), // NOI18N
                 request.getId(), escapedPath.length(), escapedPath);
-        writer.flush();        
+        writer.flush();   
     }
 
     private FsServer getServer() {        
@@ -265,6 +326,7 @@ import org.openide.util.RequestProcessor;
                 if (isFreeBSD()) {
                     platformPath = "FreeBSD-x86"; // NOI18N
                 } else {
+                    setInvalid(true);
                     throw new IOException("Unsupported platform on " + env.getDisplayName()); //NOI18N
                 }
             } else {
@@ -297,6 +359,7 @@ import org.openide.util.RequestProcessor;
             }
         } else {
             if (!HostInfoUtils.fileExists(env, remotePath)) {
+                setInvalid(true);
                 throw new FileNotFoundException(env.getDisplayName() + ':' + remotePath); //NOI18N
             }
         }
@@ -358,6 +421,7 @@ import org.openide.util.RequestProcessor;
                     String line;
                     while ((line = reader.readLine()) != null) {
                         System.err.printf("%s\n", line); //NOI18N
+                        lastErrorMessage.set(line);
                     }
                 } catch (IOException ex) {
                     ex.printStackTrace(System.err);
@@ -384,7 +448,7 @@ import org.openide.util.RequestProcessor;
         public FsServer(String path) throws IOException {
             this.path = path;
             NativeProcessBuilder processBuilder = NativeProcessBuilder.newProcessBuilder(env);
-            processBuilder.setExecutable(path);
+            processBuilder.setExecutable(this.path);
             List<String> args = new ArrayList<String>();
             args.add("-t"); // NOI18N
             args.add("4"); // NOI18N
