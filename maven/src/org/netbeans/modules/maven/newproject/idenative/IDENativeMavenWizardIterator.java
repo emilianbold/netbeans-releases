@@ -121,6 +121,7 @@ public abstract class IDENativeMavenWizardIterator implements WizardDescriptor.I
             projFile.mkdirs();
             handle.progress("Looking for parent project");
             List<ModelOperation<POMModel>> operations = new ArrayList<ModelOperation<POMModel>>();
+            //TODO is FOQ too adventurous, maybe just ProjectManager.findProject on parent is better heuristics?
             Project parentProject = FileOwnerQuery.getOwner(org.openide.util.Utilities.toURI(projFile));
             MavenProject parent = null;
             if (parentProject != null) {
