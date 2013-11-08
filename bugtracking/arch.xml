@@ -29,18 +29,21 @@
 -->
  <answer id="arch-overall">
   <p>
-      The bugtracking SPI enables Bugtracking (e.g. bugzilla, JIRA) modules to fully integrate into the IDE workflow -
-      to manage tasks provided by those modules available in a Tasks Dashboard and to make them accessible for other 
-      subsystems in the IDE - e.g. VCS, Team
-      
-      Registration:
-      A bugtracking module extends <code>BugtrackingConnector</code> and registers it via default Lookup by the  
+      The Bugtracking SPI makes it possible to integrate bugtracking system 
+      providers into the IDE workflow:<br/>
+      - to create, edit, access and manage tasks via the Tasks Dashboard<br/>
+      - and to make them accessible for integration with other subsystems in the IDE - e.g. VCS, Team<br/>
+  </p>     
+    <p>
+      <b>Registration:</b><br/>
+      A bugtracking module extends <code>BugtrackingConnector</code> and registers it via the
       <code>BugtrackingConnector.Registration</code> annotation.
-      
+    </p>
+    <p>
       <api name="BugrackingSPI" group="java" type="export" category="devel">
           Enables Bugtracking modules to fully integrate into the IDE workflow.
       </api>
-      
+      <br/>
       <api name="BugrackingAPI" group="java" type="export" category="devel">
           Provides Bugtracking functionality for other subsystems in the IDE.
       </api>
@@ -107,7 +110,25 @@
 -->
  <answer id="arch-usecases">
   <p>
-   XXX no answer for arch-usecases
+    <usecase id="1" name="Registration and setup">
+        All registered plugins provide the capability to create and edit remote Repository configurations, 
+        to create and edit Queries and to create and edit issues for the needs of the Bugtracking UI.<br/> 
+        See UI spec XXX
+        See UI spec Taskss Dashboard
+    </usecase>
+    <usecase id="2" name="Issue information">
+        Registered plugins provide basic Issue information like id, summary, priority, scheduling for the 
+        needs of the Bugtracking UI.
+        See UI spec XXX
+        See UI spec Taskss Dashboard        
+    </usecase>
+    <usecase id="2" name="Issue operations">
+        If available the registered plugins provide bugtracking functionality to other systems in the IDE 
+        - e.g. attaching files, closing Issues, etc.
+        See UI spec XXX
+        See UI spec Taskss Dashboard
+    </usecase>    
+        see also the basic <a href="http://wiki.netbeans.org/BugtrackingAPISPIUseCases">api/spi requirements</a>      
   </p>
  </answer>
 
@@ -215,8 +236,9 @@
  <answer id="compat-version">
   <p>
     Yes, the moudle is designed to evolve over time. 
-    Currently the module persists bugtracking repository properties (see o.n.m.bugtracking.spi.RepositoryInfo)
-    and some Tasks Dashborad Settings via the standard NbPreferences API. It is expected, that it can live
+    Currently the module persists bugtracking repository properties (see 
+    <code>o.n.m.bugtracking.spi.RepositoryInfo</code>) and some Tasks Dashborad 
+    Settings via the standard NbPreferences API. It is expected, that it can live
     happily with future releases as it ignores all other settings.
   </p>
  </answer>
@@ -418,8 +440,9 @@
 -->
  <answer id="deploy-packages">
   <p>
-    Packages org.netbeans.modules.bugtracking.spi and org.netbeans.modules.bugtracking.api are declared as public, all others
-    are left private.
+      Packages <code>org.netbeans.modules.bugtracking.spi</code> 
+      and <code>org.netbeans.modules.bugtracking.api</code> are declared as public, 
+      all others are left private.
   </p>
  </answer>
 
@@ -586,21 +609,13 @@
  <answer id="exec-property">
   <p>
    Yes:<br/>
-   <ul>
-       <li>
-           <code>System.getProperty("netbeans.bugtracking.noOpenProjects")</code> to block 
+   - <code>System.getProperty("netbeans.bugtracking.noOpenProjects")</code> to block 
            creating of team repositories based on open project beineg checked out from a team server 
-           (e.g. kenai.com, java.net).
-       </li>
-       <li>
-           <code>System.getProperty("netbeans.bugzilla.url")</code> to override the hardcoded netbeans bugzilla url. 
-           Testing purposes only.
-       </li>
-       <li>
-           <code>System.getProperty("org.netbeans.modules.bugtracking.logPasswords")</code> when logging repository 
-           information, the password isn't obfuscated.
-       </li>
-   </ul>
+           (e.g. kenai.com, java.net).<br/>
+   - <code>System.getProperty("netbeans.bugzilla.url")</code> to override the hardcoded netbeans bugzilla url. 
+           Testing purposes only.<br/>
+   - <code>System.getProperty("org.netbeans.modules.bugtracking.logPasswords")</code> when logging repository 
+           information, the password isn't obfuscated.<br/>
   </p>
  </answer>
 
@@ -760,17 +775,15 @@
 -->
  <answer id="lookup-lookup">
   <p>
-    The module uses default Lookup to:
-    <ul>
-        <li>find registered bugtracking modules by searching for all 
+    The module uses default Lookup to:<br/>
+        - find registered bugtracking modules by searching for all 
             <code>org.netbeans.modules.bugtracking.spi.BugtrackingConnector</code> instaces. 
-            Order does not matter.</li>
-        <li>find RepositoryQuery implementations by searching for all 
+            Order does not matter.<br/>
+        - find RepositoryQuery implementations by searching for all 
             <code>org.netbeans.modules.bugtracking.spi.RepositoryQueryImplementations</code> instances. 
-            Order does not matter.</li>    
-            <li>find implementations of <code>org.netbeans.modules.team.ide.spi.IDEServices</code> and 
-            <code>org.netbeans.modules.team.ide.spi.ProjectServices</code> for 1 expected instance.</li>                
-    </ul>    
+            Order does not matter.<br/>
+        - find implementations of <code>org.netbeans.modules.team.ide.spi.IDEServices</code> and 
+            <code>org.netbeans.modules.team.ide.spi.ProjectServices</code> for 1 expected instance.<br/>
   </p>
  </answer>
 
@@ -787,11 +800,9 @@
 -->
  <answer id="lookup-register">
   <p>
-   There are some registrations via <code>@ServiceProvider</code>:
-      <ul>
-          <li><code>javax.annotation.processing.Processor</code> to handle registrations of 
-              <code>o.n.m.bugtracking.spi.BugtrackingConnector.Registration</code> - see <code>o.n.m.bugtracking.BugtrackingRegistrationProcessor</code></li>
-      </ul>   
+    There are some registrations via <code>@ServiceProvider</code>:<br/>
+        - <code>javax.annotation.processing.Processor</code> to handle registrations of 
+              <code>o.n.m.bugtracking.spi.BugtrackingConnector.Registration</code> - see <code>o.n.m.bugtracking.BugtrackingRegistrationProcessor</code><br/>
   </p>
  </answer>
 
@@ -884,10 +895,8 @@
  <answer id="perf-mem">
   <p>
     Amount of memory is proportional to the size of opened issue and query 
-    editors as well as to the amount of queries and issues listed in the Tasks Dashboard 
-    and depends on the memory consumption of the underlying bugtracking system implementations.
-    SPI: some temporary caches, all data is referenced weakly
-      XXX
+    editors as well as to the amount of queries and issues listed in the Tasks Dashboard. 
+    Exact memory consumption depends on the underlying bugtracking system implementations. 
   </p>
  </answer>
 
@@ -1020,7 +1029,7 @@
 -->
  <answer id="resources-file">
   <p>
-    Yes it does, but the API and SPI packages are wokring with FileObject-s 
+    Yes it does, but the API and SPI packages are working with FileObject-s 
     where IDE relevant files are provided as parameters.
   </p>
  </answer>
