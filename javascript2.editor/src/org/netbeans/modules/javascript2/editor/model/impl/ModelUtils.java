@@ -188,7 +188,6 @@ public class ModelUtils {
             }
             if (object instanceof JsArray) {
                 JsArray array = (JsArray)object;
-                JsObject global = getGlobalObject(object);
                 for (TypeUsage type : array.getTypesInArray()) {
                     if (type.getType().startsWith(SemiTypeResolverVisitor.ST_ANONYM)) {
                         int anonymOffset = Integer.parseInt(type.getType().substring(SemiTypeResolverVisitor.ST_ANONYM.length()));

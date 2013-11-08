@@ -299,7 +299,7 @@ public class IDEServicesImpl implements IDEServices {
     }
 
     @Override
-    public boolean isInstalled(String cnb) {
+    public boolean isPluginInstalled(String cnb) {
         List<UpdateUnit> units = UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE);
         for (UpdateUnit u : units) {
             if(u.getCodeName().equals(cnb) && u.getInstalled() != null) {

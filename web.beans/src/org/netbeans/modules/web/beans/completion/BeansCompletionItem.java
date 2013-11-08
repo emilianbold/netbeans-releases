@@ -651,6 +651,7 @@ public abstract class BeansCompletionItem implements CompletionItem {
     private static class PropertyValueItem extends PersistenceXmlCompletionItem {
 
         private String displayText;
+        CCPaintComponent.DBElementPaintComponent paintComponent;
 
         public PropertyValueItem(int substitutionOffset, String displayText) {
             super(substitutionOffset);
@@ -697,14 +698,20 @@ public abstract class BeansCompletionItem implements CompletionItem {
             return displayText;
         }
 
-        @Override
-        public String getItemText() {
-            throw new UnsupportedOperationException("Not supported yet.");
+         public String getItemText() {
+            
+                return displayText;
+            
         }
 
         @Override
         public Component getPaintComponent(boolean isSelected) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            if (paintComponent == null) {
+                paintComponent = new CCPaintComponent.DBElementPaintComponent();
+            }
+            paintComponent.setString(displayText); // NOI18N
+            paintComponent.setSelected(isSelected);
+            return paintComponent;
         }
     }
 }
