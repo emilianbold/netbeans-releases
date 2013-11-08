@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.html.angular.index;
 
+import java.net.URL;
+
 /**
  *
  * @author Petr Pisl
@@ -49,12 +51,14 @@ public class AngularJsController {
 
     private final String name;
     private final String fqn;
-    private final String filePath;
+    private final URL url;
+    private final int offset;
 
-    public AngularJsController(String name, String fqn, String filePath) {
+    public AngularJsController(String name, String fqn, URL url, int offset) {
         this.name = name;
         this.fqn = fqn;
-        this.filePath = filePath;
+        this.url = url;
+        this.offset = offset;
     }
 
     public String getName() {
@@ -65,9 +69,11 @@ public class AngularJsController {
         return fqn;
     }
 
-    public String getDeclarationFile() {
-        return filePath;
+    public URL getDeclarationFile() {
+        return url;
     }
 
-    
+    public int getOffset() {
+        return offset;
+    }
 }
