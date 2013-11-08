@@ -43,8 +43,13 @@ package org.netbeans.modules.web.beans.completion;
 
 import java.io.IOException;
 import java.util.*;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeElement;
 import javax.swing.text.Document;
+import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
@@ -52,6 +57,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.w3c.dom.Node;
@@ -110,64 +116,39 @@ public abstract class BeansCompletor {
                 @Override
                 public void run(CompilationController cc) throws Exception {
                     cc.toPhase(Phase.ELEMENTS_RESOLVED);
-                    Project project = FileOwnerQuery.getOwner(fo);
-//                    EntityClassScopeProvider provider = (EntityClassScopeProvider) project.getLookup().lookup(EntityClassScopeProvider.class);
-//                    EntityClassScope ecs = null;
-//                    Entity[] entities = null;
-//                    if (provider != null) {
-//                        ecs = provider.findEntityClassScope(fo);
-//                    }
-//                    if (ecs != null) {
-//                        entities = ecs.getEntityMappingsModel(false).runReadAction(new MetadataModelAction<EntityMappingsMetadata, Entity[]>() {
-//
-//                            @Override
-//                            public Entity[] run(EntityMappingsMetadata metadata) throws Exception {
-//                                return metadata.getRoot().getEntity();
-//                            }
-//                        });
-//                    }
-//                    // add classes 
-//                    if(entities != null) {
-//                        for (Entity entity : entities) {
-//                            if (typedPrefix.length() == 0 || entity.getClass2().toLowerCase().startsWith(typedPrefix.toLowerCase()) || entity.getName().toLowerCase().startsWith(typedPrefix.toLowerCase())) {
-//                                BeansCompletionItem item = BeansCompletionItem.createAttribValueItem(substitutionOffset, entity.getClass2());
-//                                results.add(item);
-//                            }
-//                        }
-//                    }
+                    Set<ElementHandle<TypeElement>> declaredTypes = null;
+                        declaredTypes = cc.getClasspathInfo().getClassIndex().getDeclaredTypes(typedPrefix, ClassIndex.NameKind.PREFIX, EnumSet.allOf(ClassIndex.SearchScope.class));
+        
+                    // add classes 
+                    if(declaredTypes != null && declaredTypes.size()>0) {
+                        for (ElementHandle<TypeElement> cl : declaredTypes) {
+                            if (typedPrefix.length() == 0 || cl.getQualifiedName().toLowerCase().startsWith(typedPrefix.toLowerCase())) {
+                                TypeElement te = cl.resolve(cc);
+                                if(te!=null && te.getKind() == ElementKind.CLASS && isAlternative(te)) { 
+                                  
+                                    BeansCompletionItem item = BeansCompletionItem.createHbPropertyValueItem(substitutionOffset, cl.getQualifiedName());
+                                    results.add(item);
+                                }
+                                //LazyJavaCompletionItem.createTypeItem(name, kinds, anchorOffset, env.getReferencesCount(), controller.getSnapshot().getSource(), env.isInsideNew(), env.isInsideNew() || env.isInsideClass(), env.afterExtends, env.getWhiteList()));
+                            }
+                        }
+                    }
                 }
             }, true);
 
             setAnchorOffset(substitutionOffset);
         }
     }
-
-    private static String getProviderClass(Node tag) {
-        String name = null;
-        while (tag != null && !"persistence-unit".equals(tag.getNodeName())) {
-            tag = tag.getParentNode();//NOI18N
-        }
-        if (tag != null) {
-            for (Node ch = tag.getFirstChild(); ch != null; ch = ch.getNextSibling()) {
-                if ("provider".equals(ch.getNodeName())) {//NOI18N
-                    name = ch.getFirstChild().getNodeValue();
+    private static boolean isAlternative(TypeElement te) { 
+        List<? extends AnnotationMirror> annotationMirrors = te.getAnnotationMirrors();
+        for (AnnotationMirror annotation : annotationMirrors) {
+            if(annotation.getAnnotationType().asElement() instanceof TypeElement) {
+            String typeName =((TypeElement) annotation.getAnnotationType().asElement()).getQualifiedName().toString();
+                if (AnnotationUtil.ALTERNATVE.equals(typeName)) {
+                    return true;
                 }
             }
         }
-        return name;
-    }
-
-    private static String getPropertyName(Node tag) {
-        String name = null;
-        while (tag != null && !"property".equals(tag.getNodeName())) {
-            tag = tag.getParentNode();//NOI18N
-        }
-        if (tag != null) {
-            Node nmN = tag.getAttributes().getNamedItem("name");//NOI18N
-            if (nmN != null) {
-                name = nmN.getNodeValue();
-            }
-        }
-        return name;
+        return false;
     }
 }
