@@ -263,7 +263,7 @@ import org.openide.util.RequestProcessor;
             HostInfo.OSFamily osFamily = hostInfo.getOSFamily();
             if (osFamily == HostInfo.OSFamily.UNKNOWN) {
                 if (isFreeBSD()) {
-                    platformPath = "FreeBSD-x86";
+                    platformPath = "FreeBSD-x86"; // NOI18N
                 } else {
                     throw new IOException("Unsupported platform on " + env.getDisplayName()); //NOI18N
                 }
@@ -307,7 +307,7 @@ import org.openide.util.RequestProcessor;
         if (line.indexOf('\\') == -1) {
             return line;
         } else {
-            return  line.replace("\\n", "\n").replace("\\\\", "\\");
+            return  line.replace("\\n", "\n").replace("\\\\", "\\"); // NOI18N
         }
     }
     
@@ -315,7 +315,7 @@ import org.openide.util.RequestProcessor;
         if (line.indexOf('\n') == -1 && line.indexOf('\\') == -1) {
             return line;
         } else {
-            return  line.replace("\n", "\\n").replace("\\", "\\\\");
+            return  line.replace("\n", "\\n").replace("\\", "\\\\"); // NOI18N
         }
     }
 
