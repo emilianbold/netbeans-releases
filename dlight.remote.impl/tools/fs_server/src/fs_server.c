@@ -412,14 +412,14 @@ static bool form_entry_response(char* response_buf, const int response_buf_size,
                 escape_strcpy(escaped_link, link);
             }
         }
-        snprintf(response_buf, response_buf_size, "%i %s %li %li %li %li %li %i %s\n",
+        snprintf(response_buf, response_buf_size, "%i %s %li %li %li %lu %lu %i %s\n",
                 escaped_name_size,
                 escaped_name,
                 (long) stat_buf.st_uid,
                 (long) stat_buf.st_gid,
                 (long) stat_buf.st_mode,
-                (long) stat_buf.st_size,
-                (long) stat_buf.st_mtime,
+                (unsigned long) stat_buf.st_size,
+                (unsigned long) stat_buf.st_mtime,
                 escaped_link_size,
                 escaped_link);
         return true;
@@ -893,18 +893,18 @@ static bool print_visitor(const char* path, int index, dirtab_element* el) {
 
 int main(int argc, char* argv[]) {
     trace("Version %d.%d\n", FS_SERVER_MAJOR_VERSION, FS_SERVER_MINOR_VERSION);    
-    lock_or_unloock(true);
     process_options(argc, argv);
-    state_init();
     dirtab_init();
-    if (get_trace() && ! dirtab_is_empty()) {
-        trace("loaded dirtab:\n");
-        dirtab_visit(print_visitor);
-    }
     const char* basedir = dirtab_get_basedir();
     if (chdir(basedir)) {
         report_error("cannot change current directory to %s: %s\n", basedir, strerror(errno));
         exit(FAILED_CHDIR);
+    }
+    lock_or_unloock(true);
+    state_init();
+    if (get_trace() && ! dirtab_is_empty()) {
+        trace("loaded dirtab:\n");
+        dirtab_visit(print_visitor);
     }
     if (log_flag) {
        log_open("log") ;
