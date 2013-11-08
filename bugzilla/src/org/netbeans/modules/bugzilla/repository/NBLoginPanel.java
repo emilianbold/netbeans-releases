@@ -46,7 +46,7 @@
  * Created on Jan 22, 2010, 11:02:27 AM
  */
 
-package org.netbeans.modules.bugzilla.api;
+package org.netbeans.modules.bugzilla.repository;
 
 import java.awt.event.ActionEvent;
 import java.net.MalformedURLException;
