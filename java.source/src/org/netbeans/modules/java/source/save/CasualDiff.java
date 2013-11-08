@@ -695,10 +695,13 @@ public class CasualDiff {
             boolean constMissing = filteredOldTDefs.isEmpty();
             boolean firstDiff = false;
             boolean oldEnum = constMissing;
-            if (!constMissing) {
+            boolean xxx = (newT.mods.flags & Flags.ENUM) != 0 && filteredOldTDefs.isEmpty() && !filteredNewTDefs.isEmpty() && !isEnum(filteredNewTDefs.get(0)) && !newT.getSimpleName().isEmpty();
+            if (constMissing) {
+                firstDiff = !isEnum(filteredNewTDefs.get(0));
+            } else {
                 firstDiff = (oldEnum = isEnum(filteredOldTDefs.get(0))) != isEnum(filteredNewTDefs.get(0));
             }
-            if ((constMissing || firstDiff) && !newT.getSimpleName().isEmpty()) {
+            if (firstDiff && !newT.getSimpleName().isEmpty()) {
                 if (oldEnum) {
                     printer.blankline();
                     printer.toLeftMargin();
@@ -707,7 +710,7 @@ public class CasualDiff {
                 } else {
                     // there's probably a semicolon before the 1st member, which must be removed before the 1st constant
                     // is created.
-                    removeExtraEnumSemicolon(insertHint);
+                    insertHint = removeExtraEnumSemicolon(insertHint);
                 }
             }
         }
