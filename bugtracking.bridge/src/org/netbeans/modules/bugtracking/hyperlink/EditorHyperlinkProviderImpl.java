@@ -100,18 +100,15 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt {
             @Override
             public void run() {
                 DataObject dobj = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
-                File file = null;
+                FileObject fileObject = null;
                 if (dobj != null) {
-                    FileObject fileObject = dobj.getPrimaryFile();
-                    if(fileObject != null) {
-                        file = FileUtil.toFile(fileObject);
-                    }
+                    fileObject = dobj.getPrimaryFile();
                 }
-                if(file == null) {
+                if(fileObject == null) {
                     Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "EditorHyperlinkProviderImpl - no file found for given document");
                     return;
                 }
-                Util.openIssue(file, issueId);
+                Util.openIssue(fileObject, issueId);
             }
         }
         RequestProcessor.getDefault().post(new IssueDisplayer());

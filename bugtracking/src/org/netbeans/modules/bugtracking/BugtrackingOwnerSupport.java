@@ -122,6 +122,18 @@ public class BugtrackingOwnerSupport {
     }
 
     public RepositoryImpl getRepository(FileObject fileObject) {
+        return getRepository(fileObject, false);
+    }
+    
+    public RepositoryImpl getRepository(FileObject fileObject, boolean askIfUnknown) {
+        if(fileObject == null) {
+            if(askIfUnknown) {
+                return askUserToSpecifyRepository(null);
+            } else {
+                return null;
+            }
+        }
+        
         RepositoryImpl repo;
 
         try {
@@ -135,7 +147,7 @@ public class BugtrackingOwnerSupport {
 
         File context = Util.getLargerContext(fileObject);
         if (context != null) {
-            return getRepositoryForContext(context, false);
+            return getRepositoryForContext(context, askIfUnknown);
         } else {
             return askUserToSpecifyRepository(null);
         }
@@ -176,6 +188,19 @@ public class BugtrackingOwnerSupport {
         return getRepositoryForContext(context, askIfUnknown);
     }
 
+    public void setFirmAssociations(FileObject[] files, RepositoryImpl repository) {
+        if (files == null) {
+            throw new IllegalArgumentException("files is null");        //NOI18N
+        }
+        if (files.length == 0) {
+            return;
+        }
+
+        FileToRepoMappingStorage.getInstance().setFirmAssociation(
+                Util.getLargerContext(files[0]),
+                repository.getUrl());
+    }
+    
     public void setFirmAssociations(File[] files, RepositoryImpl repository) {
         if (files == null) {
             throw new IllegalArgumentException("files is null");        //NOI18N
@@ -189,6 +214,12 @@ public class BugtrackingOwnerSupport {
                 repository.getUrl());
     }
 
+    public void setFirmAssociation(FileObject file, RepositoryImpl repository) {
+        FileToRepoMappingStorage.getInstance().setFirmAssociation(
+                Util.getLargerContext(file),
+                repository.getUrl());
+    }
+    
     public void setFirmAssociation(File file, RepositoryImpl repository) {
         FileToRepoMappingStorage.getInstance().setFirmAssociation(
                 Util.getLargerContext(file),

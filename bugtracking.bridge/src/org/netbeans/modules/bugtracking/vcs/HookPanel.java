@@ -49,19 +49,13 @@
 package org.netbeans.modules.bugtracking.vcs;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.io.File;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.IssueQuickSearch;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.versioning.util.VerticallyNonResizingPanel;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -96,7 +90,7 @@ public class HookPanel extends VerticallyNonResizingPanel implements ChangeListe
     }
     private FieldValues fieldValues = null;
     
-    public HookPanel(File context, boolean link, boolean resolve, boolean commit) {
+    public HookPanel(FileObject context, boolean link, boolean resolve, boolean commit) {
         initComponents();
         this.fieldValues = new FieldValues();
 

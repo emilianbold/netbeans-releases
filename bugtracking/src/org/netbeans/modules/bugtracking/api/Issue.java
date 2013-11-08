@@ -179,14 +179,9 @@ public final class Issue {
     }
     
     /**
-     * Returns a short variant of the display name. The short variant is used
+     * Returns a short variant of the display name. The short variant should be used
      * in cases where the full display name might be too long, such as when used
-     * as a title of a tab. The default implementation uses the
-     * the {@linkplain #getDisplayName full display name} as a base and trims
-     * it to maximum of {@value #SHORT_DISP_NAME_LENGTH} characters if
-     * necessary. If it was necessary to trim the name (i.e. if the full name
-     * was longer then {@value #SHORT_DISP_NAME_LENGTH}), then an ellipsis
-     * is appended to the end of the trimmed display name.
+     * as a title of a tab. 
      *
      * @return short variant of the display name
      * @see #getDisplayName

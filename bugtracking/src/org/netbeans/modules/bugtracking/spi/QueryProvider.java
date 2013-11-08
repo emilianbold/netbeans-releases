@@ -73,7 +73,7 @@ public interface QueryProvider<Q, I> {
     /**
      * Returns the queries tooltip
      * @param q the particular query instance
-     * @return 
+     * @return the tooltip
      * @since 1.85
      */
     public String getTooltip(Q q);
@@ -130,7 +130,11 @@ public interface QueryProvider<Q, I> {
     public Collection<I> getIssues(Q q);
 
     /**
-     * Refreshes the given query
+     * Refreshes the given query. 
+     * 
+     * <p>
+     * <b>Note</p> that this call is made periodically by the infrastructure. 
+     * <p>
      * 
      * @param q the particular query instance
      * @since 1.85

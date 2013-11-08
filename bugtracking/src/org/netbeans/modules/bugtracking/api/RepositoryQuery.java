@@ -41,14 +41,12 @@
  */
 package org.netbeans.modules.bugtracking.api;
 
-import java.io.File;
 import java.util.Collection;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.spi.RepositoryQueryImplementation;
 import org.netbeans.modules.bugtracking.BugtrackingOwnerSupport;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
 
@@ -103,8 +101,9 @@ public final class RepositoryQuery {
     }
 
     /**
+     * The only one RepositoryQuery instance.
      * 
-     * @return 
+     * @return the RepositoryQuery instance
      */
     private static synchronized RepositoryQuery getInstance() {
         if(instance == null) {
@@ -119,11 +118,7 @@ public final class RepositoryQuery {
     }
     
     private Repository getRepositoryIntern(FileObject fileObject, boolean askIfUnknown) {
-        File file = FileUtil.toFile(fileObject);
-        if(file == null) {
-            return null;
-        }
-        RepositoryImpl impl = BugtrackingOwnerSupport.getInstance().getRepository(file, askIfUnknown);
+        RepositoryImpl impl = BugtrackingOwnerSupport.getInstance().getRepository(fileObject, askIfUnknown);
         return impl != null ? impl.getRepository() : null;
     }
     
