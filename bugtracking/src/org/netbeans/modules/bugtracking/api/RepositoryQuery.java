@@ -101,8 +101,9 @@ public final class RepositoryQuery {
     }
 
     /**
+     * The only one RepositoryQuery instance.
      * 
-     * @return 
+     * @return the RepositoryQuery instance
      */
     private static synchronized RepositoryQuery getInstance() {
         if(instance == null) {

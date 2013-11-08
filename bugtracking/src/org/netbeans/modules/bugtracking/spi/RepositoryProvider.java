@@ -108,7 +108,7 @@ public interface RepositoryProvider<R, Q, I> {
     public void remove(R r);
 
     /**
-     * Returns the {@link BugtrackignController} for this repository.
+     * Returns the {@link RepositoryController} for this repository.
      * 
      * @param r an implementation specific repository
      * @return a controller for this repository
@@ -188,7 +188,7 @@ public interface RepositoryProvider<R, Q, I> {
     /**
      * Determines whether it is possible to attach files to an Issue for the given repository.
      * <p>
-     * Note that in case this method returns <code>true</code> {@link IssueProvider#attachFile(java.lang.Object, java.io.File, java.lang.String, boolean)>
+     * Note that in case this method returns <code>true</code> {@link IssueProvider#attachFile(java.lang.Object, java.io.File, java.lang.String, boolean)}
      * has to be implemented as well.
      * <p/>
      * 

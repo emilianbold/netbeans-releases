@@ -91,7 +91,7 @@ public final class IssueQuickSearch {
     /**
      * Creates an IssueQuickSearch providing all repositories and none of them preselected.
      * 
-     * @return  
+     * @return a new IssueQuickSearch instance
      * @since 1.85
      */
     public static IssueQuickSearch create() {
@@ -104,7 +104,7 @@ public final class IssueQuickSearch {
      * repository was used to pick an Issue in some previous session.
      * 
      * @param context a file to give a hint about a repository to preselect
-     * @return IssueQuickSearch
+     * @return a new IssueQuickSearch instance
      * @since 1.85
      */
     public static IssueQuickSearch create(FileObject context) {
@@ -118,7 +118,7 @@ public final class IssueQuickSearch {
      * 
      * @param context a file to give a hint about a repository to preselect
      * @param filter what kind of repositories should be provided
-     * @return IssueQuickSearch
+     * @return a new IssueQuickSearch instance
      * @since 1.85
      */
     public static IssueQuickSearch create(FileObject context, RepositoryFilter filter) {
@@ -195,7 +195,7 @@ public final class IssueQuickSearch {
     /**
      * Returns the selected repository.
      * 
-     * @return 
+     * @return a Repository
      * @since 1.85
      */
     public Repository getSelectedRepository() {

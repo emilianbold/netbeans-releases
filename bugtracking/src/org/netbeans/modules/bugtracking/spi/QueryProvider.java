@@ -73,7 +73,7 @@ public interface QueryProvider<Q, I> {
     /**
      * Returns the queries tooltip
      * @param q the particular query instance
-     * @return 
+     * @return the tooltip
      * @since 1.85
      */
     public String getTooltip(Q q);

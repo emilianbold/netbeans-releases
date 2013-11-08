@@ -138,7 +138,7 @@ public final class IssueScheduleInfo {
      * interval, i.e. values returned by {@link #getDate()} and
      * {@link #getInterval()}.
      *
-     * @return
+     * @return hash code
      * @since 1.85
      */
     @Override

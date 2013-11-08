@@ -51,7 +51,7 @@ import org.netbeans.modules.bugtracking.api.Repository;
 /**
  * Represents a bugtracking connector.
  * <p>
- * Bugtracking system registration can be done via {@link BugtrackingConnector#Registration}. 
+ * Bugtracking system registration can be done via {@link Registration}. 
  * </p>
  *
  * <pre>
@@ -77,7 +77,7 @@ public interface BugtrackingConnector {
      * @param info repository information based on which the repository should be created
      * 
      * @return a {@link Repository} instance.
-     * @see BugtrackingFactory
+     * @see BugtrackingSupport
      * @since 1.85
      */
     public Repository createRepository(RepositoryInfo info);  
@@ -86,7 +86,7 @@ public interface BugtrackingConnector {
      * Creates a new repository instance. 
      * 
      * @return the created repository
-     * @see BugtrackingFactory
+     * @see BugtrackingSupport
      * @since 1.85
      */
     public Repository createRepository();
