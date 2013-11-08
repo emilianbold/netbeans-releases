@@ -58,6 +58,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.IssueQuickSearch;
 import org.netbeans.modules.versioning.util.VerticallyNonResizingPanel;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -96,7 +97,7 @@ public class HgQueueHookPanel extends VerticallyNonResizingPanel implements Chan
     }
     private FieldValues fieldValues = null;
     
-    public HgQueueHookPanel(File context, boolean link, boolean resolve, boolean commit) {
+    public HgQueueHookPanel(FileObject context, boolean link, boolean resolve, boolean commit) {
         initComponents();
         this.fieldValues = new FieldValues();
 

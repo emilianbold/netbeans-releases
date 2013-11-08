@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.bugtracking.api;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -57,6 +56,7 @@ import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.IssueFinderUtils;
 import org.netbeans.modules.team.spi.TeamAccessorUtils;
+import org.openide.filesystems.FileObject;
 
 /**
  * Bugtracking Utility methods.
@@ -88,7 +88,7 @@ public final class Util {
      * @param issueId issue id
      * @since 1.85
      */
-    public static void openIssue(File context, String issueId) {
+    public static void openIssue(FileObject context, String issueId) {
         IssueAction.openIssue(context, issueId);
     }
     

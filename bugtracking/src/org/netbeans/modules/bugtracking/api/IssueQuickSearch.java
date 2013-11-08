@@ -41,12 +41,12 @@
  */
 package org.netbeans.modules.bugtracking.api;
 
-import java.io.File;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
 import org.netbeans.modules.bugtracking.ui.search.QuickSearchPanel;
+import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 
 /**
@@ -67,7 +67,7 @@ import org.openide.util.HelpCtx;
 public final class IssueQuickSearch {
     private final QuickSearchPanel panel;
     
-    private IssueQuickSearch(File context, RepositoryFilter filter) {
+    private IssueQuickSearch(FileObject context, RepositoryFilter filter) {
         panel = new QuickSearchPanel(context, filter);
     }
     
@@ -107,7 +107,7 @@ public final class IssueQuickSearch {
      * @return IssueQuickSearch
      * @since 1.85
      */
-    public static IssueQuickSearch create(File context) {
+    public static IssueQuickSearch create(FileObject context) {
        return new IssueQuickSearch(context, RepositoryFilter.ALL);
     }
     
@@ -121,7 +121,7 @@ public final class IssueQuickSearch {
      * @return IssueQuickSearch
      * @since 1.85
      */
-    public static IssueQuickSearch create(File context, RepositoryFilter filter) {
+    public static IssueQuickSearch create(FileObject context, RepositoryFilter filter) {
        return new IssueQuickSearch(context, filter);
     }
     

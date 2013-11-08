@@ -267,7 +267,7 @@ public class HgQueueHookImpl extends HgQueueHook {
         }
 
         panel = new HgQueueHookPanel(
-                        referenceFile,
+                        FileUtil.toFileObject(referenceFile),
                         globalConfig.getLink(),
                         globalConfig.getResolve(),
                         config.getAfterRefresh());

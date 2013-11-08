@@ -63,6 +63,7 @@ import org.netbeans.modules.bugtracking.api.IssueQuickSearch.RepositoryFilter;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.ui.repository.RepositoryComboSupport;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -71,10 +72,10 @@ import org.netbeans.modules.bugtracking.ui.repository.RepositoryComboSupport;
 public class QuickSearchPanel extends javax.swing.JPanel implements ItemListener, ChangeListener {
     private final QuickSearchComboBar qs;
     private ChangeListener listener;
-    private final File referenceFile;
+    private final FileObject referenceFile;
     private final JButton newButton;
     
-    public QuickSearchPanel(File referenceFile, RepositoryFilter filter) {
+    public QuickSearchPanel(FileObject referenceFile, RepositoryFilter filter) {
         initComponents();
         
         newButton = createNewRepoButton();
@@ -108,7 +109,7 @@ public class QuickSearchPanel extends javax.swing.JPanel implements ItemListener
                 // to which it was done (e.g. from a commit hook). Lets save the 
                 // assotiation between the file and the repository as it
                 // can be used next time to preselect a repository ...
-                BugtrackingOwnerSupport.getInstance().setFirmAssociations(new File[] { referenceFile }, APIAccessor.IMPL.getImpl(selectedRepository));
+                BugtrackingOwnerSupport.getInstance().setFirmAssociations(new FileObject[] { referenceFile }, APIAccessor.IMPL.getImpl(selectedRepository));
             } else {
                 // Some issue was picked but we have no file context.
                 // Still, some nodes (eventually leading to a file) might be currently 

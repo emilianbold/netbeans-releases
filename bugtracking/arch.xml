@@ -496,7 +496,10 @@
 -->
  <answer id="exec-component">
   <p>
-   XXX no answer for exec-component
+    No, the module does not depend on any such public property. Maybe worth to mention, 
+    that on Issue editors provided by the particular implementations, the property 
+    "highlights.property" is used internaly, on TextPanes contained in those editor components,
+    to store text higlight relevant information.
   </p>
  </answer>
 
@@ -582,7 +585,22 @@
 -->
  <answer id="exec-property">
   <p>
-   XXX no answer for exec-property
+   Yes:<br/>
+   <ul>
+       <li>
+           <code>System.getProperty("netbeans.bugtracking.noOpenProjects")</code> to block 
+           creating of team repositories based on open project beineg checked out from a team server 
+           (e.g. kenai.com, java.net).
+       </li>
+       <li>
+           <code>System.getProperty("netbeans.bugzilla.url")</code> to override the hardcoded netbeans bugzilla url. 
+           Testing purposes only.
+       </li>
+       <li>
+           <code>System.getProperty("org.netbeans.modules.bugtracking.logPasswords")</code> when logging repository 
+           information, the password isn't obfuscated.
+       </li>
+   </ul>
   </p>
  </answer>
 
@@ -773,8 +791,6 @@
       <ul>
           <li><code>javax.annotation.processing.Processor</code> to handle registrations of 
               <code>o.n.m.bugtracking.spi.BugtrackingConnector.Registration</code> - see <code>o.n.m.bugtracking.BugtrackingRegistrationProcessor</code></li>
-          <li>and a private contract between the bugtracking internal repository registry and the bugzilla to handle 
-              particular functionality neccessary for an out of the box support for the NetBeans Bugzilla server.</li>
       </ul>   
   </p>
  </answer>
@@ -955,7 +971,7 @@
 -->
  <answer id="perf-spi">
   <p>
-   XXX no answer for perf-spi
+    SPI will log (on demand) performance of calls on plugged-in implementations such like e.g. query.refresh(), issue.refresh(), ...
   </p>
  </answer>
 
@@ -1004,7 +1020,8 @@
 -->
  <answer id="resources-file">
   <p>
-   XXX no answer for resources-file
+    Yes it does, but the API and SPI packages are wokring with FileObject-s 
+    where IDE relevant files are provided as parameters.
   </p>
  </answer>
 
