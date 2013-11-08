@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -313,6 +313,16 @@ public class GlassFishAccountInstance extends GlassFishAccountEntity
     @Override
     public GlassFishAdminInterface getAdminInterface() {
         return GlassFishAdminInterface.REST;
+    }
+
+    /**
+     * Is this server local or remote?
+     * <p/>
+     * @return Always returns <code>true</code> because cloud server is remote..
+     */
+    @Override
+    public boolean isRemote() {
+        return true;
     }
 
     ////////////////////////////////////////////////////////////////////////////
