@@ -506,13 +506,19 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     @Override
     public void setAttribute(String attrName, Object value) throws IOException {
         if (attrName.equals("warmup")) { // NOI18N
-            DirectoryReaderFS fsReader = DirectoryReaderFS.getInstance(getExecutionEnvironment());
-            if (fsReader != null) {
-                fsReader.warmap(getPath());
-            }
+            warmup();
+        } else {
+            super.setAttribute(attrName, value);
         }
-        super.setAttribute(attrName, value);
     }
+    
+    private void warmup() {
+        DirectoryReaderFS fsReader = DirectoryReaderFS.getInstance(getExecutionEnvironment());
+        if (fsReader != null && fsReader.isValid()) {
+            fsReader.warmap(getPath());
+        }
+    }
+    
     private Map<String, DirEntry> readEntries(DirectoryStorage oldStorage, boolean forceRefresh, String childName) throws IOException, InterruptedException, ExecutionException, CancellationException {
         if (isProhibited()) {
             return Collections.<String, DirEntry>emptyMap();
@@ -520,12 +526,28 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         Map<String, DirEntry> newEntries = new HashMap<String, DirEntry>();            
         boolean canLs = canLs();
         if (canLs) {
-            DirectoryReader directoryReader;
-            directoryReader = DirectoryReaderFS.getInstance(getExecutionEnvironment());
-            if (directoryReader == null) {
-                directoryReader = DirectoryReaderSftp.getInstance(getExecutionEnvironment());
+            List<DirEntry> entries = null;
+            DirectoryReaderFS fsReader = DirectoryReaderFS.getInstance(getExecutionEnvironment());
+            if (fsReader != null && fsReader.isValid()) {
+                try {
+                    entries = fsReader.readDirectory(getPath());
+                    // The agreement is as follows: if a fatal error occurs
+                    // (so we suppose fs_server can't work)
+                    // DirectoryReaderFS throws ExecutionException or IOException 
+                    // (InterruptedException and CancellationException don't mean server failed)
+                    // and DirectoryReaderFS.isValid()  is set to false.
+                    // In this case we need to fallback to the default (sftp) implementation
+                    // TODO: consider redesign?
+                } catch (ExecutionException | IOException ex) {
+                    if (fsReader.isValid()) {
+                        throw ex; // process as usual
+                    } // else fall back to sftp implementation
+                }
             }
-            List<DirEntry> entries = directoryReader.readDirectory(getPath());
+            if (entries == null) {
+                DirectoryReader directoryReader = DirectoryReaderSftp.getInstance(getExecutionEnvironment());
+                entries = directoryReader.readDirectory(getPath());
+            }            
             for (DirEntry entry : entries) {
                 newEntries.put(entry.getName(), entry);
             }
@@ -559,6 +581,19 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         return newEntries;
     }
     
+    private List<DirEntry> readEntries2() throws IOException, InterruptedException, CancellationException, ExecutionException {
+        DirectoryReader directoryReader = null;
+        DirectoryReaderFS fsReader = DirectoryReaderFS.getInstance(getExecutionEnvironment());
+        if (fsReader != null && fsReader.isValid()) {
+            directoryReader = fsReader;
+        }
+        if (directoryReader == null) {
+            directoryReader = DirectoryReaderSftp.getInstance(getExecutionEnvironment());
+        }
+        List<DirEntry> entries = directoryReader.readDirectory(getPath());
+        return entries;
+    }
+        
     private DirEntry getSpecialDirChildEntry(String absPath, String childName) throws InterruptedException, ExecutionException {
         StatInfo statInfo;
         try {
