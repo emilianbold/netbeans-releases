@@ -87,6 +87,7 @@ public abstract class AbstractNativeProcess extends NativeProcess implements ExP
     private final static Integer SIGKILL_TIMEOUT =
             Integer.valueOf(System.getProperty(
             "dlight.nativeexecutor.forcekill.timeout", "5")); // NOI18N
+    /*package*/ static final Boolean FIX_ERASE_KEY_IN_TERMINAL = Boolean.valueOf(System.getProperty("fixEraseKeyInTerminal", "true")); // NOI18N;
     protected final NativeProcessInfo info;
     protected final HostInfo hostInfo;
     private final ConcurrentHashMap<String, String> processInfo =  new ConcurrentHashMap<String, String>();
