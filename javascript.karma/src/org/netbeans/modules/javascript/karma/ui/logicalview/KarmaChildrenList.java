@@ -43,13 +43,21 @@
 package org.netbeans.modules.javascript.karma.ui.logicalview;
 
 import java.awt.Image;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JComponent;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.StaticResource;
@@ -59,18 +67,25 @@ import org.netbeans.modules.javascript.karma.exec.KarmaServersListener;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferencesValidator;
 import org.netbeans.modules.javascript.karma.ui.customizer.KarmaCustomizer;
+import org.netbeans.modules.javascript.karma.util.KarmaUtils;
 import org.netbeans.modules.javascript.karma.util.ValidationResult;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.netbeans.spi.project.ui.support.NodeList;
+import org.openide.awt.DynamicMenuContent;
+import org.openide.awt.Mnemonics;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
+import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.NodeAction;
+import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
@@ -187,6 +202,8 @@ public class KarmaChildrenList implements NodeList<Node>, PreferenceChangeListen
                 SystemAction.get(StopKarmaServerAction.class),
                 SystemAction.get(RestartKarmaServerAction.class),
                 null,
+                SystemAction.get(ActiveKarmaConfigAction.class),
+                null,
                 SystemAction.get(CustomizeKarmaAction.class),
             };
         }
@@ -277,6 +294,94 @@ public class KarmaChildrenList implements NodeList<Node>, PreferenceChangeListen
         @Override
         public String getName() {
             return Bundle.RestartKarmaServerAction_name();
+        }
+
+    }
+
+    private static final class ActiveKarmaConfigAction extends CallableSystemAction implements ContextAwareAction {
+
+        @NbBundle.Messages("ActiveKarmaConfigAction.name=Set Configuration")
+        @Override
+        public String getName() {
+            return Bundle.ActiveKarmaConfigAction_name();
+        }
+
+        @Override
+        public void performAction() {
+            assert false;
+        }
+
+        @Override
+        public HelpCtx getHelpCtx() {
+            return HelpCtx.DEFAULT_HELP;
+        }
+
+        @Override
+        public Action createContextAwareInstance(final Lookup actionContext) {
+            class ActiveConfigAction extends AbstractAction implements Presenter.Popup {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    assert false;
+                }
+                @Override
+                public JMenuItem getPopupPresenter() {
+                    return ConfigMenu.create(actionContext);
+                }
+            }
+            return new ActiveConfigAction();
+        }
+
+    }
+
+    private static final class ConfigMenu extends JMenu implements DynamicMenuContent, ActionListener {
+
+        final Project project;
+
+
+        private ConfigMenu(Lookup actionContext) {
+            assert actionContext != null;
+            project = actionContext.lookup(Project.class);
+            assert project != null : "Project expected in lookup: " + actionContext;
+        }
+
+        public static ConfigMenu create(Lookup actionContext) {
+            ConfigMenu configMenu = new ConfigMenu(actionContext);
+            Mnemonics.setLocalizedText(configMenu, Bundle.ActiveKarmaConfigAction_name());
+            return configMenu;
+        }
+
+        @Override
+        public JComponent[] getMenuPresenters() {
+            removeAll();
+            List<File> configs = KarmaUtils.findKarmaConfigs(KarmaUtils.getConfigDir(project));
+            if (!configs.isEmpty()) {
+                String activeConfig = KarmaPreferences.getConfig(project);
+                for (final File config : configs) {
+                    boolean selected = config.getAbsolutePath().equals(activeConfig);
+                    JRadioButtonMenuItem configItem = new JRadioButtonMenuItem(config.getName(), selected);
+                    configItem.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            KarmaPreferences.setConfig(project, config.getAbsolutePath());
+                        }
+                    });
+                    add(configItem);
+                }
+            } else {
+                setEnabled(false);
+            }
+            return new JComponent[] {this};
+        }
+
+        @Override
+        public JComponent[] synchMenuPresenters(JComponent[] items) {
+            // always rebuild submenu
+            return getMenuPresenters();
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            assert false;
         }
 
     }
