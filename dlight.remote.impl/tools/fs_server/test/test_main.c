@@ -16,15 +16,15 @@ static void _assert_true(bool condition, const char* conditionText) {
         fprintf(stdout, "Check for (%s) passed.\n", conditionText);
         fflush(stdout);
     } else {
-        fprintf(stdout, "Check for (%s) failed.\n", conditionText);
-        fflush(stdout);
+        fprintf(stderr, "Check for (%s) FAILED.\n", conditionText);
+        fflush(stderr);
         exit(1);
     }
 }
 
 #define assert_true(condition) _assert_true(condition, #condition)
 
-void test_list() {
+static void test_list() {
     queue l;
     queue_init(&l);
     assert_true(queue_size(&l) == 0);
@@ -75,14 +75,14 @@ void test_dirtab_get_cache(const char* path, const char* reference_cache_path, i
     fflush(stdout);
 }
 
-void test_dirtab_2() {
+static void test_dirtab_2() {
     fprintf(stdout, "testing dirtab persistence...\n");
     dirtab_init();
     assert_true(chdir(dirtab_get_basedir())== 0);
     test_dirtab_get_cache("/home/xxx123", "1024", 3);
 }
 
-void test_dirtab_1() {
+static void test_dirtab_1() {
     assert_true(system("rm -rf ~/.netbeans/remotefs") == 0);        
     fprintf(stdout, "testing dirtab...\n");
     dirtab_init();
@@ -103,6 +103,21 @@ void test_dirtab_1() {
     fprintf(stdout, "storing dirtab...\n");
     fflush(stdout);
     assert_true(dirtab_flush());
+}
+
+static int string_comparator (const void *element1, const void *element2) {
+    const char *str1 = *((char**)element1);
+    const char *str2 = *((char**)element2);
+    int res = strcmp(str1, str2);
+    return res;
+}
+
+static const void *string_finder(const void *element, void* arg) {
+    const char *p = element;
+    if (strcmp(p, arg) == 0) {
+        return p;
+    }
+    return NULL;
 }
 
 static void test_array() {
@@ -133,12 +148,6 @@ static void test_array() {
    assert_true(strcmp(array_get(&a, 2), "1") == 0);
    assert_true(strcmp(array_get(&a, 3), "3") == 0);
    
-   int string_comparator (const void *element1, const void *element2) {
-       const char *str1 = *((char**)element1);
-       const char *str2 = *((char**)element2);
-       int res = strcmp(str1, str2);
-       return res;
-   }
    array_qsort(&a, string_comparator);
 
    assert_true(strcmp(array_get(&a, 0), "1") == 0);
@@ -153,23 +162,84 @@ static void test_array() {
    array_add(&a, "c");
    array_add(&a, "z");
    array_qsort(&a, string_comparator);
-
-   const void *finder(const void *element, void* arg) {
-       const char *p = element;
-       if (strcmp(p, arg) == 0) {
-           return p;
-       }
-       return NULL;
-   }
    
-   assert_true(strcmp(array_iterate(&a, finder, "z"), "z") == 0);
+   assert_true(strcmp(array_iterate(&a, string_finder, "z"), "z") == 0);
+}
+
+static void test_escape_unescape(const char *unescaped, const char* escaped) {
+    bool failed = false;
+    char buf[2048];
+    escape_strcpy(buf, unescaped);
+    if (strcmp(buf, escaped) == 0) {
+        fprintf(stdout, "check for escape_strcpy(\"%s\") == \"%s\" passed\n", unescaped, escaped);
+    } else {
+        fprintf(stderr, "check for escape_strcpy(\"%s\") == \"%s\" FAILED: got \"%s\"\n", unescaped, escaped, buf);
+        failed = true;
+    }
+    unescape_strcpy(buf, escaped);
+    if (strcmp(buf, unescaped) == 0) {
+        fprintf(stdout, "check for unescape_strcpy(\"%s\") == \"%s\" passed\n", escaped, unescaped);
+    } else {
+        fprintf(stderr, "check for unescape_strcpy(\"%s\") == \"%s\" FAILED: got \"%s\"\n", escaped, unescaped, buf);
+        failed = true;
+    }
+
+    {
+        int ref_escaped_len = strlen(escaped);
+        int escaped_len = escape_strlen(unescaped);
+
+        if (escaped_len == ref_escaped_len) {
+            fprintf(stdout, "check for escape_strlen(\"%s\") == %d passed\n", unescaped, ref_escaped_len);
+        } else {
+            fprintf(stderr, "check for escape_strlen(\"%s\") == %d FAILED: got %d\n", unescaped, ref_escaped_len, escaped_len);
+            failed = true;
+        }
+    }
+
+    {
+        int ref_unescaped_len = strlen(unescaped);
+        int unescaped_len = unescape_strlen(escaped);
+        if (unescaped_len == ref_unescaped_len) {
+            fprintf(stdout, "check for unescape_strlen(\"%s\") == %d passed\n", escaped, ref_unescaped_len);
+        } else {
+            fprintf(stderr, "check for unescape_strlen(\"%s\") == %d FAILED: got %d\n", escaped, ref_unescaped_len, unescaped_len);
+            failed = true;
+        }
+    }
+    if (failed) {
+        exit(2);
+    }
+}
+
+static void test_secapes() {
+//    assert_true(escape_strlen("ab\ncd") == 6);
+//    assert_true(escape_strlen("") == 0);
+//    assert_true(escape_strlen(NULL) == 0);
+//    assert_true(escape_strlen("\n") == 2);
+//    assert_true(escape_strlen("xx\n") == 4);
+//    assert_true(escape_strlen("\nyy") == 4);
+//    assert_true(escape_strlen("\\") == 2);
+//    assert_true(escape_strlen("\\\\") == 4);
+//    assert_true(escape_strlen("123\\") == 5);
+//    char buf[2048];
+    
+    test_escape_unescape("ab\ncd", "ab\\ncd");
+    test_escape_unescape("", "");
+    test_escape_unescape("qwe", "qwe");
+    test_escape_unescape("\n", "\\n");
+    test_escape_unescape("xx\n", "xx\\n");
+    test_escape_unescape("\nyy", "\\nyy");
+    test_escape_unescape("\\", "\\\\");
+    test_escape_unescape("\\\\", "\\\\\\\\");
+    test_escape_unescape("123\\", "123\\\\");    
 }
 
 int main(int argc, char** argv) {
-    test_array();
-    test_list();
-    test_dirtab_1();
-    test_dirtab_2();
+    test_secapes();
+//    test_array();
+//    test_list();
+//    test_dirtab_1();
+//    test_dirtab_2();
     return (EXIT_SUCCESS);
 }
 

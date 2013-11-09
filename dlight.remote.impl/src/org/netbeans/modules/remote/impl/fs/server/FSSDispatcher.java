@@ -44,6 +44,7 @@ package org.netbeans.modules.remote.impl.fs.server;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -167,6 +168,7 @@ import org.openide.util.RequestProcessor;
                         RemoteLogger.info("error: empty line for " + traceName);
                         continue;
                     }
+                    line = unescape(line);
                     Buffer buf = new Buffer(line);
                     char respKind = buf.getChar();
                     int respId = buf.getInt();
@@ -223,8 +225,9 @@ import org.openide.util.RequestProcessor;
     }
     
     /*package*/ static void sendRequest(PrintWriter writer, FSSRequest request) {
+        String escapedPath = escape(request.getPath());
         writer.printf("%c %d %d %s\n", request.getKind().getChar(), // NOI18N
-                request.getId(), request.getPath().length(), request.getPath());
+                request.getId(), escapedPath.length(), escapedPath);
         writer.flush();        
     }
 
@@ -232,6 +235,16 @@ import org.openide.util.RequestProcessor;
         synchronized (serverLock) {
             return server;
         }
+    }
+    
+    private boolean isFreeBSD() {
+        ProcessUtils.ExitStatus res = ProcessUtils.execute(env, "uname"); // NOI18N
+        if (res.isOK()) {
+            if (res.output.equals("FreeBSD")) { // NOI18N
+                return true;
+            }
+        }
+        return false;
     }
     
     private String checkServerSetup() throws ConnectException, IOException, 
@@ -246,10 +259,20 @@ import org.openide.util.RequestProcessor;
         String toolPath = "";
         MacroExpanderFactory.MacroExpander macroExpander = MacroExpanderFactory.getExpander(env);
         try {
-            String toExpand = "bin/$osname-$platform" + // NOI18N
-                    ((hostInfo.getOSFamily() == HostInfo.OSFamily.LINUX) ? "${_isa}" : "") + // NOI18N
-                    "/fs_server"; // NOI18N
-            toolPath = macroExpander.expandPredefinedMacros(toExpand);
+            String platformPath;
+            HostInfo.OSFamily osFamily = hostInfo.getOSFamily();
+            if (osFamily == HostInfo.OSFamily.UNKNOWN) {
+                if (isFreeBSD()) {
+                    platformPath = "FreeBSD-x86";
+                } else {
+                    throw new IOException("Unsupported platform on " + env.getDisplayName()); //NOI18N
+                }
+            } else {
+                String toExpand = "$osname-$platform" + // NOI18N
+                        ((osFamily == HostInfo.OSFamily.LINUX) ? "${_isa}" : ""); // NOI18N
+                platformPath = macroExpander.expandPredefinedMacros(toExpand);
+            }
+            toolPath += "bin/" + platformPath + "/fs_server"; //NOI18N
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -260,22 +283,42 @@ import org.openide.util.RequestProcessor;
         }
         String remoteBase = PathUtilities.getDirName(remotePath);
         
-        File localFile = InstalledFileLocator.getDefault().getDefault().locate(
+        File localFile = InstalledFileLocator.getDefault().locate(
                 toolPath, "org.netbeans.modules.remote.impl", false); // NOI18N
         if (localFile != null && localFile.exists()) {
             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
             npb.setExecutable("/bin/mkdir").setArguments("-p", remoteBase); // NOI18N
             npb.call().waitFor();
-        }
-        Future<CommonTasksSupport.UploadStatus> copyTask;
-        copyTask = CommonTasksSupport.uploadFile(localFile, env, remotePath, 0755, true); // NOI18N
-        CommonTasksSupport.UploadStatus uploadStatus = copyTask.get(); // is it OK not to check upload exit code?
-        if (!uploadStatus.isOK()) {
-            throw new IOException(uploadStatus.getError());
+            Future<CommonTasksSupport.UploadStatus> copyTask;
+            copyTask = CommonTasksSupport.uploadFile(localFile, env, remotePath, 0755, true); // NOI18N
+            CommonTasksSupport.UploadStatus uploadStatus = copyTask.get(); // is it OK not to check upload exit code?
+            if (!uploadStatus.isOK()) {
+                throw new IOException(uploadStatus.getError());
+            }
+        } else {
+            if (!HostInfoUtils.fileExists(env, remotePath)) {
+                throw new FileNotFoundException(env.getDisplayName() + ':' + remotePath); //NOI18N
+            }
         }
         return remotePath;
     }
     
+    private static String unescape(String line) {
+        if (line.indexOf('\\') == -1) {
+            return line;
+        } else {
+            return  line.replace("\\n", "\n").replace("\\\\", "\\");
+        }
+    }
+    
+    private static String escape(String line) {
+        if (line.indexOf('\n') == -1 && line.indexOf('\\') == -1) {
+            return line;
+        } else {
+            return  line.replace("\n", "\\n").replace("\\", "\\\\");
+        }
+    }
+
     private FsServer getOrCreateServer() throws IOException, ConnectException, 
             ConnectionManager.CancellationException, InterruptedException, ExecutionException {
         synchronized (serverLock) {

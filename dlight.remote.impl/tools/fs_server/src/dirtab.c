@@ -159,6 +159,7 @@ static bool load_impl() {
         if (*p == '\n') {
             *p = 0;
         }
+        unescape_strcpy(path, path);
         expand_table_if_needed();
         table.paths[table.size] = new_dirtab_element(path, index);
         table.size++;
@@ -186,16 +187,19 @@ static bool load_table() {
 }
 
 static bool flush_impl() {
-    FILE *f = fopen600(dirtab_file_path);
-    if (!f){
+    FILE *fp = fopen600(dirtab_file_path);
+    if (!fp){
         report_error("error opening %s for writing: %s\n", dirtab_file_path, strerror(errno));
         return false;
     }
     int i;
+    char* buf = malloc(PATH_MAX * 2); 
     for (i = 0; i < table.size; i++) {
-        fprintf(f, "%d %s\n", table.paths[i]->index, table.paths[i]->path);
+        escape_strcpy(buf, table.paths[i]->path);
+        fprintf(fp, "%d %s\n", table.paths[i]->index, buf);
     }
-    if (fclose(f) == 0) {
+    free(buf);
+    if (fclose(fp) == 0) {
         return true;
     } else {
         report_error("error closing %s for writing: %s\n", dirtab_file_path, strerror(errno));

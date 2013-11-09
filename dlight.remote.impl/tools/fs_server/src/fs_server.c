@@ -39,7 +39,7 @@ static bool statistics = false;
 static int refresh_sleep = 1;
 
 #define FS_SERVER_MAJOR_VERSION 1
-#define FS_SERVER_MINOR_VERSION 3
+#define FS_SERVER_MINOR_VERSION 4
 
 typedef struct fs_entry {
     int /*short?*/ name_len;
@@ -88,9 +88,12 @@ static const char* decode_int(const char* text, int* result) {
             *result += c - '0';
         } else if (c == 0 || isspace(c)) {
             return p;
+        } else {
+            report_error("unexpected numeric value: '%c'\n", c);
+            return NULL;
         }
     }
-    report_error("unexpected numeric value: '%s'\n", text);
+    report_error("numeric value too long: '%s'\n", text);
     return NULL;
 }
 
@@ -104,9 +107,12 @@ static const char* decode_uint(const char* text, unsigned int* result) {
             *result += c - '0';
         } else if (c == 0 || isspace(c)) {
             return p;
+        } else {
+            report_error("unexpected numeric value: '%c'\n", c);
+            return NULL;
         }
     }
-    report_error("unexpected numeric value: '%s'\n", text);
+    report_error("numeric value too long: '%s'\n", text);
     return NULL;
 }
 
@@ -120,9 +126,12 @@ static const char* decode_long(const char* text, long* result) {
             *result += c - '0';
         } else if (c == 0 || isspace(c)) {
             return p;
+        } else {
+            report_error("unexpected numeric value: '%c'\n", c);
+            return NULL;
         }
     }
-    report_error("unexpected numeric value: '%s'\n", text);
+    report_error("numeric value too long: '%s'\n", text);
     return NULL;
 }
 
@@ -143,7 +152,7 @@ static bool is_prohibited(const char* abspath) {
 /** 
  * Decodes in-place fs_raw_request into fs_request
  */
-static fs_request* decode_request(char* raw_request, fs_request* request) {
+static fs_request* decode_request(char* raw_request, fs_request* request, int request_size) {
     const char* p = raw_request + 2;
     //soft_assert(*p == ' ', "incorrect request format: '%s'", request);
     //p++;
@@ -158,11 +167,21 @@ static fs_request* decode_request(char* raw_request, fs_request* request) {
     if (p == NULL) {
         return NULL;
     }   
+    if (!len) {
+        report_error("wrong (zero path) request: %s", raw_request);
+        return NULL;
+    }
+    if (len > (request_size - sizeof(fs_request) - 1)) {
+        report_error("wrong (too long path) request: %s", raw_request);
+        return NULL;
+    }
     //fs_request->kind = request->kind;
     //soft_assert(*p == ' ', "incorrect request format: '%s'", request);
     request->kind = raw_request[0];
     strncpy(request->path, p, len);
     request->path[len] = 0;
+    unescape_strcpy(request->path, request->path);
+    len = strlen(request->path);
     request->id = id;
     request->len = len;
     request->size = offsetof(fs_request, path)+len+1; //(request->path-&request)+len+1;
@@ -195,43 +214,74 @@ static fs_entry* create_fs_entry(fs_entry *entry2clone) {
 
 /** allocates fs_entry on heap */
 static fs_entry *decode_entry_response(const char* buf) {
+
     // format: name_len name uid gid mode size mtime link_len link
     fs_entry tmp; // a temporary one since we don't know names size
+
     const char* p = decode_int(buf, &tmp.name_len);
+    if (!p) { return NULL; }; // decode_int already printed error message
+    
     tmp.name = (char*) p;
     p += tmp.name_len + 1;
+
     p = decode_uint(p, &tmp.uid);
+    if (!p) { return NULL; }; // decode_int already printed error message
+    
     p = decode_uint(p, &tmp.gid);
+    if (!p) { return NULL; };
+    
     p = decode_uint(p, &tmp.mode);
+    if (!p) { return NULL; };
+    
     p = decode_long(p, &tmp.size);
+    if (!p) { return NULL; };
+    
     p = decode_long(p, &tmp.mtime);
+    if (!p) { return NULL; };
+    
     p = decode_int(p, &tmp.link_len);
+    if (!p) { return NULL; };
+    
     tmp.link = (char*) p;
+    if (tmp.name_len > MAXNAMLEN) {
+        report_error("wrong entry format: too long (%i) file name: %s", tmp.name_len, buf);
+        return NULL;
+    }
+    if (tmp.link_len > PATH_MAX) {
+        report_error("wrong entry format: too long (%i) link name: %s", tmp.link_len, buf);
+        return NULL;
+    }
     return create_fs_entry(&tmp);
 }
 
 static void read_entries_from_cache(array/*<fs_entry>*/ *entries, const char* cache, const char* path) {
     array_init(entries, 100);
-    FILE *f = NULL;
-    f = fopen(cache, "r");
-    if (f) {
+    FILE *fp = NULL;
+    fp = fopen(cache, "r");
+    if (fp) {
         int buf_size = PATH_MAX + 40;
         char *buf = malloc(buf_size);
-        if (!fgets(buf, buf_size, f)) {
+        if (!fgets(buf, buf_size, fp)) {
             report_error("error reading cache'%s/%s': %s\n", dirtab_get_basedir(), cache, strerror(errno));
         }
+        unescape_strcpy(buf, buf);
         if (strncmp(path, buf, strlen(path)) != 0) {
             report_error("error: first line in file '%s/%s' is not '%s', but is '%s'", dirtab_get_basedir(), cache, path, buf);
         }
-        while (fgets(buf, buf_size, f)) {
+        while (fgets(buf, buf_size, fp)) {
+            unescape_strcpy(buf, buf);
             fs_entry *entry = decode_entry_response(buf);
-            array_add(entries, entry);
+            if (entry) {
+                array_add(entries, entry);
+            } else {
+                report_error("error reading entry from cache: %s\n", buf);
+            }
         }
-        if (!feof(f)) {
+        if (!feof(fp)) {
             report_error("error reading '%s/%s': %s\n", dirtab_get_basedir(), cache, strerror(errno));
         }
         free(buf);
-        fclose(f);
+        fclose(fp);
     }
     array_truncate(entries);
 }
@@ -306,7 +356,12 @@ static bool fs_entry_creating_visitor(char* name, struct stat *stat_buf, char* l
     bool is_link = S_ISLNK(stat_buf->st_mode);
     tmp.link_len = is_link ? strlen(link) : 0;
     tmp.link = is_link ? link : "";
-    array_add((array*)data, create_fs_entry(&tmp));
+    fs_entry* new_entry = create_fs_entry(&tmp);
+    if (new_entry) {
+        array_add((array*)data, new_entry);
+    } else {
+        report_error("error creating entry for %s\n", abspath);
+    }
     return true;
 }
 
@@ -316,29 +371,51 @@ static void read_entries_from_dir(array/*<fs_entry>*/ *entries, const char* path
     array_truncate(entries);
 }
 
-static bool form_entry_response(char* buf, const int buf_size, const char *abspath, const struct dirent *entry, char* link_buf, int link_buf_size) {
+static bool form_entry_response(char* response_buf, const int response_buf_size, 
+        const char *abspath, const struct dirent *entry, 
+        char* work_buf, int work_buf_size) {
     struct stat stat_buf;
     if (lstat(abspath, &stat_buf) == 0) {
+        
+        //int escaped_name_size = escape_strlen(entry->d_name);
+        escape_strcpy(work_buf, entry->d_name);
+        char *escaped_name = work_buf;
+        int escaped_name_size = strlen(escaped_name);
+        work_buf_size -= (escaped_name_size + 1);
+        
         bool link_flag = S_ISLNK(stat_buf.st_mode);
+
+        int escaped_link_size = 0;
+        char* escaped_link = "";
+        
         if (link_flag) {
-            ssize_t sz = readlink(abspath, link_buf, link_buf_size);
+            char* link = work_buf + escaped_name_size + 1; 
+            ssize_t sz = readlink(abspath, link, work_buf_size);
             if (sz == -1) {
                 report_error("error performing readlink for %s: %s\n", abspath, strerror(errno));
-                strcpy(link_buf, "?");
+                strcpy(work_buf, "?");
             } else {
-                link_buf[sz] = 0;
+                link[sz] = 0;
+                escaped_link_size = escape_strlen(link);
+                work_buf_size -= (sz + escaped_link_size + 1);
+                if (work_buf_size < 0) {
+                    report_error("insufficient space in buffer for %s\n", abspath);
+                    return false;
+                }
+                escaped_link = link + sz + 1;
+                escape_strcpy(escaped_link, link);
             }
         }
-        snprintf(buf, buf_size, "%li %s %li %li %li %li %li %li %s\n",
-                (long) strlen(entry->d_name),
-                entry->d_name,
+        snprintf(response_buf, response_buf_size, "%i %s %li %li %li %li %li %i %s\n",
+                escaped_name_size,
+                escaped_name,
                 (long) stat_buf.st_uid,
                 (long) stat_buf.st_gid,
                 (long) stat_buf.st_mode,
                 (long) stat_buf.st_size,
                 (long) stat_buf.st_mtime,
-                (long) (link_flag ? strlen(link_buf) : 0),
-                (link_flag ? link_buf : ""));
+                escaped_link_size,
+                escaped_link);
         return true;
     } else {
         report_error("error getting stat for '%s': %s\n", abspath, strerror(errno));
@@ -354,7 +431,7 @@ static void response_ls(int request_id, const char* path, bool recursive, int ne
     }
     
     DIR *d = NULL;
-    FILE *f = NULL;
+    FILE *cache_fp = NULL;
     struct dirent *entry;
     
     union {
@@ -363,18 +440,21 @@ static void response_ls(int request_id, const char* path, bool recursive, int ne
     } entry_buf;    
     entry_buf.d.d_reclen = MAXNAMLEN + sizeof(struct dirent);
     
-    int buf_size = PATH_MAX * 2; // TODO: accurate size calculation
-    char* buf = malloc(buf_size); 
+    int response_buf_size = PATH_MAX * 2; // TODO: accurate size calculation
+    char* response_buf = malloc(response_buf_size); 
     char* abspath = malloc(PATH_MAX);
-    char* link_buf = malloc(PATH_MAX);
+    int work_buf_size = (PATH_MAX + MAXNAMLEN) * 2 + 2;
+    char* work_buf = malloc(work_buf_size);
     d = opendir(path);
     if (d) {
         if (persistence) {
-            const char *cache = dirtab_get_cache(path);
-            f = fopen600(cache);
-            if (!f) {
-                report_error("error opening file %s: %s\n", cache, strerror(errno));
+            const char *cache_path = dirtab_get_cache(path);
+            cache_fp = fopen600(cache_path);
+            if (!cache_fp) {
+                report_error("error opening file %s: %s\n", cache_path, strerror(errno));
             }
+            escape_strcpy(work_buf, path);
+            fprintf(cache_fp, "%s\n", work_buf);
         }        
         int cnt = 0;
         while (true) {
@@ -397,9 +477,6 @@ static void response_ls(int request_id, const char* path, bool recursive, int ne
         rewinddir(d);
         fprintf(stdout, "%c %d %li %s %d\n", (recursive ? FS_RSP_RECURSIVE_LS : FS_RSP_LS),
                 request_id, (long) strlen(path), path, cnt);
-        if (f) {
-            fprintf(f, "%s\n", path);
-        }        
         int base_len = strlen(path);
         strcpy(abspath, path);
         abspath[base_len] = '/';
@@ -425,13 +502,13 @@ static void response_ls(int request_id, const char* path, bool recursive, int ne
                 continue;
             }
             strcpy(abspath + base_len + 1, entry->d_name);
-            if (form_entry_response(buf, buf_size, abspath, entry, link_buf, PATH_MAX)) {
-                fprintf(stdout, "%c %d %s", FS_RSP_ENTRY, request_id, buf);
-                if (f) {
-                    fprintf(f, "%s",buf); // trailing '\n' already there, added by form_entry_response
+            if (form_entry_response(response_buf, response_buf_size, abspath, entry, work_buf, work_buf_size)) {
+                fprintf(stdout, "%c %d %s", FS_RSP_ENTRY, request_id, response_buf);
+                if (cache_fp) {
+                    fprintf(cache_fp, "%s",response_buf); // trailing '\n' already there, added by form_entry_response
                 }
             } else {
-                report_error("error getting stat for '%s': %s\n", abspath, strerror(errno));
+                report_error("error forming entry response for '%s'\n", abspath);
             }
         }
         fprintf(stdout, "%c %d %li %s\n", FS_RSP_END, request_id, (long) strlen(path), path);
@@ -465,11 +542,11 @@ static void response_ls(int request_id, const char* path, bool recursive, int ne
     } else {
         report_error("error opening directory '%s': %s\n", path, strerror(errno));
     }
-    fclose_if_not_null(f);
+    fclose_if_not_null(cache_fp);
     closedir_if_not_null(d);
-    free(link_buf);
+    free(work_buf);
     free(abspath);
-    free(buf);
+    free(response_buf);
 }
 
 static void response_stat(int request_id, const char* path) {
@@ -678,12 +755,13 @@ static void main_loop() {
         report_error("error setting exit function: %s\n", strerror(errno));
     }
 
-    char raw_req_buffer[256 + PATH_MAX];
-    char req_buffer[256 + PATH_MAX];
-    while(fgets(raw_req_buffer, sizeof raw_req_buffer, stdin)) {
+    int buf_size = 256 + PATH_MAX;
+    char *raw_req_buffer = malloc(buf_size);
+    char *req_buffer = malloc(buf_size);
+    while(fgets(raw_req_buffer, buf_size, stdin)) {
         trace("raw request: %s", raw_req_buffer); // no LF since buffer ends it anyhow 
         log_print(raw_req_buffer);
-        fs_request* request = decode_request(raw_req_buffer, (fs_request*) req_buffer);
+        fs_request* request = decode_request(raw_req_buffer, (fs_request*) req_buffer, buf_size);
         if (request) {
             trace("decoded request #%d sz=%d kind=%c len=%d path=%s\n", request->id, request->size, request->kind, request->len, request->path);
             if (request->kind == FS_REQ_QUIT) {
@@ -714,9 +792,11 @@ static void main_loop() {
                 process_request(request);
             }
        } else {
-            trace("incorrect request \n");
+            report_error("incorrect request: %s", raw_req_buffer);
        }
     }
+    free(req_buffer);
+    free(raw_req_buffer);
     state_set_proceed(false);
     blocking_queue_shutdown(&req_queue);
     trace("Max. requests queue size: %d\n", blocking_queue_max_size(&req_queue));
@@ -812,7 +892,16 @@ int main(int argc, char* argv[]) {
     lock_or_unloock(true);
     if (log_flag) {
        log_open("log") ;
-       log_print("\n---------- ");
+       log_print("\n--------------------------------------\nfs_server started  ");
+       time_t t = time(NULL);
+       struct tm *tt = localtime(&t);
+       if (tt) {
+           log_print("%d/%02d/%02d %02d:%02d:%02d\n", 
+                   tt->tm_year+1900, tt->tm_mon + 1, tt->tm_mday, 
+                   tt->tm_hour, tt->tm_min, tt->tm_sec);
+       } else {
+           log_print("<error getting time: %s>\n", strerror(errno));
+       }       
        for (int i = 0; i < argc; i++) {
            log_print("%s ", argv[i]);
        }

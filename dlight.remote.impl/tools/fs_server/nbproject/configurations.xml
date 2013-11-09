@@ -17,19 +17,6 @@
         <in>test_main.c</in>
       </df>
     </df>
-    <df root="." name="1">
-    </df>
-    <logicalFolder name="ExternalFiles"
-                   displayName="Important Files"
-                   projectFiles="false"
-                   kind="IMPORTANT_FILES_FOLDER">
-      <itemPath>Makefile</itemPath>
-      <itemPath>nbproject/configurations.xml</itemPath>
-      <itemPath>nbproject/launcher.properties</itemPath>
-      <itemPath>make</itemPath>
-      <itemPath>nbproject/project.xml</itemPath>
-      <itemPath>todo.txt</itemPath>
-    </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
                    projectFiles="false"
@@ -44,7 +31,6 @@
   </logicalFolder>
   <sourceFolderFilter>^(nbproject)$</sourceFolderFilter>
   <sourceRootList>
-    <Elem>.</Elem>
     <Elem>.</Elem>
   </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
@@ -326,7 +312,7 @@
           <buildCommandWorkingDir>test</buildCommandWorkingDir>
           <buildCommand>${MAKE} -f Makefile</buildCommand>
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
-          <executablePath>../../release/bin/Linux-x86_64/fs_server_test</executablePath>
+          <executablePath>dist/Linux-x86/fs_server_test</executablePath>
           <cTool>
             <preprocessorList>
               <Elem>LINUX</Elem>
