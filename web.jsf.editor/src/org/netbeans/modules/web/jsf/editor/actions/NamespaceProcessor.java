@@ -64,6 +64,7 @@ import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
+import org.netbeans.modules.web.jsf.editor.JsfUtils;
 import org.netbeans.modules.web.jsf.editor.actions.ImportData.VariantItem;
 import org.netbeans.modules.web.jsf.editor.hints.LibraryDeclarationChecker;
 import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
@@ -130,14 +131,6 @@ class NamespaceProcessor {
             }
         }
         return root;
-    }
-
-    private Node getRoot(HtmlParserResult parserResult, Library library) {
-        Node rootNode = parserResult.root(library.getNamespace());
-        if ((rootNode == null || rootNode.children().isEmpty()) && library.getLegacyNamespace() != null) {
-            rootNode = parserResult.root(library.getLegacyNamespace());
-        }
-        return rootNode;
     }
 
     private List<Library> getDeclaredLibraries() {
@@ -213,7 +206,7 @@ class NamespaceProcessor {
             // gather usage of namespaces
             ElementUtils.visitChildren(parserResult.root(), compCollector, ElementType.OPEN_TAG);
             for (Library library : declaredLibraries) {
-                Node root = getRoot(parserResult, library);
+                Node root = JsfUtils.getRoot(parserResult, library);
                 if (root != null) {
                     ElementUtils.visitChildren(root, compCollector, ElementType.OPEN_TAG);
                 }

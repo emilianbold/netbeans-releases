@@ -50,7 +50,13 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.lexer.*;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.api.Error;
@@ -63,8 +69,12 @@ import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.parsing.api.*;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.common.api.FileReferenceCompletion;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.taginfo.AttrValueType;
 import org.netbeans.modules.web.common.taginfo.LibraryMetadata;
 import org.netbeans.modules.web.common.taginfo.TagAttrMetadata;
@@ -79,7 +89,6 @@ import org.netbeans.modules.web.jsf.editor.index.CompositeComponentModel;
 import org.netbeans.modules.web.jsf.editor.index.JsfPageModelFactory;
 import org.netbeans.modules.web.jsfapi.api.Attribute;
 import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
-import org.netbeans.modules.web.jsfapi.api.JsfUtils;
 import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.api.LibraryComponent;
 import org.netbeans.modules.web.jsfapi.api.NamespaceUtils;
@@ -88,6 +97,7 @@ import org.netbeans.modules.web.jsfapi.spi.LibraryUtils;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.lexer.MutableTextInput;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  * XXX should be rather done by dynamic artificial embedding creation. The
@@ -96,7 +106,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author marekfukala
  */
-@MimeRegistration(mimeType=JsfUtils.JSF_XHTML_FILE_MIMETYPE, service=HtmlExtension.class)
+@MimeRegistration(mimeType=org.netbeans.modules.web.jsfapi.api.JsfUtils.JSF_XHTML_FILE_MIMETYPE, service=HtmlExtension.class)
 public class JsfHtmlExtension extends HtmlExtension {
 
     private static final String EL_ENABLED_KEY = "el_enabled"; //NOI18N
@@ -123,7 +133,7 @@ public class JsfHtmlExtension extends HtmlExtension {
             inputAttributes = new InputAttributes();
             doc.putProperty(InputAttributes.class, inputAttributes);
         }
-        Language xhtmlLang = Language.find(org.netbeans.modules.web.jsf.editor.JsfUtils.XHTML_MIMETYPE); //NOI18N
+        Language xhtmlLang = Language.find(JsfUtils.XHTML_MIMETYPE); //NOI18N
         if (inputAttributes.getValue(LanguagePath.get(xhtmlLang), EL_ENABLED_KEY) == null) {
             inputAttributes.setValue(LanguagePath.get(xhtmlLang), EL_ENABLED_KEY, new Object(), false);
 
@@ -410,6 +420,9 @@ public class JsfHtmlExtension extends HtmlExtension {
         // completion for files in cases of ui:include src attribute
         completeFaceletsFromProject(context, items, ns, openTag);
 
+        // completion for sections in cases of ui:define name attribute
+        completeSectionsOfTemplate(context, items, ns, openTag);
+
         //facets
         completeFacetsInCCImpl(context, items, ns, openTag, jsfs);
         completeFacets(context, items, ns, openTag, jsfs);
@@ -497,12 +510,126 @@ public class JsfHtmlExtension extends HtmlExtension {
     }
 
     private static void completeFaceletsFromProject(CompletionContext context, List<CompletionItem> items, String ns, OpenTag openTag) {
+        // <ui:include src="|" ...
+        String tagName = openTag.unqualifiedName().toString();
+        String attrName = context.getAttributeName();
         if (NamespaceUtils.containsNsOf(Collections.singleton(ns), DefaultLibraryInfo.FACELETS)
-                && "src".equals(context.getAttributeName())) { //NOI18N
+                && "include".equalsIgnoreCase(tagName) && "src".equalsIgnoreCase(attrName)) { //NOI18N
             items.addAll(FILENAME_SUPPORT.getItems(
                     context.getResult().getSnapshot().getSource().getFileObject(),
                     context.getCCItemStartOffset(),
                     context.getPrefix()));
+        }
+    }
+
+    private void completeSectionsOfTemplate(final CompletionContext context, final List<CompletionItem> items, String ns, OpenTag openTag) {
+        // <ui:define name="|" ...
+        String tagName = openTag.unqualifiedName().toString();
+        String attrName = context.getAttributeName();
+        if (NamespaceUtils.containsNsOf(Collections.singleton(ns), DefaultLibraryInfo.FACELETS)
+                && "define".equalsIgnoreCase(tagName) && "name".equalsIgnoreCase(attrName)) { //NOI18N
+
+            // get the template path
+            Node root = JsfUtils.getRoot(context.getResult(), DefaultLibraryInfo.FACELETS);
+            final String[] template = new String[1];
+            ElementUtils.visitChildren(root, new ElementVisitor() {
+                @Override
+                public void visit(Element node) {
+                    OpenTag openTag = (OpenTag) node;
+                    if ("composition".equalsIgnoreCase(openTag.unqualifiedName().toString())) { //NOI18N
+                        for (org.netbeans.modules.html.editor.lib.api.elements.Attribute attribute : openTag.attributes()) {
+                            if ("template".equalsIgnoreCase(attribute.name().toString())) { //NOI18N
+                                template[0] = attribute.unquotedValue().toString();
+                            }
+                        }
+                    }
+                }
+            }, ElementType.OPEN_TAG);
+
+            if (template[0] == null) {
+                return;
+            }
+
+            // find the template inside the web root or resource library contract
+            List<Source> candidates = getTemplateCandidates(context.getResult().getSnapshot().getSource().getFileObject(), template[0]);
+            try {
+                ParserManager.parse(candidates, new UserTask() {
+                    @Override
+                    public void run(ResultIterator resultIterator) throws Exception {
+                        Parser.Result result = resultIterator.getParserResult(0);
+                        if (result.getSnapshot().getMimeType().equals("text/html")) {
+                            HtmlParserResult htmlResult = (HtmlParserResult) result;
+                            Node root = JsfUtils.getRoot(htmlResult, DefaultLibraryInfo.FACELETS);
+                            if (root != null) {
+                                List<OpenTag> foundNodes = findValue(root.children(OpenTag.class), "ui:insert", new ArrayList<OpenTag>()); //NOI18N
+                                for (OpenTag node : foundNodes) {
+                                    org.netbeans.modules.html.editor.lib.api.elements.Attribute attr = node.getAttribute("name"); //NOI18N
+                                    if (attr !=null) {
+                                         String value = attr.unquotedValue().toString();
+                                        if (value != null && !"".equals(value)) { //NOI18N
+                                            items.add(HtmlCompletionItem.createAttributeValue(value, context.getCCItemStartOffset(), !context.isValueQuoted())); //NOI18N
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (ParseException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+
+    private static List<OpenTag> findValue(Collection<OpenTag> nodes, String tagName, List<OpenTag> foundNodes) {
+        if (nodes == null) {
+            return foundNodes;
+        }
+        for (OpenTag ot : nodes) {
+            if(LexerUtils.equals(tagName, ot.name(), true, false)) {
+                foundNodes.add(ot);
+            } else {
+                foundNodes = findValue(ot.children(OpenTag.class), tagName, foundNodes);
+            }
+
+        }
+        return foundNodes;
+    }
+
+    private static List<Source> getTemplateCandidates(FileObject client, String path) {
+        List<Source> result = new ArrayList<>();
+        FileObject template = client.getParent().getFileObject(path);
+        if (template != null) {
+            result.add(Source.create(template));
+        }
+
+        Project project = FileOwnerQuery.getOwner(client);
+        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        if (wm != null && wm.getDocumentBase() != null) {
+            handleContracts(wm.getDocumentBase(), path, result);
+        } else {
+            Sources sources = ProjectUtils.getSources(project);
+            SourceGroup[] sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+            for (SourceGroup sourceGroup : sourceGroups) {
+                FileObject metaInf = sourceGroup.getRootFolder().getFileObject("META-INF"); //NOI18N
+                if (metaInf != null) {
+                    handleContracts(metaInf, path, result);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private static void handleContracts(FileObject parent, String path, List<Source> result) {
+        FileObject contractsFolder = parent.getFileObject("contracts"); //NOI18N
+        if (contractsFolder != null) {
+            for (FileObject child : contractsFolder.getChildren()) {
+                FileObject contract = child.getFileObject(path);
+                if (contract != null) {
+                    result.add(Source.create(contract));
+                }
+            }
         }
     }
 
