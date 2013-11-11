@@ -510,7 +510,7 @@ public final class Terminal extends JComponent {
 
     public void resetTitle() {
 	customTitle = false;
-	updateName("");
+	updateName("");	//NOI18N
     }
 
     public String getTitle() {
