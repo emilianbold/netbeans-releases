@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,45 +34,19 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.core.multitabs.prefs;
+@OptionsPanelController.ContainerRegistration(id = "Appearance", 
+        position = 750,
+        categoryName = "#OptionsCategory_Name_Appearance", 
+        iconBase = "org/netbeans/core/windows/options/appearance32.png", 
+        keywords = "#OptionsCategory_Keywords_Appearance", 
+        keywordsCategory = "Appearance")
+@NbBundle.Messages(value = {"OptionsCategory_Name_Appearance=Appearance", "OptionsCategory_Keywords_Appearance=look and feel, windows, document tab"})
+package org.netbeans.core.windows.options;
 
-import java.awt.BorderLayout;
-import javax.swing.JPanel;
-import org.netbeans.core.windows.options.TabsPanel;
-
-/**
- * 
- * @author S. Aubrecht
- */
-//@OptionsPanelController.Keywords(keywords={"#KW_WindowOptions"}, location=OptionsDisplayer.ADVANCED, tabTitle="#AdvancedOption_DisplayName_WinSys")
-final class MultiTabsPanel extends TabsPanel {
-
-    private InnerTabsPanel tabsPanel;
-
-    MultiTabsPanel( final MultiTabsOptionsPanelController controller ) {
-        super( controller );
-    }
-
-    @Override
-    protected void initTabsPanel( JPanel panel ) {
-        if( null == tabsPanel )
-            tabsPanel = new InnerTabsPanel( ( MultiTabsOptionsPanelController ) controller);
-        panel.removeAll();
-        panel.setLayout( new BorderLayout() );
-        panel.add( tabsPanel, BorderLayout.CENTER );
-    }
-
-    @Override
-    protected void load() {
-        super.load();
-        tabsPanel.load();
-    }
-
-    @Override
-    protected boolean store() {
-        boolean changed = super.store();
-        changed |= tabsPanel.store();
-        return changed;
-    }
-}
+import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.NbBundle;
