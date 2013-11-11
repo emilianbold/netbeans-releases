@@ -131,6 +131,7 @@ public final class KarmaExecutable {
         };
         Future<Integer> task = getExecutable(Bundle.KarmaExecutable_start(ProjectUtils.getInformation(project).getDisplayName()), getProjectDir())
                 .additionalParameters(params)
+                .environmentVariables(runInfo.getEnvVars())
                 .run(getStartDescriptor(runInfo, countDownTask));
         assert task != null : karmaPath;
         try {

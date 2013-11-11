@@ -42,6 +42,9 @@
 
 package org.netbeans.modules.javascript.karma.run;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
@@ -54,18 +57,21 @@ public final class RunInfo {
     private final String nbConfigFile;
     private final String projectConfigFile;
     private final String testFile;
+    private final Map<String, String> envVars = new ConcurrentHashMap<>();
 
 
-    public RunInfo(Project project, RerunHandler rerunHandler, String nbConfigFile, String projectConfigFile, @NullAllowed String testFile) {
-        assert project != null;
-        assert rerunHandler != null;
-        assert nbConfigFile != null;
-        assert projectConfigFile != null;
-        this.project = project;
-        this.rerunHandler = rerunHandler;
-        this.nbConfigFile = nbConfigFile;
-        this.projectConfigFile = projectConfigFile;
-        this.testFile = testFile;
+    private RunInfo(Builder builder) {
+        assert builder != null;
+        assert builder.project != null;
+        assert builder.rerunHandler != null;
+        assert builder.nbConfigFile != null;
+        assert builder.projectConfigFile != null;
+        project = builder.project;
+        rerunHandler = builder.rerunHandler;
+        nbConfigFile = builder.nbConfigFile;
+        projectConfigFile = builder.projectConfigFile;
+        testFile = builder.testFile;
+        envVars.putAll(builder.envVars);
     }
 
     public Project getProject() {
@@ -89,10 +95,72 @@ public final class RunInfo {
         return testFile;
     }
 
+    public Map<String, String> getEnvVars() {
+        return new HashMap<>(envVars);
+    }
+
     @Override
     public String toString() {
         return "RunInfo{" + "project=" + project + ", nbConfigFile=" + nbConfigFile // NOI18N
                 + ", projectConfigFile=" + projectConfigFile + ", testFile=" + testFile + '}'; // NOI18N
+    }
+
+    //~ Inner classes
+
+    public static final class Builder {
+
+        final Project project;
+        RerunHandler rerunHandler;
+        String nbConfigFile;
+        String projectConfigFile;
+        String testFile;
+        Map<String, String> envVars = new HashMap<>();
+
+
+        public Builder(Project project) {
+            this.project = project;
+        }
+
+        public Builder setRerunHandler(RerunHandler rerunHandler) {
+            assert rerunHandler != null;
+            this.rerunHandler = rerunHandler;
+            return this;
+        }
+
+        public Builder setNbConfigFile(String nbConfigFile) {
+            assert nbConfigFile != null;
+            this.nbConfigFile = nbConfigFile;
+            return this;
+        }
+
+        public Builder setProjectConfigFile(String projectConfigFile) {
+            assert projectConfigFile != null;
+            this.projectConfigFile = projectConfigFile;
+            return this;
+        }
+
+        public Builder setTestFile(@NullAllowed String testFile) {
+            this.testFile = testFile;
+            return this;
+        }
+
+        public Builder addEnvVar(String name, String value) {
+            assert name != null;
+            assert value != null;
+            envVars.put(name, value);
+            return this;
+        }
+
+        public Builder addEnvVars(Map<String, String> envVars) {
+            assert envVars != null;
+            this.envVars.putAll(envVars);
+            return this;
+        }
+
+        public RunInfo build() {
+            return new RunInfo(this);
+        }
+
     }
 
 }

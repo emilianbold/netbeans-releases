@@ -43,13 +43,11 @@
 package org.netbeans.modules.javascript.karma.exec;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -63,17 +61,12 @@ import org.netbeans.modules.javascript.karma.run.RunInfo;
 import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.ChangeSupport;
 
 public final class KarmaServer {
 
     static final Logger LOGGER = Logger.getLogger(KarmaServer.class.getName());
-
-    private static final String NETBEANS_KARMA_CONFIG_NAME = "netbeans-karma.conf.js"; // NOI18N
 
     private final int port;
     private final Project project;
@@ -85,6 +78,7 @@ public final class KarmaServer {
     volatile boolean started = false;
     volatile boolean starting = false;
     private volatile File netBeansKarmaReporter = null;
+    private volatile File netBeansKarmaConfig = null;
 
 
     KarmaServer(int port, Project project) {
@@ -107,13 +101,12 @@ public final class KarmaServer {
             fireChange();
             return false;
         }
-        String projectConfigFile = getProjectConfigFile();
-        String netBeansConfigFile = getNetBeansConfigFile(projectConfigFile);
-        if (netBeansConfigFile == null) {
+        RunInfo runInfo = getRunInfo();
+        if (runInfo == null) {
             // some error
             return false;
         }
-        server = karmaExecutable.start(port, new RunInfo(project, new RerunHandlerImpl(this), netBeansConfigFile, projectConfigFile, null));
+        server = karmaExecutable.start(port, runInfo);
         starting = false;
         if (server != null) {
             started = true;
@@ -180,43 +173,30 @@ public final class KarmaServer {
     }
 
     @CheckForNull
-    private String getNetBeansConfigFile(String projectConfigFile) {
-        FileObject nbConfig = FileUtil.getConfigFile("Karma/karma-netbeans.conf.js"); // NOI18N
-        assert nbConfig != null;
-        try {
-            File tmpDir = new File(System.getProperty("java.io.tmpdir"), "netbeans-karma-" + getProjectName()); // NOI18N
-            tmpDir.mkdir();
-            File targetFile = new File(tmpDir, NETBEANS_KARMA_CONFIG_NAME);
-            if (targetFile.isFile()) {
-                targetFile.delete();
-            }
-            DataObject template = DataObject.find(nbConfig);
-            DataFolder targetDir = DataFolder.findFolder(FileUtil.toFileObject(tmpDir));
-            DataObject config = template.createFromTemplate(targetDir, NETBEANS_KARMA_CONFIG_NAME, getParams(projectConfigFile)); // NOI18N
-            return FileUtil.toFile(config.getPrimaryFile()).getAbsolutePath();
-        } catch (DataObjectNotFoundException ex) {
-            LOGGER.log(Level.WARNING, null, ex);
-            throw new IllegalStateException("Cannot find dataobject for fileobject", ex);
-        } catch (IOException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-        }
-        return null;
+    private RunInfo getRunInfo() {
+        String projectConfig = getProjectConfigFile();
+        return new RunInfo.Builder(project)
+                .setProjectConfigFile(projectConfig)
+                .setNbConfigFile(getNetBeansKarmaConfig().getAbsolutePath())
+                .setRerunHandler(new RerunHandlerImpl(this))
+                .addEnvVars(getEnvVars(projectConfig))
+                .build();
     }
 
-    private Map<String, ? extends Object> getParams(String projectConfigFile) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("projectConfig", projectConfigFile); // NOI18N
+    private Map<String, String> getEnvVars(String projectConfigFile) {
+        Map<String, String> envVars = new HashMap<>();
+        envVars.put("FILE_SEPARATOR", File.separator); // NOI18N
+        envVars.put("PROJECT_CONFIG", projectConfigFile); // NOI18N
         Collection<FileObject> webRoots = ProjectWebRootQuery.getWebRoots(project);
         if (webRoots.isEmpty()) {
             throw new IllegalStateException("Project " + project.getClass().getName() + " must provide ProjectWebRootProvider in its lookup");
         }
         File webRoot = FileUtil.toFile(webRoots.iterator().next());
-        params.put("projectWebRoot", webRoot.getAbsolutePath()); // NOI18N
+        envVars.put("PROJECT_WEB_ROOT", webRoot.getAbsolutePath()); // NOI18N
         // XXX
-        params.put("coverage", false); // NOI18N
-        params.put("karmaNetbeansReporter", getNetBeansKarmaReporter().getAbsolutePath()); // NOI18N
-        params.put("fileSeparator", File.separator); // NOI18N
-        return params;
+        envVars.put("COVERAGE", ""); // NOI18N
+        envVars.put("KARMA_NETBEANS_REPORTER", getNetBeansKarmaReporter().getAbsolutePath()); // NOI18N
+        return envVars;
     }
 
     private String getProjectConfigFile() {
@@ -227,8 +207,18 @@ public final class KarmaServer {
         if (netBeansKarmaReporter == null) {
             netBeansKarmaReporter = InstalledFileLocator.getDefault().locate(
                     "karma/karma-netbeans-reporter", "org.netbeans.modules.javascript.karma", false); // NOI18N
+            assert netBeansKarmaReporter != null;
         }
         return netBeansKarmaReporter;
+    }
+
+    private File getNetBeansKarmaConfig() {
+        if (netBeansKarmaConfig == null) {
+            netBeansKarmaConfig = InstalledFileLocator.getDefault().locate(
+                    "karma/karma-netbeans.conf.js", "org.netbeans.modules.javascript.karma", false); // NOI18N
+            assert netBeansKarmaConfig != null;
+        }
+        return netBeansKarmaConfig;
     }
 
     private String getProjectName() {
