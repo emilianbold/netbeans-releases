@@ -78,81 +78,34 @@ static void state_init() {
     state_set_proceed(true);
 }
 
-static const char* decode_int(const char* text, int* result) {
-    *result = 0;
-    const char* p = text;
-    while (p - text < 12) {
-        char c = *(p++);
-        if (isdigit(c)) {
-            *result *= 10; 
-            *result += c - '0';
-        } else if (c == 0 || isspace(c)) {
-            return p;
-        } else {
-            report_error("unexpected numeric value: '%c'\n", c);
-            return NULL;
-        }
-    }
-    report_error("numeric value too long: '%s'\n", text);
-    return NULL;
+#define DECLARE_DECODE(type, type_name, maxlen) \
+static const char* decode_##type_name (const char* text, type* result) { \
+    *result = 0; \
+    const char* p = text; \
+    if (!isdigit(*p)) { \
+        report_error("unexpected numeric value: '%c'\n", *p); \
+        return NULL; \
+    } \
+    while (p - text < maxlen) { \
+        char c = *(p++); \
+        if (isdigit(c)) { \
+            *result *= 10; \
+            *result += c - '0'; \
+        } else if (c == 0 || isspace(c)) { \
+            return p; \
+        } else { \
+            report_error("unexpected numeric value: '%c'\n", c); \
+            return NULL; \
+        } \
+    } \
+    report_error("numeric value too long: '%s'\n", text); \
+    return NULL; \
 }
 
-static const char* decode_uint(const char* text, unsigned int* result) {
-    *result = 0;
-    const char* p = text;
-    while (p - text < 12) {
-        char c = *(p++);
-        if (isdigit(c)) {
-            *result *= 10; 
-            *result += c - '0';
-        } else if (c == 0 || isspace(c)) {
-            return p;
-        } else {
-            report_error("unexpected numeric value: '%c'\n", c);
-            return NULL;
-        }
-    }
-    report_error("numeric value too long: '%s'\n", text);
-    return NULL;
-}
-
-static const char* decode_long(const char* text, long* result) {
-    *result = 0;
-    const char* p = text;
-    while (p - text < 20) {
-        char c = *(p++);
-        if (isdigit(c)) {
-            *result *= 10; 
-            *result += c - '0';
-        } else if (c == 0 || isspace(c)) {
-            return p;
-        } else {
-            report_error("unexpected numeric value: '%c'\n", c);
-            return NULL;
-        }
-    }
-    report_error("numeric value too long: '%s'\n", text);
-    return NULL;
-}
-
-static const char* decode_long_long(const char* text, long long* result) {
-    *result = 0;
-    const char* p = text;
-    while (p - text < 20) {
-        char c = *(p++);
-        if (isdigit(c)) {
-            *result *= 10; 
-            *result += c - '0';
-        } else if (c == 0 || isspace(c)) {
-            return p;
-        } else {
-            report_error("unexpected numeric value: '%c'\n", c);
-            return NULL;
-        }
-    }
-    report_error("numeric value too long: '%s'\n", text);
-    return NULL;
-}
+DECLARE_DECODE(int, int, 12)
+DECLARE_DECODE(unsigned int, uint, 12)
+DECLARE_DECODE(long, long, 20)
+DECLARE_DECODE(long long, long_long, 20)
 
 static bool is_prohibited(const char* abspath) {
     if (strcmp("/proc", abspath) == 0) {
@@ -266,11 +219,15 @@ static fs_entry *decode_entry_response(char* buf) {
     
     p = decode_int(p, &tmp.link_len);
     if (!p) { return NULL; };
-    
-    tmp.link = (char*) p;
-    tmp.link[tmp.link_len] = 0;
-    unescape_strcpy(tmp.link, tmp.link);
-    tmp.link_len = strlen(tmp.link);
+
+    if (tmp.link_len) {
+        tmp.link = (char*) p;
+        tmp.link[tmp.link_len] = 0;
+        unescape_strcpy(tmp.link, tmp.link);
+        tmp.link_len = strlen(tmp.link);
+    } else {
+        tmp.link = "";
+    }
     if (tmp.name_len > MAXNAMLEN) {
         report_error("wrong entry format: too long (%i) file name: %s", tmp.name_len, buf);
         return NULL;
@@ -296,7 +253,7 @@ static void read_entries_from_cache(array/*<fs_entry>*/ *entries, FILE *cache_fp
         }
         while (fgets(buf, buf_size, cache_fp)) {
             trace("\tread entry: %s", buf);
-            if (*buf == '\n') {
+            if (*buf == '\n' || *buf == 0) {
                 trace("an empty one; continuing...");
                 continue;
             }
