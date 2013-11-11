@@ -97,7 +97,7 @@ implements TokenOrEmbedding<T> {
     
     AbstractToken(T id, int rawOffset) {
         this.id = id;
-        this.rawOffset = rawOffset;
+        setRawOffset(rawOffset);
     }
     
     /**
@@ -139,6 +139,9 @@ implements TokenOrEmbedding<T> {
      * @param rawOffset new raw offset.
      */
     public final void setRawOffset(int rawOffset) {
+//        if (rawOffset < -1) { // -1 is default value
+//            throw new IllegalArgumentException("Invalid rawOffset=" + rawOffset);
+//        }
         this.rawOffset = rawOffset;
     }
 
