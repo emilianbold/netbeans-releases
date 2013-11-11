@@ -336,7 +336,12 @@ final public class TerminalContainerTabbed extends TerminalContainerCommon {
 		String newTitle = inputLine.getInputText().trim();
 		if (!newTitle.equals(title)) {
 		    if (selected instanceof Terminal) {
-			((Terminal)selected).setTitle(newTitle);
+			Terminal terminal = ((Terminal)selected);
+			if (!newTitle.isEmpty()) {
+			    terminal.setTitle(newTitle);
+			} else {
+			    terminal.resetTitle();
+			}
 		    } else {
 			setTitle(selected, newTitle);
 		    }

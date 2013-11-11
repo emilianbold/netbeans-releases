@@ -214,7 +214,7 @@ import org.netbeans.lib.terminalemulator.LineDiscipline;
 	    // If anything it protects against null names.
 	    terminal().setTitle(terminal().name() + " ");	// NOI18N
 	     */
-	    terminal().setTitle(terminal().name());
+	    terminal().updateName(terminal().name());
 
 	    // TMP container().add(terminal(), terminal().callBacks());
 	}
