@@ -94,6 +94,11 @@ public class Utils {
     private static String [] unversionedFolders;
 
     /**
+     * Keeps forbidden folders without metadata
+     */
+    private static Set<String> forbiddenFolders;
+
+    /**
      * Request processor for parallel tasks.
      */
     private static final RequestProcessor vcsParallelRequestProcessor = new RequestProcessor("Versioning parallel tasks", 10, false, true);
@@ -326,6 +331,20 @@ public class Utils {
             unversionedFolders = files;
         }
         return unversionedFolders;
+    }
+
+    public static boolean isForbiddenFolder (VCSFileProxy folder) {
+        if (forbiddenFolders == null) {
+            List<String> files = new ArrayList<String>();
+            try {
+                String forbidden = System.getProperty("versioning.forbiddenFolders", ""); //NOI18N
+                files.addAll(Arrays.asList(forbidden.split("\\;"))); //NOI18N
+            } catch (Exception e) {
+                Logger.getLogger(Utils.class.getName()).log(Level.INFO, e.getMessage(), e);
+            }
+            forbiddenFolders = new HashSet<String>(files);
+        }
+        return forbiddenFolders.contains(folder.getPath());
     }
 
     static boolean isVersionUserdir() {
