@@ -175,7 +175,7 @@ class NamespaceProcessor {
             if (jsfSupport.isJsf22Plus()) {
                     remainingNs = library.getNamespace();
                 }
-            result.add(new VariantItem(library.getDefaultPrefix(), remainingNs, library));
+            result.add(new VariantItem(prefix, remainingNs, library));
         }
 
         return result;
