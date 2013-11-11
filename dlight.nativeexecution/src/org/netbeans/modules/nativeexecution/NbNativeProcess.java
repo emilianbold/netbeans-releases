@@ -107,7 +107,7 @@ public abstract class NbNativeProcess extends AbstractNativeProcess {
         } else {
             Pty pty = info.getPty();
             if (FIX_ERASE_KEY_IN_TERMINAL) {
-                command.add("--set-erase-key");
+                command.add("--set-erase-key"); // NOI18N;
             }
             if (pty != null) {
                 command.add("-p"); // NOI18N
