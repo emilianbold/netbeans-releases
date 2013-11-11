@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.maven.newproject.idenative;
 
+import org.netbeans.modules.maven.spi.newproject.CreateProjectBuilder;
 import java.io.File;
 import org.netbeans.modules.maven.newproject.*;
 import java.io.IOException;

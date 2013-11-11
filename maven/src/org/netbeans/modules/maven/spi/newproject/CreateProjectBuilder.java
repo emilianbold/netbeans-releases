@@ -40,7 +40,7 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.newproject.idenative;
+package org.netbeans.modules.maven.spi.newproject;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -64,8 +64,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
- *
+ * builder for creating a new pom file/project.
  * @author mkleint
+ * @since 2.98
  */
 public class CreateProjectBuilder {
     private static final String SKELETON = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project xmlns=\"http://maven.apache.org/POM/4.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd\">\n" +
@@ -78,8 +79,8 @@ public class CreateProjectBuilder {
     private String packageName;
     private String packaging = "jar";
     private boolean updateParent = true;
-    private Project parentProject;
-    private List<PomOperationHandle> operations;
+    private MavenProject parentProject;
+    private PomOperationsHandle operations;
     private AdditionalChangeHandle moreWork;
     private ProgressHandle progressHandle;
 
@@ -115,12 +116,12 @@ public class CreateProjectBuilder {
      * @param parent
      * @return 
      */
-    public CreateProjectBuilder setParentProject(Project parent) {
+    public CreateProjectBuilder setParentProject(MavenProject parent) {
         this.parentProject = parent;
         return this;
     }
     
-    public CreateProjectBuilder setAdditionalOperations(List<PomOperationHandle> opers) {
+    public CreateProjectBuilder setAdditionalOperations(PomOperationsHandle opers) {
         this.operations = opers;
         return this;
     }
@@ -140,26 +141,20 @@ public class CreateProjectBuilder {
 
             List<ModelOperation<POMModel>> pomOpers = new ArrayList<ModelOperation<POMModel>>();
             //TODO is FOQ too adventurous, maybe just ProjectManager.findProject on parent is better heuristics?
-            Project parentPrj = parentProject;
-            if (parentPrj == null) {
-                parentPrj = FileOwnerQuery.getOwner(org.openide.util.Utilities.toURI(projectDirectory));
-            }
-            MavenProject parent = null;
-            if (parentPrj != null) {
-                NbMavenProject nbMavenParent = parentPrj.getLookup().lookup(NbMavenProject.class);
-                if (nbMavenParent != null && "pom".equals(nbMavenParent.getMavenProject().getPackaging())) {
-                    parent = nbMavenParent.getMavenProject();
+            MavenProject parent = parentProject;
+            if (parent == null) {
+                Project p = FileOwnerQuery.getOwner(org.openide.util.Utilities.toURI(projectDirectory));
+                if (p != null) {
+                    NbMavenProject nbMavenParent = p.getLookup().lookup(NbMavenProject.class);
+                    if (nbMavenParent != null && "pom".equals(nbMavenParent.getMavenProject().getPackaging())) {
+                        parent = nbMavenParent.getMavenProject();
+                    }
                 }
             }
             Context context = new Context(parent, groupId, artifactId, version, packaging, projectDirectory, packageName);
             pomOpers.add(new BasicPropertiesOperation(context));
             if (operations != null) {
-                for (PomOperationHandle handle : operations) {
-                    ModelOperation<POMModel> op = handle.createPomOperation(context);
-                    if (op != null) {
-                        pomOpers.add(op);
-                    }
-                }
+                pomOpers.addAll(operations.createPomOperations(context));
             }
 
             if (progressHandle != null) {
@@ -172,8 +167,9 @@ public class CreateProjectBuilder {
                 if (progressHandle != null) {
                     progressHandle.progress("Updating parent pom.xml");
                 }
-                ModelSource pmodel = Utilities.createModelSource(parentPrj.getProjectDirectory().getFileObject("pom.xml"));
-                Utilities.performPOMModelOperations(pmodel, Collections.singletonList(new AddModuleToParentOperation(parentPrj.getProjectDirectory(), projectDirectory)));
+                FileObject pom = FileUtil.toFileObject(parent.getFile());
+                ModelSource pmodel = Utilities.createModelSource(pom);
+                Utilities.performPOMModelOperations(pmodel, Collections.singletonList(new AddModuleToParentOperation(pom.getParent(), projectDirectory)));
             }
         
             if (moreWork != null) {
@@ -187,14 +183,14 @@ public class CreateProjectBuilder {
     /**
      * create pom modeloperations based on the passed context
      */
-    public static interface PomOperationHandle {
+    public static interface PomOperationsHandle {
         
-        ModelOperation<POMModel> createPomOperation(Context context);
+        @NonNull List<ModelOperation<POMModel>> createPomOperations(@NonNull Context context);
     
     }
     
     public static interface AdditionalChangeHandle {
-        Runnable createAdditionalChange(Context context);
+        Runnable createAdditionalChange(@NonNull Context context);
     }
     
     public static final class Context {
