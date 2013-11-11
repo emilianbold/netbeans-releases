@@ -64,11 +64,12 @@ import org.openide.filesystems.FileObject;
  */
 public class RemoteFileSystemTestCase extends RemoteFileTestBase {
 
-//    static {
+    static {
 //        System.setProperty("remote.fs_server.verbose", "true");
 //        System.setProperty("remote.fs_server.log", "true");
-//        System.setProperty("remote.fs_server.refresh", "0");
-//    }
+//        System.setProperty("remote.fs_server.verbose.response", "true");
+        System.setProperty("remote.fs_server.refresh", "0");
+    }
 
     public RemoteFileSystemTestCase(String testName) {
         super(testName);
