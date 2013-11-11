@@ -45,6 +45,14 @@
                     <name>Linux64</name>
                     <type>0</type>
                 </confElem>
+                <confElem>
+                    <name>Debug_Linux32</name>
+                    <type>0</type>
+                </confElem>
+                <confElem>
+                    <name>Debug_Linux64</name>
+                    <type>0</type>
+                </confElem>
             </confList>
             <formatting>
                 <project-formatting-style>false</project-formatting-style>
