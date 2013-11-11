@@ -43,16 +43,21 @@ package org.netbeans.modules.bugtracking.tasks.actions;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.IssueImpl;
+import org.netbeans.modules.bugtracking.QueryImpl;
+import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.tasks.DashboardTopComponent;
@@ -62,6 +67,7 @@ import org.netbeans.modules.bugtracking.tasks.dashboard.QueryNode;
 import org.netbeans.modules.bugtracking.tasks.dashboard.RepositoryNode;
 import org.netbeans.modules.bugtracking.tasks.dashboard.TaskNode;
 import org.netbeans.modules.bugtracking.tasks.DashboardUtils;
+import org.netbeans.modules.bugtracking.tasks.SortPanel;
 import org.netbeans.modules.bugtracking.tasks.dashboard.ClosedCategoryNode;
 import org.netbeans.modules.bugtracking.tasks.dashboard.ClosedRepositoryNode;
 import org.netbeans.modules.bugtracking.tasks.dashboard.Refreshable;
@@ -70,6 +76,8 @@ import org.netbeans.modules.bugtracking.tasks.dashboard.Submitable;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.team.commons.treelist.TreeListNode;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -201,6 +209,10 @@ public class Actions {
         if (submitAction != null) {
             actions.add(submitAction);
         }
+        Action cancelAction = CancelAction.createAction(nodes);
+        if (cancelAction != null) {
+            actions.add(cancelAction);
+        }
         return actions;
     }
 
@@ -279,6 +291,84 @@ public class Actions {
             return new SubmitAction(submitables, name);
         }
     }
+
+    public static class CancelAction extends AbstractAction {
+
+        private final List<Submitable> nodes;
+        private boolean canceled = false;
+
+        private CancelAction(List<Submitable> nodes, String name) {
+            super(name);
+            this.nodes = nodes;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            boolean confirmCancel = DashboardUtils.confirmDelete(NbBundle.getMessage(Actions.class, "LBL_CancelDialogTitle"), NbBundle.getMessage(Actions.class, "LBL_CancelDialogQuestion"));
+            if (confirmCancel) {
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Map<String, IssueImpl> tasksMap = new HashMap<String, IssueImpl>();
+                        for (Submitable submitable : nodes) {
+                            for (IssueImpl task : submitable.getTasksToSubmit()) {
+                                if (!tasksMap.containsKey(getTaskKey(task))) {
+                                    tasksMap.put(getTaskKey(task), task);
+                                }
+                            }
+                        }
+                        ProgressHandle cancelProgress = getProgress();
+                        cancelProgress.start(tasksMap.values().size());
+                        int workunits = 0;
+                        for (IssueImpl task : tasksMap.values()) {
+                            if (canceled) {
+                                break;
+                            }
+                            cancelProgress.progress(NbBundle.getMessage(Actions.class, "LBL_CancelTaskProgress", task.getDisplayName()));
+                            task.discardChanges();
+                            workunits++;
+                            cancelProgress.progress(workunits);
+                        }
+                        cancelProgress.finish();
+                    }
+
+                });
+            }
+        }
+
+        private ProgressHandle getProgress() {
+            return ProgressHandleFactory.createHandle(NbBundle.getMessage(Actions.class, "LBL_CancelAllProgress"), new Cancellable() {
+                @Override
+                public boolean cancel() {
+                    canceled = true;
+                    return canceled;
+                }
+            });
+        }
+
+        private String getTaskKey(IssueImpl task) {
+            return task.getRepositoryImpl().getId() + ";;" + task.getID();
+        }
+
+        public static CancelAction createAction(TreeListNode... nodes) {
+            List<Submitable> submitables = new ArrayList<Submitable>();
+            for (TreeListNode n : nodes) {
+                if (n instanceof Submitable && ((Submitable) n).isUnsubmitted()) {
+                    submitables.add((Submitable) n);
+                } else {
+                    return null;
+                }
+            }
+            String name = NbBundle.getMessage(Actions.class, "CTL_CancelAll");
+            if (nodes.length == 1 && nodes[0] instanceof TaskContainerNode) {
+                TaskContainerNode n = (TaskContainerNode) nodes[0];
+                if (n.getTasks(true).size() == 1 && (n instanceof TaskNode)) {
+                    name = NbBundle.getMessage(Actions.class, "CTL_Cancel");
+                }
+            }
+            return new CancelAction(submitables, name);
+        }
+    }
 //</editor-fold>
 
     public static List<Action> getTaskPopupActions(TaskNode... taskNodes) {
@@ -291,6 +381,7 @@ public class Actions {
         }
         boolean enableSetCategory = true;
         boolean showRemoveTask = true;
+        boolean showDeleteLocal = true;
         for (TaskNode taskNode : taskNodes) {
             if (!taskNode.isCategorized()) {
                 showRemoveTask = false;
@@ -298,16 +389,23 @@ public class Actions {
             if (taskNode.getTask().isNew()) {
                 enableSetCategory = false;
             }
+            if (!taskNode.isLocal()) {
+                showDeleteLocal = false;
+            }
         }
         if (showRemoveTask) {
             actions.add(new RemoveTaskAction(taskNodes));
+        }
+        if (showDeleteLocal) {
+            actions.add(new DeleteLocalTaskAction(taskNodes));
         }
         SetCategoryAction setCategoryAction = new SetCategoryAction(taskNodes);
         actions.add(setCategoryAction);
         if (!enableSetCategory) {
             setCategoryAction.setEnabled(false);
         }
-        //actions.add(new ScheduleTaskAction(taskNodes));
+
+        actions.add(getScheduleAction(taskNodes));
         //actions.add(new NotificationTaskAction(taskNodes));
         return actions;
     }
@@ -317,7 +415,6 @@ public class Actions {
 
         public RemoveTaskAction(TaskNode... taskNodes) {
             super(NbBundle.getMessage(Actions.class, "CTL_RemoveFromCat"), taskNodes); //NOI18N
-            putValue(ACCELERATOR_KEY, DELETE_KEY);
         }
 
         @Override
@@ -336,21 +433,61 @@ public class Actions {
         }
     }
 
-    private static class ScheduleTaskAction extends TaskAction {
+    public static class DeleteLocalTaskAction extends TaskAction {
 
-        public ScheduleTaskAction(TaskNode... taskNodes) {
-            super("Schedule", taskNodes); //NOI18N
+        public DeleteLocalTaskAction(TaskNode... taskNodes) {
+            super(NbBundle.getMessage(Actions.class, "CTL_Delete"), taskNodes); //NOI18N
+            putValue(ACCELERATOR_KEY, DELETE_KEY);
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            new DummyAction().actionPerformed(e);
+            boolean confirmDelete = DashboardUtils.confirmDelete(
+                    NbBundle.getMessage(Actions.class, "LBL_DeleteDialogTitle"),
+                    NbBundle.getMessage(Actions.class, "LBL_DeleteDialogQuestion", getTaskNodes().length));
+
+            if (confirmDelete) {
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        for (TaskNode taskNode : getTaskNodes()) {
+                            taskNode.getTask().discardChanges();
+                        }
+                    }
+                });
+            }
         }
 
         @Override
         public boolean isEnabled() {
-            return false;
+            for (TaskNode taskNode : getTaskNodes()) {
+                if (!taskNode.isLocal()) {
+                    return false;
+                }
+            }
+            return true;
         }
+    }
+
+    private static Action getScheduleAction(final TaskNode... taskNodes) {
+        IssueScheduleInfo schedule = null;
+        if (taskNodes.length == 1) {
+            schedule = taskNodes[0].getTask().getSchedule();
+        }
+        final DashboardUtils.SchedulingMenu scheduleMenu = DashboardUtils.createScheduleMenu(schedule);
+
+        //TODO weak listener??
+        final ChangeListener listener = new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                for (TaskNode taskNode : taskNodes) {
+                    taskNode.getTask().setSchedule(scheduleMenu.getScheduleInfo());
+                }
+                scheduleMenu.removeChangeListener(this);
+            }
+        };
+        scheduleMenu.addChangeListener(listener);
+        return scheduleMenu.getMenuAction();
     }
 
     private static class SetCategoryAction extends TaskAction {
@@ -659,15 +796,15 @@ public class Actions {
         @Override
         public void actionPerformed(ActionEvent e) {
             for (RepositoryNode repositoryNode : getRepositoryNodes()) {
-                org.netbeans.modules.bugtracking.ui.query.QueryAction.openQuery(null, repositoryNode.getRepository());
+                org.netbeans.modules.bugtracking.ui.query.QueryAction.createNewQuery(repositoryNode.getRepository());
             }
         }
 
         @Override
-        public boolean isEnabled () {
+        public boolean isEnabled() {
             return super.isEnabled() && !containsLocalRepository(getRepositoryNodes());
         }
-        
+
     }
 
     public static class QuickSearchAction extends RepositoryAction {
@@ -691,8 +828,23 @@ public class Actions {
     //</editor-fold>
 
     public static List<Action> getQueryPopupActions(QueryNode... queryNodes) {
+        boolean editPossible = true;
+        boolean openPossible = true;
+
+        for (QueryNode queryNode : queryNodes) {
+            QueryImpl q = queryNode.getQuery();
+            if (!q.providesMode(QueryController.QueryMode.EDIT)) {
+                editPossible = false;
+            }
+            if (!q.providesMode(QueryController.QueryMode.VIEW)) {
+                openPossible = false;
+            }
+            if (!editPossible && !openPossible) {
+                break;
+            }
+        }
         List<Action> actions = new ArrayList<Action>();
-        actions.add(new EditQueryAction(queryNodes));  
+        actions.add(new EditQueryAction(queryNodes));
         actions.add(new OpenQueryAction(queryNodes));
         actions.add(new DeleteQueryAction(queryNodes));
         //actions.add(new NotificationQueryAction(queryNodes));
@@ -742,21 +894,14 @@ public class Actions {
 
     public static class OpenQueryAction extends QueryAction {
 
-        private QueryController.QueryMode mode;
-
         public OpenQueryAction(QueryNode... queryNodes) {
-            this(QueryController.QueryMode.SHOW_ALL, queryNodes);
-        }
-
-        public OpenQueryAction(QueryController.QueryMode mode, QueryNode... queryNodes) {
             super(NbBundle.getMessage(OpenQueryAction.class, "CTL_OpenNode"), queryNodes); //NOI18N
-            this.mode = mode;
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
             for (QueryNode queryNode : getQueryNodes()) {
-                queryNode.getQuery().open(false, mode);
+                queryNode.getQuery().open(QueryController.QueryMode.VIEW);
             }
         }
 
@@ -765,23 +910,17 @@ public class Actions {
             return !containsQueryFromLocalRepository(getQueryNodes());
         }
     }
+
     public static class EditQueryAction extends QueryAction {
 
-        private QueryController.QueryMode mode;
-
         public EditQueryAction(QueryNode... queryNodes) {
-            this(QueryController.QueryMode.EDIT, queryNodes);
-        }
-
-        public EditQueryAction(QueryController.QueryMode mode, QueryNode... queryNodes) {
             super(NbBundle.getMessage(OpenQueryAction.class, "CTL_Edit"), queryNodes); //NOI18N
-            this.mode = mode;
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
             for (QueryNode queryNode : getQueryNodes()) {
-                queryNode.getQuery().open(false, mode);
+                queryNode.getQuery().open(QueryController.QueryMode.EDIT);
             }
         }
 
@@ -816,8 +955,8 @@ public class Actions {
                     action = new Actions.DeleteCategoryAction(value.toArray(new CategoryNode[value.size()]));
                 } else if (key.equals(QueryNode.class.getName())) {
                     action = new Actions.DeleteQueryAction(value.toArray(new QueryNode[value.size()]));
-                } else if (key.equals(TaskNode.class.getName())){
-                    action = new Actions.RemoveTaskAction(value.toArray(new TaskNode[value.size()]));
+                } else if (key.equals(TaskNode.class.getName())) {
+                    action = new Actions.DeleteLocalTaskAction(value.toArray(new TaskNode[value.size()]));
                 }
                 if (action != null && action.isEnabled()) {
                     action.actionPerformed(e);
@@ -849,7 +988,7 @@ public class Actions {
         }
     }
 
-    private static boolean containsLocalRepository (RepositoryNode[] nodes) {
+    private static boolean containsLocalRepository(RepositoryNode[] nodes) {
         boolean isLocal = false;
         for (RepositoryNode n : nodes) {
             if (BugtrackingManager.isLocalConnectorID(n.getRepository().getConnectorId())) {
@@ -860,7 +999,7 @@ public class Actions {
         return isLocal;
     }
 
-    private static boolean containsQueryFromLocalRepository (QueryNode[] nodes) {
+    private static boolean containsQueryFromLocalRepository(QueryNode[] nodes) {
         boolean isLocal = false;
         for (QueryNode n : nodes) {
             if (BugtrackingManager.isLocalConnectorID(n.getQuery().getRepositoryImpl().getConnectorId())) {
@@ -869,5 +1008,24 @@ public class Actions {
             }
         }
         return isLocal;
+    }
+
+    public static class SortDialogAction extends AbstractAction {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            SortPanel panel = new SortPanel();
+            NotifyDescriptor categoryNameDialog = new NotifyDescriptor(
+                    panel,
+                    NbBundle.getMessage(Actions.class, "MSG_SortDialog"),
+                    NotifyDescriptor.OK_CANCEL_OPTION,
+                    NotifyDescriptor.PLAIN_MESSAGE,
+                    null,
+                    NotifyDescriptor.OK_OPTION);
+            if (DialogDisplayer.getDefault().notify(categoryNameDialog) == NotifyDescriptor.OK_OPTION) {
+                panel.saveAttributes();
+            }
+
+        }
     }
 }

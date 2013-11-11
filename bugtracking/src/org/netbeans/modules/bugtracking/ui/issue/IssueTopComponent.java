@@ -42,15 +42,24 @@
 
 package org.netbeans.modules.bugtracking.ui.issue;
 
+import org.netbeans.modules.bugtracking.commons.NBBugzillaUtils;
+import org.netbeans.modules.bugtracking.ui.repository.RepositoryComboRenderer;
+import org.netbeans.modules.bugtracking.ui.repository.RepositoryComboSupport;
 import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ContainerEvent;
+import java.awt.event.ContainerListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.MissingResourceException;
@@ -58,11 +67,14 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.JTextComponent;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import org.netbeans.api.progress.ProgressHandle;
@@ -70,19 +82,26 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.IssueImpl;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
-import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
+import org.netbeans.modules.bugtracking.commons.HyperlinkSupport;
+import org.netbeans.modules.bugtracking.commons.HyperlinkSupport.IssueRefProvider;
+import org.netbeans.modules.bugtracking.spi.IssueFinder;
+import org.netbeans.modules.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.util.*;
+import org.netbeans.modules.team.spi.TeamAccessorUtils;
+import org.netbeans.spi.actions.AbstractSavable;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.UndoRedo;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.TopComponent;
 
 /**
@@ -101,11 +120,14 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     private File context;
     private DelegatingUndoRedoManager delegatingUndoRedoManager;
 
+    private final InstanceContent instanceContent = new InstanceContent();
+    
     /**
      * Creates new {@code IssueTopComponent}.
      */
     public IssueTopComponent() {
         initComponents();
+        associateLookup(new AbstractLookup(instanceContent));
         RepositoryRegistry.getInstance().addPropertyChangeListener(this);
         preparingLabel.setVisible(false);
         newButton.addActionListener(new ActionListener() {
@@ -201,6 +223,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     void setIssue(IssueImpl issue) {
         assert (this.issue == null);
         this.issue = issue;
+        instanceContent.add(issue.getIssue());
         preparingLabel.setVisible(false);
         issuePanel.add(issue.getController().getComponent(), BorderLayout.CENTER);
         
@@ -212,11 +235,19 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         
         repoPanel.setVisible(false);
         setNameAndTooltip();
-        issue.addPropertyChangeListener(this);
+        registerListeners();
         
         if(!issue.isNew()) {
             BugtrackingManager.getInstance().addRecentIssue(issue.getRepositoryImpl(), issue);
         }
+        
+        registerForIssue();
+    }
+
+    private void registerForIssue() {
+        undoRedoListener.register(this, true);
+        HyperlinkSupport.getInstance().register(this);
+        issueLinksListener.register(this);
     }
 
     /** This method is called from within the constructor to
@@ -232,7 +263,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         findIssuesLabel = new javax.swing.JLabel();
         repoLabel = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
-        newButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+        newButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
         jSeparator1 = new javax.swing.JSeparator();
         issuePanel = new javax.swing.JPanel();
         preparingLabel = new javax.swing.JLabel();
@@ -330,7 +361,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         }
     }
 
-    private BugtrackingController controller;
+    private IssueController controller;
     private void onRepoSelected() {
         if(prepareTask != null) {
             prepareTask.cancel();
@@ -360,16 +391,20 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                             issuePanel.remove(controller.getComponent());
                             controller.closed();
                         }
-                        issue.removePropertyChangeListener(IssueTopComponent.this);
+                        unregisterListeners();
+                        instanceContent.remove(issue.getIssue());
                     }
                     issue = repo.createNewIssue();
                     if (issue == null) {
                         return;
                     }
+                    instanceContent.add(issue.getIssue());
+                    
+                    registerForIssue();
                     ((DelegatingUndoRedoManager)getUndoRedo()).init();
                     
                     if(context != null && NBBugzillaUtils.isNbRepository(repo.getUrl())) {
-                        OwnerInfo ownerInfo = TeamUtil.getOwnerInfo(context);
+                        OwnerInfo ownerInfo = TeamAccessorUtils.getOwnerInfo(context);
                         if(ownerInfo != null) {
                             issue.setContext(ownerInfo);
                         }
@@ -381,7 +416,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                             controller = getController();
                             issuePanel.add(controller.getComponent(), BorderLayout.CENTER);
                             controller.opened(); // XXX TC wasn't realy opened
-                            issue.addPropertyChangeListener(IssueTopComponent.this);
+                            registerListeners();
                             revalidate();
                             repaint();
 
@@ -400,6 +435,16 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                 }
             }
         });
+    }
+
+    private void unregisterListeners() {
+        issue.removePropertyChangeListener(this);
+        getController().removePropertyChangeListener(this);
+    }
+
+    private void registerListeners() {
+        issue.addPropertyChangeListener(this);
+        getController().addPropertyChangeListener(this);
     }
 
     private RepositoryImpl getRepository() {
@@ -425,7 +470,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     private javax.swing.JPanel issuePanel;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JSeparator jSeparator1;
-    private org.netbeans.modules.bugtracking.util.LinkButton newButton;
+    private org.netbeans.modules.bugtracking.commons.LinkButton newButton;
     private javax.swing.JLabel preparingLabel;
     private javax.swing.JLabel repoLabel;
     private javax.swing.JPanel repoPanel;
@@ -442,6 +487,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         openIssues.add(this);
         if(issue != null) {
             getController().opened();
+            registerForIssue();
         }
         BugtrackingManager.LOG.log(Level.FINE, "IssueTopComponent Opened {0}", (issue != null ? issue.getID() : "null")); // NOI18N
     }
@@ -450,7 +496,8 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     public void componentClosed() {
         openIssues.remove(this);
         if(issue != null) {
-            issue.removePropertyChangeListener(this);
+            undoRedoListener.register(this, false);
+            unregisterListeners();
             getController().closed();
         }
         if(prepareTask != null) {
@@ -459,6 +506,41 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         BugtrackingManager.LOG.log(Level.FINE, "IssueTopComponent Closed {0}", (issue != null ? issue.getID() : "null")); // NOI18N
     }
 
+    @NbBundle.Messages({
+        "CTL_Save=Save",
+        "CTL_Discard=Discard",
+        "# {0} - stands for a task name", "MSG_HasChanges=Task {0}\nhas changes. Save?",
+        "#Question is simply i dialog title", "LBL_Question=Question"
+    })
+    @Override
+    public boolean canClose() {
+        if(issue != null) {
+            IssueSavable savable = getSavable();
+            if(savable != null) {
+                JButton save = new JButton(Bundle.CTL_Save());
+                JButton discard = new JButton(Bundle.CTL_Discard());
+                NotifyDescriptor nd = 
+                    new NotifyDescriptor(
+                        Bundle.MSG_HasChanges(issue.getShortenedDisplayName()), 
+                        Bundle.LBL_Question(), 
+                        NotifyDescriptor.YES_NO_CANCEL_OPTION, 
+                        NotifyDescriptor.INFORMATION_MESSAGE, 
+                        new Object[] {save, discard, NotifyDescriptor.CANCEL_OPTION}, null);
+                Object ret = DialogDisplayer.getDefault().notify(nd);
+                boolean canClose = false;
+                if(ret == save) {
+                    canClose = issue.getController().saveChanges();
+                } else if(ret == discard) {
+                    canClose = issue.getController().discardUnsavedChanges();
+                } 
+                if(canClose) {
+                    savable.destroy();
+                }
+            }
+        }
+        return super.canClose(); 
+    }
+    
     /**
      * Returns top-component that should display the given issue.
      *
@@ -515,7 +597,11 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
             @Override
             public void run() {
                 if(issue != null) {
-                    setName(issue.getShortenedDisplayName());
+                    String name = issue.getShortenedDisplayName();
+                    if(getSavable() != null) {
+                        name = "<html><b>" + name + "</b></html>"; // NOI18N
+                    }
+                    setName(name);
                     setToolTipText(issue.getTooltip());
                 } else {
                     setName(NbBundle.getMessage(IssueTopComponent.class, "CTL_IssueTopComponent")); // NOI18N
@@ -527,7 +613,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals(IssueProvider.EVENT_ISSUE_REFRESHED)) {
+        if(evt.getPropertyName().equals(IssueImpl.EVENT_ISSUE_DATA_CHANGED)) {
             repoPanel.setVisible(false);
             setNameAndTooltip();
         } else if(evt.getPropertyName().equals(RepositoryRegistry.EVENT_REPOSITORIES_CHANGED)) {
@@ -543,9 +629,24 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                     }
                 }
             });
+        } else if(evt.getPropertyName().equals(IssueController.PROPERTY_ISSUE_CHANGED)) {
+            if (getLookup().lookup(IssueSavable.class) == null) {
+                instanceContent.add(new IssueSavable(IssueTopComponent.this));
+                setNameAndTooltip();
+            }
+        } else if(evt.getPropertyName().equals(IssueController.PROPERTY_ISSUE_SAVED)) {
+            IssueSavable savable = getSavable();
+            if(savable != null) {
+                savable.destroy();
+                setNameAndTooltip();
+            }
         }
     }
 
+    private IssueSavable getSavable() {
+        return getLookup().lookup(IssueSavable.class);
+    }
+    
     @Override
     public boolean requestFocusInWindow() {
         if (issue == null) {
@@ -555,7 +656,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         }
     }
 
-    private BugtrackingController getController() {
+    private IssueController getController() {
         return issue.getController();
     }
 
@@ -632,4 +733,157 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         }
     }
     
+    private final UndoRedoListener undoRedoListener = new UndoRedoListener();
+    private class UndoRedoListener implements ContainerListener {
+        
+        @Override
+        public void componentAdded(ContainerEvent e) {
+            register((Container)e.getComponent(), true);
+        }
+
+        @Override
+        public void componentRemoved(ContainerEvent e) {
+            register((Container)e.getComponent(), false);
+        }
+        
+        void register(Component c, boolean register) {
+            if(c instanceof Container) {
+                register((Container)c, register, issue != null ? UndoRedoSupport.getSupport(issue) : null);
+            }            
+        }
+        
+        private void register(Component c, boolean register, UndoRedoSupport urs) {
+            if(urs != null && c instanceof JTextComponent) {
+                JTextComponent tx = (JTextComponent) c;
+                if(register) {
+                    urs.register(tx);
+                } else {
+                    urs.unregister(tx);
+                }
+            }
+            if(c instanceof Container) {
+                Container container = (Container) c;
+                container.removeContainerListener(this);
+                if(register) {
+                    container.addContainerListener(this);
+                }
+                Component[] components = container.getComponents();
+                for (Component cmp : components) {
+                    register(cmp, register, urs);
+                }
+            }
+        }
+    }
+    
+    private IssueLinksListener issueLinksListener = new IssueLinksListener();
+    private class IssueLinksListener implements ContainerListener {
+        
+        @Override
+        public void componentAdded(ContainerEvent e) {
+            register((Container)e.getComponent());
+        }
+
+        @Override
+        public void componentRemoved(ContainerEvent e) { }
+        
+        void register(Component c) {
+            if(c instanceof JTextPane) {
+                JTextPane tp = (JTextPane) c;
+                if(!tp.isEditable()) {
+                    HyperlinkSupport.getInstance().registerForIssueLinks(tp, issueLink, issueRefProvider);
+                }
+            }
+            if(c instanceof Container) {
+                Container container = (Container) c;
+                container.removeContainerListener(this);
+                container.addContainerListener(this);
+                Component[] components = container.getComponents();
+                for (Component cmp : components) {
+                    register(cmp);
+                }
+            }
+        }
+    }
+    
+    private static class IssueSavable extends AbstractSavable {
+        private final IssueTopComponent tc;
+        
+        IssueSavable(IssueTopComponent tc) {
+            this.tc = tc;
+            register();
+        }
+
+        @Override
+        protected String findDisplayName() {
+            if(tc.issue != null) {
+                return tc.issue.getDisplayName();
+            }
+            return tc.getName();
+        }
+
+        @Override
+        protected void handleSave() throws IOException {
+            if(tc.issue != null) {
+                tc.issue.getController().saveChanges();
+            }
+        }
+
+        void destroy() {
+            tc.instanceContent.remove(this);
+            unregister();
+        }
+        
+        @Override
+        public boolean equals(Object obj) {
+             if (obj instanceof IssueSavable) {
+                return tc == ((IssueSavable)obj).tc;
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return tc.hashCode();
+        }
+
+    }
+    
+    private IssueRefProvider issueRefProvider = issueRefProvider = new HyperlinkSupport.IssueRefProvider() {
+        @Override
+        public int[] getIssueRefSpans(CharSequence text) {
+            if(issue == null) {
+                return new int[0];
+            }
+            final RepositoryImpl repo = issue.getRepositoryImpl();
+            IssueFinder ifn = repo.getIssueFinder();
+            if(ifn == null) {
+                return new int[0];
+            }
+            return ifn.getIssueSpans(text);
+        }
+    };
+    
+    HyperlinkSupport.Link issueLink = new HyperlinkSupport.Link() {
+            @Override
+            public void onClick(String linkText) {
+                if(issue == null) {
+                    return;
+                }
+                final RepositoryImpl repo = issue.getRepositoryImpl();
+                IssueFinder ifn = repo.getIssueFinder();
+                if(ifn == null) {
+                    return;
+                }
+                final String issueKey = ifn.getIssueId(linkText);
+                rp.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Collection<IssueImpl> issues = repo.getIssueImpls(issueKey);
+                        if (issues != null && !issues.isEmpty()) {
+                            issues.iterator().next().open();
+                        }
+                    }
+                });
+            }
+        };
 }

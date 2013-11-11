@@ -47,12 +47,14 @@ package org.netbeans.modules.editor.java;
 import com.sun.source.tree.*;
 import com.sun.source.util.*;
 
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import javax.lang.model.SourceVersion;
@@ -80,6 +82,7 @@ import org.netbeans.api.java.source.support.ReferencesCount;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.whitelist.WhiteListQuery;
+import org.netbeans.editor.ext.ToolTipSupport;
 import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -141,6 +144,7 @@ public class JavaCompletionProvider implements CompletionProvider {
     static final class JavaCompletionQuery extends AsyncCompletionQuery {
         
         static final AtomicBoolean javadocBreak = new AtomicBoolean();
+        static AtomicReference<CompletionDocumentation> outerDocumentation = new AtomicReference<CompletionDocumentation>();
         
         private static final String ERROR = "<error>"; //NOI18N
         private static final String INIT = "<init>"; //NOI18N
@@ -280,7 +284,20 @@ public class JavaCompletionProvider implements CompletionProvider {
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
             try {
                 this.caretOffset = caretOffset;
-                if (queryType == TOOLTIP_QUERY_TYPE || Utilities.isJavaContext(component, caretOffset, true)) {
+                CompletionDocumentation outerDoc = outerDocumentation.getAndSet(null);
+                if (queryType == DOCUMENTATION_QUERY_TYPE && outerDoc != null) {
+                    resultSet.setDocumentation(outerDoc);
+                    ToolTipSupport tts = org.netbeans.editor.Utilities.getEditorUI(component).getToolTipSupport();
+                    if (tts != null) {
+                        MouseEvent lme = tts.getLastMouseEvent();
+                        if (lme != null) {
+                            int offset = component.viewToModel(lme.getPoint());
+                            if (offset > -1) {
+                                resultSet.setAnchorOffset(offset);
+                            }
+                        }
+                    }
+                } else if (queryType == TOOLTIP_QUERY_TYPE || Utilities.isJavaContext(component, caretOffset, true)) {
                     results = null;
                     documentation = null;
                     if (toolTip != null)
@@ -5717,28 +5734,30 @@ public class JavaCompletionProvider implements CompletionProvider {
                     return null;
                 }
                 controller.toPhase(Utilities.inAnonymousOrLocalClass(path)? Phase.RESOLVED : Phase.ELEMENTS_RESOLVED);
+                Scope scope = controller.getTrees().getScope(path);
                 final int initPos = (int)sourcePositions.getStartPosition(root, tree);
                 String initText = controller.getText().substring(initPos, upToOffset ? offset : (int)sourcePositions.getEndPosition(root, tree));
-                final SourcePositions[] sp = new SourcePositions[1];
-                final ExpressionTree init = tu.parseVariableInitializer(initText, sp);
-                final ExpressionStatementTree fake = new ExpressionStatementTree() {
-                    public Object accept(TreeVisitor v, Object p) {
-                        return v.visitExpressionStatement(this, p);
+                if (initText.length() > 0) {
+                    final SourcePositions[] sp = new SourcePositions[1];
+                    final ExpressionTree init = tu.parseVariableInitializer(initText, sp);
+                    final ExpressionStatementTree fake = new ExpressionStatementTree() {
+                        public Object accept(TreeVisitor v, Object p) {
+                            return v.visitExpressionStatement(this, p);
+                        }
+                        public ExpressionTree getExpression() {
+                            return init;
+                        }
+                        public Kind getKind() {
+                            return Tree.Kind.EXPRESSION_STATEMENT;
+                        }
+                    };
+                    sourcePositions = new SourcePositionsImpl(fake, sourcePositions, sp[0], initPos, upToOffset ? offset : -1);
+                    path = tu.pathFor(new TreePath(pPath, fake), offset, sourcePositions);
+                    if (upToOffset && sp[0].getEndPosition(root, init) + initPos > offset) {
+                        scope = tu.reattributeTreeTo(init, scope, path.getLeaf());
+                    } else {
+                        tu.reattributeTree(init, scope);
                     }
-                    public ExpressionTree getExpression() {
-                        return init;
-                    }
-                    public Kind getKind() {
-                        return Tree.Kind.EXPRESSION_STATEMENT;
-                    }
-                };
-                sourcePositions = new SourcePositionsImpl(fake, sourcePositions, sp[0], initPos, upToOffset ? offset : -1);
-                Scope scope = controller.getTrees().getScope(path);
-                path = tu.pathFor(new TreePath(pPath, fake), offset, sourcePositions);
-                if (upToOffset && sp[0].getEndPosition(root, init) + initPos > offset) {
-                    scope = tu.reattributeTreeTo(init, scope, path.getLeaf());
-                } else {
-                    tu.reattributeTree(init, scope);
                 }
                 return new Env(offset, prefix, controller, path, sourcePositions, scope);
             } else if (parent != null && TreeUtilities.CLASS_TREE_KINDS.contains(parent.getKind()) && tree.getKind() == Tree.Kind.VARIABLE &&
@@ -5747,25 +5766,27 @@ public class JavaCompletionProvider implements CompletionProvider {
                     sourcePositions.getStartPosition(root, ((VariableTree)tree).getInitializer()) <= offset) {
                 controller.toPhase(Utilities.inAnonymousOrLocalClass(path)? Phase.RESOLVED : Phase.ELEMENTS_RESOLVED);
                 tree = ((VariableTree)tree).getInitializer();
+                Scope scope = controller.getTrees().getScope(new TreePath(path, tree));
                 final int initPos = (int)sourcePositions.getStartPosition(root, tree);
                 String initText = controller.getText().substring(initPos, offset);
-                final SourcePositions[] sp = new SourcePositions[1];
-                final ExpressionTree init = tu.parseVariableInitializer(initText, sp);
-                Scope scope = controller.getTrees().getScope(new TreePath(path, tree));
-                final ExpressionStatementTree fake = new ExpressionStatementTree() {
-                    public Object accept(TreeVisitor v, Object p) {
-                        return v.visitExpressionStatement(this, p);
-                    }
-                    public ExpressionTree getExpression() {
-                        return init;
-                    }
-                    public Kind getKind() {
-                        return Tree.Kind.EXPRESSION_STATEMENT;
-                    }
-                };
-                sourcePositions = new SourcePositionsImpl(fake, sourcePositions, sp[0], initPos, offset);
-                path = tu.pathFor(new TreePath(path, fake), offset, sourcePositions);
-                tu.reattributeTree(init, scope);
+                if (initText.length() > 0) {
+                    final SourcePositions[] sp = new SourcePositions[1];
+                    final ExpressionTree init = tu.parseVariableInitializer(initText, sp);
+                    final ExpressionStatementTree fake = new ExpressionStatementTree() {
+                        public Object accept(TreeVisitor v, Object p) {
+                            return v.visitExpressionStatement(this, p);
+                        }
+                        public ExpressionTree getExpression() {
+                            return init;
+                        }
+                        public Kind getKind() {
+                            return Tree.Kind.EXPRESSION_STATEMENT;
+                        }
+                    };
+                    sourcePositions = new SourcePositionsImpl(fake, sourcePositions, sp[0], initPos, offset);
+                    path = tu.pathFor(new TreePath(path, fake), offset, sourcePositions);
+                    tu.reattributeTree(init, scope);
+                }
                 return new Env(offset, prefix, controller, path, sourcePositions, scope);
             }
             return null;

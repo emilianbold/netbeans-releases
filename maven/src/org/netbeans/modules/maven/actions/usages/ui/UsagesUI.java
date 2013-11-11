@@ -321,7 +321,7 @@ public final class UsagesUI extends javax.swing.JPanel implements ExplorerManage
                 switch (type) {
                     case TYPE_DEPENDENCY:
                         {
-                            Set deps = mp.getDependencyArtifacts();
+                            Set<Artifact> deps = mp.getDependencyArtifacts();
                             if (deps != null) {
                                 artifacts.addAll(deps);
                             }
@@ -329,7 +329,7 @@ public final class UsagesUI extends javax.swing.JPanel implements ExplorerManage
                         break;
                     case TYPE_COMPILE:
                          {
-                            List compArtifs = mp.getCompileArtifacts();
+                            List<Artifact> compArtifs = mp.getCompileArtifacts();
                             if (compArtifs != null) {
                                 artifacts.addAll(compArtifs);
                             }
@@ -337,11 +337,11 @@ public final class UsagesUI extends javax.swing.JPanel implements ExplorerManage
                         break;
                     case TYPE_TEST:
                          {
-                            List testArtifs = mp.getTestArtifacts();
+                            List<Artifact> testArtifs = mp.getTestArtifacts();
                             if (testArtifs != null) {
                                 artifacts.addAll(testArtifs);
                             }
-                            List compArtifs = mp.getCompileArtifacts();
+                            List<Artifact> compArtifs = mp.getCompileArtifacts();
                             if (compArtifs != null) {
                                 artifacts.removeAll(compArtifs);
                             }
@@ -349,11 +349,11 @@ public final class UsagesUI extends javax.swing.JPanel implements ExplorerManage
                         break;
                     case TYPE_RUNTIME:
                          {
-                            List runtimeArtifs = mp.getRuntimeArtifacts();
+                            List<Artifact> runtimeArtifs = mp.getRuntimeArtifacts();
                             if (runtimeArtifs != null) {
                                 artifacts.addAll(runtimeArtifs);
                             }
-                            List compArtifs = mp.getCompileArtifacts();
+                            List<Artifact> compArtifs = mp.getCompileArtifacts();
                             if (compArtifs != null) {
                                 artifacts.removeAll(compArtifs);
                             }

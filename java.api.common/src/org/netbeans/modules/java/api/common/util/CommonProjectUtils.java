@@ -49,7 +49,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
@@ -57,9 +59,12 @@ import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.project.ui.customizer.MainClassChooser;
 import org.netbeans.spi.project.libraries.LibraryImplementation3;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
+import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 
@@ -81,13 +86,36 @@ public final class CommonProjectUtils {
      * @return active {@link JavaPlatform} or null if the project's platform
      * is broken
      */
+    @CheckForNull
     public static JavaPlatform getActivePlatform(final String activePlatformId) {
+        return getActivePlatform(activePlatformId, null);
+    }
+
+    /**
+     * Returns the active platform used by the project or null if the active
+     * project platform is broken.
+     * @param activePlatformId the name of platform used by Ant script or null
+     * for default platform.
+     * @param platformType the type of {@link JavaPlatform}
+     * @return active {@link JavaPlatform} or null if the project's platform
+     * is broken
+     * @since 1.59
+     */
+    @CheckForNull
+    public static JavaPlatform getActivePlatform(
+        @NullAllowed final String activePlatformId,
+        @NullAllowed String platformType) {
+        if (platformType == null) {
+            platformType = "j2se";  //NOI18N
+        }
         final JavaPlatformManager pm = JavaPlatformManager.getDefault();
         if (activePlatformId == null) {
-            return pm.getDefaultPlatform();
+            final JavaPlatform candidate = pm.getDefaultPlatform();
+            return candidate == null || !platformType.equals(candidate.getSpecification().getName()) ?
+                null :
+                candidate;
         }
-
-        JavaPlatform[] installedPlatforms = pm.getPlatforms(null, new Specification("j2se", null)); //NOI18N
+        JavaPlatform[] installedPlatforms = pm.getPlatforms(null, new Specification(platformType, null)); //NOI18N
         for (JavaPlatform javaPlatform : installedPlatforms) {
             String antName = javaPlatform.getProperties().get("platform.ant.name"); //NOI18N
             if (antName != null && antName.equals(activePlatformId)) {
@@ -139,6 +167,26 @@ public final class CommonProjectUtils {
     public static boolean isMainClass (final String className, ClassPath bootPath, ClassPath compilePath, ClassPath sourcePath) {
         ClasspathInfo cpInfo = ClasspathInfo.create(bootPath, compilePath, sourcePath);
         return SourceUtils.isMainClass(className, cpInfo);
+    }
+
+    /**
+     * Returns the name of the project's build script.
+     * @param eval the project's {@link PropertyEvaluator}
+     * @param propName the name of property holding the reference to project build
+     * script or null. In case of null the {@link ProjectProperties#BUILD_SCRIPT} is used.
+     * @return the name of project build script
+     * @since 1.65
+     */
+    @NonNull
+    public static String getBuildXmlName(
+        @NonNull final PropertyEvaluator eval,
+        @NullAllowed final String propName) {
+        String buildScriptPath = eval.getProperty(
+                propName != null ? propName : ProjectProperties.BUILD_SCRIPT);
+        if (buildScriptPath == null || buildScriptPath.isEmpty()) {
+            buildScriptPath = GeneratedFilesHelper.BUILD_XML_PATH;
+        }
+        return buildScriptPath;
     }
 
     /**

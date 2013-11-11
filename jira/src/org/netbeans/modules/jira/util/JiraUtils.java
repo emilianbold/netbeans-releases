@@ -66,8 +66,10 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskOperation;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConnector;
+import org.netbeans.modules.jira.issue.JiraIssueFinder;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
@@ -345,7 +347,7 @@ public class JiraUtils {
     }
 
     public static Repository getRepository(JiraRepository jiraRepository) {
-        Repository repository = Jira.getInstance().getBugtrackingFactory().getRepository(JiraConnector.ID, jiraRepository.getID());
+        Repository repository = RepositoryManager.getInstance().getRepository(JiraConnector.ID, jiraRepository.getID());
         if(repository == null) {
             repository = createRepository(jiraRepository);
         }
@@ -355,22 +357,18 @@ public class JiraUtils {
     public static Repository createRepository(JiraRepository jiraRepository) {
         return Jira.getInstance().getBugtrackingFactory().createRepository(
                 jiraRepository,
-                Jira.getInstance().getRepositoryProvider(),
-                Jira.getInstance().getQueryProvider(),
-                Jira.getInstance().getIssueProvider(),
                 Jira.getInstance().getStatusProvider(),
-                null, 
-                Jira.getInstance().getPriorityProvider(jiraRepository));
+                Jira.getInstance().getSchedulingProvider(), 
+                Jira.getInstance().getPriorityProvider(jiraRepository),
+                JiraIssueFinder.getInstance());
     }
     
     public static void openIssue(NbJiraIssue jiraIssue) {
-        Repository repository = getRepository(jiraIssue.getRepository());
-        Jira.getInstance().getBugtrackingFactory().openIssue(repository, jiraIssue);
+        Jira.getInstance().getBugtrackingFactory().openIssue(jiraIssue.getRepository(), jiraIssue);
     }
 
     public static void openQuery(JiraQuery jiraQuery) {
-        Repository repository = getRepository(jiraQuery.getRepository());
-        Jira.getInstance().getBugtrackingFactory().openQuery(repository, jiraQuery);
+        Jira.getInstance().getBugtrackingFactory().editQuery(jiraQuery.getRepository(), jiraQuery);
     }    
     
     public static void runInAWT(Runnable r) {

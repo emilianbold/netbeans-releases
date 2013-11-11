@@ -68,7 +68,7 @@ import java.util.Vector;
  * 
  * @author Martin Entlicher
  */
-public class EvaluatorApp {
+public class EvaluatorApp extends BaseClass {
 
     private static int      ix = 74;
     private static int      ixcopy = 74;
@@ -90,6 +90,8 @@ public class EvaluatorApp {
     private double  cd = 1243.4312;
     private Map     cm = new HashMap();
     
+    String basedField = "App value";
+    
     public EvaluatorApp() {
     }
 
@@ -99,9 +101,17 @@ public class EvaluatorApp {
     public static void main(String[] args) {
         EvaluatorApp app = new EvaluatorApp(); // LBREAKPOINT
         app.instanceMethod(args, llxcopy);
+        app = new SuperEvaluatorApp();
+        app.instanceMethodFromSuper(args, llxcopy);
     }
 
     private void instanceMethod(String[] args, long lparam) {
+        int instance = 0;
+        Runtime lvar = Runtime.getRuntime();
+        instance = instance + 2; // LBREAKPOINT
+    }
+    
+    private void instanceMethodFromSuper(String[] args, long lparam) {
         int instance = 0;
         Runtime lvar = Runtime.getRuntime();
         instance = instance + 2; // LBREAKPOINT
@@ -1066,6 +1076,39 @@ public class EvaluatorApp {
         return ((EvaluatorApp) new InnerI2()).methodNotToOverride();
     }
     
+    public String testInnerInner() {
+        return new InnerI1().new InnerI1Inner().getInnerString();
+    }
+    
+    @Override
+    String getBasedValue() {
+        return "This App value";
+    }
+    
+    // Test of <class-name>.this.<method-name>
+    public String testClassMethodReference1() {
+        return getBasedValue();
+    }
+    
+    public String testClassMethodReference2() {
+        return this.getBasedValue();
+    }
+    
+    public String testClassMethodReference3() {
+        return EvaluatorApp.this.getBasedValue();
+    }
+    
+    public String testClassMethodReference4() {
+        return super.getBasedValue();
+    }
+    
+    public String testClassFieldReference1() {
+        return basedField;
+    }
+    
+    public String testClassFieldReference4() {
+        return super.basedField;
+    }
     
     // Private access
     
@@ -1167,6 +1210,13 @@ public class EvaluatorApp {
         public String getString() {
             return "1234";
         }
+        
+        public class InnerI1Inner {
+            
+            public String getInnerString() {
+                return "iString";
+            }
+        }
     }
     
     public class InnerI2 extends EvaluatorApp {
@@ -1177,4 +1227,84 @@ public class EvaluatorApp {
         }
         
     }
+    
+    private static interface ParentInterface {
+        
+        String getValue();
+        
+    }
+    
+    private static class Parent implements ParentInterface {
+
+        @Override
+        public String getValue() {
+            return "Parent value";
+        }
+        
+    }
+    
+    private static class SubClass extends Parent {
+
+        @Override
+        public String getValue() {
+            return "SubClass value";
+        }
+        
+        public String t3stReferencedMethod1() {
+            return getValue();
+        }
+        
+        public String t3stReferencedMethod2() {
+            return getValue();
+        }
+        
+    }
+    
+    private static class SubSubClass extends SubClass {
+
+        @Override
+        public String getValue() {
+            return "SubSubClass value";
+        }
+        
+    }
+}
+
+class BaseClass extends SubBaseClass {
+    
+    String basedField = "Based value";
+    
+    @Override
+    String getBasedValue() {
+        return "Based value";
+    }
+    
+}
+
+class SubBaseClass extends SubSubBaseClass {
+    
+    @Override
+    String getBasedValue() {
+        return "SubBased value";
+    }
+    
+}
+
+class SubSubBaseClass extends Object {
+    
+    String getBasedValue() {
+        return "SubSubBased value";
+    }
+    
+}
+
+class SuperEvaluatorApp extends EvaluatorApp {
+    
+    String basedField = "Super value";
+
+    @Override
+    String getBasedValue() {
+        return "Super value";
+    }
+    
 }

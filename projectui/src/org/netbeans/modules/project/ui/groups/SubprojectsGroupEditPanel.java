@@ -45,8 +45,21 @@
 package org.netbeans.modules.project.ui.groups;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.prefs.Preferences;
+import javax.swing.JFileChooser;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import static org.netbeans.modules.project.ui.groups.Group.KEY_PATH;
+import static org.netbeans.modules.project.ui.groups.Group.NODE;
+import static org.netbeans.modules.project.ui.groups.GroupEditPanel.PROP_READY;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  * Panel to configure state of an existing subproject-based group.
@@ -59,7 +72,17 @@ public class SubprojectsGroupEditPanel extends GroupEditPanel {
     public SubprojectsGroupEditPanel(SubprojectsGroup g) {
         this.g = g;
         initComponents();
+        DocumentListener l = new DocumentListener() {
+            @Override public void insertUpdate(DocumentEvent e) {
+                firePropertyChange(PROP_READY, null, null);
+            }
+            @Override public void removeUpdate(DocumentEvent e) {
+                firePropertyChange(PROP_READY, null, null);
+            }
+            @Override public void changedUpdate(DocumentEvent e) {}
+        };
         nameField.setText(g.getName());
+        nameField.getDocument().addDocumentListener(l);
         FileObject dir = g.getMasterProjectDirectory();
         if (dir != null) {
             File d = FileUtil.toFile(dir);
@@ -67,12 +90,43 @@ public class SubprojectsGroupEditPanel extends GroupEditPanel {
                 masterProjectField.setText(d.getAbsolutePath());
             }
         }
-        startPerformingNameChecks(nameField, g.getName());
+        masterProjectField.getDocument().addDocumentListener(l);
     }
 
     @Override
     public void applyChanges() {
         g.setName(nameField.getText().trim());
+        updateMasterProject();
+    }
+    
+    private void updateMasterProject() {
+        String s = masterProjectField.getText();
+        if (s != null && s.length() > 0) {
+            File f = new File(s);
+            FileObject fo = FileUtil.toFileObject(f);
+            if (fo != null && fo.isFolder()) {
+                 try {
+                    Project p = ProjectManager.getDefault().findProject(fo);
+                    if (p != null){
+                        String path = p.getProjectDirectory().toURL().toExternalForm();
+                        Preferences pref = NODE.node(g.id);
+                        pref.put(KEY_PATH, path);
+                        if(Group.getActiveGroup().equals(g)) {
+                            if(Group.getActiveGroup().equals(g)) {
+                                RequestProcessor.getDefault().post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Group.open(g, null, false, null);
+                                    }
+                                });
+                            }
+                        }
+                    }
+                 } catch (IOException x) {
+                    Exceptions.printStackTrace(x);
+                 }
+            }
+        }
     }
 
     /** This method is called from within the constructor to
@@ -87,6 +141,7 @@ public class SubprojectsGroupEditPanel extends GroupEditPanel {
         nameField = new javax.swing.JTextField();
         masterProjectLabel = new javax.swing.JLabel();
         masterProjectField = new javax.swing.JTextField();
+        masterProjectButton = new javax.swing.JButton();
 
         nameLabel.setLabelFor(nameField);
         org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(SubprojectsGroupEditPanel.class, "SubprojectsGroupEditPanel.nameLabel.text")); // NOI18N
@@ -94,7 +149,12 @@ public class SubprojectsGroupEditPanel extends GroupEditPanel {
         masterProjectLabel.setLabelFor(masterProjectField);
         org.openide.awt.Mnemonics.setLocalizedText(masterProjectLabel, org.openide.util.NbBundle.getMessage(SubprojectsGroupEditPanel.class, "SubprojectsGroupEditPanel.masterProjectLabel.text")); // NOI18N
 
-        masterProjectField.setEditable(false);
+        org.openide.awt.Mnemonics.setLocalizedText(masterProjectButton, org.openide.util.NbBundle.getMessage(SubprojectsGroupEditPanel.class, "SubprojectsGroupEditPanel.masterProjectButton.text")); // NOI18N
+        masterProjectButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                masterProjectButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -107,8 +167,11 @@ public class SubprojectsGroupEditPanel extends GroupEditPanel {
                     .addComponent(masterProjectLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(masterProjectField, javax.swing.GroupLayout.DEFAULT_SIZE, 304, Short.MAX_VALUE)
-                    .addComponent(nameField, javax.swing.GroupLayout.DEFAULT_SIZE, 304, Short.MAX_VALUE))
+                    .addComponent(nameField, javax.swing.GroupLayout.DEFAULT_SIZE, 304, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(masterProjectField)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(masterProjectButton)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -121,7 +184,8 @@ public class SubprojectsGroupEditPanel extends GroupEditPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(masterProjectLabel)
-                    .addComponent(masterProjectField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(masterProjectField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(masterProjectButton))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -136,11 +200,48 @@ public class SubprojectsGroupEditPanel extends GroupEditPanel {
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SubprojectsGroupEditPanel.class, "SubprojectsGroupEditPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
+    private void masterProjectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_masterProjectButtonActionPerformed
+        JFileChooser chooser = ProjectChooser.projectChooser();
+        if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File f = chooser.getSelectedFile();
+            if (f != null) {
+                masterProjectField.setText(f.getAbsolutePath());
+                //firePropertyChange(PROP_READY, null, null);
+            }
+        }
+    }//GEN-LAST:event_masterProjectButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton masterProjectButton;
     private javax.swing.JTextField masterProjectField;
     private javax.swing.JLabel masterProjectLabel;
     private javax.swing.JTextField nameField;
     private javax.swing.JLabel nameLabel;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public boolean isReady() {
+        if(!doCheckExistingGroups(nameField, g)) {
+            return false;
+        }
+        String s = masterProjectField.getText();
+        if (s == null || s.length() == 0) {
+            return false;
+        }
+        else {
+            File f = FileUtil.normalizeFile(new File(s));
+            FileObject fo = FileUtil.toFileObject(f);
+            if (fo != null && fo.isFolder()) {
+                try {
+                    return ProjectManager.getDefault().findProject(fo) != null;
+                } catch (IOException x) {
+                    Exceptions.printStackTrace(x);
+                }
+            } else {
+                return false;
+            }
+        }
+        return true;
+    }
 
 }

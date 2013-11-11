@@ -99,6 +99,9 @@ import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.JavaDataLoader;
@@ -1082,16 +1085,78 @@ public class HintTest {
 
             String realCode = toCheckDocument.getText(0, toCheckDocument.getLength());
 
-            //ignore whitespaces:
-            realCode = reduceWhitespaces(realCode);
-
-            assertEquals("The output code does not match the expected code.", reduceWhitespaces(code), realCode);
-
+            assertSameOutput(realCode, code);
             return this;
+        }
+        
+        /**
+         * Compares the result with the golden string but ignores *all* whitespaces. In order to keep the nice IDE tools
+         * to work, if a inconsistency is found, the prefix of the golden file will be forged from the actual result, so the
+         * first reported inconsistency will occur at the right place.
+         * The lax comparison can be switched off by -Dorg.netbeans.test.hints.strictOutputCompare=true
+         * @param result
+         * @param golden 
+         */
+        private void assertSameOutput(String result, String golden) throws Exception {
+            Language lng = Language.find("text/x-java");
+            if (lng == null || Boolean.getBoolean("org.netbeans.test.hints.strictOutputCompare")) {
+                assertEquals("The output code does not match the expected code.", reduceWhitespaces(golden), 
+                        reduceWhitespaces(result));
+                return;
+            }
+            TokenHierarchy h1 = TokenHierarchy.create(result, lng);
+            TokenHierarchy h2 = TokenHierarchy.create(golden, lng);
+            TokenSequence s1 = h1.tokenSequence();
+            TokenSequence s2 = h2.tokenSequence();
+            while (s2.moveNext()) {
+                Token gt = s2.token();
+                boolean wh = gt.id() == JavaTokenId.WHITESPACE;
+                if (s1.moveNext()) {
+                    Token rt;
+                    do {
+                        rt = s1.token();
+                        if (!wh) {
+                            if (!rt.text().toString().equals(gt.text().toString())) {
+                                failNotSame(result, golden, s2.offset());
+                            }
+                        } else if (!isWH(rt)) {
+                            s1.movePrevious();
+                            break;
+                        }
+                    } while (isWH(rt) && s1.moveNext());
+                } else if (!wh) {
+                    failNotSame(result, golden, s2.offset());
+                }
+            }
+            
+            s1.movePrevious();
+            s2.movePrevious();
+            if (s1.moveNext() != s2.moveNext()) {
+                failNotSame(result, golden, s2.offset());
+            }
+        }
+        
+        private boolean isWH(Token t) {
+            return t.id() == JavaTokenId.WHITESPACE;
+        }
+        
+        private void failNotSame(String result, String golden, int point) {
+            String fakeGolden = result.substring(0, point) + golden.substring(point);
+            assertEquals("The output code does not match the expected code.", fakeGolden, result);
         }
         
         private String reduceWhitespaces(String str) {
             StringBuilder result = new StringBuilder();
+            /*
+            TokenHierarchy h = TokenHierarchy.create(str, Language.find("text/x-java"));
+            TokenSequence ts = h.tokenSequence();
+            while (ts.moveNext()) {
+                Token t = ts.token();
+                if (t.id() != JavaTokenId.WHITESPACE) {
+                    result.append(str.subSequence(ts.offset(), ts.offset() + t.length()));
+                }
+            }
+            */
             int i = 0;
             boolean wasWhitespace = false;
             
@@ -1109,7 +1174,6 @@ public class HintTest {
                 }
                 i += Character.charCount(codePoint);
             }
-            
             return result.toString();
         }
         

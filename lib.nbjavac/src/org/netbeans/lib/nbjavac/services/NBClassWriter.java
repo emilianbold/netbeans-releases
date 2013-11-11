@@ -177,7 +177,7 @@ public class NBClassWriter extends ClassWriter {
 
     @Override
     protected int writeExtraTypeAnnotations(List<TypeCompound> attrs) {
-        ListBuffer<Attribute.TypeCompound> sourceLevel = ListBuffer.lb();
+        ListBuffer<Attribute.TypeCompound> sourceLevel = new ListBuffer<Attribute.TypeCompound>();
         for (Attribute.TypeCompound tc : attrs) {
             if (tc.hasUnknownPosition()) {
                 boolean fixed = tc.tryFixPosition();

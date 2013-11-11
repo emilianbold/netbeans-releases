@@ -104,7 +104,7 @@ public class NBParserFactory extends ParserFactory {
                 return new AbstractEndPosTable(this) {
 
                     @Override
-                    protected void storeEnd(JCTree tree, int endpos) {
+                    public void storeEnd(JCTree tree, int endpos) {
                         ((EndPosTableImpl)endPos).storeEnd(tree, endpos);
                     }
 

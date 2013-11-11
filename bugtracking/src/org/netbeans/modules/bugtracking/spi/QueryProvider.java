@@ -46,116 +46,117 @@ import java.beans.PropertyChangeListener;
 import java.util.Collection;
 
 /**
- * Provides access to an bugtracking query.
+ * Provides access to a bugtracking query.
  *
  * @author Tomas Stupka
  * 
  * @param <Q> the implementation specific query type
  * @param <I> the implementation specific issue type
+ * @since 1.85
  */
-public abstract class QueryProvider<Q, I> {
+public interface QueryProvider<Q, I> {
 
     /**
-     * queries issue list was changed
+     * Fired when a queries list of issue was changed.
+     * @since 1.85
      */
-    public final static String EVENT_QUERY_ISSUES_CHANGED = "bugtracking.query.issues_changed";   // NOI18N
-
-    /**
-     * query was saved
-     */
-    public final static String EVENT_QUERY_SAVED   = "bugtracking.query.saved";       // NOI18N
-
-    /**
-     * query was removed
-     */
-    public final static String EVENT_QUERY_REMOVED = "bugtracking.query.removed";     // NOI18N
-
-    static {
-        SPIAccessorImpl.createAccesor();
-    }
-    
-    /**
-     * Creates a query
-     */
-    public QueryProvider() {
-    }
+    public final static String EVENT_QUERY_REFRESHED = "bugtracking.query.refreshed";   // NOI18N
 
     /**
      * Returns the queries display name
-     * @param q
-     * @return
+     * @param q the particular query instance
+     * @return the display name
+     * @since 1.85
      */
-    public abstract String getDisplayName(Q q);
+    public String getDisplayName(Q q);
 
     /**
      * Returns the queries tooltip
-     * @param q
-     * @return
+     * @param q the particular query instance
+     * @return the tooltip
+     * @since 1.85
      */
-    public abstract String getTooltip(Q q);
+    public String getTooltip(Q q);
 
     /**
      * Returns the {@link QueryController} for this query
-     * @param q
-     * @return
+     * @param q the implementation specific query type
+     * @return a controller for the given query
+     * @since 1.85
      */
-    public abstract QueryController getController(Q q);
+    public QueryController getController(Q q);
 
     /**
-     * Returns true if query is saved
-     * @param q
-     * @return
-     */
-    public abstract boolean isSaved(Q q);
-
-    public abstract void remove(Q q);
-    
-    /**
-     * Determines if it is possible to rename the given query
-     * @return 
-     */
-    public abstract boolean canRename(Q q);
-    
-    /**
-     * Renames the given query
-     * @param q 
-     */
-    public abstract void rename(Q q, String displayName);
-    
-    public abstract Collection<I> getIssues(Q q);
-
-    /**
-     * Returns true if the issue does belong to the query
-     * @param q
-     * @param id
-     * @return
-     */
-    // XXX used only by query table - get rid of this
-    public abstract boolean contains(Q q, String id);
-
-    /**
-     * Refreshes the given query
+     * Determines whether it is possible to remove the given Query.
      * 
-     * @param query
+     * @param q the particular query instance
+     * @return  <code>true</code> in case it is possible to remove the query, otherwise <code>fasle</code>
+     * @since 1.85
      */
-    public abstract void refresh(Q query);
+    public boolean canRemove(Q q);
     
-    /*********
-     * EVENTS
-     *********/
+    /** 
+     * Removes the given query.
+     * 
+     * @param q the particular query instance
+     * @since 1.85
+     */
+    public void remove(Q q);
+    
+    /**
+     * Determines whether it is possible to rename the given Query
+     * @param q the particular query instance
+     * @return <code>true</code> in case it is possible to rename the query, otherwise <code>fasle</code>
+     * @since 1.85
+     */
+    public boolean canRename(Q q);
+    
+    /**
+     * Renames the given query.
+     * 
+     * @param q the particular query instance
+     * @param newName new name
+     * @since 1.85
+     */
+    public void rename(Q q, String newName);
+    
+    /**
+     * Returns all issues from this queries last refresh.
+     * 
+     * @param q the particular query instance
+     * @return issues from the given query
+     * @since 1.85
+     */
+    public Collection<I> getIssues(Q q);
 
     /**
+     * Refreshes the given query. 
      * 
-     * @param q
-     * @param listener 
+     * <p>
+     * <b>Note</p> that this call is made periodically by the infrastructure. 
+     * <p>
+     * 
+     * @param q the particular query instance
+     * @since 1.85
      */
-    public abstract void removePropertyChangeListener(Q q, PropertyChangeListener listener);
+    public void refresh(Q q);
+    
+    /**
+     * Remove a PropertyChangeListener from the given query.
+     * 
+     * @param q the particular query instance
+     * @param listener a PropertyChangeListener
+     * @since 1.85
+     */
+    public void removePropertyChangeListener(Q q, PropertyChangeListener listener);
 
     /**
+     * Add a PropertyChangeListener to the given query.
      * 
-     * @param q
-     * @param listener 
+     * @param q the particular query instance
+     * @param listener a PropertyChangeListener
+     * @since 1.85
      */
-    public abstract void addPropertyChangeListener(Q q, PropertyChangeListener listener);
+    public void addPropertyChangeListener(Q q, PropertyChangeListener listener);
 
 }

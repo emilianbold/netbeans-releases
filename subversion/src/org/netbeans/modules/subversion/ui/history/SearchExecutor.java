@@ -221,7 +221,7 @@ class SearchExecutor extends SvnProgressSupport {
         if (searchingUrl()) {
             try {
                 ISVNLogMessage [] messages = client.getLogMessages(rootUrl, null, toRevision, fromRevision, false, fetchDetailsPaths, limit);
-                appendResults(rootUrl, messages);
+                appendResults(rootUrl, messages, null);
             } catch (SVNClientException e) {
                 if(!SvnClientExceptionHandler.handleLogException(rootUrl, toRevision, e)) {
                     progressSupport.annotate(e);
@@ -230,16 +230,21 @@ class SearchExecutor extends SvnProgressSupport {
         } else {
             String [] paths = new String[files.size()];
             int idx = 0;
+            Map<String, SVNRevision> revisions = new HashMap<>();
             try {
                 for (File file : files) {
+                    ISVNInfo info = client.getInfoFromWorkingCopy(file);
                     String p = SvnUtils.getRelativePath(file);
                     if(p != null && p.startsWith("/")) {
                         p = p.substring(1, p.length());
                     }
                     paths[idx++] = p;
+                    if (info != null && info.getRevision() != null) {
+                        revisions.put(p, info.getRevision());
+                    }
                 }
-                ISVNLogMessage [] messages = SvnUtils.getLogMessages(client, rootUrl, paths, toRevision, fromRevision, false, fetchDetailsPaths, limit);
-                appendResults(rootUrl, messages);
+                ISVNLogMessage [] messages = SvnUtils.getLogMessages(client, rootUrl, paths, revisions, toRevision, fromRevision, false, fetchDetailsPaths, limit);
+                appendResults(rootUrl, messages, revisions);
             } catch (SVNClientException e) {
                 try {
                     // WORKAROUND issue #110034
@@ -248,7 +253,7 @@ class SearchExecutor extends SvnProgressSupport {
                     if(SvnClientExceptionHandler.isHTTP403(e.getMessage())) { // 403 forbidden
                         for(String path : paths) {
                             ISVNLogMessage [] messages = client.getLogMessages(rootUrl.appendPath(path), null, toRevision, fromRevision, false, fetchDetailsPaths, limit);
-                            appendResults(rootUrl, messages);
+                            appendResults(rootUrl, messages, revisions);
                         }
                         return;
                     }
@@ -272,12 +277,13 @@ class SearchExecutor extends SvnProgressSupport {
      * @param rootUrl repository root URL
      * @param logMessages events in chronological order
      */
-    private synchronized void appendResults(SVNUrl rootUrl, ISVNLogMessage[] logMessages) {
+    private synchronized void appendResults (SVNUrl rootUrl, ISVNLogMessage[] logMessages,
+            Map<String, SVNRevision> pegRevisions) {
         // traverse in reverse chronological order
         for (int i = logMessages.length - 1; i >= 0; i--) {
             ISVNLogMessage logMessage = logMessages[i];
             if(logMessage == null) continue;
-            RepositoryRevision rev = new RepositoryRevision(logMessage, rootUrl, master.getRoots(), pathToRoot);
+            RepositoryRevision rev = new RepositoryRevision(logMessage, rootUrl, master.getRoots(), pathToRoot, pegRevisions);
             results.add(rev);
         }
     }

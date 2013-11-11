@@ -41,11 +41,13 @@
  */
 package org.netbeans.modules.cnd.refactoring.hints;
 
+import org.netbeans.modules.cnd.model.tasks.CndParserResult;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -76,9 +78,12 @@ import org.netbeans.modules.cnd.api.model.deep.CsmLoopStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmSwitchStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmTryCatchStatement;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
+import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.services.CsmTypeResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.refactoring.actions.InstantRenamePerformer;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -95,6 +100,7 @@ import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.filesystems.FileObject;
+import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -112,13 +118,12 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
     public void run(CndParserResult result, SchedulerEvent event) {
         final Document doc = result.getSnapshot().getSource().getDocument(false);
         final FileObject fileObject = result.getSnapshot().getSource().getFileObject();
-        Collection<CsmFile> csmFiles = result.getCsmFiles();
-        if (csmFiles.size() == 1 && doc != null) {
+        final CsmFile file = result.getCsmFile();
+        if (file != null && doc != null) {
             if (event instanceof CursorMovedSchedulerEvent) {
                 clearHint(doc, fileObject);
                 CursorMovedSchedulerEvent cursorEvent = (CursorMovedSchedulerEvent) event;
                 int caretOffset = cursorEvent.getCaretOffset();
-                final CsmFile file = csmFiles.iterator().next();
                 JTextComponent comp = EditorRegistry.lastFocusedComponent();
                 int selectionStart = caretOffset;
                 int selectionEnd = caretOffset;
@@ -138,15 +143,18 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
                     if (CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, selectionStart)[0] == 
                         CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, selectionEnd)[0] &&
                         isExpressionSelection(doc, selectionStart, selectionEnd)) {
-                        try {
-                            final String text = doc.getText(selectionStart, selectionEnd-selectionStart);
-                            if(text.length() > 0) {
-                                CsmOffsetable csmOffsetable = new CsmOffsetableImpl(file, selectionStart, selectionEnd, text);
-                                if (isApplicableExpression(csmOffsetable, doc)) {
-                                    createExpressionHint(res.statementInBody, csmOffsetable, doc, fileObject);
+                        if (!(res.container.getStartOffset() == selectionStart &&
+                            res.container.getEndOffset() == selectionEnd)) {
+                            try {
+                                final String text = doc.getText(selectionStart, selectionEnd-selectionStart);
+                                if(text.length() > 0) {
+                                    CsmOffsetable csmOffsetable = new CsmOffsetableImpl(file, selectionStart, selectionEnd, text);
+                                    if (isApplicableExpression(csmOffsetable, doc)) {
+                                        createExpressionHint(res.statementInBody, csmOffsetable, doc, comp, fileObject);
+                                    }
                                 }
+                            } catch (BadLocationException ex) {
                             }
-                        } catch (BadLocationException ex) {
                         }
                     }
                 }
@@ -509,8 +517,8 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
         
     }
 
-    private void createExpressionHint(CsmStatement st, CsmOffsetable expression, Document doc, FileObject fo) {
-        List<Fix> fixes = Collections.<Fix>singletonList(new IntroduceFixImpl(st, expression, doc, fo));
+    private void createExpressionHint(CsmStatement st, CsmOffsetable expression, Document doc, JTextComponent comp, FileObject fo) {
+        List<Fix> fixes = Collections.<Fix>singletonList(new IntroduceFixImpl(st, expression, doc, comp, fo));
         String description = NbBundle.getMessage(LineFactoryTask.class, "HINT_IntroduceVariable"); //NOI18N
         List<ErrorDescription> hints = Collections.singletonList(
                 ErrorDescriptionFactory.createErrorDescription(Severity.HINT, description, fixes, fo,
@@ -603,13 +611,36 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
             if (name == null) {
                 name = "variable"; //NOI18N
             } else {
-                if (name.toLowerCase().startsWith("get") && name.length() > 3) { //NOI18N
+                if ((name.toLowerCase().startsWith("get") || name.toLowerCase().startsWith("has")) && name.length() > 3) { //NOI18N
                     name = name.substring(3);
                 } else if (name.toLowerCase().startsWith("is") && name.length() > 2) { //NOI18N
                     name = name.substring(2);
                 }
             }
             return name;
+        }
+
+        protected CharSequence getExpressionType() {
+            CsmCacheManager.enter();
+            try {
+                CharSequence typeText;
+                CsmType resolveType = CsmTypeResolver.resolveType(expression, null);
+                if (resolveType == null) {
+                    return null;
+                }
+//                if (resolveType.isTemplateBased()) {
+//                    CsmClassifier classifier = CsmBaseUtilities.getClassifier(resolveType, expression.getContainingFile(), expression.getStartOffset(), true);
+//                    if (!CsmKindUtilities.isTemplate(classifier)) {
+//                        CsmTypes.TypeDescriptor typeDescriptor = new CsmTypes.TypeDescriptor(resolveType.isConst(), resolveType.isReference(), resolveType.getPointerDepth(), resolveType.getArrayDepth());
+//                        CsmTypes.OffsetDescriptor offsetDescriptor = new CsmTypes.OffsetDescriptor(expression.getContainingFile(), expression.getStartOffset(), expression.getEndOffset());
+//                        resolveType = CsmTypes.createType(classifier, typeDescriptor, offsetDescriptor);
+//                    }
+//                }
+                typeText = CsmInstantiationProvider.getDefault().getInstantiatedText(resolveType);
+                return typeText;
+            } finally {
+                CsmCacheManager.leave();
+            }
         }
     }
     
@@ -628,13 +659,8 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
         
         @Override
         public ChangeInfo implement() throws Exception {
-            CsmType resolveType = CsmTypeResolver.resolveType(expression, null);
-            if (resolveType == null) {
-                return null;
-            }
-            //final String typeText = resolveType.getCanonicalText().toString();
-            final String typeText = resolveType.getText().toString();
-            if ("void".equals(typeText)) { //NOI18N
+            final CharSequence typeText = getExpressionType();
+            if (typeText == null || "void".contentEquals(typeText)) { //NOI18N
                 return null;
             }
             final String aName = suggestName();
@@ -662,11 +688,13 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
     private static final class IntroduceFixImpl extends BaseFixImpl {
         private final CsmStatement st;
         private final FileObject fo;
+        private final JTextComponent comp;
 
-        private IntroduceFixImpl(CsmStatement st, CsmOffsetable expression, Document doc, FileObject fo) {
+        private IntroduceFixImpl(CsmStatement st, CsmOffsetable expression, Document doc, JTextComponent comp, FileObject fo) {
             super(expression, doc);
             this.fo = fo;
             this.st = st;
+            this.comp = comp;
         }
 
         @Override
@@ -676,25 +704,28 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
         
         @Override
         public ChangeInfo implement() throws Exception {
-            CsmType resolveType = CsmTypeResolver.resolveType(expression, null);
-            if (resolveType == null) {
+            final CharSequence typeText = getExpressionType();
+            if (typeText == null || "void".contentEquals(typeText)) { //NOI18N
                 return null;
-            }
-            //final String typeText = resolveType.getCanonicalText().toString();
-            final String typeText = resolveType.getText().toString();
-            if ("void".equals(typeText)) { //NOI18N
-                return null;
-            }
+            }            
             final String aName = suggestName();
             final String exprText = expression.getText().toString();
-            final String text = typeText+" "+aName+" = "+expression.getText()+";\n"; //NOI18N
+            final ChangeInfo changeInfo = new ChangeInfo();
+            final String typeTextPrefix = typeText+" ";//NOI18N
+            final String text = typeTextPrefix+aName+" = "+expression.getText()+";\n"; //NOI18N
             doc.runAtomicAsUser(new Runnable() {
                 @Override
                 public void run() {
                     try {
                         doc.remove(expression.getStartOffset(), exprText.length());
                         doc.insertString(expression.getStartOffset(), aName, null);
+                        Position exprStart = NbDocument.createPosition(doc, expression.getStartOffset(), Position.Bias.Forward);
+                        Position exprEnd = NbDocument.createPosition(doc, expression.getStartOffset() + aName.length(), Position.Bias.Backward);
+                        changeInfo.add(fo, exprStart, exprEnd);
                         doc.insertString(st.getStartOffset(), text, null);
+                        Position stmtStart = NbDocument.createPosition(doc, st.getStartOffset() + typeTextPrefix.length(), Position.Bias.Forward);
+                        Position stmtEnd = NbDocument.createPosition(doc, st.getStartOffset() + typeTextPrefix.length() +aName.length(), Position.Bias.Backward);
+                        changeInfo.add(fo, stmtStart, stmtEnd);
                         Indent indent = Indent.get(doc);
                         indent.lock();
                         try {
@@ -707,22 +738,18 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
                     }
                 }
             });
-            
-            Position startPosition = new Position() {
-                
-                @Override
-                public int getOffset() {
-                    return st.getStartOffset()+typeText.length()+1;
-                }
-            };
-            Position endPosition = new Position() {
-                
-                @Override
-                public int getOffset() {
-                    return st.getStartOffset()+typeText.length()+1+aName.length();
-                }
-            };
-            ChangeInfo changeInfo = new ChangeInfo(fo, startPosition, endPosition);
+            if (comp != null) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            InstantRenamePerformer.invokeInstantRename(comp, changeInfo);
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                });
+            }
             return changeInfo;
         }        
     }
@@ -802,5 +829,5 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
         public CharSequence getText() {
             return text;
         }
-    }
+    }    
 }

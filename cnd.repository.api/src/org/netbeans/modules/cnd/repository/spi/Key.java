@@ -45,6 +45,8 @@
 
 package org.netbeans.modules.cnd.repository.spi;
 
+import org.netbeans.modules.cnd.repository.impl.spi.UnitsConverter;
+
 /**
  * interface for repository keys, must be implemented in client of repository
  * @author Sergey Grinev, Vladimir Voskresensky
@@ -68,7 +70,7 @@ public interface Key {
     int getUnitId();
     
     /** Behaviors allow repository to optimize
-     *  storaging files
+     *  storing files
      */
     enum Behavior { 
         Default, // default behavior
@@ -108,5 +110,25 @@ public interface Key {
      */
     int getSecondaryAt(int level);
     
-    KeyDataPresentation getDataPresentation();
+    /**
+     * Hash code generator when layering is involved. 
+     * Will be used from layering only.
+     * Should use 
+     * <code>
+     * int hashCode = RepositoryUtils.clientToLayer(unisConverter, getUnitid());
+     * </code>
+     * 
+     * @param unitsConverter
+     * @return 
+     */
+    int hashCode(UnitsConverter unitsConverter);
+    
+    /**
+     * Equals to be used from layering     
+     * 
+     * @param unitsConverter
+     * @param object
+     * @return 
+     */
+    public abstract boolean equals(UnitsConverter unitsConverter, Key object);
 }

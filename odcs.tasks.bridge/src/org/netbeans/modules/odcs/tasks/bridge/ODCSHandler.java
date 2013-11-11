@@ -58,17 +58,14 @@ import javax.swing.Action;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
+import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.odcs.api.ODCSServer;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.server.ui.spi.QueryHandle;
-import org.netbeans.modules.team.server.ui.spi.QueryResultHandle;
-import static org.netbeans.modules.odcs.tasks.bridge.Bundle.*;
 import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
 import org.netbeans.modules.team.server.ui.common.DashboardSupport;
 import org.netbeans.modules.team.server.ui.spi.TeamServer;
-import org.openide.util.NbBundle.Messages;
 import org.openide.util.WeakListeners;
 
 /**
@@ -181,16 +178,7 @@ public class ODCSHandler {
     }
 
     private QueryHandleImpl createQueryHandle (Query q, boolean needsRefresh) {
-        Repository repo = q.getRepository();
-        boolean predefined = false;
-        if (TeamUtil.isFromTeamServer(repo)) {
-            boolean needsLogin = TeamUtil.needsLogin(q);
-            predefined = TeamUtil.getAllIssuesQuery(repo) == q || TeamUtil.getMyIssuesQuery(repo) == q;
-            if (needsLogin) {
-                return new LoginAwareQueryHandle(q, needsRefresh, predefined);
-            }
-        }
-        return new QueryHandleImpl(q, needsRefresh, predefined);
+        return new QueryHandleImpl(q, needsRefresh);
     }
 
     private void sortQueries (List<QueryHandle> queryHandles) {
@@ -264,7 +252,7 @@ public class ODCSHandler {
                 Support.getInstance().post(new Runnable() { // XXX add post method to BM
                     @Override
                     public void run () {
-                        TeamUtil.openNewQuery(repo, true);
+                        Util.createNewQuery(repo);
                     }
                 });
             }
@@ -281,7 +269,7 @@ public class ODCSHandler {
                 Support.getInstance().post(new Runnable() { // XXX add post method to BM
                     @Override
                     public void run () {
-                        TeamUtil.createIssue(repo);
+                        Util.createNewIssue(repo);
                     }
                 });
             }
@@ -340,7 +328,7 @@ public class ODCSHandler {
         public void closeQueries () {
             for (QueryHandle qh : queries) {
                 if (qh instanceof QueryHandleImpl) {
-                    TeamUtil.closeQuery(((QueryHandleImpl) qh).getQuery());
+                    Util.closeQuery(((QueryHandleImpl) qh).getQuery());
                 }
             }
             synchronized (projectListeners) {
@@ -390,36 +378,4 @@ public class ODCSHandler {
         }
     }
 
-    private class LoginAwareQueryHandle extends QueryHandleImpl {
-
-        private final String notLoggedIn;
-
-        @Messages("LBL_NotLoggedIn=(Not logged in)")
-        public LoginAwareQueryHandle (Query query, boolean needsRefresh, boolean predefined) {
-            super(query, needsRefresh, predefined);
-            this.notLoggedIn = LBL_NotLoggedIn();
-        }
-
-        @Override
-        public String getDisplayName () {
-            return super.getDisplayName() + (TeamAccessorImpl.isLoggedIn(server) ? "" : " " + notLoggedIn); //NOI18N
-        }
-
-        @Override
-        List<QueryResultHandle> getQueryResults () {
-            return TeamAccessorImpl.isLoggedIn(server) ? super.getQueryResults() : Collections.EMPTY_LIST;
-        }
-
-        @Override
-        void refreshIfNeeded () {
-            if (!TeamAccessorImpl.isLoggedIn(server)) {
-                return;
-            }
-            super.refreshIfNeeded();
-        }
-
-        void needsRefresh () {
-            super.needsRefresh = true;
-        }
-    }
 }

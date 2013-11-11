@@ -56,9 +56,11 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
@@ -419,12 +421,22 @@ public abstract class TooManyLinesHint extends HintRule implements CustomisableR
         private final BaseDocument baseDocument;
         private final FileObject fileObject;
         private final TooManyLinesHint linesHint;
+        private final List<OffsetRange> commentRanges;
 
         private CheckVisitor(TooManyLinesHint linesHint, FileObject fileObject, BaseDocument baseDocument) {
             this.linesHint = linesHint;
             this.fileObject = fileObject;
             this.baseDocument = baseDocument;
-            this.hints = new ArrayList<>();
+            hints = new ArrayList<>();
+            commentRanges = new ArrayList<>();
+        }
+
+        @Override
+        public void visit(Program node) {
+            for (Comment comment : node.getComments()) {
+                commentRanges.add(new OffsetRange(comment.getStartOffset(), comment.getEndOffset()));
+            }
+            super.visit(node);
         }
 
         protected int countLines(final Block block) {
@@ -442,18 +454,42 @@ public abstract class TooManyLinesHint extends HintRule implements CustomisableR
         private int countLinesUnderReadLock(Block block) {
             int result = 0;
             try {
-                int searchOffset = block.getStartOffset() + 1;
-                int firstNonWhiteFwd = Utilities.getFirstNonWhiteFwd(baseDocument, searchOffset);
-                int startLinePosition = Utilities.getLineOffset(
-                        baseDocument,
-                        firstNonWhiteFwd == -1 ? searchOffset : firstNonWhiteFwd);
-                int endLinePosition = Utilities.getLineOffset(
-                        baseDocument,
-                        Utilities.getFirstNonWhiteBwd(baseDocument, block.getEndOffset()));
-                result = endLinePosition - startLinePosition;
+                result = tryCountLines(block);
             } catch (BadLocationException ex) {
                 // see issue 227687 and #172881
                 LOGGER.log(Level.FINE, null, ex);
+            }
+            return result;
+        }
+
+        private int tryCountLines(Block block) throws BadLocationException {
+            int searchOffset = block.getStartOffset() + 1;
+            int firstNonWhiteFwd = Utilities.getFirstNonWhiteFwd(baseDocument, searchOffset);
+            int startLineOffset = Utilities.getLineOffset(baseDocument, firstNonWhiteFwd == -1 ? searchOffset : firstNonWhiteFwd);
+            int endLineOffset = Utilities.getLineOffset(baseDocument, Utilities.getFirstNonWhiteBwd(baseDocument, block.getEndOffset()));
+            return countLinesBetweenLineOffsets(startLineOffset, endLineOffset);
+        }
+
+        private int countLinesBetweenLineOffsets(int startLineOffset, int endLineOffset) throws BadLocationException {
+            int result = 0;
+            for (int lineOffset = startLineOffset; lineOffset < endLineOffset; lineOffset++) {
+                int rowStartFromLineOffset = Utilities.getRowStartFromLineOffset(baseDocument, lineOffset);
+                if (!Utilities.isRowWhite(baseDocument, rowStartFromLineOffset) && !isJustCommentOnLine(rowStartFromLineOffset)) {
+                    result++;
+                }
+            }
+            return result;
+        }
+
+        private boolean isJustCommentOnLine(int rowStartOffset) throws BadLocationException {
+            boolean result = false;
+            int rowFirstNonWhite = Utilities.getRowFirstNonWhite(baseDocument, rowStartOffset);
+            int rowLastNonWhite = Utilities.getRowLastNonWhite(baseDocument, rowStartOffset);
+            for (OffsetRange commentRange : commentRanges) {
+                if (commentRange.containsInclusive(rowFirstNonWhite) && commentRange.containsInclusive(rowLastNonWhite)) {
+                    result = true;
+                    break;
+                }
             }
             return result;
         }

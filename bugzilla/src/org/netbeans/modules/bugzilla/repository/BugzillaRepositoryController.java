@@ -49,7 +49,6 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.logging.Level;
 import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -60,7 +59,7 @@ import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.commons.LogUtils;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.netbeans.modules.bugzilla.commands.ValidateCommand;
@@ -99,7 +98,7 @@ public class BugzillaRepositoryController implements RepositoryController, Docum
     }
 
     public HelpCtx getHelpContext() {
-        return new HelpCtx(org.netbeans.modules.bugzilla.repository.BugzillaRepository.class);
+        return new HelpCtx("org.netbeans.modules.bugzilla.repository.BugzillaRepository"); // NOI18N
     }
 
     @Override
@@ -226,6 +225,11 @@ public class BugzillaRepositoryController implements RepositoryController, Docum
     }
 
     @Override
+    public void cancelChanges() {
+        
+    }
+    
+    @Override
     public void populate() {
         taskRunner = new TaskRunner(NbBundle.getMessage(RepositoryPanel.class, "LBL_ReadingRepoData")) {  // NOI18N
             @Override
@@ -341,7 +345,7 @@ public class BugzillaRepositoryController implements RepositoryController, Docum
             }
 
             private void logValidateMessage(String msg, Level level, String name, String url, String user, char[] psswd, String httpUser, char[] httpPsswd) {
-                Bugzilla.LOG.log(level, msg, new Object[] {name, url, user, BugtrackingUtil.getPasswordLog(psswd), httpUser, BugtrackingUtil.getPasswordLog(httpPsswd)});
+                Bugzilla.LOG.log(level, msg, new Object[] {name, url, user, LogUtils.getPasswordLog(psswd), httpUser, LogUtils.getPasswordLog(httpPsswd)});
             }
         };
         taskRunner.startTask();

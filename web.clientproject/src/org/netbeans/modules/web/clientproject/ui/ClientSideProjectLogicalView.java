@@ -65,6 +65,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
+import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.modules.web.clientproject.api.remotefiles.RemoteFilesNodeFactory;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
@@ -445,6 +446,11 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
     @NodeFactory.Registration(projectType="org-netbeans-modules-web-clientproject",position=537)
     public static NodeFactory createRemoteFiles() {
         return RemoteFilesNodeFactory.createRemoteFilesNodeFactory();
+    }
+
+    @NodeFactory.Registration(projectType = "org-netbeans-modules-web-clientproject",position = 1000)
+    public static NodeFactory createJsTestingProvidersNodes() {
+        return JsTestingProviders.getDefault().createJsTestingProvidersNodeFactory();
     }
 
     private static class ClientProjectNodeList implements NodeList<Key> {

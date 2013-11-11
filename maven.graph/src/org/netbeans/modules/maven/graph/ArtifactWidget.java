@@ -470,7 +470,7 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
         }
 
         if (updateNeeded) {
-            updateContent();
+            updateContent(((DependencyGraphScene)getScene()).isAnimated());
         } else if (repaintNeeded) {
             repaint();
         }
@@ -479,7 +479,7 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
 
     @Override public void actionPerformed(ActionEvent e) {
         enlargedFromHover = true;
-        updateContent();
+        updateContent(((DependencyGraphScene)getScene()).isAnimated());
     }
 
     public void setReadable (boolean readable) {
@@ -487,7 +487,7 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
             return;
         }
         this.readable = readable;
-        updateContent();
+        updateContent(((DependencyGraphScene)getScene()).isAnimated());
     }
 
     public boolean isReadable () {
@@ -498,8 +498,16 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
         return node;
     }
 
-    private void updateContent () {
-        boolean isAnimated = ((DependencyGraphScene)getScene()).isAnimated();
+    /**
+     * readable widgets are calculated  based on scene zoom factor when zoom factor changes, the readable scope should too
+     */
+    void updateReadableZoom() {
+        if (isReadable()) {
+            updateContent(false);
+        }
+    }
+
+    private void updateContent (boolean isAnimated) {
 
         if (isAnimated) {
             artifactW.setPreferredBounds(artifactW.getPreferredBounds());

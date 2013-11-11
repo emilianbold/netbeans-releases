@@ -142,6 +142,17 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider {
     }
 
     @Override
+    protected FileSystem urlToFileSystemImpl(CharSequence url) {
+        // That's legacy: an url can be a path to RFS cache file.
+        FileSystemAndString p = getFileSystemAndRemotePath(url);
+        if (p == null) {
+            return FileSystemProvider.urlToFileSystem(url.toString());
+        } else {
+            return p.getFileSystem();
+        }
+    }
+
+    @Override
     protected FileInfo[] getChildInfoImpl(CharSequence path) {
         FileSystemAndString p = getFileSystemAndRemotePath(path);
         if (p != null) {
@@ -346,6 +357,10 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider {
 
         public FileObject getFileObject() {
             return fileSystem.findResource(remotePath.toString());
+        }
+
+        public FileSystem getFileSystem() {
+            return fileSystem;
         }
     }
 }

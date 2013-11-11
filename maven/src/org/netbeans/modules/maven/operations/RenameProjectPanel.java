@@ -319,7 +319,7 @@ public class RenameProjectPanel extends javax.swing.JPanel {
         }
     }
 
-    private void checkParentProject(final String newName, final String oldName) throws IOException {
+    private void checkParentProject(final String oldName, final String newName) throws IOException {
         FileObject fo = project.getProjectDirectory().getParent();
         Project possibleParent = ProjectManager.getDefault().findProject(fo);
         if (possibleParent != null) {

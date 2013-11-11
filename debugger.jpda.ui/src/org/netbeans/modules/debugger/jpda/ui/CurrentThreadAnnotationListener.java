@@ -345,24 +345,25 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
     }
 
     private String getTheURL(SourcePath sourcePath, JPDAThread currentThread, String language) {
-        final String url;
-        String sPath;
-        try {
-            sPath = currentThread.getSourcePath (language);
-        } catch (AbsentInformationException e) {
-            sPath = "";
-        }
-        if (sPath.length() > 0) {
-            url = sourcePath.getURL (SourcePath.convertSlash (sPath), true);
-        } else {
-            String className = currentThread.getClassName ();
-            if (className.length() == 0) {
-                url = null;
-            } else {
-                url = sourcePath.getURL (SourcePath.convertClassNameToRelativePath (className), true);
-            }
-        }
-        return url;
+        return sourcePath.getURL(currentThread, language);
+//        final String url;
+//        String sPath;
+//        try {
+//            sPath = currentThread.getSourcePath (language);
+//        } catch (AbsentInformationException e) {
+//            sPath = "";
+//        }
+//        if (sPath.length() > 0) {
+//            url = sourcePath.getURL (SourcePath.convertSlash (sPath), true);
+//        } else {
+//            String className = currentThread.getClassName ();
+//            if (className.length() == 0) {
+//                url = null;
+//            } else {
+//                url = sourcePath.getURL (SourcePath.convertClassNameToRelativePath (className), true);
+//            }
+//        }
+//        return url;
     }
 
     private void showCurrentFrame(final CallStackFrame frame) {

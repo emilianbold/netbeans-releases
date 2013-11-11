@@ -42,7 +42,6 @@
 package org.netbeans.modules.php.nette.tester.commands;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -53,6 +52,8 @@ import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.input.InputProcessor;
+import org.netbeans.api.extexecution.input.InputProcessors;
+import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.executable.PhpExecutable;
@@ -243,7 +244,9 @@ public final class Tester {
         // #236397 - cannot be controllable
         return new ExecutionDescriptor()
                 .optionsPath(TesterOptionsPanelController.OPTIONS_PATH)
-                .showProgress(true);
+                .showProgress(true)
+                .outLineBased(true)
+                .errLineBased(true);
     }
 
     @NbBundle.Messages({
@@ -299,16 +302,17 @@ public final class Tester {
 
         @Override
         public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
-            return new ParsingProcessor(testSession);
+            return InputProcessors.bridge(new ParsingProcessor(testSession));
         }
 
     }
 
-    private static final class ParsingProcessor implements InputProcessor {
+    private static final class ParsingProcessor implements LineProcessor {
 
         private static final Logger LOGGER = Logger.getLogger(ParsingProcessor.class.getName());
 
         private final TestSession testSession;
+        private final StringBuilder buffer = new StringBuilder();
 
         private TestSuite testSuite = null;
         private long currentMillis = currentMillis();
@@ -325,9 +329,38 @@ public final class Tester {
         }
 
         @Override
-        public void processInput(char[] chars) throws IOException {
-            String input = new String(chars);
-            LOGGER.log(Level.FINEST, "Processing input {0}", input);
+        public void processLine(String line) {
+            LOGGER.log(Level.FINEST, "Processing line: {0}", line);
+            if (TapParser.isTestCaseStart(line)) {
+                process(buffer.toString());
+                buffer.setLength(0);
+            }
+            buffer.append(line);
+            buffer.append("\n"); // NOI18N
+        }
+
+        @Override
+        public void reset() {
+            LOGGER.fine("Resetting processor");
+            finish();
+        }
+
+        @Override
+        public void close() {
+            LOGGER.fine("Closing processor");
+            finish();
+        }
+
+        private void finish() {
+            process(buffer.toString());
+            if (testSuite != null) {
+                LOGGER.log(Level.FINE, "Test suite {0} found, finishing", testSuite);
+                testSuite.finish(testSuiteTime);
+            }
+        }
+
+        public void process(String input) {
+            LOGGER.log(Level.FINEST, "Parsing input:\n{0}", input);
             TestSuiteVo suite = new TapParser()
                     .parse(input, currentMillis() - currentMillis);
             LOGGER.log(Level.FINE, "Parsed test suites: {0}", suite);
@@ -338,20 +371,6 @@ public final class Tester {
                 LOGGER.log(Level.WARNING, null, throwable);
             }
             currentMillis = currentMillis();
-        }
-
-        @Override
-        public void reset() throws IOException {
-            // noop
-        }
-
-        @Override
-        public void close() throws IOException {
-            LOGGER.fine("Closing processor");
-            if (testSuite != null) {
-                LOGGER.log(Level.FINE, "Test suite {0} found, finishing", testSuite);
-                testSuite.finish(testSuiteTime);
-            }
         }
 
         private void process(TestSuiteVo suite) {
@@ -365,7 +384,7 @@ public final class Tester {
             if (path == null) {
                 return null;
             }
-            FileObject fileObject = FileUtil.toFileObject(new File(path));
+            FileObject fileObject = FileUtil.toFileObject(FileUtil.normalizeFile(new File(path)));
             assert fileObject != null : "Cannot find file object for: " + path;
             return fileObject;
         }

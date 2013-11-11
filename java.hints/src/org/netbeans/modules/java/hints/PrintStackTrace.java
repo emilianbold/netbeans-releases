@@ -67,7 +67,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Jancura
  */
-@Hint(displayName = "#DN_org.netbeans.modules.java.hints.PrintStackTrace", description = "#DESC_org.netbeans.modules.java.hints.PrintStackTrace", category="code_maturity", suppressWarnings="CallToThreadDumpStack")
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.PrintStackTrace", description = "#DESC_org.netbeans.modules.java.hints.PrintStackTrace", category="code_maturity", suppressWarnings="CallToPrintStackTrace")
 public class PrintStackTrace {
 
     @TriggerPattern(value="$t.printStackTrace ()",

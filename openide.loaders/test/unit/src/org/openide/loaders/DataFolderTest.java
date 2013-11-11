@@ -588,6 +588,8 @@ public class DataFolderTest extends LoggingTestCaseHid {
         assertEquals("next order is alphabetical", "a/b.xml/c/d.instance/e.xml", childrenOrder(folder));
         folder.setSortMode(DataFolder.SortMode.CLASS);
         assertEquals("last order is by type", "d.instance/a/c/b.xml/e.xml", childrenOrder(folder));
+        folder.setSortMode(DataFolder.SortMode.EXTENSIONS);
+        assertEquals("last order is by extension", "a/c/d.instance/b.xml/e.xml", childrenOrder(folder));
     }
 
     public void testPositionalSort() throws Exception {

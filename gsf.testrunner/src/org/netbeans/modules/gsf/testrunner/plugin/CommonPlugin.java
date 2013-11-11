@@ -147,7 +147,12 @@ public abstract class CommonPlugin {
          * key for the map of test creation parameters
          * - generate test suites for packages?
          */
-        INC_GENERATE_SUITE(99322);
+        INC_GENERATE_SUITE(99322),
+        /**
+         * key for the map of test creation parameters
+         * - generate integration test?
+         */
+        INC_GENERATE_INTEGRATION_TEST(99323);
         
         private final int idNumber;
         

@@ -43,15 +43,17 @@
  */
 package org.netbeans.modules.java.api.common.classpath;
 
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.HashMap;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.java.api.common.SourceRoots;
@@ -64,7 +66,8 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
-import org.openide.util.WeakListeners;
+import org.openide.util.Parameters;
+import org.openide.util.Union2;
 
 /**
  * Defines the various class paths for a J2SE project.
@@ -72,23 +75,24 @@ import org.openide.util.WeakListeners;
  */
 public final class ClassPathProviderImpl implements ClassPathProvider {
 
-    private String buildClassesDir = "build.classes.dir"; // NOI18N
     private static final String buildGeneratedDir = "build.generated.sources.dir"; // NOI18N
-    private String distJar = "dist.jar"; // NOI18N
-    private String buildTestClassesDir = "build.test.classes.dir"; // NOI18N
-    private String[] javacClasspath = new String[]{"javac.classpath"};    //NOI18N
-    private String[] processorClasspath = new String[]{ProjectProperties.JAVAC_PROCESSORPATH};    //NOI18N
-    private String[] javacTestClasspath = new String[]{"javac.test.classpath"};  //NOI18N
-    private String[] processorTestClasspath = new String[]{"javac.test.processorpath"};  //NOI18N
-    private String[] runClasspath = new String[]{"run.classpath"};    //NOI18N
-    private String[] runTestClasspath = new String[]{"run.test.classpath"};  //NOI18N
-    private String[] endorsedClasspath = new String[]{ProjectProperties.ENDORSED_CLASSPATH};  //NOI18N
+    private static final String[] processorTestClasspath = new String[]{"javac.test.processorpath"};  //NOI18N
 
     private final AntProjectHelper helper;
     private final File projectDirectory;
     private final PropertyEvaluator evaluator;
     private final SourceRoots sourceRoots;
     private final SourceRoots testSourceRoots;
+    private final String buildClassesDir;
+    private final String distJar;
+    private final String buildTestClassesDir;
+    private final String[] javacClasspath;
+    private final String[] processorClasspath;
+    private final String[] javacTestClasspath;
+    private final String[] runClasspath;
+    private final String[] runTestClasspath;
+    private final String[] endorsedClasspath;
+    private final Union2<String,String[]> platform;
     /**
      * ClassPaths cache
      * Index -> CP mapping
@@ -112,18 +116,18 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
 
     public ClassPathProviderImpl(AntProjectHelper helper, PropertyEvaluator evaluator, SourceRoots sourceRoots,
                                  SourceRoots testSourceRoots) {
-        this.helper = helper;
-        this.projectDirectory = FileUtil.toFile(helper.getProjectDirectory());
-        assert this.projectDirectory != null;
-        this.evaluator = evaluator;
-        this.sourceRoots = sourceRoots;
-        this.testSourceRoots = testSourceRoots;
-        listener = new PropertyChangeListener() {
-                public synchronized void propertyChange(PropertyChangeEvent evt) {
-                    dirCache.remove(evt.getPropertyName());
-                }
-            };
-        evaluator.addPropertyChangeListener(WeakListeners.propertyChange(listener, evaluator));
+        this(
+            helper,
+            evaluator,
+            sourceRoots,
+            testSourceRoots,
+            Builder.DEFAULT_BUILD_CLASSES_DIR,
+            Builder.DEFAULT_DIST_JAR,
+            Builder.DEFAULT_BUILD_TEST_CLASSES_DIR,
+            Builder.DEFAULT_JAVAC_CLASS_PATH,
+            Builder.DEFAULT_JAVAC_TEST_CLASS_PATH,
+            Builder.DEFAULT_RUN_CLASS_PATH,
+            Builder.DEFAULT_RUN_TEST_CLASS_PATH);
     }
 
     public ClassPathProviderImpl(AntProjectHelper helper, PropertyEvaluator evaluator,
@@ -131,7 +135,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             String buildClassesDir, String distJar, String buildTestClassesDir,
             String[] javacClasspath, String[] javacTestClasspath, String[] runClasspath,
             String[] runTestClasspath) {
-        this(helper,
+        this(
+            helper,
             evaluator,
             sourceRoots,
             testSourceRoots,
@@ -142,7 +147,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             javacTestClasspath,
             runClasspath,
             runTestClasspath,
-            new String[]{ProjectProperties.ENDORSED_CLASSPATH});
+            Builder.DEFAULT_ENDORSED_CLASSPATH);
     }
     /**
      * Constructor allowing customization of endorsedClasspath property names.
@@ -153,7 +158,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             String buildClassesDir, String distJar, String buildTestClassesDir,
             String[] javacClasspath, String[] javacTestClasspath, String[] runClasspath,
             String[] runTestClasspath, String[] endorsedClasspath) {
-        this(helper,
+        this(
+            helper,
             evaluator,
             sourceRoots,
             testSourceRoots,
@@ -161,11 +167,11 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             distJar,
             buildTestClassesDir,
             javacClasspath,
-            javacClasspath,
+            Builder.DEFAULT_PROCESSOR_PATH,
             javacTestClasspath,
             runClasspath,
             runTestClasspath,
-            new String[]{ProjectProperties.ENDORSED_CLASSPATH});
+            endorsedClasspath);
     }
 
     /**
@@ -177,7 +183,58 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             String buildClassesDir, String distJar, String buildTestClassesDir,
             String[] javacClasspath, String[] processorPath, String[] javacTestClasspath, String[] runClasspath,
             String[] runTestClasspath, String[] endorsedClasspath) {
-        this(helper, evaluator, sourceRoots, testSourceRoots);
+        this(
+            helper,
+            evaluator,
+            sourceRoots,
+            testSourceRoots,
+            buildClassesDir,
+            distJar,
+            buildTestClassesDir,
+            javacClasspath,
+            processorPath,
+            javacTestClasspath,
+            runClasspath,
+            runTestClasspath,
+            endorsedClasspath,
+            Union2.<String,String[]>createFirst(Builder.DEFAULT_PLATFORM_TYPE));
+    }
+
+    private ClassPathProviderImpl(
+        @NonNull final AntProjectHelper helper,
+        @NonNull final PropertyEvaluator evaluator,
+        @NonNull final SourceRoots sourceRoots,
+        @NonNull final SourceRoots testSourceRoots,
+        @NonNull final String buildClassesDir,
+        @NonNull final String distJar,
+        @NonNull final String buildTestClassesDir,
+        @NonNull final String[] javacClasspath,
+        @NonNull final String[] processorPath,
+        @NonNull final String[] javacTestClasspath,
+        @NonNull final String[] runClasspath,
+        @NonNull final String[] runTestClasspath,
+        @NonNull final String[] endorsedClasspath,
+        @NonNull final Union2<String,String[]> platform) {
+        Parameters.notNull("helper", helper);   //NOI18N
+        Parameters.notNull("evaluator", evaluator); //NOI18N
+        Parameters.notNull("sourceRoots", sourceRoots); //NOI18N
+        Parameters.notNull("testSourceRoots", testSourceRoots); //NOI18N
+        Parameters.notNull("buildClassesDir", buildClassesDir); //NOI18N
+        Parameters.notNull("distJar", distJar); //NOI18N
+        Parameters.notNull("buildTestClassesDir", buildTestClassesDir); //NOI18N
+        Parameters.notNull("javacClasspath", javacClasspath);   //NOI18N
+        Parameters.notNull("processorPath", processorPath); //NOI18N
+        Parameters.notNull("javacTestClasspath", javacTestClasspath);   //NOI18N
+        Parameters.notNull("runClasspath", runClasspath);   //NOI18N
+        Parameters.notNull("runTestClasspath", runTestClasspath);   //NOI18N
+        Parameters.notNull("endorsedClasspath", endorsedClasspath); //NOI18N
+        Parameters.notNull("platform", platform); //NOI18N
+        this.helper = helper;
+        this.projectDirectory = FileUtil.toFile(helper.getProjectDirectory());
+        assert this.projectDirectory != null;
+        this.evaluator = evaluator;
+        this.sourceRoots = sourceRoots;
+        this.testSourceRoots = testSourceRoots;
         this.buildClassesDir = buildClassesDir;
         this.distJar = distJar;
         this.buildTestClassesDir = buildTestClassesDir;
@@ -187,6 +244,232 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         this.runClasspath = runClasspath;
         this.runTestClasspath = runTestClasspath;
         this.endorsedClasspath = endorsedClasspath;
+        this.platform = platform;
+    }
+
+    /**
+     * Builder to create ClassPathProviderImpl.
+     * @since 1.59
+     */
+    public static final class Builder {
+
+        private static final String DEFAULT_PLATFORM_TYPE = "j2se";   //NOI18N
+        private static final String DEFAULT_BUILD_CLASSES_DIR = "build.classes.dir";   //NOI18N
+        private static final String DEFAULT_BUILD_TEST_CLASSES_DIR = "build.test.classes.dir"; // NOI18N
+        private static final String DEFAULT_DIST_JAR = "dist.jar"; // NOI18N
+        private static final String[] DEFAULT_JAVAC_CLASS_PATH = new String[]{"javac.classpath"};    //NOI18N
+        private static final String[] DEFAULT_PROCESSOR_PATH = new String[]{ProjectProperties.JAVAC_PROCESSORPATH};    //NOI18N
+        private static final String[] DEFAULT_JAVAC_TEST_CLASS_PATH = new String[]{"javac.test.classpath"};  //NOI18N
+        private static final String[] DEFAULT_RUN_CLASS_PATH = new String[]{"run.classpath"};    //NOI18N
+        private static final String[] DEFAULT_RUN_TEST_CLASS_PATH = new String[]{"run.test.classpath"};  //NOI18N
+        private static final String[] DEFAULT_ENDORSED_CLASSPATH = new String[]{ProjectProperties.ENDORSED_CLASSPATH};  //NOI18N
+
+        private final AntProjectHelper helper;
+        private final PropertyEvaluator evaluator;
+        private final SourceRoots sourceRoots;
+        private final SourceRoots testSourceRoots;
+
+        private String platformType = DEFAULT_PLATFORM_TYPE;
+        private String buildClassesDir = DEFAULT_BUILD_CLASSES_DIR;
+        private String buildTestClassesDir = DEFAULT_BUILD_TEST_CLASSES_DIR;
+        private String distJar = DEFAULT_DIST_JAR;
+        private String[] javacClasspath = DEFAULT_JAVAC_CLASS_PATH;
+        private String[] processorPath = DEFAULT_PROCESSOR_PATH;
+        private String[] javacTestClasspath = DEFAULT_JAVAC_TEST_CLASS_PATH;
+        private String[] runClasspath = DEFAULT_RUN_CLASS_PATH;
+        private String[] runTestClasspath = DEFAULT_RUN_TEST_CLASS_PATH;
+        private String[] endorsedClasspath = DEFAULT_ENDORSED_CLASSPATH;
+        private String[] bootClasspathProperties;
+
+        private Builder(
+            @NonNull final AntProjectHelper helper,
+            @NonNull final PropertyEvaluator evaluator,
+            @NonNull final SourceRoots sourceRoots,
+            @NonNull final SourceRoots testSourceRoots) {
+            Parameters.notNull("helper", helper);   //NOI18N
+            Parameters.notNull("evaluator", evaluator); //NOI18N
+            Parameters.notNull("sourceRoots", sourceRoots); //NOI18N
+            Parameters.notNull("testSourceRoots", testSourceRoots); //NOI18N
+            this.helper = helper;
+            this.evaluator = evaluator;
+            this.sourceRoots = sourceRoots;
+            this.testSourceRoots = testSourceRoots;
+        }
+
+        /**
+         * Sets a {@link JavaPlatform} type for boot classpath lookup.
+         * @param platformType the type of {@link JavaPlatform}, by default "j2se"
+         * @return {@link Builder}
+         */
+        @NonNull
+        public Builder setPlatformType(@NonNull final String platformType) {
+            Parameters.notNull("platformType", platformType);   //NOI18N
+            this.platformType = platformType;
+            return this;
+        }
+
+        /**
+         * Sets a property name containing build classes directory.
+         * @param buildClassesDirProperty the name of property containing the build classes directory, by default "build.classes.dir"
+         * @return {@link Builder}
+         */
+        @NonNull
+        public Builder setBuildClassesDirProperty(@NonNull final String buildClassesDirProperty) {
+            Parameters.notNull("buildClassesDirProperty", buildClassesDirProperty); //NOI18N
+            this.buildClassesDir = buildClassesDirProperty;
+            return this;
+        }
+
+        /**
+         * Sets a property name containing build test classes directory.
+         * @param buildTestClassesDirProperty the name of property containing the build test classes directory, by default "build.test.classes.dir"
+         * @return {@link Builder}
+         */
+        @NonNull
+        public Builder setBuildTestClassesDirProperty(@NonNull final String buildTestClassesDirProperty) {
+            Parameters.notNull("buildTestClassesDirProperty", buildTestClassesDirProperty); //NOI18N
+            this.buildTestClassesDir = buildTestClassesDirProperty;
+            return this;
+        }
+
+        /**
+         * Sets a property name containing the distribution jar.
+         * @param distJarProperty the name of property containing the distribution jar reference, by default "dist.jar"
+         * @return {@link Builder}
+         */
+        @NonNull
+        public Builder setDistJarProperty(@NonNull final String distJarProperty) {
+            Parameters.notNull("distJarProperty", distJarProperty); //NOI18N
+            this.distJar = distJarProperty;
+            return this;
+        }
+
+        /**
+         * Sets javac classpath properties for source roots.
+         * @param javacClassPathProperties the names of properties containing the compiler classpath for sources, by default "javac.classpath"
+         * @return {@link Builder}
+         */
+        @NonNull
+        public Builder setJavacClassPathProperties(@NonNull final String[] javacClassPathProperties) {
+            Parameters.notNull("javacClassPathProperties", javacClassPathProperties);   //NOI18N
+            this.javacClasspath = Arrays.copyOf(javacClassPathProperties, javacClassPathProperties.length);
+            return this;
+        }
+
+        /**
+         * Sets javac processor path properties for source roots.
+         * @param processorPathProperties the names of properties containing the compiler processor path for sources, by default "javac.processorpath"
+         * @return {@link Builder}
+         */
+        @NonNull
+        public Builder setProcessorPathProperties(@NonNull final String[] processorPathProperties) {
+            Parameters.notNull("processorPathProperties", processorPathProperties);
+            this.processorPath = Arrays.copyOf(processorPathProperties, processorPathProperties.length);
+            return this;
+        }
+
+        /**
+         * Sets javac classpath properties for test roots.
+         * @param javacTestClasspathProperties  the names of properties containing the compiler classpath for tests, by default "javac.test.classpath"
+         * @return {@link Builder}
+         */
+        @NonNull
+        public Builder setJavacTestClasspathProperties(@NonNull final String[] javacTestClasspathProperties) {
+            Parameters.notNull("javacTestClasspathProperties", javacTestClasspathProperties);   //NOI18N
+            this.javacTestClasspath = Arrays.copyOf(javacTestClasspathProperties, javacTestClasspathProperties.length);
+            return this;
+        }
+
+        /**
+         * Sets runtime classpath properties for source roots.
+         * @param runClasspathProperties the names of properties containing the runtime classpath for sources, by default "run.classpath"
+         * @return {@link Builder}
+         */
+        @NonNull
+        public Builder setRunClasspathProperties(@NonNull final String[] runClasspathProperties) {
+            Parameters.notNull("runClasspathProperties", runClasspathProperties);   //NOI18N
+            this.runClasspath = Arrays.copyOf(runClasspathProperties, runClasspathProperties.length);
+            return this;
+        }
+
+        /**
+         * Sets runtime classpath properties for test roots.
+         * @param runTestClasspathProperties  the names of properties containing the runtime classpath for tests, by default "run.test.classpath"
+         * @return {@link Builder}
+         */
+        @NonNull
+        public Builder setRunTestClasspathProperties(@NonNull final String[] runTestClasspathProperties) {
+            Parameters.notNull("runTestClasspathProperties", runTestClasspathProperties);   //NOI18N
+            this.runTestClasspath = Arrays.copyOf(runTestClasspathProperties, runTestClasspathProperties.length);
+            return this;
+        }
+
+        /**
+         * Sets endorsed classpath properties.
+         * @param endorsedClasspathProperties the names of properties containing the endorsed classpath, by default "endorsed.classpath"
+         * @return {@link Builder}
+         */
+        @NonNull
+        public Builder setEndorsedClasspathProperties(@NonNull final String[] endorsedClasspathProperties) {
+            Parameters.notNull("endorsedClasspathProperties", endorsedClasspathProperties); //NOI18N
+            this.endorsedClasspath = Arrays.copyOf(endorsedClasspathProperties, endorsedClasspathProperties.length);
+            return this;
+        }
+
+        /**
+         * Sets boot classpath properties.
+         * Some project types do not use {@link JavaPlatform#getBootstrapLibraries()} as boot classpath but
+         * have a project property specifying the boot classpath. Setting the boot classpath properties
+         * causes that the {@link Project}'s boot classpath is not taken from {@link Project}'s {@link JavaPlatform}
+         * but from these properties.
+         * @param bootClasspathProperties  the names of properties containing the boot classpath
+         * @return {@link Builder}
+         * @since 1.67
+         */
+        @NonNull
+        public Builder setBootClasspathProperties(@NonNull final String... bootClasspathProperties) {
+            Parameters.notNull("bootClasspathProperties", bootClasspathProperties); //NOI18N
+            this.bootClasspathProperties = Arrays.copyOf(bootClasspathProperties, bootClasspathProperties.length);
+            return this;
+        }
+
+
+        /**
+         * Creates a configured {@link ClassPathProviderImpl}.
+         * @return the {@link ClassPathProviderImpl}
+         */
+        @NonNull
+        public ClassPathProviderImpl build() {
+            final Union2<String,String[]> platform =
+                bootClasspathProperties == null ?
+                    Union2.<String,String[]>createFirst(platformType) :
+                    Union2.<String,String[]>createSecond(bootClasspathProperties);
+            return new ClassPathProviderImpl (
+                helper,
+                evaluator,
+                sourceRoots,
+                testSourceRoots,
+                buildClassesDir,
+                distJar,
+                buildTestClassesDir,
+                javacClasspath,
+                processorPath,
+                javacTestClasspath,
+                runClasspath,
+                runTestClasspath,
+                endorsedClasspath,
+                platform);
+        }
+
+        @NonNull
+        public static Builder create(
+            @NonNull final AntProjectHelper helper,
+            @NonNull final PropertyEvaluator evaluator,
+            @NonNull final SourceRoots sourceRoots,
+            @NonNull final SourceRoots testSourceRoots) {
+            return new Builder(helper, evaluator, sourceRoots, testSourceRoots);
+        }
+
     }
 
     
@@ -429,8 +712,23 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     
     private synchronized ClassPath getBootClassPath() {
         ClassPath cp = cache[7];
-        if ( cp== null ) {
-            cp = ClassPathFactory.createClassPath(ClassPathSupportFactory.createBootClassPathImplementation(evaluator, getEndorsedClasspath()));
+        if ( cp == null ) {
+            if (platform.hasFirst()) {
+                cp = ClassPathFactory.createClassPath(
+                    ClassPathSupportFactory.createBootClassPathImplementation(
+                        evaluator,
+                        getEndorsedClasspath(),
+                        platform.first()));
+            } else {
+                assert platform.hasSecond();
+                cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createProxyClassPath(
+                    getEndorsedClasspath(),
+                    ClassPathFactory.createClassPath(
+                        ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                            projectDirectory,
+                            evaluator,
+                            platform.second())));
+            }
             cache[7] = cp;
         }
         return cp;

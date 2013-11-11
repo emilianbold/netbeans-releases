@@ -106,6 +106,31 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="J2SEBuildPropertiesProvider">
+            <api name="jseprojects"/>
+            <summary>Added SPI to allow J2SE Project extensions to supply additional build properties</summary>
+            <version major="1" minor="71"/>            
+            <date day="24" month="9" year="2013"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                Added SPI to allow J2SE Project extensions to supply additional build properties.
+            </description>
+            <class package="org.netbeans.modules.java.j2seproject.api" name="J2SEBuildPropertiesProvider"/>
+        </change>
+        <change id="J2SERuntimePlatformProvider">
+            <api name="jseprojects"/>
+            <summary>Added SPI to allow J2SE Project extensions to provide allowed runtime java platforms</summary>
+            <version major="1" minor="70"/>
+            <date day="24" month="9" year="2013"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                Added J2SERuntimePlatformProvider SPI to allow J2SE Project extensions to provide allowed runtime java platforms
+                to J2SE Project customizer.
+            </description>
+            <class package="org.netbeans.modules.java.j2seproject.api" name="J2SERuntimePlatformProvider"/>
+        </change>
         <change id="J2SEProjectPlatform">
             <api name="jseprojects"/>
             <summary>Added API to allow J2SE Project extension to get and set active project platform</summary>
@@ -146,7 +171,6 @@ is the proper place.
                 registered in the project <code>Lookup</code> when a a build script file has been updated
                 or created.
             </description>
-            <class package="org.netbeans.modules.java.j2seproject.api" name="GeneratedFilesInterceptor"/>
             <issue number="226433"/>
         </change>
 

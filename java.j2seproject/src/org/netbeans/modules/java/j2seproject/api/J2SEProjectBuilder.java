@@ -102,7 +102,6 @@ import org.w3c.dom.NodeList;
 public class J2SEProjectBuilder {
 
     private static final Logger LOG = Logger.getLogger(J2SEProjectBuilder.class.getName());
-    private static final String PLATFORM_ANT_NAME = "platform.ant.name";    //NOI18N
     private static final String DEFAULT_PLATFORM_ID = "default_platform";   //NOI18N
     
     private final File projectDirectory;
@@ -308,7 +307,7 @@ public class J2SEProjectBuilder {
      */
     public J2SEProjectBuilder setJavaPlatform (@NonNull final JavaPlatform platform) {
         Parameters.notNull("platform", platform);
-        if (platform.getProperties().get(PLATFORM_ANT_NAME) == null) {
+        if (platform.getProperties().get(J2SEProjectProperties.PROP_PLATFORM_ANT_NAME) == null) {
             throw new IllegalArgumentException("Invalid platform, the platform has no platform.ant.name");  //NOI18N
         }
         this.platform = platform;
@@ -343,7 +342,7 @@ public class J2SEProjectBuilder {
                         jvmArgs.toString(),
                         toClassPathElements(compileLibraries),
                         toClassPathElements(runtimeLibraries, "${javac.classpath}:", "${build.classes.dir}"),
-                        platform.getProperties().get(PLATFORM_ANT_NAME));   //NOI18N
+                        platform.getProperties().get(J2SEProjectProperties.PROP_PLATFORM_ANT_NAME));   //NOI18N
                 final J2SEProject p = (J2SEProject) ProjectManager.getDefault().findProject(dirFO);
                 ProjectManager.getDefault().saveProject(p);
                 final ReferenceHelper refHelper = p.getReferenceHelper();
@@ -507,28 +506,28 @@ public class J2SEProjectBuilder {
             "# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_run.jvmargs_3"), // NOI18N
         }, false);
 
-        ep.setProperty(J2SEProjectProperties.JAVADOC_PRIVATE, "false"); // NOI18N
-        ep.setProperty(J2SEProjectProperties.JAVADOC_NO_TREE, "false"); // NOI18N
-        ep.setProperty(J2SEProjectProperties.JAVADOC_USE, "true"); // NOI18N
-        ep.setProperty(J2SEProjectProperties.JAVADOC_NO_NAVBAR, "false"); // NOI18N
-        ep.setProperty(J2SEProjectProperties.JAVADOC_NO_INDEX, "false"); // NOI18N
-        ep.setProperty(J2SEProjectProperties.JAVADOC_SPLIT_INDEX, "true"); // NOI18N
-        ep.setProperty(J2SEProjectProperties.JAVADOC_AUTHOR, "false"); // NOI18N
-        ep.setProperty(J2SEProjectProperties.JAVADOC_VERSION, "false"); // NOI18N
-        ep.setProperty(J2SEProjectProperties.JAVADOC_WINDOW_TITLE, ""); // NOI18N
-        ep.setProperty(J2SEProjectProperties.JAVADOC_ENCODING, "${"+J2SEProjectProperties.SOURCE_ENCODING+"}"); // NOI18N
-        ep.setProperty(J2SEProjectProperties.JAVADOC_ADDITIONALPARAM, ""); // NOI18N
+        ep.setProperty(ProjectProperties.JAVADOC_PRIVATE, "false"); // NOI18N
+        ep.setProperty(ProjectProperties.JAVADOC_NO_TREE, "false"); // NOI18N
+        ep.setProperty(ProjectProperties.JAVADOC_USE, "true"); // NOI18N
+        ep.setProperty(ProjectProperties.JAVADOC_NO_NAVBAR, "false"); // NOI18N
+        ep.setProperty(ProjectProperties.JAVADOC_NO_INDEX, "false"); // NOI18N
+        ep.setProperty(ProjectProperties.JAVADOC_SPLIT_INDEX, "true"); // NOI18N
+        ep.setProperty(ProjectProperties.JAVADOC_AUTHOR, "false"); // NOI18N
+        ep.setProperty(ProjectProperties.JAVADOC_VERSION, "false"); // NOI18N
+        ep.setProperty(ProjectProperties.JAVADOC_WINDOW_TITLE, ""); // NOI18N
+        ep.setProperty(ProjectProperties.JAVADOC_ENCODING, "${"+ProjectProperties.SOURCE_ENCODING+"}"); // NOI18N
+        ep.setProperty(ProjectProperties.JAVADOC_ADDITIONALPARAM, ""); // NOI18N
         Charset enc = FileEncodingQuery.getDefaultEncoding();
-        ep.setProperty(J2SEProjectProperties.SOURCE_ENCODING, enc.name());
+        ep.setProperty(ProjectProperties.SOURCE_ENCODING, enc.name());
         if (manifestFile != null) {
             ep.setProperty("manifest.file", manifestFile); // NOI18N
         }
         if (buildXmlName != null) {
-            ep.put(J2SEProjectProperties.BUILD_SCRIPT, buildXmlName);
+            ep.put(ProjectProperties.BUILD_SCRIPT, buildXmlName);
         }
         ep.setProperty(J2SEProjectProperties.MKDIST_DISABLED, isLibrary ? "true" : "false");
-        ep.setProperty(J2SEProjectProperties.DIST_ARCHIVE_EXCLUDES,""); //NOI18N
-        ep.setComment(J2SEProjectProperties.DIST_ARCHIVE_EXCLUDES,
+        ep.setProperty(ProjectProperties.DIST_ARCHIVE_EXCLUDES,""); //NOI18N
+        ep.setComment(ProjectProperties.DIST_ARCHIVE_EXCLUDES,
                 new String[] {
                     "# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_dist.archive.excludes") //NOI18N
                 },

@@ -87,6 +87,10 @@ public class ExtDefineCodeCompletionTest extends JsCodeCompletionBase {
         checkCompletion("testfiles/completion/defineMethod/test06.js", "NetBeans.stuff.engineer.developer.address.z^", false);
     }
     
+    public void testIssue231923() throws Exception {
+        checkCompletion("testfiles/completion/defineMethod/issue231923.js", "var obj = My.app.Pan^;", false);
+    }
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());

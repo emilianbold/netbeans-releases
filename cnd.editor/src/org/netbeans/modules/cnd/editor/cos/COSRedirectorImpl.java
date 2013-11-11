@@ -336,10 +336,9 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (!removed.get()) {
-                if (evt.getPropertyName().equals("name") || // NOI18N
-                        evt.getPropertyName().equals("valid") || // NOI18N 
-                        evt.getPropertyName().equals("modified") || // NOI18N
-                        evt.getPropertyName().equals("primaryFile")) { // NOI18N
+                if (evt.getPropertyName().equals(DataObject.PROP_NAME) ||
+                        evt.getPropertyName().equals(DataObject.PROP_VALID) ||
+                        evt.getPropertyName().equals(DataObject.PROP_PRIMARY_FILE)) {
                     if (!(evt.getSource() instanceof DataObject)) {
                         return;
                     }
@@ -361,9 +360,6 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
 
         @Override
         public void fileChanged(FileEvent fe) {
-            if (!removed.get()) {
-                removed.set(true);
-            }
         }
 
         @Override
@@ -382,9 +378,6 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
 
         @Override
         public void fileAttributeChanged(FileAttributeEvent fe) {
-            if (!removed.get()) {
-                removed.set(true);
-            }
         }
     }
 }

@@ -60,6 +60,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.keyring.Keyring;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.common.nodes.Hk2InstanceNode;
+import org.netbeans.modules.glassfish.common.parser.DomainXMLChangeListener;
 import org.netbeans.modules.glassfish.common.ui.GlassFishPropertiesCustomizer;
 import org.netbeans.modules.glassfish.common.ui.WarnPanel;
 import org.netbeans.modules.glassfish.common.utils.Util;
@@ -397,7 +398,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
             String domainName, int httpPort, int adminPort,
             String userName, String password, String target, String url,
             GlassfishInstanceProvider gip) {
-        Map<String, String> ip = new HashMap<String, String>();
+        Map<String, String> ip = new HashMap<>();
         ip.put(GlassfishModule.DISPLAY_NAME_ATTR, displayName);
         ip.put(GlassfishModule.INSTALL_FOLDER_ATTR, installRoot);
         ip.put(GlassfishModule.GLASSFISH_FOLDER_ATTR, glassfishRoot);
@@ -606,7 +607,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
                 && org.netbeans.modules.glassfish.common.utils.ServerUtils
                 .isValidFolder(glassfishRoot)) {
             // collect attributes and pass to create()
-            Map<String, String> ip = new HashMap<String, String>();
+            Map<String, String> ip = new HashMap<>();
             Enumeration<String> iter = instanceFO.getAttributes();
             while(iter.hasMoreElements()) {
                 String name = iter.nextElement();
@@ -735,6 +736,9 @@ public class GlassfishInstance implements ServerInstanceImplementation,
      *  is not running at all. */
     private transient volatile Process process;
 
+    /** Configuration changes listener watching <code>domain.xml</code> file. */
+    private transient final DomainXMLChangeListener domainXMLListener;
+
     private transient InstanceContent ic;
     private transient Lookup localLookup;
     private transient Lookup full;
@@ -774,6 +778,10 @@ public class GlassfishInstance implements ServerInstanceImplementation,
                 ip.put(GlassfishModule.HTTPPORT_ATTR,
                         Integer.toString(pc.getHttpPort()));
             }
+            domainXMLListener = new DomainXMLChangeListener(this, 
+                    ServerUtils.getDomainConfigFile(domainDirPath, domainName));
+        } else {
+            domainXMLListener = null;
         }
         this.properties = prepareProperties(ip);
         if (!isPublicAccess()) {
@@ -851,6 +859,17 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     }
 
     /**
+     * Get GlassFish configuration file <code>domain.xml</code> changes
+     * listener.
+     * <p/>
+     * @return GlassFish configuration file <code>domain.xml</code> changes
+     *         listener. 
+     */
+    public DomainXMLChangeListener getDomainXMLChangeListener() {
+        return domainXMLListener;
+    }
+
+    /**
      * Set process information of local running server started from IDE.
      * <p/>
      * @param process Process information of local running server started
@@ -895,13 +914,44 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     }
 
     /**
-     * Get GlassFish server port from stored properties.
+     * Set GlassFish server host from stored properties.
      * <p/>
-     * @return GlassFish server port.
+     * @param host GlassFish server host  to be stored.
+     */
+    public void setHost(final String host) {
+        properties.put(GlassfishModule.HOSTNAME_ATTR, host);
+    }
+
+    /**
+     * Get GlassFish server HTTP port from stored properties.
+     * <p/>
+     * @return GlassFish server HTTP port.
      */
     @Override
     public int getPort() {
         return intProperty(GlassfishModule.HTTPPORT_ATTR);
+    }
+
+    /**
+     * Set GlassFish server HTTP port in stored properties.
+     * <p/>
+     * @param httpPort GlassFish server HTTP port to be stored.
+     * @throws NumberFormatException if <code>httpPort</code> does not contain
+     *                               valid integer value.
+     */
+    public void setHttpPort(String httpPort) {
+        Integer.parseInt(httpPort);
+        properties.put(GlassfishModule.HTTPPORT_ATTR, httpPort);
+    }
+
+    /**
+     * Set GlassFish server HTTP port in stored properties.
+     * <p/>
+     * @param httpPort GlassFish server HTTP port to be stored.
+     */
+    public void setHttpPort(int httpPort) {
+        properties.put(
+                GlassfishModule.HTTPPORT_ATTR, Integer.toString(httpPort));
     }
 
     /**
@@ -912,6 +962,27 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     @Override
     public int getAdminPort() {
         return intProperty(GlassfishModule.ADMINPORT_ATTR);
+    }
+
+    /**
+     * Set GlassFish server administration port in stored properties.
+     * <p/>
+     * @param adminPort GlassFish server administration port to be stored.
+     * @throws NumberFormatException if <code>httadminPortpPort</code> does not contain
+     *                               valid integer value.
+     */
+    public void setAdminPort(String adminPort) {
+        properties.put(GlassfishModule.ADMINPORT_ATTR, adminPort);
+    }
+
+    /**
+     * Set GlassFish server administration port in stored properties.
+     * <p/>
+     * @param adminPort GlassFish server administration port to be stored.
+     */
+    public void setAdminPort(int adminPort) {
+        properties.put(
+                GlassfishModule.ADMINPORT_ATTR, Integer.toString(adminPort));
     }
 
     /**
@@ -949,7 +1020,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
      * Set GlassFish server domains folder into stored properties.
      * <p/>
      * @param domainsFolder GlassFish server domains folder.
-     * @return Previous value of domains folder, or <code>null</code> if there
+     * @return Previous value of domains folder or <code>null</code> if there
      *         was no value of domains folder stored.
      */
     public String setDomainsFolder(String domainsFolder) {
@@ -965,6 +1036,30 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     @Override
     public String getDomainName() {
         return properties.get(GlassfishModule.DOMAIN_NAME_ATTR);
+    }
+
+    /**
+     * Get GlassFish server target in domain (cluster or standalone
+     * server name).
+     * <p/>
+     * @return  GlassFish server target in domain (cluster or standalone
+     *          server name).
+     */
+    public String getTarget() {
+        return properties.get(GlassfishModule.TARGET_ATTR);
+    }
+
+    /**
+     * Set GlassFish server target in domain (cluster or standalone
+     * server name).
+     * <p/>
+     * @param target GlassFish server target in domain (cluster or standalone
+     *               server name).
+     * @return Previous value of target or <code>null</code> if there
+     *         was no value of domains folder stored.
+     */
+    public String setTarget(final String target) {
+        return properties.put(GlassfishModule.TARGET_ATTR, target);
     }
 
     /**
@@ -1062,12 +1157,24 @@ public class GlassfishInstance implements ServerInstanceImplementation,
      * If the map previously contained a mapping for the key, the old value
      * is replaced by the specified value.
      * <p/>
-     * @param properties GlassFish properties to set
+     * @param key   GlassFish property <code>key</code>.
+     * @param value GlassFish property <code>value</code>.
      * @return Previous value associated with <code>key</code>, or
      *         <code>null</code> if there was no mapping for <code>key</code>.
      */
     public String putProperty(String key, String value) {
         return properties.put(key, value);
+    }
+
+    /**
+     * Removes the mapping for a key from this map if it is present.
+     * <p/>
+     * @param key GlassFish property <code>key</code>.
+     * @return Previous value associated with <code>key</code>, or
+     *         <code>null</code> if there was no mapping for <code>key</code>.
+     */
+    public String removeProperty(String key) {
+        return properties.remove(key);
     }
 
     /**
@@ -1101,16 +1208,6 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     }
 
     /**
-     * Retrieve password attribute from stored properties and NetBeans
-     * key store.
-     * <p/>
-     * @return Retrieved password attribute.
-     */
-    public String getPassword() {
-        return properties.get(GlassfishModule.PASSWORD_ATTR);
-    }
-
-    /**
      * Store password attribute into GlassFish instance properties.
      * <p/>
      * Password is not stored in {@see Keyring}. Method
@@ -1119,8 +1216,18 @@ public class GlassfishInstance implements ServerInstanceImplementation,
      * <p/>
      * @param password Password attribute to store.
      */
-    public void setPassword(String password) {
+    public void setAdminPassword(String password) {
         properties.put(GlassfishModule.PASSWORD_ATTR, password);
+    }
+
+    /**
+     * Retrieve password attribute from stored properties and NetBeans
+     * key store.
+     * <p/>
+     * @return Retrieved password attribute.
+     */
+    public String getPassword() {
+        return properties.get(GlassfishModule.PASSWORD_ATTR);
     }
 
     public String getInstallRoot() {
@@ -1532,7 +1639,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
         } else {
             LOGGER.log(Level.WARNING, "{0} does not exist", asenvConf.getAbsolutePath()); // NOI18N
         }
-        Set<GlassfishModuleFactory> added = new HashSet<GlassfishModuleFactory>();
+        Set<GlassfishModuleFactory> added = new HashSet<>();
         //Set<GlassfishModuleFactory> removed = new HashSet<GlassfishModuleFactory>();
         synchronized (lookupResult) {
             Collection<? extends GlassfishModuleFactory> factories = lookupResult.allInstances();
@@ -1540,7 +1647,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
             added.removeAll(currentFactories);
             currentFactories = factories;
 
-            List<Lookup> proxies = new ArrayList<Lookup>();
+            List<Lookup> proxies = new ArrayList<>();
             proxies.add(localLookup);
             for (GlassfishModuleFactory moduleFactory : added) {
                 if(moduleFactory.isModuleSupported(homeFolder, asenvProps)) {
@@ -1655,17 +1762,20 @@ public class GlassfishInstance implements ServerInstanceImplementation,
         if (null == other.getDeployerUri()) {
             return false;
         }
-        if (null == getDomainName()) {
-            return false;
-        }
-        if (null == getDomainName()) {
-            return false;
-        }
-        return getDeployerUri().replace("127.0.0.1", "localhost").
-                equals(other.getDeployerUri().
-                replace("127.0.0.1", "localhost"))
+        // Domain name can be null so we shall avoid NPE.
+        boolean domainName = (
+                getDomainName() == null && other.getDomainName() == null)
+                || ((getDomainName() != null && other.getDomainName() != null)
+                && getDomainName().equals(other.getDomainName()));
+        // Domains root can be null so we shall avoid NPE.
+        boolean domainsRoot = (
+                getDomainsRoot() == null && other.getDomainsRoot() == null)
+                || ((getDomainsRoot() != null && other.getDomainsRoot() != null)
+                && getDomainsRoot().equals(other.getDomainsRoot()));
+        return domainName && domainsRoot
+                && getDeployerUri().replace("127.0.0.1", "localhost").
+                equals(other.getDeployerUri().replace("127.0.0.1", "localhost"))
                 && getDomainName().equals(other.getDomainName()) 
-                && getDomainsRoot().equals(other.getDomainsRoot())
                 && getHttpPort().equals(other.getHttpPort());
     }
 

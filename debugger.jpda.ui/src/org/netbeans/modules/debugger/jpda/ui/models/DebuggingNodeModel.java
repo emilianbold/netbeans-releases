@@ -80,6 +80,7 @@ import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.ThreadBreakpoint;
+import org.netbeans.modules.debugger.jpda.ui.SourcePath;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 
@@ -153,6 +154,7 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
     private final Preferences preferences = NbPreferences.forModule(getClass()).node("debugging"); // NOI18N
     private final PreferenceChangeListener prefListener;
     private final RequestProcessor rp;
+    private final SourcePath sourcePath;
     private final Session session;
     private final PropertyChangeListener sessionLanguageListener;
     
@@ -163,6 +165,7 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         deadlockDetector = debugger.getThreadsCollector().getDeadlockDetector();
         deadlockDetector.addPropertyChangeListener(new DeadlockListener());
         rp = lookupProvider.lookupFirst(null, RequestProcessor.class);
+        sourcePath = lookupProvider.lookupFirst(null, SourcePath.class);
         session = lookupProvider.lookupFirst(null, Session.class);
         sessionLanguageListener = new SessionLanguageListener();
         session.addPropertyChangeListener(Session.PROP_CURRENT_LANGUAGE,
@@ -269,7 +272,7 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
 
     private final Map<CallStackFrame, String> frameDescriptionsByFrame = new WeakHashMap<CallStackFrame, String>();
 
-    private static final Map<CallStackFrame, String[]> framePathAndClass = new WeakHashMap<CallStackFrame, String[]>();
+    private static final Map<CallStackFrame, String[]> framePathClassURL = new WeakHashMap<CallStackFrame, String[]>();
     
     public static String getDisplayName(JPDAThread t, boolean showPackageNames) throws UnknownTypeException {
         return getDisplayName(t, showPackageNames, null);
@@ -345,13 +348,24 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         if (breakpoint instanceof LineBreakpoint) {
             LineBreakpoint lb = (LineBreakpoint) breakpoint;
             String fileName = null;
-            try {
-                FileObject fo = URLMapper.findFileObject(new URL(lb.getURL()));
-                if (fo != null) {
-                    fileName = fo.getNameExt();
+            String urlStr = lb.getURL();
+            if (urlStr.isEmpty()) {
+                fileName = lb.getPreferredClassName();
+                if (fileName != null) {
+                    int i = fileName.lastIndexOf('.');
+                    if (i > 0) {
+                        fileName = fileName.substring(i+1);
+                    }
                 }
-            } catch (MalformedURLException ex) {
-                ErrorManager.getDefault().notify(ex);
+            } else {
+                try {
+                    FileObject fo = URLMapper.findFileObject(new URL(urlStr));
+                    if (fo != null) {
+                        fileName = fo.getNameExt();
+                    }
+                } catch (MalformedURLException ex) {
+                    ErrorManager.getDefault().notify(ex);
+                }
             }
             if (fileName == null) fileName = lb.getURL();
             return NbBundle.getMessage(DebuggingNodeModel.class, "CTL_Thread_At_LineBreakpoint",
@@ -451,14 +465,16 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
                 synchronized (frameDescriptionsByFrame) {
                     frameDescriptionsByFrame.put(f, frameDescr);
                 }
-                String[] pathAndClass = new String[2];
+                String[] pathAndClass = new String[3];
+                String language = session.getCurrentLanguage();
                 try {
-                    pathAndClass[0] = f.getSourcePath(session.getCurrentLanguage());
+                    pathAndClass[0] = f.getSourcePath(language);
                 } catch (AbsentInformationException ex) {
                 }
                 pathAndClass[1] = f.getClassName();
-                synchronized (framePathAndClass) {
-                    framePathAndClass.put(f, pathAndClass);
+                pathAndClass[2] = sourcePath.getURL(f, language);
+                synchronized (framePathClassURL) {
+                    framePathClassURL.put(f, pathAndClass);
                 }
                 fireDisplayNameChanged(f);
             }
@@ -466,8 +482,8 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
     }
 
     static String getCachedFramePath(CallStackFrame f) {
-        synchronized (framePathAndClass) {
-            String[] pathAndClass = framePathAndClass.get(f);
+        synchronized (framePathClassURL) {
+            String[] pathAndClass = framePathClassURL.get(f);
             if (pathAndClass != null) {
                 return pathAndClass[0];
             }
@@ -476,10 +492,20 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
     }
 
     static String getCachedFrameClass(CallStackFrame f) {
-        synchronized (framePathAndClass) {
-            String[] pathAndClass = framePathAndClass.get(f);
+        synchronized (framePathClassURL) {
+            String[] pathAndClass = framePathClassURL.get(f);
             if (pathAndClass != null) {
                 return pathAndClass[1];
+            }
+        }
+        return null;
+    }
+    
+    static String getCachedFrameURL(CallStackFrame f) {
+        synchronized (framePathClassURL) {
+            String[] pathAndClass = framePathClassURL.get(f);
+            if (pathAndClass != null) {
+                return pathAndClass[2];
             }
         }
         return null;
@@ -949,8 +975,8 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
             synchronized (frameDescriptionsByFrame) {
                 frameDescriptionsByFrame.clear();
             }
-            synchronized (framePathAndClass) {
-                framePathAndClass.clear();
+            synchronized (framePathClassURL) {
+                framePathClassURL.clear();
             }
             fireTreeChanged();
         }

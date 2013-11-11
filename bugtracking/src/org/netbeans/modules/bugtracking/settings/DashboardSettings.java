@@ -171,17 +171,23 @@ public class DashboardSettings {
         getPreferences().putBoolean(FINISHED_TASK_FILTER, tasksLimitQuery);
     }
 
-    public void updateAttributesRank(List<TaskAttribute> attributes) {
+    public void updateSortingAttributes(List<TaskAttribute> attributes) {
         for (TaskAttribute taskAttribute : attributes) {
-            taskAttribute.setRank(getPreferences().getInt(taskAttribute.getId(), 0));
+            taskAttribute.setRank(getPreferences().getInt(taskAttribute.getId(), taskAttribute.getRank()));
+            taskAttribute.setAsceding(getPreferences().getBoolean(getAttributeAscedingId(taskAttribute.getId()), taskAttribute.isAsceding()));
         }
     }
 
     public void setSortingAttributes(List<TaskAttribute> attributes) {
         for (TaskAttribute taskAttribute : attributes) {
             getPreferences().putInt(taskAttribute.getId(), taskAttribute.getRank());
+            getPreferences().putBoolean(getAttributeAscedingId(taskAttribute.getId()), taskAttribute.isAsceding());
         }
         fireSortChangedEvent();
+    }
+
+    private String getAttributeAscedingId(String attributeId) {
+        return attributeId + ".asceding";
     }
 
     private Preferences getPreferences() {

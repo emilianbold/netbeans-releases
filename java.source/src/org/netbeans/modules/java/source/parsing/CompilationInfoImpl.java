@@ -481,6 +481,10 @@ public final class CompilationInfoImpl {
         private final Map<JavaFileObject, TreeMap<Integer, Collection<Diagnostic<? extends JavaFileObject>>>> source2Errors;
         private final JavaFileObject jfo;
         private volatile List<Diagnostic<? extends JavaFileObject>> partialReparseErrors;
+        /**
+         * true if the partialReparseErrors contain some non-warning
+         */
+        private volatile boolean partialReparseRealErrors;
         private volatile List<Diagnostic<? extends JavaFileObject>> affectedErrors;
         private volatile int currentDelta;
         
@@ -494,6 +498,9 @@ public final class CompilationInfoImpl {
             if (partialReparseErrors != null) {
                 if (this.jfo != null && this.jfo == message.getSource()) {
                     partialReparseErrors.add(message);
+                    if (message.getKind() == Kind.ERROR) {
+                        partialReparseRealErrors = true;
+                    }
                 }
             } else {
                 TreeMap<Integer, Collection<Diagnostic<? extends JavaFileObject>>> errors = getErrors(message.getSource());
@@ -518,7 +525,8 @@ public final class CompilationInfoImpl {
         }
         
         final boolean hasPartialReparseErrors () {
-            return this.partialReparseErrors != null && !this.partialReparseErrors.isEmpty();
+            // #236654: warnings should not stop processing of the reparsed method
+            return this.partialReparseErrors != null && partialReparseRealErrors;
         }
         
         final void startPartialReparse (int from, int to) {
@@ -543,6 +551,7 @@ public final class CompilationInfoImpl {
             else {
                 this.partialReparseErrors.clear();
             }
+            partialReparseRealErrors = false;
         }
         
         final void endPartialReparse (final int delta) {

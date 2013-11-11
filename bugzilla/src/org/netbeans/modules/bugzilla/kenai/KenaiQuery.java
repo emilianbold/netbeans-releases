@@ -42,11 +42,15 @@
 
 package org.netbeans.modules.bugzilla.kenai;
 
-import org.netbeans.modules.bugtracking.util.LogUtils;
+import java.util.Collection;
+import org.netbeans.modules.bugtracking.commons.LogUtils;
+import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.BugzillaConnector;
+import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.bugzilla.query.QueryController;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -60,7 +64,7 @@ public class KenaiQuery extends BugzillaQuery {
         super(name, repository, urlParameters, saved, false, false);
         this.product = product;
         this.predefinedQuery = predefined;
-        this.lastRefresh = repository.getIssueCache().getQueryTimestamp(getStoredQueryName());
+        this.lastRefresh = BugzillaConfig.getInstance().getLastQueryRefresh(repository, getStoredQueryName());
         controller = createControler(repository, this, urlParameters);
     }
 
@@ -89,4 +93,8 @@ public class KenaiQuery extends BugzillaQuery {
         return super.getStoredQueryName() + "-" + product;
     }
 
+    @Override
+    public boolean canRemove() {
+        return predefinedQuery ? false : super.canRemove();
+    }
 }

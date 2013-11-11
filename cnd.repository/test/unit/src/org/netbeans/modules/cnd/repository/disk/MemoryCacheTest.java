@@ -45,8 +45,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.cnd.modelimpl.test.ModelImplBaseTestCase;
+import org.netbeans.modules.cnd.repository.impl.spi.UnitsConverter;
 import org.netbeans.modules.cnd.repository.spi.Key;
-import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 import org.openide.util.RequestProcessor;
@@ -174,7 +174,7 @@ public class MemoryCacheTest extends ModelImplBaseTestCase {
 
     private static final class MyPersistent implements Persistent {
 
-        private double d;
+        private final double d;
 
         private MyPersistent(double d) {
             this.d = d;
@@ -188,6 +188,10 @@ public class MemoryCacheTest extends ModelImplBaseTestCase {
         private MyKey(int i) {
             this.i = i;
         }
+        @Override
+        public int hashCode(UnitsConverter unitsConverter) {
+            return unitsConverter == null  ? i : unitsConverter.clientToLayer(i);
+        }
 
         @Override
         public int hashCode() {
@@ -195,13 +199,29 @@ public class MemoryCacheTest extends ModelImplBaseTestCase {
         }
 
         @Override
-        public int getUnitId() {
-            return 1;
+        public final boolean equals(UnitsConverter unitsConverter, Key object) {
+            if (object == null || (this.getClass() != object.getClass())) {
+                return false;
+            }
+            return unitsConverter == null ?  i == object.getUnitId() : unitsConverter.clientToLayer(i) == unitsConverter.clientToLayer(object.getUnitId());
         }
 
         @Override
-        public boolean equals(Object obj) {
-            return ((MyKey) obj).i == i;
+        public final boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final MyKey other = (MyKey) obj;
+            return i == other.i;
+        }
+
+
+        @Override
+        public int getUnitId() {
+            return 1;
         }
 
         @Override
@@ -242,11 +262,6 @@ public class MemoryCacheTest extends ModelImplBaseTestCase {
         @Override
         public boolean hasCache() {
             return false;
-        }
-
-        @Override
-        public KeyDataPresentation getDataPresentation() {
-            throw new UnsupportedOperationException("Not supported yet.");
         }
     }
 }

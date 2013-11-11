@@ -2,27 +2,20 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Deployment Descriptor Visual Editor: Messaging</title>
+<title>Deployment Descriptor Visual Editor: Web Service Clients</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="org.netbeans.modules.j2ee.sun.ddloaders.multiview.jms.JmsMappingView" name="org.netbeans.modules.j2ee.sun.ddloaders.multiview.jms.JmsMappingView"></a></p>
+<p>Beta Draft: 2013-10-28</p>
+<p><a id="org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.ServiceRefNode,org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.ServiceRefView,org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.PortInfoNode" name="org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.ServiceRefNode,org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.ServiceRefView,org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.PortInfoNode"></a></p>
 <!-- infolevel="all" infotype="General" --><a id="sthref643" name="sthref643"></a>
-<h1>Deployment Descriptor Visual Editor: Messaging</h1>
+<h1>Deployment Descriptor Visual Editor: Web Service Clients</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to edit the platform-specific deployment descriptors for GlassFish application server. 
+<p>Use to add descriptor properties for a web service. This pane lists the reference to web services in the project. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1226">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1114">
 <param name="text" value="<html><u>How?</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p>This pane lists the JMS message destinations in the project and enables you to provide a reference to any resource from which the application is going to send or receive messages. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1279">
-<param name="text" value="<html><u>More</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
@@ -40,46 +33,69 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t50" headers="r1c1-t50">
-<p>Add Message Destination</p>
+<p>Add Service Reference</p>
 </td>
 <td align="left" headers="r2c1-t50 r1c2-t50">
-<p>Adds descriptor properties for a message destination.</p>
-<p>Each message destination has the following properties: Message Destination Name and JNDI Name.</p>
+<p>Adds descriptor properties for a web service.</p>
+<p>Each web service has the following properties: Service Reference Name, WSDL override, Port Information, and Selected Port Information.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t50" headers="r1c1-t50">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Message Destination Name</p>
+<p>Service Reference Name</p>
 </td>
 <td align="left" headers="r3c1-t50 r1c2-t50">
-<p>Specifies the name of a logical message destination defined within the corresponding deployment descriptor file (<code>web.xml</code> or <code>ejb-jar.xml</code>).</p>
+<p>Specifies the name of the Service reference.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t50" headers="r1c1-t50">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;JNDI Name</p>
+<p>WSDL override</p>
 </td>
 <td align="left" headers="r4c1-t50 r1c2-t50">
-<p>Displays the JNDI name of the message destination.</p>
+<p>Specifies the URL to a WSDL document.</p>
+<p>This URL overrides the WSDL document reference in the <code>web-app.xml</code> file.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t50" headers="r1c1-t50">
+<p>Port Information</p>
+</td>
+<td align="left" headers="r5c1-t50 r1c2-t50">
+<p>Defines and configures the port information and properties of a Service reference.</p>
+<p>Add a new port for a Service reference by clicking <b>Add Port Information</b>, or expand an existing port node to edit the properties of that port or to remove it.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t50" headers="r1c1-t50">
+<p>Selected Port Information</p>
+</td>
+<td align="left" headers="r6c1-t50 r1c2-t50">
+<p>Adds or modifies the following properties for the port selected in the Port Information combo box:</p>
+<ul>
+<li>Service Endpoint Interface</li>
+<li>WSDL Port Namespace URI</li>
+<li>WSDL Port Localpart - Specifies the local portion of the WSDL namespace.</li>
+<li>Message Security - Enables you to edit the message security binding settings when selected.</li>
+</ul>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<p><b>Note:</b> The message destination name must match the corresponding message destination name in the <code>web.xml</code> file.</p>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1874">
-<param name="text" value="<html><u>&quot;About Deployment Descriptors&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2805">
+<param name="text" value="<html><u>&quot;Configuring Web Services&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1111">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1111">
 <param name="text" value="<html><u>&quot;Configuring a Web Application&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
@@ -87,8 +103,8 @@
 </p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1269">
-<param name="text" value="<html><u>&quot;Creating an Enterprise Bean&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2719">
+<param name="text" value="<html><u>&quot;Building and Deploying an EJB Module&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

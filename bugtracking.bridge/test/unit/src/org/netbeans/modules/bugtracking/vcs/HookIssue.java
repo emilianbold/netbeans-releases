@@ -44,12 +44,10 @@ package org.netbeans.modules.bugtracking.vcs;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.IOException;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.bugtracking.TestIssue;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
+import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.openide.util.HelpCtx;
 
 /**
@@ -61,7 +59,7 @@ public class HookIssue extends TestIssue {
 
     boolean closed;
     String comment;
-    private BugtrackingController controller;
+    private IssueController controller;
 
     static HookIssue getInstance() {
         if(instance == null) {
@@ -116,14 +114,14 @@ public class HookIssue extends TestIssue {
     }
 
     @Override
-    public void attachPatch(File file, String description) {
+    public void attachFile(File file, String description, boolean isPatch) {
         // do nothing
     }
 
     @Override
-    public BugtrackingController getController() {
+    public IssueController getController() {
         if(controller == null) {        
-            controller = new BugtrackingController() {
+            controller = new IssueController() {
                 private JComponent panel = new JPanel();                
                 @Override
                 public JComponent getComponent() {
@@ -133,14 +131,18 @@ public class HookIssue extends TestIssue {
                 public HelpCtx getHelpCtx() {
                     throw new UnsupportedOperationException("Not supported yet.");
                 }
+                @Override public void opened() { }
+                @Override public void closed() { }
                 @Override
-                public boolean isValid() {
-                    throw new UnsupportedOperationException("Not supported yet.");
+                public boolean saveChanges() {
+                    return true;
                 }
                 @Override
-                public void applyChanges() throws IOException {
-                    throw new UnsupportedOperationException("Not supported yet.");
+                public boolean discardUnsavedChanges() {
+                    return true;
                 }
+                @Override public void addPropertyChangeListener(PropertyChangeListener l) { }
+                @Override public void removePropertyChangeListener(PropertyChangeListener l) { }
             };
         }
         return controller;

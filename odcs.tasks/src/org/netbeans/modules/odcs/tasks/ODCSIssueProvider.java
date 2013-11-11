@@ -44,7 +44,8 @@ package org.netbeans.modules.odcs.tasks;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import java.util.Collection;
+import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
 
@@ -52,7 +53,7 @@ import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
  *
  * @author Tomas Stupka
  */
-public class ODCSIssueProvider extends IssueProvider<ODCSIssue> {
+public class ODCSIssueProvider implements IssueProvider<ODCSIssue> {
 
     @Override
     public String getDisplayName(ODCSIssue data) {
@@ -70,7 +71,7 @@ public class ODCSIssueProvider extends IssueProvider<ODCSIssue> {
     }
 
     @Override
-    public String[] getSubtasks(ODCSIssue data) {
+    public Collection<String> getSubtasks(ODCSIssue data) {
         return data.getSubtasks();
     }
 
@@ -100,12 +101,12 @@ public class ODCSIssueProvider extends IssueProvider<ODCSIssue> {
     }
 
     @Override
-    public void attachPatch(ODCSIssue data, File file, String description) {
+    public void attachFile(ODCSIssue data, File file, String description, boolean isPatch) {
         data.attachPatch(file, description);
     }
 
     @Override
-    public BugtrackingController getController(ODCSIssue data) {
+    public IssueController getController(ODCSIssue data) {
         return data.getController();
     }
 
@@ -117,16 +118,6 @@ public class ODCSIssueProvider extends IssueProvider<ODCSIssue> {
     @Override
     public void addPropertyChangeListener(ODCSIssue data, PropertyChangeListener listener) {
         data.addPropertyChangeListener(listener);
-    }
-
-    @Override
-    public boolean submit (ODCSIssue data) {
-        return data.submitAndRefresh();
-    }
-
-    @Override
-    public void discardOutgoing(ODCSIssue data) {
-        data.discardLocalEdits();
     }
     
 }

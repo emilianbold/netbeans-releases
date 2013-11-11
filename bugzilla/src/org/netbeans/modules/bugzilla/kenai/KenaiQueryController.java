@@ -43,8 +43,8 @@
 package org.netbeans.modules.bugzilla.kenai;
 
 import java.util.List;
-import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
-import org.netbeans.modules.bugtracking.util.LogUtils;
+import org.netbeans.modules.team.spi.OwnerInfo;
+import org.netbeans.modules.bugtracking.commons.LogUtils;
 import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
@@ -74,6 +74,12 @@ public class KenaiQueryController extends QueryController {
         postPopulate(urlParameters, false);
     }
 
+    @Override
+    public boolean providesMode(QueryMode mode) {
+        // can't edit predefined quries, otherwise all posible modes accepted
+        return !predefinedQuery || mode != QueryMode.EDIT;
+    }
+    
     @Override
     public void populate(String urlParameters) {
         if(BugzillaUtil.isNbRepository(getRepository())) {

@@ -46,11 +46,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.util.NBBugzillaUtils;
+import org.netbeans.modules.bugtracking.commons.NBBugzillaUtils;
+import org.netbeans.modules.bugtracking.commons.LogUtils;
 
 /**
+ * Represents information related to one particular repository. 
  *
  * @author Tomas Stupka
+ * @see RepositoryController
+ * @since 1.85
  */
 public final class RepositoryInfo {
     
@@ -59,7 +63,7 @@ public final class RepositoryInfo {
     static {
         SPIAccessorImpl.createAccesor();
     }
-        
+
     private static final String DELIMITER         = "<=>";                      // NOI18N    
     
     private final Map<String, String> map = new HashMap<String, String>();
@@ -77,6 +81,16 @@ public final class RepositoryInfo {
         this.map.putAll(properties);
     }
 
+    /**
+     * Creates a new RepositoryInfo instance.
+     * 
+     * @param id unique identifier for the given connector
+     * @param connectorId connector id
+     * @param url remote repository url
+     * @param displayName display name to be used in the UI
+     * @param tooltip tooltip to be used in the UI
+     * @since 1.85
+     */
     public RepositoryInfo(String id, String connectorId, String url, String displayName, String tooltip) {
         LOG.log(
             Level.FINER, 
@@ -90,11 +104,25 @@ public final class RepositoryInfo {
         map.put(PROPERTY_URL, url);
     }
     
+    /**
+     * Creates a new RepositoryInfo instance.
+     * 
+     * @param id unique identifier for the given connector
+     * @param connectorId connector id
+     * @param url remote repository url
+     * @param displayName display name to be used in the UI
+     * @param tooltip tooltip to be used in the UI
+     * @param user username 
+     * @param httpUser http username 
+     * @param password password
+     * @param httpPassword http password
+     * @since 1.85
+     */
     public RepositoryInfo(String id, String connectorId, String url, String displayName, String tooltip, String user, String httpUser, char[] password, char[] httpPassword) {
         LOG.log(
             Level.FINER, 
                 "create RepositoryInfo for [id={0},connectorId={1},url={2},displayName={3},tooltip={4},user={5},httpUser={6},password={7},httpPassword={8}]", 
-                new Object[]{id, connectorId, url, displayName, tooltip, user, httpUser, BugtrackingUtil.getPasswordLog(password), BugtrackingUtil.getPasswordLog(httpPassword)});
+                new Object[]{id, connectorId, url, displayName, tooltip, user, httpUser, LogUtils.getPasswordLog(password), LogUtils.getPasswordLog(httpPassword)});
         
         map.put(PROPERTY_ID, id);
         map.put(PROPERTY_CONNECTOR_ID, connectorId);
@@ -106,60 +134,128 @@ public final class RepositoryInfo {
         storePasswords(password, httpPassword);
     }
 
+    /**
+     * Returns the display name to presented in the IDE UI.
+     * 
+     * @return display name
+     * @since 1.85
+     */
     public String getDisplayName() {
         return map.get(PROPERTY_DISPLAY_NAME);
     }
 
+    /**
+     * Returns the http password.
+     * 
+     * @return http password
+     * @since 1.85
+     */
     public char[] getHttpPassword() {
         if(isNbRepository(map)) {
             return new char[0];
         } else {
             char[] httpPassword = BugtrackingUtil.readPassword(null, "http", getHttpUsername(), getUrl());
-            LOG.log(Level.FINER, "read httpPassword={0}", BugtrackingUtil.getPasswordLog(httpPassword));
+            LOG.log(Level.FINER, "read httpPassword={0}", LogUtils.getPasswordLog(httpPassword));
             return httpPassword; // NOI18N
         }
     }
 
+    /**
+     * Returns this repositories unique ID.
+     * 
+     * @return id
+     * @since 1.85
+     */
     public String getId() {
         return map.get(PROPERTY_ID);
     }
     
+    /**
+     * Returns the id for the connector this repository belongs to.
+     * 
+     * @return connector id
+     * @since 1.85
+     */
     public String getConnectorId() {
         return map.get(PROPERTY_CONNECTOR_ID);
     }
     
+    /**
+     * Returns the remote repositories url.
+     * 
+     * @return url
+     * @since 1.85
+     */
     public String getUrl() {
         return map.get(PROPERTY_URL);
     }
 
+    /**
+     * Returns the password for the repository user.
+     * 
+     * @return password
+     * @since 1.85
+     */
     public char[] getPassword() {
         if(isNbRepository(map)) {
             char[] password = NBBugzillaUtils.getNBPassword();
-            LOG.log(Level.FINER, "read netbeans password={0}", BugtrackingUtil.getPasswordLog(password));
+            LOG.log(Level.FINER, "read netbeans password={0}", LogUtils.getPasswordLog(password));
             return password;
         } else {
             char[] password = BugtrackingUtil.readPassword(null, null, getUsername(), getUrl());
-            LOG.log(Level.FINER, "read password={0}", BugtrackingUtil.getPasswordLog(password));
+            LOG.log(Level.FINER, "read password={0}", LogUtils.getPasswordLog(password));
             return password;
         }
     }
 
+    /**
+     * Returns the tooltip to be presented in the IDE UI.
+     * 
+     * @return tooltip
+     * @since 1.85
+     */
     public String getTooltip() {
         return map.get(PROPERTY_TOOLTIP);
     }
 
+    /**
+     * Returns the repositories username.
+     * 
+     * @return username
+     * @since 1.85
+     */
     public String getUsername() {
         return map.get(PROPERTY_USERNAME);
     }
 
+    /**
+     * Returns the http username.
+     * 
+     * @return the http username
+     * @since 1.85
+     */
     public String getHttpUsername() {
         return map.get(PROPERTY_HTTP_USERNAME);
     }
     
+    /**
+     * Gets a general property of a Repository. 
+     * 
+     * @param key property key
+     * @return property value
+     * @since 1.85
+     */
     public String getValue(String key) {
         return map.get(key);
     }
     
+    /**
+     * Sets a general property of a Repository. 
+     * 
+     * @param key property key
+     * @param value property value
+     * @since 1.85
+     */
     public void putValue(String key, String value) {
         map.put(key, value);
     }
@@ -220,10 +316,10 @@ public final class RepositoryInfo {
     
     private void storePasswords(char[] password, char[] httpPassword) throws MissingResourceException {
         if(isNbRepository(map)) {
-            LOG.log(Level.FINER, "storing netbeans password={0}", BugtrackingUtil.getPasswordLog(password));
+            LOG.log(Level.FINER, "storing netbeans password={0}", LogUtils.getPasswordLog(password));
             NBBugzillaUtils.saveNBPassword(password);
         } else {
-            LOG.log(Level.FINER, "storing password={0}, httpPassword={1}", new Object[] {BugtrackingUtil.getPasswordLog(password), BugtrackingUtil.getPasswordLog(httpPassword)});
+            LOG.log(Level.FINER, "storing password={0}, httpPassword={1}", new Object[] {LogUtils.getPasswordLog(password), LogUtils.getPasswordLog(httpPassword)});
             BugtrackingUtil.savePassword(password, null, getUsername(), getUrl());
             BugtrackingUtil.savePassword(httpPassword, "http", getHttpUsername(), getUrl()); // NOI18N
         }

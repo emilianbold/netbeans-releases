@@ -6,6 +6,31 @@
             <code-name-base>org.netbeans.modules.team.commons</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.openide.loaders</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.api.progress</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.13</specification-version>
+                    </run-dependency>
+                </dependency>                        
+                <dependency>
+                    <code-name-base>org.openide.nodes</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.9</specification-version>
+                    </run-dependency>
+                </dependency>                        
+                <dependency>
                     <code-name-base>org.netbeans.api.java.classpath</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -62,19 +87,80 @@
                         <specification-version>8.21</specification-version>
                     </run-dependency>
                 </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.keyring</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>                
+                <dependency>
+                    <code-name-base>org.openide.awt</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.2</specification-version>
+                    </run-dependency>
+                </dependency>     
+                <dependency>
+                    <code-name-base>org.openide.dialogs</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.9</specification-version>
+                    </run-dependency>
+                </dependency>              
+                <dependency>
+                    <code-name-base>org.openide.windows</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.24</specification-version>
+                    </run-dependency>
+                </dependency>                             
             </module-dependencies>
+            <test-dependencies>
+                <test-type>
+                    <name>unit</name>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.autoupdate.services</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.util.lookup</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                </test-type>
+            </test-dependencies>            
             <friend-packages>
                 <friend>oracle.jdevimpl.nbteam.ide</friend>
                 <friend>org.netbeans.modules.bugtracking</friend>
+                <friend>org.netbeans.modules.bugtracking.bridge</friend>
+                <friend>org.netbeans.modules.bugtracking.kenai</friend>
+                <friend>org.netbeans.modules.odcs.tasks.bridge</friend>
+                <friend>org.netbeans.modules.bugtracking.commons</friend>
                 <friend>org.netbeans.modules.bugzilla</friend>
+                <friend>org.netbeans.modules.jira</friend>
                 <friend>org.netbeans.modules.kenai.ui</friend>
                 <friend>org.netbeans.modules.localtasks</friend>
                 <friend>org.netbeans.modules.odcs.ui</friend>
                 <friend>org.netbeans.modules.odcs.versioning</friend>
+                <friend>org.netbeans.modules.odcs.tasks</friend>
                 <friend>org.netbeans.modules.team.ide</friend>
                 <friend>org.netbeans.modules.team.server</friend>
+                <friend>org.netbeans.modules.mylyn.util</friend>
                 <package>org.netbeans.modules.team.commons.treelist</package>
                 <package>org.netbeans.modules.team.ide.spi</package>
+                <package>org.netbeans.modules.team.spi</package>
+                <package>org.netbeans.modules.bugtracking.commons</package>
             </friend-packages>
         </data>
     </configuration>

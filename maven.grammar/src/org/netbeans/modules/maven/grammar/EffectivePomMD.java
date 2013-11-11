@@ -45,6 +45,8 @@ package org.netbeans.modules.maven.grammar;
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.Image;
+import java.awt.PopupMenu;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -58,6 +60,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
@@ -83,6 +86,9 @@ import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.project.ProjectBuildingResult;
+import org.netbeans.api.diff.Diff;
+import org.netbeans.api.diff.DiffView;
+import org.netbeans.api.diff.StreamSource;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -91,7 +97,6 @@ import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
@@ -109,6 +114,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
@@ -221,11 +227,15 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
                 toolbar.setFloatable(false);
                 if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
                     toolbar.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
-                }                
+                }
+                effDiffAction = new ShowEffPomDiffAction(lookup);
+                effDiffAction.setEnabled(false);
+                toolbar.add(effDiffAction);
                 //TODO
             }
             return toolbar;
         }
+        private ShowEffPomDiffAction effDiffAction;
 
         @Override public void setMultiViewCallback(MultiViewElementCallback callback) {}
 
@@ -245,12 +255,23 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
 
         @Override public void componentClosed() {}
 
+        private JEditorPane pane;
+        
+        private int caretPosition;
+        
         @Messages("LBL_loading_Eff=Loading Effective POM...")
         @Override public void componentShowing() {
             if (firstTimeShown) {
                 firstTimeShown = false;
-                panel.add(new JLabel(LBL_loading_Eff(), SwingConstants.CENTER), BorderLayout.CENTER);
+                getVisualRepresentation().add(new JLabel(LBL_loading_Eff(), SwingConstants.CENTER), BorderLayout.CENTER);
                 task.schedule(0);
+            } else if( pane != null ) {
+                EventQueue.invokeLater(new Runnable() {
+                    @Override public void run() {
+                        pane.requestFocus();
+                        pane.setCaretPosition(caretPosition);
+                    }
+                });
             }
         }
 
@@ -258,14 +279,25 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
 
         @Override public void componentActivated() {}
 
-        @Override public void componentDeactivated() {}
+        @Override public void componentDeactivated() {
+            caretPosition = pane.getCaretPosition();
+        }
 
         @Override public UndoRedo getUndoRedo() {
             return UndoRedo.NONE;
         }
 
-        @Messages("ERR_No_Project_Loaded=No project associated with the project or loading failed. See Source tab for errors")
+        @Messages({
+            "ERR_No_Project_Loaded=No project associated with the project or loading failed. See Source tab for errors", 
+            "ERR_Unloadable=POM's project currently unloadable.",
+            "ERR_In_Jar=Cannot show effective POM for jar file content."
+        })
         @Override public void run() {
+            EventQueue.invokeLater(new Runnable() {
+                @Override public void run() {
+                    effDiffAction.setEnabled(false);
+                }
+            });
             try {
                 FileObject pom = lookup.lookup(FileObject.class);
                 Model model = null;
@@ -285,7 +317,7 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
                         if (nbmp != null) {
                             model = nbmp.getMavenProject().getModel();
                             if (model == null || nbmp.isUnloadable()) {
-                                errorMessage = "POM's project currently unloadable.";
+                                errorMessage = ERR_Unloadable();
                             }
                             nbmp.addPropertyChangeListener(WeakListeners.propertyChange(this, nbmp));
                         } else {
@@ -295,10 +327,16 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
                         }
                     } else {
                         LOG.log(Level.WARNING, "not a project: {0}", p);
-                        ModelBuildingResult res = EmbedderFactory.getProjectEmbedder().executeModelBuilder(FileUtil.toFile(pom));
-                        model = res.getEffectiveModel();
+                        File fl = FileUtil.toFile(pom);
+                        if (fl != null) {
+                            ModelBuildingResult res = EmbedderFactory.getProjectEmbedder().executeModelBuilder(fl);
+                            model = res.getEffectiveModel();
+                        } else {
+                            errorMessage = ERR_In_Jar();
+                        }
                     }
                 } else {
+                    LOG.log(Level.WARNING, "no file in lookup");
                     errorMessage = "No file in editor lookup";
                 }                
                 
@@ -340,7 +378,7 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
                     @Override public void run() {
                         EditorKit kit = mime.lookup(EditorKit.class);
                         NbEditorDocument doc = (NbEditorDocument) kit.createDefaultDocument();
-                        JEditorPane pane = new JEditorPane(EFF_MIME_TYPE, null);
+                        pane = new JEditorPane(EFF_MIME_TYPE, null);
                         pane.setDocument(doc);
                         JComponent pnl = getVisualRepresentation(); 
                         pnl.removeAll();
@@ -352,6 +390,7 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
                         } catch (BadLocationException ex) {
                             Exceptions.printStackTrace(ex);
                         }
+                        pane.requestFocus();
                         pane.setCaretPosition(0);
 
                         for (final Map.Entry<ModelProblem, Location> ent : prblmMap.entrySet()) {
@@ -394,6 +433,12 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
                         firstTimeShown = true;
                     }
                 });
+            } finally {
+                EventQueue.invokeLater(new Runnable() {
+                @Override public void run() {
+                    effDiffAction.calculateEnabledState();
+                }
+            });
             }
         }
 

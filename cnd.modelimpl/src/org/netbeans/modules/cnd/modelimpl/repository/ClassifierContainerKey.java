@@ -68,12 +68,12 @@ public final class ClassifierContainerKey extends ProjectContainerKey {
     @Override
     public int getSecondaryAt(int level) {
         assert (level == 0);
-        return KeyObjectFactory.KEY_CLASSIFIER_CONTAINER_KEY;
+        return getHandler();
     }
 
     @Override
-    public int hashCode() {
-        return 37*KeyObjectFactory.KEY_CLASSIFIER_CONTAINER_KEY + super.hashCode();
+    public short getHandler() {
+        return KeyObjectFactory.KEY_CLASSIFIER_CONTAINER_KEY;
     }
 
     @Override
@@ -94,10 +94,5 @@ public final class ClassifierContainerKey extends ProjectContainerKey {
     @Override
     public String toString() {
         return "ClassifierContainerKey " + getProjectName(); // NOI18N
-    }
-
-    @Override
-    public final short getKindPresentation() {
-        return KeyObjectFactory.KEY_CLASSIFIER_CONTAINER_KEY;
     }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2009-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -51,8 +51,8 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.glassfish.common.PortCollection;
+import org.netbeans.modules.glassfish.common.parser.TreeParser;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
-import org.netbeans.modules.glassfish.spi.TreeParser;
 import org.netbeans.modules.glassfish.spi.Utils;
 import org.openide.filesystems.FileUtil;
 import org.xml.sax.Attributes;
@@ -102,7 +102,7 @@ public final class Util {
      * @param path file path in string form.
      * @return quote path if it contains any space characters, otherwise same.
      */
-    public static final String quote(String path) {
+    public static String quote(String path) {
         return path.indexOf(' ') == -1 ? path : "\"" + path + "\""; // NOI18N
     }
 
@@ -116,7 +116,7 @@ public final class Util {
      * @deprecated use spi.Utils.escapePath(String)
      */
     @Deprecated
-    public static final String escapePath(String path) {
+    public static String escapePath(String path) {
         return Utils.escapePath(path);
     }
 
@@ -128,8 +128,8 @@ public final class Util {
      * @param root root folder for expanding relative path names
      * @return list of existing jars, normalized
      */
-    public static final  List<File> classPathToFileList(String cp, File root) {
-        List<File> result = new ArrayList<File>();
+    public final List<File> classPathToFileList(String cp, File root) {
+        List<File> result = new ArrayList<>();
         if(cp != null && cp.length() > 0) {
             String [] jars = cp.split(File.pathSeparator);
             for(String jar: jars) {
@@ -148,10 +148,10 @@ public final class Util {
     public static boolean readServerConfiguration(File domainDir, PortCollection wi) {
         boolean result = false;
         File domainXml = new File(domainDir, DOMAIN_XML_PATH);
-        final Map<String, HttpData> httpMap = new LinkedHashMap<String, HttpData>();
+        final Map<String, HttpData> httpMap = new LinkedHashMap<>();
 
         if (domainXml.exists()) {
-            List<TreeParser.Path> pathList = new ArrayList<TreeParser.Path>();
+            List<TreeParser.Path> pathList = new ArrayList<>();
             pathList.add(new TreeParser.Path("/domain/configs/config/http-service/http-listener",
                     new TreeParser.NodeReader() {
                 @Override
@@ -319,4 +319,5 @@ public final class Util {
         String target = Util.computeTarget(ip);
         return null == target || "server".equals(target);
     }
+
 }

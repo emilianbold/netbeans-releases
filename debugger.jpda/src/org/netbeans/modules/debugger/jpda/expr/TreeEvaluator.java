@@ -46,6 +46,7 @@ package org.netbeans.modules.debugger.jpda.expr;
 
 import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.ClassNotPreparedException;
+import com.sun.jdi.ClassType;
 import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.InternalException;
 import com.sun.jdi.InvalidStackFrameException;
@@ -57,6 +58,7 @@ import com.sun.jdi.Mirror;
 import com.sun.jdi.NativeMethodException;
 import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.ObjectReference;
+import com.sun.jdi.ReferenceType;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
@@ -71,12 +73,14 @@ import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.JDIExceptionReporter;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.SourcePath;
+import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
@@ -257,15 +261,48 @@ public class TreeEvaluator {
         List<Value> args,
         JPDADebuggerImpl debugger
      ) throws InvalidExpressionException {
+        return invokeVirtual(objectReference, null, method, evaluationThread, args, debugger);
+    }
+
+    public static Value invokeVirtual (
+        ClassType classType,
+        Method method,
+        ThreadReference evaluationThread,
+        List<Value> args,
+        JPDADebuggerImpl debugger
+     ) throws InvalidExpressionException {
+        return invokeVirtual(null, classType, method, evaluationThread, args, debugger);
+    }
+
+    private static Value invokeVirtual (
+        ObjectReference objectReference,
+        ClassType classType,
+        Method method,
+        ThreadReference evaluationThread,
+        List<Value> args,
+        JPDADebuggerImpl debugger
+     ) throws InvalidExpressionException {
 
         try {
             if (loggerMethod.isLoggable(Level.FINE)) {
-                loggerMethod.fine("STARTED : "+objectReference+"."+method+" ("+args+") in thread "+evaluationThread);
+                if (objectReference != null) {
+                    loggerMethod.fine("STARTED : "+objectReference+"."+method+" ("+args+") in thread "+evaluationThread);
+                } else {
+                    loggerMethod.fine("STARTED : "+classType+"."+method+" ("+args+") in thread "+evaluationThread);
+                }
             }
-            Value value =
+            Value value;
+            if (objectReference != null) {
+                value =
                     ObjectReferenceWrapper.invokeMethod(objectReference, evaluationThread, method,
-                                                 args,
-                                                 ObjectReference.INVOKE_SINGLE_THREADED);
+                                                        args,
+                                                        ObjectReference.INVOKE_SINGLE_THREADED);
+            } else {
+                value =
+                    ClassTypeWrapper.invokeMethod(classType, evaluationThread, method,
+                                                  args,
+                                                  ObjectReference.INVOKE_SINGLE_THREADED);
+            }
             if (loggerMethod.isLoggable(Level.FINE)) {
                 loggerMethod.fine("   return = "+value);
             }
@@ -280,7 +317,14 @@ public class TreeEvaluator {
             throw ieex;
         } catch (InvocationException iex) {
             InvocationExceptionTranslated ex = new InvocationExceptionTranslated(iex, debugger);
-            ex.setPreferredThread(debugger.getThread(evaluationThread));
+            JPDAThreadImpl trImpl = debugger.getThread(evaluationThread);
+            { // Init exception translation:
+                ex.setPreferredThread(trImpl);
+                trImpl.notifyMethodInvokeDone();
+                ex.getMessage();
+                ex.getLocalizedMessage();
+                ex.getStackTrace();
+            }
             InvalidExpressionException ieex = new InvalidExpressionException (ex);
             ieex.initCause(ex);
             throw ieex;
@@ -298,7 +342,11 @@ public class TreeEvaluator {
                 TreeEvaluator.class, "CTL_EvalError_disconnected"));
         } finally {
             if (loggerMethod.isLoggable(Level.FINE)) {
-                loggerMethod.fine("FINISHED: "+objectReference+"."+method+" ("+args+") in thread "+evaluationThread);
+                if (objectReference != null) {
+                    loggerMethod.fine("FINISHED: "+objectReference+"."+method+" ("+args+") in thread "+evaluationThread);
+                } else {
+                    loggerMethod.fine("FINISHED: "+classType+"."+method+" ("+args+") in thread "+evaluationThread);
+                }
             }
         }
     }

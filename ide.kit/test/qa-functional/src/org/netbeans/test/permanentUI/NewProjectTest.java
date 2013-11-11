@@ -59,7 +59,7 @@ import org.netbeans.test.permanentUI.utils.Utilities;
  */
 public class NewProjectTest extends PermUITestCase {
 
-    private static NewProjectWizardOperator npwo = null;
+    private NewProjectWizardOperator npwo;
 
     /**
      * Need to be defined because of JUnit
@@ -70,7 +70,8 @@ public class NewProjectTest extends PermUITestCase {
 
     public static Test suite() {
         return NewProjectTest.emptyConfiguration().
-                addTest(NewProjectTest.class, "testNewProjectCategories").
+                addTest(NewProjectTest.class, "testNewProjectWizardLayout").
+                addTest(NewProjectTest.class, "testNewProjectCategories"). // move it here to avoid situation when 'wait' node is shown
                 addTest(NewProjectTest.class, "testNewProjectsJava").
                 addTest(NewProjectTest.class, "testNewProjectsJavaFX").
                 addTest(NewProjectTest.class, "testNewProjectsJavaWeb").
@@ -89,77 +90,90 @@ public class NewProjectTest extends PermUITestCase {
 
     @Override
     public void initialize() {
-        if(npwo == null || !npwo.isVisible()){
+        if (npwo == null || !npwo.isVisible()) {
             npwo = NewProjectWizardOperator.invoke();
         }
-        this.context = ProjectContext.NONE;
     }
 
     @Override
-    protected void tearDown() throws Exception {}
-    
-    
+    public ProjectContext getContext() {
+        return ProjectContext.NONE;
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+    }
+
+    /**
+     * Verify layout
+     */
+    public void testNewProjectWizardLayout() {
+        npwo = NewProjectWizardOperator.invoke();
+        npwo.verify();
+    }
+
     /**
      * tests the that the File > New Project categories match
      * http://wiki.netbeans.org/NewProjectWizard
      */
     public void testNewProjectCategories() {
+        npwo = NewProjectWizardOperator.invoke();
         File goldenfile = getGoldenFile("newproject", "newprojects-Categories");
         ArrayList<String> permanentCategories = Utilities.parseFileByLinesLeaveSpaces(goldenfile);
         JTreeOperator categoriesOperator = npwo.treeCategories();
         ArrayList<String> actualCategories = getChildren(categoriesOperator.getModel(), categoriesOperator.getRoot(), "");
-        
-        compareAndAssert(permanentCategories, actualCategories);        
+
+        compareAndAssert(permanentCategories, actualCategories);
     }
 
-    public void testNewProjectsJava() {
+    public void testNewProjectsJava() throws InterruptedException {
         oneCategoryTest("Java");
     }
 
-    public void testNewProjectsJavaFX() {
+    public void testNewProjectsJavaFX() throws InterruptedException {
         oneCategoryTest("JavaFX");
     }
 
-    public void testNewProjectsJavaWeb() {
+    public void testNewProjectsJavaWeb() throws InterruptedException {
         oneCategoryTest("Java Web", "Java_Web");
     }
 
-    public void testNewProjectsJavaEE() {
+    public void testNewProjectsJavaEE() throws InterruptedException {
         oneCategoryTest("Java EE", "Java_EE");
     }
 
-    public void testNewProjectsHTML5() {
+    public void testNewProjectsHTML5() throws InterruptedException {
         oneCategoryTest("HTML5", "HTML5");
     }
-            
-    public void testNewProjectsJavaCard() {
+
+    public void testNewProjectsJavaCard() throws InterruptedException {
         oneCategoryTest("Java Card", "Java_Card");
     }
-            
-    public void testNewProjectsJavaME() {
+
+    public void testNewProjectsJavaME() throws InterruptedException {
         oneCategoryTest("Java ME", "Java_ME");
     }
 
-    public void testNewProjectsCpp() {
+    public void testNewProjectsCpp() throws InterruptedException {
         oneCategoryTest("C/C++", "Cpp");
     }
 
-    public void testNewProjectsNetBeansModules() {
+    public void testNewProjectsNetBeansModules() throws InterruptedException {
         oneCategoryTest("NetBeans Modules", "NetBeans_Modules");
 
     }
 
-    public void testNewProjectsGroovy() {
+    public void testNewProjectsGroovy() throws InterruptedException {
         oneCategoryTest("Groovy");
 
     }
 
-    public void testNewProjectsPHP() {
+    public void testNewProjectsPHP() throws InterruptedException {
         oneCategoryTest("PHP");
 
     }
 
-    public void testNewProjectsMaven() {
+    public void testNewProjectsMaven() throws InterruptedException {
         oneCategoryTest("Maven");
 
     }
@@ -172,7 +186,7 @@ public class NewProjectTest extends PermUITestCase {
      * @param newProjectOperator
      * @return
      */
-    private void oneCategoryTest(String categoryName) {
+    private void oneCategoryTest(String categoryName) throws InterruptedException {
         oneCategoryTest(categoryName, categoryName);
     }
 
@@ -185,16 +199,18 @@ public class NewProjectTest extends PermUITestCase {
      * @param newProjectOperator
      * @return
      */
-    private void oneCategoryTest(String categoryName, String goldenFileName) {
+    private void oneCategoryTest(String categoryName, String goldenFileName) throws InterruptedException {
+        npwo = NewProjectWizardOperator.invoke();
         File goldenfile = getGoldenFile("newproject", goldenFileName);
         ArrayList<String> permanentProjects = Utilities.parseFileByLines(goldenfile);
+        wait(2000);
         npwo.selectCategory(categoryName);
         JListOperator jlo = npwo.lstProjects();
         ArrayList<String> actualProjects = new ArrayList<String>();
         actualProjects.add(categoryName); /// add category as the first item
         actualProjects.addAll(getProjectsList(jlo));
 
-        compareAndAssert(permanentProjects, actualProjects);        
+        compareAndAssert(permanentProjects, actualProjects);
     }
 
     private void compareAndAssert(ArrayList<String> permanent, ArrayList<String> ide) {
@@ -229,11 +245,11 @@ public class NewProjectTest extends PermUITestCase {
             goldenFileStream.close();
         }
     }
-    
+
     private ArrayList<String> getProjectsList(JListOperator projectsListOperator) {
         ArrayList<String> projectsList = new ArrayList<String>();
         int catSize = projectsListOperator.getModel().getSize();
-        for (int j = 0; j <= catSize-1; j++) { // last (null) nodes
+        for (int j = 0; j <= catSize - 1; j++) { // last (null) nodes
             projectsList.add(projectsListOperator.getModel().getElementAt(j).toString());
         }
         return projectsList;

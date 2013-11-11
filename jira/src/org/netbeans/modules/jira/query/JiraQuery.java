@@ -54,16 +54,17 @@ import javax.swing.SwingUtilities;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
-import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
-import org.netbeans.modules.bugtracking.util.LogUtils;
+import org.netbeans.modules.bugtracking.spi.IssueStatusProvider.Status;
+import org.netbeans.modules.bugtracking.commons.LogUtils;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.repository.JiraRepository;
+import org.netbeans.modules.jira.repository.JiraRepository.Cache;
 import org.netbeans.modules.jira.util.JiraUtils;
 import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.mylyn.util.NbTask;
@@ -80,7 +81,6 @@ public class JiraQuery {
     private final JiraRepository repository;
     protected QueryController controller;
     private final Set<String> issues = new HashSet<>();
-    private final Set<String> archivedIssues = new HashSet<>();
 
     protected JiraFilter jiraFilter;
     private boolean firstRun = true;
@@ -104,7 +104,7 @@ public class JiraQuery {
         this.saved = saved;
         this.name = name;
         this.jiraFilter = jiraFilter;
-        this.lastRefresh = repository.getIssueCache().getQueryTimestamp(getStoredQueryName());
+        this.lastRefresh = JiraConfig.getInstance().getLastQueryRefresh(repository, getStoredQueryName());
         this.support = new PropertyChangeSupport(this);
         
         if(initControler) {
@@ -127,17 +127,8 @@ public class JiraQuery {
         support.removePropertyChangeListener(listener);
     }
 
-    // XXX does this has to be protected
-    public void fireQuerySaved() {
-        support.firePropertyChange(QueryProvider.EVENT_QUERY_SAVED, null, null);
-    }
-
-    protected void fireQueryRemoved() {
-        support.firePropertyChange(QueryProvider.EVENT_QUERY_REMOVED, null, null);
-    }
-
     protected void fireQueryIssuesChanged() {
-        support.firePropertyChange(QueryProvider.EVENT_QUERY_ISSUES_CHANGED, null, null);
+        support.firePropertyChange(QueryProvider.EVENT_QUERY_REFRESHED, null, null);
     }  
     
     public String getDisplayName() {
@@ -145,7 +136,7 @@ public class JiraQuery {
     }
 
     public boolean canRename() {
-        return jiraFilter != null && !(jiraFilter instanceof NamedFilter);
+        return jiraFilter != null && !(isModifiable(jiraFilter));
     }
     
     public String getTooltip() {
@@ -166,10 +157,14 @@ public class JiraQuery {
     protected QueryController createControler(JiraRepository r, JiraQuery q, JiraFilter jiraFilter) {
         if(jiraFilter == null || jiraFilter instanceof FilterDefinition) {
             return new QueryController(r, q, (FilterDefinition) jiraFilter);
-        } else if(jiraFilter instanceof NamedFilter) {
+        } else if(isModifiable(jiraFilter)) {
             return new QueryController(r, q, jiraFilter, false);
         }
         throw new IllegalStateException("wrong filter type : " + jiraFilter.getClass().getName());
+    }
+
+    private static boolean isModifiable(JiraFilter jiraFilter) {
+        return jiraFilter instanceof NamedFilter;
     }
 
     public ColumnDescriptor[] getColumnDescriptors() {
@@ -198,15 +193,11 @@ public class JiraQuery {
                     // - those matching the query criteria
                     // - and the archived
                     issues.clear();
-                    archivedIssues.clear();
                     if(isSaved()) {
                         if(!wasRun() && !issues.isEmpty()) {
                                 Jira.LOG.log(Level.WARNING, "query {0} supposed to be run for the first time yet already contains issues.", getDisplayName()); // NOI18N
                                 assert false;
                         }
-                        // read the stored state ...
-                        archivedIssues.addAll(repository.getIssueCache().readQueryIssues(getStoredQueryName()));
-                        archivedIssues.addAll(repository.getIssueCache().readArchivedQueryIssues(getStoredQueryName()));
                     }
                     firstRun = false;
 
@@ -243,15 +234,7 @@ public class JiraQuery {
                             return;
                         }
 
-                        // only issues not returned by the query are obsolete
-                        archivedIssues.removeAll(issues);
-                        if(isSaved()) {
-                            // ... and store all issues you got
-                            repository.getIssueCache().storeQueryIssues(getStoredQueryName(), issues.toArray(new String[issues.size()]));
-                            repository.getIssueCache().storeArchivedQueryIssues(getStoredQueryName(), archivedIssues.toArray(new String[archivedIssues.size()]));
-                        }
                         list.notifyIssues(issues);
-                        list.notifyIssues(archivedIssues);
 
                         // but what about the archived issues?
                         // they should be refreshed as well, but do we really care about them ?
@@ -265,6 +248,7 @@ public class JiraQuery {
                         // ad-hoc queries cannot be saved in tasklist
                         MylynSupport.getInstance().deleteQuery(runningQuery);
                     }
+                    JiraConfig.getInstance().putLastQueryRefresh(repository, getStoredQueryName(), System.currentTimeMillis());
                     logQueryEvent(issues.size(), autoRefresh);
                     Jira.LOG.log(Level.FINE, "refresh finish - {0} [{1}]", new String[] {name /* XXX , filterDefinition*/}); // NOI18N
                 }
@@ -292,6 +276,10 @@ public class JiraQuery {
         refreshIntern(autoReresh);
     }
 
+    public boolean canRemove() {
+        return isModifiable(jiraFilter);
+    }
+        
     public void remove() {
         if(QueryController.isNamedFilter(jiraFilter)) {
             // Serverside filter. Can't remove.
@@ -299,15 +287,10 @@ public class JiraQuery {
             return;
         }
         repository.removeQuery(this);
-        fireQueryRemoved();
     }
 
-    public boolean contains(String key) {
-        return issues.contains(key);
-    }
-
-    public IssueCache.Status getIssueStatus(String key) {
-        return repository.getIssueCache().getStatus(key);
+    public Status getIssueStatus(String key) {
+        return repository.getIssue(key).getStatus();
     }
 
     int getSize() {
@@ -323,7 +306,6 @@ public class JiraQuery {
 
     public void setSaved(boolean saved) {
         this.saved = saved;
-        fireQuerySaved();
     }
 
     public boolean isSaved() {
@@ -335,10 +317,6 @@ public class JiraQuery {
     }
 
     public Collection<NbJiraIssue> getIssues() {
-        return getIssues(IssueCache.ISSUE_STATUS_ALL);
-    }
-    
-    public Collection<NbJiraIssue> getIssues(EnumSet<IssueCache.Status> includeStatus) {
         if (issues == null) {
             return Collections.emptyList();
         }
@@ -347,13 +325,9 @@ public class JiraQuery {
             ids.addAll(issues);
         }
         
-        IssueCache<NbJiraIssue> cache = repository.getIssueCache();
         List<NbJiraIssue> ret = new ArrayList<>();
         for (String id : ids) {
-            IssueCache.Status status = getIssueStatus(id);
-            if(includeStatus.contains(status)) {
-                ret.add(cache.getIssue(id));
-            }
+            ret.add(repository.getIssueCache().getIssue(id));
         }
         return ret;
     }

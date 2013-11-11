@@ -54,6 +54,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import org.netbeans.api.queries.VersioningQuery;
 import org.netbeans.modules.bugtracking.APIAccessor;
@@ -62,18 +63,18 @@ import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.team.ide.spi.ProjectServices;
-import org.netbeans.modules.bugtracking.team.spi.TeamAccessor;
-import org.netbeans.modules.bugtracking.team.spi.TeamBugtrackingConnector;
-import org.netbeans.modules.bugtracking.team.spi.TeamBugtrackingConnector.BugtrackingType;
-import org.netbeans.modules.bugtracking.team.spi.TeamProject;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
-import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
+import org.netbeans.modules.team.spi.TeamAccessor;
+import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
+import org.netbeans.modules.team.spi.TeamBugtrackingConnector.BugtrackingType;
+import org.netbeans.modules.team.spi.TeamProject;
+import org.netbeans.modules.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
+import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.util.NBBugzillaUtils;
+import org.netbeans.modules.bugtracking.commons.NBBugzillaUtils;
+import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -86,6 +87,7 @@ public abstract class TeamRepositories implements PropertyChangeListener {
     private static TeamRepositories instance;
 
     private final Map<String, Object> teamLocks = new HashMap<String, Object>(1);
+    private final Map<RepositoryImpl, TeamProject> repoToTeam = new WeakHashMap<RepositoryImpl, TeamProject>(5);
 
     /**
      * Holds already created team repositories
@@ -110,7 +112,7 @@ public abstract class TeamRepositories implements PropertyChangeListener {
 
     public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
         support.addPropertyChangeListener(listener);
-        TeamAccessor[] teamAccessors = TeamUtil.getTeamAccessors();
+        TeamAccessor[] teamAccessors = TeamAccessorUtils.getTeamAccessors();
         for (TeamAccessor teamAccessor : teamAccessors) {
             teamAccessor.addPropertyChangeListener(this);
         }        
@@ -118,7 +120,7 @@ public abstract class TeamRepositories implements PropertyChangeListener {
 
     public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
-        TeamAccessor[] teamAccessors = TeamUtil.getTeamAccessors();
+        TeamAccessor[] teamAccessors = TeamAccessorUtils.getTeamAccessors();
         for (TeamAccessor teamAccessor : teamAccessors) {
             teamAccessor.removePropertyChangeListener(this);
         }        
@@ -127,7 +129,15 @@ public abstract class TeamRepositories implements PropertyChangeListener {
     private void fireProjectsChanged(Collection<RepositoryImpl> removed, Collection<RepositoryImpl> added) {
         support.firePropertyChange(RepositoryManager.EVENT_REPOSITORIES_CHANGED, removed, added);
     }
-    
+
+    public RepositoryImpl getRepository(String url, String projectName) {
+        TeamProject p = TeamAccessorUtils.getTeamProject(url, projectName);
+        if(p == null) {
+            return null;
+        }
+        return getRepository(p);
+    }
+
     /**
      * Returns a {@link Repository} representing the given {@link TeamProject}
      *
@@ -171,19 +181,27 @@ public abstract class TeamRepositories implements PropertyChangeListener {
         }
     }
     
+    public TeamProject getTeamProject(RepositoryImpl repoImpl) {
+        return repoToTeam.get(repoImpl);
+    }
+    
     /**
      * Creates a {@link Repository} for the given {@link TeamProject}
      *
      * @param project
      * @return
      */
-    private static RepositoryImpl createRepository(TeamProject project) {
+    private RepositoryImpl createRepository(TeamProject project) {
         BugtrackingConnector[] connectors = BugtrackingUtil.getBugtrackingConnectors();
         for (BugtrackingConnector c : connectors) {
             if (isType(c, project.getType())) {
                 BugtrackingManager.LOG.log(Level.FINER, "found suport for {0}", project.getWebLocation().toString()); // NOI18N
-                Repository repo = ((TeamBugtrackingConnector) c).createRepository(project);
-                return APIAccessor.IMPL.getImpl(repo);
+                RepositoryInfo info = new RepositoryInfo(project.getName(), null, project.getHost(), project.getDisplayName(), project.getDisplayName());
+                info.putValue(TeamBugtrackingConnector.TEAM_PROJECT_NAME, project.getName());
+                Repository repo = (c).createRepository(info);
+                RepositoryImpl repoImpl = APIAccessor.IMPL.getImpl(repo);
+                repoToTeam.put(repoImpl, project);
+                return repoImpl;
             }
         }
         return null;
@@ -267,7 +285,7 @@ public abstract class TeamRepositories implements PropertyChangeListener {
 
             EnumSet<BugtrackingType> reluctantSupports = EnumSet.noneOf(BugtrackingType.class);
             for (TeamProject kp : teamProjects) {
-                if(onlyDashboardOpenProjects && !TeamUtil.isLoggedIn(kp.getWebLocation())) {
+                if(onlyDashboardOpenProjects && !TeamAccessorUtils.isLoggedIn(kp.getWebLocation())) {
                     continue;
                 }
                 if(kp.getType() == null) {
@@ -303,7 +321,7 @@ public abstract class TeamRepositories implements PropertyChangeListener {
         }
 
         private TeamProject[] getDashboardProjects(boolean onlyOpenProjects) {
-            return TeamUtil.getDashboardProjects(onlyOpenProjects);
+            return TeamAccessorUtils.getDashboardProjects(onlyOpenProjects);
         }
 
         private TeamProject[] getProjectsViewProjects() {
@@ -340,15 +358,15 @@ public abstract class TeamRepositories implements PropertyChangeListener {
             TeamProject teamProject = null;
             try {
                 if(NBBugzillaUtils.isNbRepository(url)) {
-                    OwnerInfo owner = TeamUtil.getOwnerInfo(FileUtil.toFile(rootDir));
+                    OwnerInfo owner = TeamAccessorUtils.getOwnerInfo(FileUtil.toFile(rootDir));
                     if(owner != null) {
-                        teamProject = TeamUtil.getTeamProject(url, owner.getOwner());
+                        teamProject = TeamAccessorUtils.getTeamProject(url, owner.getOwner());
                     } else {
                         // might be deactivated
                         BugtrackingManager.LOG.fine("team accessor not available");
                     }
                 } else {
-                    teamProject = TeamUtil.getTeamProjectForRepository(url);
+                    teamProject = TeamAccessorUtils.getTeamProjectForRepository(url);
                 }
 
             } catch (IOException ex) {

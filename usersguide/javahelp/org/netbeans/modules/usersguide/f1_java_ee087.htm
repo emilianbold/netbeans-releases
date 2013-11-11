@@ -2,16 +2,17 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>New Web Service from WSDL Wizard: Name and Location</title>
+<title>New Web Service Wizard: Name and Location</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="org.netbeans.modules.websvc.core.dev.wizard.WebServiceFromWSDLPanel" name="org.netbeans.modules.websvc.core.dev.wizard.WebServiceFromWSDLPanel"></a></p>
+<p>Beta Draft: 2013-10-28</p>
+<p><a id="org.netbeans.modules.websvc.core.dev.wizard.WebServiceTypePanel" name="org.netbeans.modules.websvc.core.dev.wizard.WebServiceTypePanel"></a></p>
 <!-- infolevel="all" infotype="General" --><a id="sthref672" name="sthref672"></a>
-<h1>New Web Service from WSDL Wizard: Name and Location</h1>
+<h1>New Web Service Wizard: Name and Location</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>The New Web Service from WSDL wizard creates a new Web Service from a WSDL file.</p>
+<p>The New Web Service wizard creates a new Web Service.</p>
 <p>In the Name and Location page, you have to set the following properties:</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
@@ -58,35 +59,26 @@
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r6c1-t84" headers="r1c1-t84">
-<p>Select Local WSDL File or Enter WSDL URL</p>
+<p>Create Web Service from Scratch</p>
 </td>
 <td align="left" headers="r6c1-t84 r1c2-t84">
-<p>Type the location or URL of the WSDL file or click Browse to locate the WSDL file on your locat system.</p>
+<p>Use this when you have no code to expose.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r7c1-t84" headers="r1c1-t84">
-<p>WSDL Service Port</p>
+<p>Create Web Service from Existing Session Bean</p>
 </td>
 <td align="left" headers="r7c1-t84 r1c2-t84">
-<p>WSDL service port specified in WSDL file. This field is populated automatically when you specify the WSDL file. You can click Browse to specify a service port if the WSDL file specifies more than one service port.</p>
+<p>Use this when you have a session bean in an EJB module or web application that you want to expose. Click Browse and then select the session bean that you want to expose as a web service.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r8c1-t84" headers="r1c1-t84">
-<p>Use Provider</p>
-</td>
-<td align="left" headers="r8c1-t84 r1c2-t84">
-<p>When selected, the service endpoint implements the Provider interface as a dynamic alternative to an SEI. Provider implementations receive requests as raw XML data, and must send responses as raw XML data. The class declaration is annotated with @WebServiceProvider. You will need to add the implementation of the invoke method to the class. The element name should be changed to:<code><br />
-Implement javax.ws.xml.Provider Interface</code></p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r9c1-t84" headers="r1c1-t84">
 <p>Implement Web Service as Stateless Session Bean</p>
 </td>
-<td align="left" headers="r9c1-t84 r1c2-t84">
-<p>When selected the class declaration is annotated with the @Stateless annotation.</p>
+<td align="left" headers="r8c1-t84 r1c2-t84">
+<p>If you are creating a web service from scratch, you can select this option to create the web service as a stateless session bean.</p>
 </td>
 </tr>
 </tbody>
@@ -96,7 +88,7 @@ Implement javax.ws.xml.Provider Interface</code></p>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1681">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1681">
 <param name="text" value="<html><u>&quot;Working with Glassfish Application Servers&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">

@@ -2,16 +2,25 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Web Service Attributes Editor</title>
+<title>Web Service Attributes Editor: Quality of Service: Port Binding</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="org.netbeans.modules.websvc.core.wseditor.support.EditWSAttributesCookieImpl" name="org.netbeans.modules.websvc.core.wseditor.support.EditWSAttributesCookieImpl"></a></p>
+<p>Beta Draft: 2013-10-28</p>
+<p><a id="org.netbeans.modules.websvc.wsitconf.ui.nodes.ServiceNode" name="org.netbeans.modules.websvc.wsitconf.ui.nodes.ServiceNode"></a></p>
 <!-- infolevel="all" infotype="General" --><a id="sthref677" name="sthref677"></a>
-<h1>Web Service Attributes Editor</h1>
+<h1>Web Service Attributes Editor: Quality of Service: Port Binding</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>For JAX-WS web services, the Web Service Attributes Editor helps you to customize various aspects of your application, in relation to its web services and clients. Depending on the context, the editor consists of one or more of the following panels:</p>
+<p>In the Quality of Service tab's Port Binding section, on the service side, you can configure MTMOM, reliable messaging, and interoperable security policy. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2872">
+<param name="text" value="<html><u>More</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p>You can set the following options:</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
@@ -25,34 +34,107 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t89" headers="r1c1-t89">
-<p>Quality of Service</p>
+<p>Version Compatibility</p>
 </td>
 <td align="left" headers="r2c1-t89 r1c2-t89">
-<p>The Quality of Service tab is for configuring components that enable interoperability between Java web services and .Net web services. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1937">
-<param name="text" value="<html><u>How?</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
+<p>A drop-down list of .NET/METRO version compatibility. By default, this list is disabled and the user must use .NET 3.0/METRO 1.0. To enable more recent versions of .NET, you must add the latest METRO library to your project classpath.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t89" headers="r1c1-t89">
-<p>WSDL Customization</p>
+<p>Optimize Transport of Binary Data (MTOM)</p>
 </td>
 <td align="left" headers="r3c1-t89 r1c2-t89">
-<p>For web services and clients created from WSDL files, the editor provides the WSDL Customization panel. You can use the WSDL Customization panel to modify the artifacts generated from a WSDL file.</p>
+<p>The MTOM feature is disabled in JAX-WS by default. It can be enabled on the client and server. Once enabled, all the XML binary data, XML elements of type xs:base64Binary and xs:hexBinary is optimally transmitted.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t89" headers="r1c1-t89">
-<p>Wsimport Options</p>
+<p>Reliable Message Delivery</p>
 </td>
 <td align="left" headers="r4c1-t89 r1c2-t89">
-<p>For JAX-WS client Web Service References, the Web Service Attributes Editor provides a tab for viewing and modifying the options for the wsimport and JAXB XML binding compiler (xjc) Ant tasks.</p>
-<p>The table displays a list of the current import options. Click Add to add a new import option to the list.</p>
+<p>Specifies whether reliable messaging is enabled.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t89" headers="r1c1-t89">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Deliver Messages In Exact Order</p>
+</td>
+<td align="left" headers="r5c1-t89 r1c2-t89">
+<p>Specifies whether the Reliable Messaging protocol ensures that the application messages for a given message sequence are delivered to the endpoint application in the order indicated by the message numbers. This option increases the time to process application message sequences and may result in the degradation of Web service performance.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t89" headers="r1c1-t89">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Advanced</p>
+</td>
+<td align="left" headers="r6c1-t89 r1c2-t89">
+<p>Click the Advanced button to set the following options:</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t89" headers="r1c1-t89">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Flow Control</p>
+</td>
+<td align="left" headers="r7c1-t89 r1c2-t89">
+<p>Specifies whether the Flow Control feature is enabled.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t89" headers="r1c1-t89">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Maximum Flow Control Buffer Size</p>
+</td>
+<td align="left" headers="r8c1-t89 r1c2-t89">
+<p>If Flow control is enabled, specifies the number of messages for a sequence that will be buffered. The default setting is 32.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r9c1-t89" headers="r1c1-t89">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Inactivity Timeout (ms)</p>
+</td>
+<td align="left" headers="r9c1-t89 r1c2-t89">
+<p>Specifies the time interval beyond which either source or destination may terminate any message sequence due to inactivity. The default setting is 600,000 milliseconds (10 minutes). A Web service endpoint will always terminate a sequence whose inactivity timeout has expired. To keep the sequence active, an inactive client will always send a stand- alone message with an AckRequested header to act as a heartbeat as the end Inactivity timeout interval approaches.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r10c1-t89" headers="r1c1-t89">
+<p>Secure Service</p>
+</td>
+<td align="left" headers="r10c1-t89 r1c2-t89">
+<p>Specifies security for all of the operations of a web service.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r11c1-t89" headers="r1c1-t89">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Security Mechanism</p>
+</td>
+<td align="left" headers="r11c1-t89 r1c2-t89">
+<p>Select one of the options from the list. Most of the mechanisms are fully functional without further configuration, however, if you'd like to customize the mechanism, click Configure to specify the configuration for that mechanism.</p>
+<p>The mechanisms that use STS require that an STS be specified in the Configuration dialog. If a security mechanism is selected that requires this, select the buttons to configure keystore, truststore, and validator options.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r12c1-t89" headers="r1c1-t89">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Use Development Defaults</p>
+</td>
+<td align="left" headers="r12c1-t89 r1c2-t89">
+<p>Select this option to import certificates into the GlassFish keystore and truststore, so that they can be used immediately for development. Because the default certificates are not in an appropriate format to be used in this context, this import is done for you, so that you do not need to do this manually yourself. In addition to importing certificates, a default user is created in the "file" realm, with username "wsitUser". In a production environment, you will probably want to provide your own certificates and user settings, however, in a development environment you may find these defaults useful.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r13c1-t89" headers="r1c1-t89">
+<p>Allow TCP Transport</p>
+</td>
+<td align="left" headers="r13c1-t89 r1c2-t89">
+<p>Specifies that the service supports TCP and works with both TCP and HTTP transport. TCP provides better performance when sending smaller messages. The performance enhancement is visible mostly in smaller messages because the overhead of sending messages over the HTTP protocol is eliminated.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r14c1-t89" headers="r1c1-t89">
+<p>Disable Fast Infoset</p>
+</td>
+<td align="left" headers="r14c1-t89 r1c2-t89">
+<p>Specifies that Fast Infoset is not used. Fast Infoset is useful for faster parsing, faster serializing, and smaller document sizes when compared with equivalent XML documents.</p>
 </td>
 </tr>
 </tbody>
@@ -62,7 +144,7 @@
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1842">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1842">
 <param name="text" value="<html><u>&quot;Developing and Securing Web Services&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">

@@ -43,83 +43,198 @@
 
 package org.netbeans.modules.maven.repository.ui;
 
-import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Stack;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JList;
+import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
+import javax.swing.tree.TreeSelectionModel;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.apache.maven.shared.dependency.tree.traversal.DependencyNodeVisitor;
-import org.netbeans.api.annotations.common.StaticResource;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
+import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerFactory;
 import org.netbeans.modules.maven.spi.IconResources;
 import org.openide.awt.Actions;
-import org.openide.util.ImageUtilities;
+import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.view.BeanTreeView;
+import org.openide.filesystems.FileObject;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.ChildFactory;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
 
 /**
  *
  * @author mkleint
  */
-public class DependencyPanel extends TopComponent implements MultiViewElement, LookupListener {
+public class DependencyPanel extends TopComponent implements MultiViewElement, LookupListener{
+    private static final Logger LOG = Logger.getLogger(DependencyPanel.class.getName());
 
     private Lookup.Result<DependencyNode> result;
     private JToolBar toolbar;
+    private final ExplorerManager explorerManager;
+    private final ExplorerManager treeExplorerManager;
+    private final boolean includeToolbar;
 
-    DependencyPanel(Lookup lookup) {
+    DependencyPanel(Lookup lookup, boolean includeToolbar) {
         super(lookup);
+        this.includeToolbar = includeToolbar;
+        explorerManager = new ExplorerManager();
+        treeExplorerManager = new ExplorerManager();
+        
         initComponents();
-        Rend r = new Rend();
-        lstTest.setCellRenderer(r);
-        lstRuntime.setCellRenderer(r);
-        lstCompile.setCellRenderer(r);
-        MouseListener ml = new MouseAdapter() {
-            @Override
-            @SuppressWarnings("unchecked")
-            public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() > 1) {
-                    DependencyNode nd = (DependencyNode)((JList)e.getComponent()).getSelectedValue();
-                    if (nd != null) {
-                        MavenProject prj = getLookup().lookup(MavenProject.class);
-                        if (prj != null) {
-                            ArtifactViewer.showArtifactViewer(nd.getArtifact(), prj.getRemoteArtifactRepositories(), ArtifactViewer.HINT_DEPENDENCIES);
-                        }
-                    }
-                }
-            }
-        };
-        lstTest.addMouseListener(ml);
-        lstRuntime.addMouseListener(ml);
-        lstCompile.addMouseListener(ml);
+
+        ((BeanTreeView)tvTree).setBorder((Border)UIManager.get("ScrollPane.border"));
+        ((BeanTreeView)tvDependencyList).setBorder((Border)UIManager.get("ScrollPane.border"));
+        
         if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
             setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
             jPanel1.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+            jPanel2.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+            jPanel3.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
         }
+        ((BeanTreeView)tvTree).setRootVisible(false);
+        ((BeanTreeView)tvDependencyList).setRootVisible(false);
+        ((BeanTreeView)tvTree).setDefaultActionAllowed(true);
+        ((BeanTreeView)tvDependencyList).setDefaultActionAllowed(true);
+        ((BeanTreeView)tvDependencyList).setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        explorerManager.addPropertyChangeListener(new PropertyChangeListener() {
+
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
+                    for (Node nd : explorerManager.getSelectedNodes()) {
+                        DependencyNode n = nd.getLookup().lookup(DependencyNode.class);
+                        if (n != null) {
+                            Artifact a = n.getArtifact();
+                            recursCollapse(treeExplorerManager.getRootContext().getChildren().getNodes(), (BeanTreeView)tvTree);
+                            Set<Node> selectedNodes = recurse(a, treeExplorerManager.getRootContext(), (BeanTreeView)tvTree);
+                            try {
+                                treeExplorerManager.setSelectedNodes(selectedNodes.toArray(new Node[0]));
+                            } catch (PropertyVetoException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                        
+                    }
+                }
+            }
+
+            private Set<Node> recurse(Artifact a, Node rootContext, BeanTreeView btv) {
+                Set<Node> toRet = new HashSet<Node>();
+                for (Node nd : rootContext.getChildren().getNodes(true)) {
+                    DependencyNode n = nd.getLookup().lookup(DependencyNode.class);
+                    if (n != null) {
+                        if (n.getArtifact().equals(a) || (n.getRelatedArtifact() != null && n.getRelatedArtifact().equals(a))) {
+                            btv.expandNode(rootContext);
+                            toRet.add(nd);
+                        }
+                    }
+                    toRet.addAll(recurse(a, nd, btv));
+                }
+                return toRet;
+            }
+            
+            private void recursCollapse(Node[] nodes, BeanTreeView btv) {
+                for (Node nn : nodes) {
+                    recursCollapse(nn.getChildren().getNodes(true), btv);
+                    ((BeanTreeView)tvTree).collapseNode(nn);
+                }
+            }
+        });
     }
+    
+//    @MultiViewElement.Registration(
+//        displayName="#TAB_Tree",
+//        iconBase=IconResources.ICON_DEPENDENCY_JAR,
+//        persistenceType=TopComponent.PERSISTENCE_NEVER,
+//        preferredID=ArtifactViewer.HINT_DEPENDENCIES,
+//        mimeType=Constants.POM_MIME_TYPE,
+//        position=101
+//    )
+    //we want to include in editable editors once we have modification actions included.
+    @NbBundle.Messages("TAB_Tree=Tree")
+    public static MultiViewElement forPOM(final Lookup editor) {
+        class L extends ProxyLookup implements PropertyChangeListener {
+            Project p;
+            L() {
+                FileObject pom = editor.lookup(FileObject.class);
+                if (pom != null) {
+                    p = FileOwnerQuery.getOwner(pom);
+                    if (p != null) {
+                        NbMavenProject nbmp = p.getLookup().lookup(NbMavenProject.class);
+                        if (nbmp != null) {
+                            nbmp.addPropertyChangeListener(WeakListeners.propertyChange(this, nbmp));
+                            reset();
+                        } else {
+                            LOG.log(Level.WARNING, "not a Maven project: {0}", p);
+                        }
+                    } else {
+                        LOG.log(Level.WARNING, "no owner of {0}", pom);
+                    }
+                } else {
+                    LOG.log(Level.WARNING, "no FileObject in {0}", editor);
+                }
+            }
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
+                    reset();
+                }
+            }
+            private void reset() {
+                ArtifactViewerFactory avf = Lookup.getDefault().lookup(ArtifactViewerFactory.class);
+                if (avf != null) {
+                    Lookup l = avf.createLookup(p);
+                    if (l != null) {
+                        setLookups(l);
+                    } else {
+                        LOG.log(Level.WARNING, "no artifact lookup for {0}", p);
+                    }
+                } else {
+                    LOG.warning("no ArtifactViewerFactory found");
+                }
+            }
+        }
+        return new DependencyPanel(new L(), false);
+    }    
+    
 
     public @Override int getPersistenceType() {
         return PERSISTENCE_NEVER;
@@ -135,80 +250,98 @@ public class DependencyPanel extends TopComponent implements MultiViewElement, L
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
-        lblCompile = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        lstCompile = new javax.swing.JList();
-        lblRuntime = new javax.swing.JLabel();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        lstRuntime = new javax.swing.JList();
-        lblTest = new javax.swing.JLabel();
-        jScrollPane3 = new javax.swing.JScrollPane();
-        lstTest = new javax.swing.JList();
+        lblList = new javax.swing.JLabel();
+        lblTree = new javax.swing.JLabel();
         lblHint = new javax.swing.JLabel();
+        jPanel2 = new ExplorerPanel(treeExplorerManager)
+        ;
+        tvTree = new BeanTreeView();
+        ;
+        jPanel3 = new ExplorerPanel(explorerManager);
+        tvDependencyList = new BeanTreeView();
 
         setFocusable(true);
         setLayout(new java.awt.BorderLayout());
 
-        lblCompile.setLabelFor(lstCompile);
-        org.openide.awt.Mnemonics.setLocalizedText(lblCompile, org.openide.util.NbBundle.getMessage(DependencyPanel.class, "DependencyPanel.lblCompile.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lblList, org.openide.util.NbBundle.getMessage(DependencyPanel.class, "DependencyPanel.lblList.text")); // NOI18N
 
-        jScrollPane1.setViewportView(lstCompile);
-        lstCompile.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DependencyPanel.class, "DependencyPanel.lstCompile.AccessibleContext.accessibleDescription")); // NOI18N
-
-        lblRuntime.setLabelFor(lstRuntime);
-        org.openide.awt.Mnemonics.setLocalizedText(lblRuntime, org.openide.util.NbBundle.getMessage(DependencyPanel.class, "DependencyPanel.lblRuntime.text")); // NOI18N
-
-        jScrollPane2.setViewportView(lstRuntime);
-        lstRuntime.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DependencyPanel.class, "DependencyPanel.lstRuntime.AccessibleContext.accessibleDescription")); // NOI18N
-
-        lblTest.setLabelFor(lstTest);
-        org.openide.awt.Mnemonics.setLocalizedText(lblTest, org.openide.util.NbBundle.getMessage(DependencyPanel.class, "DependencyPanel.lblTest.text")); // NOI18N
-
-        jScrollPane3.setViewportView(lstTest);
-        lstTest.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DependencyPanel.class, "DependencyPanel.lstTest.AccessibleContext.accessibleDescription")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lblTree, org.openide.util.NbBundle.getMessage(DependencyPanel.class, "DependencyPanel.lblTree.text")); // NOI18N
 
         lblHint.setText(org.openide.util.NbBundle.getMessage(DependencyPanel.class, "DependencyPanel.lblHint.text")); // NOI18N
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(tvTree)
+                .addContainerGap())
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(tvTree, javax.swing.GroupLayout.DEFAULT_SIZE, 226, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(tvDependencyList)
+                .addContainerGap())
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(tvDependencyList)
+                .addContainerGap())
+        );
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(lblList)
+                        .addGap(0, 43, Short.MAX_VALUE))
+                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(lblTree)
+                        .addGap(0, 134, Short.MAX_VALUE))
+                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
             .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel1Layout.createSequentialGroup()
                     .addContainerGap()
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addComponent(lblHint, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 511, Short.MAX_VALUE)
-                        .addGroup(jPanel1Layout.createSequentialGroup()
-                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(lblCompile)
-                                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE))
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(lblRuntime)
-                                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 172, Short.MAX_VALUE))
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(lblTest)
-                                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 145, Short.MAX_VALUE))))
+                    .addComponent(lblHint, javax.swing.GroupLayout.DEFAULT_SIZE, 455, Short.MAX_VALUE)
                     .addContainerGap()))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblTree)
+                    .addComponent(lblList))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(34, 34, 34))
             .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel1Layout.createSequentialGroup()
-                    .addContainerGap()
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(lblCompile)
-                        .addComponent(lblRuntime)
-                        .addComponent(lblTest))
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 234, Short.MAX_VALUE)
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 234, Short.MAX_VALUE)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 234, Short.MAX_VALUE))
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addContainerGap(278, Short.MAX_VALUE)
                     .addComponent(lblHint)
                     .addContainerGap()))
         );
@@ -222,16 +355,13 @@ public class DependencyPanel extends TopComponent implements MultiViewElement, L
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JScrollPane jScrollPane3;
-    private javax.swing.JLabel lblCompile;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JLabel lblHint;
-    private javax.swing.JLabel lblRuntime;
-    private javax.swing.JLabel lblTest;
-    private javax.swing.JList lstCompile;
-    private javax.swing.JList lstRuntime;
-    private javax.swing.JList lstTest;
+    private javax.swing.JLabel lblList;
+    private javax.swing.JLabel lblTree;
+    private javax.swing.JScrollPane tvDependencyList;
+    private javax.swing.JScrollPane tvTree;
     // End of variables declaration//GEN-END:variables
 
     @Override
@@ -243,16 +373,22 @@ public class DependencyPanel extends TopComponent implements MultiViewElement, L
     public JComponent getToolbarRepresentation() {
         if (toolbar == null) {
             toolbar = new JToolBar();
+            if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+                toolbar.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+            }
+            
             toolbar.setFloatable(false);
-            Action[] a = new Action[1];
-            Action[] actions = getLookup().lookup(a.getClass());
-            Dimension space = new Dimension(3, 0);
-            toolbar.addSeparator(space);
-            for (Action act : actions) {
-                JButton btn = new JButton();
-                Actions.connect(btn, act);
-                toolbar.add(btn);
+            if (includeToolbar) {
+                Action[] a = new Action[1];
+                Action[] actions = getLookup().lookup(a.getClass());
+                Dimension space = new Dimension(3, 0);
                 toolbar.addSeparator(space);
+                for (Action act : actions) {
+                    JButton btn = new JButton();
+                    Actions.connect(btn, act);
+                    toolbar.add(btn);
+                    toolbar.addSeparator(space);
+                }
             }
         }
         return toolbar;
@@ -262,7 +398,7 @@ public class DependencyPanel extends TopComponent implements MultiViewElement, L
     @Override
     public void componentOpened() {
         super.componentOpened();
-        result = getLookup().lookup(new Lookup.Template<DependencyNode>(DependencyNode.class));
+        result = getLookup().lookupResult(DependencyNode.class);
         RequestProcessor.getDefault().post(new Runnable() {
             @Override
             public void run() {
@@ -312,9 +448,13 @@ public class DependencyPanel extends TopComponent implements MultiViewElement, L
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    setDepModel(lstCompile, root, Arrays.asList(new String[]{ Artifact.SCOPE_COMPILE, Artifact.SCOPE_PROVIDED}));
-                    setDepModel(lstRuntime, root, Arrays.asList(new String[]{ Artifact.SCOPE_RUNTIME}));
-                    setDepModel(lstTest, root, Arrays.asList(new String[]{ Artifact.SCOPE_TEST}));
+                    NodeVisitor vis = new NodeVisitor(Arrays.asList(new String[]{ Artifact.SCOPE_COMPILE, Artifact.SCOPE_PROVIDED, Artifact.SCOPE_RUNTIME, Artifact.SCOPE_TEST}));
+                    root.accept(vis);
+                    vis.getListOfDependencies();
+                    explorerManager.setRootContext(new AbstractNode(createListChildren(vis.getListOfDependencies(), getLookup())));
+                    treeExplorerManager.setRootContext(new AbstractNode(createTreeChildren(root, getLookup())));
+                    ((BeanTreeView)tvTree).expandAll();
+
                 }
             });
         } else {
@@ -326,50 +466,30 @@ public class DependencyPanel extends TopComponent implements MultiViewElement, L
     public void resultChanged(LookupEvent ev) {
         populateFields();
     }
-
-    private void setDepModel(JList lst, DependencyNode root, List<String> scopes) {
-        DefaultListModel dlm = new DefaultListModel();
-        NodeVisitor vis = new NodeVisitor(scopes);
-        root.accept(vis);
-        for (DependencyNode d : vis.getDirects()) {
-            dlm.addElement(d);
-        }
-        for (DependencyNode d : vis.getTransitives()) {
-            dlm.addElement(d);
-        }
-        lst.setModel(dlm);
-        lst.putClientProperty("directs", vis.getDirects());
-        lst.putClientProperty("trans", vis.getTransitives());
-    }
-
-    private static class Rend extends DefaultListCellRenderer {
-
-        @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            Component cmp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-            if (value instanceof DependencyNode) {
-                DependencyNode d = (DependencyNode)value;
-                JLabel lbl = (JLabel)cmp;
-                lbl.setText(d.getArtifact().getArtifactId() + ":" + d.getArtifact().getVersion());
-                @SuppressWarnings("unchecked")
-                List<DependencyNode> dirs = (List<DependencyNode>)list.getClientProperty("directs");
-                if (dirs.contains(d)) {
-                    lbl.setIcon(ImageUtilities.image2Icon(ImageUtilities.loadImage(IconResources.DEPENDENCY_ICON, true)));
-                } else {
-                    lbl.setIcon(ImageUtilities.image2Icon(ImageUtilities.loadImage(IconResources.TRANSITIVE_DEPENDENCY_ICON, true)));
-                }
+    @NbBundle.Messages({
+        "TIP_Included=Is included",
+        "TIP_Conflict=Is omitted for conflict, version used is {0}",
+        "TIP_Duplicate=Is omitted for duplicate with the same version",
+        "TIP_Cycle=Is omitted for cycle"
+    })
+    private static String calculateStateTipPart(DependencyNode node) {
+            int s = node.getState();
+            if (s == DependencyNode.INCLUDED) {
+                return Bundle.TIP_Included();
+            } else if (s == DependencyNode.OMITTED_FOR_CONFLICT) {
+                return Bundle.TIP_Conflict(node.getRelatedArtifact().getVersion());
+            } else if (s == DependencyNode.OMITTED_FOR_DUPLICATE) {
+                return Bundle.TIP_Duplicate();
+            } else if (s == DependencyNode.OMITTED_FOR_CYCLE) {
+                return Bundle.TIP_Cycle();
             }
-            return cmp;
-        }
-
-    }
+            throw new IllegalStateException("illegal state:" + s);
+        }    
 
     private static class NodeVisitor implements DependencyNodeVisitor {
-        private List<DependencyNode> directs;
-        private List<DependencyNode> trans;
-        private List<String> scopes;
+        private List<DependencyNode> lst;
+        private final List<String> scopes;
         private DependencyNode root;
-        private Stack<DependencyNode> path;
 
         private NodeVisitor(List<String> scopes) {
             this.scopes = scopes;
@@ -379,20 +499,14 @@ public class DependencyPanel extends TopComponent implements MultiViewElement, L
     public boolean visit(DependencyNode node) {
         if (root == null) {
             root = node;
-            directs = new ArrayList<DependencyNode>();
-            trans = new ArrayList<DependencyNode>();
-            path = new Stack<DependencyNode>();
-            return true;
+            lst = new ArrayList<DependencyNode>();
         }
-        if (node.getState() == DependencyNode.INCLUDED &&
-                scopes.contains(node.getArtifact().getScope())) {
-            if (path.empty()) {
-                directs.add(node);
-            } else {
-                trans.add(node);
+        for (DependencyNode ch : node.getChildren()) {
+            if (ch.getState() == DependencyNode.INCLUDED &&
+                    scopes.contains(ch.getArtifact().getScope())) {
+                lst.add(ch);
             }
         }
-        path.push(node);
         return true;
     }
 
@@ -400,22 +514,162 @@ public class DependencyPanel extends TopComponent implements MultiViewElement, L
     public boolean endVisit(DependencyNode node) {
         if (root == node) {
             root = null;
-            path = null;
             return true;
         }
-        path.pop();
         return true;
     }
 
-        private Iterable<DependencyNode> getDirects() {
-            return directs;
+        private Collection<DependencyNode> getListOfDependencies() {
+            return lst;
+        }
+    }
+    
+    private static class TreeNode extends AbstractNode {
+        private final DependencyNode node;
+        private final Lookup tcLookup;
+
+        public TreeNode(DependencyNode node, final Lookup tcLookup) {
+            super(createTreeChildren(node, tcLookup), Lookups.fixed(node));
+            this.tcLookup = tcLookup;
+            final Artifact artifact = node.getArtifact();
+            setName(artifact.getId());
+            this.node = node;
+            setDisplayName(artifact.getArtifactId() + "-" + artifact.getVersion() + "." + artifact.getArtifactHandler().getExtension());
+            if (node.getDepth() > 1) {
+                setIconBaseWithExtension(IconResources.TRANSITIVE_DEPENDENCY_ICON);
+            } else {
+                setIconBaseWithExtension(IconResources.ICON_DEPENDENCY_JAR);
+            }
+            setShortDescription(Bundle.TIP_listNode(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), calculateStateTipPart(node)));
         }
 
-        private Iterable<DependencyNode> getTransitives() {
-            return trans;
+        @Override
+        public String getHtmlDisplayName() {
+            if (node.getState() == DependencyNode.OMITTED_FOR_DUPLICATE) {
+                return "<html><s>" + getDisplayName() + "</s></html>";
+            }
+            if (node.getState() == DependencyNode.OMITTED_FOR_CONFLICT) {
+                return "<html><font color=\"!nb.errorForeground\"><s>" + getDisplayName() + "</s></font></html>";
+            }
+            return super.getHtmlDisplayName(); //To change body of generated methods, choose Tools | Templates.
         }
 
+        @Override
+        public Action getPreferredAction() {
+            return new OpenAction(node, tcLookup);
+        }
+        
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[] {new OpenAction(node, tcLookup)};
+        }
+    }
+    
+    private static class ListNode extends AbstractNode {
+        private final DependencyNode node;
+        private final Lookup tcLookup;
+
+        @NbBundle.Messages({"TIP_listNode=<html><i>GroupId:</i> <b>{0}</b><br/><i>ArtifactId:</i> <b>{1}</b><br/><i>Version:</i> <b>{2}</b><br/><i>State:</i> <b>{3}</b><br/></html>"})
+        public ListNode(DependencyNode node, final Lookup tcLookup) {
+            super(Children.LEAF, Lookups.fixed(node));
+            this.tcLookup = tcLookup;
+            this.node = node;
+            final Artifact artifact = node.getArtifact();
+            setName(artifact.getId());
+            setDisplayName(artifact.getArtifactId() + "-" + artifact.getVersion() + "." + artifact.getArtifactHandler().getExtension());
+            if (node.getDepth() > 1) {
+                setIconBaseWithExtension(IconResources.TRANSITIVE_DEPENDENCY_ICON);
+            } else {
+                setIconBaseWithExtension(IconResources.ICON_DEPENDENCY_JAR);
+            }
+            setShortDescription(Bundle.TIP_listNode(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), calculateStateTipPart(node)));
+        }
+        
+        @Override
+        public Action getPreferredAction() {
+            return new OpenAction(node, tcLookup);
+        }
+
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[] {new OpenAction(node, tcLookup)};
+        }
+    }
+    
+    
+    
+    private static Children createTreeChildren(final DependencyNode dn, final Lookup tcLookup) {
+        if (!dn.hasChildren()) {
+            return Children.LEAF;
+        }
+        return Children.create(new ChildFactory<DependencyNode>() {
+
+            @Override
+            protected Node createNodeForKey(DependencyNode key) {
+                return new TreeNode(key, tcLookup);
+            }
+
+            @Override
+            protected boolean createKeys(List<DependencyNode> toPopulate) {
+                toPopulate.addAll(dn.getChildren());
+                return true;
+            }
+        }, false);
+    }
+    
+    private static Children createListChildren(final Collection<DependencyNode> dns, final Lookup tcLookup) {
+        return Children.create(new ChildFactory<DependencyNode>() {
+
+            @Override
+            protected Node createNodeForKey(DependencyNode key) {
+                return new ListNode(key, tcLookup);
+            }
+
+            @Override
+            protected boolean createKeys(List<DependencyNode> toPopulate) {
+                toPopulate.addAll(dns);
+                return true;
+            }
+        }, false);
     }
 
+    
+    private class ExplorerPanel extends JPanel implements ExplorerManager.Provider {
+        private final ExplorerManager manager;
 
+        public ExplorerPanel(ExplorerManager manager) {
+            this.manager = manager;
+        }
+
+        @Override
+        public ExplorerManager getExplorerManager() {
+            return manager;
+        }
+        
+    }
+    
+    private static class OpenAction extends AbstractAction {
+        private final DependencyNode dependencyNode;
+        private final Lookup lkp;
+
+        @NbBundle.Messages({"ACT_Open=View Artifact Details"})
+        public OpenAction(DependencyNode dn, Lookup lkp) {
+            this.dependencyNode = dn;
+            this.lkp = lkp;
+            putValue(NAME, Bundle.ACT_Open());
+        }
+        
+        
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (dependencyNode != null) {
+                MavenProject prj = lkp.lookup(MavenProject.class);
+                if (prj != null) {
+                    ArtifactViewer.showArtifactViewer(dependencyNode.getArtifact(), prj.getRemoteArtifactRepositories(), ArtifactViewer.HINT_DEPENDENCIES);
+                }
+            }
+        }
+        
+    }
 }

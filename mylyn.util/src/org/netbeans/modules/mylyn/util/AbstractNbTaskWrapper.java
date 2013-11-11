@@ -45,7 +45,9 @@ import java.awt.EventQueue;
 import java.io.File;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -53,10 +55,12 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.mylyn.internal.tasks.core.AbstractTask;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
+import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
-import org.netbeans.modules.bugtracking.util.AttachmentsPanel;
+import org.netbeans.modules.bugtracking.commons.AttachmentsPanel;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
@@ -240,6 +244,9 @@ public abstract class AbstractNbTaskWrapper {
                 if (readPending) {
                     // make sure remote changes are not lost and still highlighted in the editor
                     setUpToDate(false, false);
+                    if (task.getDelegate() instanceof AbstractTask) {
+                        ((AbstractTask) task.getDelegate()).setMarkReadPending(false);
+                    }
                 }
                 model = task.getTaskDataModel();
                 if (model == null) {
@@ -479,12 +486,15 @@ public abstract class AbstractNbTaskWrapper {
     public final IssueStatusProvider.Status getStatus () {
         switch (getSynchronizationState()) {
             case CONFLICT:
+                return IssueStatusProvider.Status.CONFLICT;
             case INCOMING:
                 return IssueStatusProvider.Status.INCOMING_MODIFIED;
             case INCOMING_NEW:
                 return IssueStatusProvider.Status.INCOMING_NEW;
             case OUTGOING:
+                return IssueStatusProvider.Status.OUTGOING_MODIFIED;
             case OUTGOING_NEW:
+                return IssueStatusProvider.Status.OUTGOING_NEW;
             case SYNCHRONIZED:
                 return IssueStatusProvider.Status.SEEN;
         }
@@ -594,30 +604,64 @@ public abstract class AbstractNbTaskWrapper {
         return dueDateModified ? dueDate : getNbTask().getDueDate();
     }
 
-    protected final void setDueDate (Date date) {
+    protected final void setDueDate (Date date, boolean persistentChange) {
         dueDate = date;
         dueDateModified = true;
+        if (persistentChange) {
+            persistDueDate();
+        }
     }
 
     public final NbDateRange getScheduleDate () {
         return scheduleDateModified ? scheduleDate : getNbTask().getScheduleDate();
     }
 
-    protected final void setScheduleDate (NbDateRange date) {
-        scheduleDate = date;
+    protected final void setScheduleDate (IssueScheduleInfo info, boolean persistentChange) {
+        scheduleDate = info == null ? null : new NbDateRange(info);
         scheduleDateModified = true;
+        if (persistentChange) {
+            persistScheduleDate();
+        }
     }
 
     public final int getEstimate () {
         return estimate == null ? getNbTask().getEstimate() : estimate;
     }
 
-    protected final void setEstimate (int estimate) {
+    protected final void setEstimate (int estimate, boolean persistentChange) {
         this.estimate = estimate;
+        if (persistentChange) {
+            persistEstimate();
+        }
+    }
+
+    /**
+     * Returns only persistent value of due date, never the unsaved modification from the task editor
+     * @return current task's persistent due date value
+     */
+    public final Date getPersistentDueDate () {
+        return getNbTask().getDueDate();
+    }
+
+    /**
+     * Returns only persistent value of estimate, never the unsaved modification from the task editor
+     * @return current task's persistent estimate value
+     */
+    public final int getPersistentEstimate () {
+        return getNbTask().getEstimate();
+    }
+
+    /**
+     * Returns only persistent value of schedule date, never the unsaved modification from the task editor
+     * @return current task's persistent scheduled date value
+     */
+    public final IssueScheduleInfo getPersistentScheduleInfo () {
+        NbDateRange scheduled = getNbTask().getScheduleDate();
+        return scheduled == null ? null : scheduled.toSchedulingInfo();
     }
 
     protected final boolean hasUnsavedPrivateTaskAttributes () {
-        return privateNotes != null || dueDateModified || scheduleDateModified;
+        return privateNotes != null || dueDateModified || scheduleDateModified || estimate != null;
     }
 
     private boolean persistPrivateTaskAttributes () {
@@ -627,17 +671,41 @@ public abstract class AbstractNbTaskWrapper {
             privateNotes = null;
             modified = true;
         }
-        if (estimate != null) {
-            getNbTask().setEstimate(estimate);
-            estimate = null;
+        if (persistEstimate()) {
             modified = true;
         }
+        if (persistDueDate()) {
+            modified = true;
+        }
+        if (persistScheduleDate()) {
+            modified = true;
+        }
+        return modified;
+    }
+
+    private boolean persistDueDate () {
+        boolean modified = false;
         if (dueDateModified) {
             getNbTask().setDueDate(dueDate);
             dueDate = null;
             dueDateModified = false;
             modified = true;
         }
+        return modified;
+    }
+
+    private boolean persistEstimate () {
+        boolean modified = false;
+        if (estimate != null) {
+            getNbTask().setEstimate(estimate);
+            estimate = null;
+            modified = true;
+        }
+        return modified;
+    }
+
+    private boolean persistScheduleDate () {
+        boolean modified = false;
         if (scheduleDateModified) {
             getNbTask().setScheduleDate(scheduleDate);
             scheduleDate = null;
@@ -654,6 +722,45 @@ public abstract class AbstractNbTaskWrapper {
         scheduleDate = null;
         scheduleDateModified = false;
         estimate = null;
+    }
+
+    protected final String getDueDisplayString () {
+        Calendar cal = Calendar.getInstance();
+        Date date = getPersistentDueDate();
+        if (date == null) {
+            return "";
+        }
+        cal.setTime(date);
+        return formatDate(cal);
+    }
+
+    protected final String getEstimateDisplayString () {
+        int est = getPersistentEstimate();
+        if (est == 0) {
+            return "";
+        }
+        return "" + est;
+    }
+
+    protected final String getScheduleDisplayString () {
+        NbDateRange schedule = getNbTask().getScheduleDate();
+        if (schedule == null) {
+            return "";
+        }
+        int interval = schedule.getEndDate().get(Calendar.DAY_OF_YEAR) - schedule.getStartDate().get(Calendar.DAY_OF_YEAR);
+        if (interval == 1) {
+            return formatDate(schedule.getStartDate());
+        }
+        return formateDate(schedule.getStartDate(), schedule.getEndDate());
+    }
+
+    private String formatDate (Calendar date) {
+        return DateFormat.getDateInstance(DateFormat.DEFAULT).format(date.getTime());
+    }
+
+    private String formateDate (Calendar start, Calendar end) {
+        DateFormat format = DateFormat.getDateInstance(DateFormat.DEFAULT);
+        return format.format(start.getTime()) + " - " + format.format(end.getTime()); //NOI18N
     }
 
     private class TaskDataListenerImpl implements TaskDataListener {

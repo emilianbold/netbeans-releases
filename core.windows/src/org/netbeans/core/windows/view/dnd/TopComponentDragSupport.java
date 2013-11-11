@@ -71,7 +71,6 @@ import java.util.logging.Logger;
 import javax.swing.*;
 import org.netbeans.core.windows.*;
 import org.netbeans.core.windows.options.WinSysPrefs;
-import org.netbeans.core.windows.view.ui.*;
 import org.openide.util.*;
 import org.openide.windows.TopComponent;
 
@@ -400,8 +399,7 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
         if (tabbed != null) {
             if( transfer.isTopComponentTransfer()
                 && WinSysPrefs.HANDLER.getBoolean(WinSysPrefs.DND_DRAGIMAGE, 
-                    Utilities.getOperatingSystem() != Utilities.OS_SOLARIS)
-                    && !isMacJDK7() ) {
+                    Utilities.getOperatingSystem() != Utilities.OS_SOLARIS) ) {
                 tabIndex = tabbed.indexOf(transfer.getTopComponent());
 
                 visualizer = new DragAndDropFeedbackVisualizer( tabbed, tabIndex );
@@ -1003,15 +1001,5 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
         g.setColor( Color.white );
         g.fillRect(0,0,1,1);
         return res;
-    }
-    
-    private static boolean isMacJDK7() {
-        if( Utilities.isMac() ) {
-            String version = System.getProperty("java.version"); //NOI18N
-            if( null != version && version.startsWith("1.7" ) ) //NOI18N
-                return true;
-        }
-        return false;
-        
     }
 }

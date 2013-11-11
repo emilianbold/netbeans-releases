@@ -39,23 +39,24 @@ package org.netbeans.modules.bugzilla;
 
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
-import org.netbeans.modules.bugtracking.team.spi.TeamQueryProvider;
-import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.QueryController;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class BugzillaQueryProvider extends TeamQueryProvider<BugzillaQuery, BugzillaIssue> {
+public class BugzillaQueryProvider implements QueryProvider<BugzillaQuery, BugzillaIssue> {
 
     @Override
     public String getDisplayName(BugzillaQuery query) {
-        return query.getDisplayName();
+        String name = query.getDisplayName();
+        return name + (needsAndHasNoLogin(query) ? " " +  NbBundle.getMessage(BugzillaQueryProvider.class, "LBL_NotLoggedIn") : "");
     }
 
     @Override
@@ -69,15 +70,25 @@ public class BugzillaQueryProvider extends TeamQueryProvider<BugzillaQuery, Bugz
     }
 
     @Override
+    public boolean canRemove(BugzillaQuery q) {
+        return q.canRemove();
+    }
+    
+    @Override
     public void remove(BugzillaQuery q) {
         q.remove();
     }
     
     @Override
-    public boolean isSaved(BugzillaQuery query) {
-        return query.isSaved();
+    public boolean canRename(BugzillaQuery q) {
+        return true;
     }
 
+    @Override
+    public void rename(BugzillaQuery q, String displayName) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
     @Override
     public Collection<BugzillaIssue> getIssues(BugzillaQuery query) {
         return query.getIssues();
@@ -94,12 +105,10 @@ public class BugzillaQueryProvider extends TeamQueryProvider<BugzillaQuery, Bugz
     }
 
     @Override
-    public boolean contains(BugzillaQuery query, String id) {
-        return query.contains(id);
-    }
-
-    @Override
     public void refresh(BugzillaQuery query) {
+        if(needsAndHasNoLogin(query)) {
+            return;
+        }
         query.getController().refresh(true);
     }
 
@@ -108,25 +117,13 @@ public class BugzillaQueryProvider extends TeamQueryProvider<BugzillaQuery, Bugz
      * Kenai
      ************************************************************************************/
     
-    @Override
-    public void setOwnerInfo(BugzillaQuery q, OwnerInfo info) {
-        q.setOwnerInfo(info);
+    private boolean needsAndHasNoLogin(BugzillaQuery query) {
+        BugzillaRepository repo = query.getRepository();
+        if(repo instanceof KenaiRepository ) {
+            KenaiRepository kenaiRepo = (KenaiRepository) repo;
+            return kenaiRepo.isMyIssues(query) && !kenaiRepo.isLoggedIn();
+        }
+        return false;
     }
     
-    @Override
-    public boolean needsLogin(BugzillaQuery query) {
-        BugzillaRepository repository = query.getRepository();
-        return query == ((KenaiRepository) repository).getMyIssuesQuery();
-    }
-
-    @Override
-    public boolean canRename(BugzillaQuery q) {
-        return true;
-    }
-
-    @Override
-    public void rename(BugzillaQuery q, String displayName) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
 }

@@ -131,7 +131,7 @@ public class Project extends AbstractEntity implements Serializable {
         return false;
     }
 
-    public boolean removeSpring(Sprint sprint) {
+    public boolean removeSprint(Sprint sprint) {
         if (sprints != null && !sprints.isEmpty()) {
             return sprints.remove(sprint);
         } else {

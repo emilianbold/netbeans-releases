@@ -39,6 +39,7 @@
 package org.netbeans.modules.maven.problems;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.Collections;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
@@ -49,6 +50,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.test.TestFileUtils;
@@ -75,9 +77,11 @@ public class ProblemReporterImplTest extends NbTestCase { // #175472
         Project p = ProjectManager.getDefault().findProject(FileUtil.toFileObject(getWorkDir()));
         assertEquals("g:m:jar:0", p.getLookup().lookup(NbMavenProject.class).getMavenProject().getId());
         ProblemReporterImpl pr = getReporter(p);
-        pr.doIDEConfigChecks();
+        MavenModelProblemsProvider mpp = new MavenModelProblemsProvider(p);
+        Collection<? extends ProjectProblemsProvider.ProjectProblem> problems = mpp.getProblems();
+        
         waitForReports();
-        assertFalse(pr.getReports().isEmpty());
+        assertFalse(problems.isEmpty());
         
         assertEquals(Collections.singleton(a2f(new DefaultArtifact("g", "par", "0", null, "pom", null, new DefaultArtifactHandler("pom")))), pr.getMissingArtifactFiles());
     }
@@ -96,9 +100,10 @@ public class ProblemReporterImplTest extends NbTestCase { // #175472
             "</project>");
         Project p = ProjectManager.getDefault().findProject(FileUtil.toFileObject(getWorkDir()));
         ProblemReporterImpl pr = getReporter(p);
-        pr.doIDEConfigChecks();
+        MavenModelProblemsProvider mpp = new MavenModelProblemsProvider(p);
+        Collection<? extends ProjectProblemsProvider.ProjectProblem> problems = mpp.getProblems();
         waitForReports();
-        assertFalse(pr.getReports().isEmpty());
+        assertFalse(problems.isEmpty());
         assertEquals(Collections.singleton(a2f(new DefaultArtifact("g", "plug", "0", null, "jar", null, new DefaultArtifactHandler("jar")))), pr.getMissingArtifactFiles());
     }
 
@@ -109,9 +114,10 @@ public class ProblemReporterImplTest extends NbTestCase { // #175472
             "</project>");
         Project p = ProjectManager.getDefault().findProject(FileUtil.toFileObject(getWorkDir()));
         ProblemReporterImpl pr = getReporter(p);
-        pr.doIDEConfigChecks();
+        MavenModelProblemsProvider mpp = new MavenModelProblemsProvider(p);
+        Collection<? extends ProjectProblemsProvider.ProjectProblem> problems = mpp.getProblems();
         waitForReports();
-        assertFalse(pr.getReports().isEmpty());
+        assertFalse(problems.isEmpty());
         assertEquals(Collections.singleton(a2f(new DefaultArtifact("g", "b", "1.0-SNAPSHOT", "compile", "jar", null, new DefaultArtifactHandler("jar")))), pr.getMissingArtifactFiles());
     }
 

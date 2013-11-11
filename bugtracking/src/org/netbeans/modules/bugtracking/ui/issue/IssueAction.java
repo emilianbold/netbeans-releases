@@ -55,12 +55,13 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
-import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
+import org.netbeans.modules.bugtracking.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -137,7 +138,7 @@ public class IssueAction extends SystemAction {
         });
     }
 
-    public static void openIssue(final File file, final String issueId) {
+    public static void openIssue(final FileObject file, final String issueId) {
         openIssueIntern(null, file, issueId);
     }
 
@@ -145,7 +146,7 @@ public class IssueAction extends SystemAction {
         openIssueIntern(repository, null, issueId);
     }
 
-    private static void openIssueIntern(final RepositoryImpl repositoryParam, final File file, final String issueId) {
+    private static void openIssueIntern(final RepositoryImpl repositoryParam, final FileObject file, final String issueId) {
         assert issueId != null;
         assert file == null || repositoryParam == null && file != null;
 

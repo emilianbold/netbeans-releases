@@ -77,7 +77,7 @@ public class MavenProjectNode extends AbstractNode {
     @Messages("ICON_BrokenProjectBadge=Project loading failed or was not complete")
     private static final String toolTipBroken = "<img src=\"" + MavenProjectNode.class.getClassLoader().getResource(IconResources.BROKEN_PROJECT_BADGE_ICON) + "\">&nbsp;" + ICON_BrokenProjectBadge();
 
-     private NbMavenProjectImpl project;
+     private final NbMavenProjectImpl project;
      private final ProjectInformation info;
 
      public MavenProjectNode(Lookup lookup, NbMavenProjectImpl proj) {

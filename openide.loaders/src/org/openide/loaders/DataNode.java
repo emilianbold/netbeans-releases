@@ -472,17 +472,10 @@ public class DataNode extends AbstractNode {
                 // show extension property only if name differs from getNameExt
                 ss.put(new ExtensionProperty());
             }
-            ss.put(new AllFilesProperty());
             ss.put(new SizeProperty());
             ss.put(new LastModifiedProperty());
         }
-        // Fix for IZ#120560  - Refactor of resources node in project view throws ISE exception
-        if ( fo.isFolder() ){
-            AllFilesProperty prop = new AllFilesProperty();
-            prop.setHidden( true );
-            ss.put( prop );
-        }
-
+        ss.put(new AllFilesProperty()); // #120560, #188315
         return s;
     }
     

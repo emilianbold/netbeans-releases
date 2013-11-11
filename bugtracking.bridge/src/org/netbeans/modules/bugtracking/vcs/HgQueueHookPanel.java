@@ -50,26 +50,22 @@ package org.netbeans.modules.bugtracking.vcs;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.util.logging.Level;
+import java.io.File;
 import java.util.logging.Logger;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.IssueQuickSearch;
-import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.versioning.util.VerticallyNonResizingPanel;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Tomas Stupka
  * @author Marian Petras
  */
-public class HgQueueHookPanel extends VerticallyNonResizingPanel implements ItemListener, ChangeListener {
+public class HgQueueHookPanel extends VerticallyNonResizingPanel implements ChangeListener {
 
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.vcshooks.HookPanel");  // NOI18N
 
@@ -101,13 +97,14 @@ public class HgQueueHookPanel extends VerticallyNonResizingPanel implements Item
     }
     private FieldValues fieldValues = null;
     
-    public HgQueueHookPanel(boolean link, boolean resolve, boolean commit) {
+    public HgQueueHookPanel(FileObject context, boolean link, boolean resolve, boolean commit) {
         initComponents();
         this.fieldValues = new FieldValues();
 
-        qs = new IssueQuickSearch(this);
+        qs = IssueQuickSearch.create(context);
+        qs.setChangeListener(this);
+        qs.setEnabled(true);
         issuePanel.add(qs.getComponent(), BorderLayout.NORTH);
-        issueLabel.setLabelFor(qs.getComponent());
 
         linkCheckBox.setSelected(link);
         resolveCheckBox.setSelected(resolve);
@@ -116,7 +113,6 @@ public class HgQueueHookPanel extends VerticallyNonResizingPanel implements Item
 
         enableFields();
 
-        repositoryComboBox.addItemListener(this);
     }
 
     Issue getIssue() {
@@ -124,7 +120,7 @@ public class HgQueueHookPanel extends VerticallyNonResizingPanel implements Item
     }
 
     void enableFields() {
-        boolean repoSelected = !blockEvents && repositoryComboBox.getSelectedItem() instanceof Repository;
+        boolean repoSelected = !blockEvents && qs.getSelectedRepository() != null;
         boolean enableFields = repoSelected && (getIssue() != null);
 
         if(!enableFields && !fieldValues.stored) { // !fieldValues.stored ->
@@ -141,14 +137,10 @@ public class HgQueueHookPanel extends VerticallyNonResizingPanel implements Item
         commitRadioButton.setEnabled(enableFields);
         changeFormatButton.setEnabled(enableFields);
 
-        issueLabel.setEnabled(repoSelected);
-        qs.enableFields(repoSelected);
     }
 
     void enableIssueField (boolean enabled) {
         blockEvents = !enabled;
-        jButton2.setEnabled(enabled);
-        repositoryComboBox.setEnabled(enabled);
         if (enabled) {
             // enabled, should setup issue field
             enableFields();
@@ -177,10 +169,6 @@ public class HgQueueHookPanel extends VerticallyNonResizingPanel implements Item
 
         buttonGroup1 = new javax.swing.ButtonGroup();
         issuePanel = new javax.swing.JPanel();
-        repositoryLabel = new javax.swing.JLabel();
-        jButton2 = createDoubleWidthButton();
-        issueLabel = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
 
         setFocusable(false);
 
@@ -190,18 +178,6 @@ public class HgQueueHookPanel extends VerticallyNonResizingPanel implements Item
 
         org.openide.awt.Mnemonics.setLocalizedText(linkCheckBox, org.openide.util.NbBundle.getMessage(HgQueueHookPanel.class, "HgQueueHookPanel.linkCheckBox.text")); // NOI18N
 
-        repositoryLabel.setLabelFor(repositoryComboBox);
-        org.openide.awt.Mnemonics.setLocalizedText(repositoryLabel, org.openide.util.NbBundle.getMessage(HgQueueHookPanel.class, "HgQueueHookPanel.repositoryLabel.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(jButton2, org.openide.util.NbBundle.getMessage(HgQueueHookPanel.class, "HgQueueHookPanel.jButton2.text")); // NOI18N
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
-            }
-        });
-
-        org.openide.awt.Mnemonics.setLocalizedText(issueLabel, org.openide.util.NbBundle.getMessage(HgQueueHookPanel.class, "HgQueueHookPanel.issueLabel.text")); // NOI18N
-
         org.openide.awt.Mnemonics.setLocalizedText(changeFormatButton, org.openide.util.NbBundle.getMessage(HgQueueHookPanel.class, "HgQueueHookPanel.changeFormatButton.text")); // NOI18N
 
         buttonGroup1.add(commitRadioButton);
@@ -210,53 +186,33 @@ public class HgQueueHookPanel extends VerticallyNonResizingPanel implements Item
         buttonGroup1.add(pushRadioButton);
         org.openide.awt.Mnemonics.setLocalizedText(pushRadioButton, org.openide.util.NbBundle.getMessage(HgQueueHookPanel.class, "HgQueueHookPanel.pushRadioButton.text")); // NOI18N
 
-        jLabel2.setForeground(javax.swing.UIManager.getDefaults().getColor("Button.disabledText"));
-        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(HgQueueHookPanel.class, "HgQueueHookPanel.jLabel2.text")); // NOI18N
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addGap(116, 116, 116)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(repositoryLabel)
-                    .addComponent(issueLabel))
-                .addGap(11, 11, 11)
+                    .addComponent(resolveCheckBox)
+                    .addComponent(linkCheckBox))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(changeFormatButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(65, 65, 65)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(resolveCheckBox)
-                            .addComponent(linkCheckBox))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(changeFormatButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(65, 65, 65)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(commitRadioButton)
-                            .addComponent(pushRadioButton)))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 502, Short.MAX_VALUE)
-                            .addComponent(issuePanel, javax.swing.GroupLayout.DEFAULT_SIZE, 502, Short.MAX_VALUE)
-                            .addComponent(repositoryComboBox, javax.swing.GroupLayout.Alignment.LEADING, 0, 502, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jButton2)))
+                    .addComponent(commitRadioButton)
+                    .addComponent(pushRadioButton))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(issuePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(repositoryLabel)
-                    .addComponent(jButton2)
-                    .addComponent(repositoryComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(issuePanel, javax.swing.GroupLayout.DEFAULT_SIZE, 16, Short.MAX_VALUE)
-                    .addComponent(issueLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 16, Short.MAX_VALUE))
-                .addGap(9, 9, 9)
-                .addComponent(jLabel2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addContainerGap()
+                .addComponent(issuePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(resolveCheckBox)
@@ -273,80 +229,28 @@ public class HgQueueHookPanel extends VerticallyNonResizingPanel implements Item
 
         resolveCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HgQueueHookPanel.class, "HookPanel.resolveCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
         linkCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HgQueueHookPanel.class, "HookPanel.addRevisionCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
-        repositoryComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HgQueueHookPanel.class, "HookPanel.repositoryComboBox.AccessibleContext.accessibleDescription")); // NOI18N
-        jButton2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HgQueueHookPanel.class, "HookPanel.jButton2.AccessibleContext.accessibleDescription")); // NOI18N
         changeFormatButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HgQueueHookPanel.class, "HookPanel.changeRevisionFormatButton.AccessibleContext.accessibleDescription")); // NOI18N
         commitRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HgQueueHookPanel.class, "HookPanel.commitRadioButton.AccessibleContext.accessibleDescription")); // NOI18N
         pushRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HgQueueHookPanel.class, "HookPanel.pushRadioButton.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
-    private JButton createDoubleWidthButton() {
-        class DoubleWidthButton extends JButton {
-            @Override
-            public Dimension getPreferredSize() {
-                Dimension defPrefSize = super.getPreferredSize();
-                return new Dimension((int) (1.8f * defPrefSize.width),
-                                     defPrefSize.height);
-            }
-            @Override
-            public Dimension getMinimumSize() {
-                return getPreferredSize();
-            }
-        }
-        return new DoubleWidthButton();
-    }
-
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        Repository repo = RepositoryManager.getInstance().createRepository();
-        if(repo == null) {
-            return;
-        }
-        repositoryComboBox.addItem(repo);
-        repositoryComboBox.setSelectedItem(repo);
-    }//GEN-LAST:event_jButton2ActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
-    final org.netbeans.modules.bugtracking.util.LinkButton changeFormatButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+    final org.netbeans.modules.bugtracking.commons.LinkButton changeFormatButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
     final javax.swing.JRadioButton commitRadioButton = new javax.swing.JRadioButton();
-    private javax.swing.JLabel issueLabel;
     private javax.swing.JPanel issuePanel;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JLabel jLabel2;
     final javax.swing.JCheckBox linkCheckBox = new javax.swing.JCheckBox();
     final javax.swing.JRadioButton pushRadioButton = new javax.swing.JRadioButton();
-    final javax.swing.JComboBox repositoryComboBox = new javax.swing.JComboBox();
-    private javax.swing.JLabel repositoryLabel;
     final javax.swing.JCheckBox resolveCheckBox = new javax.swing.JCheckBox();
     // End of variables declaration//GEN-END:variables
 
     @Override
-    public void itemStateChanged(ItemEvent e) {
-        if (LOG.isLoggable(Level.FINER)) {
-            LOG.log(Level.FINER, "itemStateChanged() - selected item: {0}", e.getItem()); //NOI18N
-        }
-        enableFields();
-        if(e.getStateChange() == ItemEvent.SELECTED) {
-            Object item = e.getItem();
-            Repository repo = (item instanceof Repository) ? (Repository) item : null;
-            if (!blockEvents && repo != null) {
-                qs.setRepository(repo);
-                if (preselectedIssue != null && repo.equals(preselectedIssue.getRepository())) {
-                    preselectIssue();
-                }
-            }
-        }
-    }
-
-    @Override
     public void addNotify() {
-        qs.addChangeListener(this);
         super.addNotify();
     }
 
     @Override
     public void removeNotify() {
-        qs.removeChangeListener(this);
         super.removeNotify();
     }
 

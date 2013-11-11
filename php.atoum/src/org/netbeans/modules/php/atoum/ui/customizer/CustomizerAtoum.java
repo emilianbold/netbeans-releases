@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.atoum.ui.customizer;
 
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -76,8 +77,11 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
+import org.openide.util.RequestProcessor;
 
 public class CustomizerAtoum extends JPanel implements HelpCtx.Provider {
+
+    private static final RequestProcessor RP = new RequestProcessor(CustomizerAtoum.class);
 
     private final ProjectCustomizer.Category category;
     private final PhpModule phpModule;
@@ -219,7 +223,7 @@ public class CustomizerAtoum extends JPanel implements HelpCtx.Provider {
         return true;
     }
 
-    private boolean checkFile(File file, String errorMessage) {
+    boolean checkFile(File file, String errorMessage) {
         assert file != null;
         if (file.exists()) {
             informUser(errorMessage);
@@ -415,41 +419,52 @@ public class CustomizerAtoum extends JPanel implements HelpCtx.Provider {
         "CustomizerAtoum.error.configuration.exists=Configuration {0} already exists.",
     })
     private void createButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_createButtonActionPerformed
-        if (checkTestDirectory()) {
-            // check
-            File bootstrap = Atoum.getDefaultBootstrap(phpModule);
-            assert bootstrap != null;
-            if (!checkFile(bootstrap, Bundle.CustomizerAtoum_error_bootstrap_exists(bootstrap.getAbsolutePath()))) {
-                return;
-            }
-            File configuration = Atoum.getDefaultConfiguration(phpModule);
-            assert configuration != null;
-            if (!checkFile(configuration, Bundle.CustomizerAtoum_error_configuration_exists(configuration.getAbsolutePath()))) {
-                return;
-            }
-            // run
-            Atoum atoum;
-            try {
-                atoum = Atoum.getDefault();
-            } catch (InvalidPhpExecutableException ex) {
-                UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), AtoumOptionsPanelController.OPTIONS_SUB_PATH);
-                return;
-            }
-            assert atoum != null;
-            Pair<File, File> files = atoum.init(phpModule);
-            if (files == null) {
-                return;
-            }
-            // set
-            assert bootstrap.equals(files.first()) : bootstrap + " should equal " + files.first();
-            assert bootstrap.isFile();
-            bootstrapCheckBox.setSelected(true);
-            bootstrapTextField.setText(bootstrap.getAbsolutePath());
-            assert configuration.equals(files.second()) : configuration + " should equal " + files.second();
-            assert configuration.isFile();
-            configurationCheckBox.setSelected(true);
-            configurationTextField.setText(configuration.getAbsolutePath());
+        if (!checkTestDirectory()) {
+            return;
         }
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                // check
+                final File bootstrap = Atoum.getDefaultBootstrap(phpModule);
+                assert bootstrap != null;
+                if (!checkFile(bootstrap, Bundle.CustomizerAtoum_error_bootstrap_exists(bootstrap.getAbsolutePath()))) {
+                    return;
+                }
+                final File configuration = Atoum.getDefaultConfiguration(phpModule);
+                assert configuration != null;
+                if (!checkFile(configuration, Bundle.CustomizerAtoum_error_configuration_exists(configuration.getAbsolutePath()))) {
+                    return;
+                }
+                // run
+                Atoum atoum;
+                try {
+                    atoum = Atoum.getDefault();
+                } catch (InvalidPhpExecutableException ex) {
+                    UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), AtoumOptionsPanelController.OPTIONS_SUB_PATH);
+                    return;
+                }
+                assert atoum != null;
+                final Pair<File, File> files = atoum.init(phpModule);
+                if (files == null) {
+                    return;
+                }
+                // set
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        assert bootstrap.equals(files.first()) : bootstrap + " should equal " + files.first();
+                        assert bootstrap.isFile();
+                        bootstrapCheckBox.setSelected(true);
+                        bootstrapTextField.setText(bootstrap.getAbsolutePath());
+                        assert configuration.equals(files.second()) : configuration + " should equal " + files.second();
+                        assert configuration.isFile();
+                        configurationCheckBox.setSelected(true);
+                        configurationTextField.setText(configuration.getAbsolutePath());
+                    }
+                });
+            }
+        });
     }//GEN-LAST:event_createButtonActionPerformed
 
     @NbBundle.Messages("CustomizerAtoum.chooser.atoum=Select atoum file")

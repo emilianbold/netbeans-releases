@@ -276,6 +276,9 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="ajaxifyCheckbox">
       <Properties>
+        <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
+          <ResourceString bundle="org/netbeans/modules/web/jsf/wizards/Bundle.properties" key="LBL_AJAXIFY_APP.Mnemonic" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/web/jsf/wizards/Bundle.properties" key="LBL_AJAXIFY_APP" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -309,6 +312,9 @@
     </Component>
     <Component class="javax.swing.JLabel" name="jpaPackageLabel">
       <Properties>
+        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
+          <ResourceString bundle="org/netbeans/modules/web/jsf/wizards/Bundle.properties" key="LBL_Jpa_Controller_Package_Mnemonic" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="jpaPackageComboBox"/>
         </Property>
@@ -332,6 +338,9 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="overrideExistingCheckBox">
       <Properties>
+        <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
+          <ResourceString bundle="org/netbeans/modules/web/jsf/wizards/Bundle.properties" key="PersistenceClientSetupPanelVisual.overrideExistingFiles.mnemonic" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/web/jsf/wizards/Bundle.properties" key="PersistenceClientSetupPanelVisual.overrideExistingFiles" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -352,6 +361,9 @@
     </Component>
     <Component class="javax.swing.JLabel" name="localizationBundleLabel">
       <Properties>
+        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
+          <ResourceString bundle="org/netbeans/modules/web/jsf/wizards/Bundle.properties" key="PersistenceClientSetupPanelVisual.localizationBundle.mnemonic" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="localizationBundleTextField"/>
         </Property>
@@ -364,6 +376,12 @@
     </Component>
     <Component class="javax.swing.JLabel" name="templateChooserLabel">
       <Properties>
+        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
+          <ResourceString bundle="org/netbeans/modules/web/jsf/wizards/Bundle.properties" key="PersistenceClientSetupPanelVisual.chooseTemplate.mnemonic" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="templatesComboBox"/>
+        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/web/jsf/wizards/Bundle.properties" key="PersistenceClientSetupPanelVisual.chooseTemplate" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>

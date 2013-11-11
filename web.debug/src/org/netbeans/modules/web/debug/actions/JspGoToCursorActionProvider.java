@@ -68,6 +68,7 @@ public class JspGoToCursorActionProvider extends ActionsProviderSupport implemen
     public JspGoToCursorActionProvider(ContextProvider contextProvider) {
         debugger = (JPDADebugger) contextProvider.lookupFirst(null, JPDADebugger.class);
         session = (Session) contextProvider.lookupFirst(null, Session.class);
+        assert session != null;
         debugger.addPropertyChangeListener(debugger.PROP_STATE, this);
         Context.addPropertyChangeListener(this);
     }
@@ -107,7 +108,11 @@ public class JspGoToCursorActionProvider extends ActionsProviderSupport implemen
         );
         breakpoint.setHidden(true);
         DebuggerManager.getDebuggerManager().addBreakpoint (breakpoint);
-        session.getEngineForLanguage ("JSP").getActionsManager ().doAction (
+        DebuggerEngine jspEngine = session.getEngineForLanguage("JSP");
+        if (jspEngine == null) {
+            jspEngine = session.getCurrentEngine();
+        }
+        jspEngine.getActionsManager ().doAction (
             ActionsManager.ACTION_CONTINUE
         );
     }

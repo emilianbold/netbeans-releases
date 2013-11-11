@@ -43,17 +43,23 @@ package org.netbeans.modules.odcs.tasks;
 
 import com.tasktop.c2c.server.tasks.domain.Priority;
 import java.beans.PropertyChangeListener;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 import oracle.eclipse.tools.cloud.dev.tasks.CloudDevClient;
 import oracle.eclipse.tools.cloud.dev.tasks.CloudDevRepositoryConnector;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.netbeans.modules.bugtracking.commons.SimpleIssueFinder;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
-import org.netbeans.modules.bugtracking.spi.BugtrackingFactory;
+import org.netbeans.modules.bugtracking.spi.BugtrackingSupport;
+import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.bugtracking.spi.IssuePriorityInfo;
 import org.netbeans.modules.bugtracking.spi.IssuePriorityProvider;
+import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
+import org.netbeans.modules.bugtracking.spi.IssueSchedulingProvider;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
@@ -84,10 +90,12 @@ public class ODCS {
     private ODCSIssueProvider odcsIssueProvider;
     private ODCSQueryProvider odcsQueryProvider;
     private ODCSRepositoryProvider odcsRepositoryProvider;
-    private IssueStatusProvider<ODCSIssue> isp;    
+    private IssueStatusProvider<ODCSRepository, ODCSIssue> isp;    
     private IssuePriorityProvider<ODCSIssue> ipp;    
-    private BugtrackingFactory<ODCSRepository, ODCSQuery, ODCSIssue> bf;
+    private BugtrackingSupport<ODCSRepository, ODCSQuery, ODCSIssue> bf;
     private IssueNode.ChangesProvider<ODCSIssue> ocp;
+    private IssueFinder issueFinder;
+    private IssueSchedulingProvider<ODCSIssue> ischp;
 
     private void init() {
         rc = MylynRepositoryConnectorProvider.getInstance().getConnector();
@@ -98,9 +106,9 @@ public class ODCS {
         return rc;
     }
     
-    public BugtrackingFactory<ODCSRepository, ODCSQuery, ODCSIssue> getBugtrackingFactory() {
+    public BugtrackingSupport<ODCSRepository, ODCSQuery, ODCSIssue> getBugtrackingFactory() {
         if(bf == null) {
-            bf = new BugtrackingFactory<ODCSRepository, ODCSQuery, ODCSIssue>();
+            bf = new BugtrackingSupport<>(getRepositoryProvider(), getQueryProvider(), getIssueProvider());
         }    
         return bf;
     }
@@ -124,15 +132,15 @@ public class ODCS {
         return odcsRepositoryProvider; 
     }    
 
-    public IssueStatusProvider getStatusProvider() {
+    public IssueStatusProvider<ODCSRepository, ODCSIssue> getStatusProvider() {
         if(isp == null) {
-            isp = new IssueStatusProvider<ODCSIssue>() {
+            isp = new IssueStatusProvider<ODCSRepository, ODCSIssue>() {
                 @Override
                 public IssueStatusProvider.Status getStatus(ODCSIssue issue) {
                     return issue.getStatus();
                 }
                 @Override
-                public void setSeen(ODCSIssue issue, boolean seen) {
+                public void setSeenIncoming(ODCSIssue issue, boolean seen) {
                     issue.setUpToDate(seen);
                 }
                 @Override
@@ -143,6 +151,18 @@ public class ODCS {
                 public void addPropertyChangeListener(ODCSIssue issue, PropertyChangeListener listener) {
                     issue.addPropertyChangeListener(listener);
                 }
+                @Override
+                public Collection<ODCSIssue> getUnsubmittedIssues(ODCSRepository r) {
+                    return r.getUnsubmittedIssues();
+                }
+                @Override
+                public void discardOutgoing(ODCSIssue i) {
+                    i.discardLocalEdits();
+                }
+                @Override
+                public boolean submit (ODCSIssue data) {
+                    return data.submitAndRefresh();
+                }                
             };
         }
         return isp;
@@ -184,6 +204,44 @@ public class ODCS {
         return ipp;
     }
     
+    public IssueSchedulingProvider<ODCSIssue> getSchedulingProvider () {
+        if(ischp == null) {
+            ischp = new IssueSchedulingProvider<ODCSIssue>() {
+
+                @Override
+                public void setDueDate (ODCSIssue i, Date date) {
+                    i.setTaskDueDate(date, true);
+                }
+
+                @Override
+                public void setSchedule (ODCSIssue i, IssueScheduleInfo scheduleInfo) {
+                    i.setTaskScheduleDate(scheduleInfo, true);
+                }
+
+                @Override
+                public void setEstimate (ODCSIssue i, int hours) {
+                    i.setTaskEstimate(hours, true);
+                }
+
+                @Override
+                public Date getDueDate (ODCSIssue i) {
+                    return i.getPersistentDueDate();
+                }
+
+                @Override
+                public IssueScheduleInfo getSchedule (ODCSIssue i) {
+                    return i.getPersistentScheduleInfo();
+                }
+
+                @Override
+                public int getEstimate (ODCSIssue i) {
+                    return i.getPersistentEstimate();
+                }
+            };
+        }
+        return ischp;
+    }
+    
     public RequestProcessor getRequestProcessor() {
         if(rp == null) {
             rp = new RequestProcessor("ODCS Tasks", 1, true); // NOI18N
@@ -206,4 +264,20 @@ public class ODCS {
         }
         return ocp;
     }    
+    
+    public IssueFinder getODCSIssueFinder() {
+        if(issueFinder == null) {
+            issueFinder = new IssueFinder() {
+                @Override
+                public int[] getIssueSpans(CharSequence text) {
+                    return SimpleIssueFinder.getInstance().getIssueSpans(text);
+                }
+                @Override
+                public String getIssueId(String issueHyperlinkText) {
+                    return SimpleIssueFinder.getInstance().getIssueId(issueHyperlinkText);
+                }
+            };
+        }
+        return issueFinder;
+    }        
 }

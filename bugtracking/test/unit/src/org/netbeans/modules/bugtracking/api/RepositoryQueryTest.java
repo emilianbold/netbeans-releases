@@ -47,7 +47,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.spi.RepositoryQueryImplementation;
-import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
+import org.netbeans.modules.bugtracking.BugtrackingOwnerSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.test.MockLookup;
@@ -88,7 +88,7 @@ public class RepositoryQueryTest extends NbTestCase {
         
         assertNotNull(fo);
         
-        Repository r = RepositoryQuery.getInstance().getRepository(fo, false);
+        Repository r = RepositoryQuery.getRepository(fo, false);
         assertNotNull(r);
         assertEquals(repo, r);
     }
@@ -101,12 +101,12 @@ public class RepositoryQueryTest extends NbTestCase {
         
         FileObject noRepoFO = FileUtil.toFileObject(noRepoFile);
         assertNotNull(noRepoFO);
-        Repository r = RepositoryQuery.getInstance().getRepository(noRepoFO, false);
+        Repository r = RepositoryQuery.getRepository(noRepoFO, false);
         assertNull(r);
         
         FileObject assocFO = FileUtil.toFileObject(assocFile);
         assertNotNull(assocFO);
-        r = RepositoryQuery.getInstance().getRepository(assocFO, false);
+        r = RepositoryQuery.getRepository(assocFO, false);
         assertNotNull(r);
         assertEquals(getRepo(), r);
     }
@@ -118,11 +118,11 @@ public class RepositoryQueryTest extends NbTestCase {
     @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.bugtracking.spi.RepositoryQueryImplementation.class)
     public static class RepositoryQImpl implements RepositoryQueryImplementation {
         @Override
-        public Repository getRepository(FileObject fileObject, boolean askIfUnknown) {
+        public String getRepositoryUrl(FileObject fileObject) {
             if(fileObject.getName().endsWith("norepo")) {
                 return null;
             }
-            return APITestKit.getRepo(APITestRepository.ID);
+            return APITestKit.getRepo(APITestRepository.ID).getUrl();
         }
     }
     

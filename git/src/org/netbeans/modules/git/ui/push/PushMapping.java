@@ -140,6 +140,10 @@ public abstract class PushMapping extends ItemSelector.Item {
     public final boolean isDeletion () {
         return localName == null;
     }
+    
+    public final String getLocalName () {
+        return localName;
+    }
 
     @Override
     public int compareTo (Item t) {

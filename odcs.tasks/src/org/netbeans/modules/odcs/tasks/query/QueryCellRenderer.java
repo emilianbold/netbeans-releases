@@ -7,8 +7,6 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.GridBagLayout;
 import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.text.MessageFormat;
 import java.util.*;
 import javax.swing.Icon;
@@ -16,11 +14,9 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
-import javax.swing.Timer;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode.IssueProperty;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode.SummaryProperty;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
@@ -78,7 +74,7 @@ public class QueryCellRenderer implements TableCellRenderer {
 
     private Component getSubtaskRenderer(ODCSIssue issue, SummaryProperty summaryProperty, JTable table, boolean isSelected, int row) {
         TwoLabelPanel panel = getTwoLabelPanel();
-        RendererLabel label = issue.getSubtasks().length > 0 ? panel.north : panel.south;
+        RendererLabel label = !issue.getSubtasks().isEmpty() ? panel.north : panel.south;
         String summary = summaryProperty.getValue();
         TableCellStyle style = getStyle(table, summaryProperty, isSelected, row);
         MessageFormat northformat = issue.hasSubtasks() ? (style != null ? style.getFormat() : null) : (isSelected ? null : parentFormat);
@@ -101,7 +97,7 @@ public class QueryCellRenderer implements TableCellRenderer {
     private TableCellStyle getStyle(JTable table, IssueProperty p, boolean isSelected, int row) {
         TableCellStyle style;
         if (odcsQuery.isSaved()) {
-            style = QueryTableCellRenderer.getCellStyle(table, getQuery(), issueTable, p, isSelected, row);
+            style = QueryTableCellRenderer.getCellStyle(table, issueTable, p, isSelected, row);
         } else {
             style = QueryTableCellRenderer.getDefaultCellStyle(table, issueTable, p, isSelected, row);
         }
@@ -109,14 +105,14 @@ public class QueryCellRenderer implements TableCellRenderer {
     }
 
     private String getSubtaskKeys(ODCSIssue issue) {
-        String[] keys = issue.getSubtasks();
+        Collection<String> keys = issue.getSubtasks();
         StringBuilder keysBuffer = new StringBuilder();
-        for (int i = 0; i < keys.length; i++) {
-            keysBuffer.append(keys[i]);
-            if (i < keys.length - 1) {
+        Iterator<String> it = keys.iterator();
+        while(it.hasNext()) {
+            keysBuffer.append(it.next());
+            if (it.hasNext()) {
                 keysBuffer.append(", "); // NOI18N
             }
-            
         }
         return keysBuffer.toString();
     }

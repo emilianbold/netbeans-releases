@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.css.editor;
 
 import java.util.ArrayList;
@@ -49,6 +48,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+import java.util.regex.Pattern;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.css.editor.csl.CssLanguage;
 import org.openide.util.WeakListeners;
@@ -67,11 +67,15 @@ public class CssPreferences {
     private static String disabledErrorChecks;
     private static final String disabledErrorChecks_key = "disabledErrorChecks"; //NOI18N
     private static String disabledErrorChecks_default = ""; //NOI18N
-    private static String DELIMITER = ";"; //NOI18N
-
-
-
-    private static AtomicBoolean initialized = new AtomicBoolean(false);
+    
+    private static final char DELIMITER_CHAR = ';'; //NOI18N 
+    private static final String DELIMITER = ""+DELIMITER_CHAR; //NOI18N 
+    private static final String ENCODED_DELIMITER = "\\"+DELIMITER_CHAR; //NOI18N 
+    
+    private static final Pattern DELIMITER_PATTERN = Pattern.compile(DELIMITER);
+    private static final Pattern ENCODED_DELIMITER_PATTEN = Pattern.compile(ENCODED_DELIMITER);
+    
+    private static final AtomicBoolean initialized = new AtomicBoolean(false);
     private static Preferences preferences;
     private static final PreferenceChangeListener preferencesTracker = new PreferenceChangeListener() {
         @Override
@@ -87,7 +91,7 @@ public class CssPreferences {
     };
 
     private static void lazyIntialize() {
-        if(initialized.compareAndSet(false, true)) {
+        if (initialized.compareAndSet(false, true)) {
             preferences = MimeLookup.getLookup(CssLanguage.CSS_MIME_TYPE).lookup(Preferences.class);
             preferences.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, preferencesTracker, preferences));
             preferencesTracker.preferenceChange(null);
@@ -119,25 +123,27 @@ public class CssPreferences {
     }
 
     public static boolean isErrorCheckingDisabledForCssErrorKey(String errorKey) {
-        return getDisabledErrorChecks().contains(errorKey);
+        return getDisabledErrorChecks().contains(encodeKey(errorKey));
     }
 
     public static void setCssErrorChecking(String errorKey, boolean enabled) {
         lazyIntialize();
+        errorKey = encodeKey(errorKey);
+        
         Collection<String> mimescol = getDisabledErrorChecksAsCollection();
 
-        if(mimescol.contains(errorKey)) {
-            if(!enabled) {
-                return ; //already disabled
+        if (mimescol.contains(errorKey)) {
+            if (!enabled) {
+                return; //already disabled
             } else {
                 //already disabled, but should be enabled
                 mimescol.remove(errorKey);
             }
         } else {
-            if(!enabled) {
+            if (!enabled) {
                 mimescol.add(errorKey);
             } else {
-                return ; //already enabled
+                return; //already enabled
             }
         }
 
@@ -147,13 +153,17 @@ public class CssPreferences {
 
     private static String encodeKeys(Collection<String> mimes) {
         StringBuilder b = new StringBuilder();
-        for(String m : mimes) {
+        for (String m : mimes) {
             b.append(m);
-            b.append(DELIMITER);
+            b.append(DELIMITER_CHAR);
         }
         return b.toString();
     }
 
+    /**
+     * The keys are encoded!
+     * @return 
+     */
     private static Collection<String> getDisabledErrorChecksAsCollection() {
         //return modifiable collection!
         ArrayList<String> list = new ArrayList<>();
@@ -161,5 +171,12 @@ public class CssPreferences {
         return list;
     }
 
+    private static String encodeKey(String key) {
+        return DELIMITER_PATTERN.matcher(key).replaceAll(ENCODED_DELIMITER);
+    }
+    
+    private static String decodeKey(String key) {
+        return ENCODED_DELIMITER_PATTEN.matcher(key).replaceAll(DELIMITER);
+    }
 
 }

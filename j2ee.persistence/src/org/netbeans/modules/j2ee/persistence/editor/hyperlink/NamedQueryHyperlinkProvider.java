@@ -41,21 +41,34 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.j2ee.persistence.editor.hyperlink;
 
-import java.awt.Toolkit;
+import com.sun.source.util.TreePath;
+import com.sun.source.util.Trees;
 import java.io.IOException;
 import java.util.EnumSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
@@ -68,15 +81,10 @@ import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMeta
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.NamedQuery;
 import org.netbeans.modules.j2ee.persistence.editor.completion.CCParser;
 import org.netbeans.modules.j2ee.persistence.spi.EntityClassScopeProvider;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.text.Line;
-import org.openide.text.Line.ShowOpenType;
-import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -100,80 +108,150 @@ public class NamedQueryHyperlinkProvider implements HyperlinkProviderExt {
     }
 
     @Override
-    public void performClickAction(Document doc, int offset, HyperlinkType type) {
-        Line ln = getLine(doc, offset);
-        if (ln != null) {
-            ln.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
-        } else {
-            Toolkit.getDefaultToolkit().beep();
-        }
+    public void performClickAction(final Document doc, final int offset, HyperlinkType type) {
+        final AtomicBoolean cancel = new AtomicBoolean();
+        ProgressUtils.runOffEventDispatchThread(new Runnable() {
+            @Override
+            public void run() {
+                goToNQ(doc, offset);
+            }
+        }, NbBundle.getMessage(NamedQueryHyperlinkProvider.class, "LBL_GoToNamedQuery"), cancel, false);
     }
 
     @Override
     public String getTooltipText(Document doc, int offset, HyperlinkType type) {
         TokenHierarchy th = TokenHierarchy.get(doc);
         TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(th, offset);
-        
-        if (ts == null)
+
+        if (ts == null) {
             return null;
-        
+        }
+
         ts.move(offset);
-        if (!ts.moveNext())
+        if (!ts.moveNext()) {
             return null;
-        
+        }
+
         Token<JavaTokenId> t = ts.token();
         FileObject fo = getFileObject(doc);
         String name = t.text().toString();
-        name = name.substring(name.startsWith("\"") ? 1 : 0, name.endsWith("\"") ? name.length()-1 : name.length());
+        name = name.substring(name.startsWith("\"") ? 1 : 0, name.endsWith("\"") ? name.length() - 1 : name.length());
         String query = findNq(fo, name);
         if (query != null) {
             return query;
         }
         return null;
     }
-    
-    private Line getLine(Document doc, int offset) {
+
+    private void goToNQ(Document doc, int offset) {
         TokenHierarchy th = TokenHierarchy.get(doc);
         TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(th, offset);
-        
-        if (ts == null)
-            return null;
-        
+
+        if (ts == null) {
+            return;
+        }
+
         ts.move(offset);
-        if (!ts.moveNext())
-            return null;
-        
+        if (!ts.moveNext()) {
+            return;
+        }
+
         Token<JavaTokenId> t = ts.token();
-        FileObject fo = getFileObject(doc);
+        final FileObject fo = getFileObject(doc);
         String name = t.text().toString();
-        name = name.substring(name.startsWith("\"") ? 1 : 0, name.endsWith("\"") ? name.length()-1 : name.length());
-        FileObject ent  = findEntity(fo, name);
+        name = name.substring(name.startsWith("\"") ? 1 : 0, name.endsWith("\"") ? name.length() - 1 : name.length());
+        final String nam = name;
+        Project project = FileOwnerQuery.getOwner(getFileObject(doc));
+        if (project == null) {
+            return;
+        }
+        Object[] entInfo = findEntity(fo, nam);
+        if (entInfo == null) {
+            return;
+        }
+        final FileObject ent = (FileObject) entInfo[1];
+        final String entClasst = (String) entInfo[0];
+        JavaSource js = JavaSource.forFileObject(ent);
+
         if (ent != null) {
             try {
-                DataObject dobj = DataObject.find(ent);
-                EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
-                try {
-                    ec.openDocument();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-                LineCookie lc = dobj.getLookup().lookup(LineCookie.class);
-                if (lc != null) {
-                    Line.Set ls = lc.getLineSet();
-                    for (Line line : ls.getLines()) {
-                        if (line.getText().contains("\""+name+"\"")) {
-                            return line;
+                js.runUserActionTask(new Task<CompilationController>() {
+
+                    @Override
+                    public void run(CompilationController parameter) throws Exception {
+                        parameter.toPhase(JavaSource.Phase.RESOLVED);
+                        AnnotationMirror foundAm = null;
+                        AnnotationValue get = null;
+                        Trees trees = parameter.getTrees();
+                        
+                        TypeElement entityElement = parameter.getElements().getTypeElement(entClasst);trees.getSourcePositions().getStartPosition(parameter.getCompilationUnit(), trees.getPath(entityElement).getLeaf());
+                        List<? extends AnnotationMirror> annotationMirrors = entityElement.getAnnotationMirrors();
+                        if (annotationMirrors != null) {
+                            Iterator<? extends AnnotationMirror> iterator = annotationMirrors.iterator();
+                            while (iterator.hasNext() && foundAm == null) {
+                                AnnotationMirror next = iterator.next();
+                                if (next.getAnnotationType().toString().equals("javax.persistence.NamedQueries")) {//NOI18N
+
+                                    Map<? extends ExecutableElement, ? extends AnnotationValue> maps = next.getElementValues();
+
+                                    for (AnnotationValue vl : maps.values()) {
+                                        List lst = (List) vl.getValue();
+                                        for (Object val : lst) {
+                                            if (val instanceof AnnotationMirror) {
+                                                AnnotationMirror am = (AnnotationMirror) val;
+                                                if ("javax.persistence.NamedQuery".equals(am.getAnnotationType().toString())) {//NOI18N
+                                                    Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues = am.getElementValues();
+                                                    for (ExecutableElement el : elementValues.keySet()) {
+                                                        if (el.getSimpleName().contentEquals("name")) { //NOI18N
+                                                            get = elementValues.get(el);
+                                                            if (get.getValue().toString().equals(nam)) {
+                                                                foundAm = am;
+                                                                break;
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            if(foundAm != null) {
+                                                break;
+                                            }
+                                        }
+                                        if(foundAm != null) {
+                                            break;
+                                        }
+                                    }
+
+                                } else if (next.getAnnotationType().toString().equals("javax.persistence.NamedQuery")) {//NOI18N
+                                    if (next.getElementValues().size() > 0) {
+                                        Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues = next.getElementValues();
+                                        for (ExecutableElement el : elementValues.keySet()) {
+                                            if (el.getSimpleName().contentEquals("name")) { //NOI18N
+                                                get = elementValues.get(el);
+                                                if (get.getValue().toString().equals(nam)) {
+                                                    foundAm = next;
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if(foundAm != null) {
+                            TreePath tree = trees.getPath(entityElement, foundAm, get);                            
+                            int startOffset = (int) trees.getSourcePositions().getStartPosition(parameter.getCompilationUnit(), tree.getLeaf());
+                            UiUtils.open(ent, startOffset );
                         }
                     }
-                }
-            } catch (DataObjectNotFoundException ex) {
+                }, true);
+                //parameter.getClasspathInfo()
+            } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
-        return null;
     }
-    
-    private FileObject findEntity(FileObject javaFile, String nqName) {
+
+    private Object[] findEntity(FileObject javaFile, String nqName) {
         Project prj = FileOwnerQuery.getOwner(javaFile);
         if (prj == null) {
             return null;
@@ -181,7 +259,7 @@ public class NamedQueryHyperlinkProvider implements HyperlinkProviderExt {
         ClassPath cp = ClassPath.getClassPath(javaFile, ClassPath.SOURCE);
         if (cp == null) {
             return null;
-        }       
+        }
         EntityClassScopeProvider provider = (EntityClassScopeProvider) prj.getLookup().lookup(EntityClassScopeProvider.class);
         EntityClassScope ecs = null;
         Entity[] entities = null;
@@ -191,7 +269,7 @@ public class NamedQueryHyperlinkProvider implements HyperlinkProviderExt {
         if (ecs != null) {
             try {
                 entities = ecs.getEntityMappingsModel(false).runReadAction(new MetadataModelAction<EntityMappingsMetadata, Entity[]>() {
-                   @Override
+                    @Override
                     public Entity[] run(EntityMappingsMetadata metadata) throws Exception {
                         return metadata.getRoot().getEntity();
                     }
@@ -200,16 +278,18 @@ public class NamedQueryHyperlinkProvider implements HyperlinkProviderExt {
             } catch (IOException ex) {
             }
         }
-        if(entities != null)
-        for (Entity entity : entities) {
-            for(NamedQuery nq:entity.getNamedQuery()){
-                if(nqName.equals(nq.getName())){
-                    return cp.findResource(entity.getClass2().replace('.', '/')+".java");
+        if (entities != null) {
+            for (Entity entity : entities) {
+                for (NamedQuery nq : entity.getNamedQuery()) {
+                    if (nqName.equals(nq.getName())) {
+                        return new Object[]{entity.getClass2(), cp.findResource(entity.getClass2().replace('.', '/') + ".java")};
+                    }
                 }
             }
         }
         return null;
     }
+
     private String findNq(FileObject javaFile, String nqName) {
         Project prj = FileOwnerQuery.getOwner(javaFile);
         if (prj == null) {
@@ -218,7 +298,7 @@ public class NamedQueryHyperlinkProvider implements HyperlinkProviderExt {
         ClassPath cp = ClassPath.getClassPath(javaFile, ClassPath.SOURCE);
         if (cp == null) {
             return null;
-        }       
+        }
         EntityClassScopeProvider provider = (EntityClassScopeProvider) prj.getLookup().lookup(EntityClassScopeProvider.class);
         EntityClassScope ecs = null;
         Entity[] entities = null;
@@ -228,7 +308,7 @@ public class NamedQueryHyperlinkProvider implements HyperlinkProviderExt {
         if (ecs != null) {
             try {
                 entities = ecs.getEntityMappingsModel(false).runReadAction(new MetadataModelAction<EntityMappingsMetadata, Entity[]>() {
-                   @Override
+                    @Override
                     public Entity[] run(EntityMappingsMetadata metadata) throws Exception {
                         return metadata.getRoot().getEntity();
                     }
@@ -239,19 +319,20 @@ public class NamedQueryHyperlinkProvider implements HyperlinkProviderExt {
                 Exceptions.printStackTrace(ex);
             }
         }
-        if(entities != null)
-        for (Entity entity : entities) {
-            for(NamedQuery nq:entity.getNamedQuery()){
-                if(nqName.equals(nq.getName())){
-                    return nq.getQuery();
+        if (entities != null) {
+            for (Entity entity : entities) {
+                for (NamedQuery nq : entity.getNamedQuery()) {
+                    if (nqName.equals(nq.getName())) {
+                        return nq.getQuery();
+                    }
                 }
             }
         }
         return null;
     }
-    
+
     private static final Set<JavaTokenId> USABLE_TOKEN_IDS = EnumSet.of(JavaTokenId.STRING_LITERAL);
-    
+
     public static int[] getIdentifierSpan(final Document doc, final int offset, Token<JavaTokenId>[] token) {
         FileObject fo = getFileObject(doc);
         if (fo == null) {
@@ -262,13 +343,13 @@ public class NamedQueryHyperlinkProvider implements HyperlinkProviderExt {
         if (prj == null) {
             return null;
         }
-     
+
         EntityClassScopeProvider eCS = prj.getLookup().lookup(EntityClassScopeProvider.class);
-        if(eCS == null){
+        if (eCS == null) {
             return null;//no jpa support
         }
 
-        final int[] ret = new int[] { -1, -1 };
+        final int[] ret = new int[]{-1, -1};
         doc.render(new Runnable() {
             @Override
             public void run() {
@@ -307,14 +388,13 @@ public class NamedQueryHyperlinkProvider implements HyperlinkProviderExt {
             }
         });
         return (ret[0] == -1) ? null : ret;
-        
+
     }
-    
+
     private static FileObject getFileObject(Document doc) {
         DataObject od = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
-        
+
         return od != null ? od.getPrimaryFile() : null;
     }
-    
 
 }

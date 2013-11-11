@@ -45,6 +45,7 @@ package org.netbeans.modules.maven.execute.cmd;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.api.annotations.common.NonNull;
 import org.openide.util.Utilities;
 
 /**
@@ -52,9 +53,9 @@ import org.openide.util.Utilities;
  * @author mkleint
  */
 public class ShellConstructor implements Constructor {
-    private final File mavenHome;
+    private final @NonNull File mavenHome;
 
-    public ShellConstructor(File mavenHome) {
+    public ShellConstructor(@NonNull File mavenHome) {
         this.mavenHome = mavenHome;
     }
 
@@ -63,21 +64,10 @@ public class ShellConstructor implements Constructor {
         //#164234
         //if maven.bat file is in space containing path, we need to quote with simple quotes.
         String quote = "\"";
-        // the command line parameters with space in them need to be quoted and escaped to arrive
-        // correctly to the java runtime on windows
-        String escaped = "\\" + quote;
         List<String> toRet = new ArrayList<String>();
         String ex = Utilities.isWindows() ? "mvn.bat" : "mvn"; //NOI18N
-        if (mavenHome != null) {
-            File bin = new File(mavenHome, "bin" + File.separator + ex);//NOI18N
-            if (bin.exists()) {
-                toRet.add(quoteSpaces(bin.getAbsolutePath(), quote));
-            } else {
-                toRet.add(ex);
-            }
-        } else {
-            toRet.add(ex);
-        }
+        File bin = new File(mavenHome, "bin" + File.separator + ex);//NOI18N
+        toRet.add(quoteSpaces(bin.getAbsolutePath(), quote));
 
         if (Utilities.isWindows()) { //#153101, since #228901 always on windows use cmd /c
             toRet.add(0, "/c"); //NOI18N

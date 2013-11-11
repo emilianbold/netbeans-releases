@@ -47,64 +47,97 @@ import java.util.Date;
 /**
  * Provides access to scheduling data for a given task so that they can by used 
  * by the Tasks Dashboard facilities - filtering or grouping by schedule date.
- * <br/>
+ * 
+ * <p>
+ * Typically a bugtracking system make it possible to specify a date when an issue 
+ * is due, but this doesn't have to be the same date as the user private date for 
+ * which an Issue was scheduled to start work on.
+ * </p>
+ * 
+ * <p>
  * It is up to the particular implementation if the values eventually match with  
  * corresponding remote repository fields or if they are merely handed 
  * locally as user private.
- * <br/>
+ * </p>
+ * 
+ * <p>
  * Note that an implementation of this interface is not mandatory for a 
  * NetBeans bugtracking plugin. 
+ * <p>
  * 
  * @author Tomas Stupka
  * @param <I> the implementation specific issue type
+ * @since 1.85
  */
 public interface IssueSchedulingProvider<I> {
         
     /**
-     * Sets the due date
+     * Sets the date when the Issue is to be finished. 
+     * <p>
+     * Note that this is a different date as for when the Issue is scheduled. 
+     * <p>
      * 
-     * @param i
+     * @param i an implementation specific issue instance
      * @param date 
+     * @since 1.85
      */
     public void setDueDate(I i, Date date);
 
     /**
-     * Sets the schedule date. 
+     * Sets the schedule info describing the time period for which 
+     * the Issue was scheduled to start work on. 
+     * <p>
+     * Note that this is a different date as when the Issue is due to be finished. 
+     * <p>
      * 
-     * @param i
-     * @param date 
+     * @param i an implementation specific issue instance
+     * @param scheduleInfo a ScheduleInfo describing the Issues scheduling 
+     * @since 1.85
      */
-    public void setSchedule(I i, IssueScheduleInfo date);
+    public void setSchedule(I i, IssueScheduleInfo scheduleInfo);
 
     /**
-     * Sets the estimate in hours
+     * Sets the estimate in hours.
      * 
-     * @param i
-     * @param hours 
+     * @param i an implementation specific issue instance
+     * @param hours the Issues estimate
+     * @since 1.85
      */
     public void setEstimate(I i, int hours); 
 
     /**
-     * Returns the due date
+     * Returns the due date.
      * 
-     * @param i
-     * @return 
+     * <p>
+     * Note that this is a different date as for when the Issue is scheduled. 
+     * <p>
+     * 
+     * @param i an implementation specific issue instance
+     * @return the Issues due date
+     * @since 1.85
      */
     public Date getDueDate(I i);
 
     /**
-     * Returns the schedule date
+     * Returns the the schedule info describing the time period for which 
+     * the Issue was scheduled to start work on. 
      * 
-     * @param i
-     * @return 
+     * <p>
+     * Note that this is a different date as when the Issue is due to be finished. 
+     * <p>
+     * 
+     * @param i an implementation specific issue instance
+     * @return the Issues schedule info
+     * @since 1.85
      */
     public IssueScheduleInfo getSchedule(I i);
 
     /**
-     * Returns the estimate in hours
+     * Returns the estimate in hours.
      * 
-     * @param i
-     * @return 
+     * @param i an implementation specific issue instance
+     * @return the Issues estimate
+     * @since 1.85
      */
     public int getEstimate(I i); 
     

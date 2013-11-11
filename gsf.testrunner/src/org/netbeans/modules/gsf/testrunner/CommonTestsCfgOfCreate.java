@@ -45,9 +45,11 @@
 package org.netbeans.modules.gsf.testrunner;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.File;
 import java.util.List;
 import java.util.*;
 import java.util.prefs.Preferences;
@@ -93,6 +95,8 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
     
     /** suffix of test classes */
     private static final String TEST_CLASS_SUFFIX = "Test";             //NOI18N
+    /** suffix of integration test classes */
+    private static final String INTEGRATION_TEST_CLASS_SUFFIX = "IT";             //NOI18N
     
     /**
      * nodes selected when the Create Tests action was invoked
@@ -154,8 +158,12 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
     private static final int MSG_TYPE_MODIFIED_FILES = 3;
     /** layer index for a message about j2me project type */
     private static final int MSG_TYPE_J2ME_PROJECT = 4;
+    /** layer index for a message about updating a single test class */
+    private static final int MSG_TYPE_UPDATE_SINGLE_TEST_CLASS = 5;
+    /** layer index for a message about updating all test classes */
+    private static final int MSG_TYPE_UPDATE_ALL_TEST_CLASSES = 6;
     /** */
-    private MessageStack msgStack = new MessageStack(5);
+    private MessageStack msgStack = new MessageStack(7);
 
     private Collection<SourceGroup> createdSourceRoots = new ArrayList<SourceGroup>();
     
@@ -306,6 +314,32 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
         singleClass = dataObj.getPrimaryFile().isData();
         return !singleClass;
     }
+
+    @NbBundle.Messages({"MSG_UPDATE_SINGLE_TEST_CLASS=The existing test class will be updated.",
+    "MSG_UPDATE_ALL_TEST_CLASSES=Any existing test classes will be updated."})
+    private void checkUpdatingExistingTestClass() {
+        if(tfClassName == null) {
+            setMessage(Bundle.MSG_UPDATE_ALL_TEST_CLASSES(), MSG_TYPE_UPDATE_ALL_TEST_CLASSES);
+        } else {
+            FileObject locationFO = getTargetFolder();
+            if (locationFO != null) {
+                String targetFolderPath = FileUtil.toFile(locationFO).getAbsolutePath();
+                String className = tfClassName.getText();
+                String packageName = className.substring(0, className.lastIndexOf('.'));
+                String fileName = className.substring(className.lastIndexOf('.')+ 1);
+                FileObject testFolderFO = FileUtil.toFileObject(new File(targetFolderPath.concat(File.separator).concat(packageName.replace(".", "/"))));
+                if(testFolderFO != null) {
+                    for(FileObject testClassFO : testFolderFO.getChildren()) {
+                        if(testClassFO.getName().equals(fileName)) {
+                            setMessage(Bundle.MSG_UPDATE_SINGLE_TEST_CLASS(), MSG_TYPE_UPDATE_SINGLE_TEST_CLASS);
+                            return;
+                        }
+                    }
+                }
+            }
+            setMessage(null, MSG_TYPE_UPDATE_SINGLE_TEST_CLASS);
+        }
+    }
     
     /**
      * Displays a configuration dialog and updates JUnit options according
@@ -374,6 +408,15 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
     public boolean isSingleClass() {
         return singleClass;
     }
+    
+    /**
+     * Returns whether integration tests are to be created.
+     *
+     * @return  true if integration tests are to be created
+     */
+    public boolean isIntegrationTests() {
+        return chkIntegrationTests.isSelected();
+    }
 
     public boolean isSinglePackage() {
         return singlePackage;
@@ -413,6 +456,7 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
         boolean chkTearDownB = true;
         boolean chkBeforeClassB = true;
         boolean chkAfterClassB = true;
+        boolean chkGenerateIntegrationTests = true;
         Collection<? extends CommonSettingsProvider> providers = Lookup.getDefault().lookupAll(CommonSettingsProvider.class);
         for (CommonSettingsProvider provider : providers) {
             chkPublicB = provider.isMembersPublic();
@@ -429,6 +473,7 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
             chkTearDownB = provider.isGenerateTearDown();
             chkBeforeClassB = provider.isGenerateClassSetUp();
             chkAfterClassB = provider.isGenerateClassTearDown();
+            chkGenerateIntegrationTests = provider.isGenerateIntegrationTests();
             break;
         }
         
@@ -448,6 +493,7 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
         chkTearDown.setSelected(chkTearDownB);
         chkBeforeClass.setSelected(chkBeforeClassB);
         chkAfterClass.setSelected(chkAfterClassB);
+        chkIntegrationTests.setSelected(chkGenerateIntegrationTests);
     }
     
     /**
@@ -475,6 +521,7 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
             provider.setGenerateTearDown(chkTearDown.isSelected());
             provider.setGenerateClassSetUp(chkBeforeClass.isSelected());
             provider.setGenerateClassTearDown(chkAfterClass.isSelected());
+            provider.setGenerateIntegrationTests(isIntegrationTests());
             break;
         }
     }
@@ -538,7 +585,7 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
         chkProtected.addItemListener(listener);
         chkPackage.addItemListener(listener);
     }
-    
+
     /**
      * Listener object that listens on state changes of some check-boxes.
      */
@@ -580,6 +627,21 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
     }
     
     private void fireFrameworkChanged() {
+        setSelectedTestingFramework();
+        Collection<? extends GuiUtilsProvider> providers = Lookup.getDefault().lookupAll(GuiUtilsProvider.class);
+        for (GuiUtilsProvider provider : providers) {
+            if(selectedTestingFramework.equals(provider.getJunitFramework())) {
+                chkIntegrationTests.setEnabled(true);
+            } else {
+                chkIntegrationTests.setEnabled(false);
+            }
+            break;
+        }
+        updateClassName();
+        checkUpdatingExistingTestClass();
+    }
+    
+    private void updateClassName() {
         if (tfClassName != null) {
             DataObject dataObj = nodes[0].getLookup().lookup(DataObject.class);
             FileObject fileObj = dataObj.getPrimaryFile();
@@ -587,12 +649,12 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
             ClassPath cp = ClassPath.getClassPath(fileObj, ClassPath.SOURCE);
             String className = cp.getResourceName(fileObj, '.', false);
 
-            String prefilledName = className + getTestingFrameworkSuffix() + TEST_CLASS_SUFFIX;
+            String suffix = chkIntegrationTests.isEnabled() && chkIntegrationTests.isSelected() ? INTEGRATION_TEST_CLASS_SUFFIX : TEST_CLASS_SUFFIX;
+            String prefilledName = className + getTestingFrameworkSuffix() + suffix;
             tfClassName.setText(prefilledName);
             tfClassName.setDefaultText(prefilledName);
             tfClassName.setCaretPosition(prefilledName.length());
         }
-        setSelectedTestingFramework();
     }
     
     private void setSelectedTestingFramework() {
@@ -611,7 +673,7 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
             testingFrameworks.add(testingFramework);
         }
         cboxFramework.setModel(new DefaultComboBoxModel(testingFrameworks.toArray()));
-	cboxFramework.setSelectedItem(getLastSelectedTestingFramework());
+        cboxFramework.setSelectedItem(getLastSelectedTestingFramework());
         fireFrameworkChanged();
     }
 
@@ -706,6 +768,26 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
             }
         }
         
+        String[] chkBoxIDs = new String[1];
+        JCheckBox[] chkBoxes;
+        for (GuiUtilsProvider provider : providers) {
+            chkBoxIDs = new String[]{provider.getCheckboxText("CHK_INTEGRATION_TESTS")};
+            break;
+        }
+        chkBoxes = new JCheckBox[chkBoxIDs.length];
+        for (GuiUtilsProvider provider : providers) {
+            chkBoxes = provider.createCheckBoxes(chkBoxIDs);
+            break;
+        }
+        chkIntegrationTests = chkBoxes[0];
+        chkIntegrationTests.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                updateClassName();
+                checkUpdatingExistingTestClass();
+            }
+        });
+        
         panel.setLayout(new GridBagLayout());
         
         GridBagConstraints gbcLeft = new GridBagConstraints();
@@ -736,6 +818,7 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
         gbcRight.insets.bottom = 0;
         panel.add(lblFramework,      gbcLeft);
         panel.add(cboxFramework,     gbcRight);
+        panel.add(chkIntegrationTests,     gbcRight);
         
         return panel;
     }
@@ -1097,7 +1180,8 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
             lblClassToTestValue.setText(className);
             
             if (tfClassName != null) {
-                String prefilledName = className + getTestingFrameworkSuffix() + TEST_CLASS_SUFFIX;
+                String suffix = isIntegrationTests() ? INTEGRATION_TEST_CLASS_SUFFIX : TEST_CLASS_SUFFIX;
+                String prefilledName = className + getTestingFrameworkSuffix() + suffix;
                 tfClassName.setText(prefilledName);
                 tfClassName.setDefaultText(prefilledName);
                 tfClassName.setCaretPosition(prefilledName.length());
@@ -1379,5 +1463,6 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
     private JCheckBox chkTearDown;
     private JCheckBox chkBeforeClass;
     private JCheckBox chkAfterClass;
+    private JCheckBox chkIntegrationTests;
 
 }

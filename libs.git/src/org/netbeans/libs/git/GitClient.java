@@ -98,6 +98,9 @@ import org.netbeans.libs.git.jgit.commands.SetRemoteCommand;
 import org.netbeans.libs.git.jgit.commands.StatusCommand;
 import org.netbeans.libs.git.jgit.commands.UnignoreCommand;
 import org.netbeans.libs.git.jgit.commands.SetUpstreamBranchCommand;
+import org.netbeans.libs.git.jgit.commands.SubmoduleInitializeCommand;
+import org.netbeans.libs.git.jgit.commands.SubmoduleStatusCommand;
+import org.netbeans.libs.git.jgit.commands.SubmoduleUpdateCommand;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.NotificationListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
@@ -655,6 +658,24 @@ public final class GitClient {
         cmd.execute();
         return cmd.getFileDifferences();
     }
+    
+    /**
+     * Scans for any submodules under given roots or in the whole repository and
+     * returns their status.
+     *
+     * @param roots files to search for submodules. If empty all submodules will
+     * be returned
+     * @param monitor command progress monitor
+     * @return status map of repository's submodules
+     * @throws GitException an unexpected error occurs
+     * @since 1.16
+     */
+    public Map<File, GitSubmoduleStatus> getSubmoduleStatus (File[] roots, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        SubmoduleStatusCommand cmd = new SubmoduleStatusCommand(repository, getClassFactory(), roots, monitor);
+        cmd.execute();
+        return cmd.getStatuses();
+    }
 
     /**
      * Returns remote configuration set up for this repository identified by a given remoteName
@@ -727,6 +748,23 @@ public final class GitClient {
         Repository repository = gitRepository.getRepository();
         InitRepositoryCommand cmd = new InitRepositoryCommand(repository, getClassFactory(), monitor);
         cmd.execute();
+    }
+
+    /**
+     * Initializes submodules and registers them in .git/config file.
+     *
+     * @param roots modules to initialize
+     * @param monitor progress monitor
+     * @return initialized submodule statuses
+     * @throws GitException an unexpected error occurs
+     * @since 1.16
+     */
+    public Map<File, GitSubmoduleStatus> initializeSubmodules (File[] roots, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        SubmoduleInitializeCommand cmd = new SubmoduleInitializeCommand(repository, getClassFactory(),
+                roots, monitor);
+        cmd.execute();
+        return cmd.getStatuses();
     }
 
     /**
@@ -1063,6 +1101,24 @@ public final class GitClient {
         UnignoreCommand cmd = new UnignoreCommand(repository, getClassFactory(), files, monitor, delegateListener);
         cmd.execute();
         return cmd.getModifiedIgnoreFiles();
+    }
+
+    /**
+     * Updates submodules. An equivalent to submodule update command.
+     *
+     * @param roots modules to update
+     * @param monitor progress monitor
+     * @return submodule statuses
+     * @throws GitException an unexpected error occurs
+     * @since 1.16
+     */
+    public Map<File, GitSubmoduleStatus> updateSubmodules (File[] roots, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        SubmoduleUpdateCommand cmd = new SubmoduleUpdateCommand(repository, getClassFactory(),
+                roots, monitor);
+        cmd.setCredentialsProvider(credentialsProvider);
+        cmd.execute();
+        return cmd.getStatuses();
     }
 
     private GitClassFactory getClassFactory () {

@@ -48,11 +48,20 @@ import static org.junit.Assert.*;
 public class AtoumTest {
 
     @Test
-    public void testLinePattern() {
+    public void testLinePatternUnix() {
         String line = "/home/gapon/NetBeansProjects/atoum-sample/vendor/atoum/atoum/classes/test.php:838";
         Matcher matcher = Atoum.LINE_PATTERN.matcher(line);
         assertTrue(matcher.matches());
         assertEquals("/home/gapon/NetBeansProjects/atoum-sample/vendor/atoum/atoum/classes/test.php", matcher.group(1));
+        assertEquals("838", matcher.group(2));
+    }
+
+    @Test
+    public void testLinePatternWin() {
+        String line = "C:\\Program Files\\myprojects\\test.php:838";
+        Matcher matcher = Atoum.LINE_PATTERN.matcher(line);
+        assertTrue(matcher.matches());
+        assertEquals("C:\\Program Files\\myprojects\\test.php", matcher.group(1));
         assertEquals("838", matcher.group(2));
     }
 

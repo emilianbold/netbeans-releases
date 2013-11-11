@@ -71,6 +71,9 @@ import org.netbeans.lib.lexer.TokenList;
 
 public class DefaultToken<T extends TokenId> extends AbstractToken<T> {
 
+    private static final int BIT_31 = 1 << 31;
+    private static final int MASK_31 = ~BIT_31;
+    
     // -J-Dorg.netbeans.lib.lexer.token.DefaultToken.level=FINE
     private static final Logger LOG = Logger.getLogger(DefaultToken.class.getName());
     
@@ -93,7 +96,7 @@ public class DefaultToken<T extends TokenId> extends AbstractToken<T> {
         toStringStacks = LOG_TOKEN_TEXT_TO_STRING ? StackElementArray.createSet() : null;
     }
     
-    final int tokenLength; // 24 bytes (20-super + 4)
+    int tokenLength; // 24 bytes (20-super + 4)
     
     /**
      * Construct new default token.
@@ -114,9 +117,20 @@ public class DefaultToken<T extends TokenId> extends AbstractToken<T> {
 
     @Override
     public int length() {
-        return tokenLength;
+        return tokenLength & MASK_31;
     }
 
+    @Override
+    public boolean isNoDefaultEmbedding() {
+        return (tokenLength & BIT_31) != 0;
+    }
+
+    @Override
+    public AbstractToken<T> markNoDefaultEmbedding() {
+        tokenLength |= BIT_31;
+        return null;
+    }
+    
     @Override
     protected String dumpInfoTokenType() {
         return "DefT"; // NOI18N "TextToken" or "FlyToken"
@@ -130,30 +144,36 @@ public class DefaultToken<T extends TokenId> extends AbstractToken<T> {
     public CharSequence text() {
         CharSequence text;
         TokenList<T> tList = tokenList;
-        if (!isRemoved()) { // Updates status for EmbeddedTokenList; tokenList != null
-            // Create subsequence of input source text
-            CharSequence inputSourceText = tList.inputSourceText();
-            int tokenOffset = tList.tokenOffset(this);
-            int start = tokenOffset;
-            int end = tokenOffset + tokenLength;
-            if (LOG_TOKEN_TEXT_TO_STRING) {
-                CharSequenceUtilities.checkIndexesValid(inputSourceText, start, end);
-                text = new InputSourceSubsequence(this, inputSourceText, start, end);
-            } else {
-                // Temporary fix for issue #225394
-                try {
-                    return inputSourceText.subSequence(start, end);
-                } catch (IndexOutOfBoundsException ex) {
-                    // Log that the IOOBE occurred.
-                    if (!textFailureLogged) {
-                        textFailureLogged = true;
-                        LOG.log(Level.INFO, "Obtaining of token text failed.", ex);
+        if (!isRemoved()) {
+            TokenList<?> rootTokenList = tList.rootTokenList();
+            synchronized (rootTokenList) {
+                // Create subsequence of input source text
+                CharSequence inputSourceText = tList.inputSourceText();
+                int tokenOffset = tList.tokenOffset(this);
+                int start = tokenOffset;
+                int end = tokenOffset + length();
+                if (LOG_TOKEN_TEXT_TO_STRING) {
+                    CharSequenceUtilities.checkIndexesValid(inputSourceText, start, end);
+                    text = new InputSourceSubsequence(this, inputSourceText, start, end);
+                } else {
+                    // Temporary fix for issue #225394
+                    try {
+                        return inputSourceText.subSequence(start, end);
+                    } catch (IndexOutOfBoundsException ex) {
+                        // Log that the IOOBE occurred.
+                        if (!textFailureLogged) {
+                            textFailureLogged = true;
+                            LOG.log(Level.INFO, "Obtaining of token text failed.", ex); // NOI18N
+                            LOG.info("Errorneous token: IHC=" + System.identityHashCode(this) + ", rawOffset=" + rawOffset() + // NOI18N
+                                    ", tokenLength=" + tokenLength + ", start=" + start + ", end=" + end); // NOI18N
+                            LOG.info("Errorneous token hierarchy:\n" + rootTokenList.tokenHierarchyOperation().toString()); // NOI18N
+                        }
+                        return "";
                     }
-                    return "";
                 }
             }
 
-        } else { // Token is removed
+        } else { // Token is removed or flyweight
             text = null;
         }
         return text;

@@ -49,7 +49,6 @@ var NBJDK_DOWNLOAD_LINK  = "http://www.oracle.com/technetwork/java/javase/downlo
 var JAVA_COM_LINK        = "http://java.com/";
 
 var JDK_NOTE_ALL      = "Java 7 and later versions are required for installing and running the PHP and C/C++ NetBeans Bundles. You can download the <a href=\"{0}\">latest Java at java.com</a>.<br><br>JDK 7 and later versions are required for installing and running the Java SE, Java EE and All NetBeans Bundles. You can download <a href=\"{1}\">standalone JDK</a> or download the latest <a href=\"{2}\">JDK with NetBeans IDE Java SE bundle</a>.<br><br>";
-var JDK_NOTE_MACOSX   = "Java 7 and later versions are required for installing and running the PHP and C/C++ NetBeans Bundles. You can download the <a href=\"{0}\">latest Java at java.com</a>.<br><br>JDK 7 and later versions are required for installing and running the Java SE, Java EE and All NetBeans Bundles. You can download <a href=\"{1}\">standalone JDK</a> or download the latest <a href=\"{2}\">JDK with NetBeans IDE Java SE bundle</a>.<br><br>";
 
 var FREE_SIZE_MESSAGE  = "Free, {0}&nbsp;MB";
 var NOT_AVAILABLE_SIZE = "--";
@@ -66,8 +65,6 @@ var MULTIPLE_NOT_AVAILABLE_BUNDLE = "{0} are not available for {1}";
 var ZIP_FILES_LIST_NAME             = "Zip Files";
 var MODULE_CLUSTERS_FILES_LIST_NAME = "Module Clusters";
 
-var NOTE_SOLARIS = "Note: Java ME is only available for Windows, Linux and Mac OS X.";
-var NOTE_MACOSX  = "Note: Java ME is only available for Windows, Linux and Mac OS X.";
 var NOTE_ZIP     = "Note: GlassFish and Apache Tomcat are only available in platform specific installers.";
 var NOTE_ALL     = "Note: Greyed out technologies are not supported for this platform.";
 

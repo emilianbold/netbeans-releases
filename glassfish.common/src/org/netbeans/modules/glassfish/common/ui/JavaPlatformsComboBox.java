@@ -79,7 +79,7 @@ public class JavaPlatformsComboBox
          * <p/>
          * @param platform Java SE platform reference.
          */
-        Platform(JavaPlatform platform) {
+        Platform(final JavaPlatform platform) {
             this.platform = platform;
         }
 
@@ -121,13 +121,14 @@ public class JavaPlatformsComboBox
 
         /**
          * Compares display name values of <code>Platform</code> instances.
+         * <p/>
          * @param p1 First <code>Platform</code> instance to be compared.
          * @param p2 Second <code>Platform</code> instance to be compared.
          * @return A negative integer, zero, or a positive integer as the first
          *         argument is less than, equal to, or greater than the second.
          */
         @Override
-        public int compare(Platform p1, Platform p2) {
+        public int compare(final Platform p1, final Platform p2) {
             String d1 = p1 != null ? p1.toString() : null;
             String d2 = p2 != null ? p2.toString() : null;
             return d1 != null
@@ -162,8 +163,6 @@ public class JavaPlatformsComboBox
     /**
      * Convert array of {@see JavaPlatform} objects to array of {@see Platform}
      * objects.
-     * <p/>
-     * 
      * <p/>
      * @param platformsIn An array of {@see JavaPlatform} objects
      *        to be converted.
@@ -287,15 +286,15 @@ public class JavaPlatformsComboBox
             platform = JavaPlatform.getDefault();
         }
         if (platform instanceof JavaPlatform) {
-        int i, count = dataModel.getSize();
-        for (i = 0; i < count; i++) {
-            if (((JavaPlatform)platform).getDisplayName().equals((
-                    (Platform)dataModel.getElementAt(i))
-                    .getPlatform().getDisplayName())) {
-                super.setSelectedItem(dataModel.getElementAt(i));
-                break;
+            int i, count = dataModel.getSize();
+            for (i = 0; i < count; i++) {
+                if (((JavaPlatform) platform).getDisplayName().equals(
+                        (dataModel.getElementAt(i))
+                        .getPlatform().getDisplayName())) {
+                    super.setSelectedItem(dataModel.getElementAt(i));
+                    break;
+                }
             }
-        }
         } else {
             super.setSelectedItem(platform);
         }

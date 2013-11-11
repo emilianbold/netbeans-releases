@@ -57,9 +57,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import javax.swing.JLabel;
-import org.netbeans.modules.bugtracking.team.spi.TeamAccessor;
-import org.netbeans.modules.bugtracking.team.spi.RepositoryUser;
-import org.netbeans.modules.bugtracking.util.NBBugzillaUtils;
+import org.netbeans.modules.bugtracking.api.Query;
+import org.netbeans.modules.team.spi.TeamAccessor;
+import org.netbeans.modules.team.spi.RepositoryUser;
+import org.netbeans.modules.bugtracking.commons.NBBugzillaUtils;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiManager;
@@ -73,15 +74,19 @@ import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.api.KenaiUIUtils;
 import org.netbeans.modules.team.server.ui.common.DashboardSupport;
 import org.netbeans.modules.team.server.ui.spi.TeamServer;
+import org.netbeans.modules.team.spi.TeamProject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.windows.TopComponent;
+import org.openide.windows.TopComponent.Registry;
+import org.openide.windows.WindowManager;
 
 /**
  *
  * @author Tomas Stupka
  */
-@org.openide.util.lookup.ServiceProviders({@ServiceProvider(service=org.netbeans.modules.bugtracking.team.spi.TeamAccessor.class),
+@org.openide.util.lookup.ServiceProviders({@ServiceProvider(service=org.netbeans.modules.team.spi.TeamAccessor.class),
                                            @ServiceProvider(service=org.netbeans.modules.bugtracking.kenai.TeamAccessorImpl.class)})
 public class TeamAccessorImpl extends TeamAccessor {
 
@@ -110,6 +115,7 @@ public class TeamAccessorImpl extends TeamAccessor {
                 }
             }
         });
+        WindowManager.getDefault().getRegistry().addPropertyChangeListener(new ActivatedTCListener());
     }
 
     
@@ -149,7 +155,7 @@ public class TeamAccessorImpl extends TeamAccessor {
     }
 
     @Override
-    public Collection<RepositoryUser> getProjectMembers(org.netbeans.modules.bugtracking.team.spi.TeamProject kp) throws IOException {
+    public Collection<RepositoryUser> getProjectMembers(org.netbeans.modules.team.spi.TeamProject kp) throws IOException {
         if(kp instanceof TeamProjectImpl) {
             List<RepositoryUser> members;
             KenaiProjectMember[] kenaiMembers = ((TeamProjectImpl)kp).getProject().getMembers();
@@ -197,19 +203,19 @@ public class TeamAccessorImpl extends TeamAccessor {
     }
 
     @Override
-    public org.netbeans.modules.bugtracking.team.spi.OwnerInfo getOwnerInfo(Node node) {
+    public org.netbeans.modules.team.spi.OwnerInfo getOwnerInfo(Node node) {
         OwnerInfo ownerInfo = NbModuleOwnerSupport.getInstance().getOwnerInfo(node);
         return ownerInfo != null ? new OwnerInfoImpl(ownerInfo) : null;
     }
 
     @Override
-    public org.netbeans.modules.bugtracking.team.spi.OwnerInfo getOwnerInfo(File file) {
+    public org.netbeans.modules.team.spi.OwnerInfo getOwnerInfo(File file) {
         OwnerInfo ownerInfo = NbModuleOwnerSupport.getInstance().getOwnerInfo(NbModuleOwnerSupport.NB_BUGZILLA_CONFIG, file);
         return ownerInfo != null ? new OwnerInfoImpl(ownerInfo) : null;
     }
 
     @Override
-    public org.netbeans.modules.bugtracking.team.spi.TeamProject[] getDashboardProjects(boolean onlyOpened) {
+    public org.netbeans.modules.team.spi.TeamProject[] getDashboardProjects(boolean onlyOpened) {
         ProjectHandle<KenaiProject>[] handles = KenaiUIUtils.getDashboardProjects(onlyOpened);
         if ((handles == null) || (handles.length == 0)) {
             return new TeamProjectImpl[0];
@@ -231,13 +237,13 @@ public class TeamAccessorImpl extends TeamAccessor {
     }
 
     @Override
-    public org.netbeans.modules.bugtracking.team.spi.TeamProject getTeamProjectForRepository(String url) throws IOException {
+    public org.netbeans.modules.team.spi.TeamProject getTeamProjectForRepository(String url) throws IOException {
         KenaiProject kp = KenaiProject.forRepository(url);
         return kp != null ? TeamProjectImpl.getInstance(kp) : null;
     }
 
     @Override
-    public org.netbeans.modules.bugtracking.team.spi.TeamProject getTeamProject(String url, String projectName) throws IOException {
+    public org.netbeans.modules.team.spi.TeamProject getTeamProject(String url, String projectName) throws IOException {
         Kenai kenai = getKenai(url);
         if (kenai == null) {
             Support.LOG.log(Level.FINEST, "no kenai for url : [{0}]", url);
@@ -366,7 +372,7 @@ public class TeamAccessorImpl extends TeamAccessor {
         }
     }
 
-    private class OwnerInfoImpl extends org.netbeans.modules.bugtracking.team.spi.OwnerInfo {
+    private class OwnerInfoImpl extends org.netbeans.modules.team.spi.OwnerInfo {
         private final OwnerInfo delegate;
 
         public OwnerInfoImpl(OwnerInfo delegate) {
@@ -437,6 +443,26 @@ public class TeamAccessorImpl extends TeamAccessor {
             if(delegates.isEmpty()) {
                 kenai.removePropertyChangeListener(this);
                 KenaiUIUtils.removeDashboardListener(kenai, this);
+            }
+        }
+    }
+    
+    private class ActivatedTCListener implements PropertyChangeListener {
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            Registry registry = WindowManager.getDefault().getRegistry();
+            if (Registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
+                TopComponent tc = registry.getActivated();
+                Support.LOG.log(Level.FINER, "activated TC : {0}", tc); // NOI18N
+                final Lookup lookup = tc.getLookup();
+                Query query = lookup.lookup(Query.class);
+                if(query == null || !QueryHandleImpl.isAllIssues(query)) {
+                    return;
+                }
+                TeamProject project = lookup.lookup(TeamProject.class);
+                if(project instanceof TeamProjectImpl) {
+                    ((TeamProjectImpl)project).fireQueryActivated(query);
+                }
             }
         }
     }

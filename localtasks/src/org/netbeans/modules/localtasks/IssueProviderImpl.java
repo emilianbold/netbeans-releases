@@ -44,15 +44,17 @@ package org.netbeans.modules.localtasks;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.Collection;
+import java.util.Collections;
 import org.netbeans.modules.localtasks.task.LocalTask;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
+import org.netbeans.modules.bugtracking.spi.IssueController;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
 
 /**
  *
  * @author Ondrej Vrabec
  */
-public class IssueProviderImpl extends org.netbeans.modules.bugtracking.spi.IssueProvider<LocalTask> {
+public class IssueProviderImpl implements IssueProvider<LocalTask> {
 
     @Override
     public String getDisplayName (LocalTask data) {
@@ -70,8 +72,8 @@ public class IssueProviderImpl extends org.netbeans.modules.bugtracking.spi.Issu
     }
 
     @Override
-    public String[] getSubtasks (LocalTask data) {
-        return new String[0];
+    public Collection<String> getSubtasks (LocalTask data) {
+        return Collections.emptyList();
     }
 
     @Override
@@ -100,12 +102,12 @@ public class IssueProviderImpl extends org.netbeans.modules.bugtracking.spi.Issu
     }
 
     @Override
-    public void attachPatch (LocalTask data, File file, String description) {
+    public void attachFile (LocalTask data, File file, String description, boolean isPatch) {
         data.attachPatch(file, description);
     }
 
     @Override
-    public BugtrackingController getController (LocalTask data) {
+    public IssueController getController (LocalTask data) {
         return data.getController();
     }
 
@@ -117,11 +119,6 @@ public class IssueProviderImpl extends org.netbeans.modules.bugtracking.spi.Issu
     @Override
     public void removePropertyChangeListener (LocalTask data, PropertyChangeListener listener) {
         data.removePropertyChangeListener(listener);
-    }
-
-    @Override
-    public void discardOutgoing(LocalTask data) {
-        data.delete();
     }
     
 }

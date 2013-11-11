@@ -97,7 +97,7 @@ import org.netbeans.lib.lexer.inc.TokenHierarchyEventInfo;
  * @author Miloslav Metelka
  */
 
-public final class TokenListList<T extends TokenId> extends GapList<EmbeddedTokenList<T>> {
+public final class TokenListList<T extends TokenId> extends GapList<EmbeddedTokenList<?,T>> {
 
     private final TokenList<?> rootTokenList;
 
@@ -106,6 +106,8 @@ public final class TokenListList<T extends TokenId> extends GapList<EmbeddedToke
     private boolean joinSections;
 
     private Set<Language<?>> childrenLanguages;
+    
+    private JoinTokenList<T> joinTokenList;
     
 
     public TokenListList(TokenList<?> rootTokenList, LanguagePath languagePath) {
@@ -127,14 +129,13 @@ public final class TokenListList<T extends TokenId> extends GapList<EmbeddedToke
             scanTokenList(rootTokenList, language);
         }
         
-        if (joinSections) {
-            JoinTokenList.create(this, 0, size());
-        } else { // Not joining sections
+        checkCreateJoinTokenList();
+        if (joinTokenList == null) {
             // Init individual lists if they are not yet.
             // TLL may be created later once someone calls e.g. TH.tokenSequenceList() but
             // individual non-joined ETLs might already been asked and populated with tokens.
-            for (EmbeddedTokenList<T> etl : this) {
-                assert (!etl.embedding().joinSections());
+            for (EmbeddedTokenList<?,T> etl : this) {
+                assert (!etl.languageEmbedding().joinSections());
                 // Here some ETLs might already be initialized and some not.
                 // There is no extra flag whether tokens were inited or not.
                 // Therefore check for token-count and possibly offset span.
@@ -154,13 +155,23 @@ public final class TokenListList<T extends TokenId> extends GapList<EmbeddedToke
             // there might be just few joinSections ETLs and rest non-joining 
             // and then the whole TLL should become joining so avoid extra work
             // that could be thrown away.
-            EmbeddedTokenList<T> etl = EmbeddingContainer.embeddedTokenList(tokenList, i, singleLanguageSet, false);
+            EmbeddedTokenList<?,T> etl = EmbeddingOperation.embeddedTokenList(tokenList, i, singleLanguageSet, false);
             if (etl != null) {
                 add(etl);
-                if (etl.embedding().joinSections()) {
+                if (etl.languageEmbedding().joinSections()) {
                     this.joinSections = true;
                 }
             }
+        }
+    }
+    
+    public JoinTokenList<T> joinTokenList() {
+        return joinTokenList;
+    }
+    
+    public void checkCreateJoinTokenList() {
+        if (joinSections && joinTokenList == null) {
+            joinTokenList = JoinTokenList.create(this);
         }
     }
     
@@ -203,17 +214,17 @@ public final class TokenListList<T extends TokenId> extends GapList<EmbeddedToke
     /**
      * Return a valid token list or null if the index is too high.
      */
-    public EmbeddedTokenList<T> getOrNull(int index) {
+    public EmbeddedTokenList<?,T> getOrNull(int index) {
         return (index < size()) ? get(index) : null;
     }
     
-    private static final EmbeddedTokenList<?>[] EMPTY_TOKEN_LIST_ARRAY = new EmbeddedTokenList<?>[0];
+    private static final EmbeddedTokenList<?,?>[] EMPTY_TOKEN_LIST_ARRAY = new EmbeddedTokenList<?,?>[0];
 
-    public EmbeddedTokenList<T>[] replace(int index, int removeTokenListCount, List<EmbeddedTokenList<T>> addTokenLists) {
+    public EmbeddedTokenList<?,T>[] replace(int index, int removeTokenListCount, List<EmbeddedTokenList<?,T>> addTokenLists) {
         @SuppressWarnings("unchecked")
-        EmbeddedTokenList<T>[] removed = (removeTokenListCount > 0)
-                ? (EmbeddedTokenList<T>[]) new EmbeddedTokenList[removeTokenListCount]
-                : (EmbeddedTokenList<T>[]) EMPTY_TOKEN_LIST_ARRAY;
+        EmbeddedTokenList<?,T>[] removed = (removeTokenListCount > 0)
+                ? (EmbeddedTokenList<?,T>[]) new EmbeddedTokenList[removeTokenListCount]
+                : (EmbeddedTokenList<?,T>[]) EMPTY_TOKEN_LIST_ARRAY;
         if (removeTokenListCount > 0) {
             copyElements(index, index + removeTokenListCount, removed, 0);
             remove(index, removeTokenListCount);
@@ -233,11 +244,12 @@ public final class TokenListList<T extends TokenId> extends GapList<EmbeddedToke
     public int findIndex(int offset) {
         int high = size() - 1;
         int low = 0;
+        int rootModCount = rootTokenList.modCount();
         while (low <= high) {
             int mid = (low + high) >>> 1;
-            EmbeddedTokenList<T> etl = get(mid);
+            EmbeddedTokenList<?,T> etl = get(mid);
             // Ensure that the startOffset() will be updated
-            etl.embeddingContainer().updateStatus();
+            etl.updateModCount(rootModCount);
             int cmp = etl.startOffset() - offset;
             if (cmp < 0)
                 low = mid + 1;
@@ -258,13 +270,13 @@ public final class TokenListList<T extends TokenId> extends GapList<EmbeddedToke
      * were removed then these TLs then the token lists beyond the modification point
      * will be forced to update itself which may 
      */
-    public int findIndexDuringUpdate(EmbeddedTokenList<T> targetEtl, TokenHierarchyEventInfo eventInfo) {
+    public int findIndexDuringUpdate(EmbeddedTokenList<?,T> targetEtl, TokenHierarchyEventInfo eventInfo) {
         int high = size() - 1;
         int low = 0;
         int targetStartOffset = LexerUtilsConstants.updatedStartOffset(targetEtl, eventInfo);
         while (low <= high) {
             int mid = (low + high) >>> 1;
-            EmbeddedTokenList<T> etl = get(mid);
+            EmbeddedTokenList<?,T> etl = get(mid);
             // Ensure that the startOffset() will be updated
             int startOffset = LexerUtilsConstants.updatedStartOffset(etl, eventInfo);
             int cmp = startOffset - targetStartOffset;
@@ -311,8 +323,8 @@ public final class TokenListList<T extends TokenId> extends GapList<EmbeddedToke
         // Check whether the token lists are in a right order
         int lastEndOffset = 0;
         for (int i = 0; i < size(); i++) {
-            EmbeddedTokenList<T> etl = get(i);
-            etl.embeddingContainer().updateStatusUnsync();
+            EmbeddedTokenList<?,T> etl = get(i);
+            etl.updateModCount();
             if (etl.isRemoved()) {
                 return "TOKEN-LIST-LIST Removed token list at index=" + i + '\n' + this;
             }
@@ -328,16 +340,13 @@ public final class TokenListList<T extends TokenId> extends GapList<EmbeddedToke
                         " > etl[" + i + "].endOffset()="+ etl.endOffset() +
                         "\n" + this;
             }
-            if (etl.embeddingContainer() == null) {
-                return "TOKEN-LIST-LIST Null ec at index=" + i + "\n" + this;
-            }
-            if (etl.embeddingContainer().isRemoved()) {
+            if (etl.isRemoved()) {
                 return "TOKEN-LIST-LIST Removed ec at index=" + i + "\n" + this;
             }
             lastEndOffset = etl.endOffset();
         }
         if (joinSections() && size() > 0) {
-            return get(0).joinTokenList().checkConsistency();
+            return joinTokenList().checkConsistency();
         }
         return null;
     }
@@ -356,10 +365,9 @@ public final class TokenListList<T extends TokenId> extends GapList<EmbeddedToke
         sb.append('\n');
         int digitCount = ArrayUtilities.digitCount(size());
         for (int i = 0; i < size(); i++) {
-            EmbeddedTokenList<T> etl = get(i);
+            EmbeddedTokenList<?,T> etl = get(i);
             ArrayUtilities.appendBracketedIndex(sb, i, digitCount);
-            EmbeddingContainer ec = etl.embeddingContainer();
-            ec.updateStatus();
+            etl.updateModCount();
             etl.dumpInfo(sb);
             sb.append('\n');
 //            LexerUtilsConstants.appendTokenListIndented(sb, etl, 4);

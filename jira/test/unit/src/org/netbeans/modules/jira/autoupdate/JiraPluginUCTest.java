@@ -45,8 +45,8 @@ package org.netbeans.modules.jira.autoupdate;
 import com.atlassian.connector.eclipse.internal.jira.core.model.JiraVersion;
 import java.io.IOException;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.bugtracking.util.AutoupdatePluginUCTestCase;
-import org.netbeans.modules.bugtracking.util.AutoupdateSupport;
+import org.netbeans.modules.bugtracking.commons.AutoupdatePluginUCTestCase;
+import org.netbeans.modules.bugtracking.commons.AutoupdateSupport;
 import org.netbeans.modules.jira.JiraTestUtil;
 import org.openide.util.NbBundle;
 

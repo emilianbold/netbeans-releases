@@ -50,53 +50,71 @@ import org.netbeans.modules.bugtracking.api.Repository;
 
 /**
  * Represents a bugtracking connector.
+ * <p>
+ * Bugtracking system registration can be done via {@link Registration}. 
+ * </p>
  *
+ * <pre>
+ *  {@literal @}BugtrackingConnector.Registration (
+ *      id = "foo.bar.MyConnector",
+ *      displayName ="My Connector",
+ *      tooltip = "This is My Connector")    
+ *   public class MyConnector extends BugtrackingConnector {
+ *  
+ *    ... 
+ * 
+ *   }
+ * </pre>
+ * 
  * @author Tomas Stupka
+ * @since 1.85
  */
-// XXX provide commit hook support instead of addComment() and addAttachent() in Issue
-public abstract class BugtrackingConnector {
+public interface BugtrackingConnector {
 
     /**
+     * Creates a {@link Repository} instance.
      * 
-     * @param info
-     * @return 
+     * @param info repository information based on which the repository should be created
+     * 
+     * @return a {@link Repository} instance.
+     * @see BugtrackingSupport
+     * @since 1.85
      */
-    public abstract Repository createRepository(RepositoryInfo info);  
+    public Repository createRepository(RepositoryInfo info);  
     
     /**
-     * Creates a new repository instance.
+     * Creates a new repository instance. 
      * 
      * @return the created repository
+     * @see BugtrackingSupport
+     * @since 1.85
      */
-    public abstract Repository createRepository();
+    public Repository createRepository();
 
     /**
-     * Returns an {@code IssueFinder} for the connector, or {@code null}
-     * if no {@code IssueFinder} is available.
-     * The default implementation returns {@code null}.
-     *
-     * @return  an instance of {@code IssueFinder} corresponding to this
-     *          type of bugtracker, or {@code null}
+     * Register a BugtrackingConnector in the IDE.
+     * 
+     * @author Tomas Stupka
+     * @see org.openide.util.lookup.ServiceProvider
+     * @since 1.85
      */
-    // XXX provide via lookup
-    public IssueFinder getIssueFinder() {
-        return null;
-    }
-
     @Retention(RetentionPolicy.SOURCE)
     @Target({ElementType.TYPE, ElementType.METHOD})
     public @interface Registration {    
+        
         /**
          * Returns a unique ID for this connector
          *
-         * @return
+         * @return id
+         * @since 1.85
          */
         public String id();
 
         /**
          * Returns the icon path for this connector
          *
-         * @return
+         * @return the icon path
+         * @since 1.85
          */
         public String iconPath() default "";
 
@@ -104,6 +122,7 @@ public abstract class BugtrackingConnector {
          * Returns the display name for this connector
          *
          * @return the display name for this connector
+         * @since 1.85
          */
         public String displayName();
 
@@ -111,16 +130,19 @@ public abstract class BugtrackingConnector {
          * Returns tooltip for this connector
          *
          * @return tooltip for this connector
+         * @since 1.85
          */
         public String tooltip();    
         
         /**
          * Determines if this connector provides the possibility for a user 
-         * to create, edit or removal of repositories.<br/>
+         * to create, edit or removal of repositories.
+         * <p>
          * Typically the expected value for a connector is to return <code>true</code>. 
-         * 
+         * </p>
          * @return <code>true</code> if this connector provides the possibility 
          *         to create, edit or removal of repositories. Otherwise <code>false</code>.
+         * @since 1.85
          */
         public boolean providesRepositoryManagement() default true;
         

@@ -52,6 +52,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.mylyn.internal.tasks.core.data.TaskAttributeDiff;
+import org.eclipse.mylyn.internal.tasks.core.data.TaskDataState;
 import org.eclipse.mylyn.tasks.core.ITask;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.ITaskDataWorkingCopy;
@@ -169,6 +170,9 @@ public final class NbTaskDataModel {
         // this is needed because after refresh() the unsaved changes no longer
         // belong to the local taskdata (they're reinstantiated)
         delegateModel.revert();
+        if (workingCopy instanceof TaskDataState && workingCopy.getLastReadData() == null) {
+            ((TaskDataState) workingCopy).setLastReadData(workingCopy.getRepositoryData());
+        }
         Set<TaskAttribute> changedAttributes;
         synchronized (unsavedChangedAttributes) {
             changedAttributes = new HashSet<TaskAttribute>(unsavedChangedAttributes);

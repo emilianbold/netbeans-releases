@@ -55,12 +55,10 @@ import java.util.logging.Logger;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryQuery;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.util.OwnerUtils;
-import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
 import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.Format;
 import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.PushOperation;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -73,7 +71,7 @@ class HookImpl {
     static final Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.vcshooks");        // NOI18N
     private static final SimpleDateFormat CC_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");// NOI18N
     private final VCSHooksConfig config;
-    private String[] supportedIssueInfoVariables;
+    private final String[] supportedIssueInfoVariables;
     private final String[] supportedRevisionVariables;
 
     HookImpl(VCSHooksConfig config, String[] supportedIssueInfoVariables, String[] supportedRevisionVariables) {
@@ -83,22 +81,9 @@ class HookImpl {
     }
     
     public String beforeCommit(File[] files, String msg) throws IOException {
-        Repository selectedRepository = getSelectedRepository();
-
         if(files.length == 0) {
-
-            if (selectedRepository != null) {
-                OwnerUtils.setLooseAssociation(selectedRepository, true);
-            }
-
             LOG.warning("calling beforeCommit for zero files");              // NOI18N
             return null;
-        }
-
-        if (selectedRepository != null) {
-            OwnerUtils.setFirmAssociations(
-                    files,
-                    selectedRepository);
         }
 
         File file = files[0];
@@ -210,8 +195,8 @@ class HookImpl {
             }
 
             if(repo == null) { // don't go for the repository until we really need it
-                repo = RepositoryQuery.getInstance().getRepository(FileUtil.toFileObject(file), true); // true -> ask user if repository unknown
-                                                                                        //         might have deleted in the meantime
+                repo = RepositoryQuery.getRepository(FileUtil.toFileObject(file), true); // true -> ask user if repository unknown
+                                                                                                       // might have deleted in the meantime
                 if(repo == null) {
                     LOG.log(Level.WARNING, " could not find issue tracker for {0}", file);      // NOI18N
                     break;
@@ -274,15 +259,11 @@ class HookImpl {
         }
         
         panel = new HookPanel(
+                        FileUtil.toFileObject(referenceFile),
                         config.getLink(),
                         config.getResolve(),
                         afterCommit != null ? afterCommit : config.getAfterCommit());
         
-        if (referenceFile != null) {
-            RepositoryComboSupport.setup(panel, panel.repositoryComboBox, referenceFile);
-        } else {
-            RepositoryComboSupport.setup(panel, panel.repositoryComboBox, false);
-        }
         panel.changeFormatButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -301,7 +282,7 @@ class HookImpl {
                     config.getIssueInfoTemplate(),
                     config.getDefaultIssueInfoTemplate(),
                     supportedIssueInfoVariables);
-        if(BugtrackingUtil.show(p, NbBundle.getMessage(HookPanel.class, "LBL_FormatTitle"), NbBundle.getMessage(HookPanel.class, "LBL_OK"))) {  // NOI18N
+        if(HookUtils.show(p, NbBundle.getMessage(HookPanel.class, "LBL_FormatTitle"), NbBundle.getMessage(HookPanel.class, "LBL_OK"), new HelpCtx(panel.getClass()))) {  // NOI18N
             config.setRevisionTemplate(p.getIssueFormat());
             config.setIssueInfoTemplate(p.getCommitFormat());
         }

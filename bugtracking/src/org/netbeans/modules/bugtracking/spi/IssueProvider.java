@@ -43,137 +43,168 @@ package org.netbeans.modules.bugtracking.spi;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.util.Calendar;
-import java.util.Date;
+import java.util.Collection;
 
 /**
  * Provides access to a bugtracking Issue.
- * <br/>
- * Note that an implementation of this interface is not mandatory for a 
- * NetBeans bugtracking plugin. 
  *
  * @author Tomas Stupka
  * @param <I> the implementation specific issue type
+ * @since 1.85
  */
-public abstract class IssueProvider<I> {
+public interface IssueProvider<I> {
 
     /**
-     * issue data were refreshed
+     * Issue data were changed. Fire this to notify e.g. Issue nodes in Tasks Dashboard.
+     * @since 1.85
      */
-    public static final String EVENT_ISSUE_REFRESHED = "issue.data_changed"; // NOI18N
+    public static final String EVENT_ISSUE_DATA_CHANGED = "issue.data_changed"; // NOI18N
 
-    static {
-        SPIAccessorImpl.createAccesor();
-    }
+    /**
+     * Returns this issues display name. 
+     * 
+     * @param i an implementation specific issue instance
+     * @return the display name for the given Issue
+     * @since 1.85
+     */
+    public String getDisplayName(I i);
+
+    /**
+     * Returns this issues tooltip. 
+     * 
+     * @param i an implementation specific issue instance
+     * @return tooltip for the given Issue
+     * @since 1.85
+     */
+    public String getTooltip(I i);
+
+    /**
+     * Returns this issues unique ID.
+     * 
+     * @param i an implementation specific issue instance
+     * @return id of the given Issue
+     * @since 1.85
+     */
+    public String getID(I i);
     
     /**
-     * Returns this issues display name
-     * @return
-     */
-    public abstract String getDisplayName(I data);
-
-    /**
-     * Returns this issues tooltip
-     * @return
-     */
-    public abstract String getTooltip(I data);
-
-    /**
-     * Returns this issues unique ID
-     * @return
-     */
-    public abstract String getID(I data);
-    
-    /**
-     * Returns the ID-s of all issues where this one could be consideret 
-     * being superordinated to them. 
-     * e.g. the blocks/depends relationship in Bugzilla, or subtask/parenttask in JIRA
+     * Returns the ID-s of all issues where this one could be considered
+     * being superordinate to them. 
+     * e.g. the blocks/depends relationship in Bugzilla, or sub-/parent-task in JIRA
      * 
-     * 
-     * @param data
-     * @return 
+     * @param i an implementation specific issue instance
+     * @return id-s of subtasks for the given Issue
+     * @since 1.85
      */
-    public abstract String[] getSubtasks(I data);
+    public Collection<String> getSubtasks(I i);
 
     /**
-     * Returns this issues summary
-     * @return
+     * Returns this issues summary.
+     * 
+     * @param i an implementation specific issue instance
+     * @return summary
+     * @since 1.85
      */
-    public abstract String getSummary(I data);
+    public String getSummary(I i);
 
     /**
      * Returns true if the issue isn't stored in a repository yet. Otherwise false.
-     * @return
+     * 
+     * @param i an implementation specific issue instance
+     * @return <code>true</code> in case the given Issue exists only locally and wasn't submitted yet.
+     * @since 1.85
      */
-    public abstract boolean isNew(I data);
+    public boolean isNew(I i);
     
     /**
      * Determines if the issue is considered finished 
-     * in the means of the particular bugtracking.
+     * in the means of the particular implementation 
+     * - e.g closed as fixed in case of bugzilla.
      * 
-     * @param data
-     * @return true if finished, otherwise false
+     * @param i an implementation specific issue instance
+     * @return <code>true</code> if finished, otherwise <code>false</code>
+     * @since 1.85
      */
-    public abstract boolean isFinished(I data);
+    public boolean isFinished(I i);
 
     /**
-     * Refreshes this Issues data from its bugtracking repository
+     * Refreshes this Issues data from its bugtracking repository.
      *
-     * @return true if the issue was refreshed, otherwise false
-     */
-    public abstract boolean refresh(I data);
-
-    /**
-     * Add a comment to this issue and close it as fixed eventually.
+     * <p>
+     * In case an error appears during execution, the implementation 
+     * should take care of the error handling, user notification etc.
+     * </p>
      * 
-     * @param comment
-     * @param closeAsFixed 
+     * @param i an implementation specific issue instance
+     * @return <code>true</code> if the issue was refreshed, otherwise <code>false</code>
+     * @since 1.85
      */
-    // XXX throw exception
-    // XXX provide way so that we know commit hooks are supported
-    public abstract void addComment(I data, String comment, boolean closeAsFixed);
+    public boolean refresh(I i);
 
     /**
-     * Attach a file to this issue
-     * @param file
-     * @param description 
-     */
-    // XXX throw exception; attach Patch or attachFile?
-    // XXX provide way so that we know patch attachemnts are supported
-    public abstract void attachPatch(I data, File file, String description);
-
-    /**
-     * Discard outgoing local changes. 
-     * Note that this method is going to be called only for issue with  {@link IssueStatusProvider.Status} 
-     * being either {@link IssueStatusProvider.Status#OUTGOING_NEW} or 
-     * {@link IssueStatusProvider.Status#OUTGOING_MODIFIED}.
+     * Add a comment to this issue and close it as fixed eventually. 
+     * The method is expected to return after the whole execution was handled 
+     * and the changes submitted to the remote repository.
      * 
-     * @param data 
+     * <p>
+     * In case an error appears during execution, the implementation 
+     * should take care of the error handling, user notification etc.
+     * </p>
+     * 
+     * @param i an implementation specific issue instance
+     * @param comment a comment to be added to the issue
+     * @param close close the issue if <code>true</code>
+     * @since 1.85
      */
-    public abstract void discardOutgoing(I data);
-    
-    /**
-     * Returns this issues controller
-     * XXX we don't need this. use get component instead and get rid of the BugtrackingController
-     * @return
-     */
-    public abstract BugtrackingController getController(I data);
+    public void addComment(I i, String comment, boolean close);
 
-    public abstract void removePropertyChangeListener(I data, PropertyChangeListener listener);
-
-    public abstract void addPropertyChangeListener(I data, PropertyChangeListener listener);
-    
     /**
-     * Submits the issue. Override and implement if you support issue
-     * submitting.
-     *
-     * @param data issue data
-     * @return <code>true</code> if the task was successfully
-     * submitted,<code>false</code> if the task was not submitted for any
-     * reason.
+     * Attach a file to this issue. The method is expected to return after 
+     * the whole execution was handled and the changes submitted to the remote repository.
+     * 
+     * <p>
+     * In case an error appears during execution, the implementation 
+     * should take care of the error handling, user notification etc.
+     * </p>
+     * 
+     * Note that in case this functionality isn't available then
+     * {@link RepositoryProvider#canAttachFiles(java.lang.Object)} is expected to return <code>false</code>
+     * 
+     * @param i an implementation specific issue instance
+     * @param file the to be attached file
+     * @param description description to be associated with the file 
+     * @param isPatch <code>true</code> in case the given file is a patch, otherwise <code>false</code>
+     * 
+     * @see RepositoryProvider#canAttachFiles(java.lang.Object) 
+     * @since 1.85
      */
-    public boolean submit (I data) {
-        return false;
-    }
+    public void attachFile(I i, File file, String description, boolean isPatch);
+
+    /**
+     * Returns this issues controller.
+     * 
+     * @param i an implementation specific issue instance
+     * @return an IssueController for the given issue
+     * @since 1.85
+     */
+    public IssueController getController(I i);
+
+    /**
+     * Remove a PropertyChangeListener from the given issue.
+     * 
+     * @param i an implementation specific issue instance
+     * @param listener a PropertyChangeListener
+     * @since 1.85
+     */
+    public void removePropertyChangeListener(I i, PropertyChangeListener listener);
+
+    /**
+     * Add a PropertyChangeListener to the given issue.
+     * 
+     * @param i an implementation specific issue instance
+     * @param listener a PropertyChangeListener
+     * @since 1.85
+     */
+    public void addPropertyChangeListener(I i, PropertyChangeListener listener);
     
 }

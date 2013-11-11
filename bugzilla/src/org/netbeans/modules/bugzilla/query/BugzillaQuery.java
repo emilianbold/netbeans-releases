@@ -53,10 +53,10 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
-import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
-import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
-import org.netbeans.modules.bugtracking.util.LogUtils;
+import org.netbeans.modules.bugtracking.spi.IssueStatusProvider.Status;
+import org.netbeans.modules.team.spi.OwnerInfo;
+import org.netbeans.modules.bugtracking.commons.LogUtils;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.mylyn.util.NbTask;
@@ -71,8 +71,7 @@ public class BugzillaQuery {
     private String name;
     private final BugzillaRepository repository;
     protected QueryController controller;
-    private final Set<String> issues = new HashSet<String>();
-    private Set<String> archivedIssues = new HashSet<String>();
+    private final Set<String> issues = new HashSet<>();
 
     // XXX its not clear how the urlParam is used between query and controller
     protected String urlParameters;
@@ -101,8 +100,8 @@ public class BugzillaQuery {
         this.iquery = query;
         this.urlParameters = urlParameters;
         this.initialUrlDef = urlDef;
-        this.lastRefresh = repository.getIssueCache().getQueryTimestamp(getStoredQueryName());
         this.support = new PropertyChangeSupport(this);
+        this.lastRefresh = BugzillaConfig.getInstance().getLastQueryRefresh(repository, getStoredQueryName());
         
         if(initControler) {
             controller = createControler(repository, this, urlParameters);
@@ -117,16 +116,8 @@ public class BugzillaQuery {
         support.removePropertyChangeListener(listener);
     }
 
-    private void fireQuerySaved() {
-        support.firePropertyChange(QueryProvider.EVENT_QUERY_SAVED, null, null);
-    }
-
-    private void fireQueryRemoved() {
-        support.firePropertyChange(QueryProvider.EVENT_QUERY_REMOVED, null, null);
-    }
-
     private void fireQueryIssuesChanged() {
-        support.firePropertyChange(QueryProvider.EVENT_QUERY_ISSUES_CHANGED, null, null);
+        support.firePropertyChange(QueryProvider.EVENT_QUERY_REFRESHED, null, null);
     }  
     
     public String getDisplayName() {
@@ -175,20 +166,12 @@ public class BugzillaQuery {
                     // keeps all issues we will retrieve from the server
                     // - those matching the query criteria
                     // - and the obsolete ones
-                    Set<String> queryIssues = new HashSet<String>();
-
                     issues.clear();
-                    archivedIssues.clear();
                     if(isSaved()) {
                         if(!wasRun() && !issues.isEmpty()) {
                             Bugzilla.LOG.log(Level.WARNING, "query {0} supposed to be run for the first time yet already contains issues.", getDisplayName()); // NOI18N
                             assert false;
                         }
-                        // read the stored state ...
-                        queryIssues.addAll(repository.getIssueCache().readQueryIssues(getStoredQueryName()));
-                        queryIssues.addAll(repository.getIssueCache().readArchivedQueryIssues(getStoredQueryName()));
-                        // ... and they might be rendered obsolete if not returned by the query
-                        archivedIssues.addAll(queryIssues);
                     }
                     firstRun = false;
 
@@ -233,15 +216,7 @@ public class BugzillaQuery {
                             return;
                         }
 
-                        // only issues not returned by the query are obsolete
-                        archivedIssues.removeAll(issues);
-                        if(isSaved()) {
-                            // ... and store all issues you got
-                            repository.getIssueCache().storeQueryIssues(getStoredQueryName(), issues.toArray(new String[issues.size()]));
-                            repository.getIssueCache().storeArchivedQueryIssues(getStoredQueryName(), archivedIssues.toArray(new String[archivedIssues.size()]));
-                        }
                         list.notifyIssues(issues);
-                        list.notifyIssues(archivedIssues);
 
                         // but what about the archived issues?
                         // they should be refreshed as well, but do we really care about them ?
@@ -254,6 +229,7 @@ public class BugzillaQuery {
                         // ad-hoc queries cannot be saved in tasklist
                         MylynSupport.getInstance().deleteQuery(runningQuery);
                     }
+                    BugzillaConfig.getInstance().putLastQueryRefresh(repository, getStoredQueryName(), System.currentTimeMillis());
                     logQueryEvent(issues.size(), autoRefresh);
                     Bugzilla.LOG.log(Level.FINE, "refresh finish - {0} [{1}]", new String[] {name, urlParameters}); // NOI18N
                 }
@@ -284,11 +260,6 @@ public class BugzillaQuery {
 
     public void remove() {
         repository.removeQuery(this);
-        fireQueryRemoved();
-    }
-
-    public boolean contains(String id) {
-        return issues.contains(id);
     }
 
     public void setOwnerInfo(OwnerInfo info) {
@@ -299,8 +270,8 @@ public class BugzillaQuery {
         return info;
     }
 
-    public IssueCache.Status getIssueStatus(String id) {
-        return repository.getIssueCache().getStatus(id);
+    public Status getIssueStatus(String id) {
+        return repository.getIssueCache().getIssue(id).getStatus();
     }
 
     int getSize() {
@@ -327,7 +298,6 @@ public class BugzillaQuery {
             info = null;
         }
         this.saved = saved;
-        fireQuerySaved();
     }
 
     public boolean isSaved() {
@@ -338,15 +308,14 @@ public class BugzillaQuery {
         if (issues == null) {
             return Collections.emptyList();
         }
-        List<String> ids = new ArrayList<String>();
+        List<String> ids = new ArrayList<>();
         synchronized (issues) {
             ids.addAll(issues);
         }
 
-        IssueCache<BugzillaIssue> cache = repository.getIssueCache();
-        List<BugzillaIssue> ret = new ArrayList<BugzillaIssue>();
+        List<BugzillaIssue> ret = new ArrayList<>();
         for (String id : ids) {
-            BugzillaIssue issue = cache.getIssue(id);
+            BugzillaIssue issue = repository.getIssueCache().getIssue(id);
             if (issue != null) {
                 ret.add(issue);
             }
@@ -358,8 +327,12 @@ public class BugzillaQuery {
         return !firstRun;
     }
 
-    long getLastRefresh() {
+    public long getLastRefresh() {
         return lastRefresh;
+    }
+
+    public boolean canRemove() {
+        return true;
     }
 
     private class QueryProgressListener implements SynchronizeQueryCommand.CommandProgressListener {

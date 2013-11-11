@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.classview.model;
 
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import org.openide.nodes.*;
 
@@ -68,29 +69,38 @@ public class TypedefNode extends ObjectNode {
     }
     
     private void init(final CsmTypedef typedef){
-        CharSequence old = name;
+        final CharSequence old = name;
         name = typedef.getName();
-        if ((old == null) || !old.equals(name)) {
-            fireNameChange(old == null ? null : old.toString(),
-                    name == null ? null : name.toString());
-            fireDisplayNameChange(old == null ? null : old.toString(),
-                    name == null ? null : name.toString());
-        }
-        old = qname;
+        final CharSequence oldQ = qname;
         qname = typedef.getQualifiedName();
-        if ((old == null) || !old.equals(qname)) {
-            fireShortDescriptionChange(old == null ? null : old.toString(),
-                    qname == null ? null : qname.toString());
-        }
-        RP.post(new Runnable() {
-
+        final Runnable runnable = new Runnable() {
+            
             @Override
             public void run() {
-                image = CsmImageLoader.getImage(typedef);
-                fireIconChange();
-                fireOpenedIconChange();
+                if (SwingUtilities.isEventDispatchThread()) {
+                    if ((old == null) || !old.equals(name)) {
+                        fireNameChange(old == null ? null : old.toString(),
+                                name == null ? null : name.toString());
+                        fireDisplayNameChange(old == null ? null : old.toString(),
+                                name == null ? null : name.toString());
+                    }
+                    if ((oldQ == null) || !oldQ.equals(qname)) {
+                        fireShortDescriptionChange(oldQ == null ? null : oldQ.toString(),
+                                qname == null ? null : qname.toString());
+                    }
+                    fireIconChange();
+                    fireOpenedIconChange();
+                } else {
+                    resetIcon(CsmImageLoader.getImage(typedef));
+                    SwingUtilities.invokeLater(this);
+                }
             }
-        });
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            RP.post(runnable);
+        } else {
+            runnable.run();
+        }
     }
 
     @Override
@@ -115,8 +125,6 @@ public class TypedefNode extends ObjectNode {
             CsmTypedef cls = (CsmTypedef)o;
             setObject(cls);
             init(cls);
-            fireIconChange();
-            fireOpenedIconChange();
         } else if (o != null) {
             System.err.println("Expected CsmMember. Actually event contains "+o.toString());
         }

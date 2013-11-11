@@ -50,7 +50,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.bugtracking.api.Query;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
+import org.netbeans.modules.bugtracking.commons.JiraUpdater;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
@@ -215,10 +215,9 @@ class FakeJiraSupport {
         @Override
         public void removePropertyChangeListener(PropertyChangeListener l) {}
 
+        @Override
         public void actionPerformed(ActionEvent e) {
-            if(TeamUtil.notifyJiraDownload(projectUrl)) {
-                TeamUtil.downloadAndInstallJira();
-            }
+            JiraUpdater.getInstance().downloadAndInstall(projectUrl);
         }
         public List<QueryResultHandle> getQueryResults() {
             if(results == null) {
@@ -233,10 +232,12 @@ class FakeJiraSupport {
             return new FakeJiraQueryResultHandle(notAvailableResult, ResultType.ALL_CHANGES_RESULT, projectUrl);
         }
 
+        @Override
         public boolean isPredefined() {
             return true;
         }
 
+        @Override
         public Query getQuery() {
             return null;
         }
@@ -259,10 +260,9 @@ class FakeJiraSupport {
         public String getToolTipText() {
             return NbBundle.getMessage(FakeJiraQueryHandle.class, "LBL_NotAvailableTooltip");   // NOI18N
         }
+        @Override
         public void actionPerformed(ActionEvent e) {
-            if(TeamUtil.notifyJiraDownload(projectUrl)) {
-                TeamUtil.downloadAndInstallJira();
-            }
+            JiraUpdater.getInstance().downloadAndInstall(projectUrl);
         }
         @Override
         public ResultType getResultType() {
@@ -279,10 +279,9 @@ class FakeJiraSupport {
 
     private ActionListener getJiraListener(final String urlString) {
         return new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
-                if(TeamUtil.notifyJiraDownload(urlString)) {
-                    TeamUtil.downloadAndInstallJira();
-                }
+                JiraUpdater.getInstance().downloadAndInstall(urlString);
             }
         };
     }

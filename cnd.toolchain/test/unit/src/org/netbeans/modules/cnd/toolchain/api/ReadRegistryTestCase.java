@@ -415,31 +415,31 @@ public class ReadRegistryTestCase extends NbTestCase {
         CompilerFlavor f;
         f = CompilerFlavor.getUnknown(PlatformTypes.PLATFORM_SOLARIS_SPARC);
         assertNotNull(f);
-        assertTrue("Unknown".equals(f.toString()));
+        assertTrue("Unknown".equals(f.getToolchainDescriptor().getName()));
         assertTrue(f.isGnuCompiler());
         f = CompilerFlavor.getUnknown(PlatformTypes.PLATFORM_SOLARIS_INTEL);
         assertNotNull(f);
-        assertTrue("Unknown".equals(f.toString()));
+        assertTrue("Unknown".equals(f.getToolchainDescriptor().getName()));
         assertTrue(f.isGnuCompiler());
         f = CompilerFlavor.getUnknown(PlatformTypes.PLATFORM_LINUX);
         assertNotNull(f);
-        assertTrue("Unknown".equals(f.toString()));
+        assertTrue("Unknown".equals(f.getToolchainDescriptor().getName()));
         assertTrue(f.isGnuCompiler());
         f = CompilerFlavor.getUnknown(PlatformTypes.PLATFORM_WINDOWS);
         assertNotNull(f);
-        assertTrue("Unknown".equals(f.toString()));
+        assertTrue("Unknown".equals(f.getToolchainDescriptor().getName()));
         assertTrue(f.isGnuCompiler());
         f = CompilerFlavor.getUnknown(PlatformTypes.PLATFORM_MACOSX);
         assertNotNull(f);
-        assertTrue("Unknown".equals(f.toString()));
+        assertTrue("Unknown".equals(f.getToolchainDescriptor().getName()));
         assertTrue(f.isGnuCompiler());
         f = CompilerFlavor.getUnknown(PlatformTypes.PLATFORM_GENERIC);
         assertNotNull(f);
-        assertTrue("Unknown".equals(f.toString()));
+        assertTrue("Unknown".equals(f.getToolchainDescriptor().getName()));
         assertTrue(f.isGnuCompiler());
         f = CompilerFlavor.getUnknown(PlatformTypes.PLATFORM_NONE);
         assertNotNull(f);
-        assertTrue("Unknown".equals(f.toString()));
+        assertTrue("Unknown".equals(f.getToolchainDescriptor().getName()));
         assertTrue(f.isGnuCompiler());
     }
 

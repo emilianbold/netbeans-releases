@@ -43,6 +43,10 @@
 package org.netbeans.core.nativeaccess;
 
 import com.sun.jna.platform.WindowUtils;
+import java.awt.Frame;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.Shape;
 import java.awt.Window;
 import java.util.logging.Level;
@@ -87,18 +91,22 @@ public class NativeWindowSystemImpl extends NativeWindowSystem {
         return res;
     }
 
-    private static boolean is32Bit() {
-        String osarch = System.getProperty("os.arch"); //NOI18N
-        for (String x : new String[]{"x86", "i386", "i486", "i586", "i686"}) { //NOI18N
-            if (x.equals(osarch)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     @Override
     public void setWindowAlpha(Window w, float alpha) {
+        GraphicsConfiguration gc = w.getGraphicsConfiguration();
+        GraphicsDevice gd = gc.getDevice();
+        //check if JDK APIs are supported
+        if (gc.getDevice().getFullScreenWindow() != w) {
+            if (gd.isWindowTranslucencySupported(GraphicsDevice.WindowTranslucency.TRANSLUCENT) ) {
+                try {
+                    w.setOpacity(alpha);
+                    return;
+                } catch( Exception e ) {
+                    //ignore, we'll try JNA
+                }
+            }
+        }
+        //try the JNA way
         try {
             WindowUtils.setWindowAlpha(w, alpha);
         } catch( ThreadDeath td ) {
@@ -110,6 +118,22 @@ public class NativeWindowSystemImpl extends NativeWindowSystem {
 
     @Override
     public void setWindowMask(Window w, Shape mask) {
+        GraphicsConfiguration gc = w.getGraphicsConfiguration();
+        GraphicsDevice gd = gc.getDevice();
+        //check if JDK APIs are supported
+        if (gc.getDevice().getFullScreenWindow() != w) {
+            if (gd.isWindowTranslucencySupported(GraphicsDevice.WindowTranslucency.TRANSLUCENT)) {
+                try {
+                    w.setShape(mask);
+                    return;
+                } catch( Exception e ) {
+                    //ignore, we'll try JNA
+                }
+            }
+        }
+        //try the JNA way
+        if( true )
+            return;
         try {
             WindowUtils.setWindowMask(w, mask);
         } catch( ThreadDeath td ) {
@@ -128,5 +152,11 @@ public class NativeWindowSystemImpl extends NativeWindowSystem {
         } catch( Throwable e ) {
             LOG.log(Level.INFO, null, e);
         }
+    }
+
+    @Override
+    public boolean isUndecoratedWindowAlphaSupported() {
+        GraphicsConfiguration config = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
+        return config.getDevice().isWindowTranslucencySupported(GraphicsDevice.WindowTranslucency.TRANSLUCENT);
     }
 }

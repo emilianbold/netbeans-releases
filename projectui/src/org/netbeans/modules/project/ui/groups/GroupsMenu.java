@@ -44,26 +44,13 @@
 
 package org.netbeans.modules.project.ui.groups;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Dialog;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.AbstractAction;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.DefaultListModel;
 import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JList;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JRadioButtonMenuItem;
-import javax.swing.JScrollPane;
-import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.modules.project.ui.ProjectsRootNode;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -72,12 +59,10 @@ import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
-import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
-import org.openide.util.actions.Presenter;
 import static org.netbeans.modules.project.ui.groups.Bundle.*;
 import org.netbeans.modules.project.uiapi.Utilities;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
@@ -85,7 +70,7 @@ import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
 /**
- * Submenu listing available groups and offering some operations on them.
+ * Menu listing available groups and offering some operations on them.
  * @author Jesse Glick
  */
 @ActionID(id = "org.netbeans.modules.project.ui.groups.GroupsMenu", category = "Project")
@@ -94,10 +79,9 @@ import org.openide.util.lookup.Lookups;
     @ActionReference(path = "Menu/File", position = 1100),
     @ActionReference(path = ProjectsRootNode.ACTIONS_FOLDER, position = 600, separatorAfter = 700)
 })
-@Messages("GroupsMenu.label=Project Gro&up")
-public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presenter.Popup {
-    private static final int MAX_COUNT = 20;
-
+@Messages("GroupsMenu.label=Project Gro&ups...")
+public class GroupsMenu extends AbstractAction {
+    
     private static final RequestProcessor RP = new RequestProcessor(GroupsMenu.class.getName());
     private static final String HELPCTX = "org.netbeans.modules.project.ui.groups.GroupsMenu";
 
@@ -107,206 +91,7 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        //#236682 accessed by keyboard shortcut invokation.
-        //remote the assert but no real plans right now to implement a popup dialog to allow selecting groups.
-//        assert false;
-        
-    }
-
-    @Override
-    public JMenuItem getMenuPresenter() {
-        return new Menu();
-    }
-
-    @Override
-    public JMenuItem getPopupPresenter() {
-        return new Menu();
-    }
-
-    /**
-     * The actual submenu (recreated each time it is displayed).
-     */
-    private static class Menu extends JMenu implements DynamicMenuContent {
-
-        Menu() {
-            Mnemonics.setLocalizedText(this, GroupsMenu_label());
-        }
-
-        @Messages({
-            "GroupsMenu.no_group=(none)",
-            "GroupsMenu.new_group=&New Group...",
-            "# {0} - group display name", "GroupsMenu.properties=&Properties of \"{0}\"",
-            "# {0} - group display name", "GroupsMenu.remove=&Remove \"{0}\"",
-            "# {0} - group display name", "Delete_Confirm=Do you want to delete group \"{0}\"?",
-            "GroupsMenu_more=&More groups...",
-            "GroupsMenu_select=Select",
-            "GroupsMenu_moreTitle=Select Project Group",
-            "GroupsMenu.remove_groups=Remove &Group(s)..."
-        })
-        @Override public JComponent[] getMenuPresenters() {
-            // XXX can it wait to add menu items until it is posted?
-            removeAll();
-            if (!OpenProjectList.getDefault().openProjectsAPI().isDone()) {
-                //#214891 only show the groups when we have finishes opening the initial set of projects upon startup
-                this.setEnabled(false);
-                return new JComponent[] {this};
-            }
-            this.setEnabled(true);
-            final Group active = Group.getActiveGroup();
-            int counter = 0;
-            // Create one menu item per group.
-            for (final Group g : Group.allGroups()) {
-                JRadioButtonMenuItem mi = new JRadioButtonMenuItem(g.getName());
-                if (g.equals(active)) {
-                    mi.setSelected(true);
-                    /* Was disliked by UI people:
-                    if (g.isPristine()) {
-                        mi.setEnabled(false);
-                    }
-                     */
-                }
-                mi.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        // Could be slow (if needs to load projects); don't block EQ.
-                        RP.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                Group.setActiveGroup(g, false);
-                            }
-                        });
-                    }
-                });
-                add(mi);
-                counter = counter + 1;
-                if (counter > MAX_COUNT) {
-                    //#216121
-                    JMenuItem more = new JMenuItem();
-                    Mnemonics.setLocalizedText(more, GroupsMenu_more());
-                    more.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            JList lst = new JList();
-                            DefaultListModel model = new DefaultListModel();
-                            for (final Group g : Group.allGroups()) {
-                                model.addElement(g);
-                            }
-                            lst.setModel(model);
-                            lst.setCellRenderer(new DefaultListCellRenderer() {
-
-                                @Override
-                                public Component getListCellRendererComponent(JList arg0, Object arg1, int arg2, boolean arg3, boolean arg4) {
-                                    String text = ((Group)arg1).getName();
-                                    return super.getListCellRendererComponent(arg0, text, arg2, arg3, arg4); //To change body of generated methods, choose Tools | Templates.
-                                }
-                            });
-                            JScrollPane pane = new JScrollPane(lst);
-                            JPanel pnl = new JPanel();
-                            pnl.setLayout(new BorderLayout(12, 12));
-                            pnl.add(pane);
-                            pnl.setPreferredSize(new Dimension(300, 300));
-                            String select = GroupsMenu_select();
-                            NotifyDescriptor nd = new NotifyDescriptor(pnl, GroupsMenu_moreTitle(), NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.PLAIN_MESSAGE, new Object[] {select, NotifyDescriptor.CANCEL_OPTION} , select);
-                            if (select == DialogDisplayer.getDefault().notify(nd)) {
-                                final Object o = lst.getSelectedValue();
-                                if (o != null) {
-                                    // Could be slow (if needs to load projects); don't block EQ.
-                                    RP.post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            Group.setActiveGroup((Group)o, false);
-                                        }
-                                    });
-                                }
-                            }
-                        }
-                    });
-                    add(more);
-                    break;
-                }
-            }
-            JMenuItem mi = new JRadioButtonMenuItem();
-            Mnemonics.setLocalizedText(mi, GroupsMenu_no_group());
-            if (active == null) {
-                mi.setSelected(true);
-                /* Was disliked by UI people:
-                if (OpenProjects.getDefault().getOpenProjects().length == 0) {
-                    mi.setEnabled(false);
-                }
-                 */
-            }
-            mi.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    // Could be slow (if needs to load projects); don't block EQ.
-                    RP.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            Group.setActiveGroup(null, false);
-                        }
-                    });
-                }
-            });
-            add(mi);
-            // Special menu items.
-            addSeparator();
-            mi = new JMenuItem();
-            Mnemonics.setLocalizedText(mi, GroupsMenu_new_group());
-            mi.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    newGroup();
-                }
-            });
-            add(mi);
-            if(Group.allGroups().size() > 0) {
-                addSeparator();
-                mi = new JMenuItem();
-                Mnemonics.setLocalizedText(mi, GroupsMenu_remove_groups());
-                mi.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        removeGroup();
-                    }
-                });
-                add(mi);
-            }
-            if (active != null) {
-                mi = new JMenuItem();
-                Mnemonics.setLocalizedText(mi, GroupsMenu_properties(active.getName()));
-                mi.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        openProperties(active);
-                    }
-                });
-                add(mi);
-                mi = new JMenuItem();
-                Mnemonics.setLocalizedText(mi, GroupsMenu_remove(active.getName()));
-                mi.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        NotifyDescriptor.Confirmation ask = new NotifyDescriptor.Confirmation(Delete_Confirm(active.getName()), NotifyDescriptor.YES_NO_OPTION);
-                        if (DialogDisplayer.getDefault().notify(ask) == NotifyDescriptor.YES_OPTION) {
-                            RP.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    active.destroy();
-                                }
-                            });
-                        }
-                    }
-                });
-                add(mi);
-            }
-            return new JComponent[] {this};
-        }
-
-        @Override
-        public JComponent[] synchMenuPresenters(JComponent[] items) {
-            return getMenuPresenters();
-        }
-
+        manageGroups();
     }
 
     /**
@@ -357,63 +142,66 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
     }
     
     /**
-     * Create (and open) a new group.
+     * Manage groups.
      */
     @Messages({
-        "GroupsMenu.remove_title=Remove Group(s)",
-        "GroupsMenu.remove_remove=Remove",
-        "GroupsMenu.remove_cancel=Cancel"
+        "GroupsMenu.manage_title=Manage Groups",
+        "GroupsMenu.manage_select_group=&Select Group",
+        "GroupsMenu.manage_new_group=&New Group...",
+        "GroupsMenu.manage_remove=&Remove",
+        "GroupsMenu.manage_cancel=&Cancel",
+        "GroupsMenu.manage_properties=&Properties",
     })
-    private static void removeGroup() {
-        final RemoveGroupPanel panel = new RemoveGroupPanel();
-        DialogDescriptor dd = new DialogDescriptor(panel, GroupsMenu_remove_title());
+    private static void manageGroups() {
+        final ManageGroupsPanel panel = new ManageGroupsPanel();
+        DialogDescriptor dd = new DialogDescriptor(panel, GroupsMenu_manage_title());
         dd.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
         dd.setModal(true);
         dd.setHelpCtx(new HelpCtx(HELPCTX));
-        final JButton remove = new JButton(GroupsMenu_remove_remove());
-        PropertyChangeListener listener = new PropertyChangeListener() {
-
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                if(evt.getPropertyName().equals("selection")) {
-                    if(panel.isAtLeastOneGroupSelected()) {
-                        remove.setEnabled(true);
-                    } else {
-                        remove.setEnabled(false);
-                    }
-                }
-            }
-        };
-        panel.addChangeListener(listener);
-        remove.setDefaultCapable(true);
-        remove.setEnabled(panel.isAtLeastOneGroupSelected());
+        final JButton select = new JButton();
+        Mnemonics.setLocalizedText(select, GroupsMenu_manage_select_group());
+        select.setDefaultCapable(true);
         panel.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                if (NewGroupPanel.PROP_READY.equals(evt.getPropertyName())) {
-                    remove.setEnabled(panel.isReady());
+                if (evt.getPropertyName().equals("selection")) {
+                    select.setEnabled(panel.isExactlyOneGroupSelected());
                 }
             }
         });
+        select.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Group.setActiveGroup(panel.getSelectedGroups()[0], false);
+                    }
+                });
+            }
+        });
+        final JButton newGroup = new JButton();
+        newGroup.setDefaultCapable(false);
+        Mnemonics.setLocalizedText(newGroup, GroupsMenu_manage_new_group());
+        newGroup.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                newGroup();
+            }
+        });
         JButton cancel = new JButton(GroupsMenu_new_cancel());
-        dd.setOptions(new Object[] {remove, cancel});
-        Object result = DialogDisplayer.getDefault().notify(dd);
-        if (result.equals(remove)) {
-            assert panel.isReady();
-            RP.post(new Runnable() {
-                @Override
-                public void run() {
-                    panel.remove();
-                }
-            });
-        }
+        cancel.setDefaultCapable(false);
+        dd.setOptions(new Object[] {select, newGroup, cancel});
+        DialogDisplayer.getDefault().notify(dd);
     }
 
     /**
      * Open a properties dialog for the group, according to its type.
      */
     @Messages("GroupsMenu.properties_title=Project Group Properties")
-    private static void openProperties(Group g) {
+    static void openProperties(Group g) {
             Lookup context = Lookups.fixed(new Object[] { g, Utilities.ACCESSOR.createGroup(g.getName(), g.prefs()) });
             Dialog dialog = ProjectCustomizer.createCustomizerDialog("Projects/Groups/Customizer", //NOI18N
                                              context, 

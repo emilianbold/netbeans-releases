@@ -357,6 +357,11 @@ public class StandardLoggerTest extends NbTestCase {
         @Override public Map<String, String> getProperties() {
             return Collections.emptyMap();
         }
+
+        @Override
+        public boolean isConcealed(String propertyName) {
+            return false;
+        }
         
     }
 

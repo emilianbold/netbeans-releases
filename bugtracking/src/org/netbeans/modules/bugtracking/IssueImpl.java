@@ -48,16 +48,12 @@ import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import static java.lang.Character.isSpaceChar;
 import java.util.Date;
 import org.netbeans.modules.bugtracking.api.Issue;
-import org.netbeans.modules.bugtracking.team.spi.TeamIssueProvider;
-import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.IssuePriorityInfo;
-import org.netbeans.modules.bugtracking.spi.IssuePriorityProvider;
+import org.netbeans.modules.team.spi.OwnerInfo;
+import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
 import org.netbeans.modules.bugtracking.spi.IssueSchedulingProvider;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
-import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -69,14 +65,14 @@ public final class IssueImpl<R, I> {
      */
     public static final int SHORT_DISP_NAME_LENGTH = 15;
     
-    public static final String EVENT_ISSUE_REFRESHED = IssueProvider.EVENT_ISSUE_REFRESHED;
+    public static final String EVENT_ISSUE_DATA_CHANGED = IssueProvider.EVENT_ISSUE_DATA_CHANGED;
 
     private Issue issue;
-    private final RepositoryImpl<?, ?, I> repo;
+    private final RepositoryImpl<R, ?, I> repo;
     private final IssueProvider<I> issueProvider;
     private final I data;
 
-    IssueImpl(RepositoryImpl<?, ?, I> repo, IssueProvider<I> issueProvider, I data) {
+    IssueImpl(RepositoryImpl<R, ?, I> repo, IssueProvider<I> issueProvider, I data) {
         this.issueProvider = issueProvider;
         this.data = data;
         this.repo = repo;
@@ -149,8 +145,8 @@ public final class IssueImpl<R, I> {
         return issueProvider.getTooltip(data);
     }
 
-    public void attachPatch(File file, String description) {
-        issueProvider.attachPatch(data, file, description);
+    public void attachFile(File file, String description, boolean isPatch) {
+        issueProvider.attachFile(data, file, description, isPatch);
     }
 
     public void addComment(String comment, boolean closeAsFixed) {
@@ -182,13 +178,10 @@ public final class IssueImpl<R, I> {
     }
 
     public void setContext(OwnerInfo info) {
-        assert issueProvider instanceof TeamIssueProvider;
-        if(issueProvider instanceof TeamIssueProvider) {
-            ((TeamIssueProvider<I>)issueProvider).setOwnerInfo(data, info);
-        }
+        repo.setIssueContext(data, info);
     }
 
-    public BugtrackingController getController() {
+    public IssueController getController() {
         return issueProvider.getController(data);
     }    
     
@@ -197,7 +190,7 @@ public final class IssueImpl<R, I> {
     }
 
     public IssueStatusProvider.Status getStatus() {
-        IssueStatusProvider<I> sp = repo.getStatusProvider();
+        IssueStatusProvider<R, I> sp = repo.getStatusProvider();
         if(sp == null) {
             return IssueStatusProvider.Status.SEEN;
         } 
@@ -205,7 +198,7 @@ public final class IssueImpl<R, I> {
     }
 
     public void addIssueStatusListener(PropertyChangeListener l) {
-        IssueStatusProvider<I> sp = repo.getStatusProvider();
+        IssueStatusProvider<R, I> sp = repo.getStatusProvider();
         if(sp == null) {
             return;
         }
@@ -213,7 +206,7 @@ public final class IssueImpl<R, I> {
     }
 
     public void removeIssueStatusListener(PropertyChangeListener l) {
-        IssueStatusProvider<I> sp = repo.getStatusProvider();
+        IssueStatusProvider<R, I> sp = repo.getStatusProvider();
         if(sp == null) {
             return;
         }
@@ -221,15 +214,27 @@ public final class IssueImpl<R, I> {
     }
 
     public void setSeen(boolean isUptodate) {
-        IssueStatusProvider<I> sp = repo.getStatusProvider();
+        IssueStatusProvider<R, I> sp = repo.getStatusProvider();
         if(sp == null) {
             return;
         }
-        sp.setSeen(data, isUptodate);
+        sp.setSeenIncoming(data, isUptodate);
     }
     
     public boolean submit () {
-        return issueProvider.submit(data);
+        IssueStatusProvider<R, I> sp = repo.getStatusProvider();
+        if(sp == null) {
+            return false;
+        }
+        return sp.submit(data);
+    }
+
+    public void discardChanges() {
+        IssueStatusProvider<R, I> sp = repo.getStatusProvider();
+        if(sp == null) {
+            return;
+        }
+        sp.discardOutgoing(data);
     }
 
     public boolean hasSchedule() {

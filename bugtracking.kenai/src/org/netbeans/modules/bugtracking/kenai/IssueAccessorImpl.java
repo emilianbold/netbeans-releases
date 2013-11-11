@@ -43,22 +43,24 @@ package org.netbeans.modules.bugtracking.kenai;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
+import java.util.logging.Level;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.bugtracking.team.spi.RecentIssue;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
+import org.netbeans.modules.bugtracking.api.Util;
+import org.netbeans.modules.bugtracking.commons.JiraUpdater;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor;
 import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor.IssueHandle;
 import org.openide.util.RequestProcessor;
 import static org.netbeans.modules.bugtracking.kenai.Bundle.*;
 import org.openide.util.NbBundle.Messages;
+import org.openide.windows.Mode;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -80,22 +82,22 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
         FakeJiraSupport support = FakeJiraSupport.get(project);
         if(support != null) {
             // this is a jira project
-            if(!BugtrackingUtil.isJiraInstalled()) {
-                if(TeamUtil.notifyJiraDownload(support.getIssueUrl(issueID))) {
-                    TeamUtil.downloadAndInstallJira();
-                }
-                return;
-            }
+            JiraUpdater.getInstance().downloadAndInstall(support.getIssueUrl(issueID));
         }
 
         final ProgressHandle handle = ProgressHandleFactory.createHandle(LBL_GETTING_REPO());
         handle.start();
         RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run() {
-                final Repository repo = TeamUtil.getRepository(TeamProjectImpl.getInstance(project));
+                Repository repo = Util.getTeamRepository(project.getKenai().getUrl().toString(), project.getName());
                 handle.finish();
                 try {
-                    Issue.open(repo, issueID);
+                    if(issueID != null) {
+                        Util.openIssue(repo, issueID);
+                    } else {
+                        Util.createNewIssue(repo);
+                    }
                 } catch (NullPointerException e) {
                     //
                 }
@@ -105,54 +107,10 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
 
     @Override
     public IssueHandle[] getRecentIssues() {
-        Map<String, List<RecentIssue>> recentIssues = BugtrackingUtil.getAllRecentIssues();
-        Collection<Repository> knownRepos = TeamUtil.getKnownRepositories(false);
-        Map<String, Repository> repoMap = new HashMap<String, Repository>(knownRepos.size());
-        for (Repository repository : knownRepos) {
-            repoMap.put(repository.getId(), repository);
-        }
-
-        Map<String, TeamProjectImpl> issueToKenaiProject = new HashMap<String, TeamProjectImpl>();
-        List<RecentIssue> retIssues = new ArrayList<RecentIssue>(5);
-        for(Map.Entry<String, List<RecentIssue>> entry : recentIssues.entrySet()) {
-            Repository repo = repoMap.get(entry.getKey());
-            if(repo == null) {
-                Support.LOG.fine("No repository available with ID " + entry.getKey()); // NOI18N
-                continue;
-            }
-            TeamProjectImpl kenaiProject = (TeamProjectImpl) TeamUtil.getTeamProject(repo);
-            if(kenaiProject == null) {
-                continue;
-            }
-
-            for(RecentIssue ri : entry.getValue()) {
-                if(retIssues.size() > 5) {
-                    retIssues.remove(5);
-                }
-                if(retIssues.isEmpty()) {
-                    retIssues.add(ri);
-                    issueToKenaiProject.put(ri.getIssue().getID(), kenaiProject);
-                } else {
-                    for (int i = 0; i < retIssues.size(); i++) {
-                        if(ri.getTimestamp() > retIssues.get(i).getTimestamp()) {
-                            retIssues.add(i, ri);
-                            issueToKenaiProject.put(ri.getIssue().getID(), kenaiProject);
-                            break;
-                        } else if (retIssues.size() < 5) {
-                            retIssues.add(retIssues.size(), ri);
-                            issueToKenaiProject.put(ri.getIssue().getID(), kenaiProject);
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-
-        List<IssueHandle> ret = new ArrayList<IssueHandle>(retIssues.size());
-        for (RecentIssue recentIssue : retIssues) {
-            TeamProjectImpl kenaiProject = issueToKenaiProject.get(recentIssue.getIssue().getID());
-            assert kenaiProject != null;
-            ret.add(new IssueHandleImpl(recentIssue.getIssue(), kenaiProject.getProject()));
+        List<Issue> recentIssues = Util.getRecentIssues();
+        List<IssueHandle> ret = new LinkedList<IssueHandle>();
+        for (int i = 0; i < recentIssues.size() || i < 5; i++) {
+            ret.add(new IssueHandleImpl(recentIssues.get(i)));
         }
         return ret.toArray(new IssueHandle[ret.size()]);
     }
@@ -163,21 +121,28 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
         if(project == null) {
             return new IssueHandle[0];
         }
-        Repository repo = TeamUtil.getRepository(TeamProjectImpl.getInstance(project), false);
+        Repository repo = Util.getTeamRepository(project.getKenai().getUrl().toString(), project.getName());
         if(repo == null) {
-            // looks like no repository was created for the project yet, and if there's no repository
-            // then there can't be any recent issue for it...
-            Support.LOG.fine("No issue tracker available for the given kenai project [" + project.getName() + "," + project.getDisplayName() + "]"); // NOI18N
+            // ???
+            Support.LOG.log(Level.FINE, "No issue tracker available for the given kenai project [{0},{1}]", new Object[]{project.getName(), project.getDisplayName()}); // NOI18N
             return new IssueHandle[0];
         }
-        Collection<Issue> issues = TeamUtil.getRecentIssues(repo);
-        if(issues == null) {
+        Collection<Issue> recentIssues = Util.getRecentIssues();
+        if(recentIssues == null) {
             return new IssueHandle[0];
         }
 
+        Collection<Issue> issues = new LinkedList<Issue>();
+        for (Issue issue : recentIssues) {
+            Repository recentRepo = issue.getRepository();
+            if(recentRepo.getId().equals(repo.getId()) && recentRepo.getUrl().equals(repo.getUrl())) {
+                issues.add(issue);
+            }
+        }        
+                
         List<IssueHandle> ret = new ArrayList<IssueHandle>(issues.size());
         for (Issue issue : issues) {
-            IssueHandleImpl ih = new IssueHandleImpl(issue, project);
+            IssueHandleImpl ih = new IssueHandleImpl(issue);
             ret.add(ih);
         }
         return ret.toArray(new IssueHandle[ret.size()]);
@@ -185,21 +150,14 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
 
     private class IssueHandleImpl extends IssueHandle {
         private final Issue issue;
-        private final KenaiProject project;
 
-        public IssueHandleImpl(Issue issue, KenaiProject project) {
+        public IssueHandleImpl(Issue issue) {
             this.issue = issue;
-            this.project = project;
         }
 
         @Override
         public String getID() {
             return issue.getID();
-        }
-
-        @Override
-        public KenaiProject getProject() {
-            return project;
         }
 
         @Override
@@ -213,13 +171,15 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
         }
 
         @Override
-        public boolean isOpened() {
-            return TeamUtil.isOpen(issue);
-        }
-
-        @Override
         public boolean isShowing() {
-            return TeamUtil.isShowing(issue);
+            Mode editor = WindowManager.getDefault().findMode("editor"); //NOI18N
+            TopComponent[] tcs = editor.getTopComponents();
+            for (TopComponent tc : tcs) {
+                if(issue == tc.getLookup().lookup(Issue.class)) {
+                    return tc.isShowing();
+                }
+            }
+            return false;
         }
 
     }

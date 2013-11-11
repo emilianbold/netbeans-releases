@@ -1132,6 +1132,7 @@ public class FieldGroupTest extends GeneratorTestMDRCompat {
             "class UserTask {\n" +
             "\n" +
             "    public int j;\n" +
+            "\n" +
             "    private int k = 1;\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));

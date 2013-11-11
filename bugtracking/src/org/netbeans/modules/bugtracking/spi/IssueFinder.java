@@ -43,12 +43,19 @@
 package org.netbeans.modules.bugtracking.spi;
 
 /**
- * Recognizes references to issues in text.
- *
+ * Recognizes references to issues in text as in the editor or in 
+ * Versioning commit messages. Such references are then hyperlinked to 
+ * easily access the issue in the IDE.
+ * <p>
+ * Note that an implementation of this interface is not mandatory for a 
+ * NetBeans bugtracking plugin. 
+ * </p>
+ * 
  * @author Tomas Stupka
  * @author Marian Petras
+ * @since 1.85
  */
-public abstract class IssueFinder {
+public interface IssueFinder {
 
     /**
      * Finds boundaries of one or more references to issues in the given text.
@@ -69,21 +76,29 @@ public abstract class IssueFinder {
      * #1. In other words, only (boundaries of) substrings that method
      * {@link #getIssueId} is able to transform the actual issue identifier,
      * should be returned by this method.
-     *
+     * <p>
+     * <b>Please note</b> that this method might be called in EDT and should avoid any 
+     * excessive computation.
+     * 
      * @param  text  text to be searched for references
      * @return  non-{@code null} array of boundaries of hyperlink references
      *          in the given text
+     * @since 1.85
      */
-    public abstract int[] getIssueSpans(CharSequence text);
+    public int[] getIssueSpans(CharSequence text);
 
     /**
      * Transforms the given text to an issue identifier.
      * The format of the returned value is specific for the type of issue
      * tracker - it may but may not be a number.
+     * <p>
+     * <b>Please note</b> that this method might be called in EDT and should avoid any 
+     * excessive computation.
      * 
      * @param  issueHyperlinkText  text that refers to a bug/issue
      * @return  unique identifier of the bug/issue
+     * @since 1.85
      */
-    public abstract String getIssueId(String issueHyperlinkText);
+    public String getIssueId(String issueHyperlinkText);
 
 }

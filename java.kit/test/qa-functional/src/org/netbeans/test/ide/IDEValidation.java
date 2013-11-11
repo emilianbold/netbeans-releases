@@ -423,17 +423,15 @@ public class IDEValidation extends JellyTestCase {
             // is still available (maybe some threading issue).
             log("Timeout expired: " + e.getMessage());
         }
-        if (System.getProperty("os.name").toLowerCase().indexOf("mac") == -1) { // NOI18N
-            // node JDBC-ODBC Bridge should be present always but not on mac
-            Node jdbcOdbcNode = new Node(driversNode, "JDBC-ODBC Bridge"); // NOI18N
-            // "Connect Using ..."
-            String connectUsingItem = Bundle.getString("org.netbeans.modules.db.explorer.action.Bundle", "ConnectUsing");
-            // open a dialog to create a new connection
-            new ActionNoBlock(null, connectUsingItem).perform(jdbcOdbcNode);
-            // "New Connection Wizard"
-            String connectionDialogTitle = Bundle.getString("org.netbeans.modules.db.explorer.dlg.Bundle", "PredefinedWizard.WizardTitle");
-            new NbDialogOperator(connectionDialogTitle).cancel();
-        }
+        // node Java DB (Embedded) should be present always
+        Node javaDBNode = new Node(driversNode, "Java DB (Embedded"); // NOI18N
+        // "Connect Using ..."
+        String connectUsingItem = Bundle.getString("org.netbeans.modules.db.explorer.action.Bundle", "ConnectUsing");
+        // open a dialog to create a new connection
+        new ActionNoBlock(null, connectUsingItem).perform(javaDBNode);
+        // "New Connection Wizard"
+        String connectionDialogTitle = Bundle.getString("org.netbeans.modules.db.explorer.dlg.Bundle", "PredefinedWizard.WizardTitle");
+        new NbDialogOperator(connectionDialogTitle).cancel();
     }
 
     /** Test Help 

@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.65.1
+#Version 1.72.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -136,6 +136,10 @@ supr java.lang.Object
 CLSS public abstract interface org.netbeans.spi.project.ui.CustomizerProvider
 meth public abstract void showCustomizer()
 
+CLSS public abstract interface org.netbeans.spi.project.ui.CustomizerProvider2
+intf org.netbeans.spi.project.ui.CustomizerProvider
+meth public abstract void showCustomizer(java.lang.String,java.lang.String)
+
 CLSS public abstract interface org.netbeans.spi.project.ui.LogicalViewProvider
 intf org.netbeans.spi.project.ui.PathFinder
 meth public abstract org.openide.nodes.Node createLogicalView()
@@ -231,10 +235,17 @@ CLSS public abstract interface org.netbeans.spi.project.ui.RecommendedTemplates
 meth public abstract java.lang.String[] getRecommendedTypes()
 
 CLSS public final org.netbeans.spi.project.ui.support.BuildExecutionSupport
+innr public abstract interface static ActionItem
 innr public abstract interface static Item
 meth public static void registerFinishedItem(org.netbeans.spi.project.ui.support.BuildExecutionSupport$Item)
 meth public static void registerRunningItem(org.netbeans.spi.project.ui.support.BuildExecutionSupport$Item)
 supr java.lang.Object
+
+CLSS public abstract interface static org.netbeans.spi.project.ui.support.BuildExecutionSupport$ActionItem
+ outer org.netbeans.spi.project.ui.support.BuildExecutionSupport
+intf org.netbeans.spi.project.ui.support.BuildExecutionSupport$Item
+meth public abstract java.lang.String getAction()
+meth public abstract org.openide.filesystems.FileObject getProjectDirectory()
 
 CLSS public abstract interface static org.netbeans.spi.project.ui.support.BuildExecutionSupport$Item
  outer org.netbeans.spi.project.ui.support.BuildExecutionSupport
@@ -245,6 +256,7 @@ meth public abstract void stopRunning()
 
 CLSS public org.netbeans.spi.project.ui.support.CommonProjectActions
 fld public final static java.lang.String EXISTING_SOURCES_FOLDER = "existingSourcesFolder"
+fld public final static java.lang.String PROJECT_PARENT_FOLDER = "projdir"
 meth public static javax.swing.Action closeProjectAction()
 meth public static javax.swing.Action copyProjectAction()
 meth public static javax.swing.Action customizeProjectAction()
@@ -431,6 +443,8 @@ meth public static boolean getDefinesMainProject(org.openide.WizardDescriptor)
 meth public static java.lang.String getTargetName(org.openide.WizardDescriptor)
 meth public static org.netbeans.api.project.Project getProject(org.openide.WizardDescriptor)
 meth public static org.netbeans.spi.project.ui.templates.support.Templates$SimpleTargetChooserBuilder buildSimpleTargetChooser(org.netbeans.api.project.Project,org.netbeans.api.project.SourceGroup[])
+ anno 1 org.netbeans.api.annotations.common.NullAllowed()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
 meth public static org.openide.WizardDescriptor$Panel<org.openide.WizardDescriptor> createSimpleTargetChooser(org.netbeans.api.project.Project,org.netbeans.api.project.SourceGroup[])
  anno 0 java.lang.Deprecated()
 meth public static org.openide.WizardDescriptor$Panel<org.openide.WizardDescriptor> createSimpleTargetChooser(org.netbeans.api.project.Project,org.netbeans.api.project.SourceGroup[],org.openide.WizardDescriptor$Panel<org.openide.WizardDescriptor>)

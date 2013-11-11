@@ -79,7 +79,14 @@ class DocumentSwitcherTable extends SwitcherTable {
 
         Component renComponent = super.prepareRenderer( renderer, row, column );
         if( selected && isClosable( (Item) item) ) {
-            JPanel res = new JPanel( new BorderLayout(5, 0) );
+            if( renComponent instanceof JLabel ) {
+                String text = ((JLabel)renComponent).getText();
+                if( text.endsWith(" ←") ) { //NOI18N
+                    text = text.substring(0, text.length()-2);
+                    ((JLabel)renComponent).setText(text);
+                }
+            }
+            JPanel res = new JPanel( new BorderLayout(0, 0) );
             res.add( renComponent, BorderLayout.CENTER );
             res.add( btnClose, BorderLayout.EAST );
             res.setBackground( renComponent.getBackground() );
@@ -141,7 +148,7 @@ class DocumentSwitcherTable extends SwitcherTable {
     }
 
     private JButton createCloseButton() {
-        JButton res = CloseButtonFactory.createBigCloseButton();
+        JButton res = CloseButtonFactory.createCloseButton();
         res.setModel( new DefaultButtonModel() {
             @Override
             public boolean isRollover() {

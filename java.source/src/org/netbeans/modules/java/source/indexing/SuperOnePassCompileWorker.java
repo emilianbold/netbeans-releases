@@ -254,14 +254,15 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                 javaContext.getFQNs().set(activeTypes, active.indexable.getURL());
                 boolean[] main = new boolean[1];
                 if (javaContext.getCheckSums().checkAndSet(active.indexable.getURL(), activeTypes, jt.getElements()) || context.isSupplementaryFilesIndexing()) {
-                    javaContext.analyze(Collections.singleton(unit.getKey()), jt, unit.getValue(), addedTypes, main);
+                    javaContext.analyze(Collections.singleton(unit.getKey()), jt, active, addedTypes, main);
                 } else {
                     final Set<ElementHandle<TypeElement>> aTypes = new HashSet<ElementHandle<TypeElement>>();
-                    javaContext.analyze(Collections.singleton(unit.getKey()), jt, unit.getValue(), aTypes, main);
+                    javaContext.analyze(Collections.singleton(unit.getKey()), jt, active, aTypes, main);
                     addedTypes.addAll(aTypes);
                     modifiedTypes.addAll(aTypes);
                 }
                 ExecutableFilesIndex.DEFAULT.setMainClass(context.getRoot().getURL(), active.indexable.getURL(), main[0]);
+                JavaCustomIndexer.setErrors(context, active, dc);
             }
             if (context.isCancelled()) {
                 return null;
@@ -270,9 +271,6 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                 units = null;
                 mem.free();
                 return ParsingOutput.lowMemory(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
-            }
-            for (Entry<CompilationUnitTree, CompileTuple> unit : units.entrySet()) {
-                JavaCustomIndexer.setErrors(context, unit.getValue(), dc);
             }
             for (TypeElement type : types) {
                 Iterable<? extends JavaFileObject> generatedFiles = jt.generate(Collections.singletonList(type));

@@ -74,6 +74,9 @@ abstract class DefaultParser  extends DefaultHandler {
     protected static final short INIT = 0;
     protected static final short LOAD = 1;
 
+    private static final Logger LOG = Logger.getLogger(DefaultParser.class.getName());
+    private static boolean xercesErrorInfoLogged = false;
+
     protected DefaultParser() {        
     }
     
@@ -145,14 +148,14 @@ abstract class DefaultParser  extends DefaultHandler {
             if (!isStopException(io)) {
                 if (fo.isValid() && fo.canRead()) {
                     Exceptions.attachMessage(io, "While parsing: " + fo); // NOI18N
-                    Logger.getLogger(DefaultParser.class.getName()).log(Level.INFO, null, io);
+                    LOG.log(Level.INFO, null, io);
                     state = ERROR;
                 }
             }
         } catch (SAXException sex) {
             if (!isStopException(sex)) {
                 Exceptions.attachMessage(sex, "While parsing: " + fo); // NOI18N
-                Logger.getLogger(DefaultParser.class.getName()).log(Level.INFO, null, sex);
+                LOG.log(Level.INFO, null, sex);
                 state = ERROR;
             }
         } catch (InternalError ie) {
@@ -161,17 +164,9 @@ abstract class DefaultParser  extends DefaultHandler {
                 state = ERROR;
             }
         } catch (NullPointerException npe) {
-            // Ignore NPE at com.sun.org.apache.xerces.internal.impl.XMLEntityScanner.skipChar(XMLEntityScanner.java:1414)
-            // See http://www.netbeans.org/issues/show_bug.cgi?id=126496 and
-            // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6743605.
             if(!isStopException(npe)) {
                 state = ERROR;
-                StackTraceElement[] elements = npe.getStackTrace();
-                if(elements.length == 0 || !elements[0].getMethodName().equals("skipChar")) {  //NOI18N
-                    // report all other NPEs
-                    Exceptions.attachMessage(npe, "While parsing: " + fo); // NOI18N
-                    Logger.getLogger(DefaultParser.class.getName()).log(Level.INFO, null, npe);
-                }
+                logNPE(npe, fo);
             }
         } finally {
             if (is != null) {
@@ -184,6 +179,31 @@ abstract class DefaultParser  extends DefaultHandler {
         }                        
     }
 
+    /**
+     * Log NullPointerException thrown by a parser.
+     *
+     * Use Level FINE for NPEs thrown in com.sun.org.apache.xerces.internal.impl
+     * package or its subpackages. See bug 126496 and bug 126496 and
+     * http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6743605.
+     */
+    private void logNPE(NullPointerException npe, FileObject fo) {
+        StackTraceElement[] elements = npe.getStackTrace();
+        if (elements.length > 0 && elements[0].getClassName().startsWith(
+                "com.sun.org.apache.xerces.internal.impl")) { //NOI18N
+            if (!xercesErrorInfoLogged && !LOG.isLoggable(Level.FINE)) {
+                xercesErrorInfoLogged = true;
+                LOG.log(Level.INFO, "Some problem occurred during" //NOI18N
+                        + " parsing. Please set logging level for {0}" //NOI18N
+                        + " to FINE for more details.", LOG.getName()); //NOI18N
+            }
+            LOG.log(Level.FINE, "While parsing: {0}", fo);              //NOI18N
+            LOG.log(Level.FINE, null, npe);
+        } else {
+            // report all other NPEs
+            Exceptions.attachMessage(npe, "While parsing: " + fo);      //NOI18N
+            LOG.log(Level.INFO, null, npe);
+        }
+    }
 
     protected void customizeInputSource(InputSource in) {
     }

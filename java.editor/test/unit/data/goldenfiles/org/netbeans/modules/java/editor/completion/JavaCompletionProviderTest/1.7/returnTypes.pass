@@ -7,6 +7,8 @@ int
 long
 short
 void
+X
+Y
 AbstractMethodError
 Appendable
 ArithmeticException

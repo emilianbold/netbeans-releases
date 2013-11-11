@@ -67,10 +67,15 @@ import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.modules.maven.spi.debug.MavenDebugger;
 import org.netbeans.modules.web.browser.spi.URLDisplayerImplementation;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 import org.openide.windows.OutputWriter;
+import static org.netbeans.modules.maven.j2ee.Bundle.*;
+import org.openide.util.Exceptions;
 
 
 @ProjectServiceProvider(
@@ -256,6 +261,10 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
     
     @Override
     public boolean checkRunConfig(RunConfig config) {
+        if (!isSupported()) { // #234767
+            return false;
+        }
+
         boolean depl = Boolean.parseBoolean(config.getProperties().get(MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY));
         if (depl) {
             J2eeModuleProvider provider = config.getProject().getLookup().lookup(J2eeModuleProvider.class);
@@ -264,6 +273,50 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
             }
         }
         return true;
+    }
+
+    @NbBundle.Messages({
+        "MSG_Server_No_Profiling=<html>The target server does not support profiling.<br><b>Choose a different server</b> in project properties.</html>",
+        "MSG_Server_No_Debugging=<html>The target server does not support debugging.<br><b>Choose a different server</b> in project properties.</html>"
+    })
+    private boolean isSupported() {
+        String serverInstanceID = getServerInstanceID();
+        if (serverInstanceID == null) {
+            return false;
+        }
+
+        ServerInstance serverInstance = Deployment.getDefault().getServerInstance(serverInstanceID);
+        try {
+            if (serverInstance != null && !DEV_NULL.equals(serverInstanceID)) {
+                if (!serverInstance.isDebuggingSupported()) {
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(MSG_Server_No_Debugging(), NotifyDescriptor.WARNING_MESSAGE));
+                    return false;
+                }
+                if (!serverInstance.isProfilingSupported()) {
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(MSG_Server_No_Profiling(), NotifyDescriptor.WARNING_MESSAGE));
+                    return false;
+                }
+            }
+        } catch (InstanceRemovedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return true;
+    }
+
+    private String getServerInstanceID() {
+        J2eeModuleProvider moduleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
+        String serverInstanceID = null;
+
+        // First check if the one-time deployment server is set
+        OneTimeDeployment oneTimeDeployment = project.getLookup().lookup(OneTimeDeployment.class);
+        if (oneTimeDeployment != null) {
+            serverInstanceID = oneTimeDeployment.getServerInstanceId();
+        }
+
+        if (serverInstanceID == null && moduleProvider != null) {
+            serverInstanceID = moduleProvider.getServerInstanceID();
+        }
+        return serverInstanceID;
     }
 
     private boolean touchCoSTimeStamp(RunConfig rc, long stamp) {

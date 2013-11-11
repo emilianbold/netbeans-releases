@@ -1145,9 +1145,28 @@ public class Utilities {
         }
 
         @Override
+        public Boolean scan(TreePath path, Void p) {
+            seenTrees.add(path.getLeaf());
+            return super.scan(path, p);
+        }
+
+        @Override
         public Boolean scan(Tree tree, Void p) {
             seenTrees.add(tree);
             return super.scan(tree, p);
+        }
+
+        /**
+         * Hardcoded check for System.exit(), Runtime.exit and Runtime.halt which also terminates the processing. 
+         * TODO: some configuration (project-level ?) could add also different exit methods.
+         */
+        @Override
+        public Boolean visitMethodInvocation(MethodInvocationTree node, Void p) {
+            Element el = info.getTrees().getElement(getCurrentPath());
+            if (isSystemExit(info, el)) {
+                return true;
+            }
+            return super.visitMethodInvocation(node, p);
         }
 
         @Override
@@ -1450,6 +1469,34 @@ public class Utilities {
                 if (varElement.getSimpleName().contentEquals(variableName)) {
                     return true;
                 }
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * Determines if the element corresponds to never-returning, terminating method.
+     * System.exit, Runtime.exit, Runtime.halt are checked. The passed element is
+     * usually a result of {@code CompilationInfo.getTrees().getElement(path)}.
+     * 
+     * @param info context
+     * @param e element to check
+     * @return true, if the element corrresponds to a VM-exiting method
+     */
+    public static boolean isSystemExit(CompilationInfo info, Element e) {
+        if (e == null || e.getKind() != ElementKind.METHOD) {
+            return false;
+        }
+        ExecutableElement ee = (ExecutableElement)e;
+        Name n = ee.getSimpleName();
+        if (n.contentEquals("exit") || n.contentEquals("halt")) { // NOI18N
+            TypeElement tel = info.getElementUtilities().enclosingTypeElement(e);
+            if (tel == null) {
+                return false;
+            }
+            Name ofqn = tel.getQualifiedName();
+            if (ofqn.contentEquals("java.lang.System") || ofqn.contentEquals("java.lang.Runtime")) { // NOI18N
+                return true;
             }
         }
         return false;

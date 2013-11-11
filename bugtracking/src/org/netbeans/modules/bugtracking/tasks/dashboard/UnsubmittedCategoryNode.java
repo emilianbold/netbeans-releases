@@ -105,7 +105,7 @@ public class UnsubmittedCategoryNode extends CategoryNode implements Submitable 
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(RepositoryImpl.EVENT_UNSUBMITTED_ISSUES_CHANGED)) {
                 UnsubmittedCategoryNode.this.updateContent();
-                DashboardViewer.getInstance().updateUnsubmittedCategory(UnsubmittedCategoryNode.this);
+                DashboardViewer.getInstance().updateCategoryNode(UnsubmittedCategoryNode.this);
             }
         }
     }

@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import static junit.framework.Assert.assertTrue;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.TestIssue;
 import org.openide.util.test.MockLookup;
 
@@ -105,7 +106,7 @@ public class RepositoryTest extends NbTestCase {
         APITestRepository apiRepo = getApiRepo();
         Repository repo = getRepo();
         String[] ids = new String[] {APITestIssue.ID_1, APITestIssue.ID_2};
-        assertEquals(apiRepo.getIssues(ids).length, repo.getIssues(ids).length);
+        assertEquals(apiRepo.getIssues(ids).size(), repo.getIssues(ids).length);
     }
     
 //    public void testSimpleSearch() {
@@ -118,6 +119,15 @@ public class RepositoryTest extends NbTestCase {
         Repository repo = getRepo();
         String[] ids = new String[] {APITestIssue.ID_1, APITestIssue.ID_2};
         assertEquals(true, repo.isMutable());
+    }
+    
+    public void testCanAttachFiles() {
+        Repository repo = getRepo();
+        
+        getApiRepo().canAttachFiles = false;
+        assertFalse(repo.canAttachFiles());
+        getApiRepo().canAttachFiles = true;
+        assertTrue(repo.canAttachFiles());
     }
     
     public void testQueryListChanged() {
@@ -147,14 +157,14 @@ public class RepositoryTest extends NbTestCase {
         final String newDisplayName = "newDisplayName";
         APITestRepository apiTestRepo = getApiRepo();
         apiTestRepo.getController().setDisplayName(newDisplayName);
-        testAttributeChange(Repository.ATTRIBUTE_DISPLAY_NAME, APITestRepository.DISPLAY_NAME, newDisplayName);
+        testAttributeChange(RepositoryImpl.ATTRIBUTE_DISPLAY_NAME, APITestRepository.DISPLAY_NAME, newDisplayName);
     }
     
     public void testUrlChanged() throws IOException {
         final String newURL = "http://test/newUrl/";
         APITestRepository apiTestRepo = getApiRepo();
         apiTestRepo.getController().setURL(newURL);
-        testAttributeChange(Repository.ATTRIBUTE_URL, APITestRepository.URL, newURL);
+        testAttributeChange(RepositoryImpl.ATTRIBUTE_URL, APITestRepository.URL, newURL);
     }
     
     private void testAttributeChange(final String key, final String expectedOldValue, final String expectedNewValue) throws IOException {

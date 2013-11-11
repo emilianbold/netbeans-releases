@@ -45,7 +45,6 @@ import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -53,14 +52,11 @@ import java.util.LinkedList;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.bugtracking.TestIssue;
-import org.netbeans.modules.bugtracking.TestQuery;
 import org.netbeans.modules.bugtracking.TestRepository;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -79,6 +75,7 @@ public class APITestRepository extends TestRepository {
     private HashMap<String, APITestIssue> issues;
     APITestIssue newIssue;
     APITestQuery newQuery;
+    boolean canAttachFiles = false;
 
     public APITestRepository(RepositoryInfo info) {
         this.info = info;
@@ -103,7 +100,7 @@ public class APITestRepository extends TestRepository {
     }
 
     @Override
-    public synchronized APITestIssue[] getIssues(String[] ids) {
+    public synchronized Collection<APITestIssue> getIssues(String... ids) {
         if(issues == null) {
             issues = new HashMap<String, APITestIssue>();
         }
@@ -116,7 +113,7 @@ public class APITestRepository extends TestRepository {
             }
             ret.add(i);
         }
-        return ret.toArray(new APITestIssue[ret.size()]);
+        return ret;
     }
 
     @Override
@@ -140,7 +137,7 @@ public class APITestRepository extends TestRepository {
     }
 
     @Override
-    public TestIssue createIssue(String summary, String description) {
+    public APITestIssue createIssue(String summary, String description) {
         newIssue = new APITestIssue(null, this, true, summary, description);
         return newIssue;
     }
@@ -165,7 +162,13 @@ public class APITestRepository extends TestRepository {
         return ret;
     }
 
-    private PropertyChangeSupport support = new PropertyChangeSupport(this);
+    @Override
+    public boolean canAttachFile() {
+        return canAttachFiles;
+    }
+
+    
+    private final PropertyChangeSupport support = new PropertyChangeSupport(this);
     @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) { 
         support.removePropertyChangeListener(listener);
@@ -219,7 +222,7 @@ public class APITestRepository extends TestRepository {
         }
 
         @Override
-        public void applyChanges() throws IOException {
+        public void applyChanges() {
             info = new RepositoryInfo(
                     info.getId(), 
                     info.getConnectorId(), 
@@ -245,6 +248,11 @@ public class APITestRepository extends TestRepository {
         
         public void setURL(String url) {
             this.url = url;
+        }
+
+        @Override
+        public void cancelChanges() {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
         
     }

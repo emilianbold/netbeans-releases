@@ -135,9 +135,9 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     }
 
     @Override
-    protected int getHandler(Object object) {
+    protected short getHandler(Object object) {
         assert object != null;
-        int aHandler;
+        short aHandler;
         if (object instanceof LibProjectImpl) {
             aHandler = LIB_PROJECT_IMPL;
         } else if (object instanceof ProjectImpl) {
@@ -321,7 +321,7 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     }
 
     @Override
-    protected SelfPersistent createObject(int handler, RepositoryDataInput stream) throws IOException {
+    protected SelfPersistent createObject(short handler, RepositoryDataInput stream) throws IOException {
         SelfPersistent obj;
 
         switch (handler) {
@@ -597,7 +597,7 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                 obj = ReferencesIndex.create(stream);
                 break;
             default:
-                throw new IllegalArgumentException("unknown handler" + handler);  //NOI18N
+                throw new IllegalArgumentException("Unknown handler " + handler);  //NOI18N
         }
         return obj;
     }
@@ -619,98 +619,98 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     ///////////////////////////////////////////////////////////////////////////////////
     // handlers to identify different classes of projects
     
-    private static final int FIRST_INDEX                    = UIDObjectFactory.LAST_INDEX + 1;
+    private static final short FIRST_INDEX                    = UIDObjectFactory.LAST_INDEX + 1;
     
-    private static final int PROJECT_IMPL                   = FIRST_INDEX;
-    private static final int LIB_PROJECT_IMPL               = PROJECT_IMPL + 1;    
-    private static final int FILES_CONTAINER                = LIB_PROJECT_IMPL + 1;
-    private static final int GRAPH_CONTAINER                = FILES_CONTAINER + 1;
-    private static final int DECLARATION_CONTAINER_PROJECT  = GRAPH_CONTAINER + 1;
-    private static final int DECLARATION_CONTAINER_NAMESPACE= DECLARATION_CONTAINER_PROJECT + 1;
-    private static final int CLASSIFIER_CONTAINER           = DECLARATION_CONTAINER_NAMESPACE + 1;
-    private static final int INCLUDED_FILE_STORAGE          = CLASSIFIER_CONTAINER + 1;
-    private static final int FILE_IMPL                      = INCLUDED_FILE_STORAGE + 1;
-    private static final int FILE_DECLARATIONS              = FILE_IMPL + 1;
-    private static final int FILE_MACROS                    = FILE_DECLARATIONS + 1;
-    private static final int FILE_INCLUDES                  = FILE_MACROS + 1;
-    private static final int FILE_REFERENCES                = FILE_INCLUDES + 1;
-    private static final int FILE_INSTANTIATIONS            = FILE_REFERENCES + 1;
-    private static final int ENUM_IMPL                      = FILE_INSTANTIATIONS + 1;
-    private static final int FORWARD_ENUM                   = ENUM_IMPL + 1;
-    private static final int CLASS_IMPL_SPECIALIZATION      = FORWARD_ENUM + 1;
-    private static final int CLASS_IMPL_FUNCTION_SPECIALIZATION = CLASS_IMPL_SPECIALIZATION + 1;
-    private static final int FORWARD_CLASS                  = CLASS_IMPL_FUNCTION_SPECIALIZATION + 1;
-    private static final int CLASS_IMPL                     = FORWARD_CLASS + 1;
+    private static final short PROJECT_IMPL                   = FIRST_INDEX;
+    private static final short LIB_PROJECT_IMPL               = PROJECT_IMPL + 1;    
+    private static final short FILES_CONTAINER                = LIB_PROJECT_IMPL + 1;
+    private static final short GRAPH_CONTAINER                = FILES_CONTAINER + 1;
+    private static final short DECLARATION_CONTAINER_PROJECT  = GRAPH_CONTAINER + 1;
+    private static final short DECLARATION_CONTAINER_NAMESPACE= DECLARATION_CONTAINER_PROJECT + 1;
+    private static final short CLASSIFIER_CONTAINER           = DECLARATION_CONTAINER_NAMESPACE + 1;
+    private static final short INCLUDED_FILE_STORAGE          = CLASSIFIER_CONTAINER + 1;
+    private static final short FILE_IMPL                      = INCLUDED_FILE_STORAGE + 1;
+    private static final short FILE_DECLARATIONS              = FILE_IMPL + 1;
+    private static final short FILE_MACROS                    = FILE_DECLARATIONS + 1;
+    private static final short FILE_INCLUDES                  = FILE_MACROS + 1;
+    private static final short FILE_REFERENCES                = FILE_INCLUDES + 1;
+    private static final short FILE_INSTANTIATIONS            = FILE_REFERENCES + 1;
+    private static final short ENUM_IMPL                      = FILE_INSTANTIATIONS + 1;
+    private static final short FORWARD_ENUM                   = ENUM_IMPL + 1;
+    private static final short CLASS_IMPL_SPECIALIZATION      = FORWARD_ENUM + 1;
+    private static final short CLASS_IMPL_FUNCTION_SPECIALIZATION = CLASS_IMPL_SPECIALIZATION + 1;
+    private static final short FORWARD_CLASS                  = CLASS_IMPL_FUNCTION_SPECIALIZATION + 1;
+    private static final short CLASS_IMPL                     = FORWARD_CLASS + 1;
 //    private static final int UNRESOLVED_FILE                = CLASS_IMPL + 1;
 //    private static final int UNRESOLVED_CLASS               = UNRESOLVED_FILE + 1;
 //    private static final int TYPEDEF_IMPL                   = UNRESOLVED_CLASS + 1;
-    private static final int TYPEDEF_IMPL                   = CLASS_IMPL + 1;
-    private static final int TYPEALIAS_IMPL                 = TYPEDEF_IMPL + 1;
-    private static final int MEMBER_TYPEDEF                 = TYPEALIAS_IMPL + 1;
-    private static final int MEMBER_TYPEALIAS               = MEMBER_TYPEDEF + 1;
-    private static final int NAMESPACE_IMPL                 = MEMBER_TYPEALIAS + 1;
-    private static final int NAMESPACE_DEF_IMPL             = NAMESPACE_IMPL + 1;
-    private static final int NAMESPACE_ALIAS_IMPL           = NAMESPACE_DEF_IMPL + 1;
-    private static final int USING_DECLARATION_IMPL         = NAMESPACE_ALIAS_IMPL + 1;
-    private static final int USING_DIRECTIVE_IMPL           = USING_DECLARATION_IMPL + 1;
-    private static final int ENUM_FORWARD_DECLARATION_IMPL  = USING_DIRECTIVE_IMPL + 1;
-    private static final int ENUM_MEMBER_FORWARD_DECLARATION= ENUM_FORWARD_DECLARATION_IMPL + 1;
-    private static final int CLASS_FORWARD_DECLARATION_IMPL = ENUM_MEMBER_FORWARD_DECLARATION + 1;
-    private static final int CLASS_MEMBER_FORWARD_DECLARATION = CLASS_FORWARD_DECLARATION_IMPL + 1;   
-    private static final int FRIEND_CLASS_IMPL              = CLASS_MEMBER_FORWARD_DECLARATION + 1;
+    private static final short TYPEDEF_IMPL                   = CLASS_IMPL + 1;
+    private static final short TYPEALIAS_IMPL                 = TYPEDEF_IMPL + 1;
+    private static final short MEMBER_TYPEDEF                 = TYPEALIAS_IMPL + 1;
+    private static final short MEMBER_TYPEALIAS               = MEMBER_TYPEDEF + 1;
+    private static final short NAMESPACE_IMPL                 = MEMBER_TYPEALIAS + 1;
+    private static final short NAMESPACE_DEF_IMPL             = NAMESPACE_IMPL + 1;
+    private static final short NAMESPACE_ALIAS_IMPL           = NAMESPACE_DEF_IMPL + 1;
+    private static final short USING_DECLARATION_IMPL         = NAMESPACE_ALIAS_IMPL + 1;
+    private static final short USING_DIRECTIVE_IMPL           = USING_DECLARATION_IMPL + 1;
+    private static final short ENUM_FORWARD_DECLARATION_IMPL  = USING_DIRECTIVE_IMPL + 1;
+    private static final short ENUM_MEMBER_FORWARD_DECLARATION= ENUM_FORWARD_DECLARATION_IMPL + 1;
+    private static final short CLASS_FORWARD_DECLARATION_IMPL = ENUM_MEMBER_FORWARD_DECLARATION + 1;
+    private static final short CLASS_MEMBER_FORWARD_DECLARATION = CLASS_FORWARD_DECLARATION_IMPL + 1;   
+    private static final short FRIEND_CLASS_IMPL              = CLASS_MEMBER_FORWARD_DECLARATION + 1;
                 
     // functions
-    private static final int FUNCTION_IMPL                  = FRIEND_CLASS_IMPL + 1;
-    private static final int FUNCTION_IMPL_EX               = FUNCTION_IMPL + 1;
-    private static final int FUNCTION_INSTANTIATION_IMPL    = FUNCTION_IMPL_EX + 1;
+    private static final short FUNCTION_IMPL                  = FRIEND_CLASS_IMPL + 1;
+    private static final short FUNCTION_IMPL_EX               = FUNCTION_IMPL + 1;
+    private static final short FUNCTION_INSTANTIATION_IMPL    = FUNCTION_IMPL_EX + 1;
 
     //// function definitons 
-    private static final int DESTRUCTOR_DEF_IMPL            = FUNCTION_INSTANTIATION_IMPL + 1;
-    private static final int CONSTRUCTOR_DEF_IMPL           = DESTRUCTOR_DEF_IMPL + 1;
-    private static final int FUNCTION_DEF_IMPL              = CONSTRUCTOR_DEF_IMPL + 1;
+    private static final short DESTRUCTOR_DEF_IMPL            = FUNCTION_INSTANTIATION_IMPL + 1;
+    private static final short CONSTRUCTOR_DEF_IMPL           = DESTRUCTOR_DEF_IMPL + 1;
+    private static final short FUNCTION_DEF_IMPL              = CONSTRUCTOR_DEF_IMPL + 1;
 
     //// friends
-    private static final int FRIEND_FUNCTION_IMPL           = FUNCTION_DEF_IMPL + 1;
-    private static final int FRIEND_FUNCTION_IMPL_EX        = FRIEND_FUNCTION_IMPL + 1;
-    private static final int FRIEND_FUNCTION_DEF_IMPL       = FRIEND_FUNCTION_IMPL_EX + 1;
-    private static final int FRIEND_FUNCTION_DEF_DECL_IMPL  = FRIEND_FUNCTION_DEF_IMPL + 1;
+    private static final short FRIEND_FUNCTION_IMPL           = FUNCTION_DEF_IMPL + 1;
+    private static final short FRIEND_FUNCTION_IMPL_EX        = FRIEND_FUNCTION_IMPL + 1;
+    private static final short FRIEND_FUNCTION_DEF_IMPL       = FRIEND_FUNCTION_IMPL_EX + 1;
+    private static final short FRIEND_FUNCTION_DEF_DECL_IMPL  = FRIEND_FUNCTION_DEF_IMPL + 1;
     
     //// methods
-    private static final int CONSTRUCTOR_DEF_DECL_IMPL      = FRIEND_FUNCTION_DEF_DECL_IMPL + 1;
-    private static final int DESTRUCTOR_DEF_DECL_IMPL       = CONSTRUCTOR_DEF_DECL_IMPL + 1;
-    private static final int METHOD_DEF_DECL_IMPL           = DESTRUCTOR_DEF_DECL_IMPL + 1;
-    private static final int CONSTRUCTOR_IMPL               = METHOD_DEF_DECL_IMPL + 1;
-    private static final int DESTRUCTOR_IMPL                = CONSTRUCTOR_IMPL + 1;
-    private static final int METHOD_IMPL                    = DESTRUCTOR_IMPL + 1;
-    private static final int METHOD_IMPL_SPECIALIZATION     = METHOD_IMPL + 1;
+    private static final short CONSTRUCTOR_DEF_DECL_IMPL      = FRIEND_FUNCTION_DEF_DECL_IMPL + 1;
+    private static final short DESTRUCTOR_DEF_DECL_IMPL       = CONSTRUCTOR_DEF_DECL_IMPL + 1;
+    private static final short METHOD_DEF_DECL_IMPL           = DESTRUCTOR_DEF_DECL_IMPL + 1;
+    private static final short CONSTRUCTOR_IMPL               = METHOD_DEF_DECL_IMPL + 1;
+    private static final short DESTRUCTOR_IMPL                = CONSTRUCTOR_IMPL + 1;
+    private static final short METHOD_IMPL                    = DESTRUCTOR_IMPL + 1;
+    private static final short METHOD_IMPL_SPECIALIZATION     = METHOD_IMPL + 1;
     
-    private static final int FUNCTION_DEF_DECL_IMPL         = METHOD_IMPL_SPECIALIZATION + 1;
-    private static final int FUNCTION_LAMBDA_IMPL           = FUNCTION_DEF_DECL_IMPL + 1;
+    private static final short FUNCTION_DEF_DECL_IMPL         = METHOD_IMPL_SPECIALIZATION + 1;
+    private static final short FUNCTION_LAMBDA_IMPL           = FUNCTION_DEF_DECL_IMPL + 1;
     // end of functions
     
     // variables
-    private static final int VARIABLE_IMPL                  = FUNCTION_LAMBDA_IMPL + 1;
-    private static final int VARIABLE_DEF_IMPL              = VARIABLE_IMPL + 1;
-    private static final int FIELD_IMPL                     = VARIABLE_DEF_IMPL + 1;
+    private static final short VARIABLE_IMPL                  = FUNCTION_LAMBDA_IMPL + 1;
+    private static final short VARIABLE_DEF_IMPL              = VARIABLE_IMPL + 1;
+    private static final short FIELD_IMPL                     = VARIABLE_DEF_IMPL + 1;
     
-    private static final int ENUMERATOR_IMPL                = FIELD_IMPL + 1;
+    private static final short ENUMERATOR_IMPL                = FIELD_IMPL + 1;
 
-    private static final int INCLUDE_IMPL                   = ENUMERATOR_IMPL + 1;
-    private static final int INHERITANCE_IMPL               = INCLUDE_IMPL + 1;
-    private static final int MACRO_IMPL                     = INHERITANCE_IMPL + 1;
-    private static final int TEMPLATE_PARAMETER_IMPL        = MACRO_IMPL + 1;
+    private static final short INCLUDE_IMPL                   = ENUMERATOR_IMPL + 1;
+    private static final short INHERITANCE_IMPL               = INCLUDE_IMPL + 1;
+    private static final short MACRO_IMPL                     = INHERITANCE_IMPL + 1;
+    private static final short TEMPLATE_PARAMETER_IMPL        = MACRO_IMPL + 1;
 
     // instantiations
-    private static final int INSTANTIATION_CLASS            = TEMPLATE_PARAMETER_IMPL + 1;
+    private static final short INSTANTIATION_CLASS            = TEMPLATE_PARAMETER_IMPL + 1;
 
     // fortran
 
-    private static final int PROGRAM_IMPL                  = INSTANTIATION_CLASS + 1;
-    private static final int SUBROUTINE_IMPL               = PROGRAM_IMPL + 1;
-    private static final int MODULE_IMPL                   = SUBROUTINE_IMPL + 1;
+    private static final short PROGRAM_IMPL                  = INSTANTIATION_CLASS + 1;
+    private static final short SUBROUTINE_IMPL               = PROGRAM_IMPL + 1;
+    private static final short MODULE_IMPL                   = SUBROUTINE_IMPL + 1;
 
-    private static final int MODEL_INDEX                   = MODULE_IMPL + 1;
+    private static final short MODEL_INDEX                   = MODULE_IMPL + 1;
     // index to be used in another factory (but only in one) 
     // to start own indeces from the next after LAST_INDEX        
-    public static final int LAST_INDEX = MODEL_INDEX;
+    public static final short LAST_INDEX = MODEL_INDEX;
 }

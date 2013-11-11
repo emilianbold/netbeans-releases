@@ -151,13 +151,13 @@ public final class DefaultPlugin extends JUnitPlugin {
     /** */
     private static JUnitVersion junitVer;
 
-    /** name of FreeMarker template property - generate {@code &#64;BeforeClass} method? */
+    /** name of FreeMarker template property - generate {@literal &#64;BeforeClass} method? */
     private static final String templatePropBeforeClass = "classSetUp"; //NOI18N
-    /** name of FreeMarker template property - generate {@code &#64;AfterClass} method? */
+    /** name of FreeMarker template property - generate {@literal &#64;AfterClass} method? */
     private static final String templatePropAfterClass = "classTearDown";//NOI18N
-    /** name of FreeMarker template property - generate {@code &#64;Before} method? */
+    /** name of FreeMarker template property - generate {@literal &#64;Before} method? */
     private static final String templatePropBefore = "methodSetUp";     //NOI18N
-    /** name of FreeMarker template property - generate {@code &#64;After} method? */
+    /** name of FreeMarker template property - generate {@literal &#64;After} method? */
     private static final String templatePropAfter = "methodTearDown";   //NOI18N
     /** name of FreeMarker template property - generate in-method source code hints? */
     private static final String templatePropCodeHints = "sourceCodeHint";   //NOI18N
@@ -176,6 +176,8 @@ public final class DefaultPlugin extends JUnitPlugin {
     /** */
     private static java.util.ResourceBundle bundle = org.openide.util.NbBundle.getBundle(
             DefaultPlugin.class);
+    
+    private static boolean generatingIntegrationTest = false;
     
     public static void logJUnitUsage(URI projectURI) {
         String version = "";
@@ -240,8 +242,8 @@ public final class DefaultPlugin extends JUnitPlugin {
     /**
      * Finds a Java source group the given file belongs to.
      * 
-     * @param  file  {@code FileObject} to find a {@code SourceGroup} for
-     * @return  the found {@code SourceGroup}, or {@code null} if the given
+     * @param  file  {@literal FileObject} to find a {@literal SourceGroup} for
+     * @return  the found {@literal SourceGroup}, or {@literal null} if the given
      *          file does not belong to any Java source group
      */
     private static SourceGroup findSourceGroup(FileObject file) {
@@ -778,6 +780,10 @@ public final class DefaultPlugin extends JUnitPlugin {
         return baseClassName + "Test";                                  //NOI18N
     }
     
+    private static String getIntegrationTestClassName(String baseClassName) {
+        return baseClassName + "IT";                                  //NOI18N
+    }
+    
     /**
      */
     private static String getSourceClassName(String testClassName) {
@@ -849,6 +855,7 @@ public final class DefaultPlugin extends JUnitPlugin {
                     JUnitTestCreatorProvider.class,
                     "MSG_StatusBar_CreateTest_Begin");                  //NOI18N
         progress.displayStatusText(msg);
+        generatingIntegrationTest = Boolean.TRUE.equals(params.get(CreateTestParam.INC_GENERATE_INTEGRATION_TEST));
 
         final TestCreator testCreator = new TestCreator(params, junitVer);
         
@@ -922,7 +929,11 @@ public final class DefaultPlugin extends JUnitPlugin {
                         String srcClassName
                                 = ClassPath.getClassPath(filesToTest[0], SOURCE)
                                   .getResourceName(filesToTest[0], '.', false);
-                        testClassName = getTestClassName(srcClassName);
+                        if(generatingIntegrationTest) {
+                            testClassName = getIntegrationTestClassName(srcClassName);
+                        } else {
+                            testClassName = getTestClassName(srcClassName);
+                        }
                     }
                     try {
                         results = createSingleTest(
@@ -1025,7 +1036,7 @@ public final class DefaultPlugin extends JUnitPlugin {
 
     /**
      * Create a map of FreeMaker template parameters from a map
-     * of {@code CreateTestParam}s.
+     * of {@literal CreateTestParam}s.
      */
     public static final Map<String, Boolean> createTemplateParams(
                                           Map<CreateTestParam, Object> params) {
@@ -1362,13 +1373,12 @@ public final class DefaultPlugin extends JUnitPlugin {
      * Gets JUnit version info from the project and stores it
      * into field {@link #junitVer}.
      * If the &quot;junit version&quot; info is not available,
-     * {@code null} is stored.
+     * {@literal null} is stored.
      *
      * @param  project  project from which the information is to be obtained
-     * @return  {@code true} of the set of project's libraries could be
-     *          determined, {@code false} if it could not be determined
-     * @exception  java.lang.IllegalStateException
-     *             if the project does not contain any test folders
+     * @return  {@literal true} of the set of project's libraries could be
+     *          determined, {@literal false} if it could not be determined
+     * @throws java.lang.IllegalStateException if the project does not contain any test folders
      * @see  #junitVer
      */
     private boolean readProjectSettingsJUnitVer(Project project)
@@ -1409,10 +1419,9 @@ public final class DefaultPlugin extends JUnitPlugin {
      * Finds classpath used for compilation of tests.
      * 
      * @param  project  project whose classpath should be found
-     * @return  test classpath of the given project, or {@code null} if it could
+     * @return  test classpath of the given project, or {@literal null} if it could
      *          not be determined
-     * @exception  java.lang.IllegalStateException
-     *             if no test folders were found in the project
+     * @throws java.lang.IllegalStateException if no test folders were found in the project
      */
     private static ClassPath getTestClassPath(final Project project)
                                                   throws IllegalStateException {
@@ -1425,8 +1434,7 @@ public final class DefaultPlugin extends JUnitPlugin {
 
         final Collection<FileObject> testFolders = Utils.getTestFolders(project);
         if (testFolders.isEmpty()) {
-            LOG_JUNIT_VER.finest(" - no test folders found");           //NOI18N
-            throw new IllegalStateException();
+            LOG_JUNIT_VER.finest(" - no unit test folders found");           //NOI18N
         }
 
         final ClassPathProvider cpProvider
@@ -1448,7 +1456,7 @@ public final class DefaultPlugin extends JUnitPlugin {
             }
         }
 
-        LOG_JUNIT_VER.finest(" - no compile classpath for tests found");//NOI18N
+        LOG_JUNIT_VER.finest(" - no compile classpath for unit tests found");//NOI18N
         return null;
     }
 
@@ -1648,7 +1656,7 @@ public final class DefaultPlugin extends JUnitPlugin {
      * 
      * @param  bundleKey  resource bundle key of the message
      * @param  msgType  type of the message
-     *                  (e.g. {@code NotifyDescriptor.INFORMATION_MESSAGE})
+     *                  (e.g. {@literal NotifyDescriptor.INFORMATION_MESSAGE})
      */
     private static void displayMessage(String bundleKey, int msgType) {
         DialogDisplayer.getDefault().notifyLater(
@@ -1659,11 +1667,11 @@ public final class DefaultPlugin extends JUnitPlugin {
 
     /**
      * Finds a project artifact used as an argument to method
-     * {@code ProjectClassPathModifier.removeLibraries(...)
+     * {@literal ProjectClassPathModifier.removeLibraries(...)}
      * when modifying the set of JUnit libraries (used for tests).
      * 
      * @param  project  project for which the project artifact should be found
-     * @return  list of test project artifacts, or {@code null} an empty list
+     * @return  list of test project artifacts, or {@literal null} an empty list
      *          if no one could be determined
      */
     private static List<FileObject> getProjectTestArtifacts(final Project project) {
@@ -1727,11 +1735,11 @@ public final class DefaultPlugin extends JUnitPlugin {
      * 
      * @param  targetRoot     <!-- //PENDING -->
      * @param  testClassName  <!-- //PENDING -->
-     * @param  testCreator  {@code TestCreator} to be used for filling
+     * @param  testCreator  {@literal TestCreator} to be used for filling
      *                      the test class template
-     * @param  templateDataObj  {@code DataObject} representing
+     * @param  templateDataObj  {@literal DataObject} representing
      *                          the test file template
-     * @return  the created test, or {@code null} if no test was created
+     * @return  the created test, or {@literal null} if no test was created
      */
     private DataObject createEmptyTest(FileObject targetRoot,
                                        String testClassName,
@@ -1812,7 +1820,11 @@ public final class DefaultPlugin extends JUnitPlugin {
                         testClassName = requestedTestClassName;
                         mainClassProcessed = true;
                     } else {
-                        testClassName = TestUtil.getTestClassName(srcClassNameFull);
+                        if(generatingIntegrationTest) {
+                            testClassName = TestUtil.getIntegrationTestClassName(srcClassNameFull);
+                        } else {
+                            testClassName = TestUtil.getTestClassName(srcClassNameFull);
+                        }
                     }
                     String testResourceName = testClassName.replace('.', '/');
 
@@ -1956,7 +1968,7 @@ public final class DefaultPlugin extends JUnitPlugin {
         String dotPkg = pkg.replace('/', '.');
         String fullSuiteName = rootFolderName.concat((suiteName != null)
                                ? pkg + '/' + suiteName
-                               : TestUtil.convertPackage2SuiteName(pkg));
+                               : (generatingIntegrationTest ? TestUtil.convertPackage2ITSuiteName(pkg) : TestUtil.convertPackage2SuiteName(pkg)));
 
         String classNames = makeListOfClasses(classesToInclude, null);
         String classes = makeListOfClasses(classesToInclude, ".class"); //NOI18N
@@ -2011,7 +2023,7 @@ public final class DefaultPlugin extends JUnitPlugin {
 
     /**
      * Makes a string contaning comma-separated list of the given names.
-     * If the {@code suffix} parameter is non-{@code null}, each of the given
+     * If the {@literal suffix} parameter is non-{@literal null}, each of the given
      * names is appended a given suffix.
      * <p>
      * Examples:
@@ -2151,8 +2163,8 @@ public final class DefaultPlugin extends JUnitPlugin {
      * @param  junitVer  type of generated JUnit tests
      * @param  templateParams  map of template params to store
      *                         the information to
-     * @return  {@code true} if it was detected that annotations are supported;
-     *          {@code false} otherwise
+     * @return  {@literal true} if it was detected that annotations are supported;
+     *          {@literal false} otherwise
      */
     private static boolean setAnnotationsSupport(
                                         FileObject testFolder,

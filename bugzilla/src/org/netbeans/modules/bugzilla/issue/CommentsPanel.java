@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.bugzilla.issue;
 
-import org.netbeans.modules.bugtracking.util.SimpleIssueFinder;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -87,16 +86,14 @@ import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
-import org.netbeans.modules.bugzilla.util.BugzillaUtil;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
-import org.netbeans.modules.bugtracking.cache.IssueSettingsStorage;
-import org.netbeans.modules.bugtracking.util.HyperlinkSupport;
-import org.netbeans.modules.bugtracking.util.HyperlinkSupport.Link;
-import org.netbeans.modules.bugtracking.util.LinkButton;
-import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.netbeans.modules.bugtracking.commons.IssueSettingsStorage;
+import org.netbeans.modules.bugtracking.commons.HyperlinkSupport;
+import org.netbeans.modules.bugtracking.commons.LinkButton;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.repository.IssueField;
+import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -121,7 +118,6 @@ public class CommentsPanel extends JPanel {
     private NewCommentHandler newCommentHandler;
 
     private Set<Long> collapsedComments = Collections.synchronizedSet(new HashSet<Long>());
-    private final Link issueLink;
 
     static {
         blueBackground = UIManager.getColor( "nb.bugtracking.comment.background" ); //NOI18N
@@ -135,21 +131,6 @@ public class CommentsPanel extends JPanel {
 
     public CommentsPanel() {
         setOpaque( false );
-        issueLink = new HyperlinkSupport.Link() {
-            @Override
-            public void onClick(String linkText) {
-                final String issueKey = SimpleIssueFinder.getInstance().getIssueId(linkText);
-                RP.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        BugzillaIssue is = issue.getRepository().getIssue(issueKey);
-                        if (is != null) {
-                            BugzillaUtil.openIssue(is);
-                        }
-                    }
-                });
-            }
-        };
     }
 
     void setIssue(BugzillaIssue issue,
@@ -263,7 +244,7 @@ public class CommentsPanel extends JPanel {
             int index = author.indexOf('@'); // NOI18N
             String userName = (index == -1) ? author : author.substring(0,index);
             String host = ((KenaiRepository) issue.getRepository()).getHost();
-            stateLabel = TeamUtil.createUserWidget(issue.getRepository().getUrl(), userName, host, TeamUtil.getChatLink(issue.getID()));
+            stateLabel = TeamAccessorUtils.createUserWidget(issue.getRepository().getUrl(), userName, host, TeamAccessorUtils.getChatLink(issue.getID()));
             if (stateLabel != null) {
                 stateLabel.setText(null);
             }
@@ -319,17 +300,13 @@ public class CommentsPanel extends JPanel {
                 .addComponent(placeholder)
                 .addComponent(pane, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE));
         return iconLabel;
-        }
+    }
 
     private void setupTextPane(final JTextPane textPane, String comment) {
         if( UIUtils.isNimbus() ) {
             textPane.setUI( new BasicTextPaneUI() );
         }
         textPane.setText(comment);
-        HyperlinkSupport.getInstance().registerForTypes(textPane);
-        HyperlinkSupport.getInstance().registerForStacktraces(textPane);
-        HyperlinkSupport.getInstance().registerForURLs(textPane);
-        HyperlinkSupport.getInstance().registerForIssueLinks(textPane, issueLink, SimpleIssueFinder.getInstance());
         
         Caret caret = textPane.getCaret();
         if (caret instanceof DefaultCaret) {

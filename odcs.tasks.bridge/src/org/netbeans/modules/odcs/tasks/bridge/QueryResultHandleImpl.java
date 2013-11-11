@@ -48,7 +48,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
+import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.team.server.ui.spi.QueryResultHandle;
 import static org.netbeans.modules.odcs.tasks.bridge.Bundle.*;
 import org.openide.util.NbBundle.Messages;
@@ -62,14 +62,12 @@ class QueryResultHandleImpl extends QueryResultHandle implements ActionListener 
     private final Query query;
     private final String label;
     private final String tooltip;
-    private final Query.QueryMode queryMode;
     private final ResultType type;
 
-    QueryResultHandleImpl(Query query, String label, String tooltip, Query.QueryMode mode, ResultType type) {
+    QueryResultHandleImpl(Query query, String label, String tooltip, ResultType type) {
         this.query = query;
         this.label = label;
         this.tooltip = tooltip;
-        this.queryMode = mode;
         this.type = type;
     }
 
@@ -90,10 +88,10 @@ class QueryResultHandleImpl extends QueryResultHandle implements ActionListener 
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        TeamUtil.openQuery(query, queryMode, true);
+        Util.selectQuery(query);
     }
 
-    @Messages({"# {0} - number of tasks", "LBL_QueryResultTotal=total {0}"})
+    @Messages({"# {0} - number of tasks", "LBL_QueryResultTotal={0} total"})
     static QueryResultHandleImpl forAllStatus(Query query) {
         Collection<Issue> issues = query.getIssues();
         int issueCount = issues != null ? issues.size() : 0;
@@ -101,11 +99,10 @@ class QueryResultHandleImpl extends QueryResultHandle implements ActionListener 
                 query,
                 LBL_QueryResultTotal(issueCount),
                 getTotalTooltip(issueCount),
-                Query.QueryMode.SHOW_ALL,
                 ResultType.NAMED_RESULT);
     }
     
-    @Messages({"# {0} - number of tasks", "LBL_QueryResultUnseen=new or changed {0}"})
+    @Messages({"# {0} - number of tasks", "LBL_QueryResultUnseen={0} changed"})
     static QueryResultHandleImpl forNotSeenStatus(Query query) {
         Collection<Issue> issues;
         int unseenIssues;
@@ -121,6 +118,9 @@ class QueryResultHandleImpl extends QueryResultHandle implements ActionListener 
                 issues.add(issue);
             }
         }
+        if (issues.isEmpty()) {
+            return null;
+        }
         unseenIssues = issues.size();
 
         String label = LBL_QueryResultUnseen(unseenIssues);
@@ -130,7 +130,6 @@ class QueryResultHandleImpl extends QueryResultHandle implements ActionListener 
                 query,
                 label,
                 tooltip,
-                Query.QueryMode.SHOW_NEW_OR_CHANGED,
                 ResultType.NAMED_RESULT);
 
     }
@@ -155,7 +154,6 @@ class QueryResultHandleImpl extends QueryResultHandle implements ActionListener 
                 query,
                 Integer.toString(notIssues),
                 getUnseenTooltip(notIssues),
-                Query.QueryMode.SHOW_NEW_OR_CHANGED,
                 ResultType.ALL_CHANGES_RESULT);
     }
 

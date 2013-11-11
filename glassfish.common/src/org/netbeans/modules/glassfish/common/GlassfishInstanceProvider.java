@@ -52,6 +52,7 @@ import org.glassfish.tools.ide.GlassFishStatus;
 import org.glassfish.tools.ide.admin.CommandSetProperty;
 import org.glassfish.tools.ide.server.config.ConfigBuilderProvider;
 import org.netbeans.api.server.ServerInstance;
+import org.netbeans.modules.glassfish.common.parser.DomainXMLChangeListener;
 import org.netbeans.modules.glassfish.common.utils.ServerUtils;
 import org.netbeans.modules.glassfish.common.utils.Util;
 import org.netbeans.modules.glassfish.spi.CommandFactory;
@@ -161,7 +162,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
         this.displayName = displayName;
         this.uriFragments = uriFragments;
         this.needsJdk6 = needsJdk6;
-        this.noPasswordOptions = new ArrayList<String>();
+        this.noPasswordOptions = new ArrayList<>();
         if (null != noPasswordOptionsArray) {
             noPasswordOptions.addAll(Arrays.asList(noPasswordOptionsArray));
         }
@@ -249,6 +250,11 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
         }
     }
 
+    /**
+     * Add GlassFish server instance into this provider.
+     * <p/>
+     * @param si GlassFish server instance to be added.
+     */
     public void addServerInstance(GlassfishInstance si) {
         synchronized(instanceMap) {
             try {
@@ -266,10 +272,17 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
                         "Could not store GlassFish server attributes", ex);
             }
         }
-
+        if (!si.isRemote()) {
+            DomainXMLChangeListener.registerListener(si);
+        }
         support.fireChange();
     }
 
+    /**
+     * Remove GlassFish server instance from this provider.
+     * <p/>
+     * @param si GlassFish server instance to be removed.
+     */
     public boolean removeServerInstance(GlassfishInstance si) {
         boolean result = false;
         synchronized(instanceMap) {
@@ -288,11 +301,13 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
             }
         }
         GlassFishStatus.remove(si);
-        if(result) {
+        if (result) {
             ConfigBuilderProvider.destroyBuilder(si);
+            if (!si.isRemote()) {
+                DomainXMLChangeListener.unregisterListener(si);
+            }
             support.fireChange();
         }
-
         return result;
     }
     
@@ -321,7 +336,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
     }
     
     public <T> List<T> getInstancesByCapability(Class<T> serverFacadeClass) {
-        List<T> result = new ArrayList<T>();
+        List<T> result = new ArrayList<>();
         synchronized (instanceMap) {
             for (GlassfishInstance instance : instanceMap.values()) {
                 T serverFacade = instance.getLookup().lookup(serverFacadeClass);
@@ -338,7 +353,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
     // ------------------------------------------------------------------------
     @Override
     public List<ServerInstance> getInstances() {
-        List<ServerInstance> result = new  ArrayList<ServerInstance>();
+        List<ServerInstance> result = new  ArrayList<>();
         synchronized (instanceMap) {
             for (GlassfishInstance instance : instanceMap.values()) {
                 ServerInstance si = instance.getCommonInstance();
@@ -509,7 +524,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
 
     String[] getNoPasswordCreatDomainCommand(String startScript, String jarLocation, 
             String domainDir, String portBase, String uname, String domain) {
-            List<String> retVal = new ArrayList<String>();
+            List<String> retVal = new ArrayList<>();
         retVal.addAll(Arrays.asList(new String[] {startScript,
                     "-client",  // NOI18N
                     "-jar",  // NOI18N

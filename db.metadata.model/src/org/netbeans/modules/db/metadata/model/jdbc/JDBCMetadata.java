@@ -210,6 +210,8 @@ public class JDBCMetadata extends MetadataImplementation {
      * @return
      */
     private boolean driverReportsBogusCatalogNames() throws SQLException {
-        return "PointBase JDBC Driver".equals(dmd.getDriverName());
+        String driverName = dmd.getDriverName();
+        return "PointBase JDBC Driver".equals(driverName) ||
+               "IBM Data Server Driver for JDBC and SQLJ".equals(driverName);
     }
 }

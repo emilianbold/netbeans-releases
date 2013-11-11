@@ -59,8 +59,7 @@ import javax.swing.Action;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.team.spi.TeamBugtrackingConnector;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
+import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiNotification;
 import org.netbeans.modules.kenai.api.KenaiProject;
@@ -69,9 +68,7 @@ import org.netbeans.modules.kenai.ui.api.KenaiUIUtils;
 import org.netbeans.modules.team.server.ui.common.DashboardSupport;
 import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.server.ui.spi.QueryHandle;
-import org.netbeans.modules.team.server.ui.spi.QueryResultHandle;
 import org.netbeans.modules.team.server.ui.spi.TeamServer;
-import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
 /**
@@ -107,17 +104,7 @@ class KenaiHandler {
                         }
                     } else {
                         // logged in
-                        String user = getKenaiUser();
-                        if(user != null && !user.equals(lastLoggedUser)) {
-                            for(Map<String, QueryHandle> m : queryHandles.values()) {
-                                for(QueryHandle qh : m.values()) {
-                                    if(qh instanceof LoginAwareQueryHandle) {
-                                        ((LoginAwareQueryHandle)qh).needsRefresh();
-                                    }
-                                }
-                            }
-                        }
-                        lastLoggedUser = user;
+                        lastLoggedUser = getKenaiUser();
                     }
                 }
             }
@@ -180,16 +167,7 @@ class KenaiHandler {
     }
 
     private QueryHandleImpl createQueryHandle(Query q, boolean needsRefresh) {
-        Repository repo = q.getRepository();
-        boolean predefined = false;
-        if(TeamUtil.isFromTeamServer(repo)) {
-            boolean needsLogin = TeamUtil.needsLogin(q);
-            predefined = TeamUtil.getAllIssuesQuery(repo) == q || TeamUtil.getMyIssuesQuery(repo) == q;
-            if(needsLogin) {
-                return new LoginAwareQueryHandle(q, needsRefresh, predefined);
-            }
-        }
-        return new QueryHandleImpl(q, needsRefresh, predefined);
+        return new QueryHandleImpl(q, needsRefresh);
     }
 
     List<QueryHandle> getQueryHandles(Repository repo, ProjectHandle projectHandle) {
@@ -284,16 +262,10 @@ class KenaiHandler {
         return new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(!TeamAccessorImpl.isLoggedIn(kenai) &&
-                    TeamBugtrackingConnector.BugtrackingType.JIRA == getBugtrackingType(repo) &&
-                   !TeamAccessorImpl.showLoginIntern())
-                {
-                    return;
-                }
                 Support.getInstance().post(new Runnable() { // XXX add post method to BM
                     @Override
                     public void run() {
-                        TeamUtil.openNewQuery(repo, true);
+                        Util.createNewQuery(repo);
                     }
                 });
             }
@@ -304,24 +276,14 @@ class KenaiHandler {
         return new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(!TeamAccessorImpl.isLoggedIn(kenai) &&
-                    TeamBugtrackingConnector.BugtrackingType.JIRA == getBugtrackingType(repo) &&
-                   !TeamAccessorImpl.showLoginIntern())
-                {
-                    return;
-                }
                 Support.getInstance().post(new Runnable() { // XXX add post method to BM
                     @Override
                     public void run() {
-                        TeamUtil.createIssue(repo);
+                        Util.createNewIssue(repo);
                     }
                 });
             }
         };
-    }
-
-    private TeamBugtrackingConnector.BugtrackingType getBugtrackingType(Repository repo) {
-        return TeamUtil.getType(repo);
     }
 
     private class ProjectListener implements PropertyChangeListener {
@@ -359,7 +321,7 @@ class KenaiHandler {
         public void closeQueries() {
             for (QueryHandle qh : queries) {
                 if(qh instanceof QueryHandleImpl) {
-                    TeamUtil.closeQuery(((QueryHandleImpl) qh).getQuery());
+                    Util.closeQuery(((QueryHandleImpl) qh).getQuery());
                 }
             }
             synchronized (projectListeners) {
@@ -389,12 +351,10 @@ class KenaiHandler {
                 for (QueryHandle queryHandle : queryHandles) {
                     if(queryHandle instanceof QueryHandleImpl) {
                         QueryHandleImpl impl = (QueryHandleImpl) queryHandle;
-                        if(impl.getQuery().isSaved()) {
-                            // at this point every saved query should already be refreshed.
-                            // it's just for the one which was eventually saved right now
-                            // that it's needsRefresh flag haven't been set yet.
-                            impl.needsRefresh = false;
-                        }
+                        // at this point every saved query should already be refreshed.
+                        // it's just for the one which was eventually saved right now
+                        // that it's needsRefresh flag haven't been set yet.
+                        impl.needsRefresh = false;
                     }
                 }
                 ProjectHandle[] projectHandles;
@@ -414,27 +374,4 @@ class KenaiHandler {
         }
     }
 
-    private class LoginAwareQueryHandle extends QueryHandleImpl {
-        public LoginAwareQueryHandle(Query query, boolean needsRefresh, boolean predefined) {
-            super(query, needsRefresh, predefined);
-        }
-        @Override
-        public String getDisplayName() {
-            return super.getDisplayName() + (TeamAccessorImpl.isLoggedIn(kenai) ? "" : " " +  NbBundle.getMessage(QueryAccessorImpl.class, "LBL_NotLoggedIn"));        // NOI18N
-        }
-        @Override
-        List<QueryResultHandle> getQueryResults() {
-            return TeamAccessorImpl.isLoggedIn(kenai) ? super.getQueryResults() : Collections.EMPTY_LIST;
-        }
-        @Override
-        void refreshIfNeeded() {
-            if(!TeamAccessorImpl.isLoggedIn(kenai)) {
-                return;
-            }
-            super.refreshIfNeeded();
-        }
-        void needsRefresh() {
-            super.needsRefresh = true;
-        }
-    }
 }

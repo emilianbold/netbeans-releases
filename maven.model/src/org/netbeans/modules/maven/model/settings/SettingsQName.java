@@ -125,8 +125,8 @@ public final class SettingsQName {
 
     private final QName qName;
 
-    SettingsQName(QName name) {
-        qName = name;
+    SettingsQName(String localName, @NonNull Version version) {
+        qName = SettingsQName.createQName(localName, version);
     }
     
     public QName getQName() {

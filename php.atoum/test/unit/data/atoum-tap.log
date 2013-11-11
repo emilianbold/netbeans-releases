@@ -33,4 +33,4 @@ not ok 10 - my\project\tests\units\helloWorld::testBye()
 # @@ -1 +1 @@
 # -string(10) "Bye World!"
 # +string(6) "Hello!"
-# /home/gapon/NetBeansProjects/atoum/test/helloWorld.php:31
+# C:\\My Documents\\myproject\\test\\helloWorld.php:31

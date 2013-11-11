@@ -49,6 +49,7 @@ import com.sun.jdi.ClassLoaderReference;
 import com.sun.jdi.ClassObjectReference;
 import com.sun.jdi.ClassType;
 import com.sun.jdi.InterfaceType;
+import com.sun.jdi.Method;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.PrimitiveValue;
 import com.sun.jdi.ReferenceType;
@@ -63,19 +64,24 @@ import java.util.logging.Logger;
 
 import org.netbeans.api.debugger.jpda.ClassVariable;
 import org.netbeans.api.debugger.jpda.Field;
+import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
+import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Super;
+import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.EvaluatorVisitor;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InterfaceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.MethodWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.MirrorWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.TypeComponentWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.TypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.UnsupportedOperationExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
@@ -240,6 +246,91 @@ public class JPDAClassTypeImpl implements JPDAClassType {
             }
         }
         return staticFields;
+    }
+
+    @Override
+    public Variable invokeMethod(String methodName, String signature, Variable[] arguments)
+                                throws NoSuchMethodException, InvalidExpressionException {
+        return invokeMethod(null, methodName, signature, arguments);
+    }
+    
+    public Variable invokeMethod(JPDAThread thread, String methodName, String signature, Variable[] arguments)
+                                throws NoSuchMethodException, InvalidExpressionException {
+        Value v;
+        try {
+            if (!(classType instanceof ClassType)) {
+                throw new NoSuchMethodException(classType+" is not ClassType");
+            }
+            ClassType ct = (ClassType) classType;
+            // 1) find corrent method
+            Method method = null;
+            if (signature != null) {
+                method = ClassTypeWrapper.concreteMethodByName(
+                        ct,
+                        methodName, signature);
+            } else {
+                List l = ReferenceTypeWrapper.methodsByName(
+                        ct,
+                        methodName);
+                int j, jj = l.size ();
+                for (j = 0; j < jj; j++) {
+                    if ( !MethodWrapper.isAbstract((Method) l.get (j)) &&
+                         MethodWrapper.argumentTypeNames((Method) l.get (j)).isEmpty()
+                    ) {
+                        method = (Method) l.get (j);
+                        break;
+                    }
+                }
+            }
+            
+            // 2) method not found => print all method signatures
+            if (method == null) {
+                List l = ReferenceTypeWrapper.methodsByName(
+                        ct, methodName);
+                int j, jj = l.size ();
+                loggerValue.log(Level.INFO, "No method {0}.{1} with signature {2}",
+                           new Object[]{ TypeWrapper.name(ct), methodName, signature });
+                loggerValue.info("Found following methods with signatures:");
+                for (j = 0; j < jj; j++) {
+                    loggerValue.info (TypeComponentWrapper.signature((Method) l.get (j)));
+                }
+                throw new NoSuchMethodException (
+                    TypeWrapper.name(ct) + "." +
+                        methodName + " : " + signature
+                );
+            }
+            
+            // 3) call this method
+            Value[] vs = new Value [arguments.length];
+            int i, k = arguments.length;
+            for (i = 0; i < k; i++) {
+                vs [i] = ((AbstractVariable) arguments [i]).getInnerValue ();
+            }
+            v = getDebugger().invokeMethod (
+                (JPDAThreadImpl) thread,
+                ct,
+                method,
+                vs
+            );
+            
+            // 4) encapsulate result
+            if (v instanceof ObjectReference) {
+                return new AbstractObjectVariable ( // It's also ObjectVariable
+                        getDebugger(),
+                        (ObjectReference) v,
+                        getName() + method + "^"
+                    );
+            }
+            return new AbstractVariable (getDebugger(), v, getName() + method);
+        } catch (InternalExceptionWrapper ex) {
+            return null;
+        } catch (ClassNotPreparedExceptionWrapper ex) {
+            return null;
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return null;
+        } catch (ObjectCollectedExceptionWrapper ocex) {
+            return null;
+        }
     }
     
     public long getInstanceCount() {//boolean refresh) {

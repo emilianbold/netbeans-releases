@@ -53,8 +53,9 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.spi.QueryController.QueryMode;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
@@ -88,18 +89,22 @@ public class QueryAction extends SystemAction {
 
     @Override
     public void actionPerformed(ActionEvent ev) {
-        openQuery(null);
+        createNewQuery(null);
     }
 
-    private static void openQuery(QueryImpl query) {
-        openQuery(query, null);
+    public  static void createNewQuery(RepositoryImpl repositoryToSelect) {
+        openQuery(null, repositoryToSelect, false, QueryMode.EDIT, true);
+    }
+    
+    public static void createNewQuery(RepositoryImpl repositoryToSelect, boolean suggestedSelectionOnly) {
+        openQuery(null, repositoryToSelect, suggestedSelectionOnly, QueryMode.EDIT, true);
     }
 
-    public  static void openQuery(final QueryImpl query, final RepositoryImpl repositoryToSelect) {
-        openQuery(query, repositoryToSelect, false);
+    public static void openQuery(QueryImpl query, RepositoryImpl repository, QueryMode mode) {
+        openQuery(query, repository, false, mode, false);
     }
-
-    public static void openQuery(final QueryImpl query, final RepositoryImpl repository, final boolean suggestedSelectionOnly) {
+    
+    private static void openQuery(final QueryImpl query, final RepositoryImpl repository, final boolean suggestedSelectionOnly, final QueryMode mode, final boolean isNew) {
         BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
@@ -116,7 +121,9 @@ public class QueryAction extends SystemAction {
                             }
                             if(tc == null) {
                                 tc = new QueryTopComponent();
-                                tc.init(query, repository, file, suggestedSelectionOnly);
+                                tc.init(query, repository, file, suggestedSelectionOnly, mode, isNew);
+                            } else {
+                                tc.setMode(mode);
                             }
                             if(!tc.isOpened()) {
                                 tc.open();

@@ -164,8 +164,6 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
     public void testDebugProject() {
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(SAMPLE_WEB_PROJECT_NAME);
         rootNode.performPopupActionNoBlock("Debug");
-        // close info message "Use 9009 to attach the debugger to the GlassFish Instance"
-        new NbDialogOperator("Port Selection Notice").close();
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
         //MainWindowOperator.getDefault().waitStatusText("Finished building "+SAMPLE_WEB_PROJECT_NAME+" (debug)");
     }

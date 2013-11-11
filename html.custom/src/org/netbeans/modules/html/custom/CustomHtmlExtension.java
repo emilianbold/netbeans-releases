@@ -99,8 +99,8 @@ public class CustomHtmlExtension extends HtmlExtension {
         if (cache == null) {
             //no cache - create
             FileObject sourceFileObject = source.getSourceFileObject();
-            Project owner = FileOwnerQuery.getOwner(sourceFileObject);
-            Configuration conf = Configuration.get(owner);
+            Project project = sourceFileObject == null ? null : FileOwnerQuery.getOwner(sourceFileObject);  
+            Configuration conf = project == null ? Configuration.EMPTY : Configuration.get(project);
             cache = Pair.of(source, conf);
             return cache.second();
         } else {

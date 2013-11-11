@@ -45,16 +45,16 @@ import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.bugtracking.api.Query;
+import static org.netbeans.modules.bugtracking.BugtrackingOwnerSupport.ContextType.SELECTED_FILE_AND_ALL_PROJECTS;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.team.spi.TeamProject;
-import org.netbeans.modules.bugtracking.team.spi.TeamRepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.*;
+import org.netbeans.modules.team.spi.NBRepositoryProvider;
+import org.netbeans.modules.team.spi.OwnerInfo;
+import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
 
 
 /**
@@ -86,24 +86,26 @@ public final class RepositoryImpl<R, Q, I> {
     private final RepositoryProvider<R, Q, I> repositoryProvider;
     private final IssueProvider<I> issueProvider;
     private final QueryProvider<Q, I> queryProvider;
-    private final IssueStatusProvider<I> issueStatusProvider;    
+    private final IssueStatusProvider<R, I> issueStatusProvider;    
     private final IssueSchedulingProvider<I> issueSchedulingProvider;    
     private final IssuePriorityProvider<I> issuePriorityProvider;
     private final R r;
 
-    private Map<I, IssueImpl> issueMap = new HashMap<I, IssueImpl>();
+    private final Map<I, IssueImpl> issueMap = new WeakHashMap<I, IssueImpl>();
     private final Map<Q, QueryImpl> queryMap = new HashMap<Q, QueryImpl>();
     private Repository repository;
     private IssuePrioritySupport prioritySupport;
+    private final IssueFinder issueFinder;
     
     public RepositoryImpl(
             final R r, 
             RepositoryProvider<R, Q, I> repositoryProvider, 
             QueryProvider<Q, I> queryProvider, 
             IssueProvider<I> issueProvider, 
-            IssueStatusProvider<I> issueStatusProvider, 
+            IssueStatusProvider<R, I> issueStatusProvider, 
             IssueSchedulingProvider<I> issueSchedulingProvider,
-            IssuePriorityProvider<I> issuePriorityProvider) 
+            IssuePriorityProvider<I> issuePriorityProvider,
+            IssueFinder issueFinder) 
     {
         this.repositoryProvider = repositoryProvider;
         this.issueProvider = issueProvider;
@@ -111,6 +113,7 @@ public final class RepositoryImpl<R, Q, I> {
         this.issueStatusProvider = issueStatusProvider;
         this.issueSchedulingProvider = issueSchedulingProvider;
         this.issuePriorityProvider = issuePriorityProvider;
+        this.issueFinder = issueFinder;
         this.r = r;
         
         support = new PropertyChangeSupport(this);
@@ -160,6 +163,10 @@ public final class RepositoryImpl<R, Q, I> {
             repository = APIAccessor.IMPL.createRepository(this);
         }
         return repository;
+    }
+    
+    public IssueFinder getIssueFinder() {
+        return issueFinder;
     }
     
     /**
@@ -212,17 +219,15 @@ public final class RepositoryImpl<R, Q, I> {
     /**
      * Returns an issue with the given ID
      *
-     * XXX add flag refresh
-     *
      * @param id
      * @return
      */
     public Collection<IssueImpl> getIssueImpls(String... ids) {
-        I[] is = repositoryProvider.getIssues(r, ids);
-        if(is == null || is.length == 0) {
+        Collection<I> is = repositoryProvider.getIssues(r, ids);
+        if(is == null || is.isEmpty()) {
             return Collections.emptyList();
         }
-        List<IssueImpl> ret = new ArrayList<IssueImpl>(is.length);
+        List<IssueImpl> ret = new ArrayList<IssueImpl>(is.size());
         for (I i : is) {
             IssueImpl impl = getIssue(i);
             if(impl != null) {
@@ -237,15 +242,18 @@ public final class RepositoryImpl<R, Q, I> {
     }
 
     public QueryImpl createNewQuery() {
+        setLooseAssociation();
         return getQuery(repositoryProvider.createQuery(r));
     }
 
     public IssueImpl createNewIssue() {
+        setLooseAssociation();
         I issueData = repositoryProvider.createIssue(r);
         return getIssue(issueData);
     }   
     
     public IssueImpl createNewIssue(String summary, String description) {
+        setLooseAssociation();
         I issueData = repositoryProvider.createIssue(r, summary, description);
         return getIssue(issueData);
     }   
@@ -280,7 +288,7 @@ public final class RepositoryImpl<R, Q, I> {
         support.addPropertyChangeListener(listener);
     }
 
-    IssueStatusProvider<I> getStatusProvider() {
+    IssueStatusProvider<R, I> getStatusProvider() {
         return issueStatusProvider;
     }
     
@@ -290,6 +298,10 @@ public final class RepositoryImpl<R, Q, I> {
     
     IssuePriorityProvider<I> getPriorityProvider() {
         return issuePriorityProvider;
+    }
+
+    public IssuePriorityInfo[] getPriorityInfos() {
+        return issuePriorityProvider != null ? issuePriorityProvider.getPriorityInfos() : new IssuePriorityInfo[0];
     }
 
     String getPriorityName(I i) {
@@ -308,6 +320,20 @@ public final class RepositoryImpl<R, Q, I> {
             icon = IssuePrioritySupport.getDefaultIcon();
         }
         return icon;
+    }
+    
+    public void setIssueContext(I i, OwnerInfo info) {
+        assert repositoryProvider instanceof NBRepositoryProvider;
+        if(repositoryProvider instanceof NBRepositoryProvider) {
+            ((NBRepositoryProvider<Q, I>)repositoryProvider).setIssueOwnerInfo(i, info);
+        }
+    }
+    
+    public void setQueryContext(Q q, OwnerInfo info) {
+        assert repositoryProvider instanceof NBRepositoryProvider;
+        if(repositoryProvider instanceof NBRepositoryProvider) {
+            ((NBRepositoryProvider<Q, I>)repositoryProvider).setQueryOwnerInfo(q, info);
+        }
     }
     
     /**
@@ -346,11 +372,15 @@ public final class RepositoryImpl<R, Q, I> {
         }        
     }
     
-    public void applyChanges() throws IOException {
+    public void applyChanges() {
         HashMap<String, Object> oldAttributes = createAttributesMap();
         repositoryProvider.getController(getData()).applyChanges();
         HashMap<String, Object> newAttributes = createAttributesMap();
         fireAttributesChanged(oldAttributes, newAttributes);
+    }
+    
+    public void cancelChanges() {
+        repositoryProvider.getController(getData()).cancelChanges();
     }
     
     private HashMap<String, Object> createAttributesMap () {
@@ -393,30 +423,18 @@ public final class RepositoryImpl<R, Q, I> {
         }
     }
 
-    public Query getAllIssuesQuery() {
-        assert TeamRepositoryProvider.class.isAssignableFrom(repositoryProvider.getClass());
-        Q q = ((TeamRepositoryProvider<R, Q, I>) repositoryProvider).getAllIssuesQuery(r);
-        QueryImpl queryImpl = getQuery(q);
-        return queryImpl != null ? queryImpl.getQuery() : null;
+    public boolean isTeamRepository() {
+        return getInfo().getValue(TeamBugtrackingConnector.TEAM_PROJECT_NAME) != null;
     }
 
-    public Query getMyIssuesQuery() {
-        assert TeamRepositoryProvider.class.isAssignableFrom(repositoryProvider.getClass());
-        Q q = ((TeamRepositoryProvider<R, Q, I>) repositoryProvider).getMyIssuesQuery(r);
-        QueryImpl queryImpl = getQuery(q);
-        return queryImpl != null ? queryImpl.getQuery() : null;
-    }
-
-    public TeamProject getTeamProject() {
-        return repositoryProvider instanceof TeamRepositoryProvider ?
-                    ((TeamRepositoryProvider<R, Q, I>)repositoryProvider).getTeamProject(r) :
-                    null;
-    }
-    
     public boolean isMutable() {
         DelegatingConnector dc = BugtrackingManager.getInstance().getConnector(getConnectorId());
         assert dc != null;
         return dc.providesRepositoryManagement();
+    }
+    
+    public boolean canAttachFiles() {
+        return repositoryProvider.canAttachFiles(r);
     }
     
     public void remove() {
@@ -433,7 +451,7 @@ public final class RepositoryImpl<R, Q, I> {
     //////////////////////
     
     public Collection<IssueImpl> getUnsubmittedIssues () {
-        Collection<I> issues = repositoryProvider.getUnsubmittedIssues(r);
+        Collection<I> issues = issueStatusProvider != null ? issueStatusProvider.getUnsubmittedIssues(r) : null;
         if (issues == null || issues.isEmpty()) {
             return Collections.<IssueImpl>emptyList();
         }
@@ -457,6 +475,10 @@ public final class RepositoryImpl<R, Q, I> {
         }
         return prioritySupport;
     }
-        
+
+    private void setLooseAssociation() {
+        BugtrackingOwnerSupport.getInstance().setLooseAssociation(SELECTED_FILE_AND_ALL_PROJECTS, this);
+    }
+
 }
 

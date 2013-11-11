@@ -57,7 +57,7 @@ import org.openide.util.CharSequences;
  */
 /*package*/ final class ParamListKey extends OffsetableKey {
     ParamListKey(CsmParameterList obj) {
-        super(obj, Utils.getCsmParamListKindKey(), CharSequences.empty()); // NOI18N
+        super(obj, CharSequences.empty()); // NOI18N
     }
 
     /*package*/ ParamListKey(RepositoryDataInput aStream) throws IOException {
@@ -71,6 +71,16 @@ import org.openide.util.CharSequences;
     @Override
     public PersistentFactory getPersistentFactory() {
         return CsmObjectFactory.instance();
+    }
+
+    @Override
+    char getKind() {
+        return Utils.getCsmParamListKindKey();
+    }
+
+    @Override
+    public short getHandler() {
+        return KeyObjectFactory.KEY_PARAM_LIST_KEY;
     }
 
     @Override
@@ -89,7 +99,7 @@ import org.openide.util.CharSequences;
     @Override
     public int getSecondaryAt(int level) {
         if (level == 0) {
-            return KeyObjectFactory.KEY_PARAM_LIST_KEY;
+            return getHandler();
         } else {
             return super.getSecondaryAt(level - 1);
         }

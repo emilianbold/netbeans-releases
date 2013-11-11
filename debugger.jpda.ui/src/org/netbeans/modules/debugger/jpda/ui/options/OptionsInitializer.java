@@ -90,7 +90,7 @@ public class OptionsInitializer implements Initializer {
         filters.add("java.lang.String");
         filters.add("java.lang.invoke.ConstantCallSite");   // JDK 8 Lambda
         filters.add("java.lang.invoke.Invokers");           // JDK 8 Lambda
-        filters.add("java.lang.invoke.LambdaForm");         // JDK 8 Lambda
+        filters.add("java.lang.invoke.LambdaForm*");        // JDK 8 Lambda
         if (!enabled) {
             filters.add("sun.*");
             filters.add("sunw.*");

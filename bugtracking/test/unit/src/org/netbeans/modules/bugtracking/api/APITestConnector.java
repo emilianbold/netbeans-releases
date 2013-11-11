@@ -53,8 +53,8 @@ import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.TestKit;
 import static org.netbeans.modules.bugtracking.api.APITestKit.getAPIRepo;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.BugtrackingFactory;
+import org.netbeans.modules.bugtracking.spi.IssueController;
+import org.netbeans.modules.bugtracking.spi.BugtrackingSupport;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
@@ -68,13 +68,16 @@ import org.openide.util.Lookup;
  * @author tomas
  */
 @BugtrackingConnector.Registration (
-    id=APITestConnector.ID_CONNECTOR,
-    displayName=APITestConnector.ID_CONNECTOR,
-    tooltip=APITestConnector.ID_CONNECTOR)    
-public class APITestConnector extends BugtrackingConnector {
+    id = APITestConnector.ID_CONNECTOR,
+    displayName = APITestConnector.ID_CONNECTOR,
+    tooltip = APITestConnector.ID_CONNECTOR)    
+public class APITestConnector implements BugtrackingConnector {
     
-    private static final BugtrackingFactory<APITestRepository, APITestQuery, APITestIssue> factory = 
-            new BugtrackingFactory<APITestRepository, APITestQuery, APITestIssue>();
+    private static final BugtrackingSupport<APITestRepository, APITestQuery, APITestIssue> factory = 
+            new BugtrackingSupport<APITestRepository, APITestQuery, APITestIssue>(
+                new APITestRepositoryProvider(), 
+                new APITestQueryProvider(),
+                new APITestIssueProvider());
 
     private static Map<String, APITestRepository> apiRepos = new HashMap<String, APITestRepository>();
     
@@ -104,11 +107,7 @@ public class APITestConnector extends BugtrackingConnector {
             apiRepo = createAPIRepo(getInfo());
             apiRepos.put(info.getId(), apiRepo);
         }
-        return factory.createRepository(
-            apiRepo, 
-            new APITestRepositoryProvider(), 
-            new APITestQueryProvider(),
-            new APITestIssueProvider());
+        return factory.createRepository(apiRepo);
     }
 
     @Override
@@ -133,7 +132,7 @@ public class APITestConnector extends BugtrackingConnector {
             APITestRepository.TOOLTIP);
     }
     
-    public static class APITestQueryProvider extends QueryProvider<APITestQuery, APITestIssue> {
+    public static class APITestQueryProvider implements QueryProvider<APITestQuery, APITestIssue> {
 
         @Override
         public String getDisplayName(APITestQuery q) {
@@ -156,18 +155,8 @@ public class APITestConnector extends BugtrackingConnector {
         }
 
         @Override
-        public boolean isSaved(APITestQuery q) {
-            return q.isSaved();
-        }
-
-        @Override
         public Collection<APITestIssue> getIssues(APITestQuery q) {
             return q.getIssues();
-        }
-
-        @Override
-        public boolean contains(APITestQuery q, String id) {
-            return q.contains(id);
         }
 
         @Override
@@ -195,9 +184,14 @@ public class APITestConnector extends BugtrackingConnector {
             q.rename(displayName);
         }
 
+        @Override
+        public boolean canRemove(APITestQuery q) {
+            return q.canRemove();
+        }
+
     }
 
-    public static class APITestRepositoryProvider extends RepositoryProvider<APITestRepository, APITestQuery, APITestIssue> {
+    public static class APITestRepositoryProvider implements RepositoryProvider<APITestRepository, APITestQuery, APITestIssue> {
 
         @Override
         public RepositoryInfo getInfo(APITestRepository r) {
@@ -230,7 +224,7 @@ public class APITestConnector extends BugtrackingConnector {
         }
 
         @Override
-        public APITestIssue[] getIssues(APITestRepository r, String... ids) {
+        public Collection<APITestIssue> getIssues(APITestRepository r, String... ids) {
             return r.getIssues(ids);
         }
 
@@ -251,19 +245,24 @@ public class APITestConnector extends BugtrackingConnector {
 
         @Override
         public Collection<APITestIssue> simpleSearch(APITestRepository r, String criteria) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            return r.simpleSearch(criteria);
         }
 
         @Override
         public APITestIssue createIssue(APITestRepository r, String summary, String description) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            return r.createIssue(summary, description);
+        }
+
+        @Override
+        public boolean canAttachFiles(APITestRepository r) {
+            return r.canAttachFile();
         }
     }
 
-    public static class APITestIssueProvider extends IssueProvider<APITestIssue> {
+    public static class APITestIssueProvider implements IssueProvider<APITestIssue> {
 
         @Override
-        public String[] getSubtasks(APITestIssue data) {
+        public Collection<String> getSubtasks(APITestIssue data) {
             return data.getSubtasks();
         }
 
@@ -308,12 +307,12 @@ public class APITestConnector extends BugtrackingConnector {
         }
 
         @Override
-        public void attachPatch(APITestIssue data, File file, String description) {
-            data.attachPatch(file, description);
+        public void attachFile(APITestIssue data, File file, String description, boolean isPatch) {
+            data.attachFile(file, description, isPatch);
         }
 
         @Override
-        public BugtrackingController getController(APITestIssue data) {
+        public IssueController getController(APITestIssue data) {
             return data.getController();
         }
 
@@ -325,11 +324,6 @@ public class APITestConnector extends BugtrackingConnector {
         @Override
         public void addPropertyChangeListener(APITestIssue data, PropertyChangeListener listener) {
             data.addPropertyChangeListener(listener);
-        }
-
-        @Override
-        public void discardOutgoing(APITestIssue data) {
-            data.discardOutgoing();
         }
 
     }    

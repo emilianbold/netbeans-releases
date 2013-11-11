@@ -52,7 +52,7 @@ import org.openide.nodes.Node;
  *
  * @author tomas
  */
-public class TestQueryProvider extends QueryProvider<TestQuery, TestIssue> {
+public class TestQueryProvider implements QueryProvider<TestQuery, TestIssue> {
 
     @Override
     public String getDisplayName(TestQuery q) {
@@ -75,20 +75,10 @@ public class TestQueryProvider extends QueryProvider<TestQuery, TestIssue> {
     }
     
     @Override
-    public boolean isSaved(TestQuery q) {
-        return q.isSaved();
-    }
-
-    @Override
     public Collection<TestIssue> getIssues(TestQuery q) {
         return (Collection<TestIssue>) q.getIssues();
     }
 
-    @Override
-    public boolean contains(TestQuery q, String id) {
-        return q.contains(id);
-    }
-    
     @Override
     public void refresh(TestQuery q) {
         q.refresh();
@@ -112,6 +102,11 @@ public class TestQueryProvider extends QueryProvider<TestQuery, TestIssue> {
     @Override
     public void rename(TestQuery q, String displayName) {
         q.rename(displayName);
+    }
+
+    @Override
+    public boolean canRemove(TestQuery q) {
+        return q.canRemove();
     }
 
 }

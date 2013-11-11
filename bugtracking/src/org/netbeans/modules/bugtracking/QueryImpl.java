@@ -40,16 +40,13 @@ package org.netbeans.modules.bugtracking;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.bugtracking.api.Query;
-import org.netbeans.modules.bugtracking.team.spi.TeamQueryProvider;
-import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
+import org.netbeans.modules.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 
 /**
  *
@@ -57,11 +54,9 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
  */
 public final class QueryImpl<Q, I>  {
     
-    public final static String EVENT_QUERY_ISSUES_CHANGED = QueryProvider.EVENT_QUERY_ISSUES_CHANGED;
-    public final static String EVENT_QUERY_REMOVED = QueryProvider.EVENT_QUERY_REMOVED;
-    public final static String EVENT_QUERY_SAVED = QueryProvider.EVENT_QUERY_SAVED;
+    public final static String EVENT_QUERY_REFRESHED = QueryProvider.EVENT_QUERY_REFRESHED;
     
-    private final RepositoryImpl repository;
+    private final RepositoryImpl<?, Q, I> repository;
     private final QueryProvider<Q, I> queryProvider;
     private final IssueProvider<I> issueProvider;
     private Query query;
@@ -81,7 +76,7 @@ public final class QueryImpl<Q, I>  {
         return query;
     }
 
-    public RepositoryImpl getRepositoryImpl() {
+    public RepositoryImpl<?, Q, I> getRepositoryImpl() {
         return repository;
     }
     
@@ -96,51 +91,34 @@ public final class QueryImpl<Q, I>  {
     }
 
     /**
-     * Returns all issues given by the last refresh for
-     * which applies that their ID or summary contains the
-     * given criteria string
-     * XXX used only by issue table filter - move out from spi
-     *
-     * @param criteria
-     * @return
-     */
-    // XXX Shouldn't be called while running
-    // XXX move to simple search
-
-    public Collection<IssueImpl> getIssues(String criteria) {
-        return Collections.unmodifiableCollection(BugtrackingUtil.getByIdOrSummary(getIssues(), criteria));
-    }
-    
-    /**
      * @param query
      */
     public static void openNew(RepositoryImpl repository) {
-        QueryAction.openQuery(null, repository);
+        QueryAction.createNewQuery(repository);
     }
     
-    public void openShowAll(final boolean suggestedSelectionOnly) {
-        open(suggestedSelectionOnly, QueryController.QueryMode.SHOW_ALL);
+    public void open(QueryController.QueryMode mode) {
+        QueryAction.openQuery(this, repository, mode);
     }
     
-    public void open(final boolean suggestedSelectionOnly, QueryController.QueryMode mode) {
-        queryProvider.getController(data).setMode(mode);
-        QueryAction.openQuery(this, repository, suggestedSelectionOnly);
+    public boolean canRemove() {
+        return queryProvider.canRemove(data);
     }
     
-    public boolean isSaved() {
-        return queryProvider.isSaved(data);
-    }
-
     public void remove() {
         queryProvider.remove(data);
     }
     
+    public boolean canRename() {
+        return queryProvider.canRename(data);
+    }
+    
+    public void rename(String newName) {
+        queryProvider.rename(data, newName);
+    }
+    
     public String getTooltip() {
         return queryProvider.getTooltip(data);
-    }
-
-    public boolean contains(String id) {
-        return queryProvider.contains(data, id);
     }
 
     public void refresh() {
@@ -164,24 +142,18 @@ public final class QueryImpl<Q, I>  {
     }
 
     public void setContext(OwnerInfo info) {
-        assert (queryProvider instanceof TeamQueryProvider);
-        if((queryProvider instanceof TeamQueryProvider)) {
-            ((TeamQueryProvider<Q, I>)queryProvider).setOwnerInfo(data, info);
-        }
-    }
-
-    public boolean needsLogin() {
-        assert (queryProvider instanceof TeamQueryProvider);
-        if((queryProvider instanceof TeamQueryProvider)) {
-            return ((TeamQueryProvider<Q, I>)queryProvider).needsLogin(data);
-        } 
-        return false;
+        repository.setQueryContext(data, info);
     }
 
     public boolean isData(Object obj) {
         return data == obj;
     }
 
+    public boolean providesMode(QueryController.QueryMode queryMode) {
+        QueryController controller = queryProvider.getController(data);
+        return controller != null ? controller.providesMode(queryMode) : false;
+    }
+    
     Q getData() {
         return data;
     }

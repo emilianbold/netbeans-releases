@@ -55,6 +55,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -66,6 +67,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -78,7 +80,9 @@ import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
 import javax.swing.ActionMap;
+import javax.swing.BorderFactory;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -109,6 +113,7 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.Visualizer;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
@@ -127,6 +132,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
+import org.openide.util.actions.BooleanStateAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -167,7 +173,7 @@ public class ProjectTab extends TopComponent
     private Task selectionTask;
 
     private static final int NODE_SELECTION_DELAY = 200;
-
+    
     public ProjectTab( String id ) {
         this();
         this.id = id;
@@ -215,6 +221,10 @@ public class ProjectTab extends TopComponent
         synchronizeViews = nbPrefs.getBoolean(SyncEditorWithViewsAction.SYNC_ENABLED_PROP_NAME, false);
         nbPrefs.addPreferenceChangeListener(new NbPrefsListener());
         
+        NodeSelectionProjectPanel pnl = new NodeSelectionProjectPanel();
+        ActualSelectionProject actualSelectionProject = new ActualSelectionProject(pnl);
+        manager.addPropertyChangeListener(actualSelectionProject);
+        add(pnl, BorderLayout.SOUTH);        
     }
 
     /**
@@ -847,12 +857,180 @@ public class ProjectTab extends TopComponent
         }
 
         @Override public void actionPerformed(ActionEvent e) {
-            ProjectTab tab = findDefault(type);
-            for (Node root : tab.manager.getRootContext().getChildren().getNodes()) {
-                tab.btv.collapseNode(root);
+            RP.post(new Runnable() {
+
+                @Override
+                public void run() {
+                    SwingUtilities.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            final ProjectTab tab = findDefault(type);
+                            final Children children = tab.manager.getRootContext().getChildren();
+                            for (Node root : children.getNodes()) {
+                                if( tab.btv.isExpanded(root) ) {
+                                    collapseNodes(root, tab);
+                                    tab.btv.collapseNode(root);
+                                }
+                            }
+                            Mutex.EVENT.writeAccess(new Runnable() {
+                                public @Override void run() {
+                                    try {
+
+                                        FileObject activeFile = null;
+                                        Iterator<TopComponent> iterator = TopComponent.getRegistry().getOpened().iterator();
+                                        while(iterator.hasNext()) {
+                                            TopComponent componentIter = iterator.next();
+                                            if(componentIter.isVisible() && componentIter.getLookup().lookup(FileObject.class) != null) {
+                                                activeFile = componentIter.getLookup().lookup(FileObject.class);
+                                                break;
+                                            }
+                                        }
+                                        Project projectOwner = FileOwnerQuery.getOwner(activeFile);
+                                        Node projectNode = null;
+                                        for (Node node : children.getNodes(true)) {
+                                            if(projectOwner.equals(node.getLookup().lookup(Project.class))) {
+                                                projectNode = node;
+                                                break;
+                                            }
+                                        }
+                                        tab.manager.setSelectedNodes(new Node[] {projectNode});
+                                        tab.btv.scrollToNode(projectNode);
+                                    } catch (PropertyVetoException e) {
+                                        // Node found but can't be selected
+                                    }
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+            
+        }
+        
+        private void collapseNodes(Node node, ProjectTab tab) {
+            if (  node.getChildren().getNodesCount() != 0 ) {
+                for ( Node nodeIter : node.getChildren().getNodes() ) {
+                    if( tab.btv.isExpanded(nodeIter) ) {
+                        collapseNodes(nodeIter, tab);
+                        tab.btv.collapseNode(nodeIter);
+                    }
+                }
             }
         }
 
     }
+    
+    @ActionID(category="Project", id="org.netbeans.modules.project.ui.NodeSelectionProjectAction")
+    @ActionRegistration(displayName="#CTL_MenuItem_NodeSelectionProjectAction", lazy = false)
+    @ActionReferences({
+        @ActionReference(path=ProjectsRootNode.ACTIONS_FOLDER, position=1550),
+        @ActionReference(path=ProjectsRootNode.ACTIONS_FOLDER_PHYSICAL, position=1100)
+    })
+    @Messages("CTL_MenuItem_NodeSelectionProjectAction=Show Selected Node(s) Project Owner")
+    public static class NodeSelectionProjectAction extends BooleanStateAction {
 
+        public NodeSelectionProjectAction() {
+            super();
+        }
+        
+        @Override
+        public String getName() {
+            return NbBundle.getMessage(NodeSelectionProjectAction.class, "CTL_MenuItem_NodeSelectionProjectAction");
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return true;
+        }
+
+        @Override
+        public boolean getBooleanState() {
+            return NodeSelectionProjectPanel.prefs.getBoolean(NodeSelectionProjectPanel.KEY_ACTUALSELECTIONPROJECT, false);
+        }
+
+        @Override
+        public HelpCtx getHelpCtx() {
+            return new HelpCtx(NodeSelectionProjectAction.class);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            boolean show = NodeSelectionProjectPanel.prefs.getBoolean(NodeSelectionProjectPanel.KEY_ACTUALSELECTIONPROJECT, false);
+            NodeSelectionProjectPanel.prefs.putBoolean(NodeSelectionProjectPanel.KEY_ACTUALSELECTIONPROJECT, !show);
+        }
+    }
+    
+    @Messages({"MSG_none_node_selected=None of the nodes selected",
+        "MSG_nodes_from_more_projects=Selected nodes are from more than one project"})
+    private class ActualSelectionProject implements PropertyChangeListener {
+        
+        private final JPanel selectionsProjectPanel;
+        
+        private JLabel actualProjectLabel;
+        
+        public ActualSelectionProject(JPanel selectionsProjectPanel) {
+            this.selectionsProjectPanel = selectionsProjectPanel;
+            this.actualProjectLabel = new JLabel(Bundle.MSG_none_node_selected());
+            setSelectionLabelProperties(null);
+            this.selectionsProjectPanel.add(actualProjectLabel);
+        }
+        
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if ( evt.getPropertyName().equals("selectedNodes")) {
+                performChange((Node [])evt.getNewValue());
+            }
+        }
+        
+        private void performChange(Node [] selectedNodes) {
+            String text = "";
+            Node projectNode = null;
+            if( selectedNodes != null && selectedNodes.length > 0 ) {
+                Node selectedNode = selectedNodes[0];
+                Node rootNode = ProjectTab.this.manager.getRootContext();
+                while ( !selectedNode.getParentNode().equals(rootNode)) {
+                    selectedNode = selectedNode.getParentNode();
+                }
+                projectNode = selectedNode;
+                //Tests whether other selected items have same project owner
+                if( selectedNodes.length > 1 ) {
+                    for ( int i = 1; i < selectedNodes.length; i ++) {
+                        selectedNode = selectedNodes[i];
+                        while ( !selectedNode.getParentNode().equals(rootNode) ) {
+                            selectedNode = selectedNode.getParentNode();
+                        }
+                        if ( !projectNode.equals(selectedNode) ) {
+                            projectNode = null;
+                            text = Bundle.MSG_nodes_from_more_projects();
+                            break;
+                        }
+                    }
+                }
+                if ( projectNode != null ) {
+                    text = projectNode.getDisplayName();
+                }
+            } else {
+                text = Bundle.MSG_none_node_selected();
+            }
+            if ( this.actualProjectLabel != null ) {
+                this.actualProjectLabel.setText(text);
+                setSelectionLabelProperties(projectNode);
+            } else {
+                this.actualProjectLabel = new JLabel(text);
+                setSelectionLabelProperties(projectNode);
+                this.selectionsProjectPanel.add(actualProjectLabel);
+            }
+        }
+        
+        private void setSelectionLabelProperties( Node projectNode ) {
+            if ( projectNode != null ) {
+                this.actualProjectLabel.setIcon(ImageUtilities.image2Icon(projectNode.getIcon(BeanInfo.ICON_COLOR_16x16)));
+            } else {
+                this.actualProjectLabel.setIcon(null);
+            }
+            this.actualProjectLabel.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 0));
+        }
+    }
+    
 }

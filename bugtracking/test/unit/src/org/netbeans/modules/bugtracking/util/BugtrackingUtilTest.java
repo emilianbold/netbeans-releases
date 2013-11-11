@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.bugtracking.util;
 
+import org.netbeans.modules.bugtracking.commons.NBBugzillaUtils;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;

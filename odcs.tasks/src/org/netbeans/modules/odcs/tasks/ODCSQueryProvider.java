@@ -41,25 +41,23 @@
  */
 package org.netbeans.modules.odcs.tasks;
 
-import com.tasktop.c2c.server.tasks.domain.PredefinedTaskQuery;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
-import org.netbeans.modules.bugtracking.team.spi.TeamQueryProvider;
-import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.QueryController;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
 import org.netbeans.modules.odcs.tasks.query.ODCSQuery;
-import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class ODCSQueryProvider extends TeamQueryProvider<ODCSQuery, ODCSIssue> {
+public class ODCSQueryProvider implements QueryProvider<ODCSQuery, ODCSIssue> {
 
     @Override
     public String getDisplayName(ODCSQuery q) {
-        return q.getDisplayName();
+        return q.getDisplayName() + (q.getRepository().needsAndHasNoLogin(q) ? " " +  NbBundle.getMessage(ODCSQueryProvider.class, "LBL_NotLoggedIn") : "");
     }
 
     @Override
@@ -73,27 +71,35 @@ public class ODCSQueryProvider extends TeamQueryProvider<ODCSQuery, ODCSIssue> {
     }
 
     @Override
-    public boolean isSaved(ODCSQuery q) {
-        return q.isSaved();
+    public boolean canRemove(ODCSQuery q) {
+        return q.canRemove();
     }
-
+    
     @Override
     public void remove(ODCSQuery q) {
         q.remove();
     }
 
     @Override
+    public boolean canRename(ODCSQuery q) {
+        return true;
+    }
+
+    @Override
+    public void rename(ODCSQuery q, String displayName) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    @Override
     public Collection<ODCSIssue> getIssues(ODCSQuery q) {
         return q.getIssues();
     }
 
     @Override
-    public boolean contains(ODCSQuery q, String id) {
-        return q.contains(id);
-    }
-
-    @Override
     public void refresh(ODCSQuery q) {
+        if(q.getRepository().needsAndHasNoLogin(q)) {
+            return;
+        }
         q.getController().refresh(true);
     }
 
@@ -107,30 +113,4 @@ public class ODCSQueryProvider extends TeamQueryProvider<ODCSQuery, ODCSIssue> {
         q.addPropertyChangeListener(listener);
     }
 
-    /************************************************************************************
-     * Team
-     ************************************************************************************/
-    
-    @Override
-    public boolean needsLogin (ODCSQuery q) {
-        ODCSRepository repository = q.getRepository();
-        return q != (repository).getPredefinedQuery(PredefinedTaskQuery.ALL)
-            && q != (repository).getPredefinedQuery(PredefinedTaskQuery.RECENT);
-    }
-
-    @Override
-    public void setOwnerInfo (ODCSQuery q, OwnerInfo info) {
-        q.setOwnerInfo(info);
-    }
-
-    @Override
-    public boolean canRename(ODCSQuery q) {
-        return true;
-    }
-
-    @Override
-    public void rename(ODCSQuery q, String displayName) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-    
 }

@@ -206,10 +206,12 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
                             if (unitRoots != null) {
                                 for (URL unitRoot : unitRoots) {
                                     FileObject root = URLMapper.findFileObject(unitRoot);
-                                    String ngPath = relP + (relP.isEmpty() ? "" : "/") + classnameExt + "NGTest." + file.getExt();
-                                    if (root.getFileObject(ngPath) != null) {
-                                        fix = "NGTest";
-                                        break;
+                                    if (root != null) { //#237312
+                                        String ngPath = relP + (relP.isEmpty() ? "" : "/") + classnameExt + "NGTest." + file.getExt();
+                                        if (root.getFileObject(ngPath) != null) {
+                                            fix = "NGTest";
+                                            break;
+                                        }
                                     }
                                 }
                             }

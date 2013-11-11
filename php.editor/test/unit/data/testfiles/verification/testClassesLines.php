@@ -23,6 +23,7 @@ class ClassName {
         echo "line";
         echo "line";
         echo "line";
+        echo "line";
     }
 
 }

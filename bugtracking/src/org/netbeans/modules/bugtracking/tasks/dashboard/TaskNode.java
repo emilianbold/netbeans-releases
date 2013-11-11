@@ -53,6 +53,7 @@ import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions;
@@ -72,6 +73,7 @@ public class TaskNode extends TaskContainerNode implements Comparable<TaskNode>,
     private final IssueImpl task;
     private JPanel panel;
     private TreeLabel lblName;
+    private JLabel lblIcon;
     private Category category;
     private final TaskListener taskListener;
     private final Object LOCK = new Object();
@@ -135,7 +137,7 @@ public class TaskNode extends TaskContainerNode implements Comparable<TaskNode>,
         synchronized (LOCK) {
             labels.clear();
             buttons.clear();
-            JLabel lblIcon = new JLabel(getIcon());
+            lblIcon = new JLabel(getIcon());
             panel.add(lblIcon, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
 
             lblName = new TreeLabel();
@@ -201,8 +203,13 @@ public class TaskNode extends TaskContainerNode implements Comparable<TaskNode>,
         List<Action> actions = new ArrayList<Action>();
         if (justTasks) {
             actions.addAll(Actions.getTaskPopupActions(taskNodes));
+            actions.add(null);
         }
-        actions.addAll(Actions.getSubmitablePopupActions(selectedNodes.toArray(new TreeListNode[selectedNodes.size()])));
+        List<Action> submitablePopupActions = Actions.getSubmitablePopupActions(selectedNodes.toArray(new TreeListNode[selectedNodes.size()]));
+        if (!submitablePopupActions.isEmpty()) {
+            actions.addAll(submitablePopupActions);
+            actions.add(null);
+        }
         List<Action> defaultActions = Actions.getDefaultActions(selectedNodes.toArray(new TreeListNode[selectedNodes.size()]));
         if (containsNewTask) {
             for (Action action : defaultActions) {
@@ -291,6 +298,10 @@ public class TaskNode extends TaskContainerNode implements Comparable<TaskNode>,
         return false;
     }
 
+    public boolean isLocal() {
+        return BugtrackingManager.isLocalConnectorID(task.getRepositoryImpl().getConnectorId());
+    }
+
     @Override
     public List<IssueImpl> getTasksToSubmit() {
         return getTasks(true);
@@ -300,11 +311,12 @@ public class TaskNode extends TaskContainerNode implements Comparable<TaskNode>,
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName().equals(IssueImpl.EVENT_ISSUE_REFRESHED)
+            if (evt.getPropertyName().equals(IssueImpl.EVENT_ISSUE_DATA_CHANGED)
                     || IssueStatusProvider.EVENT_STATUS_CHANGED.equals(evt.getPropertyName())) {
                 fireContentChanged();
                 if (lblName != null) {
                     lblName.setToolTipText(task.getTooltip());
+                    lblIcon.setIcon(getIcon());
                 }
             }
         }

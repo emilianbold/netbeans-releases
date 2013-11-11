@@ -48,15 +48,12 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 import junit.framework.Test;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.jira.*;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.IssuetableTestFactory;
 import org.netbeans.modules.jira.repository.JiraRepository;
-import org.netbeans.modules.jira.util.JiraUtils;
 
 /**
  *
@@ -97,7 +94,7 @@ public class IssueTableTest extends IssuetableTestFactory {
     @Override
     public void setSaved(Query q) {
         JiraQuery jiraQuery = queries.get(q.getDisplayName());
-        jiraQuery.setSaved(true);
+        jiraQuery.getController().save("IssueTableTestQuery" + System.currentTimeMillis(), true);
     }
         
     @Override

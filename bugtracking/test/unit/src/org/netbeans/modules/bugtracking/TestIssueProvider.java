@@ -43,19 +43,17 @@ package org.netbeans.modules.bugtracking;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import org.netbeans.modules.bugtracking.issuetable.IssueNode;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import java.util.Collection;
+import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
-import org.openide.nodes.Node;
 
 /**
  *
  * @author tomas
  */
-public class TestIssueProvider extends IssueProvider<TestIssue> {
+public class TestIssueProvider implements IssueProvider<TestIssue> {
     @Override
-    public String[] getSubtasks(TestIssue data) {
+    public Collection<String> getSubtasks(TestIssue data) {
         return data.getSubtasks();
     }
 
@@ -100,12 +98,12 @@ public class TestIssueProvider extends IssueProvider<TestIssue> {
     }
 
     @Override
-    public void attachPatch(TestIssue data, File file, String description) {
-        data.attachPatch(file, description);
+    public void attachFile(TestIssue data, File file, String description, boolean isPatch) {
+        data.attachFile(file, description, isPatch);
     }
 
     @Override
-    public BugtrackingController getController(TestIssue data) {
+    public IssueController getController(TestIssue data) {
         return data.getController();
     }
 
@@ -117,11 +115,6 @@ public class TestIssueProvider extends IssueProvider<TestIssue> {
     @Override
     public void addPropertyChangeListener(TestIssue data, PropertyChangeListener listener) {
         data.addPropertyChangeListener(listener);
-    }
-
-    @Override
-    public void discardOutgoing(TestIssue data) {
-        data.discardOutgoing();
     }
     
 }

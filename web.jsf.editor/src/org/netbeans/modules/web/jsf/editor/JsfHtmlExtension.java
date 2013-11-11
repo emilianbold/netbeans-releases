@@ -41,8 +41,10 @@
  */
 package org.netbeans.modules.web.jsf.editor;
 
+import java.awt.Color;
 import java.util.Map.Entry;
 import java.util.*;
+import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -61,14 +63,13 @@ import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.parsing.api.*;
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
-import org.netbeans.modules.web.common.api.LexerUtils;
+import org.netbeans.modules.web.common.api.FileReferenceCompletion;
 import org.netbeans.modules.web.common.taginfo.AttrValueType;
 import org.netbeans.modules.web.common.taginfo.LibraryMetadata;
 import org.netbeans.modules.web.common.taginfo.TagAttrMetadata;
 import org.netbeans.modules.web.common.taginfo.TagMetadata;
+import org.netbeans.modules.web.jsf.api.editor.JsfFacesComponentsProvider.FacesComponentLibrary;
 import org.netbeans.modules.web.jsf.editor.completion.JsfCompletionItem;
 import org.netbeans.modules.web.jsf.editor.facelets.AbstractFaceletsLibrary;
 import org.netbeans.modules.web.jsf.editor.facelets.CompositeComponentLibrary;
@@ -77,6 +78,7 @@ import org.netbeans.modules.web.jsf.editor.hints.HintsRegistry;
 import org.netbeans.modules.web.jsf.editor.index.CompositeComponentModel;
 import org.netbeans.modules.web.jsf.editor.index.JsfPageModelFactory;
 import org.netbeans.modules.web.jsfapi.api.Attribute;
+import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 import org.netbeans.modules.web.jsfapi.api.JsfUtils;
 import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.api.LibraryComponent;
@@ -86,7 +88,6 @@ import org.netbeans.modules.web.jsfapi.spi.LibraryUtils;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.lexer.MutableTextInput;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 
 /**
  * XXX should be rather done by dynamic artificial embedding creation. The
@@ -99,6 +100,7 @@ import org.openide.util.Exceptions;
 public class JsfHtmlExtension extends HtmlExtension {
 
     private static final String EL_ENABLED_KEY = "el_enabled"; //NOI18N
+    private static final FilenameSupport FILENAME_SUPPORT = new FilenameSupport();
 
     @Override
     public Map<OffsetRange, Set<ColoringAttributes>> getHighlights(HtmlParserResult result, SchedulerEvent event) {
@@ -405,6 +407,9 @@ public class JsfHtmlExtension extends HtmlExtension {
         //then try to complete according to the attribute type (taken from the library descriptor)
         completeValueAccordingToType(context, items, ns, openTag, jsfs);
 
+        // completion for files in cases of ui:include src attribute
+        completeFaceletsFromProject(context, items, ns, openTag);
+
         //facets
         completeFacetsInCCImpl(context, items, ns, openTag, jsfs);
         completeFacets(context, items, ns, openTag, jsfs);
@@ -491,6 +496,16 @@ public class JsfHtmlExtension extends HtmlExtension {
 
     }
 
+    private static void completeFaceletsFromProject(CompletionContext context, List<CompletionItem> items, String ns, OpenTag openTag) {
+        if (NamespaceUtils.containsNsOf(Collections.singleton(ns), DefaultLibraryInfo.FACELETS)
+                && "src".equals(context.getAttributeName())) { //NOI18N
+            items.addAll(FILENAME_SUPPORT.getItems(
+                    context.getResult().getSnapshot().getSource().getFileObject(),
+                    context.getCCItemStartOffset(),
+                    context.getPrefix()));
+        }
+    }
+
     private void completeXMLNSAttribute(CompletionContext context, List<CompletionItem> items, JsfSupportImpl jsfs) {
         if (context.getAttributeName().toLowerCase(Locale.ENGLISH).startsWith("xmlns")) { //NOI18N
             //xml namespace completion for facelets namespaces
@@ -547,10 +562,8 @@ public class JsfHtmlExtension extends HtmlExtension {
     public DeclarationLocation findDeclaration(ParserResult result, final int caretOffset) {
         assert result instanceof HtmlParserResult;
         HtmlParserResult htmlresult = (HtmlParserResult) result;
-
-        Snapshot snapshot = result.getSnapshot();
-
         Element leaf = htmlresult.findByPhysicalRange(caretOffset, true);
+
         if (leaf == null || leaf.type() != ElementType.OPEN_TAG) {
             return DeclarationLocation.NONE;
         }
@@ -569,89 +582,31 @@ public class JsfHtmlExtension extends HtmlExtension {
         if (lib == null) {
             return DeclarationLocation.NONE;
         }
-        if (lib instanceof CompositeComponentLibrary) {
 
-            OpenTag openTag = (OpenTag) leaf;
-            String tagName = openTag.unqualifiedName().toString();
-            LibraryComponent component = lib.getComponent(tagName);
-            if (component == null) {
-                return DeclarationLocation.NONE;
-            }
-            if (!(component instanceof CompositeComponentLibrary.CompositeComponent)) {
-                //TODO add hyperlinking to class components
-                return DeclarationLocation.NONE;
-            }
-            CompositeComponentModel model = ((CompositeComponentLibrary.CompositeComponent) component).getComponentModel();
-            FileObject file = model.getSourceFile();
-
-            //find to what exactly the user points, the AST doesn't contain attributes as nodes :-(
-            int astOffset = snapshot.getEmbeddedOffset(caretOffset);
-
-            int jumpOffset = 0;
-            TokenSequence htmlTs = snapshot.getTokenHierarchy().tokenSequence();
-            htmlTs.move(astOffset);
-            if (htmlTs.moveNext() || htmlTs.movePrevious()) {
-                if (htmlTs.token().id() == HTMLTokenId.TAG_OPEN) {
-                    //jumpOffset = 0;
-                } else if (htmlTs.token().id() == HTMLTokenId.ARGUMENT) {
-                    final String attributeName = htmlTs.token().text().toString();
-                    //find the attribute in the interface
-
-                    Source source = Source.create(file);
-                    final int[] attrOffset = new int[1];
-                    try {
-                        ParserManager.parse(Collections.singleton(source), new UserTask() {
-                            @Override
-                            public void run(ResultIterator resultIterator) throws Exception {
-                                Result result = resultIterator.getParserResult(caretOffset);
-                                if (result instanceof HtmlParserResult) {
-                                    HtmlParserResult hresult = (HtmlParserResult) result;
-                                    Element root = hresult.root(LibraryUtils.COMPOSITE_LIBRARY_NS);
-                                    ElementUtils.visitChildren(root, new ElementVisitor() {
-                                        @Override
-                                        public void visit(Element node) {
-                                            OpenTag ot = (OpenTag) node;
-                                            if (LexerUtils.equals("interface", ot.unqualifiedName(), true, true)) { //NOI18N
-                                                for (Element child : ot.children(ElementType.OPEN_TAG)) {
-                                                    OpenTag otch = (OpenTag) child;
-                                                    if (LexerUtils.equals("attribute", otch.unqualifiedName(), true, true)) { //NOI18N
-                                                        org.netbeans.modules.html.editor.lib.api.elements.Attribute nameAttr = otch.getAttribute("name"); //NOI18N
-                                                        if (nameAttr != null) {
-                                                            CharSequence value = nameAttr.unquotedValue();
-                                                            if (value != null) {
-                                                                if (LexerUtils.equals(attributeName, value, true, false)) {
-                                                                    //we found it
-                                                                    attrOffset[0] = child.from(); //offset of the attribute tag is fine
-                                                                    break;
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }, ElementType.OPEN_TAG);
-                                }
-                            }
-                        });
-                    } catch (ParseException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                    jumpOffset = attrOffset[0];
-
-                }
-            }
-
-
-            if (file != null) {
-                return new DeclarationLocation(file, jumpOffset);
-            }
-
+        TokenSequence ts = JsfNavigationHelper.getTokenSequenceAtCaret(result.getSnapshot().getTokenHierarchy(), caretOffset);
+        if (ts == null) {
+            return DeclarationLocation.NONE;
         }
 
-
-
-
+        Token t = ts.token();
+        if (t.id() == HTMLTokenId.VALUE) {
+            String value = CharSequenceUtilities.toString(ts.token().text()).replaceAll("[\"']", ""); //NOI18N
+            String attribute = ""; //NOI18N
+            while (ts.movePrevious()) {
+                if (ts.token().id() == HTMLTokenId.TAG_OPEN) {
+                    String tag = CharSequenceUtilities.toString(ts.token().text());
+                    return JsfNavigationHelper.goToReferencedFile(htmlresult, caretOffset, tag, attribute, value);
+                } else if (ts.token().id() == HTMLTokenId.ARGUMENT && attribute.isEmpty()) {
+                    attribute = CharSequenceUtilities.toString(ts.token().text());
+                }
+            }
+        } else {
+            if (lib instanceof CompositeComponentLibrary) {
+                return JsfNavigationHelper.goToCompositeComponentLibrary(htmlresult, caretOffset, lib);
+            } else if (lib instanceof FacesComponentLibrary) {
+                return JsfNavigationHelper.goToFacesComponentLibrary(htmlresult, caretOffset, (FacesComponentLibrary) lib);
+            }
+        }
 
         return DeclarationLocation.NONE;
 
@@ -660,44 +615,48 @@ public class JsfHtmlExtension extends HtmlExtension {
     @Override
     public OffsetRange getReferenceSpan(final Document doc, final int caretOffset) {
         TokenHierarchy th = TokenHierarchy.get(doc);
-        List<TokenSequence> seqs = th.embeddedTokenSequences(caretOffset, false);
-        TokenSequence ts = null;
-        for (TokenSequence _ts : seqs) {
-            if (_ts.language() == HTMLTokenId.language()) {
-                ts = _ts;
-                break;
-            }
-        }
-
+        TokenSequence ts = JsfNavigationHelper.getTokenSequenceAtCaret(th, caretOffset);
         if (ts == null) {
             return OffsetRange.NONE;
         }
 
-        ts.move(caretOffset);
-        if (ts.moveNext() || ts.movePrevious()) {
-            Token t = ts.token();
-            if (t.id() == HTMLTokenId.TAG_OPEN) {
-                if (CharSequenceUtilities.indexOf(t.text(), ':') != -1) {
-                    return new OffsetRange(ts.offset(), ts.offset() + t.length());
-                }
-            } else if (t.id() == HTMLTokenId.ARGUMENT) {
-                int from = ts.offset();
-                int to = from + t.text().length();
-                //try to find the tag and check if there is a prefix
-                while (ts.movePrevious()) {
-                    if (ts.token().id() == HTMLTokenId.TAG_OPEN) {
-                        if (CharSequenceUtilities.indexOf(ts.token().text(), ':') != -1) {
-                            return new OffsetRange(from, to);
-                        } else {
-                            break;
-                        }
+        Token t = ts.token();
+        if (t.id() == HTMLTokenId.TAG_OPEN) {
+            if (CharSequenceUtilities.indexOf(t.text(), ':') != -1) {
+                return new OffsetRange(ts.offset(), ts.offset() + t.length());
+            }
+        } else if (t.id() == HTMLTokenId.ARGUMENT) {
+            int from = ts.offset();
+            int to = from + t.text().length();
+            //try to find the tag and check if there is a prefix
+            while (ts.movePrevious()) {
+                if (ts.token().id() == HTMLTokenId.TAG_OPEN) {
+                    if (CharSequenceUtilities.indexOf(ts.token().text(), ':') != -1) {
+                        return new OffsetRange(from, to);
+                    } else {
+                        break;
                     }
+                }
+            }
+        } else if (t.id() == HTMLTokenId.VALUE) {
+            CharSequence value = ts.token().text();
+            int from = ts.offset();
+            int to = from + t.text().length();
+            //try to find the tag and check if there is a prefix
+            while (ts.movePrevious()) {
+                if (ts.token().id() == HTMLTokenId.TAG_OPEN) {
+                    if (CharSequenceUtilities.indexOf(ts.token().text(), "include") != -1) {
+                        if (CharSequenceUtilities.indexOf(value, "'") != -1 || CharSequenceUtilities.indexOf(value, "\"") != -1) {
+                            from++; to--;
+                        }
+                        return new OffsetRange(from, to);
+                    }
+                    break;
                 }
             }
         }
 
         return OffsetRange.NONE;
-
     }
 
     @Override
@@ -712,6 +671,19 @@ public class JsfHtmlExtension extends HtmlExtension {
         Hint injectCC = InjectCompositeComponent.getHint(context, start, end);
         if (injectCC != null) {
             hints.add(injectCC);
+        }
+    }
+
+    private static class FilenameSupport extends FileReferenceCompletion<HtmlCompletionItem> {
+
+        @Override
+        public HtmlCompletionItem createFileItem(FileObject file, int anchor) {
+            return HtmlCompletionItem.createFileCompletionItem(file, anchor);
+        }
+
+        @Override
+        public HtmlCompletionItem createGoUpItem(int anchor, Color color, ImageIcon icon) {
+            return HtmlCompletionItem.createGoUpFileCompletionItem(anchor, color, icon); // NOI18N
         }
     }
 }

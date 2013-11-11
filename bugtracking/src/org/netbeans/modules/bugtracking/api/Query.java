@@ -42,103 +42,109 @@
 package org.netbeans.modules.bugtracking.api;
 
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
-import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.QueryImpl;
-import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
-import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 
 /**
- *
+ * Represents a bugtracking Query.
+ * 
  * @author Tomas Stupka
+ * @since 1.85
  */
 public final class Query {
     
     /**
-     * queries issue list was changed
+     * Fired after the Query was refreshed. 
+     * @since 1.85
      */
-    public final static String EVENT_QUERY_ISSUES_CHANGED = QueryProvider.EVENT_QUERY_ISSUES_CHANGED;
-
-    public enum QueryMode {
-        SHOW_ALL,
-        SHOW_NEW_OR_CHANGED
-    }
+    public final static String EVENT_QUERY_REFRESHED = QueryProvider.EVENT_QUERY_REFRESHED;
     
-    private QueryImpl impl;
+    private final QueryImpl impl;
 
+    /**
+     * C'tor
+     * @param impl 
+     */
     Query(QueryImpl impl) {
         this.impl = impl;
     }
 
+    /**
+     * Returns the tooltip text describing this Query.
+     * 
+     * @return the tooltip
+     * @since 1.85
+     */
     public String getTooltip() {
         return impl.getTooltip();
     }
 
-    public Collection<Issue> getIssues() {
-        List<Issue> ret = toIssues(impl.getIssues());
-        return ret;
-    }
-
+    /**
+     * Returns this Queries display name. 
+     * 
+     * @return display name
+     * @since 1.85
+     */
     public String getDisplayName() {
         return impl.getDisplayName();
     }
-
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        impl.addPropertyChangeListener(listener);
+    
+    /**
+     * The Issues returned by this Query.
+     * @return issues from this query
+     * @since 1.85
+     */
+    public Collection<Issue> getIssues() {
+        return Util.toIssues(impl.getIssues());
     }
 
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        impl.removePropertyChangeListener(listener);
-    }
-
+    /**
+     * Refreshes this query.
+     * 
+     * <p>
+     * Please <b>note</b> that this method might block for a longer time. Do not 
+     * execute in AWT. 
+     * <p>
+     * 
+     * @since 1.85
+     */
     public void refresh() {
         impl.refresh();
     }
 
-    public void open(QueryMode mode) {
-        switch(mode) {
-            case SHOW_NEW_OR_CHANGED:
-                impl.open(false, QueryController.QueryMode.SHOW_NEW_OR_CHANGED);
-                break;
-            case SHOW_ALL:
-                impl.open(false, QueryController.QueryMode.SHOW_ALL);
-                break;
-                
-        }
-    }
-    
-    public void remove() {
-        impl.remove();
+    /**
+     * Returns the Repository this Query belongs to.
+     * 
+     * @return repository
+     * @since 1.85
+     */
+    public Repository getRepository() {
+        return impl.getRepositoryImpl().getRepository();
     }
     
     /**
-     * @param query
+     * Registers a PropertyChangeListener.
+     * 
+     * @param listener 
+     * @since 1.85
      */
-    public static void openNew(Repository repository) {
-        QueryAction.openQuery(null, repository.getImpl());
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        impl.addPropertyChangeListener(listener);
+    }
+
+    /**
+     * Unregisters a PropertyChangeListener.
+     * 
+     * @param listener 
+     * @since 1.85
+     */
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        impl.removePropertyChangeListener(listener);
     }
     
     QueryImpl getImpl() {
         return impl;
-    }
-
-    public Repository getRepository() {
-        return impl.getRepositoryImpl().getRepository();
-    }
-
-    private List<Issue> toIssues(Collection<IssueImpl> c) {
-        List<Issue> ret = new ArrayList<Issue>(c.size());
-        for (IssueImpl i : c) {
-            ret.add(i.getIssue());
-        }
-        return ret;
-    }
-
-    public boolean isSaved() {
-        return impl.isSaved();
     }
     
 }

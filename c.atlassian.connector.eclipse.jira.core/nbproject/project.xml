@@ -100,7 +100,7 @@
             <public-packages/>
             <class-path-extension>
                 <runtime-relative-path>com-atlassian-connector-eclipse-jira-core.jar</runtime-relative-path>
-                <binary-origin>external/com.atlassian.connector.eclipse.jira.core-3.0.4.jar</binary-origin>
+                <binary-origin>external/com.atlassian.connector.eclipse.jira.core_3.0.8.v20130328.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

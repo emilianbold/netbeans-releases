@@ -43,7 +43,11 @@
 package org.netbeans.modules.editor.indent.spi;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
+import java.util.prefs.AbstractPreferences;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -181,7 +185,13 @@ public final class CodeStylePreferences {
             }
 
             assert prefs != null : "provider=" + s2s(provider) + ", docOrFile=" + s2s(docOrFile) + ", mimeType='" + mimeType + "'"; //NOI18N
-            return prefs;
+            Preferences parent = prefs.parent();
+            if (parent == null || parent instanceof AbstractPreferences) {
+                return new CachingPreferences((AbstractPreferences)parent, prefs.name(), prefs);
+            } else {
+                // give up, not a typical case, no caching.
+                return prefs;
+            }
         }
     }
 
@@ -230,5 +240,137 @@ public final class CodeStylePreferences {
 
     private static String s2s(Object o) {
         return o == null ? "null" : o.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(o)); //NOI18N
+    }
+
+
+    /**
+     * Trivial caching implementation of Preferencies. Since CodeStylePreferences should not be cached
+     * and should be used just for the single task, no value propagation on events is implemented.
+     * The cache should speed up repeated queries for code style preferences, namely from the formatter
+     * 
+     * The cache is created because of in issue ie. #236780, fetching preferences from project or whatever
+     * properties could be deadly slow when asked repeatedly.
+     */
+    private static final class CachingPreferences extends AbstractPreferences {
+        private final Preferences delegate;
+        
+        /**
+         * Cached values that were already asked through getSpi. nulls are cached as instances
+         * of {@link #NULL}.
+         */
+        private final Map<String, Object> values = new HashMap<String, Object>(7);
+        
+        /**
+         * Cached names of direct children
+         */
+        private String[] childNames;
+        
+        /**
+         * Cached names of all the keys
+         */
+        private String[] keys;
+        
+        /**
+         * Cached subnodes, lazily created on the first node() call.
+         */
+        private Map<String, AbstractPreferences> prefs;
+        
+        // these just for observation of the effect
+        /*
+        private int cacheHits;
+        private int cacheMisses;
+        private CachingPreferences root;
+        */
+        private static final Object NULL = new Object();
+        
+        public CachingPreferences(AbstractPreferences parent, String name, Preferences delegate) {
+            super(parent, name);
+            this.delegate = delegate;
+//            this.root = this;
+        }
+        
+        private void writeDisallowed() {
+            throw new UnsupportedOperationException("Writing not supported");
+        }
+
+        @Override
+        protected void putSpi(String key, String value) {
+            values.put(key, value);
+            delegate.put(key, value);
+        }
+
+        @Override
+        protected String getSpi(String key) {
+            Object v = values.get(key);
+            if (v == null) {
+//                root.cacheMisses++;
+                v = delegate.get(key, null);
+                if (v == null) {
+                    v = NULL;
+                }
+                values.put(key, v);
+//            } else {
+//                root.cacheHits++;
+            }
+            return v == NULL ? null : v.toString();
+            
+        }
+
+        @Override
+        protected void removeSpi(String key) {
+            values.remove(key);
+            delegate.remove(key);
+        }
+
+        @Override
+        protected void removeNodeSpi() throws BackingStoreException {
+            writeDisallowed();
+        }
+
+        @Override
+        protected String[] keysSpi() throws BackingStoreException {
+            if (keys == null) {
+//                root.cacheMisses++;
+                keys = delegate.keys();
+//            } else {
+//                root.cacheHits++;
+            }
+            return keys;
+        }
+
+        @Override
+        protected String[] childrenNamesSpi() throws BackingStoreException {
+            if (childNames == null) {
+//                root.cacheMisses++;
+                childNames = delegate.childrenNames();
+//            } else {
+//                root.cacheHits++;
+            }
+            return childNames;
+        }
+
+        @Override
+        protected AbstractPreferences childSpi(String name) {
+            if (prefs == null) {
+                prefs = new HashMap<String, AbstractPreferences>(3);
+            }
+            AbstractPreferences p = prefs.get(name);
+            if (p == null) {
+//                root.cacheMisses++;
+                Preferences r = delegate.node(name);
+                p = new CachingPreferences(this, name, r);
+//                ((CachingPreferences)p).root = this.root;
+                prefs.put(name, p);
+//            } else {
+//                root.cacheHits++;
+            }
+            return p;
+        }
+
+        @Override
+        protected void syncSpi() throws BackingStoreException {}
+
+        @Override
+        protected void flushSpi() throws BackingStoreException {}
     }
 }

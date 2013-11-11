@@ -48,31 +48,11 @@ made subject to such option by the copyright holder.
 <description>Builds, tests, and runs the project org.netbeans.performance</description>
 
     <property name="test.timeout" value="7200000"/>
-    <property environment="env"/>
-    <property name="hudson.buildnumber" value="${env.BUILD_NUMBER}"/>
-    <property name="hudson.jobname" value="${env.JOB_NAME}"/>
-
-    <loadfile property="perftestrun.buildnumber"
-      srcFile="../../../build.number"
-      failonerror="false"
-    />
-
-    <condition property="j2ee.appserver.path" value="c:\\space\\appserver">
-        <os family="windows"/>
-    </condition>
-    <condition property="j2ee.appserver.path" value="/space/appserver">
-        <os family="unix"/>
-    </condition>
-
-    <condition property="tomcat.webserver.path" value="c:\\space\\tomcat">
-        <os family="windows"/>
-    </condition>
-    <condition property="tomcat.webserver.path" value="/space/tomcat">
-        <os family="unix"/>
-    </condition>
-
-
-    <property name="test.run.args" value="-Dnetbeans.keyring.no.master=true -DBrokenReferencesSupport.suppressBrokenRefAlert=true -Dnetbeans.full.hack=true -DSuspendSupport.disabled=true -client -Xss2m -Xms64m -Xmx512m -XX:PermSize=64m -XX:MaxPermSize=300m -Xverify:none -Dsun.java2d.noddraw=true -Dcom.sun.aas.installRoot=&quot;${j2ee.appserver.path}&quot; -Dtomcat.installRoot=&quot;${tomcat.webserver.path}&quot; -Dorg.netbeans.performance.repeat=&quot;${repeat}&quot;"/>
+    <property name="test.run.args" value="-client 
+            -Xss4m -Xms64m -Xmx512m -XX:PermSize=64m -XX:MaxPermSize=300m 
+            -Dnetbeans.keyring.no.master=true 
+            -Xverify:none -Dsun.java2d.noddraw=true
+            -DBrokenReferencesSupport.suppressBrokenRefAlert=true"/>
 
     <import file="../nbbuild/templates/projectized.xml"/>
 

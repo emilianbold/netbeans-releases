@@ -53,7 +53,7 @@ import java.util.zip.ZipOutputStream;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.tasks.cache.StorageUtils.FileLocks;
 import org.netbeans.modules.bugtracking.tasks.cache.StorageUtils.FileLocks.FileLock;
-import org.netbeans.modules.bugtracking.util.TextUtils;
+import org.netbeans.modules.bugtracking.commons.TextUtils;
 import org.openide.modules.Places;
 
 /**
@@ -280,7 +280,7 @@ public class DashboardStorage {
         });
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
-            String categoryName = file.getName().replace(CATEGORY_SUFIX, "");
+            String categoryName = TextUtils.decodeURL(file.getName().replace(CATEGORY_SUFIX, ""));
             List<TaskEntry> taskEntries = readCategory(categoryName);
             if (taskEntries == null) {
                 continue;

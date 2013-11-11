@@ -46,6 +46,7 @@ import com.atlassian.connector.eclipse.internal.jira.core.model.Priority;
 import java.util.HashMap;
 import java.util.prefs.Preferences;
 import javax.swing.Icon;
+import org.netbeans.modules.jira.repository.JiraRepository;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbPreferences;
 
@@ -56,11 +57,16 @@ import org.openide.util.NbPreferences;
 public class JiraConfig {
 
     private static JiraConfig instance = null;
-    private static final String LAST_CHANGE_FROM    = "jira.last_change_from";      // NOI18N // XXX
+    private static final String QUERY_NAME          = "bugzilla.query_";            // NOI18N
+    private static final String LAST_CHANGE_FROM    = "jira.last_change_from";      // NOI18N 
     private static final String QUERY_REFRESH_INT   = "jira.query_refresh";         // NOI18N
+    private static final String QUERY_LAST_REFRESH  = "jira.query_last_refresh";    // NOI18N
     private static final String QUERY_AUTO_REFRESH  = "jira.query_auto_refresh_";   // NOI18N
     private static final String ISSUE_REFRESH_INT   = "jira.issue_refresh";         // NOI18N
-
+    private static final String PREF_SECTION_COLLAPSED = "collapsedSection"; //NOI18N
+    private static final String PREF_TASK = "task."; //NOI18N
+    private static final String DELIMITER           = "<=>";                        // NOI18N
+    
     private HashMap<String, Icon> priorityIcons;
     private HashMap<String, String> priorityIconsURL;
     private JiraConfig() { }
@@ -130,6 +136,32 @@ public class JiraConfig {
             priorityIconsURL.put(Priority.TRIVIAL_ID, JiraConfig.class.getClassLoader().getResource("org/netbeans/modules/jira/resources/trivial.png").toString()); //NOI18N
         }
         return priorityIconsURL.get(priorityId);
+    }
+    
+    public long getLastQueryRefresh(JiraRepository repository, String queryName) {
+        return getPreferences().getLong(getQueryKey(repository.getID(), queryName) + QUERY_LAST_REFRESH, -1);
+    }
+    
+    public void putLastQueryRefresh(JiraRepository repository, String queryName, long lastRefresh) {
+        getPreferences().putLong(getQueryKey(repository.getID(), queryName) + QUERY_LAST_REFRESH, lastRefresh);
+    }
+    
+    public void setEditorSectionCollapsed (String repositoryId, String taskId, String sectionName, boolean collapsed) {
+        String key = getTaskKey(repositoryId, taskId) + PREF_SECTION_COLLAPSED + sectionName;
+        getPreferences().putBoolean(key, collapsed);
+    }
+
+    public boolean isEditorSectionCollapsed (String repositoryId, String taskId, String sectionName, boolean defaultValue) {
+        String key = getTaskKey(repositoryId, taskId) + PREF_SECTION_COLLAPSED + sectionName;
+        return getPreferences().getBoolean(key, defaultValue);
+    }
+
+    private String getTaskKey (String repositoryId, String taskId) {
+        return PREF_TASK + repositoryId + "." + taskId + ".";
+    }
+    
+    private String getQueryKey(String repositoryID, String queryName) {
+        return QUERY_NAME + repositoryID + DELIMITER + queryName;
     }
 
 }

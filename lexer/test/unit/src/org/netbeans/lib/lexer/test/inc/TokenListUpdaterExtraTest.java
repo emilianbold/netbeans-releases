@@ -44,6 +44,7 @@
 
 package org.netbeans.lib.lexer.test.inc;
 
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import junit.framework.TestCase;
@@ -75,14 +76,26 @@ public class TokenListUpdaterExtraTest extends TestCase {
         
         doc.putProperty(Language.class, TestSaveTokensInLATokenId.language());
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
-        TokenSequence<?> ts = hi.tokenSequence();
-        ts.moveEnd(); // Force creation of all tokens
-        System.out.println("ts:\n" + ts);
-        LexerTestUtilities.initLastTokenHierarchyEventListening(doc);
+        ((AbstractDocument)doc).readLock();
+        try {
+            TokenSequence<?> ts = hi.tokenSequence();
+            ts.moveEnd(); // Force creation of all tokens
+            LexerTestUtilities.initLastTokenHierarchyEventListening(doc);
+        } finally {
+            ((AbstractDocument)doc).readUnlock();
+        }
+            
         doc.remove(1, 1);
-        TokenHierarchyEvent evt = LexerTestUtilities.getLastTokenHierarchyEvent(doc);
-        TokenChange<?> change = evt.tokenChange();
-        assertEquals(1, change.addedTokenCount());
+
+        ((AbstractDocument)doc).readLock();
+        try {
+            TokenHierarchyEvent evt = LexerTestUtilities.getLastTokenHierarchyEvent(doc);
+            TokenChange<?> change = evt.tokenChange();
+            assertEquals(1, change.addedTokenCount());
+        } finally {
+            ((AbstractDocument)doc).readUnlock();
+        }
+        
     }
 
     public void testEmbeddedModInStartSkipLength() throws Exception {
@@ -104,10 +117,15 @@ public class TokenListUpdaterExtraTest extends TestCase {
         doc.putProperty(Language.class,TestTokenId.language());
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
         
-        TokenSequence<?> ts = hi.tokenSequence();
-        assertTrue(ts.moveNext());
-        assertNotNull(ts.embedded());
-        return doc;
+        ((AbstractDocument)doc).readLock();
+        try {
+            TokenSequence<?> ts = hi.tokenSequence();
+            assertTrue(ts.moveNext());
+            assertNotNull(ts.embedded());
+            return doc;
+        } finally {
+            ((AbstractDocument)doc).readUnlock();
+        }
     }
 
     public void testTokenCountWasCalledInUpdater() throws Exception {
@@ -117,17 +135,29 @@ public class TokenListUpdaterExtraTest extends TestCase {
         
         doc.putProperty(Language.class, TestTokenId.language());
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
-        TokenSequence<?> ts = hi.tokenSequence();
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.PLUS, "+", -1);
+        TokenSequence<?> ts;
+        ((AbstractDocument)doc).readLock();
+        try {
+            ts = hi.tokenSequence();
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts,TestTokenId.PLUS, "+", -1);
+        } finally {
+            ((AbstractDocument)doc).readUnlock();
+        }
+
         doc.remove(1, 3); // Remove "/* "
-        ts = hi.tokenSequence();
-        ts.moveEnd();
-        // Extra ending '\n' of the document returned by DocumentUtilities.getText(doc) and lexed
-        assertTrue(ts.movePrevious());
-        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.WHITESPACE, "\n", -1);
-        assertTrue(ts.movePrevious());
-        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.DIV, "/", -1);
+        ((AbstractDocument)doc).readLock();
+        try {
+            ts = hi.tokenSequence();
+            ts.moveEnd();
+            // Extra ending '\n' of the document returned by DocumentUtilities.getText(doc) and lexed
+            assertTrue(ts.movePrevious());
+            LexerTestUtilities.assertTokenEquals(ts,TestTokenId.WHITESPACE, "\n", -1);
+            assertTrue(ts.movePrevious());
+            LexerTestUtilities.assertTokenEquals(ts,TestTokenId.DIV, "/", -1);
+        } finally {
+            ((AbstractDocument)doc).readUnlock();
+        }
     }
 
 

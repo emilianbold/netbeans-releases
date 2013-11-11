@@ -39,10 +39,9 @@ package org.netbeans.modules.bugzilla;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.util.List;
-import org.netbeans.modules.bugtracking.team.spi.TeamIssueProvider;
-import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import java.util.Collection;
+import org.netbeans.modules.bugtracking.spi.IssueController;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.repository.IssueField;
 
@@ -50,7 +49,7 @@ import org.netbeans.modules.bugzilla.repository.IssueField;
  *
  * @author Tomas Stupka
  */
-public class BugzillaIssueProvider extends TeamIssueProvider<BugzillaIssue> {
+public class BugzillaIssueProvider implements IssueProvider<BugzillaIssue> {
 
     @Override
     public String getDisplayName(BugzillaIssue data) {
@@ -68,9 +67,8 @@ public class BugzillaIssueProvider extends TeamIssueProvider<BugzillaIssue> {
     }
 
     @Override
-    public String[] getSubtasks(BugzillaIssue data) {
-        List<String> l = data.getRepositoryFieldValues(IssueField.BLOCKS);
-        return l.toArray(new String[l.size()]);
+    public Collection<String> getSubtasks(BugzillaIssue data) {
+        return data.getRepositoryFieldValues(IssueField.BLOCKS);
     }
 
     @Override
@@ -99,12 +97,12 @@ public class BugzillaIssueProvider extends TeamIssueProvider<BugzillaIssue> {
     }
 
     @Override
-    public void attachPatch(BugzillaIssue data, File file, String description) {
-        data.attachPatch(file, description);
+    public void attachFile(BugzillaIssue data, File file, String description, boolean isPatch) {
+        data.attachPatch(file, description, isPatch);
     }
 
     @Override
-    public BugtrackingController getController(BugzillaIssue data) {
+    public IssueController getController(BugzillaIssue data) {
         return data.getController();
     }
 
@@ -117,24 +115,4 @@ public class BugzillaIssueProvider extends TeamIssueProvider<BugzillaIssue> {
     public void addPropertyChangeListener(BugzillaIssue data, PropertyChangeListener listener) {
         data.addPropertyChangeListener(listener);
     }
-
-    @Override
-    public boolean submit (BugzillaIssue data) {
-        return data.submitAndRefresh();
-    }
-    
-    /************************************************************************************
-     * Kenai
-     ************************************************************************************/
-    
-    @Override
-    public void setOwnerInfo(BugzillaIssue data, OwnerInfo info) {
-        data.setOwnerInfo(info);
-    }
-
-    @Override
-    public void discardOutgoing(BugzillaIssue data) {
-        data.discardLocalEdits();
-    }
-
 }

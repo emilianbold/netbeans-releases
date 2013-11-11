@@ -63,11 +63,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle;
 import javax.swing.UIManager;
-import org.eclipse.mylyn.tasks.core.data.TaskData;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
-import org.netbeans.modules.bugtracking.cache.IssueCache;
-import org.netbeans.modules.bugtracking.util.LinkButton;
+import org.netbeans.modules.bugtracking.commons.LinkButton;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
@@ -122,10 +118,9 @@ public class IssueLinksPanel extends JPanel {
     private void reloadIssueDetails() {
         summaryMap.clear();
         JiraRepository repository = issue.getRepository();
-        IssueCache<NbJiraIssue> cache = repository.getIssueCache();
         for (NbJiraIssue.LinkedIssue linkedIssue : issue.getLinkedIssues()) {
             String issueKey = linkedIssue.getIssueKey();
-            NbJiraIssue izzue = cache.getIssue(issueKey);
+            NbJiraIssue izzue = repository.getIssueCache().getIssue(issueKey);
             if (izzue == null) {
                 izzue = repository.getIssue(issueKey);
             }

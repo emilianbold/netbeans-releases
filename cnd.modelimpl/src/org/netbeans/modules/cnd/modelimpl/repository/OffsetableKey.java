@@ -47,6 +47,8 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
+import org.netbeans.modules.cnd.repository.impl.spi.UnitsConverter;
+import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
@@ -60,24 +62,22 @@ import org.openide.util.CharSequences;
 
     private final int startOffset;
     private int endOffset = KeyUtilities.NON_INITIALIZED;
-    private final int hashCode;
+    private int hashCode;
     private final CharSequence name;
 
-    protected OffsetableKey(CsmOffsetable obj, String kind, CharSequence name) {
-        this((FileImpl) obj.getContainingFile(), obj.getStartOffset(), obj.getEndOffset(), kind, name);
+    protected OffsetableKey(CsmOffsetable obj, CharSequence name) {
+        this((FileImpl) obj.getContainingFile(), obj.getStartOffset(), obj.getEndOffset(), name);
     }
 
-    protected OffsetableKey(FileImpl containingFile, int startOffset, String kind, CharSequence name) {
-        this(containingFile, startOffset, KeyUtilities.NON_INITIALIZED, kind, name);
+    protected OffsetableKey(FileImpl containingFile, int startOffset, CharSequence name) {
+        this(containingFile, startOffset, KeyUtilities.NON_INITIALIZED, name);
     }
     
-    protected OffsetableKey(FileImpl containingFile, int startOffset, int endOffset, String kind, CharSequence name) {
+    protected OffsetableKey(FileImpl containingFile, int startOffset, int endOffset, CharSequence name) {
         super(containingFile);
         this.startOffset = startOffset;
         this.endOffset = endOffset;
-        assert kind.length() == 1;
         this.name = NameCache.getManager().getString(name);
-        this.hashCode = (_hashCode() << 8) | (kind.charAt(0) & 0xff);
     }
 
     protected OffsetableKey(KeyDataPresentation presentation) {
@@ -85,13 +85,10 @@ import org.openide.util.CharSequences;
         this.startOffset = presentation.getStartPresentation();
         this.endOffset = presentation.getEndPresentation();
         this.name = NameCache.getManager().getString(presentation.getNamePresentation());
-        this.hashCode = (_hashCode() << 8) | (presentation.getKindPresentation() & 0xff);
     }
 
-    /*package-local*/ char getKind() {
-        return (char) (hashCode & 0xff);
-    }
-
+    abstract char getKind();
+    
     /*package-local*/ CharSequence getName() {
         if (name != null && 0 < name.length() && isDigit(name.charAt(0))) {
             return CharSequences.empty();
@@ -135,7 +132,6 @@ import org.openide.util.CharSequences;
         super.write(aStream);
         aStream.writeInt(this.startOffset);
         aStream.writeInt(this.endOffset);
-        aStream.writeInt(this.hashCode);
         assert this.name != null;
         PersistentUtils.writeUTF(name, aStream);
     }
@@ -144,7 +140,6 @@ import org.openide.util.CharSequences;
         super(aStream);
         this.startOffset = aStream.readInt();
         this.endOffset = aStream.readInt();
-        this.hashCode = aStream.readInt();
         this.name = PersistentUtils.readUTF(aStream, NameCache.getManager());
         assert CharSequences.isCompact(name);
     }
@@ -152,6 +147,34 @@ import org.openide.util.CharSequences;
     @Override
     public String toString() {
         return name + "[" + getKind() + " " + getStartOffset() + "-" + (getEndOffset() == KeyUtilities.NON_INITIALIZED ? "U" : getEndOffset()) + "] {" + getFileNameSafe() + "; " + getProjectName() + "}"; // NOI18N
+    }
+
+    @Override
+    public boolean equals(UnitsConverter unitsConverter, Key object) {
+        if (!super.equals(unitsConverter, object)) {
+            return false;
+        }
+        OffsetableKey other = (OffsetableKey) object;
+        assert CharSequences.isCompact(name);
+        assert CharSequences.isCompact(other.name);
+        return this.startOffset == other.startOffset &&
+                ((this.endOffset == other.endOffset) || 
+                 (this.endOffset == KeyUtilities.NON_INITIALIZED || other.endOffset == KeyUtilities.NON_INITIALIZED)) &&
+                this.getHandler() == other.getHandler() &&
+                this.name.equals(other.name);
+    }
+
+    @Override
+    public int hashCode(UnitsConverter unitsConverter) {
+        return 59*name.hashCode() + 19*startOffset + super.hashCode(unitsConverter);
+    }
+    
+    @Override
+    public int hashCode() {
+        if (hashCode == 0) {
+            hashCode = 59*name.hashCode() + 19*startOffset + super.hashCode();
+        }
+        return hashCode;
     }
 
     @Override
@@ -165,22 +188,8 @@ import org.openide.util.CharSequences;
         return this.startOffset == other.startOffset &&
                 ((this.endOffset == other.endOffset) || 
                  (this.endOffset == KeyUtilities.NON_INITIALIZED || other.endOffset == KeyUtilities.NON_INITIALIZED)) &&
-                this.getKind() == other.getKind() &&
+                this.getHandler() == other.getHandler() &&
                 this.name.equals(other.name);
-    }
-
-    @Override
-    public int hashCode() {
-        return (hashCode >> 8) + 37 * (hashCode & 0xff);
-    }
-
-    private int _hashCode() {
-        int retValue;
-
-        retValue = 19 * super.hashCode() + name.hashCode();
-        retValue = 19 * retValue + startOffset;
-//        retValue = 19 * retValue + endOffset - startOffset;
-        return retValue;
     }
 
     @Override
@@ -260,10 +269,5 @@ import org.openide.util.CharSequences;
     @Override
     public final CharSequence getNamePresentation() {
         return name;
-    }
-
-    @Override
-    public final short getKindPresentation() {
-        return (short) getKind();
     }
 }

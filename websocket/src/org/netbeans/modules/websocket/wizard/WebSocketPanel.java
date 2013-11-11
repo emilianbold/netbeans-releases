@@ -90,7 +90,7 @@ class WebSocketPanel implements Panel<WizardDescriptor> {
      */
     @Override
     public HelpCtx getHelp() {
-        return HelpCtx.DEFAULT_HELP;
+        return new HelpCtx("org.netbeans.modules.websocket.wizard.WebSocketPanel"); //NOI18N
     }
 
     /* (non-Javadoc)

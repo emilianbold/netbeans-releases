@@ -160,7 +160,7 @@ public final class NativeExecutionService {
             // Currently only ansi emulation is supported (NB7.4).
             // xterm/dtterm cannot be considered as fully supported yet..
             // So will set TERM environment to 'ansi'
-            processBuilder.getEnvironment().put("TERM", "ansi" /*IOEmulation.getEmulation(descriptor.inputOutput)*/); // NOI18N
+            processBuilder.getEnvironment().put("TERM", "xterm" /*IOEmulation.getEmulation(descriptor.inputOutput)*/); // NOI18N
         } else {
             processBuilder.getEnvironment().put("TERM", "dumb"); // NOI18N
         }

@@ -52,27 +52,26 @@ import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 
 /**
- *
+ * Represents a bugtracking Repository.
+ * 
  * @author Tomas Stupka
+ * @since 1.85
  */
 public final class Repository {
+    
     /**
-     * A query from this repository was saved or removed
+     * A query from this repository was saved or removed.
+     * @since 1.85
      */
     public final static String EVENT_QUERY_LIST_CHANGED = RepositoryProvider.EVENT_QUERY_LIST_CHANGED;
 
     /**
      * RepositoryProvider's attributes have changed, e.g. name, url, etc.
-     * Old and new value are maps of changed doubles: attribute-name / attribute-value.
-     * Old value can be null in case the repository is created.
+     * @since 1.85
      */
     public final static String EVENT_ATTRIBUTES_CHANGED = RepositoryImpl.EVENT_ATTRIBUTES_CHANGED;
-
-    public static final String ATTRIBUTE_URL = RepositoryImpl.ATTRIBUTE_URL;
-    public static final String ATTRIBUTE_DISPLAY_NAME = RepositoryImpl.ATTRIBUTE_DISPLAY_NAME;
 
     private final static Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.Repository"); // NOI18N
     
@@ -90,53 +89,65 @@ public final class Repository {
     }
 
     /**
-     * Returns the icon for this repository
+     * Returns the icon for this repository.
      * 
-     * @return 
+     * @return the icon
+     * @since 1.85
      */
     public Image getIcon() {
         return impl.getIcon();
     }
 
     /**
-     * Returns the display name for this repository
-     * @return 
+     * Returns the display name for this repository.
+     * 
+     * @return the display name
+     * @since 1.85
      */
     public String getDisplayName() {
         return impl.getDisplayName();
     }
 
     /**
-     * Returns the tooltip describing this repository
+     * Returns the tooltip describing this repository.
      * 
-     * @return 
+     * @return the tooltip
+     * @since 1.85
      */
     public String getTooltip() {
         return impl.getTooltip();
     }
 
     /**
-     * Returns a unique id assotiated with this repository
+     * Returns a unique id associated with this repository.
      * 
-     * @return 
+     * @return id
+     * @since 1.85
      */
     public String getId() {
         return impl.getId();
     }
 
     /**
-     * Returns this repository url
+     * Returns this repositories url.
      * 
-     * @return 
+     * @return url
+     * @since 1.85
      */
     public String getUrl() {
         return impl.getUrl();
     }
 
     /**
-     * Returns a list of all saved queries for this repository
+     * Returns a list of all saved queries for this repository.
      * 
-     * @return 
+     * <p>
+     * Please <b>note</b> that in some cases this method might block for a longer time. Do not 
+     * execute in AWT. 
+     * <p>
+     * 
+     * @return queries
+     * @since 1.85
      */
     public Collection<Query> getQueries() {
         Collection<QueryImpl> c = impl.getQueries();
@@ -152,39 +163,46 @@ public final class Repository {
      * 
      * @return <code>true</code> if this repository can be deleted or changed by 
      *         the user. Otherwise <code>false</code>.
+     * @since 1.85
      */
     public boolean isMutable() {
         return impl.isMutable();
     }
     
     /**
-     * Removes this repository
+     * Determines whether it is possible to attach files to Issues from this repository.
+     * 
+     * @return <code>true</code> in case it is possible to attach files, otherwise <code>false</code>
+     * @since 1.85
+     */
+    public boolean canAttachFiles() {
+        return impl.canAttachFiles();
+    }
+    
+    /**
+     * Removes this repository.
+     * 
+     * @since 1.85
      */
     public void remove() {
         impl.remove();
     }
     
     /**
-     * Opens the modal edit repository dialog.<br>
-     * Blocks until the dialog isn't closed. 
-     */
-    public void edit() { 
-        BugtrackingUtil.editRepository(this);
-    }    
-
-    /**
-     * Registers a PropertyChangeListener 
+     * Registers a PropertyChangeListener.
      * 
      * @param listener 
+     * @since 1.85
      */
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         impl.addPropertyChangeListener(listener);
     }
     
     /**
-     * Unregisters a PropertyChangeListener 
+     * Unregisters a PropertyChangeListener. 
      * 
      * @param listener 
+     * @since 1.85
      */
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         impl.removePropertyChangeListener(listener);
@@ -193,8 +211,14 @@ public final class Repository {
     /**
      * Returns the issue with the given id or null in case such doesn't exist.
      * 
+     * <p>
+     * Please <b>note</b> that this method might block for a longer time. Do not 
+     * execute in AWT. 
+     * <p>
+     * 
      * @param ids
-     * @return 
+     * @return issues
+     * @since 1.85
      */
     public Issue[] getIssues(String... ids) {
         Collection<IssueImpl> impls = impl.getIssueImpls(ids);
@@ -203,19 +227,6 @@ public final class Repository {
             ret.add(issueImpl.getIssue());
         }
         return ret.toArray(new Issue[ret.size()]);
-    }
-    
-    /**
-     * Creates a new {@ link Issue} instance prefilled with 
-     * the given summary and description.
-     * 
-     * @param summary
-     * @param description
-     * @return 
-     */
-    public Issue createIssue(String summary, String description) {
-        IssueImpl issueImpl = impl.createNewIssue(summary, description);
-        return issueImpl.getIssue();
     }
     
     <R, Q, I> RepositoryImpl<R, Q, I> getImpl() {

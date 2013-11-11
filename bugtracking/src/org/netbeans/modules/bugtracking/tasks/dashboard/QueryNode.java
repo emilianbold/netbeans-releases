@@ -55,6 +55,7 @@ import org.netbeans.modules.team.commons.treelist.LinkButton;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions.OpenQueryAction;
 import org.netbeans.modules.bugtracking.settings.DashboardSettings;
+import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.team.commons.treelist.TreeLabel;
 import org.netbeans.modules.team.commons.treelist.TreeListNode;
 import org.openide.util.ImageUtilities;
@@ -191,7 +192,7 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
 
     @Override
     protected Action getDefaultAction() {
-        return new OpenQueryAction(this);
+        return query.providesMode(QueryController.QueryMode.VIEW) ? new OpenQueryAction(this) : null;
     }
 
     @Override
@@ -262,7 +263,7 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName().equals(QueryImpl.EVENT_QUERY_ISSUES_CHANGED)) {
+            if (evt.getPropertyName().equals(QueryImpl.EVENT_QUERY_REFRESHED)) {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {

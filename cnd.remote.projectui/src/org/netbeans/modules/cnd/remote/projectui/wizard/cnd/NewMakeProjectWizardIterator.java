@@ -67,6 +67,8 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension.ProjectKind;
@@ -440,8 +442,20 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
                     provider.setupReleaseConfiguration(debug);
                 }                
             }
-            int platform = CompilerSetManager.get(((ExecutionEnvironment) wiz.getProperty(WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV))).getPlatform();
+            // This is dirty hack to set true development host
+            final ExecutionEnvironment env = (ExecutionEnvironment) wiz.getProperty(WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV);
+            int platform = CompilerSetManager.get((env)).getPlatform();
             debug.getDevelopmentHost().setBuildPlatform(platform);
+            DevelopmentHostConfiguration toolCollecctionDevelopmentHost = new DevelopmentHostConfiguration(ExecutionEnvironmentFactory.fromUniqueID(hostUID));
+            CompilerSet2Configuration compilerSet2Configuration;
+            if (defaultToolchain) {
+                compilerSet2Configuration = new CompilerSet2Configuration(toolCollecctionDevelopmentHost);
+            } else {
+                CompilerSet defCS = (toolchain != null) ? toolchain : CompilerSetManager.get(env).getDefaultCompilerSet();
+                compilerSet2Configuration = new CompilerSet2Configuration(toolCollecctionDevelopmentHost, defCS);
+            }
+            debug.setCompilerSet(compilerSet2Configuration);
+            
             MakeConfiguration release = MakeConfiguration.createConfiguration(dirF, "Release", conftype, customizerId, hostUID, toolchain, defaultToolchain); // NOI18N
             release.getCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
             release.getCCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
@@ -456,6 +470,8 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
                 }
             }
             release.getDevelopmentHost().setBuildPlatform(platform);
+            release.setCompilerSet(compilerSet2Configuration);
+            
             MakeConfiguration[] confs = new MakeConfiguration[]{debug, release};
             ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(projectName, dirF);
             prjParams.setMakefileName(makefileName);

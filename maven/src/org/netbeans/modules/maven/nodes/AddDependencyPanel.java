@@ -57,6 +57,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -406,8 +407,12 @@ public class AddDependencyPanel extends javax.swing.JPanel {
         }
         
         if (project.getDependencies() != null && gId != null && aId != null) {
+            //poor mans expression evaluator, it's unlikely that some other expressions would be frequent
+            String resolvedGroupId = gId.contains("${project.groupId}") ? gId.replace("${project.groupId}", project.getGroupId()) : gId;
+            String resolvedArtifactId = aId.contains("${project.artifactId}") ? aId.replace("${project.artifactId}", project.getArtifactId()) : aId;
+            
             for (Dependency dep : project.getDependencies()) {
-                if (gId.equals(dep.getGroupId()) && aId.equals(dep.getArtifactId())) {
+                if (resolvedGroupId.equals(dep.getGroupId()) && resolvedArtifactId.equals(dep.getArtifactId())) {
                     warn = Bundle.MSG_Defined();
                 }
                     
@@ -843,7 +848,13 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                 break;
             }
         }
+        Collections.sort(result, new Comparator<Dependency>() {
 
+            @Override
+            public int compare(Dependency o1, Dependency o2) {
+                return o1.getManagementKey().compareTo(o2.getManagementKey());
+            }
+        });
         return result;
     }
 
@@ -1034,13 +1045,13 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             Comparator<String>, PropertyChangeListener, ChangeListener {
         
 
-        private BeanTreeView btv;
-        private ExplorerManager manager;
-        private ResultsRootNode resultsRootNode;
+        private final BeanTreeView btv;
+        private final ExplorerManager manager;
+        private final ResultsRootNode resultsRootNode;
 
         private String inProgressText, lastQueryText, curTypedText;
 
-        private Color defSearchC;
+        private final Color defSearchC;
 
         private QueryPanel() {
             btv = new BeanTreeView();
@@ -1369,9 +1380,9 @@ public class AddDependencyPanel extends javax.swing.JPanel {
     private class DMListPanel extends JPanel implements ExplorerManager.Provider,
             AncestorListener, ActionListener, PropertyChangeListener, Runnable {
 
-        private BeanTreeView btv;
-        private ExplorerManager manager;
-        private MavenProject project;
+        private final BeanTreeView btv;
+        private final ExplorerManager manager;
+        private final MavenProject project;
         private Node noDMRoot;
 
         private List<Dependency> dmDeps;
@@ -1484,9 +1495,9 @@ public class AddDependencyPanel extends javax.swing.JPanel {
     private class OpenListPanel extends JPanel implements ExplorerManager.Provider,
             PropertyChangeListener, Runnable {
 
-        private BeanTreeView btv;
-        private ExplorerManager manager;
-        private Project project;
+        private final BeanTreeView btv;
+        private final ExplorerManager manager;
+        private final Project project;
 
         public OpenListPanel(Project project) {
             this.project = project;
@@ -1523,6 +1534,20 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                 }
                 NbMavenProject mav = p.getLookup().lookup(NbMavenProject.class);
                 if (mav != null) {
+                    boolean continueProjectIteration = false;
+                    MavenProject mavenProject = mav.getMavenProject();
+                    Iterator<Dependency> iterator = project.getLookup().lookup(NbMavenProject.class).getMavenProject().getDependencies().iterator();
+                    while (iterator.hasNext()) {
+                        Dependency dependency = iterator.next();
+                        if (mavenProject.getGroupId().equals(dependency.getGroupId())
+                                && mavenProject.getArtifactId().equals(dependency.getArtifactId())) {
+                            continueProjectIteration = true;
+                            break;
+                        }
+                    }
+                    if ( continueProjectIteration ) {
+                        continue;
+                    }
                     LogicalViewProvider lvp = p.getLookup().lookup(LogicalViewProvider.class);
                     toRet.add(createFilterWithDefaultAction(lvp.createLogicalView(), true));
                 }
@@ -1625,7 +1650,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
 
         @Override
         public Action getPreferredAction() {
-            return new DefAction(true, getLookup());
+            return super.getPreferredAction();
         }
 
         @Override

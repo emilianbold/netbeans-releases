@@ -154,6 +154,7 @@ public class TypeRedeclarationHintError extends HintErrorRule {
                 }
                 for (TypeScope typeInstance : instances) {
                     if (typeInstance != firstDeclaredInstance) {
+                        assert firstDeclaredInstance != null;
                         hints.add(new Hint(this, Bundle.TypeRedeclarationDesc(firstDeclaredInstance.getName()),
                                 fileObject,
                                 typeInstance.getNameRange(), Collections.<HintFix>emptyList(), 500));

@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.web.wizards;
 
-import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
@@ -167,7 +166,6 @@ class DeployDataPanel extends BaseWizardPanel implements ItemListener {
         tfC.gridy++;
         jTFclassname = new JTextField(25);
         jTFclassname.setEnabled(false);
-        jTFclassname.setBackground(this.getBackground());
         jLclassname = new JLabel(NbBundle.getMessage(DeployDataPanel.class, "LBL_ClassName"));
         jLclassname.setLabelFor(jTFclassname);
         jLclassname.setDisplayedMnemonic(NbBundle.getMessage(DeployDataPanel.class, "LBL_Class_Mnemonic").charAt(0));
@@ -326,22 +324,6 @@ class DeployDataPanel extends BaseWizardPanel implements ItemListener {
             paramPanel.setEnabled(enable);
         } else if (fileType == FileType.FILTER) {
             mappingPanel.setEnabled(enable);
-        }
-
-        if (enable) {
-            jTFclassname.setDisabledTextColor(Color.black);
-            jTFclassname.repaint();
-            jTFname.setBackground(Color.white);
-            if (fileType == FileType.SERVLET) {
-                jTFmapping.setBackground(Color.white);
-            }
-        } else {
-            jTFclassname.setDisabledTextColor(jTFname.getDisabledTextColor());
-            jTFclassname.repaint();
-            jTFname.setBackground(this.getBackground());
-            if (fileType == FileType.SERVLET) {
-                jTFmapping.setBackground(this.getBackground());
-            }
         }
     }
 

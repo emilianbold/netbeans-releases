@@ -102,6 +102,8 @@ public class Configuration {
     private final Map<String, Tag> TAGS = new HashMap<>();
     private final Map<String, Attribute> ATTRS = new HashMap<>();
 
+    public static final Configuration EMPTY = new Configuration();
+    
     public static Configuration get(@NonNull FileObject file) {
         Project owner = FileOwnerQuery.getOwner(file);
         return get(owner);
@@ -122,6 +124,9 @@ public class Configuration {
     private FileObject configFile;
     private JSONObject root;
 
+    private Configuration() {
+    }
+    
     public Configuration(Project project) {
         //TODO fix the conf location in maven and other project types
         FileObject nbproject = project.getProjectDirectory().getFileObject("config"); //NOI18N

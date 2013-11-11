@@ -114,6 +114,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.PrimitiveType;
@@ -195,8 +196,24 @@ class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirror>, Ob
     /**
      * Supplemental ouptut: if the expression is a method or ctor parameter, this
      * field will get the parameter position. Otherwise -1.
+     * If the expression is passed to a variable-length argument, the index will be set to argsize - 1, if the expression
+     * MIGHT be interpreted as the entire vararg value (passed at the position of vararg), or will be set
+     * to argsize (beyond the formal parameter list), if the expression is passed further in the variable-length list,
+     * and must conform to vararg list item type
      */
     private int argIndex = -1;
+    
+    /** 
+     * Type of the target method/ctor argument; specifically for varargs the value can be Type[] for the variable-length
+     * argument position and Type for following positions
+     */
+    private TypeMirror targetArgType;
+    
+    /**
+     * Set to true, if the expression goes through some operator, where the type is intentionally
+     * widened to produce a different result.
+     */
+    private boolean notRedundant;
     
     public ExpectedTypeResolver(TreePath theExpression, CompilationInfo info) {
         this.originalExpression = this.theExpression = theExpression;
@@ -205,6 +222,10 @@ class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirror>, Ob
     
     protected TreePath getCurrentPath() {
         return path;
+    }
+    
+    public boolean isNotRedundant() {
+        return notRedundant;
     }
 
     /**
@@ -542,42 +563,72 @@ class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirror>, Ob
             }
         } else {
             Element el = info.getTrees().getElement(getCurrentPath());
-            if (theExpression != node &&
+            if (theExpression.getLeaf() != node &&
                 (el.getKind() == ElementKind.METHOD || el.getKind() == ElementKind.CONSTRUCTOR)) {
                 int argIndex = args.indexOf(theExpression.getLeaf());
                 this.parentExecutable = getCurrentPath();
-                this.argIndex = argIndex;
                 TypeMirror argm;
-                
+                ExecutableElement ee = (ExecutableElement)el;
+                boolean allowEntireVararg = false;
+                boolean varargPosition = false;
+                if (ee.isVarArgs() && (varargPosition = argIndex >= ee.getParameters().size() -1)) {
+                    // all parameters after the vararg will be reported at the varargs position. 
+                    allowEntireVararg = argIndex == ee.getParameters().size() -1;
+                    argIndex = ee.getParameters().size() - 1;
+                    if (allowEntireVararg) {
+                        this.argIndex = ee.getParameters().size() - 1;
+                    } else {
+                        this.argIndex = ee.getParameters().size();
+                    }
+                } else {
+                    this.argIndex = argIndex;
+                }
+
                 if (execType != null) {
+                    // handle varargs arguments; if the argtype is a vararg, then either array of the type (reported in argm),
+                    // or the component can be passed.
                     argm = execType.getParameterTypes().get(argIndex);
                     // XXX hack
-                    if (argm instanceof CapturedType) {
-                        argm = ((CapturedType)argm).wildcard;
-                    }
-                    if (argm.getKind() == TypeKind.WILDCARD) {
-                        WildcardType wctype = (WildcardType)argm;
-                        TypeMirror bound = wctype.getExtendsBound();
-                        if (bound != null) {
-                            return Collections.singletonList(bound);
-                        } 
-                        bound = wctype.getSuperBound();
-                        if (bound != null) {
-                            return Collections.singletonList(bound);
-                        }
-                        return null;
-                    } 
-                    return Collections.singletonList(argm);
+                    argm = decapture(argm);
                 } else {
                     argm = ((ExecutableElement)el).getParameters().get(argIndex).asType();
                 }
-                if (argm.getKind() == TypeKind.ERROR) {
+                if (argm == null || argm.getKind() == TypeKind.ERROR) {
+                    targetArgType = null;
                     return null;
                 }
+                if (varargPosition && argm.getKind() == TypeKind.ARRAY) {
+                    TypeMirror ctype = ((ArrayType)argm).getComponentType();
+                    if (allowEntireVararg) {
+                        targetArgType = argm;
+                        return Arrays.asList(new TypeMirror[] { argm, ctype });
+                    }
+                    argm = ctype;
+                }
+                targetArgType = argm;
                 return Collections.singletonList(argm);
             }
         }
         return null;
+    }
+    
+    private TypeMirror decapture(TypeMirror argm) {
+        if (argm instanceof CapturedType) {
+            argm = ((CapturedType)argm).wildcard;
+        }
+        if (argm.getKind() == TypeKind.WILDCARD) {
+            WildcardType wctype = (WildcardType)argm;
+            TypeMirror bound = wctype.getExtendsBound();
+            if (bound != null) {
+                return bound;
+            } 
+            bound = wctype.getSuperBound();
+            if (bound != null) {
+                return bound;
+            }
+            return null;
+        } 
+        return argm;
     }
     
     public TreePath getParentExecutable() {
@@ -689,12 +740,7 @@ class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirror>, Ob
     }
     
     private static boolean isPrimitiveType(TypeKind k) {
-        switch (k) {
-            case BOOLEAN: case BYTE: case CHAR: case DOUBLE: case FLOAT: case INT: case LONG: case SHORT:
-                return true;
-            default:
-                return false;
-        }
+        return k.isPrimitive();
     }
 
     /**
@@ -713,37 +759,37 @@ class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirror>, Ob
         TypeMirror lhsType = info.getTrees().getTypeMirror(new TreePath(getCurrentPath(), node.getLeftOperand()));
         TypeMirror rhsType = info.getTrees().getTypeMirror(new TreePath(getCurrentPath(), node.getRightOperand()));
         
-        if (lhsType == null || rhsType == null) {
+        if (lhsType == null || rhsType == null || theExpression == null) {
             return null;
         }
         
+        boolean resultIsString = false;
         if (resultType.getKind() == TypeKind.DECLARED) {
             Element e = ((DeclaredType)resultType).asElement();
-            if (e.getKind() == ElementKind.CLASS || e.getKind() == ElementKind.INTERFACE || e.getKind() == ElementKind.ENUM) {
+            if (e.getKind() == ElementKind.CLASS) {
                 TypeElement tel = (TypeElement)e;
-                if (tel.getQualifiedName().contentEquals("java.lang.String")) { // NOI18N
-                    if (ARITHMETIC_OPS.contains(node.getKind())) {
-                        // <something> + String, which results in String
-                        TreePath tp = getExpressionWithoutCasts();
-                        if (tp == null) {
-                            return null;
-                        }
-                        TypeMirror m = info.getTrees().getTypeMirror(tp);
-                        if (m == null) {
-                            return null;
-                        }
-                        return Collections.singletonList(m);
-                    }
-                }
+                resultIsString = tel.getQualifiedName().contentEquals("java.lang.String"); // NOI18N
             }
-        } 
+        }
+        
+//        if (resultType.getKind() == TypeKind.DECLARED) {
+//            Element e = ((DeclaredType)resultType).asElement();
+//            if (e.getKind() == ElementKind.CLASS || e.getKind() == ElementKind.INTERFACE || e.getKind() == ElementKind.ENUM) {
+//                TypeElement tel = (TypeElement)e;
+//                if (tel.getQualifiedName().contentEquals("java.lang.String")) { // NOI18N
+//                    if (ARITHMETIC_OPS.contains(node.getKind())) {
+//                        // <something> + String, which results in String
+//                    }
+//                }
+//            }
+//        } 
         // comparison of primitive types means the type must be promoted up to the other type
         if (COMPARISON_OPS.contains(node.getKind())) {
             TreePath expPath = getExpressionWithoutCasts();
             TypeMirror expType = info.getTrees().getTypeMirror(expPath);
             TypeMirror rettype = null;
             
-            if (theExpression == node.getLeftOperand()) {
+            if (theExpression.getLeaf() == node.getLeftOperand()) {
                 lhsType = expType;
             } else {
                 rhsType = expType;
@@ -768,12 +814,83 @@ class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirror>, Ob
             } else {
                 return Collections.singletonList(rettype);
             }
-        } else if (ARITHMETIC_OPS.contains(node.getKind()) && isPrimitiveType(resultType.getKind())) {
+        } else if (ARITHMETIC_OPS.contains(node.getKind())) {
+            TypeMirror followed;
+            TypeMirror other;
+            if (node.getLeftOperand() == theExpression.getLeaf()) {
+                followed = lhsType;
+                other = rhsType;
+            } else {
+                followed = rhsType;
+                other = lhsType;
+            }
+            if (isPrimitiveType(followed.getKind())) {
+                if (isPrimitiveType(resultType.getKind())) {
+                    // if the followed [numeric] subexpression is casted to a type broader than the other operand, it should be left as it is. The reason is 
+                    // a potential different type of the expression result influencing results or validity of operations up the tree.
+                    if (!(other.getKind() == TypeKind.ERROR || followed.getKind() == TypeKind.ERROR)) {
+                        if (followed.getKind().ordinal() > other.getKind().ordinal() && followed.getKind().ordinal() >= TypeKind.FLOAT.ordinal()) {
+                            // terminate, the cast is needed
+                            notRedundant = true;
+                            return Collections.singletonList(followed);
+                        }
+                    }
+                } else if (resultType.getKind() == TypeKind.DECLARED) {
+                    Element e = ((DeclaredType)resultType).asElement();
+                    if (e.getKind() == ElementKind.CLASS && ((TypeElement)e).getQualifiedName().contentEquals("java.lang.String")) {
+                        // primitive + string: 
+                        TreePath expPath = getExpressionWithoutCasts();
+                        TypeMirror expType = info.getTrees().getTypeMirror(expPath);
+                        
+                        if (expType.getKind().isPrimitive() && expType.getKind() != followed.getKind()) {
+                            // if the cast is to more narrow type, permit it, as it looses precision, and potential produces a different value. Other
+                            // hint / warning should take care of precision loss.
+                            if (expType.getKind() != TypeKind.CHAR && followed.getKind().ordinal() < expType.getKind().ordinal()) {
+                                return null;
+                            }
+                            
+                            // next, permit conversions to different types: int -> float, char -> int
+                            switch (expType.getKind()) {
+                                case INT: case LONG:
+                                    if (followed.getKind().ordinal() >= TypeKind.FLOAT.ordinal()) {
+                                        notRedundant = true;
+                                        return Collections.singletonList(info.getTypes().getPrimitiveType(TypeKind.FLOAT));
+                                    }
+                                    break;
+                                case CHAR:
+                                    notRedundant = true;
+                                    if (followed.getKind() == TypeKind.LONG) {
+                                        return Collections.singletonList(info.getTypes().getPrimitiveType(TypeKind.INT));
+                                    }
+                                    if (followed.getKind().ordinal() < TypeKind.FLOAT.ordinal()) {
+                                        return Collections.singletonList(followed);
+                                    } else {
+                                        return Collections.singletonList(info.getTypes().getPrimitiveType(TypeKind.FLOAT));
+                                    }
+                            }
+                        }
+                    }
+                }
+            } else if (resultIsString) {
+                TreePath tp = getExpressionWithoutCasts();
+                if (tp == null) {
+                    return null;
+                }
+                TypeMirror m = info.getTrees().getTypeMirror(tp);
+                if (m == null) {
+                    return null;
+                }
+                return Collections.singletonList(m);
+                
+            }
+
             return Collections.singletonList(resultType);
         }
         
         return null;
     }
+    
+    private final EnumSet<TypeKind> NUMERIC_TYPES = EnumSet.of(TypeKind.BYTE, TypeKind.DOUBLE, TypeKind.FLOAT, TypeKind.INT, TypeKind.LONG, TypeKind.SHORT);
 
     /**
      * Anything object-typed could be in the instance-of

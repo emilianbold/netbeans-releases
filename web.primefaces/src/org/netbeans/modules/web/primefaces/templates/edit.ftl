@@ -2,16 +2,16 @@
 
   TEMPLATE DESCRIPTION:
 
-  This is XHTML template for 'JSF Editable Form From Entity' action. Templating
+  This is XHTML template for 'JSF Pages From Entity Beans' action. Templating
   is performed using FreeMaker (http://freemarker.org/) - see its documentation
   for full syntax. Variables available for templating are:
 
-    prefixResolver - helps resolve prefix for given template (call prefixForNS(namespace, fallbackPrefix) method)
     entityName - name of entity being modified (type: String)
     managedBean - name of managed choosen in UI (type: String)
     managedBeanProperty - name of managed bean property choosen in UI (type: String)
     item - name of property used for dataTable iteration (type: String)
     comment - always set to "false" (type: Boolean)
+    nsLocation - which namespace location to use (http://xmlns.jcp.org in case of JSF2.2, http://java.sun.com otherwise)
     entityDescriptors - list of beans describing individual entities. Bean has following properties:
         label - field label (type: String)
         name - field property name (type: String)
@@ -21,42 +21,60 @@
         relationshipMany - does field represent one to many relationship (type: boolean)
         id - field id name (type: String)
         required - is field optional and nullable or it is not? (type: boolean)
+        returnType - fully qualified data type of the field
         valuesGetter - if item is of type 1:1 or 1:many relationship then use this
             getter to populate <h:selectOneMenu> or <h:selectManyMenu>
+    bundle - name of the variable defined in the JSF config file for the resource bundle (type: String)
 
   This template is accessible via top level menu Tools->Templates and can
-  be found in category JavaServer Faces->JSF Data/Form from Entity.
+  be found in category JavaServer Faces->JSF from Entity.
 
 </#if>
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="${nsLocation}/jsf/facelets"
+      xmlns:h="${nsLocation}/jsf/html"
+      xmlns:f="${nsLocation}/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
 
-<#assign htmlTagPrefix=prefixResolver.getPrefixForNS("http://xmlns.jcp.org/jsf/html", "h")>
-<#assign coreTagPrefix=prefixResolver.getPrefixForNS("http://xmlns.jcp.org/jsf/core", "f")>
-<#assign pfTagPrefix=prefixResolver.getPrefixForNS("http://primefaces.org/ui", "p")>
+    <ui:composition>
 
-<${htmlTagPrefix}:form>
-    <h1><${htmlTagPrefix}:outputText value="Create/Edit"/></h1>
-    <${pfTagPrefix}:panelGrid columns="2">
+        <p:dialog id="${entityName}EditDlg" widgetVar="${entityName}EditDialog" modal="true" resizable="false" appendTo="@(body)" header="${r"#{"}${bundle}.Edit${entityName}Title${r"}"}">
+            <h:form id="${entityName}EditForm">
+                <h:panelGroup id="display">
+                    <p:panelGrid columns="2" rendered="${r"#{"}${managedBeanProperty} != null${r"}"}">
 <#list entityDescriptors as entityDescriptor>
-        <${pfTagPrefix}:outputLabel value="${entityDescriptor.label}:" for="${entityDescriptor.id}" />
-<#if entityDescriptor.dateTimeFormat?? && entityDescriptor.dateTimeFormat != "">
-        <${pfTagPrefix}:inputText id="${entityDescriptor.id}" value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${entityDescriptor.label}" <#if entityDescriptor.required>required="true" requiredMessage="The ${entityDescriptor.label} field is required."</#if>>
-            <${coreTagPrefix}:convertDateTime pattern="${entityDescriptor.dateTimeFormat}" />
-        </${pfTagPrefix}:inputText>
-<#elseif entityDescriptor.blob>
-        <${pfTagPrefix}:inputTextarea rows="4" cols="30" id="${entityDescriptor.id}" value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${entityDescriptor.label}" <#if entityDescriptor.required>required="true" requiredMessage="The ${entityDescriptor.label} field is required."</#if>/>
-<#elseif entityDescriptor.relationshipOne>
-        <${pfTagPrefix}:selectOneMenu id="${entityDescriptor.id}" value="${r"#{"}${entityDescriptor.name}${r"}"}" <#if entityDescriptor.required>required="true" requiredMessage="The ${entityDescriptor.label} field is required."</#if>>
-            <!-- TODO: update below reference to list of available items-->
-            <${coreTagPrefix}:selectItems value="${r"#{"}fixme${r"}"}"/>
-        </${pfTagPrefix}:selectOneMenu>
-<#elseif entityDescriptor.relationshipMany>
-        <${pfTagPrefix}:selectManyMenu id="${entityDescriptor.id}" value="${r"#{"}${entityDescriptor.name}${r"}"}" <#if entityDescriptor.required>required="true" requiredMessage="The ${entityDescriptor.label} field is required."</#if>>
-            <!-- TODO: update below reference to list of available items-->
-            <${coreTagPrefix}:selectItems value="${r"#{"}fixme${r"}"}"/>
-        </${pfTagPrefix}:selectManyMenu>
-<#else>
-        <${pfTagPrefix}:inputText id="${entityDescriptor.id}" value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${entityDescriptor.label}" <#if entityDescriptor.required>required="true" requiredMessage="The ${entityDescriptor.label} field is required."</#if>/>
-</#if>
+                        <p:outputLabel value="${r"#{"}${bundle}.Edit${entityName}Label_${entityDescriptor.id?replace(".","_")}${r"}"}" for="${entityDescriptor.id?replace(".","_")}" />
+    <#if entityDescriptor.dateTimeFormat?? && entityDescriptor.dateTimeFormat != "">
+                        <p:calendar id="${entityDescriptor.id?replace(".","_")}" pattern="${entityDescriptor.dateTimeFormat}" value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${r"#{"}${bundle}.Edit${entityName}Title_${entityDescriptor.id?replace(".","_")}${r"}"}" <#if entityDescriptor.required>required="true" requiredMessage="${r"#{"}${bundle}.Edit${entityName}RequiredMessage_${entityDescriptor.id?replace(".","_")}${r"}"}"</#if> showOn="button"/>
+    <#elseif entityDescriptor.returnType?matches(".*[Bb]+oolean")>
+                        <p:selectBooleanCheckbox id="${entityDescriptor.id?replace(".","_")}" value="${r"#{"}${entityDescriptor.name}${r"}"}" <#if entityDescriptor.required>required="true" requiredMessage="${r"#{"}${bundle}.Edit${entityName}RequiredMessage_${entityDescriptor.id?replace(".","_")}${r"}"}"</#if>/>
+    <#elseif entityDescriptor.blob>
+                        <p:inputTextarea rows="4" cols="30" id="${entityDescriptor.id?replace(".","_")}" value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${r"#{"}${bundle}.Edit${entityName}Title_${entityDescriptor.id?replace(".","_")}${r"}"}" <#if entityDescriptor.required>required="true" requiredMessage="${r"#{"}${bundle}.Edit${entityName}RequiredMessage_${entityDescriptor.id?replace(".","_")}${r"}"}"</#if>/>
+    <#elseif entityDescriptor.relationshipOne>
+                        <p:selectOneMenu id="${entityDescriptor.id?replace(".","_")}" value="${r"#{"}${entityDescriptor.name}${r"}"}" <#if entityDescriptor.required>required="true" requiredMessage="${r"#{"}${bundle}.Edit${entityName}RequiredMessage_${entityDescriptor.id?replace(".","_")}${r"}"}"</#if>>
+                            <f:selectItem itemLabel="${r"#{"}${bundle}.SelectOneMessage${r"}"}"/>
+                            <f:selectItems value="${r"#{"}${entityDescriptor.valuesGetter}${r"}"}"
+                                           var="${entityDescriptor.id?replace(".","_")}Item"
+                                           itemValue="${r"#{"}${entityDescriptor.id?replace(".","_")}Item${r"}"}"/>
+                        </p:selectOneMenu>
+    <#elseif entityDescriptor.relationshipMany>
+                        <p:selectManyMenu id="${entityDescriptor.id?replace(".","_")}" value="${r"#{"}${entityDescriptor.name}${r"}"}" <#if entityDescriptor.required>required="true" requiredMessage="${r"#{"}${bundle}.Edit${entityName}RequiredMessage_${entityDescriptor.id?replace(".","_")}${r"}"}"</#if>>
+                            <f:selectItems value="${r"#{"}${entityDescriptor.valuesGetter}${r"}"}"
+                                           var="${entityDescriptor.id?replace(".","_")}Item"
+                                           itemValue="${r"#{"}${entityDescriptor.id?replace(".","_")}Item${r"}"}"/>
+                        </p:selectManyMenu>
+    <#else>
+                        <p:inputText id="${entityDescriptor.id?replace(".","_")}" value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${r"#{"}${bundle}.Edit${entityName}Title_${entityDescriptor.id?replace(".","_")}${r"}"}" <#if entityDescriptor.required>required="true" requiredMessage="${r"#{"}${bundle}.Edit${entityName}RequiredMessage_${entityDescriptor.id?replace(".","_")}${r"}"}"</#if>/>
+    </#if>
 </#list>
-    </${pfTagPrefix}:panelGrid>
-</${htmlTagPrefix}:form>
+                    </p:panelGrid>
+                    <p:commandButton actionListener="${r"#{"}${managedBean}${r".update}"}" value="${r"#{"}${bundle}.Save${r"}"}" update="display,:${entityName}ListForm:datalist,:growl" oncomplete="handleSubmit(args, '${entityName}EditDialog');"/>
+                    <p:commandButton value="${r"#{"}${bundle}.Cancel${r"}"}" onclick="${entityName}EditDialog.hide()"/>
+                </h:panelGroup>
+            </h:form>
+        </p:dialog>
+
+    </ui:composition>
+</html>
