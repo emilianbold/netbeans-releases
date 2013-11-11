@@ -135,7 +135,7 @@ public final class KarmaExecutable {
                 .run(getStartDescriptor(runInfo, countDownTask));
         assert task != null : karmaPath;
         try {
-            countDownLatch.await(1, TimeUnit.MINUTES);
+            countDownLatch.await(15, TimeUnit.SECONDS);
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         }
@@ -174,7 +174,8 @@ public final class KarmaExecutable {
                 .frontWindowOnError(false)
                 .outLineBased(true)
                 .errLineBased(true)
-                .outConvertorFactory(new ServerLineConvertorFactory(runInfo, serverStartTask));
+                .outConvertorFactory(new ServerLineConvertorFactory(runInfo, serverStartTask))
+                .postExecution(serverStartTask);
     }
 
     private ExecutionDescriptor getRunDescriptor() {
