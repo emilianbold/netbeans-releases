@@ -271,6 +271,11 @@ public final class SubSequenceTokenList<T extends TokenId> implements TokenList<
     }
 
     @Override
+    public StringBuilder dumpInfo(StringBuilder sb) {
+        return sb;
+    }
+
+    @Override
     public String dumpInfoType() {
         return "SubSeqTL";
     }

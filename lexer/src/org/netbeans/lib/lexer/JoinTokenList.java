@@ -763,7 +763,7 @@ public final class JoinTokenList<T extends TokenId> implements MutableTokenList<
 //                );
         }
         assert (tokenList.joinInfo() == null) : "Non-null joinInfo in tokenList " +
-                tokenList.dumpInfo(null) + "\n" + tokenListList;
+                tokenList.dumpInfo(new StringBuilder(256)) + "\n" + tokenListList;
         tokenList.setJoinInfo(new EmbeddedJoinInfo<T>(this, joinTokenCount, tokenListIndex));
         return tokenList;
     }
@@ -897,10 +897,8 @@ public final class JoinTokenList<T extends TokenId> implements MutableTokenList<
         return null;
     }
 
+    @Override
     public StringBuilder dumpInfo(StringBuilder sb) {
-        if (sb == null) {
-            sb = new StringBuilder(256);
-        }
         sb.append("joinTokenCount=").append(joinTokenCount).
                 append(", activeTokenListIndex=").append(activeTokenListIndex).
                 append(", JI<").append(activeStartJoinIndex).append(",").
@@ -926,7 +924,7 @@ public final class JoinTokenList<T extends TokenId> implements MutableTokenList<
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(512);
-        sb = dumpInfo(sb);
+        dumpInfo(sb);
         return LexerUtilsConstants.appendTokenList(sb, this).toString();
     }
 

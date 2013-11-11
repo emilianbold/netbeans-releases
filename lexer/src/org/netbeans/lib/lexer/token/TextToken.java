@@ -111,6 +111,7 @@ public class TextToken<T extends TokenId> extends AbstractToken<T> {
     public AbstractToken<T> markNoDefaultEmbedding() {
         CustomTextToken<T> token = new CustomTextToken<T>(id(), text, text.length());
         token.setTokenList(tokenList);
+        token.setRawOffset(rawOffset);
         AbstractToken<T> t = token.markNoDefaultEmbedding();
         assert (t == null);
         return token;

@@ -204,7 +204,8 @@ public final class TokenHierarchyUpdate {
         UpdateItem<T> item = tokenListListItem(languagePath);
         if (item != null) {
             if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("THU.updateCreateOrRemoveEmbedding() add=" + add + ": " + addedOrRemovedTokenList.dumpInfo(null));
+                LOG.fine("THU.updateCreateOrRemoveEmbedding() add=" + add + ": " +
+                    addedOrRemovedTokenList.dumpInfo(new StringBuilder(256)));
             }
             if (add) {
                 item.tokenListListUpdate.markAddedMember(addedOrRemovedTokenList);

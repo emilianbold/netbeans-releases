@@ -51,6 +51,7 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.editor.util.ArrayUtilities;
+import org.netbeans.lib.lexer.inc.IncTokenList;
 import org.netbeans.lib.lexer.inc.MutableTokenList;
 import org.netbeans.lib.lexer.inc.SnapshotTokenList;
 import org.netbeans.lib.lexer.inc.TokenHierarchyEventInfo;
@@ -452,6 +453,13 @@ public final class LexerUtilsConstants {
         if (tokenList instanceof EmbeddedTokenList) {
             ((EmbeddedTokenList<?,?>)tokenList).updateModCount();
         }
+        if (tokenList instanceof IncTokenList) {
+            String error = ((IncTokenList<?>)tokenList).checkConsistency();
+            if (error != null) {
+                return error;
+            }
+        }
+        
         int startOffset = tokenList.startOffset();
         int lastOffset = startOffset;
         for (int i = 0; i < tokenCountCurrent; i++) {

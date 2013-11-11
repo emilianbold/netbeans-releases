@@ -214,6 +214,11 @@ public final class FilterSnapshotTokenList<T extends TokenId> implements TokenLi
     }
 
     @Override
+    public StringBuilder dumpInfo(StringBuilder sb) {
+        return sb;
+    }
+
+    @Override
     public String dumpInfoType() {
         return "FilterSnapshotTL";
     }

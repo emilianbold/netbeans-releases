@@ -636,10 +636,8 @@ extends FlyOffsetGapList<TokenOrEmbedding<ET>> implements MutableTokenList<ET>, 
         
     }
 
+    @Override
     public StringBuilder dumpInfo(StringBuilder sb) {
-        if (sb == null) {
-            sb = new StringBuilder(50);
-        }
         if (isRemoved()) {
             sb.append("REMOVED-");
         }

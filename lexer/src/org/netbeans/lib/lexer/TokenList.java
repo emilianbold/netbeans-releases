@@ -323,6 +323,15 @@ public interface TokenList<T extends TokenId> {
     boolean isRemoved();
 
     /**
+     * Dump extra information (not token infos)
+     * about this token list to the given string builder.
+     *
+     * @param sb non-null string builder.
+     * @return sb passed as an argument.
+     */
+    StringBuilder dumpInfo(StringBuilder sb);
+
+    /**
      * Type of this token list for dump info purpose.
      *
      * @return textual token list type.

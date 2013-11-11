@@ -555,6 +555,11 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
     }
 
     @Override
+    public StringBuilder dumpInfo(StringBuilder sb) {
+        return sb;
+    }
+
+    @Override
     public String dumpInfoType() {
         return "SnapshotTL";
     }

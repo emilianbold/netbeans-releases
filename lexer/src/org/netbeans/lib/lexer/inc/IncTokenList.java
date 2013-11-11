@@ -399,6 +399,20 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
         this.inputSourceText = text;
     }
 
+    public String checkConsistency() {
+        if (offsetGapLength() < 0) {
+            return "offsetGapLength=" + offsetGapLength() + " < 0; offsetGapStart=" + offsetGapStart(); // NOI18N
+        }
+        return null;
+    }
+
+    @Override
+    public StringBuilder dumpInfo(StringBuilder sb) {
+        sb.append("offGap(o=").append(offsetGapStart()). // NOI18N
+                append(",l=").append(offsetGapLength()).append(")"); // NOI18N
+        return sb;
+    }
+
     @Override
     public String dumpInfoType() {
         return "ITL";

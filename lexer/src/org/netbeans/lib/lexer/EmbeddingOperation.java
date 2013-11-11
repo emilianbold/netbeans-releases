@@ -187,8 +187,9 @@ public class EmbeddingOperation {
                 sb.append(" ROOT-"); // NOI18N
                 LexerUtilsConstants.appendIdentityHashCode(sb, rootTokenList);
                 sb.append(" for ").append(embeddedLanguagePath.mimePath()). // NOI18N
-                        append(", ").append(embedding).append(": "). // NOI18N
-                        append(existingEtl.dumpInfo(null)).append(", initTokensInNew="). // NOI18N
+                        append(", ").append(embedding).append(": "); // NOI18N
+                existingEtl.dumpInfo(sb);
+                sb.append(", initTokensInNew="). // NOI18N
                         append(initTokensInNew).append('\n');
                 LOG.fine(sb.toString());
                 if (LOG.isLoggable(Level.FINER)) { // Include stack trace of the creation
@@ -323,7 +324,7 @@ public class EmbeddingOperation {
         }
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("@@@@@@@@@@ EXPLICIT-EMBEDDING-CREATED for " + embeddedLanguagePath.mimePath()
-                    + ", " + embedding + ": " + etl.dumpInfo(null) + '\n');
+                    + ", " + embedding + ": " + etl.dumpInfo(new StringBuilder(256)) + '\n');
             if (LOG.isLoggable(Level.FINER)) { // Include stack trace of the creation
                 LOG.log(Level.INFO, "Explicit embedding created by:", new Exception());
             }
