@@ -48,6 +48,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.gsf.testrunner.api.Manager;
@@ -57,6 +58,7 @@ import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 
 public final class TestRunner {
@@ -75,9 +77,11 @@ public final class TestRunner {
     private static final String TEST_FAILURE = "$NB$netbeans testFailure"; // NOI18N
     private static final String NB_VALUE_REGEX = "\\$NB\\$(.+)\\$NB\\$"; // NOI18N
     private static final String NAME_REGEX = "name=" + NB_VALUE_REGEX; // NOI18N
+    private static final String BROWSER_REGEX = "browser=" + NB_VALUE_REGEX; // NOI18N
     private static final String DURATION_REGEX = "duration=" + NB_VALUE_REGEX; // NOI18N
     private static final String DETAILS_REGEX = "details=" + NB_VALUE_REGEX; // NOI18N
     private static final Pattern NAME_PATTERN = Pattern.compile(NAME_REGEX);
+    private static final Pattern BROWSER_NAME_PATTERN = Pattern.compile(BROWSER_REGEX + " " + NAME_REGEX); // NOI18N
     private static final Pattern NAME_DURATION_PATTERN = Pattern.compile(NAME_REGEX + " " + DURATION_REGEX); // NOI18N
     private static final Pattern NAME_DETAILS_DURATION_PATTERN = Pattern.compile(NAME_REGEX + " " + DETAILS_REGEX + " " + DURATION_REGEX); // NOI18N
 
@@ -95,7 +99,14 @@ public final class TestRunner {
     }
 
     public void process(String line) {
-        if (line.startsWith(BROWSER_START)) {
+        LOGGER.finest(line);
+        if (line.startsWith(TEST)) {
+            testFinished(line);
+        } else if (line.startsWith(SUITE_START)) {
+            suiteStarted(line);
+        } else if (line.startsWith(SUITE_END)) {
+            suiteFinished(line);
+        } else if (line.startsWith(BROWSER_START)) {
             if (browserCount.incrementAndGet() == 1) {
                 sessionStarted(line);
             }
@@ -103,15 +114,9 @@ public final class TestRunner {
             if (browserCount.decrementAndGet() == 0) {
                 sessionFinished(line);
             }
-        } else if (line.startsWith(SUITE_START)) {
-            suiteStarted(line);
-        } else if (line.startsWith(SUITE_END)) {
-            suiteFinished(line);
-        } else if (line.startsWith(TEST)) {
-            testFinished(line);
         } else {
-            assert false : line;
             LOGGER.log(Level.FINE, "Unexpected line: {0}", line);
+            assert false : line;
         }
     }
 
@@ -144,26 +149,38 @@ public final class TestRunner {
         testSession = null;
     }
 
+    @NbBundle.Messages({
+        "# {0} - browser name",
+        "# {1} - suite name",
+        "TestRunner.suite.name=[{0}] {1}",
+    })
     private void suiteStarted(String line) {
         assert testSession != null;
+        if (testSuite != null) {
+            // can happen for more browsers and last browser suite
+            suiteFinished(null);
+        }
         assert testSuite == null;
         assert testSuiteRuntime == 0;
         String name = line;
-        Matcher matcher = NAME_PATTERN.matcher(line);
+        Matcher matcher = BROWSER_NAME_PATTERN.matcher(line);
         if (matcher.find()) {
-            name = matcher.group(1);
+            name = Bundle.TestRunner_suite_name(matcher.group(1), matcher.group(2));
         } else {
-            assert false : line;
             LOGGER.log(Level.FINE, "Unexpected suite line: {0}", line);
+            assert false : line;
         }
         testSuite = new TestSuite(name);
         testSession.addSuite(testSuite);
         getManager().displaySuiteRunning(testSession, testSuite.getName());
     }
 
-    private void suiteFinished(String line) {
+    private void suiteFinished(@NullAllowed String line) {
         assert testSession != null;
-        assert testSuite != null;
+        if (testSuite == null) {
+            // current suite already finished
+            return;
+        }
         getManager().displayReport(testSession, testSession.getReport(testSuiteRuntime), true);
         testSuite = null;
         testSuiteRuntime = 0;
@@ -178,8 +195,8 @@ public final class TestRunner {
         } else if (line.startsWith(TEST_IGNORE)) {
             testIgnore(line);
         } else {
-            assert false : line;
             LOGGER.log(Level.FINE, "Unexpected test line: {0}", line);
+            assert false : line;
         }
     }
 
@@ -190,8 +207,8 @@ public final class TestRunner {
             long runtime = Long.parseLong(matcher.group(2));
             addTestCase(name, Status.PASSED, runtime);
         } else {
-            assert false : line;
             LOGGER.log(Level.FINE, "Unexpected test PASS line: {0}", line);
+            assert false : line;
         }
     }
 
@@ -204,8 +221,8 @@ public final class TestRunner {
             long runtime = Long.parseLong(matcher.group(3));
             addTestCase(name, Status.FAILED, runtime, trouble);
         } else {
-            assert false : line;
             LOGGER.log(Level.FINE, "Unexpected test FAILURE line: {0}", line);
+            assert false : line;
         }
     }
 
@@ -226,8 +243,8 @@ public final class TestRunner {
             String name = matcher.group(1);
             addTestCase(name, Status.IGNORED);
         } else {
-            assert false : line;
             LOGGER.log(Level.FINE, "Unexpected test IGNORE line: {0}", line);
+            assert false : line;
         }
     }
 

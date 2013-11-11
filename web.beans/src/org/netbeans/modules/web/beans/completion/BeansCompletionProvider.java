@@ -168,12 +168,12 @@ public class BeansCompletionProvider implements CompletionProvider {
             }
 
             switch (context.getCompletionType()) {
-                case ATTRIBUTE_VALUE:
-                    anchorOffset = BeansCompletionManager.getDefault().completeAttributeValues(context, completionItems);
-                    break;
-                case ATTRIBUTE:
-                    anchorOffset = BeansCompletionManager.getDefault().completeAttributes(context, completionItems);
-                    break;
+//                case ATTRIBUTE_VALUE:
+//                    anchorOffset = BeansCompletionManager.getDefault().completeAttributeValues(context, completionItems);
+//                    break;
+//                case ATTRIBUTE:
+//                    anchorOffset = BeansCompletionManager.getDefault().completeAttributes(context, completionItems);
+//                    break;
 //                case TAG:
 //                    anchorOffset = BeansCompletionManager.getDefault().completeElements(context, completionItems);
 //                    break;

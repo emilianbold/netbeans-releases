@@ -40,12 +40,31 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-var projectConf = require('${projectConfig}');
+var FILE_SEPARATOR = process.env.FILE_SEPARATOR;
+var PROJECT_CONFIG = process.env.PROJECT_CONFIG;
+var PROJECT_WEB_ROOT = process.env.PROJECT_WEB_ROOT;
+var COVERAGE = process.env.COVERAGE;
+var DEBUG = process.env.DEBUG;
+var AUTOWATCH = process.env.AUTOWATCH;
+var KARMA_NETBEANS_REPORTER = process.env.KARMA_NETBEANS_REPORTER;
+
+var BROWSER_COUNT_MESSAGE = '$NB$netbeans browserCount %d';
+
+var util = require('util');
+var projectConf = require(PROJECT_CONFIG);
+
+var printMessage = function() {
+    var args = Array.prototype.slice.call(arguments);
+    process.stdout.write(util.format.apply(null, args) + '\n');
+};
+var arrayUnique = function(input) {
+    return input.filter(function (e, i, arr) {
+        return arr.lastIndexOf(e) === i;
+    });
+};
 
 module.exports = function(config) {
     projectConf(config);
-
-    var fileSeparator = '${fileSeparator}';
 
     // base path
     if (config.basePath) {
@@ -53,10 +72,10 @@ module.exports = function(config) {
                 || config.basePath.substr(1, 2) === ':\\') { // windows
             // absolute path, do nothing
         } else {
-            config.basePath = '${projectWebRoot}' + fileSeparator + config.basePath;
+            config.basePath = PROJECT_WEB_ROOT + FILE_SEPARATOR + config.basePath;
         }
     } else {
-        config.basePath = '${projectWebRoot}' + fileSeparator;
+        config.basePath = PROJECT_WEB_ROOT + FILE_SEPARATOR;
     }
 
     config.reporters = config.reporters || [];
@@ -64,48 +83,56 @@ module.exports = function(config) {
         //'progress',
         'netbeans'
     ]);
-    <#if coverage>
-    config.reporters = config.reporters.concat([
-        'coverage'
-    ]);
-    </#if>
-    config.reporters = config.reporters.filter(function (e, i, arr) {
-        return arr.lastIndexOf(e) === i;
-    });
+    if (COVERAGE) {
+        config.reporters = config.reporters.concat([
+            'coverage'
+        ]);
+    }
+    config.reporters = arrayUnique(config.reporters);
+
     config.plugins = config.plugins || [];
+    if (DEBUG) {
+        config.plugins = config.plugins.concat([
+            'karma-chrome-launcher'
+        ]);
+    }
     config.plugins = config.plugins.concat([
-        'karma-chrome-launcher',
-        '${karmaNetbeansReporter}'
+        KARMA_NETBEANS_REPORTER
     ]);
-    <#if coverage>
-    config.plugins = config.plugins.concat([
-        'karma-coverage'
-    ]);
-    </#if>
-    config.plugins = config.plugins.filter(function (e, i, arr) {
-        return arr.lastIndexOf(e) === i;
-    });
-    config.browsers = ['Chrome'];
+    if (COVERAGE) {
+        config.plugins = config.plugins.concat([
+            'karma-coverage'
+        ]);
+    }
+    config.plugins = arrayUnique(config.plugins);
+
+    if (DEBUG) {
+        config.browsers = ['Chrome'];
+    }
+    printMessage(BROWSER_COUNT_MESSAGE, config.browsers.length);
+
     config.colors = true;
-    config.autoWatch = false;
+
+    config.autoWatch = AUTOWATCH;
+
     config.singleRun = false;
 
-    <#if coverage>
-    config.preprocessors = config.preprocessors || {};
-    var projectWebRootLength = '${projectWebRoot}'.length + fileSeparator.length;
-    for (var i = 0; i < config.files.length; ++i) {
-        var file = config.files[i];
-        if (file.substr(0, projectWebRootLength) === '${projectWebRoot}' + fileSeparator) {
-            config.preprocessors[file] = config.preprocessors[file] || [];
-            config.preprocessors[file].push(['coverage']);
+    if (COVERAGE) {
+        config.preprocessors = config.preprocessors || {};
+        var projectWebRootLength = PROJECT_WEB_ROOT.length + FILE_SEPARATOR.length;
+        for (var i = 0; i < config.files.length; ++i) {
+            var file = config.files[i];
+            if (file.substr(0, projectWebRootLength) === PROJECT_WEB_ROOT + FILE_SEPARATOR) {
+                config.preprocessors[file] = config.preprocessors[file] || [];
+                config.preprocessors[file].push(['coverage']);
+            }
         }
+        // XXX
+        config.coverageReporter = {
+            type: 'cobertura',
+            dir: 'coverage' + fileSeparator,
+            file: 'cobertura.xml'
+        };
     }
-    // XXX
-    config.coverageReporter = {
-        type: 'cobertura',
-        dir: 'coverage' + fileSeparator,
-        file: 'cobertura.xml'
-    }
-    </#if>
 
 };
