@@ -1090,7 +1090,7 @@ public final class MakeActionProvider implements ActionProvider {
                             profile.setArgs(new String[]{"-c", "\"'"+compilerPath+"' "+command+"\""}); // NOI18N
                             Shell shell = WindowsSupport.getInstance().getActiveShell();
                             String shellPath = hostInfo.getShell();
-                            if (shell.type == Shell.ShellType.CYGWIN && compilerSet.getCompilerFlavor().isMinGWCompiler()) {
+                            if (compilerSet.getCompilerFlavor().isMinGWCompiler() && shell != null && shell.type == Shell.ShellType.CYGWIN) {
                                 Tool make = compilerSet.findTool(PredefinedToolKind.MakeTool);
                                 if (make != null) {
                                     String path = make.getPath();
@@ -1100,8 +1100,10 @@ public final class MakeActionProvider implements ActionProvider {
                                     }
                                 }
                             }
-                            shellPath = shellPath.replace('\\', '/'); // NOI18N
-                            compilerPath = shellPath;
+                            if (shellPath != null) {
+                                shellPath = shellPath.replace('\\', '/'); // NOI18N
+                                compilerPath = shellPath;
+                            }
                         } catch (IOException ex) {
                             return false;
                         } catch (CancellationException ex) {
