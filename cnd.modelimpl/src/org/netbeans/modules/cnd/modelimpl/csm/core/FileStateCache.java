@@ -157,7 +157,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
         private final Reference<PreprocessorStatePair> value;
         private int count;
         private Value(PreprocessorStatePair value){
-            if (CndTraceFlags.WEAK_REFS_HOLDERS) {
+            if (CndTraceFlags.WEAK_REFS_HOLDERS_FILE_STATE) {
                 this.value = new WeakReference<PreprocessorStatePair>(value);
             } else {
                 this.value = new SoftReference<PreprocessorStatePair>(value);
