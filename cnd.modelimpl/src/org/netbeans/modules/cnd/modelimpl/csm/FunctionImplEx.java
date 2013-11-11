@@ -238,7 +238,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                         level++;
                         break;
                     case CPPTokenTypes.SCOPE:
-                        if (id != null && level == 0) {
+                        if (id != null && level == 0 && id.length()>0) {
                             l.add(manager.getString(id));
                         }
                         break;
