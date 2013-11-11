@@ -165,7 +165,9 @@ public class DirectoryReaderFS implements DirectoryReader {
                 cache.clear();
                 return;
             }
-        } catch (ConnectException | ExecutionException ex) {
+        } catch (ConnectException ex) {
+            ex.printStackTrace(System.err);
+        } catch (ExecutionException ex) {
             ex.printStackTrace(System.err);
         } finally {
             RemoteLogger.finest("Communication #{0} with fs_server for directry {1}: ({2} entries) took {3} ms",

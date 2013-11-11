@@ -538,7 +538,11 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     // and DirectoryReaderFS.isValid()  is set to false.
                     // In this case we need to fallback to the default (sftp) implementation
                     // TODO: consider redesign?
-                } catch (ExecutionException | IOException ex) {
+                } catch (ExecutionException ex) {
+                    if (fsReader.isValid()) {
+                        throw ex; // process as usual
+                    } // else fall back to sftp implementation
+                } catch (IOException ex) {
                     if (fsReader.isValid()) {
                         throw ex; // process as usual
                     } // else fall back to sftp implementation
