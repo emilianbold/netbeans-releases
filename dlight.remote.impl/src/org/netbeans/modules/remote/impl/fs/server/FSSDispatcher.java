@@ -111,7 +111,7 @@ import org.openide.util.RequestProcessor;
     
     private volatile boolean valid = true;
     private final AtomicInteger attempts = new AtomicInteger();
-    private static final int MAX_ATTEMPTS = Integer.getInteger("remote.fs_server.attempts", 3);
+    private static final int MAX_ATTEMPTS = Integer.getInteger("remote.fs_server.attempts", 3); // NOI18N
     
     private final AtomicReference<String> lastErrorMessage = new AtomicReference<String>();
 
