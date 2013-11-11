@@ -514,16 +514,28 @@
         </makeTool>
       </makefileType>
       <item path="src/array.c" ex="false" tool="0" flavor2="9">
+        <cTool>
+        </cTool>
       </item>
       <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="9">
+        <cTool>
+        </cTool>
       </item>
       <item path="src/dirtab.c" ex="false" tool="0" flavor2="9">
+        <cTool>
+        </cTool>
       </item>
       <item path="src/fs_server.c" ex="false" tool="0" flavor2="9">
+        <cTool>
+        </cTool>
       </item>
       <item path="src/queue.c" ex="false" tool="0" flavor2="9">
+        <cTool>
+        </cTool>
       </item>
       <item path="src/util.c" ex="false" tool="0" flavor2="9">
+        <cTool>
+        </cTool>
       </item>
       <item path="test/test_main.c" ex="false" tool="0" flavor2="2">
         <cTool>
@@ -557,6 +569,8 @@
         </makeTool>
       </makefileType>
       <item path="src/array.c" ex="false" tool="0" flavor2="9">
+        <cTool>
+        </cTool>
       </item>
       <item path="src/array.h" ex="false" tool="3" flavor2="0">
       </item>
@@ -622,20 +636,30 @@
         </cTool>
       </folder>
       <item path="src/array.c" ex="false" tool="0" flavor2="9">
+        <cTool>
+        </cTool>
       </item>
       <item path="src/array.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="9">
+        <cTool>
+        </cTool>
       </item>
       <item path="src/dirtab.c" ex="false" tool="0" flavor2="9">
+        <cTool>
+        </cTool>
       </item>
       <item path="src/fs_server.c" ex="false" tool="0" flavor2="9">
         <cTool>
         </cTool>
       </item>
       <item path="src/queue.c" ex="false" tool="0" flavor2="9">
+        <cTool>
+        </cTool>
       </item>
       <item path="src/util.c" ex="false" tool="0" flavor2="9">
+        <cTool>
+        </cTool>
       </item>
       <item path="test/test_main.c" ex="false" tool="0" flavor2="2">
         <cTool>
