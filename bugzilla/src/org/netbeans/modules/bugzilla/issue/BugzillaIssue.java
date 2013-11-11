@@ -118,7 +118,7 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
     public static final String RESOLVE_DUPLICATE = "DUPLICATE";                                                 // NOI18N
     public static final String VCSHOOK_BUGZILLA_FIELD = "netbeans.vcshook.bugzilla.";                           // NOI18N
     private static final SimpleDateFormat CC_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");            // NOI18N
-    private static final SimpleDateFormat DUE_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");                 // NOI18N
+    static final SimpleDateFormat DUE_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");                 // NOI18N
 
     private final BugzillaRepository repository;
 
