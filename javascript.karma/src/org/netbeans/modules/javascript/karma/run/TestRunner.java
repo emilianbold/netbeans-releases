@@ -100,7 +100,13 @@ public final class TestRunner {
 
     public void process(String line) {
         LOGGER.finest(line);
-        if (line.startsWith(BROWSER_START)) {
+        if (line.startsWith(TEST)) {
+            testFinished(line);
+        } else if (line.startsWith(SUITE_START)) {
+            suiteStarted(line);
+        } else if (line.startsWith(SUITE_END)) {
+            suiteFinished(line);
+        } else if (line.startsWith(BROWSER_START)) {
             if (browserCount.incrementAndGet() == 1) {
                 sessionStarted(line);
             }
@@ -108,12 +114,6 @@ public final class TestRunner {
             if (browserCount.decrementAndGet() == 0) {
                 sessionFinished(line);
             }
-        } else if (line.startsWith(SUITE_START)) {
-            suiteStarted(line);
-        } else if (line.startsWith(SUITE_END)) {
-            suiteFinished(line);
-        } else if (line.startsWith(TEST)) {
-            testFinished(line);
         } else {
             LOGGER.log(Level.FINE, "Unexpected line: {0}", line);
             assert false : line;
