@@ -62,6 +62,7 @@ public final class KarmaPreferences {
     private static final String ENABLED = "enabled"; // NOI18N
     private static final String KARMA = "karma"; // NOI18N
     private static final String CONFIG = "config"; // NOI18N
+    private static final String AUTOWATCH = "autowatch"; // NOI18N
 
     // @GuardedBy("CACHE")
     private static final Map<Project, Preferences> CACHE = new WeakHashMap<>();
@@ -94,6 +95,14 @@ public final class KarmaPreferences {
 
     public static void setConfig(Project project, String config) {
         getPreferences(project).put(CONFIG, relativizePath(project, config));
+    }
+
+    public static boolean isAutowatch(Project project) {
+        return getPreferences(project).getBoolean(AUTOWATCH, false);
+    }
+
+    public static void setAutowatch(Project project, boolean autowatch) {
+        getPreferences(project).putBoolean(AUTOWATCH, autowatch);
     }
 
     public static void addPreferenceChangeListener(Project project, PreferenceChangeListener listener) {
