@@ -78,6 +78,8 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
 
     private final List<ParentContext> parents = new ArrayList<>();
 
+    private final KOTemplateContext templateContext = new KOTemplateContext();
+
     private String data;
 
     private boolean inForEach;
@@ -110,6 +112,9 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
     @Override
     public boolean processToken() {
         boolean processed = false;
+
+        templateContext.process(tokenSequence.token());
+
         String tokenText = tokenSequence.token().text().toString();
 
         switch (tokenSequence.token().id()) {
