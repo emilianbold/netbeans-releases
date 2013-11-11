@@ -116,12 +116,17 @@ public final class JsTestingProviders {
     /**
      * Show dialog for JS testing provider selection.
      * @return selected JS testing provider or {@code null} if none selected
+     * @see JsTestingProvider#notifyEnabled(Project, boolean)
      */
     @CheckForNull
     public JsTestingProvider selectJsTestingProvider() {
         return SelectProviderPanel.open();
     }
 
+    /**
+     * Create factory for project nodes provided by JS testing providers.
+     * @return factory for project nodes provided by JS testing providers
+     */
     public NodeFactory createJsTestingProvidersNodeFactory() {
         return new NodeFactory() {
             @Override
