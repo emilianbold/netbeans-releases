@@ -99,6 +99,7 @@ public final class TestRunner {
     }
 
     public void process(String line) {
+        LOGGER.finest(line);
         if (line.startsWith(BROWSER_START)) {
             if (browserCount.incrementAndGet() == 1) {
                 sessionStarted(line);
@@ -114,8 +115,8 @@ public final class TestRunner {
         } else if (line.startsWith(TEST)) {
             testFinished(line);
         } else {
-            assert false : line;
             LOGGER.log(Level.FINE, "Unexpected line: {0}", line);
+            assert false : line;
         }
     }
 
@@ -166,8 +167,8 @@ public final class TestRunner {
         if (matcher.find()) {
             name = Bundle.TestRunner_suite_name(matcher.group(1), matcher.group(2));
         } else {
-            assert false : line;
             LOGGER.log(Level.FINE, "Unexpected suite line: {0}", line);
+            assert false : line;
         }
         testSuite = new TestSuite(name);
         testSession.addSuite(testSuite);
@@ -194,8 +195,8 @@ public final class TestRunner {
         } else if (line.startsWith(TEST_IGNORE)) {
             testIgnore(line);
         } else {
-            assert false : line;
             LOGGER.log(Level.FINE, "Unexpected test line: {0}", line);
+            assert false : line;
         }
     }
 
@@ -206,8 +207,8 @@ public final class TestRunner {
             long runtime = Long.parseLong(matcher.group(2));
             addTestCase(name, Status.PASSED, runtime);
         } else {
-            assert false : line;
             LOGGER.log(Level.FINE, "Unexpected test PASS line: {0}", line);
+            assert false : line;
         }
     }
 
@@ -220,8 +221,8 @@ public final class TestRunner {
             long runtime = Long.parseLong(matcher.group(3));
             addTestCase(name, Status.FAILED, runtime, trouble);
         } else {
-            assert false : line;
             LOGGER.log(Level.FINE, "Unexpected test FAILURE line: {0}", line);
+            assert false : line;
         }
     }
 
@@ -242,8 +243,8 @@ public final class TestRunner {
             String name = matcher.group(1);
             addTestCase(name, Status.IGNORED);
         } else {
-            assert false : line;
             LOGGER.log(Level.FINE, "Unexpected test IGNORE line: {0}", line);
+            assert false : line;
         }
     }
 
