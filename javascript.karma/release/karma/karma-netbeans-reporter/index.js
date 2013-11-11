@@ -47,11 +47,11 @@ var NetBeansReporter = function(baseReporterDecorator) {
 
     this.BROWSER_START = '$NB$netbeans browserStart name=$NB$%s$NB$';
     this.BROWSER_END = '$NB$netbeans browserEnd name=$NB$%s$NB$';
-    this.SUITE_START = '$NB$netbeans suiteStart name=$NB$%s$NB$';
-    this.SUITE_END = '$NB$netbeans suiteEnd name=$NB$%s$NB$';
-    this.TEST_PASS = '$NB$netbeans testPass name=$NB$%s$NB$ duration=$NB$%s$NB$';
-    this.TEST_IGNORE = '$NB$netbeans testIgnore name=$NB$%s$NB$';
-    this.TEST_FAILURE = '$NB$netbeans testFailure name=$NB$%s$NB$ details=$NB$%s$NB$ duration=$NB$%s$NB$';
+    this.SUITE_START = '$NB$netbeans suiteStart browser=$NB$%s$NB$ name=$NB$%s$NB$';
+    this.SUITE_END = '$NB$netbeans suiteEnd browser=$NB$%s$NB$ name=$NB$%s$NB$';
+    this.TEST_PASS = '$NB$netbeans testPass browser=$NB$%s$NB$ name=$NB$%s$NB$ duration=$NB$%s$NB$';
+    this.TEST_IGNORE = '$NB$netbeans testIgnore browser=$NB$%s$NB$ name=$NB$%s$NB$';
+    this.TEST_FAILURE = '$NB$netbeans testFailure browser=$NB$%s$NB$ name=$NB$%s$NB$ details=$NB$%s$NB$ duration=$NB$%s$NB$';
 
 
     this.onRunStart = function(browsers) {
@@ -69,19 +69,19 @@ var NetBeansReporter = function(baseReporterDecorator) {
     this.specSuccess = function(browser, result) {
         this.checkBrowser(browser.id);
         this.checkSuite(browser, result);
-        this.printMessage(this.TEST_PASS, result.description, result.time);
+        this.printMessage(this.TEST_PASS, browser.name, result.description, result.time);
     };
 
     this.specFailure = function(browser, result) {
         this.checkBrowser(browser.id);
         this.checkSuite(browser, result);
-        this.printMessage(this.TEST_FAILURE, result.description, JSON.stringify(result.log), result.time);
+        this.printMessage(this.TEST_FAILURE, browser.name, result.description, JSON.stringify(result.log), result.time);
     };
 
     this.specSkipped = function(browser, result) {
         this.checkBrowser(browser.id);
         this.checkSuite(browser, result);
-        this.printMessage(this.TEST_IGNORE, result.description);
+        this.printMessage(this.TEST_IGNORE, browser.name, result.description);
     };
 
     this.onRunComplete = function() {
@@ -90,7 +90,7 @@ var NetBeansReporter = function(baseReporterDecorator) {
             self.checkBrowser(browserId);
             var browserResult = self.browserResults[browserId];
             if (browserResult.lastSuite) {
-                self.printMessage(self.SUITE_END, browserResult.lastSuite);
+                self.printMessage(self.SUITE_END, browserResult.name, browserResult.lastSuite);
             }
             self.printMessage(self.BROWSER_END, browserResult.name);
         });
@@ -109,10 +109,10 @@ var NetBeansReporter = function(baseReporterDecorator) {
         var suiteName = result.suite.join(' ');
         if (browserResult.lastSuite !== suiteName) {
             if (browserResult.lastSuite) {
-                this.printMessage(this.SUITE_END, browserResult.lastSuite);
+                this.printMessage(this.SUITE_END, browserResult.name, browserResult.lastSuite);
             }
             browserResult.lastSuite = suiteName;
-            this.printMessage(this.SUITE_START, suiteName);
+            this.printMessage(this.SUITE_START, browserResult.name, suiteName);
         }
     };
 
