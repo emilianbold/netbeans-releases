@@ -115,6 +115,7 @@ import org.netbeans.modules.cnd.modelimpl.content.project.FileContainer;
 import org.netbeans.modules.cnd.modelimpl.content.project.FileContainer.FileEntry;
 import org.netbeans.modules.cnd.modelimpl.content.project.GraphContainer;
 import org.netbeans.modules.cnd.modelimpl.content.project.IncludedFileContainer;
+import org.netbeans.modules.cnd.modelimpl.content.project.IncludedFileContainer.Storage;
 import org.netbeans.modules.cnd.modelimpl.content.project.ProjectComponent;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassEnumBase;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
@@ -271,9 +272,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             return;
         }
         Set<FileImpl> allFileImpls = new HashSet<FileImpl>(this.getAllFileImpls());
-        Map<CharSequence, FileEntry> storageForSelf = includedFileContainer.getStorageForProject(this);
+        Storage storageForSelf = this.includedFileContainer.getStorageForProject(this);
         if (storageForSelf != null) {
-            for (Map.Entry<CharSequence, FileEntry> entry : storageForSelf.entrySet()) {
+            for (Map.Entry<CharSequence, FileEntry> entry : storageForSelf.getInternalMap().entrySet()) {
                 FileImpl file = getFileContainer().getFile(entry.getKey(), true);
                 if (file == null || !allFileImpls.contains(file)) {
                     CndUtils.assertTrueInConsole(false, "no file enty for included file ", entry);
@@ -1776,10 +1777,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         List<CsmProject> libraries = getLibraries();
         for (CsmProject lib : libraries) {
             ProjectBase libProject = (ProjectBase) lib;
-            Map<CharSequence, FileEntry> internalMap = getIncludedLibraryStorage(libProject);
-            if (internalMap == null) {
+            Storage libStorage = getIncludedLibraryStorage(libProject);
+            if (libStorage == null) {
                 Utils.LOG.log(Level.INFO, "Can not find storage for dependent library {0}\n\tinside project {1}", new Object[]{libProject, this}); //NOI18N
             } else {
+                Map<CharSequence, FileEntry> internalMap = libStorage.getInternalMap();
                 for (Map.Entry<CharSequence, FileEntry> entry : internalMap.entrySet()) {
                     CharSequence fileName = entry.getKey();
                     FileEntry entryFromLibrary = libProject.getFileContainer().getEntry(fileName);
@@ -1848,7 +1850,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         includedFileContainer.invalidateIncludeStorage(libraryUID);
     }
 
-    Map<CharSequence, FileContainer.FileEntry> getIncludedLibraryStorage(ProjectBase includedProject) {
+    IncludedFileContainer.Storage getIncludedLibraryStorage(ProjectBase includedProject) {
         return includedFileContainer.getStorageForProject(includedProject);
     }
 
@@ -3659,7 +3661,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         assert classifierStorageKey != null : "classifierStorageKey can not be null";
         weakClassifierContainer = new WeakContainer<ClassifierContainer>(this, classifierStorageKey);
 
-        includedFileContainer = new IncludedFileContainer(aStream);
+        includedFileContainer = new IncludedFileContainer(this, aStream);
         
         uniqueName = APTSerializeUtils.readFileNameIndex(aStream, ProjectNameCache.getManager(), unitId);
         assert uniqueName != null : "uniqueName can not be null";
