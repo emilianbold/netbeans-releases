@@ -5,7 +5,7 @@
 
 <api-answers
   question-version="1.29"
-  author="yourname@netbeans.org"
+  author="testupka@netbeans.org"
 >
 
   &api-questions;
@@ -29,10 +29,11 @@
 -->
  <answer id="arch-overall">
   <p>
-      The Bugtracking SPI makes it possible to integrate bugtracking system 
+      The Bugtracking SPI/API makes it possible to integrate bugtracking system 
       providers into the IDE workflow:<br/>
-      - to create, edit, access and manage tasks via the Tasks Dashboard<br/>
-      - and to make them accessible for integration with other subsystems in the IDE - e.g. VCS, Team<br/>
+      - to access and manage bugtracking Issues via the Tasks Dashboard<br/>
+      - to make bugtracking functionality accessible for integration with other subsystems in the IDE 
+        - e.g. VCS, Team Support (aka kenai.com, java.net)<br/>
   </p>     
     <p>
       <b>Registration:</b><br/>
@@ -41,9 +42,10 @@
     </p>
     <p>
       <api name="BugrackingSPI" group="java" type="export" category="devel">
-          Enables Bugtracking modules to fully integrate into the IDE workflow.
+          Enables Bugtracking modules to fully integrate into Bugtracking Issue Management facilities 
+          and other IDE workflow.
       </api>
-      <br/>
+      <br/><br/>
       <api name="BugrackingAPI" group="java" type="export" category="devel">
           Provides Bugtracking functionality for other subsystems in the IDE.
       </api>
@@ -110,26 +112,40 @@
 -->
  <answer id="arch-usecases">
   <p>
+      The main Bugtracking SPI and API Use Cases are based on:<br/>
+      - the <a href="http://xdesign-tools.cz.oracle.com/projects/netbeans/IssueTracking/">Bugtracking UI spec.</a><br/>      
+      - the <a href="http://wiki.netbeans.org/TaskManagementUseCases">Issue Management Use Cases</a>. 
+      For additional information see also <a href="http://wiki.netbeans.org/TaskDashboardDesignSpec">Tasks Dashboard UI spec</a><br/>
+  </p>    
+      
     <usecase id="1" name="Registration and setup">
-        All registered plugins provide the capability to create and edit remote Repository configurations, 
-        to create and edit Queries and to create and edit issues for the needs of the Bugtracking UI.<br/> 
-        See UI spec XXX
-        See UI spec Taskss Dashboard
+        The Bugtracking SPI provides a way to register bugtracking plugins and 
+        to setup remote Repository configurations of one kind.
     </usecase>
-    <usecase id="2" name="Issue information">
-        Registered plugins provide basic Issue information like id, summary, priority, scheduling for the 
-        needs of the Bugtracking UI.
-        See UI spec XXX
-        See UI spec Taskss Dashboard        
+    
+    <usecase id="2" name="Accessing Issues">
+        All registered plugins provide the capability to access Issues from a Repository via:<br/>
+            - their ID<br/>
+            - based on a simple text criteria<br/>
+            - the capability to create, edit and execute more complex Queries
     </usecase>
-    <usecase id="2" name="Issue operations">
-        If available the registered plugins provide bugtracking functionality to other systems in the IDE 
-        - e.g. attaching files, closing Issues, etc.
-        See UI spec XXX
-        See UI spec Taskss Dashboard
-    </usecase>    
-        see also the basic <a href="http://wiki.netbeans.org/BugtrackingAPISPIUseCases">api/spi requirements</a>      
-  </p>
+    
+    <usecase id="3" name="Issue management">
+        For the needs of Issue Management all registered plugins provide:
+        - the capability to create and edit Issues<br/>
+        - basic Issue information like id, summary, priority, scheduling ...
+    </usecase>
+    
+    <usecase id="4" name="Automated Issue Operations">
+        All registered plugins provide bugtracking functionality (if available)
+        to other IDE workflows via the Bugtracking API.
+        - e.g. attaching files, closing Issues, etc. 
+    </usecase>
+    
+    <p>    
+        See also the more detailed <a href="http://wiki.netbeans.org/BugtrackingAPISPIUseCases">API/SPI requirements.</a>      
+    </p>
+    
  </answer>
 
 
@@ -146,7 +162,7 @@
 -->
  <answer id="arch-what">
   <p>
-   The module allows Bugtracking systems to fully integrate into the IDE workflow. 
+   The module allows to integrate Bugtracking systems into the IDE workflow. 
   </p>
  </answer>
 
@@ -181,7 +197,7 @@
 -->
  <answer id="compat-deprecation">
   <p>
-   The module introduces new SPI, it does not deprecate any existing APIs.
+   The module introduces a new SPI and API, it does not deprecate any old ones.
   </p>
  </answer>
 
@@ -236,10 +252,10 @@
  <answer id="compat-version">
   <p>
     Yes, the moudle is designed to evolve over time. 
-    Currently the module persists bugtracking repository properties (see 
-    <code>o.n.m.bugtracking.spi.RepositoryInfo</code>) and some Tasks Dashborad 
-    Settings via the standard NbPreferences API. It is expected, that it can live
-    happily with future releases as it ignores all other settings.
+    Currently the module persists bugtracking repository properties (see&nbsp; 
+    <code>o.n.m.bugtracking.spi.RepositoryInfo</code>) and some Tasks Dashboard 
+    settings via the standard NbPreferences API and ignores all other settings. 
+    It is expected, that it can live happily with future releases.
   </p>
  </answer>
 
@@ -520,9 +536,9 @@
  <answer id="exec-component">
   <p>
     No, the module does not depend on any such public property. Maybe worth to mention, 
-    that on Issue editors provided by the particular implementations, the property 
-    "highlights.property" is used internaly, on TextPanes contained in those editor components,
-    to store text higlight relevant information.
+    that on Issue editors, provided by the particular implementations, 
+    <code>&nbsp;setClientProperty("highlights.property", ...)&nbsp;</code>is used internaly
+    to store text higlight relevant information on TextPanes contained in those editor components.
   </p>
  </answer>
 
@@ -542,9 +558,11 @@
 -->
  <answer id="exec-introspection">
   <p>
-    Yes, instanceof operator is used on several places.
-    Class.getName() is used a couple of time, typicaly to use it for a Logger name. 
-    Otherwise no type relevant Class.* methods are not used.
+    Yes:<br/>
+    - the<code>&nbsp;instanceof&nbsp;</code>operator is used on several places, but all checks switching 
+    the control flow are made either on module private types or in cases like e.g.<code>&nbsp;.equals(Object)&nbsp;</code>.<br/>
+    - <code>&nbsp;Class.getName()&nbsp;</code> is used a couple of time, typicaly to use it for a Logger name. 
+    Otherwise no type relevant<code>&nbsp;Class.*&nbsp;</code>methods are not used.<br/>
   </p>
  </answer>
 
@@ -610,12 +628,12 @@
   <p>
    Yes:<br/>
    - <code>System.getProperty("netbeans.bugtracking.noOpenProjects")</code> to block 
-           creating of team repositories based on open project beineg checked out from a team server 
+           creating of team repositories based on open project beineg checked out from a Team Server 
            (e.g. kenai.com, java.net).<br/>
    - <code>System.getProperty("netbeans.bugzilla.url")</code> to override the hardcoded netbeans bugzilla url. 
            Testing purposes only.<br/>
    - <code>System.getProperty("org.netbeans.modules.bugtracking.logPasswords")</code> when logging repository 
-           information, the password isn't obfuscated.<br/>
+           information, the password isn't obfuscated. Diagnostic purposes only.<br/>
   </p>
  </answer>
 
@@ -674,7 +692,7 @@
     it is pointed out in the javadoc.
   </p>
   <p>
-    In cases in the SPI where the call might be done in AWT and a fast exection is essential it is explcitely 
+    In cases in the SPI where the call might be done in AWT and a fast exection is essential it is explicitely 
     pointed out in the javadoc.
   </p>  
  </answer>
@@ -712,7 +730,8 @@
 -->
  <answer id="format-dnd">
   <p>
-   There is some internal Tasks Dashoard clipboard DnD interaction between different dashboard containers. 
+   There is some internal Tasks Dashoard  DnD interaction between different 
+      dashboard node containers (though not<code>&nbsp;o.openide.nodes.Node</code>). 
   </p>
  </answer>
 
@@ -776,14 +795,14 @@
  <answer id="lookup-lookup">
   <p>
     The module uses default Lookup to:<br/>
-        - find registered bugtracking modules by searching for all 
-            <code>org.netbeans.modules.bugtracking.spi.BugtrackingConnector</code> instaces. 
+        - find registered bugtracking modules by searching for all
+            <code>&nbsp;org.netbeans.modules.bugtracking.spi.BugtrackingConnector&nbsp;</code>instaces. 
             Order does not matter.<br/>
         - find RepositoryQuery implementations by searching for all 
-            <code>org.netbeans.modules.bugtracking.spi.RepositoryQueryImplementations</code> instances. 
+            <code>&nbsp;org.netbeans.modules.bugtracking.spi.RepositoryQueryImplementations&nbsp;</code>instances. 
             Order does not matter.<br/>
-        - find implementations of <code>org.netbeans.modules.team.ide.spi.IDEServices</code> and 
-            <code>org.netbeans.modules.team.ide.spi.ProjectServices</code> for 1 expected instance.<br/>
+        - find implementations of <code>&nbsp;org.netbeans.modules.team.ide.spi.IDEServices&nbsp;</code>and 
+            <code>&nbsp;org.netbeans.modules.team.ide.spi.ProjectServices&nbsp;</code>for 1 expected instance.<br/>
   </p>
  </answer>
 
@@ -800,9 +819,10 @@
 -->
  <answer id="lookup-register">
   <p>
-    There are some registrations via <code>@ServiceProvider</code>:<br/>
-        - <code>javax.annotation.processing.Processor</code> to handle registrations of 
-              <code>o.n.m.bugtracking.spi.BugtrackingConnector.Registration</code> - see <code>o.n.m.bugtracking.BugtrackingRegistrationProcessor</code><br/>
+    <code>javax.annotation.processing.Processor&nbsp;</code>to handle registrations of 
+    <code>&nbsp;o.n.m.bugtracking.spi.BugtrackingConnector.Registration&nbsp;</code> 
+    - see<code>&nbsp;o.n.m.bugtracking.BugtrackingRegistrationProcessor</code>
+    <br/>
   </p>
  </answer>
 
@@ -846,8 +866,9 @@
 -->
  <answer id="perf-huge_dialogs">
   <p>
-   Yes, the Tasks Dashboard provides a tree of all known queries and the issues belonging to those queries. 
-   Typicaly it is not expected that a big amout of queries is registered and only the first 50 of issues are listed, 
+   Yes, the Tasks Dashboard provides a tree of all known Repositories, 
+   Queries associated with those Repositories and Issues coming from those Queries. 
+   Typicaly it is not expected that a big amout of Queries is registered and only the first 50 of issues are listed, 
    though it is possible for the user to change this setup. 
   </p>
  </answer>
@@ -877,10 +898,10 @@
   <p>
     No limits hardcoded. In extreme situations it might happen that a particular bugtracking 
     implementation provides a too big amount of issues (tested with thousands 
-    without running into problems). Considering the fact, that the representative amount of involved data 
+    without running into problems). Considering the fact, that the significant amount of involved data 
     is generated in the involved bugtracking plugin, it is seen as its problem 
     to handle such scenarious. The additional memory overhead caused by wrapping and handling 
-    the provided issues in the bugtracking module is unsignificant in the overall scheme of things. 
+    the provided Issues in the bugtracking module is not relevant in the overall scheme of things. 
   </p>
  </answer>
 
@@ -895,8 +916,8 @@
  <answer id="perf-mem">
   <p>
     Amount of memory is proportional to the size of opened issue and query 
-    editors as well as to the amount of queries and issues listed in the Tasks Dashboard. 
-    Exact memory consumption depends on the underlying bugtracking system implementations. 
+    editors as well as to the amount of registered repositories, queries and issues listed in the Tasks Dashboard. 
+    Exact memory consumption depends on the underlying bugtracking system implementations.<br/>
   </p>
  </answer>
 
@@ -942,7 +963,7 @@
 -->
  <answer id="perf-progress">
   <p>
-    All blocking task (e.g. like executing and underlying query implementation) are done by using RequestProcessor.
+    All long-running task (e.g. like executing and underlying query implementation) are done by using RequestProcessor.
   </p>
  </answer>
 
@@ -961,8 +982,8 @@
 -->
  <answer id="perf-scale">
   <p>
-    The amount of listed in issues in the Tasks Dashboard, though the relevant computations when (e.g. expanding) container 
-    nodes aren't done in AWT.
+    The amount of Issues listed in the Tasks Dashboard, though the relevant computations ( e.g. when expanding container 
+    nodes) aren't done in AWT.
   </p>
  </answer>
 
@@ -1008,7 +1029,7 @@
 -->
  <answer id="perf-wakeup">
   <p>
-    Registered queries are periodicaly refeshed. 
+    Registered queries are periodicaly refeshed by a customizable interval with a default value.
   </p>
  </answer>
 
@@ -1029,8 +1050,7 @@
 -->
  <answer id="resources-file">
   <p>
-    Yes it does, but the API and SPI packages are working with FileObject-s 
-    where IDE relevant files are provided as parameters.
+    Yes it does, but FileObject-s are used in cases, when working with IDE relevant files.
   </p>
  </answer>
 
