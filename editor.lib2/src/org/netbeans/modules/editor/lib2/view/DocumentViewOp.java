@@ -51,6 +51,7 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
@@ -82,7 +83,6 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.editor.settings.SimpleValueNames;
@@ -106,6 +106,9 @@ public final class DocumentViewOp
 
     // -J-Dorg.netbeans.modules.editor.lib2.view.DocumentViewOp.level=FINE
     private static final Logger LOG = Logger.getLogger(DocumentViewOp.class.getName());
+
+    // Whether use fractional metrics rendering hint
+    private static final boolean useFractionalMetrics = Boolean.getBoolean("org.netbeans.editor.aa.fractional");
 
     static final char PRINTING_SPACE = '\u00B7';
     static final char PRINTING_TAB = '\u2192';
@@ -227,6 +230,8 @@ public final class DocumentViewOp
     private PreferenceChangeListener prefsListener;
 
     Map<?, ?> renderingHints;
+    
+    Map<?, ?> extraRenderingHints;
     
     private int lengthyAtomicEdit; // Long atomic edit being performed
 
@@ -568,9 +573,20 @@ public final class DocumentViewOp
     
     void updateFontRenderContext(Graphics2D g, boolean paint) {
         if (g != null) {
+            if (!paint && ViewHierarchyImpl.SETTINGS_LOG.isLoggable(Level.FINE)) {
+                ViewHierarchyImpl.SETTINGS_LOG.fine(
+                        "DocumentView.updateFontColorSettings() Antialiasing Rendering Hints:\n    Graphics: " + // NOI18N
+                                g.getRenderingHints() + 
+                                "\n    Desktop Hints: " + renderingHints + // NOI18N
+                                "\n    Extra Hints: " + extraRenderingHints + '\n'); // NOI18N
+            }
+
             // Use rendering hints (antialiasing etc.)
             if (renderingHints != null) {
                 g.addRenderingHints(renderingHints);
+            }
+            if (extraRenderingHints != null) {
+                g.addRenderingHints(extraRenderingHints);
             }
             if (paint) {
                 if (!fontRenderContextFromPaint) {
@@ -829,11 +845,19 @@ public final class DocumentViewOp
         // Attempt to always hold non-null content of "defaultColoring" variable once it became non-null
         if (newDefaultColoring != null) {
             defaultColoring = newDefaultColoring;
-            renderingHints = (Map<?, ?>) defaultColoring.getAttribute(EditorStyleConstants.RenderingHints);
-        } else {
-            Map<?, ?> desktopHints = (Map<?, ?>) Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints"); //NOI18N
-            renderingHints = desktopHints;
+//            renderingHints = (Map<?, ?>) defaultColoring.getAttribute(EditorStyleConstants.RenderingHints);
         }
+
+        // Use desktop hints
+        renderingHints = (Map<?, ?>) Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints"); //NOI18N
+        // Possibly use fractional metrics
+        extraRenderingHints = null;
+        if (useFractionalMetrics) {
+            Map<Object, Object> hints = new HashMap<Object, Object>();
+            hints.put(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+            extraRenderingHints = hints;
+        }
+
         if (asTextField) {
             return;
         }
