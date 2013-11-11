@@ -273,7 +273,10 @@ import org.openide.util.RequestProcessor;
             srv = getOrCreateServer();
         } catch (ConnectionManager.CancellationException ex) {
             throw new java.util.concurrent.CancellationException(ex.getMessage());
-        } catch (IOException | ExecutionException ex) {
+        } catch (IOException ex) {
+            setInvalid(false);
+            throw ex;
+        } catch (ExecutionException ex) {
             setInvalid(false);
             throw ex;
         }
