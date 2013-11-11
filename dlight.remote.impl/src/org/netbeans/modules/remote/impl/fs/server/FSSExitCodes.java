@@ -52,23 +52,23 @@ public class FSSExitCodes {
 
     // see "exitcodes.h" in fs_server sources
     
-    static final int FAILURE_LOCKING_MUTEX                  = 1001;
-    static final int FAILURE_UNLOCKING_MUTEX                = 1002;
-    static final int WRONG_ARGUMENT                         = 1003;
-    static final int FAILURE_GETTING_HOME_DIR               = 1004;
-    static final int FAILURE_CREATING_STORAGE_SUPER_DIR     = 1005;
-    static final int FAILURE_ACCESSING_STORAGE_SUPER_DIR    = 1006;
-    static final int FAILURE_CREATING_STORAGE_DIR           = 1007;
-    static final int FAILURE_ACCESSING_STORAGE_DIR          = 1008;
-    static final int FAILURE_CREATING_TEMP_DIR              = 1009;
-    static final int FAILURE_ACCESSING_TEMP_DIR             = 1010;
-    static final int FAILURE_CREATING_CACHE_DIR             = 1011;
-    static final int FAILURE_ACCESSING_CACHE_DIR            = 1012;
-    static final int NO_MEMORY_EXPANDING_DIRTAB             = 1013;
-    static final int FAILED_CHDIR                           = 1014;
-    static final int FAILURE_OPENING_LOCK_FILE              = 1015;
-    static final int FAILURE_LOCKING_LOCK_FILE              = 1016;
-    static final int FAILURE_DIRTAB_DOUBLE_CACHE_OPEN       = 1017;
+    static final int FAILURE_LOCKING_MUTEX                  = 201;
+    static final int FAILURE_UNLOCKING_MUTEX                = 202;
+    static final int WRONG_ARGUMENT                         = 203;
+    static final int FAILURE_GETTING_HOME_DIR               = 204;
+    static final int FAILURE_CREATING_STORAGE_SUPER_DIR     = 205;
+    static final int FAILURE_ACCESSING_STORAGE_SUPER_DIR    = 206;
+    static final int FAILURE_CREATING_STORAGE_DIR           = 207;
+    static final int FAILURE_ACCESSING_STORAGE_DIR          = 208;
+    static final int FAILURE_CREATING_TEMP_DIR              = 209;
+    static final int FAILURE_ACCESSING_TEMP_DIR             = 210;
+    static final int FAILURE_CREATING_CACHE_DIR             = 211;
+    static final int FAILURE_ACCESSING_CACHE_DIR            = 212;
+    static final int NO_MEMORY_EXPANDING_DIRTAB             = 213;
+    static final int FAILED_CHDIR                           = 214;
+    static final int FAILURE_OPENING_LOCK_FILE              = 215;
+    static final int FAILURE_LOCKING_LOCK_FILE              = 216;
+    static final int FAILURE_DIRTAB_DOUBLE_CACHE_OPEN       = 217;
 
     static final int FS_SPECIFIC_START = FAILURE_LOCKING_MUTEX;
     static final int FS_SPECIFIC_END = FAILURE_DIRTAB_DOUBLE_CACHE_OPEN;

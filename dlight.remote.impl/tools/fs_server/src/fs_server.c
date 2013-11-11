@@ -39,7 +39,7 @@ static bool statistics = false;
 static int refresh_sleep = 1;
 
 #define FS_SERVER_MAJOR_VERSION 1
-#define FS_SERVER_MINOR_VERSION 6
+#define FS_SERVER_MINOR_VERSION 7
 
 typedef struct fs_entry {
     int /*short?*/ name_len;
@@ -50,7 +50,7 @@ typedef struct fs_entry {
     unsigned int  gid;
     unsigned int mode;
     long size;
-    long mtime;
+    long long mtime;
     char data[];
 } fs_entry;
 
@@ -119,7 +119,26 @@ static const char* decode_uint(const char* text, unsigned int* result) {
 static const char* decode_long(const char* text, long* result) {
     *result = 0;
     const char* p = text;
-    while (p - text < 24) {
+    while (p - text < 20) {
+        char c = *(p++);
+        if (isdigit(c)) {
+            *result *= 10; 
+            *result += c - '0';
+        } else if (c == 0 || isspace(c)) {
+            return p;
+        } else {
+            report_error("unexpected numeric value: '%c'\n", c);
+            return NULL;
+        }
+    }
+    report_error("numeric value too long: '%s'\n", text);
+    return NULL;
+}
+
+static const char* decode_long_long(const char* text, long long* result) {
+    *result = 0;
+    const char* p = text;
+    while (p - text < 20) {
         char c = *(p++);
         if (isdigit(c)) {
             *result *= 10; 
@@ -242,7 +261,7 @@ static fs_entry *decode_entry_response(char* buf) {
     p = decode_long(p, &tmp.size);
     if (!p) { return NULL; };
     
-    p = decode_long(p, &tmp.mtime);
+    p = decode_long_long(p, &tmp.mtime);
     if (!p) { return NULL; };
     
     p = decode_int(p, &tmp.link_len);
@@ -276,6 +295,11 @@ static void read_entries_from_cache(array/*<fs_entry>*/ *entries, FILE *cache_fp
             report_error("error: first line in cache for %s is not '%s', but is '%s'", path, path, buf);
         }
         while (fgets(buf, buf_size, cache_fp)) {
+            trace("\tread entry: %s", buf);
+            if (*buf == '\n') {
+                trace("an empty one; continuing...");
+                continue;
+            }
             fs_entry *entry = decode_entry_response(buf);
             if (entry) {
                 array_add(entries, entry);
@@ -350,6 +374,23 @@ static bool visit_dir_entries(const char* path,
     }
 }
 
+static long long get_mtime(struct stat *stat_buf) {
+    long long  result = stat_buf->st_mtime;
+    result *= 1000;
+#if __FreeBSD__
+    #if __BSD_VISIBLE
+        result += stat_buf->st_mtimespec.tv_nsec/1000000;
+    #else
+        result += stat_buf->__st_mtimensec/1000000;
+    #endif
+#elif __APPLE__
+    result += stat_buf->st_mtimespec.tv_nsec/1000000;
+#else
+    result +=  stat_buf->st_mtim.tv_nsec/1000000;    
+#endif
+    return result;
+}
+
 static bool fs_entry_creating_visitor(char* name, struct stat *stat_buf, char* link, const char* abspath, void *data) {
     fs_entry tmp;
     tmp.name_len = strlen(name);
@@ -358,7 +399,7 @@ static bool fs_entry_creating_visitor(char* name, struct stat *stat_buf, char* l
     tmp.gid = stat_buf->st_gid;
     tmp.mode = stat_buf->st_mode;
     tmp.size = stat_buf->st_size;
-    tmp.mtime = stat_buf->st_mtime;
+    tmp.mtime = get_mtime(stat_buf);
     bool is_link = S_ISLNK(stat_buf->st_mode);
     tmp.link_len = is_link ? strlen(link) : 0;
     tmp.link = is_link ? link : "";
@@ -412,14 +453,14 @@ static bool form_entry_response(char* response_buf, const int response_buf_size,
                 escape_strcpy(escaped_link, link);
             }
         }
-        snprintf(response_buf, response_buf_size, "%i %s %li %li %li %lu %lu %i %s\n",
+        snprintf(response_buf, response_buf_size, "%i %s %li %li %li %lu %lli %i %s\n",
                 escaped_name_size,
                 escaped_name,
                 (long) stat_buf.st_uid,
                 (long) stat_buf.st_gid,
                 (long) stat_buf.st_mode,
                 (unsigned long) stat_buf.st_size,
-                (unsigned long) stat_buf.st_mtime,
+                get_mtime(&stat_buf),
                 escaped_link_size,
                 escaped_link);
         return true;
@@ -661,7 +702,7 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el) {
                 }
                 if (new_entry->mtime != old_entry->mtime) {
                     differs = true;
-                    trace("refresh manager: times differ for %s/%s: %d vs %d\n", path, new_entry->name, new_entry->mtime, old_entry->mtime);
+                    trace("refresh manager: times differ for %s/%s: %lld vs %lld\n", path, new_entry->name, new_entry->mtime, old_entry->mtime);
                     break;
                 }
             }
@@ -892,8 +933,8 @@ static bool print_visitor(const char* path, int index, dirtab_element* el) {
 }
 
 int main(int argc, char* argv[]) {
-    trace("Version %d.%d\n", FS_SERVER_MAJOR_VERSION, FS_SERVER_MINOR_VERSION);    
     process_options(argc, argv);
+    trace("Version %d.%d (%s %s)\n", FS_SERVER_MAJOR_VERSION, FS_SERVER_MINOR_VERSION, __DATE__, __TIME__);
     dirtab_init();
     const char* basedir = dirtab_get_basedir();
     if (chdir(basedir)) {
