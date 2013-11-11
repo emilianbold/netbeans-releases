@@ -195,6 +195,9 @@ public final class KarmaServer {
         envVars.put("PROJECT_WEB_ROOT", webRoot.getAbsolutePath()); // NOI18N
         // XXX
         envVars.put("COVERAGE", ""); // NOI18N
+        // XXX
+        envVars.put("DEBUG", ""); // NOI18N
+        envVars.put("AUTOWATCH", KarmaPreferences.isAutowatch(project) ? "1" : ""); // NOI18N
         envVars.put("KARMA_NETBEANS_REPORTER", getNetBeansKarmaReporter().getAbsolutePath()); // NOI18N
         return envVars;
     }

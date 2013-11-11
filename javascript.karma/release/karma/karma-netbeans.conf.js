@@ -45,6 +45,7 @@ var PROJECT_CONFIG = process.env.PROJECT_CONFIG;
 var PROJECT_WEB_ROOT = process.env.PROJECT_WEB_ROOT;
 var COVERAGE = process.env.COVERAGE;
 var DEBUG = process.env.DEBUG;
+var AUTOWATCH = process.env.AUTOWATCH;
 var KARMA_NETBEANS_REPORTER = process.env.KARMA_NETBEANS_REPORTER;
 
 var BROWSER_COUNT_MESSAGE = '$NB$netbeans browserCount %d';
@@ -112,8 +113,7 @@ module.exports = function(config) {
 
     config.colors = true;
 
-    // XXX
-    config.autoWatch = false;
+    config.autoWatch = AUTOWATCH;
 
     config.singleRun = false;
 

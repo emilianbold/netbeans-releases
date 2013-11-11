@@ -45,10 +45,13 @@ package org.netbeans.modules.javascript.karma.ui.customizer;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.File;
 import java.util.List;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -92,6 +95,7 @@ public class CustomizerKarma extends JPanel {
         // data
         karmaTextField.setText(KarmaPreferences.getKarma(project));
         configTextField.setText(KarmaPreferences.getConfig(project));
+        autowatchCheckBox.setSelected(KarmaPreferences.isAutowatch(project));
         // listeners
         addListeners();
         // initial validation
@@ -107,8 +111,10 @@ public class CustomizerKarma extends JPanel {
 
     private void addListeners() {
         DocumentListener defaultDocumentListener = new DefaultDocumentListener();
+        ItemListener defaultItemListener = new DefaultItemListener();
         karmaTextField.getDocument().addDocumentListener(defaultDocumentListener);
         configTextField.getDocument().addDocumentListener(defaultDocumentListener);
+        autowatchCheckBox.addItemListener(defaultItemListener);
     }
 
     void validateData() {
@@ -133,6 +139,7 @@ public class CustomizerKarma extends JPanel {
     void storeData() {
         KarmaPreferences.setKarma(project, karmaTextField.getText());
         KarmaPreferences.setConfig(project, configTextField.getText());
+        KarmaPreferences.setAutowatch(project, autowatchCheckBox.isSelected());
     }
 
     private File getProjectDirectory() {
@@ -154,6 +161,7 @@ public class CustomizerKarma extends JPanel {
         configTextField = new JTextField();
         configBrowseButton = new JButton();
         configSearchButton = new JButton();
+        autowatchCheckBox = new JCheckBox();
 
         karmaLabel.setLabelFor(karmaTextField);
         Mnemonics.setLocalizedText(karmaLabel, NbBundle.getMessage(CustomizerKarma.class, "CustomizerKarma.karmaLabel.text")); // NOI18N
@@ -193,6 +201,8 @@ public class CustomizerKarma extends JPanel {
             }
         });
 
+        Mnemonics.setLocalizedText(autowatchCheckBox, NbBundle.getMessage(CustomizerKarma.class, "CustomizerKarma.autowatchCheckBox.text")); // NOI18N
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -215,6 +225,9 @@ public class CustomizerKarma extends JPanel {
                         .addComponent(configBrowseButton)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(configSearchButton))))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(autowatchCheckBox)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {configBrowseButton, karmaBrowseButton});
@@ -234,7 +247,9 @@ public class CustomizerKarma extends JPanel {
                     .addComponent(configLabel)
                     .addComponent(configTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(configBrowseButton)
-                    .addComponent(configSearchButton)))
+                    .addComponent(configSearchButton))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(autowatchCheckBox))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -297,6 +312,7 @@ public class CustomizerKarma extends JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private JCheckBox autowatchCheckBox;
     private JButton configBrowseButton;
     private JLabel configLabel;
     private JButton configSearchButton;
@@ -327,6 +343,15 @@ public class CustomizerKarma extends JPanel {
         }
 
         private void processChange() {
+            validateData();
+        }
+
+    }
+
+    private final class DefaultItemListener implements ItemListener {
+
+        @Override
+        public void itemStateChanged(ItemEvent e) {
             validateData();
         }
 
