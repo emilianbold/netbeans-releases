@@ -214,6 +214,8 @@ import org.openide.util.RequestProcessor;
                     checkValid();
                 } catch (ExecutionException ex) {
                     ex.printStackTrace(System.err);
+                } catch (InterruptedException ex) {
+                    // none
                 }
                 Thread.currentThread().setName(oldThreadName);
             }
@@ -234,14 +236,14 @@ import org.openide.util.RequestProcessor;
         }
     }
     
-    private void checkValid() throws ExecutionException {
+    private void checkValid() throws ExecutionException, InterruptedException {
         if (ConnectionManager.getInstance().isConnectedTo(env)) {
             FsServer srv = getServer();
             if (srv != null) {
                 NativeProcess process = srv.getProcess();
                 if (!ProcessUtils.isAlive(process)) {
                     try {
-                        int rc = process.exitValue();
+                        int rc = process.waitFor();
                         if (rc != 0) {
                             setInvalid(false);
                         }
