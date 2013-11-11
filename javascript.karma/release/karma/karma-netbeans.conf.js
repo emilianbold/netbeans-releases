@@ -44,9 +44,23 @@ var FILE_SEPARATOR = process.env.FILE_SEPARATOR;
 var PROJECT_CONFIG = process.env.PROJECT_CONFIG;
 var PROJECT_WEB_ROOT = process.env.PROJECT_WEB_ROOT;
 var COVERAGE = process.env.COVERAGE;
+var DEBUG = process.env.DEBUG;
 var KARMA_NETBEANS_REPORTER = process.env.KARMA_NETBEANS_REPORTER;
 
+var BROWSER_COUNT_MESSAGE = '$NB$netbeans browserCount %d';
+
+var util = require('util');
 var projectConf = require(PROJECT_CONFIG);
+
+var printMessage = function() {
+    var args = Array.prototype.slice.call(arguments);
+    process.stdout.write(util.format.apply(null, args) + '\n');
+};
+var arrayUnique = function(input) {
+    return input.filter(function (e, i, arr) {
+        return arr.lastIndexOf(e) === i;
+    });
+};
 
 module.exports = function(config) {
     projectConf(config);
@@ -73,12 +87,15 @@ module.exports = function(config) {
             'coverage'
         ]);
     }
-    config.reporters = config.reporters.filter(function (e, i, arr) {
-        return arr.lastIndexOf(e) === i;
-    });
+    config.reporters = arrayUnique(config.reporters);
+
     config.plugins = config.plugins || [];
+    if (DEBUG) {
+        config.plugins = config.plugins.concat([
+            'karma-chrome-launcher'
+        ]);
+    }
     config.plugins = config.plugins.concat([
-        'karma-chrome-launcher',
         KARMA_NETBEANS_REPORTER
     ]);
     if (COVERAGE) {
@@ -86,14 +103,18 @@ module.exports = function(config) {
             'karma-coverage'
         ]);
     }
-    config.plugins = config.plugins.filter(function (e, i, arr) {
-        return arr.lastIndexOf(e) === i;
-    });
-    // XXX
-    config.browsers = ['Chrome'];
+    config.plugins = arrayUnique(config.plugins);
+
+    if (DEBUG) {
+        config.browsers = ['Chrome'];
+    }
+    printMessage(BROWSER_COUNT_MESSAGE, config.browsers.length);
+
     config.colors = true;
+
     // XXX
     config.autoWatch = false;
+
     config.singleRun = false;
 
     if (COVERAGE) {
