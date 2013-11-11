@@ -166,7 +166,6 @@ public class TraceFlags {
                                                                 EXPRESSION_EVALUATOR_DEEP_VARIABLE_PROVIDER && 
                                                                 EXPRESSION_EVALUATOR_RECURSIVE_CALC && 
                                                                 EXPRESSION_EVALUATOR_EXTRA_SPEC_PARAMS_MATCHING;
-
     /** 
      * swithces off parsing function bodies
      */

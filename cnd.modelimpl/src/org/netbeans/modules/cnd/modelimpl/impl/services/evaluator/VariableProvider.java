@@ -307,9 +307,4 @@ public class VariableProvider {
     public String toString() {
         return "VariableProvider{" + "level=" + level + ", decl=" + decl + ", mapping=" + mapping + ", variableFile=" + variableFile + ", variableStartOffset=" + variableStartOffset + ", variableEndOffset=" + variableEndOffset + '}'; // NOI18N
     }        
-
-    @Override
-    public String toString() {
-        return "VariableProvider{" + "level=" + level + ", decl=" + decl + ", mapping=" + mapping + ", variableFile=" + variableFile + ", variableStartOffset=" + variableStartOffset + ", variableEndOffset=" + variableEndOffset + '}'; // NOI18N
-    }        
 }
