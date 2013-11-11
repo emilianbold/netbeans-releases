@@ -54,16 +54,16 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
 @OptionsPanelController.SubRegistration(
-    displayName="#AdvancedOption_DisplayName_WinSys",
-    id="Windows",
-    keywords="#KW_WindowOptions",
-    keywordsCategory="Appearance/Windows",
+    displayName="#Tabs_DisplayName",
+    id="DocumentTabs",
+    keywords="#KW_TabsOptions",
+    keywordsCategory="Appearance/Tabs",
     location = "Appearance"
-//    toolTip="#AdvancedOption_Tooltip_WinSys"
 )
-public class WinSysOptionsPanelController extends OptionsPanelController {
+@org.openide.util.NbBundle.Messages({"KW_TabsOptions=editor tabs, multi-row", "Tabs_DisplayName=Document Tabs"})
+public class TabsOptionsPanelController extends OptionsPanelController {
 
-    private WinSysPanel panel;
+    private TabsPanel panel;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private boolean changed;
 
@@ -106,7 +106,7 @@ public class WinSysOptionsPanelController extends OptionsPanelController {
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx( "org.netbeans.core.windows.options.WinSysOptionsPanelController" ); //NOI18N
+        return new HelpCtx( "org.netbeans.core.windows.options.TabsOptionsPanelController" ); //NOI18N
     }
 
     @Override
@@ -124,9 +124,9 @@ public class WinSysOptionsPanelController extends OptionsPanelController {
         pcs.removePropertyChangeListener(l);
     }
 
-    protected WinSysPanel getPanel() {
+    protected TabsPanel getPanel() {
         if (panel == null) {
-            panel = new WinSysPanel(this);
+            panel = new TabsPanel(this);
         }
         return panel;
     }

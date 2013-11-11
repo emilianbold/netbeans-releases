@@ -54,16 +54,15 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
 @OptionsPanelController.SubRegistration(
-    displayName="#AdvancedOption_DisplayName_WinSys",
-    id="Windows",
-    keywords="#KW_WindowOptions",
-    keywordsCategory="Appearance/Windows",
+    displayName="#Laf_DisplayName",
+    keywords="#KW_LafOptions",
+    keywordsCategory="Appearance/LaF",
     location = "Appearance"
-//    toolTip="#AdvancedOption_Tooltip_WinSys"
 )
-public class WinSysOptionsPanelController extends OptionsPanelController {
+@org.openide.util.NbBundle.Messages({"Laf_DisplayName=Look and Feel", "KW_LafOptions=Look and feel"})
+public class LafOptionsPanelController extends OptionsPanelController {
 
-    private WinSysPanel panel;
+    private LafPanel panel;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private boolean changed;
 
@@ -106,7 +105,7 @@ public class WinSysOptionsPanelController extends OptionsPanelController {
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx( "org.netbeans.core.windows.options.WinSysOptionsPanelController" ); //NOI18N
+        return new HelpCtx( "org.netbeans.core.windows.options.LafOptionsPanelController" ); //NOI18N
     }
 
     @Override
@@ -124,11 +123,23 @@ public class WinSysOptionsPanelController extends OptionsPanelController {
         pcs.removePropertyChangeListener(l);
     }
 
-    protected WinSysPanel getPanel() {
+    protected LafPanel getPanel() {
         if (panel == null) {
-            panel = new WinSysPanel(this);
+            panel = new LafPanel(this);
         }
         return panel;
+    }
+
+    @Override
+    protected void setCurrentSubcategory( String subpath ) {
+        if( "LaF".equals( subpath ) ) { //NOI18N
+            SwingUtilities.invokeLater( new Runnable() {
+                @Override
+                public void run() {
+                    getPanel().selectDarkLookAndFeel();
+                }
+            });
+        }
     }
 
     protected void changed() {
