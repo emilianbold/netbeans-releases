@@ -77,7 +77,7 @@ public class DirectoryReaderFS implements DirectoryReader {
     private static final Map<ExecutionEnvironment, DirectoryReaderFS> instances = new HashMap<ExecutionEnvironment, DirectoryReaderFS>();
     private static final Object instancesLock = new Object();
     
-    public static final boolean USE_FS_SERVER = getBoolean("remote.fs_server", true);
+    public static final boolean USE_FS_SERVER = getBoolean("remote.fs_server", false);
     public static final boolean VERBOSE_RESPONSE = Boolean.getBoolean("remote.fs_server.verbose.response");
 
     private final ExecutionEnvironment env;
