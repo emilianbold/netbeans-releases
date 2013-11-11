@@ -589,7 +589,7 @@ is divided into following sections:
             </target>
 
             <target name="-init-javame">
-                <xsl:attribute name="depends">-init-user,-init-project</xsl:attribute>
+                <xsl:attribute name="depends">-init-user,-init-project,-init-passwords</xsl:attribute>
                 <fail unless="libs.j2me_ant_ext.classpath">Classpath to J2ME Ant extension library (libs.j2me_ant_ext.classpath property) is not set. For example: location of javame/modules/org-netbeans-mobility-antext.jar file in the IDE installation directory.</fail>
                 <taskdef resource="org/netbeans/mobility/antext/defs.properties">
                     <classpath>
@@ -743,7 +743,8 @@ is divided into following sections:
                 <j2meproject1:jar manifest="${{tmp.manifest.file}}"/>
             </target>
 
-            <target name="-do-jar-extract-libs" description="Extracts all bundled libraries.">
+            <target name="-do-jar-extract-libs">
+                <xsl:attribute name="description">Extracts all bundled libraries.</xsl:attribute>
                 <mkdir dir="${{build.classes.dir}}"/>
                 <nb-extract dir="${{build.classes.dir}}" excludeManifest="true" classpath="${{javac.classpath}}" excludeclasspath="${{extra.classpath}}"/>
             </target>
@@ -827,6 +828,63 @@ is divided into following sections:
                 var others = new String(project.getProperty("manifest.others"));
                 updateManifest(others);
                 ]]></script>
+            </target>
+
+            <xsl:comment>
+                =================
+                SIGNING SECTION
+                =================
+            </xsl:comment>
+
+            <target name="-set-password">
+                <property name="sign.enabled" value="false"/>
+                <condition property="skip-sign-keystore-password-input">
+                    <or>
+                        <isfalse value="${{sign.enabled}}"/>
+                        <and>
+                            <isset property="sign.keystore"/>
+                            <isset property="sign.keystore.password"/>
+                            <not>
+                                <equals arg1="${{sign.keystore}}" arg2="" trim="true"/>
+                            </not>
+                            <not>
+                                <equals arg1="${{sign.keystore.password}}" arg2="" trim="true"/>
+                            </not>
+                        </and>
+                    </or>
+                </condition>
+                <condition property="skip-sign-alias-password-input">
+                    <or>
+                        <isfalse value="${{sign.enabled}}"/>
+                        <and>
+                            <isset property="sign.keystore"/>
+                            <isset property="sign.alias"/>
+                            <isset property="sign.alias.password"/>
+                            <not>
+                                <equals arg1="${{sign.keystore}}" arg2="" trim="true"/>
+                            </not>
+                            <not>
+                                <equals arg1="${{sign.alias}}" arg2="" trim="true"/>
+                            </not>
+                            <not>
+                                <equals arg1="${{sign.alias.password}}" arg2="" trim="true"/>
+                            </not>
+                        </and>
+                    </or>
+                </condition>
+            </target>
+            <target name="-set-keystore-password">
+                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="unless">skip-sign-keystore-password-input</xsl:attribute>
+                <nb-enter-password keystore="${{sign.keystore}}" passwordproperty="sign.keystore.password"/>
+            </target>
+            <target name="-set-alias-password">
+                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="unless">skip-sign-alias-password-input</xsl:attribute>
+                <nb-enter-password keystore="${{sign.keystore}}" keyalias="${{sign.alias}}" passwordproperty="sign.alias.password"/>
+            </target>
+            <target name="-init-passwords">
+                <xsl:attribute name="depends">-set-password,-set-keystore-password,-set-alias-password</xsl:attribute>
             </target>
 
             <xsl:comment>

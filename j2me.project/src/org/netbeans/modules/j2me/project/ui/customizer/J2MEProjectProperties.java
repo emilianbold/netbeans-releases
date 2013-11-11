@@ -115,10 +115,12 @@ import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ui.StoreGroup;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.Places;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
@@ -370,7 +372,7 @@ public final class J2MEProjectProperties {
 
         // Signning customizer
         SIGN_ENABLED_MODEL = projectGroup.createToggleButtonModel(evaluator, PROP_SIGN_ENABLED);
-        SIGN_KEYSTORE_MODEL = ModelHelper.createComboBoxModel(evaluator, PROP_SIGN_KEYSTORE, loadKeystores());
+        SIGN_KEYSTORE_MODEL = ModelHelper.createComboBoxModel(evaluator, PROP_SIGN_KEYSTORE, loadKeystores(), Utilities.toFile(project.getProjectDirectory().toURI()));
         SIGN_ALIAS_MODEL = ModelHelper.createComboBoxModel(evaluator, PROP_SIGN_ALIAS, loadAliases());
 
         //J2MEAttributesPanel
@@ -526,7 +528,18 @@ public final class J2MEProjectProperties {
 
         //store Signing properties
         if (SIGN_ENABLED_MODEL.isSelected() && SIGN_KEYSTORE_MODEL.getSelectedItem() != null) {
-            projectProperties.put(PROP_SIGN_KEYSTORE, ((KeyStoreRepository.KeyStoreBean) SIGN_KEYSTORE_MODEL.getSelectedItem()).getKeyStorePath());
+            final File ksFile = ((KeyStoreRepository.KeyStoreBean) SIGN_KEYSTORE_MODEL.getSelectedItem()).getKeyStoreFile();
+            String relativeKsPath = null;
+            if (SIGN_KEYSTORE_MODEL.getSelectedItem().equals(SIGN_KEYSTORE_MODEL.getElementAt(0))) {
+                final String ksPath = ksFile.getAbsolutePath();
+                if (ksPath.startsWith(Places.getUserDirectory().getAbsolutePath())) {
+                    relativeKsPath = ksPath.replace(Places.getUserDirectory().getAbsolutePath(), "${netbeans.user}").replace("\\", "/"); //NOI18N
+                }
+            } else {
+                final File prjDir = Utilities.toFile(project.getProjectDirectory().toURI());
+                relativeKsPath = PropertyUtils.relativizeFile(prjDir, ksFile);
+            }
+            projectProperties.put(PROP_SIGN_KEYSTORE, relativeKsPath != null ? relativeKsPath : ksFile.getAbsolutePath());
             if (SIGN_ALIAS_MODEL.getSelectedItem() != null) {
                 projectProperties.put(PROP_SIGN_ALIAS, ((KeyStoreRepository.KeyStoreBean.KeyAliasBean) SIGN_ALIAS_MODEL.getSelectedItem()).getAlias());
             }
@@ -646,10 +659,10 @@ public final class J2MEProjectProperties {
         projectGroup.store(projectProperties);
 
         //Save javac.debug
-        privateProperties.setProperty(JAVAC_DEBUG, encodeBoolean (JAVAC_DEBUG_MODEL.isSelected(), javacDebugBooleanKind));
+        privateProperties.setProperty(JAVAC_DEBUG, encodeBoolean(JAVAC_DEBUG_MODEL.isSelected(), javacDebugBooleanKind));
 
         //Save javadoc.preview
-        privateProperties.setProperty(ProjectProperties.JAVADOC_PREVIEW, encodeBoolean (JAVADOC_PREVIEW_MODEL.isSelected(), javadocPreviewBooleanKind));
+        privateProperties.setProperty(ProjectProperties.JAVADOC_PREVIEW, encodeBoolean(JAVADOC_PREVIEW_MODEL.isSelected(), javadocPreviewBooleanKind));
 
         //Save annotation processors
         StringBuilder sb = new StringBuilder();
@@ -1187,6 +1200,10 @@ public final class J2MEProjectProperties {
         }
 
         public static <T> ComboBoxModel<T> createComboBoxModel(PropertyEvaluator evaluator, String propertyName, Collection<T> items) {
+            return createComboBoxModel(evaluator, propertyName, items, null);
+        }
+
+        public static <T> ComboBoxModel<T> createComboBoxModel(PropertyEvaluator evaluator, String propertyName, Collection<T> items, @NullAllowed File projectDir) {
             if (items == null || items.isEmpty()) {
                 return new DefaultComboBoxModel<>();
             }
@@ -1194,9 +1211,10 @@ public final class J2MEProjectProperties {
             String value = evaluator.getProperty(propertyName);
             Class<?> type = items.toArray()[0].getClass();
             if (value != null) {
-                if (type.equals(KeyStoreRepository.KeyStoreBean.class)) {
+                if (type.equals(KeyStoreRepository.KeyStoreBean.class) && projectDir != null) {
+                    String absolutePath = PropertyUtils.resolveFile(projectDir, value).getAbsolutePath();
                     for (Object item : items) {
-                        if (value.equals(((KeyStoreRepository.KeyStoreBean) item).getKeyStorePath())) {
+                        if (absolutePath.equals(((KeyStoreRepository.KeyStoreBean) item).getKeyStorePath())) {
                             model.setSelectedItem(item);
                             break;
                         }
