@@ -45,7 +45,6 @@
 package org.netbeans.modules.cnd.apt.impl.support;
 
 import java.util.List;
-import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.structure.APTIncludeNext;
 import org.netbeans.modules.cnd.apt.support.APTFileSearch;
@@ -69,7 +68,7 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
     private final List<IncludeDirEntry> userIncludePaths;
     private final APTFileSearch fileSearch;
     private final FileSystem fileSystem;
-    private final int hashCode;
+    //private final int hashCode;
 //    private static final boolean TRACE = Boolean.getBoolean("apt.trace.resolver");
     
     public APTIncludeResolverImpl(FileSystem fs, CharSequence path, int baseFileIncludeDirIndex,
@@ -79,16 +78,16 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
         this.baseFile = FilePathCache.getManager().getString(path);
         this.systemIncludePaths = systemIncludePaths;
         this.userIncludePaths = userIncludePaths;
-        int aHashCode = 0;
-        if (APTTraceFlags.USE_INCLIDE_RESOLVER_CACHE) {
-            for(IncludeDirEntry entry: systemIncludePaths) {
-                aHashCode+=entry.hashCode()*31;
-            }
-            for(IncludeDirEntry entry: userIncludePaths) {
-                aHashCode+=entry.hashCode()*19;
-            }
-        }
-        hashCode = aHashCode;
+        //int aHashCode = 0;
+        //if (APTTraceFlags.USE_INCLIDE_RESOLVER_CACHE) {
+        //    for(IncludeDirEntry entry: systemIncludePaths) {
+        //        aHashCode+=entry.hashCode()*31;
+        //    }
+        //    for(IncludeDirEntry entry: userIncludePaths) {
+        //        aHashCode+=entry.hashCode()*19;
+        //    }
+        //}
+        //hashCode = aHashCode;
         this.baseFileIncludeDirIndex = baseFileIncludeDirIndex;
         this.fileSearch = fileSearch;
 //        if (TRACE) { 
@@ -122,28 +121,28 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
         return baseFile;
     }
 
-    @Override
-    public int hashCode() {
-        return hashCode;
-    }
+    //@Override
+    //public int hashCode() {
+    //    return hashCode;
+    //}
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final APTIncludeResolverImpl other = (APTIncludeResolverImpl) obj;
-        if (this.systemIncludePaths != other.systemIncludePaths && (this.systemIncludePaths == null || !this.systemIncludePaths.equals(other.systemIncludePaths))) {
-            return false;
-        }
-        if (this.userIncludePaths != other.userIncludePaths && (this.userIncludePaths == null || !this.userIncludePaths.equals(other.userIncludePaths))) {
-            return false;
-        }
-        return true;
-    }
+    //@Override
+    //public boolean equals(Object obj) {
+    //    if (obj == null) {
+    //        return false;
+    //    }
+    //    if (getClass() != obj.getClass()) {
+    //        return false;
+    //    }
+    //    final APTIncludeResolverImpl other = (APTIncludeResolverImpl) obj;
+    //    if (this.systemIncludePaths != other.systemIncludePaths && (this.systemIncludePaths == null || !this.systemIncludePaths.equals(other.systemIncludePaths))) {
+    //        return false;
+    //    }
+    //    if (this.userIncludePaths != other.userIncludePaths && (this.userIncludePaths == null || !this.userIncludePaths.equals(other.userIncludePaths))) {
+    //        return false;
+    //    }
+    //    return true;
+    //}
     
     ////////////////////////////////////////////////////////////////////////////
     // implementation details    
@@ -164,18 +163,18 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
                     PathsCollectionIterator paths =  new PathsCollectionIterator(userIncludePaths, systemIncludePaths, baseFileIncludeDirIndex+1);
                     result = APTIncludeUtils.resolveFilePath(paths, includedFile, baseFileIncludeDirIndex+1);
                 } else {
-                    if (APTTraceFlags.USE_INCLIDE_RESOLVER_CACHE) {
-                        //count++;
-                        result = ResolverResultsCache.getResolvedPath(includedFile, this);
-                    }
+                    //if (APTTraceFlags.USE_INCLIDE_RESOLVER_CACHE) {
+                    //    //count++;
+                    //    result = ResolverResultsCache.getResolvedPath(includedFile, this);
+                    //}
                     if (result == null) {
                         PathsCollectionIterator paths = new PathsCollectionIterator(userIncludePaths, systemIncludePaths, 0);
                         result = APTIncludeUtils.resolveFilePath(paths, includedFile, 0);
-                        if (APTTraceFlags.USE_INCLIDE_RESOLVER_CACHE) {
-                            if (result != null) {
-                                ResolverResultsCache.putResolvedPath(includedFile, this, result);
-                            }
-                        }
+                        //if (APTTraceFlags.USE_INCLIDE_RESOLVER_CACHE) {
+                        //    if (result != null) {
+                        //        ResolverResultsCache.putResolvedPath(includedFile, this, result);
+                        //    }
+                        //}
                     } else {
                         //hit++;
                         //if (hit%10000 == 0) {
