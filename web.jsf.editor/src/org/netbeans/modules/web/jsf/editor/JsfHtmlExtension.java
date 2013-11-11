@@ -422,7 +422,7 @@ public class JsfHtmlExtension extends HtmlExtension {
     //<cc:render/insertFacet name="|" />  
     //</cc:implementation>
     //offsers facet declarations only from within this document
-    private void completeFacetsInCCImpl(CompletionContext context, List<CompletionItem> items, String ns, OpenTag openTag, JsfSupportImpl jsfs) {
+    private static void completeFacetsInCCImpl(CompletionContext context, List<CompletionItem> items, String ns, OpenTag openTag, JsfSupportImpl jsfs) {
         if ("http://java.sun.com/jsf/composite".equalsIgnoreCase(ns) || "http://xmlns.jcp.org/jsf/composite".equalsIgnoreCase(ns)) {
             String tagName = openTag.unqualifiedName().toString();
             if ("renderFacet".equalsIgnoreCase(tagName) || "insertFacet".equalsIgnoreCase(tagName)) { //NOI18N
@@ -441,7 +441,7 @@ public class JsfHtmlExtension extends HtmlExtension {
 
     //2.<f:facet name="|">
     //offsers all facetes
-    private void completeFacets(CompletionContext context, List<CompletionItem> items, String ns, OpenTag openTag, JsfSupportImpl jsfs) {
+    private static void completeFacets(CompletionContext context, List<CompletionItem> items, String ns, OpenTag openTag, JsfSupportImpl jsfs) {
         if ("http://java.sun.com/jsf/core".equalsIgnoreCase(ns) || "http://xmlns.jcp.org/jsf/core".equalsIgnoreCase(ns)) {
             String tagName = openTag.unqualifiedName().toString();
             if ("facet".equalsIgnoreCase(tagName)) { //NOI18N
@@ -467,7 +467,7 @@ public class JsfHtmlExtension extends HtmlExtension {
         }
     }
 
-    private void completeValueAccordingToType(CompletionContext context, List<CompletionItem> items, String ns, OpenTag openTag, JsfSupportImpl jsfs) {
+    private static void completeValueAccordingToType(CompletionContext context, List<CompletionItem> items, String ns, OpenTag openTag, JsfSupportImpl jsfs) {
         Library lib = jsfs.getLibrary(ns);
         if (lib == null) {
             return;
@@ -506,7 +506,7 @@ public class JsfHtmlExtension extends HtmlExtension {
         }
     }
 
-    private void completeXMLNSAttribute(CompletionContext context, List<CompletionItem> items, JsfSupportImpl jsfs) {
+    private static void completeXMLNSAttribute(CompletionContext context, List<CompletionItem> items, JsfSupportImpl jsfs) {
         if (context.getAttributeName().toLowerCase(Locale.ENGLISH).startsWith("xmlns")) { //NOI18N
             //xml namespace completion for facelets namespaces
             Set<String> nss = NamespaceUtils.getAvailableNss(jsfs.getLibraries(), jsfs.isJsf22Plus());
