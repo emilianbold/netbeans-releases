@@ -23,10 +23,9 @@ Copyright &copy; 2013 Oracle and/or its affiliates. All rights reserved.
       to update the cache. </p>
     <p>By default the IDE creates one code assistance cache for all your projects in your user directory.
         The cache in your user directory cannot be copied or shared.</p>  
-    <p>For large projects created with a previous version of the IDE and managed
-        by a version control system such as Subversion or Mercurial, 
-        parsing is often triggered after each update of the code repository
-        and can take a long time. </p>
+    <p>Parsing can be triggered when you update a project from a code repository in
+        a version control system such as Subversion or Mercurial.  
+        For large projects, it can take a long time. </p>
     <p>A solution is for one developer using this version of the IDE to create a project-specific cache
         and copy it to a shared location where other developers using this version of the IDE can copy it to their
         computer. Then each developer can modify their project properties to reference the copied cache.  After this,
@@ -83,7 +82,8 @@ Copyright &copy; 2013 Oracle and/or its affiliates. All rights reserved.
               
           <li>Open the project in the IDE.
               <p>The IDE uses the copied code assistance cache instead of reparsing the project. 
-                  If there are some newer files on the machine the cache is being copied to, only newer files are parsed.<</li></ol>
+                  If there are some newer files on the machine to which you copied the cache, 
+                  only newer files are parsed.</li></ol>
  <table>
       <tr>
         <th colspan="2" align="left">

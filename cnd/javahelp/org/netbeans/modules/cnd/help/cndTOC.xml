@@ -67,6 +67,7 @@
 			</tocitem>
 			<tocitem text="Navigating Source Files and Projects">
 				<tocitem text="Using Hyperlink Navigation" target="UsingHyperlinks" />
+				<tocitem text="Using Breadcrumb Navigation" target="UsingBreadcrumbs" />
 				<tocitem text="Switching Between Source and Header Files" target="SourceHeaderSwitch" />
 				<tocitem text="Going to an Included File" target="GoToInclude" />
 				<tocitem text="Going to a Symbol" target="GoToDeclaration" />
