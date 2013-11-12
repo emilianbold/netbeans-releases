@@ -57,7 +57,7 @@ import org.netbeans.modules.xml.text.syntax.dom.StartTag;
  */
 public final class BeansCompletionManager {
     
-    private static Map<String, BeansCompletor> completors = new HashMap<String, BeansCompletor>();
+    private static Map<String, BeansCompletor> completors = new HashMap<>();
 
     private BeansCompletionManager() {
         setupCompletors();

@@ -59,22 +59,17 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
- * Various completor for code completing XML tags and attributes in Hibername
- * configuration and mapping file
- *
- * @author Dongmei Cao
+ * Various completor for code completing XML tags and attributes 
+ * 
  */
 public abstract class BeansCompletor {
 
-
-    
     private int anchorOffset = -1;
 
     public enum TAG {
 
         CLASS, STEREOTYPE
     };
-
 
     TAG tag;
 
@@ -83,7 +78,7 @@ public abstract class BeansCompletor {
     BeansCompletor(TAG tag) {
         this.tag = tag;
     }
-    
+
     protected void setAnchorOffset(int anchorOffset) {
         this.anchorOffset = anchorOffset;
     }
@@ -97,13 +92,13 @@ public abstract class BeansCompletor {
      */
     public static class JavaClassesCompletor extends BeansCompletor {
 
-        JavaClassesCompletor(TAG tag){
+        JavaClassesCompletor(TAG tag) {
             super(tag);
         }
-        
+
         @Override
         public List<BeansCompletionItem> doCompletion(final CompletionContext context) {
-            final List<BeansCompletionItem> results = new ArrayList<BeansCompletionItem>();
+            final List<BeansCompletionItem> results = new ArrayList<>();
             try {
                 Document doc = context.getDocument();
                 final String typedChars = context.getTypedPrefix();
@@ -129,17 +124,38 @@ public abstract class BeansCompletor {
                 public void run(CompilationController cc) throws Exception {
                     cc.toPhase(Phase.ELEMENTS_RESOLVED);
                     Set<ElementHandle<TypeElement>> declaredTypes = null;
-                        declaredTypes = cc.getClasspathInfo().getClassIndex().getDeclaredTypes(typedPrefix, ClassIndex.NameKind.PREFIX, Collections.singleton(ClassIndex.SearchScope.SOURCE));//to have dependencies: EnumSet.allOf(ClassIndex.SearchScope.class)
-        
+                    declaredTypes = cc.getClasspathInfo().getClassIndex().getDeclaredTypes(typedPrefix, ClassIndex.NameKind.PREFIX, Collections.singleton(ClassIndex.SearchScope.SOURCE));//to have dependencies: EnumSet.allOf(ClassIndex.SearchScope.class)
+
                     // add classes 
-                    if(declaredTypes != null && declaredTypes.size()>0) {
+                    if (declaredTypes != null && declaredTypes.size() > 0) {
                         for (ElementHandle<TypeElement> cl : declaredTypes) {
-                                TypeElement te = cl.resolve(cc);
-                                if(te!=null && te.getKind() == ElementKind.CLASS && isAlternative(te)) { 
-                                  
-                                    BeansCompletionItem item = BeansCompletionItem.createBeansTagValueItem(substitutionOffset, cl.getQualifiedName(), te.getSimpleName().toString());
-                                    results.add(item);
+                            ElementKind kind = cl.getKind();
+                            switch (tag) {
+                                case CLASS: {
+
+                                    if (kind == ElementKind.CLASS) {
+                                        TypeElement te = cl.resolve(cc);
+                                        if (isAlternative(te)) {
+
+                                            BeansCompletionItem item = BeansCompletionItem.createBeansTagValueItem(substitutionOffset-typedPrefix.length(), cl.getQualifiedName(), te.getSimpleName().toString());
+                                            results.add(item);
+                                        }
+                                    }
+
                                 }
+                                break;
+                                case STEREOTYPE: {
+                                    if (kind == ElementKind.ANNOTATION_TYPE) {
+                                        TypeElement te = cl.resolve(cc);
+                                        if (isAlternative(te)) {
+
+                                            BeansCompletionItem item = BeansCompletionItem.createBeansTagValueItem(substitutionOffset-typedPrefix.length(), cl.getQualifiedName(), te.getSimpleName().toString());
+                                            results.add(item);
+                                        }
+                                    }
+                                }
+                                break;
+                            }
                         }
                     }
                 }
@@ -148,11 +164,12 @@ public abstract class BeansCompletor {
             setAnchorOffset(substitutionOffset);
         }
     }
-    private static boolean isAlternative(TypeElement te) { 
+
+    private static boolean isAlternative(TypeElement te) {
         List<? extends AnnotationMirror> annotationMirrors = te.getAnnotationMirrors();
         for (AnnotationMirror annotation : annotationMirrors) {
-            if(annotation.getAnnotationType().asElement() instanceof TypeElement) {
-            String typeName =((TypeElement) annotation.getAnnotationType().asElement()).getQualifiedName().toString();
+            if (annotation.getAnnotationType().asElement() instanceof TypeElement) {
+                String typeName = ((TypeElement) annotation.getAnnotationType().asElement()).getQualifiedName().toString();
                 if (AnnotationUtil.ALTERNATVE.equals(typeName)) {
                     return true;
                 }

@@ -131,10 +131,11 @@ public final class KarmaExecutable {
         };
         Future<Integer> task = getExecutable(Bundle.KarmaExecutable_start(ProjectUtils.getInformation(project).getDisplayName()), getProjectDir())
                 .additionalParameters(params)
+                .environmentVariables(runInfo.getEnvVars())
                 .run(getStartDescriptor(runInfo, countDownTask));
         assert task != null : karmaPath;
         try {
-            countDownLatch.await(1, TimeUnit.MINUTES);
+            countDownLatch.await(15, TimeUnit.SECONDS);
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         }
@@ -173,7 +174,8 @@ public final class KarmaExecutable {
                 .frontWindowOnError(false)
                 .outLineBased(true)
                 .errLineBased(true)
-                .outConvertorFactory(new ServerLineConvertorFactory(runInfo, serverStartTask));
+                .outConvertorFactory(new ServerLineConvertorFactory(runInfo, serverStartTask))
+                .postExecution(serverStartTask);
     }
 
     private ExecutionDescriptor getRunDescriptor() {
@@ -217,6 +219,7 @@ public final class KarmaExecutable {
         // XXX browser specific
         // e.g.: (/home/gapon/NetBeansProjects/angular.js/src/auto/injector.js:6:12604)
         static final Pattern FILE_PATTERN = Pattern.compile("\\((.+?):(\\d+):\\d+\\)"); // NOI18N
+        private static final String NB_BROWSER_COUNT = "$NB$netbeans browserCount "; // NOI18N
 
         private final RunInfo runInfo;
         private final Runnable startFinishedTask;
@@ -224,6 +227,9 @@ public final class KarmaExecutable {
 
         private boolean firstLine = true;
         private boolean startFinishedTaskRun = false;
+
+        private int browserCount = -1;
+        private int connectedBrowsers = 0;
 
 
         public ServerLineConvertor(RunInfo runInfo, Runnable startFinishedTask) {
@@ -244,15 +250,21 @@ public final class KarmaExecutable {
                         line.replace(runInfo.getNbConfigFile(), runInfo.getProjectConfigFile()), null));
             }
             // server start
-            // XXX wait for start of all browsers
+            if (browserCount == -1
+                    && line.startsWith(NB_BROWSER_COUNT)) {
+                browserCount = Integer.parseInt(line.substring(NB_BROWSER_COUNT.length()));
+                return Collections.emptyList();
+            }
             if (startFinishedTask != null
                     && !startFinishedTaskRun
                     && line.contains("Connected on socket")) { // NOI18N
-                startFinishedTask.run();
-                startFinishedTaskRun = true;
-            }
-            // test result
-            if (line.startsWith(TestRunner.NB_LINE)) {
+                connectedBrowsers++;
+                if (connectedBrowsers == browserCount) {
+                    startFinishedTask.run();
+                    startFinishedTaskRun = true;
+                }
+            } else if (line.startsWith(TestRunner.NB_LINE)) {
+                // test result
                 testRunner.process(line);
                 return Collections.emptyList();
             }

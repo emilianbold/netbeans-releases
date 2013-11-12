@@ -167,17 +167,6 @@ public abstract class BeansCompletionItem implements CompletionItem {
     }
 
     @Override
-    public void render(Graphics g, Font defaultFont, Color defaultColor,
-            Color backgroundColor, int width, int height, boolean selected) {
-        Component renderComponent = getPaintComponent(selected);
-        renderComponent.setFont(defaultFont);
-        renderComponent.setForeground(defaultColor);
-        renderComponent.setBackground(backgroundColor);
-        renderComponent.setBounds(0, 0, width, height);
-        ((CCPaintComponent) renderComponent).paintComponent(g);
-    }
-
-    @Override
     public String toString() {
         return getItemText();
     }
@@ -250,90 +239,6 @@ public abstract class BeansCompletionItem implements CompletionItem {
         return substituteText(component, substOffset, component.getCaret().getDot() - substOffset, false);
     }
 
-    private abstract static class DBElementItem extends BeansCompletionItem {
-
-        private String name;
-        private boolean quote;
-        protected static CCPaintComponent.DBElementPaintComponent paintComponent = null;
-
-        // XXX should have an elementTypeName param
-        public DBElementItem(String name, boolean quote, int substituteOffset) {
-            this.name = name;
-            this.quote = quote;
-            this.substituteOffset = substituteOffset;
-        }
-
-        public DBElementItem(String name, boolean quote) {
-            this(name, quote, -1);
-        }
-
-        protected String getName() {
-            return name;
-        }
-
-        protected boolean getQuoted() {
-            return quote;
-        }
-
-        @Override
-        public String getItemText() {
-            if (quote) {
-                return quoteText(name);
-            } else {
-                return name;
-            }
-        }
-
-        @Override
-        public Component getPaintComponent(boolean isSelected) {
-            if (paintComponent == null) {
-                paintComponent = new CCPaintComponent.DBElementPaintComponent();
-            }
-            paintComponent.setString(getTypeName() + ": " + name); // NOI18N
-            paintComponent.setSelected(isSelected);
-            return paintComponent;
-        }
-
-        public Object getAssociatedObject() {
-            return this;
-        }
-
-        /**
-         * Returns the element name (table, schema, etc.).
-         */
-        public abstract String getTypeName();
-    }
-
-    public static final class BeanstagElementItem extends DBElementItem {
-
-        protected static CCPaintComponent.BeansElementPaintComponent paintComponent = null;
-
-        public BeanstagElementItem(String name, boolean quote, int substituteOffset) {
-            super(name, quote, substituteOffset);
-        }
-
-        @Override
-        public String getTypeName() {
-            return "CDI";
-        }
-
-        @Override
-        public int getSortPriority() {
-            return 100;
-        }
-
-        @Override
-        public Component getPaintComponent(boolean isSelected) {
-            if (paintComponent == null) {
-                paintComponent = new CCPaintComponent.BeansElementPaintComponent();
-            }
-            paintComponent.setContent(getName());
-            paintComponent.setSelected(isSelected);
-            return paintComponent;
-        }
-    }
-    
-  
     abstract private static class BeansXmlCompletionItem extends BeansCompletionItem {
         /////////
 
@@ -429,7 +334,7 @@ public abstract class BeansCompletionItem implements CompletionItem {
 
     private static class TagClassValueItem extends BeansXmlCompletionItem {
 
-        private String displayText, simpleName;
+        private final String displayText, simpleName;
         CCPaintComponent.DBElementPaintComponent paintComponent;
 
         public TagClassValueItem(int substitutionOffset, String fullName, String simpleName) {
@@ -456,12 +361,12 @@ public abstract class BeansCompletionItem implements CompletionItem {
 
         @Override
         public String getDisplayText() {
-            return simpleName + (simpleName.length()<displayText.length() ? ("("+displayText.substring(0,displayText.length()-simpleName.length()-1)+")"): "");
-        }
+            return simpleName + (simpleName.length()<displayText.length() ? (" ("+displayText.substring(0,displayText.length()-simpleName.length()-1)+")"): "");
+         }
 
         @Override
         protected String getLeftHtmlText() {
-            return displayText;
+            return getDisplayText();
         }
 
         @Override
