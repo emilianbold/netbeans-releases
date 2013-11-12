@@ -1495,6 +1495,11 @@ $ rm -r /tmp/nb/
              product installation structure.
          </p>
      </usecase>
+     <usecase name="Patch classes" id="patch">
+         In case one wants to adopt other classes one can register its own
+         <code>Agent-Class</code> and then be called whenever another
+         class is defined.
+     </usecase>
  </answer>
 
 
