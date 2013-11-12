@@ -1562,13 +1562,11 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
 
     @Override
     public void visitTypeUnion(JCTypeUnion that) {
-        boolean first = true;
-
-        for (JCExpression c : that.getTypeAlternatives()) {
-            if (!first) print(" | ");
-            print(c);
-            first = false;
-        }
+        boolean sep = cs.spaceAroundBinaryOps();
+        wrapTrees(that.getTypeAlternatives(), 
+                cs.wrapDisjunctiveCatchTypes(), 
+                cs.alignMultilineDisjunctiveCatchTypes() ? out.col : out.leftMargin + cs.getContinuationIndentSize(),
+                false, sep, sep, "|"); // NOI18N
     }
 
     @Override
@@ -2904,17 +2902,26 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
     }
     
     private <T extends JCTree> void wrapTrees(List<T> trees, WrapStyle wrapStyle, int wrapIndent, boolean wrapFirst) {
+        wrapTrees(trees, wrapStyle, wrapIndent, wrapFirst, cs.spaceBeforeComma(), cs.spaceAfterComma(), ","); // NOI18N
+    }
+
+    private <T extends JCTree> void wrapTrees(List<T> trees, WrapStyle wrapStyle, int wrapIndent, boolean wrapFirst,
+            boolean spaceBeforeSeparator, boolean spaceAfterSeparator, String separator) {
+        
         boolean first = true;
         for (List < T > l = trees; l.nonEmpty(); l = l.tail) {
             if (!first) {
-                print(cs.spaceBeforeComma() ? " ," : ",");
+                if (spaceBeforeSeparator) {
+                    print(' '); // NOI18N
+                }
+                print(separator);
             }
             
             if (!first || wrapFirst) {
                 switch(first && wrapStyle != WrapStyle.WRAP_NEVER ? WrapStyle.WRAP_IF_LONG : wrapStyle) {
                 case WRAP_IF_LONG:
                     int rm = cs.getRightMargin();
-                    boolean space = cs.spaceAfterComma() && !first;
+                    boolean space = spaceAfterSeparator && !first;
                     if (widthEstimator.estimateWidth(l.head, rm - out.col) + out.col + (space ? 1 : 0) <= rm) {
                         if (space)
                             print(' ');
@@ -2925,7 +2932,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
                     toColExactly(wrapIndent);
                     break;
                 case WRAP_NEVER:
-                    if (cs.spaceAfterComma() && !first)
+                    if (spaceAfterSeparator && !first)
                         print(' ');
                     break;
                 }

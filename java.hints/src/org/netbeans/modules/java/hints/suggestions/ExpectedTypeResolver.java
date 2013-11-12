@@ -98,9 +98,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.TreePath;
-import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.CapturedType;
-import com.sun.tools.javac.code.Type.ClassType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -125,6 +123,7 @@ import javax.lang.model.type.UnionType;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.java.hints.errors.Utilities;
 
 /**
  * Determines the expected type of the expression.
@@ -142,7 +141,7 @@ import org.netbeans.api.java.source.CompilationInfo;
  * 
  * @author sdedic
  */
-class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirror>, Object> {
+public class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirror>, Object> {
     /**
      * The expression, whose type should be guessed. Possibly null if the expression is not known.
      * This field may change on parenthesis and type casts, which are ignored.
@@ -828,16 +827,16 @@ class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirror>, Ob
                 if (isPrimitiveType(resultType.getKind())) {
                     // if the followed [numeric] subexpression is casted to a type broader than the other operand, it should be left as it is. The reason is 
                     // a potential different type of the expression result influencing results or validity of operations up the tree.
-                    if (!(other.getKind() == TypeKind.ERROR || followed.getKind() == TypeKind.ERROR)) {
-                        if (followed.getKind().ordinal() > other.getKind().ordinal() && followed.getKind().ordinal() >= TypeKind.FLOAT.ordinal()) {
+                    TypeKind otherKind = Utilities.getPrimitiveKind(info, other);
+                    if (otherKind != null && followed.getKind() != TypeKind.ERROR) {
+                        if (followed.getKind().ordinal() > otherKind.ordinal()) {
                             // terminate, the cast is needed
                             notRedundant = true;
                             return Collections.singletonList(followed);
                         }
                     }
                 } else if (resultType.getKind() == TypeKind.DECLARED) {
-                    Element e = ((DeclaredType)resultType).asElement();
-                    if (e.getKind() == ElementKind.CLASS && ((TypeElement)e).getQualifiedName().contentEquals("java.lang.String")) {
+                    if (resultIsString) {
                         // primitive + string: 
                         TreePath expPath = getExpressionWithoutCasts();
                         TypeMirror expType = info.getTrees().getTypeMirror(expPath);

@@ -92,14 +92,14 @@ public class BoxingOfBoxingValue {
     }
     
     @TriggerPatterns({
-        @TriggerPattern(value = "new java.lang.Byte.valueOf($v)", constraints = @ConstraintVariableType(variable = "$v", type = "java.lang.Byte")),
-        @TriggerPattern(value = "new java.lang.Character.valueOf($v)", constraints = @ConstraintVariableType(variable = "$v", type = "java.lang.Character")),
-        @TriggerPattern(value = "new java.lang.Double.valueOf($v)", constraints = @ConstraintVariableType(variable = "$v", type = "java.lang.Double")),
-        @TriggerPattern(value = "new java.lang.Float.valueOf($v)", constraints = @ConstraintVariableType(variable = "$v", type = "java.lang.Float")),
-        @TriggerPattern(value = "new java.lang.Integer.valueOf($v)", constraints = @ConstraintVariableType(variable = "$v", type = "java.lang.Integer")),
-        @TriggerPattern(value = "new java.lang.Long.valueOf($v)", constraints = @ConstraintVariableType(variable = "$v", type = "java.lang.Long")),
-        @TriggerPattern(value = "new java.lang.Short.valueOf($v)", constraints = @ConstraintVariableType(variable = "$v", type = "java.lang.Short")),
-        @TriggerPattern(value = "new java.lang.Boolean.valueOf($v)", constraints = @ConstraintVariableType(variable = "$v", type = "java.lang.Boolean"))
+        @TriggerPattern(value = "java.lang.Byte.valueOf($v)", constraints = @ConstraintVariableType(variable = "$v", type = "java.lang.Byte")),
+        @TriggerPattern(value = "java.lang.Character.valueOf($v)", constraints = @ConstraintVariableType(variable = "$v", type = "java.lang.Character")),
+        @TriggerPattern(value = "java.lang.Double.valueOf($v)", constraints = @ConstraintVariableType(variable = "$v", type = "java.lang.Double")),
+        @TriggerPattern(value = "java.lang.Float.valueOf($v)", constraints = @ConstraintVariableType(variable = "$v", type = "java.lang.Float")),
+        @TriggerPattern(value = "java.lang.Integer.valueOf($v)", constraints = @ConstraintVariableType(variable = "$v", type = "java.lang.Integer")),
+        @TriggerPattern(value = "java.lang.Long.valueOf($v)", constraints = @ConstraintVariableType(variable = "$v", type = "java.lang.Long")),
+        @TriggerPattern(value = "java.lang.Short.valueOf($v)", constraints = @ConstraintVariableType(variable = "$v", type = "java.lang.Short")),
+        @TriggerPattern(value = "java.lang.Boolean.valueOf($v)", constraints = @ConstraintVariableType(variable = "$v", type = "java.lang.Boolean"))
     })
     public static ErrorDescription valueOfBoxed(HintContext ctx) {
         TreePath p = ctx.getVariables().get("$v"); // NOI18N
