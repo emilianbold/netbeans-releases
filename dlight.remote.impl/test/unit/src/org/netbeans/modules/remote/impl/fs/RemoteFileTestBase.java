@@ -61,6 +61,7 @@ import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
+import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -74,6 +75,7 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
         System.setProperty("socket.connection.timeout", "30000");
         System.setProperty("remote.throw.assertions", "true");
         System.setProperty("remote.user.password.keep_in_memory", "true");
+        TestLogHandler.attach(RemoteLogger.getInstance());
     }
     
     protected RemoteFileSystem fs;
@@ -130,7 +132,7 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
     private void setLoggers(boolean setup) {
         final Logger logger = Logger.getLogger("remote.support.logger");
         if (setup) {
-            logger.addHandler(new TestLogHandler(logger));
+            TestLogHandler.attach(logger);
             if (NativeExecutionTestSupport.getBoolean("remote", "logging.finest")
                  || NativeExecutionTestSupport.getBoolean("remote", getClass().getName() + ".logging.finest")) {
                 oldLevel = logger.getLevel();

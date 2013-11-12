@@ -161,7 +161,7 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
     }
 
     static {
-        log.addHandler(new TestLogHandler(log));
+        TestLogHandler.attach(log);
     }
 
     private Level oldRemoteLevel = null;

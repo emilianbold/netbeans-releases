@@ -109,9 +109,15 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
 
         protected final Logger log;
 
+        @Deprecated
         public TestLogHandler(Logger log) {
             this.log = log;
         }
+        
+        public static void attach(Logger log) {
+            log.addHandler(new TestLogHandler((log)));
+        }
+    
         
         @Override
         public void publish(LogRecord record) {
@@ -218,9 +224,8 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
     }
     
     static {
-        Logger log = org.netbeans.modules.nativeexecution.support.Logger.getInstance();
-        org.netbeans.modules.nativeexecution.support.Logger.getInstance().addHandler(new TestLogHandler(log));
-
+        TestLogHandler.attach(org.netbeans.modules.nativeexecution.support.Logger.getInstance());
+ 
         // the 3 lines below contain a workaround for some WinXP tests failure
         File tmpDir = new File(System.getProperty("java.io.tmpdir"));
         tmpDir = FileUtil.normalizeFile(tmpDir.getAbsoluteFile());
