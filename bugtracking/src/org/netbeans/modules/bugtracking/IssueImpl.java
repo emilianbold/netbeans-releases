@@ -42,6 +42,7 @@
 package org.netbeans.modules.bugtracking;
 
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
@@ -76,6 +77,15 @@ public final class IssueImpl<R, I> {
         this.issueProvider = issueProvider;
         this.data = data;
         this.repo = repo;
+        
+        issueProvider.addPropertyChangeListener(data, new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if(IssueProvider.EVENT_ISSUE_DATA_CHANGED.equals(evt.getPropertyName())) {
+                    // XXX store changed scheduling facts (if changed)
+                }
+            }
+        });
     }
 
     public synchronized Issue getIssue() {
