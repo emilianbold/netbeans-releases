@@ -71,9 +71,9 @@ public class GroupsMenuAction extends AbstractAction implements Presenter.Menu {
     }
     
     public static AbstractAction create() {
-        if( Boolean.getBoolean("nb.document.groups.enable") ) //NOI18N
+//        if( Boolean.getBoolean("nb.document.groups.enable") ) //NOI18N
             return new GroupsMenuAction();
-        return null;
+//        return null;
     }
 
     @Override
