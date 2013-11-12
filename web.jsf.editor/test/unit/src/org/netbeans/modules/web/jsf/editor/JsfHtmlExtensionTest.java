@@ -94,6 +94,21 @@ public class JsfHtmlExtensionTest extends TestBaseForTestProject {
         testCC("testWebProject/web/cctest_newns.xhtml", "<ui:include src=\"|\"/>", new String[]{"index.xhtml", "ccusage.xhtml", "test.xhtml", "WEB-INF/"}, Match.CONTAINS);
     }
 
+    public void testJavaTypesCompletion01() throws Exception {
+        // type attribute completion in cc:attribute element
+        testCC("testWebProject/web/resources/ezcomp/test2.xhtml", "<cc:attribute name=\"testAttr\" type=\"|\"/>", new String[]{"beans", "org"}, Match.CONTAINS);
+    }
+
+    public void testJavaTypesCompletion02() throws Exception {
+        // type attribute completion in cc:attribute element
+        testCC("testWebProject/web/resources/ezcomp/test2.xhtml", "<cc:attribute name=\"testAttr\" type=\"beans.|\"/>", new String[]{"Product", "Company", "MBean"}, Match.CONTAINS);
+    }
+
+    public void testJavaTypesCompletion03() throws Exception {
+        // type attribute completion in cc:attribute element
+        testCC("testWebProject/web/resources/ezcomp/test2.xhtml", "<cc:attribute name=\"testAttr\" type=\"org.mysite.|\"/>", new String[]{"classtaglib"}, Match.EXACT);
+    }
+
     protected void testCC(String filePath, String testText, String[] expected, Match matchType) throws Exception {
         testCC(filePath, testText, expected, matchType, -1);
     }

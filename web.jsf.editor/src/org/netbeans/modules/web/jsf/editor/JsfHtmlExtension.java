@@ -41,22 +41,14 @@
  */
 package org.netbeans.modules.web.jsf.editor;
 
-import java.awt.Color;
 import java.util.Map.Entry;
 import java.util.*;
-import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.html.lexer.HTMLTokenId;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.lexer.*;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.api.Error;
@@ -64,40 +56,24 @@ import org.netbeans.modules.csl.api.HintsProvider.HintsManager;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.parsing.api.*;
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
-import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.common.api.FileReferenceCompletion;
-import org.netbeans.modules.web.common.api.LexerUtils;
-import org.netbeans.modules.web.common.taginfo.AttrValueType;
-import org.netbeans.modules.web.common.taginfo.LibraryMetadata;
-import org.netbeans.modules.web.common.taginfo.TagAttrMetadata;
-import org.netbeans.modules.web.common.taginfo.TagMetadata;
 import org.netbeans.modules.web.jsf.api.editor.JsfFacesComponentsProvider.FacesComponentLibrary;
+import org.netbeans.modules.web.jsf.editor.completion.JsfAttributesCompletionHelper;
 import org.netbeans.modules.web.jsf.editor.completion.JsfCompletionItem;
 import org.netbeans.modules.web.jsf.editor.facelets.AbstractFaceletsLibrary;
 import org.netbeans.modules.web.jsf.editor.facelets.CompositeComponentLibrary;
-import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryMetadata;
 import org.netbeans.modules.web.jsf.editor.hints.HintsRegistry;
-import org.netbeans.modules.web.jsf.editor.index.CompositeComponentModel;
-import org.netbeans.modules.web.jsf.editor.index.JsfPageModelFactory;
 import org.netbeans.modules.web.jsfapi.api.Attribute;
-import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.api.LibraryComponent;
 import org.netbeans.modules.web.jsfapi.api.NamespaceUtils;
 import org.netbeans.modules.web.jsfapi.api.Tag;
-import org.netbeans.modules.web.jsfapi.spi.LibraryUtils;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.lexer.MutableTextInput;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 
 /**
  * XXX should be rather done by dynamic artificial embedding creation. The
@@ -110,7 +86,6 @@ import org.openide.util.Exceptions;
 public class JsfHtmlExtension extends HtmlExtension {
 
     private static final String EL_ENABLED_KEY = "el_enabled"; //NOI18N
-    private static final FilenameSupport FILENAME_SUPPORT = new FilenameSupport();
 
     @Override
     public Map<OffsetRange, Set<ColoringAttributes>> getHighlights(HtmlParserResult result, SchedulerEvent event) {
@@ -400,7 +375,7 @@ public class JsfHtmlExtension extends HtmlExtension {
 
         //complete xmlns attribute value
         if(jsfs != null) {
-            completeXMLNSAttribute(context, items, jsfs);
+            JsfAttributesCompletionHelper.completeXMLNSAttribute(context, items, jsfs);
         }
         
         if(ns == null || openTag == null) {
@@ -408,281 +383,29 @@ public class JsfHtmlExtension extends HtmlExtension {
         }
         
         //first try to complete using special metadata
-        completeTagLibraryMetadata(context, items, ns, openTag);
+        JsfAttributesCompletionHelper.completeTagLibraryMetadata(context, items, ns, openTag);
 
         if(jsfs == null) {
             return items;
         }
 
         //then try to complete according to the attribute type (taken from the library descriptor)
-        completeValueAccordingToType(context, items, ns, openTag, jsfs);
+        JsfAttributesCompletionHelper.completeValueAccordingToType(context, items, ns, openTag, jsfs);
 
         // completion for files in cases of ui:include src attribute
-        completeFaceletsFromProject(context, items, ns, openTag);
+        JsfAttributesCompletionHelper.completeFaceletsFromProject(context, items, ns, openTag);
 
         // completion for sections in cases of ui:define name attribute
-        completeSectionsOfTemplate(context, items, ns, openTag);
+        JsfAttributesCompletionHelper.completeSectionsOfTemplate(context, items, ns, openTag);
+
+        // completion for java classes in <cc:attribute type="com.example.|
+        JsfAttributesCompletionHelper.completeJavaClasses(context, items, ns, openTag);
 
         //facets
-        completeFacetsInCCImpl(context, items, ns, openTag, jsfs);
-        completeFacets(context, items, ns, openTag, jsfs);
+        JsfAttributesCompletionHelper.completeFacetsInCCImpl(context, items, ns, openTag, jsfs);
+        JsfAttributesCompletionHelper.completeFacets(context, items, ns, openTag, jsfs);
 
         return items;
-    }
-
-    //1.
-    //<cc:implementation>
-    //<cc:render/insertFacet name="|" />  
-    //</cc:implementation>
-    //offsers facet declarations only from within this document
-    private static void completeFacetsInCCImpl(CompletionContext context, List<CompletionItem> items, String ns, OpenTag openTag, JsfSupportImpl jsfs) {
-        if ("http://java.sun.com/jsf/composite".equalsIgnoreCase(ns) || "http://xmlns.jcp.org/jsf/composite".equalsIgnoreCase(ns)) {
-            String tagName = openTag.unqualifiedName().toString();
-            if ("renderFacet".equalsIgnoreCase(tagName) || "insertFacet".equalsIgnoreCase(tagName)) { //NOI18N
-                if ("name".equalsIgnoreCase(context.getAttributeName())) { //NOI18N
-                    CompositeComponentModel ccModel = (CompositeComponentModel) JsfPageModelFactory.getFactory(CompositeComponentModel.Factory.class).getModel(context.getResult());
-                    if (ccModel != null) {
-                        Collection<String> facets = ccModel.getDeclaredFacets();
-                        for (String facet : facets) {
-                            items.add(HtmlCompletionItem.createAttributeValue(facet, context.getCCItemStartOffset(), !context.isValueQuoted())); //NOI18N
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    //2.<f:facet name="|">
-    //offsers all facetes
-    private static void completeFacets(CompletionContext context, List<CompletionItem> items, String ns, OpenTag openTag, JsfSupportImpl jsfs) {
-        if ("http://java.sun.com/jsf/core".equalsIgnoreCase(ns) || "http://xmlns.jcp.org/jsf/core".equalsIgnoreCase(ns)) {
-            String tagName = openTag.unqualifiedName().toString();
-            if ("facet".equalsIgnoreCase(tagName)) { //NOI18N
-                if ("name".equalsIgnoreCase(context.getAttributeName())) { //NOI18N
-                    //try to get composite library model for all declared libraries and extract facets from there
-                    for(String libraryNs : context.getResult().getNamespaces().keySet()) {
-                        Library library = jsfs.getLibrary(libraryNs);
-                        if(library != null) {
-                            if(library instanceof CompositeComponentLibrary) {
-                                Collection<? extends LibraryComponent> lcs = library.getComponents();
-                                for(LibraryComponent lc : lcs) {
-                                    CompositeComponentLibrary.CompositeComponent ccomp = (CompositeComponentLibrary.CompositeComponent)lc;
-                                    CompositeComponentModel model = ccomp.getComponentModel();
-                                    for(String facetName : model.getDeclaredFacets()) {
-                                        items.add(HtmlCompletionItem.createAttributeValue(facetName, context.getCCItemStartOffset(), !context.isValueQuoted())); //NOI18N
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private static void completeValueAccordingToType(CompletionContext context, List<CompletionItem> items, String ns, OpenTag openTag, JsfSupportImpl jsfs) {
-        Library lib = jsfs.getLibrary(ns);
-        if (lib == null) {
-            return;
-        }
-
-        String tagName = openTag.unqualifiedName().toString();
-
-        LibraryComponent comp = lib.getComponent(tagName);
-        if (comp == null) {
-            return;
-        }
-
-        String attrName = context.getAttributeName();
-        Attribute attr = comp.getTag().getAttribute(attrName);
-        if (attr == null) {
-            return;
-        }
-
-        //TODO: Add more types and generalize the code then
-        String aType = attr.getType();
-        if ("boolean".equals(aType) || "java.lang.Boolean".equals(aType)) { //NOI18N
-            //boolean type
-            items.add(HtmlCompletionItem.createAttributeValue("true", context.getCCItemStartOffset(), !context.isValueQuoted())); //NOI18N
-            items.add(HtmlCompletionItem.createAttributeValue("false", context.getCCItemStartOffset(), !context.isValueQuoted())); //NOI18N
-        }
-
-    }
-
-    private static void completeFaceletsFromProject(CompletionContext context, List<CompletionItem> items, String ns, OpenTag openTag) {
-        // <ui:include src="|" ...
-        String tagName = openTag.unqualifiedName().toString();
-        String attrName = context.getAttributeName();
-        if (NamespaceUtils.containsNsOf(Collections.singleton(ns), DefaultLibraryInfo.FACELETS)
-                && "include".equalsIgnoreCase(tagName) && "src".equalsIgnoreCase(attrName)) { //NOI18N
-            items.addAll(FILENAME_SUPPORT.getItems(
-                    context.getResult().getSnapshot().getSource().getFileObject(),
-                    context.getCCItemStartOffset(),
-                    context.getPrefix()));
-        }
-    }
-
-    private void completeSectionsOfTemplate(final CompletionContext context, final List<CompletionItem> items, String ns, OpenTag openTag) {
-        // <ui:define name="|" ...
-        String tagName = openTag.unqualifiedName().toString();
-        String attrName = context.getAttributeName();
-        if (NamespaceUtils.containsNsOf(Collections.singleton(ns), DefaultLibraryInfo.FACELETS)
-                && "define".equalsIgnoreCase(tagName) && "name".equalsIgnoreCase(attrName)) { //NOI18N
-
-            // get the template path
-            Node root = JsfUtils.getRoot(context.getResult(), DefaultLibraryInfo.FACELETS);
-            final String[] template = new String[1];
-            ElementUtils.visitChildren(root, new ElementVisitor() {
-                @Override
-                public void visit(Element node) {
-                    OpenTag openTag = (OpenTag) node;
-                    if ("composition".equalsIgnoreCase(openTag.unqualifiedName().toString())) { //NOI18N
-                        for (org.netbeans.modules.html.editor.lib.api.elements.Attribute attribute : openTag.attributes()) {
-                            if ("template".equalsIgnoreCase(attribute.name().toString())) { //NOI18N
-                                template[0] = attribute.unquotedValue().toString();
-                            }
-                        }
-                    }
-                }
-            }, ElementType.OPEN_TAG);
-
-            if (template[0] == null) {
-                return;
-            }
-
-            // find the template inside the web root or resource library contract
-            List<Source> candidates = getTemplateCandidates(context.getResult().getSnapshot().getSource().getFileObject(), template[0]);
-            try {
-                ParserManager.parse(candidates, new UserTask() {
-                    @Override
-                    public void run(ResultIterator resultIterator) throws Exception {
-                        Parser.Result result = resultIterator.getParserResult(0);
-                        if (result.getSnapshot().getMimeType().equals("text/html")) {
-                            HtmlParserResult htmlResult = (HtmlParserResult) result;
-                            Node root = JsfUtils.getRoot(htmlResult, DefaultLibraryInfo.FACELETS);
-                            if (root != null) {
-                                List<OpenTag> foundNodes = findValue(root.children(OpenTag.class), "ui:insert", new ArrayList<OpenTag>()); //NOI18N
-                                for (OpenTag node : foundNodes) {
-                                    org.netbeans.modules.html.editor.lib.api.elements.Attribute attr = node.getAttribute("name"); //NOI18N
-                                    if (attr !=null) {
-                                         String value = attr.unquotedValue().toString();
-                                        if (value != null && !"".equals(value)) { //NOI18N
-                                            items.add(HtmlCompletionItem.createAttributeValue(value, context.getCCItemStartOffset(), !context.isValueQuoted())); //NOI18N
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                });
-            } catch (ParseException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-    }
-
-    private static List<OpenTag> findValue(Collection<OpenTag> nodes, String tagName, List<OpenTag> foundNodes) {
-        if (nodes == null) {
-            return foundNodes;
-        }
-        for (OpenTag ot : nodes) {
-            if(LexerUtils.equals(tagName, ot.name(), true, false)) {
-                foundNodes.add(ot);
-            } else {
-                foundNodes = findValue(ot.children(OpenTag.class), tagName, foundNodes);
-            }
-
-        }
-        return foundNodes;
-    }
-
-    private static List<Source> getTemplateCandidates(FileObject client, String path) {
-        List<Source> result = new ArrayList<>();
-        FileObject template = client.getParent().getFileObject(path);
-        if (template != null) {
-            result.add(Source.create(template));
-        }
-
-        Project project = FileOwnerQuery.getOwner(client);
-        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-        if (wm != null && wm.getDocumentBase() != null) {
-            handleContracts(wm.getDocumentBase(), path, result);
-        } else {
-            Sources sources = ProjectUtils.getSources(project);
-            SourceGroup[] sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-            for (SourceGroup sourceGroup : sourceGroups) {
-                FileObject metaInf = sourceGroup.getRootFolder().getFileObject("META-INF"); //NOI18N
-                if (metaInf != null) {
-                    handleContracts(metaInf, path, result);
-                }
-            }
-        }
-
-        return result;
-    }
-
-    private static void handleContracts(FileObject parent, String path, List<Source> result) {
-        FileObject contractsFolder = parent.getFileObject("contracts"); //NOI18N
-        if (contractsFolder != null) {
-            for (FileObject child : contractsFolder.getChildren()) {
-                FileObject contract = child.getFileObject(path);
-                if (contract != null) {
-                    result.add(Source.create(contract));
-                }
-            }
-        }
-    }
-
-    private static void completeXMLNSAttribute(CompletionContext context, List<CompletionItem> items, JsfSupportImpl jsfs) {
-        if (context.getAttributeName().toLowerCase(Locale.ENGLISH).startsWith("xmlns")) { //NOI18N
-            //xml namespace completion for facelets namespaces
-            Set<String> nss = NamespaceUtils.getAvailableNss(jsfs.getLibraries(), jsfs.isJsf22Plus());
-
-            //add also xhtml ns to the completion
-            nss.add(LibraryUtils.XHTML_NS);
-            for (String namespace : nss) {
-                if (namespace.startsWith(context.getPrefix())) {
-                    items.add(HtmlCompletionItem.createAttributeValue(namespace, context.getCCItemStartOffset(), !context.isValueQuoted()));
-                }
-            }
-        }
-    }
-
-    private void completeTagLibraryMetadata(CompletionContext context, List<CompletionItem> items, String ns, OpenTag openTag) {
-        String attrName = context.getAttributeName();
-        String tagName = openTag.unqualifiedName().toString();
-        LibraryMetadata lib = FaceletsLibraryMetadata.get(ns);
-
-        if (lib != null) {
-            TagMetadata tag = lib.getTag(tagName);
-
-            if (tag != null) {
-                TagAttrMetadata attr = tag.getAttribute(attrName);
-
-                if (attr != null) {
-                    Collection<AttrValueType> valueTypes = attr.getValueTypes();
-
-                    if (valueTypes != null) {
-                        for (AttrValueType valueType : valueTypes) {
-                            String[] possibleVals = valueType.getPossibleValues();
-
-                            if (possibleVals != null) {
-                                for (String val : possibleVals) {
-                                    if (val.startsWith(context.getPrefix())) {
-                                        CompletionItem itm = HtmlCompletionItem.createAttributeValue(val,
-                                                context.getCCItemStartOffset(),
-                                                !context.isValueQuoted());
-
-                                        items.add(itm);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
     }
 
     @Override
@@ -801,16 +524,4 @@ public class JsfHtmlExtension extends HtmlExtension {
         }
     }
 
-    private static class FilenameSupport extends FileReferenceCompletion<HtmlCompletionItem> {
-
-        @Override
-        public HtmlCompletionItem createFileItem(FileObject file, int anchor) {
-            return HtmlCompletionItem.createFileCompletionItem(file, anchor);
-        }
-
-        @Override
-        public HtmlCompletionItem createGoUpItem(int anchor, Color color, ImageIcon icon) {
-            return HtmlCompletionItem.createGoUpFileCompletionItem(anchor, color, icon); // NOI18N
-        }
-    }
 }
