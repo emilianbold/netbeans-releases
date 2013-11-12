@@ -88,6 +88,9 @@ public class DirectoryReaderFS implements DirectoryReader {
 
     private final FSSDispatcher dispatcher;
     
+    private final AtomicInteger dirReadCnt = new AtomicInteger(0);
+    private final AtomicInteger warmupCnt = new AtomicInteger(0);
+    
     public static DirectoryReaderFS getInstance(ExecutionEnvironment env) {
         if (!USE_FS_SERVER) {
             return null;
@@ -122,6 +125,7 @@ public class DirectoryReaderFS implements DirectoryReader {
         } catch (InterruptedException ex) {
             // don't report InterruptedException
         } finally {
+            warmupCnt.incrementAndGet();
             RemoteStatistics.stopChannelActivity(activityID, 0);
             RemoteLogger.fine("Warming up fs_server for {0} took {1} ms", 
                     path, System.currentTimeMillis() - time);            
@@ -214,21 +218,20 @@ public class DirectoryReaderFS implements DirectoryReader {
         try {
             RemoteLogger.finest("Sending request #{0} for directry {1} to fs_server", 
                     request.getId(), path);
-            synchronized (lock) { 
-                // XXX: a temporary simplistic solution
-                FSSResponse response = dispatcher.dispatch(request);
-                FSSResponse.Package pkg = response.getNextPackage();
-                assert pkg.getKind() == FSSResponseKind.LS;
-                Buffer buf = pkg.getBuffer();
-                buf.getChar();
-                int respId = buf.getInt();
-                assert respId == request.getId();
-                String serverPath = buf.getString();
-                assert serverPath.equals(path);
-                int cnt = buf.getInt();
-                return readEntries(response, path, cnt, request.getId(), realCnt);
-            }
+            // XXX: a temporary simplistic solution
+            FSSResponse response = dispatcher.dispatch(request);
+            FSSResponse.Package pkg = response.getNextPackage();
+            assert pkg.getKind() == FSSResponseKind.LS;
+            Buffer buf = pkg.getBuffer();
+            buf.getChar();
+            int respId = buf.getInt();
+            assert respId == request.getId();
+            String serverPath = buf.getString();
+            assert serverPath.equals(path);
+            int cnt = buf.getInt();
+            return readEntries(response, path, cnt, request.getId(), realCnt);
         } finally {
+            dirReadCnt.incrementAndGet();
             RemoteStatistics.stopChannelActivity(activityID, 0);
             RemoteLogger.finest("Communication #{0} with fs_server for directry {1} ({2} entries read) took {3} ms",
                     request.getId(), path, realCnt.get(), System.currentTimeMillis() - time);

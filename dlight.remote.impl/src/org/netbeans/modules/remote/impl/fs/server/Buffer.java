@@ -73,7 +73,7 @@ import java.nio.BufferUnderflowException;
         return text.charAt(curr++);
     }
 
-    public int getInt() throws BufferUnderflowException {
+    public int getInt() {
         skipSpaces();
         StringBuilder sb = new StringBuilder(16);
         int result = 0;
@@ -89,7 +89,7 @@ import java.nio.BufferUnderflowException;
         return result;
     }
 
-    public long getLong() throws BufferUnderflowException {
+    public long getLong() {
         skipSpaces();
         StringBuilder sb = new StringBuilder(16);
         long result = 0;

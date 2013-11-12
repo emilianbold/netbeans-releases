@@ -55,8 +55,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -96,7 +99,7 @@ import org.openide.util.RequestProcessor;
 
     private static final String USER_DEFINED_SERVER_PATH = System.getProperty("remote.fs_server.path");
     public static final int REFRESH_INTERVAL = Integer.getInteger("remote.fs_server.refresh", 2); // NOI18N
-    public static final boolean VERBOSE = Boolean.getBoolean("remote.fs_server.verbose");
+    public static final int VERBOSE = Integer.getInteger("remote.fs_server.verbose", 0);
     public static final boolean LOG = Boolean.getBoolean("remote.fs_server.log");
 
     // Actually this RP should have only 2 tasks: one reads error, another stdout;
@@ -114,10 +117,56 @@ import org.openide.util.RequestProcessor;
     private static final int MAX_ATTEMPTS = Integer.getInteger("remote.fs_server.attempts", 3); // NOI18N
     
     private final AtomicReference<String> lastErrorMessage = new AtomicReference<String>();
+    
+    private final Set<String> refreshSet = new TreeSet<String>();
+    private final LinkedList<String> refreshQueue = new LinkedList<String>();
+    private final Object refreshLock = new Object();
+    private final RequestProcessor refreshRp = new RequestProcessor(getClass().getSimpleName() + "_Refresh"); //NOI18N
+    private final RequestProcessor.Task refreshTask = refreshRp.create(new RefreshRunnable());
 
     public FSSDispatcher(ExecutionEnvironment env) {
         this.env = env;
         traceName = "fs_server[" + env + ']'; // NOI18N
+    }
+    
+    private class RefreshRunnable implements Runnable {
+        @Override
+        public void run() {
+            while (true) {
+                List<String> paths = new ArrayList<String>();
+                synchronized (refreshLock) {
+                    if (refreshQueue.isEmpty()) {
+                        try {
+                            refreshLock.wait(1000);
+                        } catch (InterruptedException ex) {
+                            //nothing
+                        }
+                    } else {
+                        paths.addAll(refreshQueue);
+                        refreshQueue.clear();
+                        refreshSet.clear();
+                    }
+                }
+                for (String path : paths) {
+                    RemoteFileObject fo = RemoteFileSystemManager.getInstance().getFileSystem(env).findResource(path);
+                    if (fo != null) {
+                        RefreshManager refreshManager = RemoteFileSystemManager.getInstance().getFileSystem(env).getRefreshManager();
+                        refreshManager.scheduleRefresh(Arrays.asList(fo.getImplementor()), false);
+                    }
+                }
+            }
+        }        
+    }
+    
+    private void addToRefresh(String path) {
+        synchronized (refreshLock) {
+            if (!refreshSet.contains(path)) {
+                refreshSet.add(path);
+                refreshQueue.add(path);
+                refreshLock.notifyAll();
+            }
+        }
+        refreshTask.schedule(0);
     }
     
     public static FSSDispatcher getInstance(ExecutionEnvironment env) {
@@ -187,11 +236,7 @@ import org.openide.util.RequestProcessor;
                         if (respKind == FSSResponseKind.CHANGE.getChar()) {                            
                             // example: "c 0 8 /tmp/tmp"
                             String path = buf.getString();
-                            RemoteFileObject fo = RemoteFileSystemManager.getInstance().getFileSystem(env).findResource(path);
-                            if (fo != null) {
-                                RefreshManager refreshManager = RemoteFileSystemManager.getInstance().getFileSystem(env).getRefreshManager();
-                                refreshManager.scheduleRefresh(Arrays.asList(fo.getImplementor()), false);
-                            }
+                            addToRefresh(path);
                         } else {
                             RemoteLogger.info("wrong response #0: {1}", line);
                         }
@@ -292,8 +337,10 @@ import org.openide.util.RequestProcessor;
     
     /*package*/ static void sendRequest(PrintWriter writer, FSSRequest request) {
         String escapedPath = escape(request.getPath());
-        writer.printf("%c %d %d %s\n", request.getKind().getChar(), // NOI18N
+        String buffer = String.format("%c %d %d %s\n", request.getKind().getChar(), // NOI18N
                 request.getId(), escapedPath.length(), escapedPath);
+        RemoteLogger.finest("### sending request {0}", buffer);
+        writer.print(buffer);
         writer.flush();   
     }
 
@@ -425,7 +472,7 @@ import org.openide.util.RequestProcessor;
                 try {
                     String line;
                     while ((line = reader.readLine()) != null) {
-                        System.err.printf("%s\n", line); //NOI18N
+                        System.err.printf("%s %s\n", env, line); //NOI18N
                         lastErrorMessage.set(line);
                     }
                 } catch (IOException ex) {
@@ -462,8 +509,9 @@ import org.openide.util.RequestProcessor;
                 args.add("-r"); // NOI18N
                 args.add("" + REFRESH_INTERVAL);
             }
-            if (VERBOSE) {
+            if (VERBOSE > 0) {
                 args.add("-v"); // NOI18N
+                args.add("" + VERBOSE); // NOI18N
             }
             if (LOG) {
                 args.add("-l"); // NOI18N
