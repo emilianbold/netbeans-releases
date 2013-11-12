@@ -294,7 +294,7 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             aHandler = DECLARATION_CONTAINER_NAMESPACE;
         } else if (object instanceof ClassifierContainer) {
             aHandler = CLASSIFIER_CONTAINER;
-        } else if (object instanceof IncludedFileContainer.Storage) {
+        } else if (object instanceof IncludedFileContainer) {
             aHandler = INCLUDED_FILE_STORAGE;
         } else if (object instanceof TemplateParameterImpl) {
             aHandler = TEMPLATE_PARAMETER_IMPL;
@@ -570,7 +570,7 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                 break;
 
             case INCLUDED_FILE_STORAGE:
-                obj = new IncludedFileContainer.Storage(stream);
+                obj = new IncludedFileContainer(stream);
                 break;
 
             case TEMPLATE_PARAMETER_IMPL:
