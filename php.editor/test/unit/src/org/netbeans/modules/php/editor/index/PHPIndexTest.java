@@ -166,12 +166,13 @@ public class PHPIndexTest extends PHPNavTestBase {
         assertNotNull(firstCC.getFileObject());
         assertNotNull(secondCC.getFileObject());
         assertNotSame(secondCC.getFileObject(), firstCC.getFileObject());
+        TypeElement testingCC = "testGetClasses_1.php".equals(firstCC.getFileObject().getNameExt()) ? firstCC : secondCC;
         final Collection<ClassElement> preferredClasses =
-                ElementFilter.forFiles(firstCC.getFileObject()).prefer(index.getClasses(NameKind.exact("CCC")));
+                ElementFilter.forFiles(testingCC.getFileObject()).prefer(index.getClasses(NameKind.exact("CCC")));
         assertEquals(1, preferredClasses.size());
         final ClassElement preffered = getFirst(preferredClasses);
-        assertEquals(firstCC, preffered);
-        assertEquals(firstCC.getFileObject(), preffered.getFileObject());
+        assertEquals(testingCC, preffered);
+        assertEquals(testingCC.getFileObject(), preffered.getFileObject());
 
         final Collection<ClassElement> aaClasses =
                 ElementFilter.forFiles(preffered.getFileObject()).prefer(index.getClasses(NameKind.exact("AAA")));
