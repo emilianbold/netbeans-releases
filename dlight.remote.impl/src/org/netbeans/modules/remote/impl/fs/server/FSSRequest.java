@@ -50,7 +50,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public final class FSSRequest {
     
-    private static final AtomicInteger nextId = new AtomicInteger(1);
+    private static final AtomicInteger nextId = new AtomicInteger(0);
     
     private final int id;
     private final FSSRequestKind kind;
