@@ -87,7 +87,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author vkvashin
  */
-/*package*/ final class FSSDispatcher {
+/*package*/ final class FSSDispatcher implements Disposer<FSSResponse> {
 
     private static final Map<ExecutionEnvironment, FSSDispatcher> instances = 
             new HashMap<ExecutionEnvironment, FSSDispatcher>();
@@ -307,9 +307,15 @@ import org.openide.util.RequestProcessor;
         }
     }
 
+    public void dispose(FSSResponse response) {
+        synchronized (responseLock) {
+            responses.remove(response.getId());
+        }
+    }
+
     public FSSResponse dispatch(FSSRequest request) throws IOException, ConnectException, 
             CancellationException, InterruptedException, ExecutionException {
-        FSSResponse response = new FSSResponse(request);
+        FSSResponse response = new FSSResponse(request, this);
         synchronized (responseLock) {
             RemoteLogger.assertNull(responses.get(request.getId()),
                     "response should be null for id {0}", request.getId()); // NOI18N
