@@ -38,14 +38,6 @@ FILE* dirtab_get_element_cache(dirtab_element *e, bool writing);
 
 void dirtab_release_element_cache(dirtab_element *e);
 
-//FILE* dirtab_get_cache(const char* abspath, bool writing);
-
-//void dirtab_release_cache(const char* abspath);
-
-void  dirtab_lock_cache_mutex();
-
-void  dirtab_unlock_cache_mutex();
-
 void dirtab_visit(bool (*visitor) (const char* path, int index, dirtab_element* el));
 
 bool dirtab_is_empty();

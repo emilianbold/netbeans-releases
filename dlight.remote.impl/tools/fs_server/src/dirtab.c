@@ -19,8 +19,6 @@ static char* cache_path = NULL;
 static char* dirtab_file_path = NULL;
 static const char* cahe_subdir_name = "cache";
 
-static pthread_mutex_t cache_mutex = PTHREAD_MUTEX_INITIALIZER;
-
 typedef struct dirtab_element_impl {
     int index;
     char* cache_path;
@@ -299,14 +297,6 @@ void dirtab_free() {
     temp_path = NULL;
     cache_path = NULL;
     dirtab_file_path = NULL;
-}
-
-void  dirtab_lock_cache_mutex() {
-    mutex_lock(&cache_mutex);
-}
-
-void  dirtab_unlock_cache_mutex() {
-    mutex_unlock(&cache_mutex);
 }
 
 dirtab_element *dirtab_get_element(const char* abspath) {
