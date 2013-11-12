@@ -13,15 +13,15 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 
-static bool trace_flag = false;
+static TraceLevel trace_level = TRACE_NONE;
 static FILE *log_file = NULL;
 
-void set_trace(bool on_off) {
-    trace_flag= on_off;
+void set_trace(TraceLevel new_level) {
+    trace_level= new_level;
 }
 
-bool get_trace() {
-    return trace_flag;
+TraceLevel get_trace() {
+    return trace_level;
 }
 
 void report_error(const char *format, ...) {
@@ -32,8 +32,8 @@ void report_error(const char *format, ...) {
     va_end (args);
 }
 
-void trace(const char *format, ...) {
-    if (trace_flag) {
+void trace(TraceLevel level, const char *format, ...) {
+    if (trace_level >= level) {
         va_list args;
         va_start(args, format);
         fprintf(stderr, "fs_server[%li]: ", (long) getpid());
@@ -79,7 +79,7 @@ void soft_assert(int condition, char* format, ...) {
 
 void mutex_lock(pthread_mutex_t *mutex) {
     if (pthread_mutex_lock(mutex)) {
-        report_error("error unlocking mutex: %s\n", strerror(errno));
+        report_error("error locking mutex: %s\n", strerror(errno));
         exit(FAILURE_LOCKING_MUTEX);
     }
 }
@@ -117,7 +117,7 @@ int closedir_if_not_null(DIR *d) {
 static int __thread long stopwatch_start_time;
 
 void stopwatch_start() {
-    if (trace_flag) {
+    if (trace_level) {
         struct timeval curr_time;
         gettimeofday(&curr_time, 0);
         stopwatch_start_time = curr_time.tv_sec * 1000 + curr_time.tv_usec / 1000;
@@ -125,11 +125,11 @@ void stopwatch_start() {
 }
 
 void stopwatch_stop(const char* message) {
-    if (trace_flag) {
+    if (trace_level) {
         struct timeval curr_time;
         gettimeofday(&curr_time, 0);
         long end_time = curr_time.tv_sec * 1000 + curr_time.tv_usec / 1000;
-        trace("%s took %d ms\n", message, end_time - stopwatch_start_time);
+        trace(TRACE_INFO, "%s took %d ms\n", message, end_time - stopwatch_start_time);
     }    
 }
 

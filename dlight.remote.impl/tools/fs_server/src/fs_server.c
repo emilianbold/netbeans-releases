@@ -252,9 +252,9 @@ static void read_entries_from_cache(array/*<fs_entry>*/ *entries, FILE *cache_fp
             report_error("error: first line in cache for %s is not '%s', but is '%s'", path, path, buf);
         }
         while (fgets(buf, buf_size, cache_fp)) {
-            trace("\tread entry: %s", buf);
+            trace(TRACE_FINE, "\tread entry: %s", buf);
             if (*buf == '\n' || *buf == 0) {
-                trace("an empty one; continuing...");
+                trace(TRACE_FINE, "an empty one; continuing...");
                 continue;
             }
             fs_entry *entry = decode_entry_response(buf);
@@ -430,7 +430,7 @@ static bool form_entry_response(char* response_buf, const int response_buf_size,
 static void response_ls(int request_id, const char* path, bool recursive, int nesting_level) {
 
     if (is_prohibited(path)) {
-        trace("ls: skipping %s\n", path);
+        trace(TRACE_INFO, "ls: skipping %s\n", path);
         return;
     }
     
@@ -586,10 +586,10 @@ static int entry_comparator(const void *element1, const void *element2) {
 
 static bool refresh_visitor(const char* path, int index, dirtab_element* el) {
     if (is_prohibited(path)) {
-        trace("refresh manager: skipping %s\n", path);
+        trace(TRACE_INFO, "refresh manager: skipping %s\n", path);
         return true;
     }
-    trace("refresh manager: visiting %s\n", path);
+    trace(TRACE_INFO, "refresh manager: visiting %s\n", path);
     
     array/*<fs_entry>*/ old_entries;
     array/*<fs_entry>*/ new_entries;
@@ -613,53 +613,53 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el) {
             fs_entry *old_entry = array_get(&old_entries, i);
             if (new_entry->name_len != old_entry->name_len) {
                 differs = true;
-                trace("refresh manager: names differ (1) in directory %s: %s vs %s\n", path, new_entry->name, old_entry->name);
+                trace(TRACE_INFO, "refresh manager: names differ (1) in directory %s: %s vs %s\n", path, new_entry->name, old_entry->name);
                 break;
             }
             if (strcmp(new_entry->name, old_entry->name) != 0) {
                 differs = true;
-                trace("refresh manager: names differ (2) in directory %s: %s vs %s\n", path, new_entry->name, old_entry->name);
+                trace(TRACE_INFO, "refresh manager: names differ (2) in directory %s: %s vs %s\n", path, new_entry->name, old_entry->name);
                 break;
             }
             // names are same; check types (modes))
             if (new_entry->mode != old_entry->mode) {
                 differs = true;
-                trace("refresh manager: modes differ for %s/%s: %d vs %d\n", path, new_entry->name, new_entry->mode, old_entry->mode);
+                trace(TRACE_INFO, "refresh manager: modes differ for %s/%s: %d vs %d\n", path, new_entry->name, new_entry->mode, old_entry->mode);
                 break;
             }
             // if links, then check links
             if (S_ISLNK(new_entry->mode)) {
                 if (new_entry->link_len != old_entry->link_len) {
                     differs = true;
-                    trace("refresh manager: links differ (1) for %s/%s: %s vs %s\n", path, new_entry->name, new_entry->link, old_entry->link);
+                    trace(TRACE_INFO, "refresh manager: links differ (1) for %s/%s: %s vs %s\n", path, new_entry->name, new_entry->link, old_entry->link);
                     break;
                 }
                 if (strcmp(new_entry->link, old_entry->link) != 0) {
                     differs = true;
-                    trace("refresh manager: links differ (2) for %s/%s: %s vs %s\n", path, new_entry->name, new_entry->link, old_entry->link);
+                    trace(TRACE_INFO, "refresh manager: links differ (2) for %s/%s: %s vs %s\n", path, new_entry->name, new_entry->link, old_entry->link);
                     break;
                 }                
             }
             // names, modes and link targets are same
             if (new_entry->uid != old_entry->uid) {
                 differs = true;
-                trace("refresh manager: uids differ for %s/%s: %d vs %d\n", path, new_entry->name, new_entry->uid, old_entry->uid);
+                trace(TRACE_INFO, "refresh manager: uids differ for %s/%s: %d vs %d\n", path, new_entry->name, new_entry->uid, old_entry->uid);
                 break;
             }
             if (new_entry->gid != old_entry->gid) {
                 differs = true;
-                trace("refresh manager: gids differ for %s/%s: %d vs %d\n", path, new_entry->name, new_entry->gid, old_entry->gid);
+                trace(TRACE_INFO, "refresh manager: gids differ for %s/%s: %d vs %d\n", path, new_entry->name, new_entry->gid, old_entry->gid);
                 break;
             }
             if (S_ISREG(new_entry->mode)) {
                 if (new_entry->size != old_entry->size) {
                     differs = true;
-                    trace("refresh manager: sizes differ for %s/%s: %d vs %d\n", path, new_entry->name, new_entry->size, old_entry->size);
+                    trace(TRACE_INFO, "refresh manager: sizes differ for %s/%s: %d vs %d\n", path, new_entry->name, new_entry->size, old_entry->size);
                     break;
                 }
                 if (new_entry->mtime != old_entry->mtime) {
                     differs = true;
-                    trace("refresh manager: times differ for %s/%s: %lld vs %lld\n", path, new_entry->name, new_entry->mtime, old_entry->mtime);
+                    trace(TRACE_INFO, "refresh manager: times differ for %s/%s: %lld vs %lld\n", path, new_entry->name, new_entry->mtime, old_entry->mtime);
                     break;
                 }
             }
@@ -667,7 +667,7 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el) {
     }
 
     if (differs) {
-        trace("refresh manager: sending notification for %s\n", path);
+        trace(TRACE_INFO, "refresh manager: sending notification for %s\n", path);
         // trailing '\n' already there, added by form_entry_response
         fprintf(stdout, "%c 0 %li %s\n", FS_RSP_CHANGE, (long) strlen(path), path);
         fflush(stdout);
@@ -678,14 +678,14 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el) {
 }
 
 static void *refresh_loop(void *data) {    
-    trace("refresh manager started; sleep interval is %d\n", refresh_sleep);
+    trace(TRACE_INFO, "refresh manager started; sleep interval is %d\n", refresh_sleep);
     int pass = 0;
     while (dirtab_is_empty()) { //TODO: replace with notification?
         sleep(refresh_sleep ? refresh_sleep : 2);
     }
     while (state_get_proceed()) {
         pass++;
-        trace("refresh manager, pass %d\n", pass);
+        trace(TRACE_INFO, "refresh manager, pass %d\n", pass);
         dirtab_flush(); // TODO: find the appropriate place
         stopwatch_start();
         dirtab_visit(refresh_visitor);
@@ -694,17 +694,17 @@ static void *refresh_loop(void *data) {
             sleep(refresh_sleep);
         }
     }
-    trace("refresh manager stopped\n");
+    trace(TRACE_INFO, "refresh manager stopped\n");
     return NULL;
 }
 
 static void *rp_loop(void *data) {
     int thread_num = *((int*) data);
-    trace("Thread #%d started\n", thread_num);
+    trace(TRACE_INFO, "Thread #%d started\n", thread_num);
     while (true) {
         fs_request* request = blocking_queue_poll(&req_queue);
         if (request) {
-            trace("thread[%d] request #%d sz=%d kind=%c len=%d path=%s\n", 
+            trace(TRACE_INFO, "thread[%d] request #%d sz=%d kind=%c len=%d path=%s\n", 
                     thread_num, request->id, request->size, request->kind, request->len, request->path);
             process_request(request);
             free(request);
@@ -714,7 +714,7 @@ static void *rp_loop(void *data) {
             }
         }
     }
-    trace("Thread #%d done\n", thread_num);
+    trace(TRACE_INFO, "Thread #%d done\n", thread_num);
     return NULL;
 }
 
@@ -750,15 +750,15 @@ static void main_loop() {
     
     if (rp_thread_count > 1) {
         blocking_queue_init(&req_queue);
-        trace("Staring %d threads\n", rp_thread_count);
+        trace(TRACE_INFO, "Staring %d threads\n", rp_thread_count);
         int thread_num[rp_thread_count];
         for (int i = 0; i < rp_thread_count; i++) {
-            trace("Starting thread #%d...\n", i);
+            trace(TRACE_INFO, "Starting thread #%d...\n", i);
             thread_num[i] = i;
             pthread_create(&rp_threads[i], NULL, &rp_loop, &thread_num[i]);
         }
     } else {
-        trace("Starting in single-thread mode\n");
+        trace(TRACE_INFO, "Starting in single-thread mode\n");
     }
 
     if (refresh) {
@@ -772,11 +772,11 @@ static void main_loop() {
     char *raw_req_buffer = malloc(buf_size);
     char *req_buffer = malloc(buf_size);
     while(fgets(raw_req_buffer, buf_size, stdin)) {
-        trace("raw request: %s", raw_req_buffer); // no LF since buffer ends it anyhow 
+        trace(TRACE_INFO, "raw request: %s", raw_req_buffer); // no LF since buffer ends it anyhow 
         log_print(raw_req_buffer);
         fs_request* request = decode_request(raw_req_buffer, (fs_request*) req_buffer, buf_size);
         if (request) {
-            trace("decoded request #%d sz=%d kind=%c len=%d path=%s\n", request->id, request->size, request->kind, request->len, request->path);
+            trace(TRACE_INFO, "decoded request #%d sz=%d kind=%c len=%d path=%s\n", request->id, request->size, request->kind, request->len, request->path);
             if (request->kind == FS_REQ_QUIT) {
                 break;
             }
@@ -812,13 +812,13 @@ static void main_loop() {
     free(raw_req_buffer);
     state_set_proceed(false);
     blocking_queue_shutdown(&req_queue);
-    trace("Max. requests queue size: %d\n", blocking_queue_max_size(&req_queue));
+    trace(TRACE_INFO, "Max. requests queue size: %d\n", blocking_queue_max_size(&req_queue));
     if (statistics) {
         fprintf(stderr, "Max. requests queue size: %d\n", blocking_queue_max_size(&req_queue));
     }
-    trace("Shutting down. Joining threads...\n");
+    trace(TRACE_INFO, "Shutting down. Joining threads...\n");
     for (int i = 0; i < rp_thread_count; i++) {
-        trace("Shutting down. Joining thread #%i [%ui]\n", i, rp_threads[i]);
+        trace(TRACE_INFO, "Shutting down. Joining thread #%i [%ui]\n", i, rp_threads[i]);
         pthread_join(rp_threads[i], NULL);
     }
 }
@@ -838,8 +838,9 @@ static void usage(char* argv[]) {
 
 void process_options(int argc, char* argv[]) {
     int opt;
-    int new_thread_count, new_refresh_sleep;
-    while ((opt = getopt(argc, argv, "r:pvt:ls")) != -1) {
+    int new_thread_count, new_refresh_sleep, new_trace_level;
+    TraceLevel default_trace_leve = TRACE_INFO;    
+    while ((opt = getopt(argc, argv, "r:pv:t:ls")) != -1) {
         switch (opt) {
             case 's':
                 statistics = true;
@@ -858,7 +859,19 @@ void process_options(int argc, char* argv[]) {
                 persistence  = true;
                 break;
             case 'v':
-                set_trace(true);
+                new_trace_level = atoi(optarg);
+                switch (new_trace_level) {
+                    case TRACE_NONE:
+                    case TRACE_INFO:
+                    case TRACE_FINE:
+                        set_trace(new_trace_level);
+                        break;
+                    default:
+                        report_error("incorrect value of -v flag: %d. Defaulting to %d\n", 
+                                new_trace_level, default_trace_leve);
+                        set_trace(new_trace_level);
+                        break;
+                }
                 break;
             case 't':
                 new_thread_count = atoi(optarg);
@@ -885,13 +898,13 @@ void process_options(int argc, char* argv[]) {
 }
 
 static bool print_visitor(const char* path, int index, dirtab_element* el) {
-    trace("%d %s\n", index, path);
+    trace(TRACE_INFO, "%d %s\n", index, path);
     return true;
 }
 
 int main(int argc, char* argv[]) {
     process_options(argc, argv);
-    trace("Version %d.%d (%s %s)\n", FS_SERVER_MAJOR_VERSION, FS_SERVER_MINOR_VERSION, __DATE__, __TIME__);
+    trace(TRACE_INFO, "Version %d.%d (%s %s)\n", FS_SERVER_MAJOR_VERSION, FS_SERVER_MINOR_VERSION, __DATE__, __TIME__);
     dirtab_init();
     const char* basedir = dirtab_get_basedir();
     if (chdir(basedir)) {
@@ -901,7 +914,7 @@ int main(int argc, char* argv[]) {
     lock_or_unloock(true);
     state_init();
     if (get_trace() && ! dirtab_is_empty()) {
-        trace("loaded dirtab:\n");
+        trace(TRACE_INFO, "loaded dirtab:\n");
         dirtab_visit(print_visitor);
     }
     if (log_flag) {

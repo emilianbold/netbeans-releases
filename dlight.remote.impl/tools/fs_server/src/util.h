@@ -16,15 +16,21 @@
 extern "C" {
 #endif
 
-void set_trace(bool on_off);
-bool get_trace();
+typedef enum TraceLevel {
+    TRACE_NONE = 0,
+    TRACE_INFO = 1,
+    TRACE_FINE = 2
+} TraceLevel;
+
+void set_trace(TraceLevel new_level);
+TraceLevel get_trace();
+void trace(TraceLevel level, const char *format, ...);
 
 void log_print(const char *format, ...);
 void log_open(const char* path);
 void log_close();
 
 void report_error(const char *format, ...);
-void trace(const char *format, ...);
 void soft_assert(int condition, char* format, ...);
 
 void mutex_unlock(pthread_mutex_t *mutex);
