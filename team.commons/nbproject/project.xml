@@ -6,11 +6,12 @@
             <code-name-base>org.netbeans.modules.team.commons</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.openide.loaders</code-name-base>
+                    <code-name-base>org.netbeans.api.java.classpath</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.2</specification-version>
+                        <release-version>1</release-version>
+                        <specification-version>1.38</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -21,22 +22,14 @@
                         <release-version>1</release-version>
                         <specification-version>1.13</specification-version>
                     </run-dependency>
-                </dependency>                        
+                </dependency>
                 <dependency>
-                    <code-name-base>org.openide.nodes</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>7.9</specification-version>
-                    </run-dependency>
-                </dependency>                        
-                <dependency>
-                    <code-name-base>org.netbeans.api.java.classpath</code-name-base>
+                    <code-name-base>org.netbeans.modules.options.api</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.38</specification-version>
+                        <specification-version>1.37</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -45,6 +38,22 @@
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>6.31</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.awt</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.dialogs</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.9</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -64,11 +73,27 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.openide.loaders</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.modules</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>7.38</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.nodes</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.9</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -96,29 +121,13 @@
                     </run-dependency>
                 </dependency>                
                 <dependency>
-                    <code-name-base>org.openide.awt</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>7.2</specification-version>
-                    </run-dependency>
-                </dependency>     
-                <dependency>
-                    <code-name-base>org.openide.dialogs</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>7.9</specification-version>
-                    </run-dependency>
-                </dependency>              
-                <dependency>
                     <code-name-base>org.openide.windows</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>6.24</specification-version>
                     </run-dependency>
-                </dependency>                             
+                </dependency>
             </module-dependencies>
             <test-dependencies>
                 <test-type>
@@ -139,7 +148,7 @@
                         <test/>
                     </test-dependency>
                 </test-type>
-            </test-dependencies>            
+            </test-dependencies>
             <friend-packages>
                 <friend>oracle.jdevimpl.nbteam.ide</friend>
                 <friend>org.netbeans.modules.bugtracking</friend>

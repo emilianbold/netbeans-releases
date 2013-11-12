@@ -85,7 +85,7 @@ import org.openide.util.NbBundle;
  *
  * @author S. Aubrecht
  */
-@OptionsPanelController.Keywords(keywords={"#KW_ToDo", "action", "items"}, location=OptionsDisplayer.ADVANCED, tabTitle="#LBL_Options")
+@OptionsPanelController.Keywords(keywords={"#KW_ToDo", "action", "items"}, location="Team", tabTitle="#LBL_Options")
 class ToDoCustomizer extends javax.swing.JPanel implements DocumentListener{
     
     private boolean changed = false;

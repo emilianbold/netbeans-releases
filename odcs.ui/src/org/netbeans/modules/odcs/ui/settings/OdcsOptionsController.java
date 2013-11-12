@@ -54,6 +54,7 @@ import org.openide.util.Lookup;
 @OptionsPanelController.SubRegistration(
     id = OdcsOptionsController.OPTIONS_PATH,
     displayName = "#LBL_Options", // NOI18N
+    location="Team", // NOI18N
     keywords = "#KW_Odcs", // NOI18N
     keywordsCategory = "Advanced/Odcs" // NOI18N
 )
