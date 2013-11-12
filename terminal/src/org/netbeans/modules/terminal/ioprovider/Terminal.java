@@ -1012,8 +1012,11 @@ public final class Terminal extends JComponent {
 		}
 	    }
 	    term.setKeymap(Lookup.getDefault().lookup(Keymap.class), actions);
+	    // needed for Ctrl+Tab, Ctrl+Shift+Tab switching
+	    term.getScreen().setFocusTraversalKeysEnabled(false);
 	} else {
 	    term.setKeymap(null, null);
+	    term.getScreen().setFocusTraversalKeysEnabled(true);
 	}
     }
     
