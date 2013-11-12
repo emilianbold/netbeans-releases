@@ -54,6 +54,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.spi.embedding.JsEmbeddingProviderPlugin;
+import org.netbeans.modules.html.knockout.KODataBindContext.ParentContext;
 import org.netbeans.modules.html.knockout.model.KOModel;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -76,11 +77,10 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
     private final LinkedList<StackItem> stack;
     private String lastTagOpen = null;
 
-    private final List<ParentContext> parents = new ArrayList<>();
+    private final KODataBindContext dataBindContext = new KODataBindContext();
 
-    private String data;
+    private final KOTemplateContext templateContext = new KOTemplateContext();
 
-    private boolean inForEach;
 
     public KOJsEmbeddingProviderPlugin() {
         JS_LANGUAGE = Language.find(KOUtils.JAVASCRIPT_MIMETYPE); //NOI18N
@@ -101,8 +101,8 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
 
     @Override
     public void endProcessing() {
-        data = null;
-        parents.clear();
+        dataBindContext.clear();
+        templateContext.clear();
         stack.clear();
         lastTagOpen = null;
     }
@@ -110,6 +110,9 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
     @Override
     public boolean processToken() {
         boolean processed = false;
+
+        templateContext.process(tokenSequence.token());
+
         String tokenText = tokenSequence.token().text().toString();
 
         switch (tokenSequence.token().id()) {
@@ -127,7 +130,7 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
                     if (top.balance == 0) {
                         processed = true;
                         stack.pop();
-                        endKnockoutSnippet(true);
+                        dataBindContext.pop();
                     }
                 }
                 break;
@@ -153,7 +156,7 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
                         if (embedded.embedded(JS_LANGUAGE) != null) {
                             processed = true;
 
-                            startKnockoutSnippet(null, false);
+                            startKnockoutSnippet(dataBindContext);
 
                             boolean putParenthesis =
                                     !embedded.token().text().toString().trim().endsWith(";");
@@ -171,9 +174,11 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
                                 }
                             }
                             if (emptyLength < seq.length()) {
-                                embeddings.add(snapshot.create(embedded.offset() + emptyLength, embedded.token().length() - emptyLength, KOUtils.JAVASCRIPT_MIMETYPE));
+                                embeddings.add(snapshot.create(embedded.offset() + emptyLength,
+                                        embedded.token().length() - emptyLength, KOUtils.JAVASCRIPT_MIMETYPE));
                             } else {
-                                embeddings.add(snapshot.create(embedded.offset(), embedded.token().length(), KOUtils.JAVASCRIPT_MIMETYPE));
+                                embeddings.add(snapshot.create(embedded.offset(),
+                                        embedded.token().length(), KOUtils.JAVASCRIPT_MIMETYPE));
                             }
                             if (putParenthesis) {
                                 embeddings.add(snapshot.create(")", KOUtils.JAVASCRIPT_MIMETYPE));
@@ -182,14 +187,13 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
                                 embeddings.add(snapshot.create(";", KOUtils.JAVASCRIPT_MIMETYPE));
                             }
 
-                            endKnockoutSnippet(false);
+                            endKnockoutSnippet();
                         }
                     }
                     if (setData) {
                         if (dataValue != null) {
-                            startKnockoutSnippet(dataValue.text().toString().trim(), foreach);
+                            dataBindContext.push(dataValue.text().toString().trim(), foreach);
                         }
-                        setData = false;
                     }
                     break;
                 }
@@ -199,88 +203,63 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
         return processed;
     }
 
-    private void startKnockoutSnippet(String newData, boolean foreach) {
-        assert !foreach || newData != null;
-        if (newData != null) {
-            String replacement = (data == null || data.equals("$root")) ? "ko.$bindings" : data;
-            String toAdd = newData.replaceAll("$data", replacement);
+    private void startKnockoutSnippet(KODataBindContext context) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("(function(){\n"); // NOI18N
 
-            if (foreach) {
-                toAdd = toAdd + "[0]";
-            }
-            if (data == null || "$root".equals(data)) {
-                parents.add(new ParentContext("ko.$bindings", false));
-            } else {
-                parents.add(new ParentContext(data, foreach));
-            }
-            data = toAdd;
-            inForEach = foreach;
-        } else {
-            StringBuilder sb = new StringBuilder();
-            sb.append("(function(){\n"); // NOI18N
+        // for now this is actually just a placeholder
+        sb.append("var $element;\n");
 
-            // for now this is actually just a placeholder
-            sb.append("var $element;\n");
+        // define root as reference
+        sb.append("var $root = ko.$bindings;\n"); // NOI18N
 
-            // define root as reference
-            sb.append("var $root = ko.$bindings;\n"); // NOI18N
-
-            if (inForEach) {
-                sb.append("var $index = 0;\n");
-            }
-
-            // define data object
-            if (data == null) {
-                data = "$root"; // NOI18N
-            }
-
-            sb.append("var $parentContext = ");
-            generateContext(sb, parents);
-            sb.append(";\n");
-
-            sb.append("var $context = ");
-            List<ParentContext> current = new ArrayList<>(parents);
-            current.add(new ParentContext(data, inForEach));
-            generateContext(sb, current);
-            sb.append(";\n");
-            generateParentAndContextData("$context.", sb, parents);
-
-            generateParents(sb, parents);
-
-            generateWithHierarchyStart(sb, parents);
-
-            String dataValue = data;
-            if (data == null || "$root".equals(data)) {
-                dataValue = "ko.$bindings";
-            }
-            // may happen if enclosing with/foreach is empty - user is
-            // going to fill it
-            if (dataValue.trim().isEmpty()) {
-                dataValue = "undefined";
-            }
-            sb.append("var $data = ").append(dataValue).append(";\n");
-            generateWithHierarchyEnd(sb, parents);
-
-            sb.append("with ($data) {\n");
-
-            embeddings.add(snapshot.create(sb.toString(), KOUtils.JAVASCRIPT_MIMETYPE));
+        if (context.isInForEach()) {
+            sb.append("var $index = 0;\n");
         }
+
+        // define data object
+        String currentData = context.getData();
+        if (currentData == null) {
+            currentData = "$root"; // NOI18N
+        }
+
+        sb.append("var $parentContext = ");
+        generateContext(sb, context.getParents());
+        sb.append(";\n");
+
+        sb.append("var $context = ");
+        List<ParentContext> current = new ArrayList<>(context.getParents());
+        current.add(new ParentContext(currentData, context.isInForEach()));
+        generateContext(sb, current);
+        sb.append(";\n");
+        generateParentAndContextData("$context.", sb, context.getParents());
+
+        generateParents(sb, context.getParents());
+
+        generateWithHierarchyStart(sb, context.getParents());
+
+        String dataValue = currentData;
+        if ("$root".equals(currentData)) {
+            dataValue = "ko.$bindings";
+        }
+        // may happen if enclosing with/foreach is empty - user is
+        // going to fill it
+        if (dataValue.trim().isEmpty()) {
+            dataValue = "undefined";
+        }
+        sb.append("var $data = ").append(dataValue).append(";\n");
+        generateWithHierarchyEnd(sb, context.getParents());
+
+        sb.append("with ($data) {\n");
+
+        embeddings.add(snapshot.create(sb.toString(), KOUtils.JAVASCRIPT_MIMETYPE));
     }
 
-    private void endKnockoutSnippet(boolean up) {
-        if (up) {
-            inForEach = false;
-            if (parents.isEmpty()) {
-                throw new IllegalStateException();
-            }
-            ParentContext context = parents.remove(parents.size() - 1);
-            data = context.getValue();
-        } else {
-            StringBuilder sb = new StringBuilder();
-            sb.append("}\n");
-            sb.append("});\n");
-            embeddings.add(snapshot.create(sb.toString(), KOUtils.JAVASCRIPT_MIMETYPE));
-        }
+    private void endKnockoutSnippet() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("}\n");
+        sb.append("});\n");
+        embeddings.add(snapshot.create(sb.toString(), KOUtils.JAVASCRIPT_MIMETYPE));
     }
 
     private static void generateContext(StringBuilder sb, List<ParentContext> parents) {
@@ -361,6 +340,7 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
     private static class StackItem {
 
         final String tag;
+        
         int balance;
 
         public StackItem(String tag) {
@@ -369,23 +349,4 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
         }
     }
 
-    private static class ParentContext {
-
-        private final String value;
-
-        private final boolean index;
-
-        public ParentContext(String value, boolean index) {
-            this.value = value;
-            this.index = index;
-        }
-
-        public String getValue() {
-            return value;
-        }
-
-        public boolean hasIndex() {
-            return index;
-        }
-    }
 }
