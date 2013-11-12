@@ -20,6 +20,8 @@ extern "C" {
 struct dirtab_element;
 typedef struct dirtab_element dirtab_element;
     
+void dirtab_set_persistence_dir(const char* dir);
+
 /** initializes dirtab;must be called before any other dirtab_* function */    
 void dirtab_init();
 

@@ -52,8 +52,27 @@ typedef struct dirtab {
 } dirtab;
 
 static dirtab table;
+static bool initialized = false;
+char *persistence_dir = NULL;
+
+void dirtab_set_persistence_dir(const char* dir) {
+    if (initialized) {
+        report_error("persistence dir should be set BEFORE initialization!\n");
+        exit(DIRTAB_SET_PERSIST_DIR_AFTER_INITIALIZATION);
+    }
+    if (!dir_exists(dir)) {
+        report_error("directory does not exist: %s\n", dir);
+        exit(DIRTAB_SET_PERSIST_INEXISTENT);
+    }
+    persistence_dir = strdup(dir);
+}
 
 static void init_table() {
+    if (initialized) {
+        report_error("directories table should only be initialized once!\n");
+        exit(DIRTAB_DOUBLE_INITIALIZATION);
+    }
+    initialized = true;
     pthread_mutex_init(&table.mutex, NULL);
     table.dirty =  false;
     table.size =  0;
@@ -252,17 +271,22 @@ void dirtab_init() {
     cache_path = malloc(PATH_MAX);
     dirtab_file_path = malloc(PATH_MAX);
 
-    const char* home = get_home_dir();
-    if (!home) {
-        exit(FAILURE_GETTING_HOME_DIR);
-    }
-    strncpy(root, home, PATH_MAX);
+    if (persistence_dir) {
+        strcpy(root, persistence_dir);
+        free(persistence_dir);
+    } else {
+        const char* home = get_home_dir();
+        if (!home) {
+            exit(FAILURE_GETTING_HOME_DIR);
+        }
+        strncpy(root, home, PATH_MAX);
 
-    strcat(root, "/.netbeans");    
-    mkdir_or_die(root, FAILURE_CREATING_STORAGE_SUPER_DIR, FAILURE_ACCESSING_STORAGE_SUPER_DIR);
-        
-    strcat(root, "/remotefs");
-    mkdir_or_die(root, FAILURE_CREATING_STORAGE_DIR, FAILURE_ACCESSING_STORAGE_DIR);
+        strcat(root, "/.netbeans");
+        mkdir_or_die(root, FAILURE_CREATING_STORAGE_SUPER_DIR, FAILURE_ACCESSING_STORAGE_SUPER_DIR);
+
+        strcat(root, "/remotefs");
+        mkdir_or_die(root, FAILURE_CREATING_STORAGE_DIR, FAILURE_ACCESSING_STORAGE_DIR);
+    }
     
     strcpy(cache_path, root);
     strcat(cache_path, "/");

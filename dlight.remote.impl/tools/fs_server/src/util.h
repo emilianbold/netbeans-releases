@@ -38,6 +38,7 @@ void mutex_lock(pthread_mutex_t *mutex);
 
 const char* get_home_dir();
 bool file_exists(const char* path);
+bool dir_exists(const char* path);
 
 int fclose_if_not_null(FILE* f);
 int closedir_if_not_null(DIR *d);

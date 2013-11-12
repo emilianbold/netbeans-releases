@@ -105,6 +105,14 @@ bool file_exists(const char* path) {
     return true;
 }
 
+bool dir_exists(const char* path) {
+    struct stat stat_buf;
+    if (stat(path, &stat_buf) == -1 ) {
+        return errno != ENOENT;        
+    }
+    return S_ISDIR(stat_buf.st_mode);
+}
+
 int fclose_if_not_null(FILE* f) {
     return f ? fclose(f) : 0;
 }

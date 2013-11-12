@@ -827,12 +827,13 @@ static void usage(char* argv[]) {
     char *prog_name = strrchr(argv[0], '/');
     fprintf(stderr, 
             "Usage: %s [-t nthreads] [-v] [-p] [-r]\n"
-            "   -t nthreads response processing threads count (default is %d)\n"
-            "   -p persisnence\n"
-            "   -r nsec  set refresh ON and sets refresh interval in seconds\n"
-            "   -v verbose: print trace messages\n"
-            "   -l log: log all requests into log file\n"
-            "   -s statistics: orint some statistics output to stderr\n"
+            "   -t <nthreads> response processing threads count (default is %d)\n"
+            "   -p log responses into persisnence\n"
+            "   -r <nsec>  set refresh ON and sets refresh interval in seconds\n"
+            "   -v <verbose-level>: print trace messages\n"
+            "   -l log all requests into log file\n"
+            "   -s statistics: print some statistics output to stderr\n"
+            "   -d persistence directory: where to log responses (valid only if -p is set)\n"
             , prog_name ? prog_name : argv[0], rp_thread_count);
 }
 
@@ -840,8 +841,13 @@ void process_options(int argc, char* argv[]) {
     int opt;
     int new_thread_count, new_refresh_sleep, new_trace_level;
     TraceLevel default_trace_leve = TRACE_INFO;    
-    while ((opt = getopt(argc, argv, "r:pv:t:ls")) != -1) {
+    while ((opt = getopt(argc, argv, "r:pv:t:lsd:")) != -1) {
         switch (opt) {
+            case 'd':
+                if (optarg) {
+                    dirtab_set_persistence_dir(optarg);
+                }
+                break;
             case 's':
                 statistics = true;
                 break;
