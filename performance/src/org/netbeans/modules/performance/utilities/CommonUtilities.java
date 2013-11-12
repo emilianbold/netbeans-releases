@@ -813,8 +813,11 @@ public class CommonUtilities {
 
         testTag=null;
         for (int i=0;i<allPerfDoc.getElementsByTagName("Test").getLength();i++) {
-            if (("name=\""+name+"\"").equalsIgnoreCase( allPerfDoc.getElementsByTagName("Test").item(i).getAttributes().getNamedItem("name").toString() ) ) {
-                testTag =(Element)allPerfDoc.getElementsByTagName("Test").item(i);
+            NamedNodeMap attributes = allPerfDoc.getElementsByTagName("Test").item(i).getAttributes();
+            String nameFromDoc = attributes.getNamedItem("name").toString();
+            String classnameFromDoc = attributes.getNamedItem("classname").toString();
+            if (("name=\"" + name + "\"").equalsIgnoreCase(nameFromDoc) && ("classname=\"" + classname + "\"").equalsIgnoreCase(classnameFromDoc)) {
+                testTag = (Element) allPerfDoc.getElementsByTagName("Test").item(i);
                 break;
             }
         }
