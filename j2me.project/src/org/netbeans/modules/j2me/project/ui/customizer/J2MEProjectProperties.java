@@ -557,6 +557,10 @@ public final class J2MEProjectProperties {
             String platformProfile = config.get(PROP_PLATFORM_PROFILE) != null ? config.get(PROP_PLATFORM_PROFILE) : RUN_CONFIGS.get(null).get(PROP_PLATFORM_PROFILE);
             String platformApis = config.get(PROP_PLATFORM_APIS) != null ? config.get(PROP_PLATFORM_APIS) : RUN_CONFIGS.get(null).get(PROP_PLATFORM_APIS);
             StringBuilder sbBootCP = new StringBuilder();
+            if (name2ProfileMap.get(platformConfiguration) == null || name2ProfileMap.get(platformProfile) == null) {
+                //If config or profile is missing, probably platform is broken. Then don't overwrite bootcp.
+                continue;
+            }
             sbBootCP.append(name2ProfileMap.get(platformConfiguration).getClassPath());
             sbBootCP.append(":").append(name2ProfileMap.get(platformProfile).getClassPath()); //NOI18N
             if (platformApis != null) {
