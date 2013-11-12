@@ -56,7 +56,6 @@ import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
-import static org.netbeans.modules.mercurial.ui.queues.Bundle.*;
 
 /**
  *
