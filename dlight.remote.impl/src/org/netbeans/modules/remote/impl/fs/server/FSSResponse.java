@@ -161,4 +161,10 @@ import org.openide.util.NotImplementedException;
     public void cancel() {
         throw new NotImplementedException();
     }
+
+    @Override
+    public String toString() {
+        return  getClass().getSimpleName() + ' ' + requestKind + " #" + requestId + //NOI18N
+                ' ' + requestPath + " pkg.count=" + packages.size(); //NOI18N
+    }    
 }
