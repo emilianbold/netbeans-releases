@@ -919,11 +919,12 @@ int main(int argc, char* argv[]) {
     }
     if (log_flag) {
        log_open("log") ;
-       log_print("\n--------------------------------------\nfs_server started  ");
+       log_print("\n--------------------------------------\nfs_server version %d.%d (%s %s) started on ", 
+               FS_SERVER_MAJOR_VERSION, FS_SERVER_MINOR_VERSION, __DATE__, __TIME__);
        time_t t = time(NULL);
        struct tm *tt = localtime(&t);
        if (tt) {
-           log_print("%d/%02d/%02d %02d:%02d:%02d\n", 
+           log_print("%d/%02d/%02d at %02d:%02d:%02d\n", 
                    tt->tm_year+1900, tt->tm_mon + 1, tt->tm_mday, 
                    tt->tm_hour, tt->tm_min, tt->tm_sec);
        } else {
