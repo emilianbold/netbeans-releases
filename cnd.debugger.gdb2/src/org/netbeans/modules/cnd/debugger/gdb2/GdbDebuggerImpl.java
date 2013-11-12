@@ -689,39 +689,45 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         postedKill = true;
 
         //termset.finish();
-        if (gdb != null && gdb.connected()) {
-            // see IZ 191508, need to pause before exit
-            // or kill gdb if process pid is unavailable
-            if (getHost().getPlatform() == Platform.Windows_x86 || !pause(true)) {
-                try {
-                    executor.terminate();
+        
+        NativeDebuggerManager.getRequestProcessor().post(new Runnable() {
+            @Override
+            public void run() {
+                if (gdb != null && gdb.connected()) {
+                    // see IZ 191508, need to pause before exit
+                    // or kill gdb if process pid is unavailable
+                    if (getHost().getPlatform() == Platform.Windows_x86 || !pause(true)) {
+                        try {
+                            executor.terminate();
+                            kill();
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                        return;
+                    }
+
+                    // Ask gdb to quit (shutdown)
+                    MICommand cmd = new MiCommandImpl("-gdb-exit") { // NOI18N
+
+                        @Override
+                        protected void onError(MIRecord record) {
+                            finish();
+                        }
+
+                        @Override
+                        protected void onExit(MIRecord record) {
+                            kill();
+                            finish();
+                        }
+                    };
+                    gdb.sendCommand(cmd);
+                } else {
+                    // since there's no gdb connection (e.g. failed to start)
+                    // call kill directly
                     kill();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
                 }
-                return;
             }
-            
-            // Ask gdb to quit (shutdown)
-            MICommand cmd = new MiCommandImpl("-gdb-exit") { // NOI18N
-
-                @Override
-                protected void onError(MIRecord record) {
-                    finish();
-                }
-
-                @Override
-                protected void onExit(MIRecord record) {
-                    kill();
-                    finish();
-                }
-            };
-            gdb.sendCommand(cmd);
-        } else {
-            // since there's no gdb connection (e.g. failed to start)
-            // call kill directly
-            kill();
-        }
+        });
     }
 
     public void shutDown() {
