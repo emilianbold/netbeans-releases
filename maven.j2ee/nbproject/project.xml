@@ -263,7 +263,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>2</release-version>
-                        <specification-version>2.50</specification-version>
+                        <specification-version>2.86.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -272,7 +272,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>2</release-version>
-                        <specification-version>2.0</specification-version>
+                        <specification-version>2.42.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
