@@ -44,12 +44,15 @@ package org.netbeans.modules.html.knockout;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  *
  * @author Petr Hejl
  */
 public class KODataBindContext {
+
+    private final KODataBindContext original;
 
     private final List<ParentContext> parents;
 
@@ -58,10 +61,12 @@ public class KODataBindContext {
     private boolean inForEach;
 
     public KODataBindContext() {
+        this.original = null;
         this.parents = new ArrayList<>();
     }
 
     public KODataBindContext(KODataBindContext context) {
+        this.original = context;
         this.parents = new ArrayList<>(context.parents);
         this.data = context.data;
         this.inForEach = context.inForEach;
@@ -93,8 +98,8 @@ public class KODataBindContext {
         data = context.getValue();
     }
 
-    public int size() {
-        return parents.size();
+    public KODataBindContext getOriginal() {
+        return original;
     }
 
     public void clear() {
@@ -111,8 +116,49 @@ public class KODataBindContext {
         return data;
     }
 
+    public void setData(String data) {
+        this.data = data;
+    }
+
     public boolean isInForEach() {
         return inForEach;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 53 * hash + Objects.hashCode(this.original);
+        hash = 53 * hash + Objects.hashCode(this.parents);
+        hash = 53 * hash + Objects.hashCode(this.data);
+        hash = 53 * hash + (this.inForEach ? 1 : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final KODataBindContext other = (KODataBindContext) obj;
+        if (!Objects.equals(this.original, other.original)) {
+            return false;
+        }
+        if (!Objects.equals(this.parents, other.parents)) {
+            return false;
+        }
+        if (!Objects.equals(this.data, other.data)) {
+            return false;
+        }
+        if (this.inForEach != other.inForEach) {
+            return false;
+        }
+        if (!Objects.deepEquals(this.parents.toArray(), other.parents.toArray())) {
+            return false;
+        }
+        return true;
     }
 
     public static class ParentContext {

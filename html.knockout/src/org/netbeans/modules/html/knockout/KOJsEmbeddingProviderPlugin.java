@@ -46,6 +46,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
@@ -202,7 +203,17 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
                                     embedded.embedded(JsTokenId.javascriptLanguage()));
                             // it may be defined as runtime expression wchich would return null here :(
                             if (templateName != null) {
-                                templateUsages.put(templateName, templateBindContext);
+                                KODataBindContext current = templateUsages.get(templateName);
+                                if (current == null) {
+                                    templateUsages.put(templateName, templateBindContext);
+                                } else if (Objects.equals(current.getOriginal(), dataBindContext)) {
+                                    current.setData(current.getData() + " || " + templateBindContext.getData());
+                                } else {
+                                    LOGGER.log(Level.INFO, "Multiple incompatible template usage; storing the last one");
+                                    templateUsages.put(templateName, templateBindContext);
+                                }
+                            } else {
+                                LOGGER.log(Level.INFO, "Cannot get the template name at design time; ignoring");
                             }
                         }
                         if (embedded.embedded(JS_LANGUAGE) != null) {
