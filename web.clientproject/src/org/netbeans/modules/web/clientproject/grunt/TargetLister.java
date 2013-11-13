@@ -61,10 +61,11 @@ public class TargetLister {
     private static final RequestProcessor RP = new RequestProcessor(TargetLister.class);
     
     public static Collection<Target> getTargets(FileObject pr) throws IOException { 
-        read(pr);
         Pair<Long, Collection<Target>> targetPair = cache.get(pr.getPath());
         if (targetPair != null && targetPair.first().equals(pr.lastModified().getTime())) {
             return targetPair.second();
+        } else {
+            read(pr);
         }
         
         Collection<Target> loading = new ArrayList<>();
@@ -82,11 +83,11 @@ public class TargetLister {
 
                     String work = gruntFile.getParent().getPath();
                     if (Utilities.isWindows()) {
-                        data = ProcessUtilities.callProcess("cmd", work, true, 60 , work, "/C grunt -h --no-color");//NOI18N
+                        data = ProcessUtilities.callProcess("cmd", work, true, 60 , "/C grunt -h --no-color");//NOI18N
                     } else if (Utilities.isMac()) {
-                        data = ProcessUtilities.callProcess("/bin/bash", work, true, 60 , work, "-lc", "grunt -h --no-color");//NOI18N
+                        data = ProcessUtilities.callProcess("/bin/bash", work, true, 60 , "-lc", "grunt -h --no-color");//NOI18N
                     } else {
-                        data = ProcessUtilities.callProcess("grunt", work, true, 60 , work, "-h", "--no-color");//NOI18N
+                        data = ProcessUtilities.callProcess("grunt", work, true, 60 , "-h", "--no-color");//NOI18N
                     }
 
                     parse(data, gruntFile);
