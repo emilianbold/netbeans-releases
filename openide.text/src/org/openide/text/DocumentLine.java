@@ -334,25 +334,28 @@ public abstract class DocumentLine extends Line {
         }
 
         pos.getCloneableEditorSupport().prepareDocument().waitFinished();
-
-        doc.render(new Runnable() {
-            public void run() {
-                try {
+        
+        try {
+            final Position p = pos.getPosition();
+            doc.render(new Runnable() {
+                public void run() {
                     synchronized (getAnnotations()) {
                         if (!anno.isInDocument()) {
                             anno.setInDocument(true);
 
                             // #33165 - find position that is surely at begining of line
-                            FindAnnotationPosition fap = new FindAnnotationPosition(doc, pos.getPosition());
+                            FindAnnotationPosition fap = new FindAnnotationPosition(doc, p);
                             doc.render(fap);
                             NbDocument.addAnnotation(doc, fap.getAnnotationPosition(), -1, anno);
                         }
                     }
-                } catch (IOException ex) {
-                    Logger.getLogger(DocumentLine.class.getName()).log(Level.WARNING, null, ex);
                 }
-            }
-        });
+            });
+
+        } catch (IOException ex) {
+            Logger.getLogger(DocumentLine.class.getName()).log(Level.WARNING, null, ex);
+        }
+
     }
 
     /** Remove annotation to this Annotatable class
