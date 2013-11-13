@@ -96,7 +96,17 @@ public class Utils {
     /**
      * Keeps forbidden folders without metadata
      */
-    private static Set<String> forbiddenFolders;
+    private static final Set<String> forbiddenFolders;
+    static {
+        List<String> files = new ArrayList<String>();
+        try {
+            String forbidden = System.getProperty("versioning.forbiddenFolders", ""); //NOI18N
+            files.addAll(Arrays.asList(forbidden.split("\\;"))); //NOI18N
+        } catch (Exception e) {
+            Logger.getLogger(Utils.class.getName()).log(Level.INFO, e.getMessage(), e);
+        }
+        forbiddenFolders = new HashSet<String>(files);
+    }
 
     /**
      * Request processor for parallel tasks.
@@ -334,16 +344,6 @@ public class Utils {
     }
 
     public static boolean isForbiddenFolder (VCSFileProxy folder) {
-        if (forbiddenFolders == null) {
-            List<String> files = new ArrayList<String>();
-            try {
-                String forbidden = System.getProperty("versioning.forbiddenFolders", ""); //NOI18N
-                files.addAll(Arrays.asList(forbidden.split("\\;"))); //NOI18N
-            } catch (Exception e) {
-                Logger.getLogger(Utils.class.getName()).log(Level.INFO, e.getMessage(), e);
-            }
-            forbiddenFolders = new HashSet<String>(files);
-        }
         return forbiddenFolders.contains(folder.getPath());
     }
 
