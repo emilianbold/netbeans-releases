@@ -283,6 +283,9 @@ public class DirectoryReaderFS implements DirectoryReader {
                     long size = buf.getLong();
                     long mtime = buf.getLong();
                     String linkTarget = buf.getString();
+                    if (linkTarget.isEmpty()) {
+                        linkTarget = null;
+                    }
                     StatInfo statInfo = new StatInfo(name, uid, gid, size,
                             linkTarget, mode, new Date(mtime));
                     DirEntry entry = new DirEntrySftp(statInfo, statInfo.getName());
