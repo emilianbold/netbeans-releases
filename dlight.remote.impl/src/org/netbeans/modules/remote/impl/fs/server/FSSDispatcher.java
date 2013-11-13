@@ -212,6 +212,7 @@ import org.openide.util.RequestProcessor;
     private class MainLoop implements Runnable {
         @Override
         public void run() {
+            int exceptionsCount = 0;
             String oldThreadName = Thread.currentThread().getName();
             try {
                 Thread.currentThread().setName("fs_server dispatcher for " + env); // NOI18N
@@ -254,6 +255,11 @@ import org.openide.util.RequestProcessor;
                 }
             } catch (IOException ioe) {
                 ioe.printStackTrace(System.err);
+            } catch (Throwable thr) { // too wide, but we need to guarantee dispatcher is alive
+                thr.printStackTrace(System.err);
+                if (exceptionsCount++ > 1000) {
+                    setInvalid(true);
+                }
             } finally {
                 try {
                     checkValid();
