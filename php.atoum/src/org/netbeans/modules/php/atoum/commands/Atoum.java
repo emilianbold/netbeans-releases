@@ -277,7 +277,7 @@ public final class Atoum {
                 .optionsPath(AtoumOptionsPanelController.OPTIONS_PATH)
                 .showProgress(true)
                 .outLineBased(true)
-                .errLineBased(true)
+                .errLineBased(true);
     }
 
     @NbBundle.Messages({
