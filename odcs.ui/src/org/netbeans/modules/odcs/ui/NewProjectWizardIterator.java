@@ -191,7 +191,7 @@ public class NewProjectWizardIterator implements WizardDescriptor.ProgressInstan
                 PasswordAuthentication passwdAuth = server.getPasswordAuthentication();
                 if (passwdAuth != null) {
                     final File localScmRoot = new File(newPrjScmLocal);
-                    boolean inPlaceRepository = isCommonParent(sharedItems, newPrjScmLocal);
+                    boolean inPlaceRepository = sharedItems.isEmpty() || isCommonParent(sharedItems, newPrjScmLocal);
                     repoInitializer.initialize(localScmRoot, repositoryUrl, passwdAuth);
                     if (!inPlaceRepository) {
                         copySharedItems(sharedItems, localScmRoot);
