@@ -43,7 +43,12 @@
 package org.netbeans.modules.maven.j2ee.ui.customizer.impl;
 
 import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -83,6 +88,7 @@ import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.HtmlBrowser;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
@@ -95,11 +101,13 @@ import org.openide.util.NbBundle.Messages;
 public class CustomizerRunWeb extends BaseRunCustomizer {
 
     public static final String PROP_SHOW_IN_BROWSER = "netbeans.deploy.showBrowser"; //NOI18N
+    public static final String PROP_ALWAYS_BUILD_BEFORE_RUNNING = "netbeans.always.build"; // NOI18N
     private static final Set<Profile> WEB_PROFILES;
     private static final Set<Profile> FULL_PROFILES;
 
     private final CheckBoxUpdater copyStaticResourcesUpdater;
     private final CheckBoxUpdater showBrowserUpdater;
+    private final CheckBoxUpdater alwaysBuildUpdater;
     private final ComboBoxUpdater versionUpdater;
     private final boolean noServer;
 
@@ -141,6 +149,18 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
         super(handle, project);
         initComponents();
 
+        btnLearnMore.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        btnLearnMore.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    HtmlBrowser.URLDisplayer.getDefault().showURL(new URL("http://wiki.netbeans.org/FaqDeployOnSave"));
+                } catch (MalformedURLException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
+
         module = WebModule.getWebModule(project.getProjectDirectory());
         if (module != null) {
             contextPathTField.setText(module.getContextPath());
@@ -178,6 +198,26 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
             }
         });
 
+        Boolean alwaysBuild = (Boolean) project.getProjectDirectory().getAttribute(PROP_ALWAYS_BUILD_BEFORE_RUNNING);
+        if (alwaysBuild == null) {
+            alwaysBuild = Boolean.FALSE;
+        }
+        alwaysBuildUpdater = CheckBoxUpdater.create(jCBAlwaysBuild, alwaysBuild, new CheckBoxUpdater.Store() {
+
+            @Override
+            public void storeValue(boolean value) {
+                try {
+                    if (value) {
+                        project.getProjectDirectory().setAttribute(PROP_ALWAYS_BUILD_BEFORE_RUNNING, true);
+                    } else {
+                        project.getProjectDirectory().setAttribute(PROP_ALWAYS_BUILD_BEFORE_RUNNING, false);
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
+
         versionUpdater = createVersionUpdater(J2eeModule.Type.WAR);
     }
     
@@ -198,6 +238,7 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
 
         serverUpdater.storeValue();
         versionUpdater.storeValue();
+        alwaysBuildUpdater.storeValue();
         deployOnSaveUpdater.storeValue();
         copyStaticResourcesUpdater.storeValue();
 
@@ -297,7 +338,7 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
             public boolean verifyValue(Object value) {
                 if (WarningPanelSupport.isJavaEEChangeWarningActivated()) {
                     WarningPanel panel = new WarningPanel(WARNING_ChangingJavaEEVersion());
-                    NotifyDescriptor dd = new NotifyDescriptor.Message(panel, NotifyDescriptor.OK_CANCEL_OPTION);
+                    NotifyDescriptor dd = new NotifyDescriptor.Confirmation(panel, NotifyDescriptor.OK_CANCEL_OPTION);
                     DialogDisplayer.getDefault().notify(dd);
 
                     if (dd.getValue() == NotifyDescriptor.CANCEL_OPTION) {
@@ -402,6 +443,8 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
         browserLabel = new javax.swing.JLabel();
         jCBBrowser = createBrowserComboBox();
         jCBCopyStaticResources = new javax.swing.JCheckBox();
+        jCBAlwaysBuild = new javax.swing.JCheckBox();
+        btnLearnMore = new javax.swing.JButton();
 
         org.openide.awt.Mnemonics.setLocalizedText(serverLabel, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "LBL_Server")); // NOI18N
 
@@ -438,6 +481,14 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
         org.openide.awt.Mnemonics.setLocalizedText(jCBCopyStaticResources, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "CustomizerRunWeb.jCBCopyStaticResources.text")); // NOI18N
         jCBCopyStaticResources.setToolTipText(org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "CustomizerRunWeb.jCBCopyStaticResources.toolTipText")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(jCBAlwaysBuild, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "CustomizerRunWeb.jCBAlwaysBuild.text")); // NOI18N
+        jCBAlwaysBuild.setToolTipText(org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "CustomizerRunWeb.jCBAlwaysBuild.toolTipText")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(btnLearnMore, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "CustomizerRunWeb.btnLearnMore.text")); // NOI18N
+        btnLearnMore.setBorderPainted(false);
+        btnLearnMore.setContentAreaFilled(false);
+        btnLearnMore.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -461,15 +512,20 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
                             .addComponent(txtRelativeUrl, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(jCBBrowser, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(21, 21, 21)
-                        .addComponent(dosDescription, javax.swing.GroupLayout.DEFAULT_SIZE, 609, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
                         .addComponent(jCBDeployOnSave)
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jCBshowBrowser, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jCBCopyStaticResources, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(21, 21, 21)
+                        .addComponent(dosDescription, javax.swing.GroupLayout.DEFAULT_SIZE, 609, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(21, 21, 21)
+                                .addComponent(btnLearnMore, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jCBAlwaysBuild)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                .addComponent(jCBshowBrowser, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jCBCopyStaticResources, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                         .addGap(0, 0, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
@@ -505,6 +561,10 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
                 .addComponent(jCBDeployOnSave)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(dosDescription, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jCBAlwaysBuild)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(btnLearnMore, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -543,9 +603,11 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel browserLabel;
+    private javax.swing.JButton btnLearnMore;
     private javax.swing.JLabel contextPathLabel;
     private javax.swing.JTextField contextPathTField;
     private javax.swing.JLabel dosDescription;
+    private javax.swing.JCheckBox jCBAlwaysBuild;
     private javax.swing.JComboBox jCBBrowser;
     private javax.swing.JCheckBox jCBCopyStaticResources;
     private javax.swing.JCheckBox jCBDeployOnSave;

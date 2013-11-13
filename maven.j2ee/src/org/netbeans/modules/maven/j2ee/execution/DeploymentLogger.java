@@ -40,40 +40,30 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.j2ee.ui.util;
+package org.netbeans.modules.maven.j2ee.execution;
 
-import java.util.prefs.Preferences;
-import org.openide.util.NbPreferences;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.openide.windows.OutputWriter;
 
 /**
+ * Simple implementation of the {@link Deployment.Logger} used by the infrastructure to log deployment messages.
  *
- * @author Martin Janicek
+ * <p>
+ * This class is <i>immutable</i> and thus <i>thread safe</i>.
+ * </p>
+ *
+ * @author Martin Janicek <mjanicek@netbeans.org>
  */
-public final class WarningPanelSupport {
+public class DeploymentLogger implements Deployment.Logger {
 
-    private static final String JAVA_EE_VERSION_CHANGE = "showJavaEEVersionChangeWarning"; // NOI18N
-    private static final String AUTOMATIC_BUILD = "automaticBuildWarning";                 // NOI18N
+    private final OutputWriter logger;
 
-    private WarningPanelSupport() {
+    public DeploymentLogger(OutputWriter logger) {
+        this.logger = logger;
     }
 
-    private static Preferences getPreferences() {
-        return NbPreferences.root().node("org/netbeans/modules/maven/showQuestions"); //NOI18N
-    }
-
-    public static boolean isJavaEEChangeWarningActivated() {
-        return getPreferences().getBoolean(JAVA_EE_VERSION_CHANGE, true);
-    }
-
-    public static void dontShowJavaEEChangeWarning() {
-        getPreferences().putBoolean(JAVA_EE_VERSION_CHANGE, false);
-    }
-
-    public static boolean isAutomaticBuildWarningActivated() {
-        return getPreferences().getBoolean(AUTOMATIC_BUILD, true);
-    }
-
-    public static void dontShowAutomaticBuildWarning() {
-        getPreferences().putBoolean(AUTOMATIC_BUILD, false);
+    @Override
+    public void log(String string) {
+        logger.println(string);
     }
 }
