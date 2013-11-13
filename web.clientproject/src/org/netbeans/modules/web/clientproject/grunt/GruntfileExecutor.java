@@ -50,6 +50,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.openide.execution.ExecutionEngine;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
@@ -156,7 +159,14 @@ public final class GruntfileExecutor implements Runnable {
             pb = new ProcessBuilder("grunt","--no-color", targetNames.get(0));
         }
         pb.directory(FileUtil.toFile(gruntFile.getParent()));
-        InputOutput io1 = IOProvider.getDefault().getIO(gruntFile.getName(), false);
+        Project owner = FileOwnerQuery.getOwner(gruntFile);
+        String tab;
+        if (owner!=null) {
+            tab = ProjectUtils.getInformation(owner).getDisplayName() + " (Grunt)";
+        } else {
+            tab = gruntFile.getName();
+        }
+        InputOutput io1 = IOProvider.getDefault().getIO(tab, false);
         io1.select();
         try {
             io1.getOut().reset();
