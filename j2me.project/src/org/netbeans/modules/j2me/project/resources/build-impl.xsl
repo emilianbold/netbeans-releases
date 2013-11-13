@@ -557,7 +557,7 @@ is divided into following sections:
                     <xsl:attribute name="name">jar</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2me-embedded-project/1</xsl:attribute>
                     <jar jarfile="${{dist.jar}}" compress="${{jar.compress}}" index="${{jar.index}}">
-                        <j2meproject1:fileset dir="${{build.classes.dir}}" excludes="${{dist.archive.excludes}}"/>
+                        <j2meproject1:fileset dir="${{build.fatjar.dir}}" excludes="${{dist.archive.excludes}}"/>
                         <!-- XXX should have a property serving as the excludes list -->
                     </jar>
                 </presetdef>
@@ -745,8 +745,11 @@ is divided into following sections:
 
             <target name="-do-jar-extract-libs">
                 <xsl:attribute name="description">Extracts all bundled libraries.</xsl:attribute>
-                <mkdir dir="${{build.classes.dir}}"/>
-                <nb-extract dir="${{build.classes.dir}}" excludeManifest="true" classpath="${{javac.classpath}}" excludeclasspath="${{extra.classpath}}"/>
+                <mkdir dir="${{build.fatjar.dir}}"/>
+                <nb-extract dir="${{build.fatjar.dir}}" excludeManifest="true" classpath="${{javac.classpath}}" excludeclasspath="${{extra.classpath}}"/>
+                <copy todir="${{build.fatjar.dir}}" >
+                    <fileset dir="${{build.classes.dir}}"/>
+                </copy>
             </target>
 
             <target name="-do-jar-delete-manifest" >

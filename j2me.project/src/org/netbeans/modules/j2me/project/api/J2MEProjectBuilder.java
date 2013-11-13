@@ -488,6 +488,7 @@ public final class J2MEProjectBuilder {
         ep.setProperty(ProjectProperties.BUILD_CLASSES_DIR, "${"+ProjectProperties.BUILD_DIR+"}/classes"); // NOI18N
         ep.setProperty(ProjectProperties.BUILD_GENERATED_SOURCES_DIR, "${"+ProjectProperties.BUILD_DIR+"}/generated-sources"); // NOI18N
         ep.setProperty(ProjectProperties.BUILD_CLASSES_EXCLUDES, "**/*.java,**/*.form"); // NOI18N
+        ep.setProperty("build.fatjar.dir", "${"+ProjectProperties.BUILD_DIR+"}/fatjar"); // NOI18N
 
         //Platform
         ep.setProperty(
