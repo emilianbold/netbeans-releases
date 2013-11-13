@@ -92,6 +92,9 @@ public class AngularJsDeclarationFinder implements DeclarationFinder {
             JsTokenId id = ts.token().id();
             if (id == JsTokenId.IDENTIFIER) {
                 Project project = FileOwnerQuery.getOwner(fo);
+                if (project == null) {
+                    return DeclarationLocation.NONE;
+                }
                 try {
                     Collection<AngularJsController> controllers = AngularJsIndex.get(project).getControllers(ts.token().text().toString(), true);
                     if (!controllers.isEmpty()) {
