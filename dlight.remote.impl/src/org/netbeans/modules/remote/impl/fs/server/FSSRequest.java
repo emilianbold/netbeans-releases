@@ -73,4 +73,9 @@ public final class FSSRequest {
     public String getPath() {
         return path;
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + ' ' + kind + ' ' + id + path; //NOI18N
+    }
 }
