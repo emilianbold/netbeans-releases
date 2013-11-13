@@ -56,16 +56,16 @@ import org.openide.util.Lookup;
 /**
  * IDE options controller for ApiGen.
  */
-@OptionsPanelController.SubRegistration(
-    location=UiUtils.OPTIONS_PATH,
-    id=ApiGenOptionsPanelController.OPTIONS_SUBPATH,
+@UiUtils.PhpOptionsPanelRegistration(
+    id=ApiGenOptionsPanelController.ID,
     displayName="#LBL_PHPGenOptionsName",
 //    toolTip="#LBL_OptionsTooltip"
     position=165
 )
 public class ApiGenOptionsPanelController extends OptionsPanelController implements ChangeListener {
 
-    public static final String OPTIONS_SUBPATH = "ApiGen"; // NOI18N
+    static final String ID = "ApiGen"; // NOI18N
+    public static final String OPTIONS_SUBPATH = UiUtils.FRAMEWORKS_AND_TOOLS_SUB_PATH+"/" + ID; // NOI18N
 
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
