@@ -39,44 +39,27 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.verification;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.text.BadLocationException;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
-import org.netbeans.modules.csl.api.OffsetRange;
+package org.netbeans.modules.javascript.karma.browsers.util;
 
-/**
- *
- * @author Ondrej Brejla <obrejla@netbeans.org>
- */
-public final class VerificationUtils {
-    private static final Logger LOGGER = Logger.getLogger(VerificationUtils.class.getName());
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.junit.Assert;
 
-    private VerificationUtils() {
+public final class TestUtils {
+
+    private TestUtils() {
     }
 
-    public static boolean isBefore(int caret, int margin) {
-        return caret <= margin;
-    }
-
-    public static OffsetRange createLineBounds(int caretOffset, BaseDocument doc) {
-        assert doc != null;
-        OffsetRange result = OffsetRange.NONE;
-        if (caretOffset != -1) {
-            try {
-                int lineBegin = caretOffset > 0 ? Utilities.getRowStart(doc, caretOffset) : -1;
-                int lineEnd = (lineBegin != -1) ? Utilities.getRowEnd(doc, caretOffset) : -1;
-                if (lineBegin > -1 && lineEnd != -1 && lineBegin <= lineEnd) {
-                    result = new OffsetRange(lineBegin, lineEnd);
-                }
-            } catch (BadLocationException ex) {
-                LOGGER.log(Level.FINE, null, ex);
-            }
+    public static void assertFileLinePattern(Pattern pattern, String input, String file, int line) {
+        Matcher matcher = pattern.matcher(input);
+        if (file == null) {
+            Assert.assertFalse(input, matcher.find());
+            return;
         }
-        return result;
+        Assert.assertTrue(input, matcher.find());
+        Assert.assertEquals(file, matcher.group("FILE"));
+        Assert.assertEquals(String.valueOf(line), matcher.group("LINE"));
     }
 
 }

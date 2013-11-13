@@ -216,12 +216,12 @@ public class ClientSideProjectActionProvider implements ActionProvider {
     }
 
     void runTests() {
-        TestRunInfo testRunInfo = new TestRunInfo.Builder()
-                .setSessionType(TestRunInfo.SessionType.TEST)
-                .setCoverageEnabled(false)
-                .build();
         JsTestingProvider testingProvider = project.getJsTestingProvider(true);
         if (testingProvider != null) {
+            TestRunInfo testRunInfo = new TestRunInfo.Builder()
+                    .setSessionType(TestRunInfo.SessionType.TEST)
+                    .setCoverageEnabled(false)
+                    .build();
             testingProvider.runTests(project, testRunInfo);
         }
     }

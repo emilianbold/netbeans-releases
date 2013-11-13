@@ -50,14 +50,14 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.javascript.karma.browsers.Browser;
+import org.netbeans.modules.javascript.karma.browsers.Browsers;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferencesValidator;
 import org.netbeans.modules.javascript.karma.run.RunInfo;
@@ -65,10 +65,12 @@ import org.netbeans.modules.javascript.karma.run.TestRunner;
 import org.netbeans.modules.javascript.karma.ui.customizer.KarmaCustomizer;
 import org.netbeans.modules.javascript.karma.util.ExternalExecutable;
 import org.netbeans.modules.javascript.karma.util.FileUtils;
+import org.netbeans.modules.javascript.karma.util.StringUtils;
 import org.netbeans.modules.javascript.karma.util.ValidationResult;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputEvent;
@@ -214,12 +216,9 @@ public final class KarmaExecutable {
 
     }
 
-    static final class ServerLineConvertor implements LineConvertor {
+    private static final class ServerLineConvertor implements LineConvertor {
 
-        // XXX browser specific
-        // e.g.: (/home/gapon/NetBeansProjects/angular.js/src/auto/injector.js:6:12604)
-        static final Pattern FILE_PATTERN = Pattern.compile("\\((.+?):(\\d+):\\d+\\)"); // NOI18N
-        private static final String NB_BROWSER_COUNT = "$NB$netbeans browserCount "; // NOI18N
+        private static final String NB_BROWSERS = "$NB$netbeans browsers "; // NOI18N
 
         private final RunInfo runInfo;
         private final Runnable startFinishedTask;
@@ -227,8 +226,7 @@ public final class KarmaExecutable {
 
         private boolean firstLine = true;
         private boolean startFinishedTaskRun = false;
-
-        private int browserCount = -1;
+        private List<Browser> browsers = null;
         private int connectedBrowsers = 0;
 
 
@@ -250,16 +248,17 @@ public final class KarmaExecutable {
                         line.replace(runInfo.getNbConfigFile(), runInfo.getProjectConfigFile()), null));
             }
             // server start
-            if (browserCount == -1
-                    && line.startsWith(NB_BROWSER_COUNT)) {
-                browserCount = Integer.parseInt(line.substring(NB_BROWSER_COUNT.length()));
+            if (browsers == null
+                    && line.startsWith(NB_BROWSERS)) {
+                browsers = Browsers.getBrowsers(StringUtils.explode(line.substring(NB_BROWSERS.length()), ",")); // NOI18N
                 return Collections.emptyList();
             }
             if (startFinishedTask != null
                     && !startFinishedTaskRun
                     && line.contains("Connected on socket")) { // NOI18N
+                assert browsers != null;
                 connectedBrowsers++;
-                if (connectedBrowsers == browserCount) {
+                if (connectedBrowsers == browsers.size()) {
                     startFinishedTask.run();
                     startFinishedTaskRun = true;
                 }
@@ -269,12 +268,14 @@ public final class KarmaExecutable {
                 return Collections.emptyList();
             }
             // karma log
-            OutputListener outputListener;
-            Matcher matcher = FILE_PATTERN.matcher(line);
-            if (matcher.find()) {
-                outputListener = new FileOutputListener(matcher.group(1), Integer.valueOf(matcher.group(2)));
-            } else {
-                outputListener = null;
+            assert browsers != null;
+            OutputListener outputListener = null;
+            for (Browser browser : browsers) {
+                Pair<String, Integer> fileLine = browser.getOutputFileLine(line);
+                if (fileLine != null) {
+                    outputListener = new FileOutputListener(fileLine.first(), fileLine.second());
+                    break;
+                }
             }
             return Collections.singletonList(ConvertedLine.forText(line, outputListener));
         }

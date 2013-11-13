@@ -39,44 +39,24 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.verification;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.text.BadLocationException;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
-import org.netbeans.modules.csl.api.OffsetRange;
+package org.netbeans.modules.javascript.karma.browsers;
 
-/**
- *
- * @author Ondrej Brejla <obrejla@netbeans.org>
- */
-public final class VerificationUtils {
-    private static final Logger LOGGER = Logger.getLogger(VerificationUtils.class.getName());
+import java.util.regex.Pattern;
 
-    private VerificationUtils() {
+public final class Opera extends Browser {
+
+    // e.g.: @/home/gapon/NetBeansProjects/AngularSeeed/test/unit/directivesSpec.js:16
+    static final Pattern OUTPUT_FILE_LINE_PATTERN = Pattern.compile("@(?<FILE>.+?):(?<LINE>\\d+)$"); // NOI18N
+
+    @Override
+    public String getIdentifier() {
+        return "Opera"; // NOI18N
     }
 
-    public static boolean isBefore(int caret, int margin) {
-        return caret <= margin;
-    }
-
-    public static OffsetRange createLineBounds(int caretOffset, BaseDocument doc) {
-        assert doc != null;
-        OffsetRange result = OffsetRange.NONE;
-        if (caretOffset != -1) {
-            try {
-                int lineBegin = caretOffset > 0 ? Utilities.getRowStart(doc, caretOffset) : -1;
-                int lineEnd = (lineBegin != -1) ? Utilities.getRowEnd(doc, caretOffset) : -1;
-                if (lineBegin > -1 && lineEnd != -1 && lineBegin <= lineEnd) {
-                    result = new OffsetRange(lineBegin, lineEnd);
-                }
-            } catch (BadLocationException ex) {
-                LOGGER.log(Level.FINE, null, ex);
-            }
-        }
-        return result;
+    @Override
+    protected Pattern getOutputFileLinePattern() {
+        return OUTPUT_FILE_LINE_PATTERN;
     }
 
 }

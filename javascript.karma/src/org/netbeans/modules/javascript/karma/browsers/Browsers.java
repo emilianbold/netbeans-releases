@@ -39,44 +39,49 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.verification;
 
+package org.netbeans.modules.javascript.karma.browsers;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.text.BadLocationException;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
-import org.netbeans.modules.csl.api.OffsetRange;
 
-/**
- *
- * @author Ondrej Brejla <obrejla@netbeans.org>
- */
-public final class VerificationUtils {
-    private static final Logger LOGGER = Logger.getLogger(VerificationUtils.class.getName());
+public final class Browsers {
 
-    private VerificationUtils() {
-    }
+    private static final Logger LOGGER = Logger.getLogger(Browsers.class.getName());
 
-    public static boolean isBefore(int caret, int margin) {
-        return caret <= margin;
-    }
+    private static final Map<String, Browser> BROWSERS;
 
-    public static OffsetRange createLineBounds(int caretOffset, BaseDocument doc) {
-        assert doc != null;
-        OffsetRange result = OffsetRange.NONE;
-        if (caretOffset != -1) {
-            try {
-                int lineBegin = caretOffset > 0 ? Utilities.getRowStart(doc, caretOffset) : -1;
-                int lineEnd = (lineBegin != -1) ? Utilities.getRowEnd(doc, caretOffset) : -1;
-                if (lineBegin > -1 && lineEnd != -1 && lineBegin <= lineEnd) {
-                    result = new OffsetRange(lineBegin, lineEnd);
-                }
-            } catch (BadLocationException ex) {
-                LOGGER.log(Level.FINE, null, ex);
-            }
+    static {
+        List<Browser> browsers = Arrays.asList(
+                new Chrome(),
+                new Firefox(),
+                new Opera());
+        BROWSERS = new ConcurrentHashMap<>();
+        for (Browser browser : browsers) {
+            BROWSERS.put(browser.getIdentifier(), browser);
         }
-        return result;
+    }
+
+
+    private Browsers() {
+    }
+
+    public static List<Browser> getBrowsers(List<String> identifiers) {
+        List<Browser> browsers = new ArrayList<>(identifiers.size());
+        for (String identifier : identifiers) {
+            Browser browser = BROWSERS.get(identifier);
+            if (browser == null) {
+                LOGGER.log(Level.INFO, "Unknown karma browser: {0}", identifier);
+                continue;
+            }
+            browsers.add(browser);
+        }
+        return browsers;
     }
 
 }
