@@ -77,7 +77,7 @@ public class DirectoryReaderFS implements DirectoryReader {
     private static final Map<ExecutionEnvironment, DirectoryReaderFS> instances = new HashMap<ExecutionEnvironment, DirectoryReaderFS>();
     private static final Object instancesLock = new Object();
     
-    public static final boolean USE_FS_SERVER = Boolean.getBoolean("remote.fs_server");
+    public static final boolean USE_FS_SERVER = getBoolean("remote.fs_server", false);
     public static final boolean VERBOSE_RESPONSE = Boolean.getBoolean("remote.fs_server.verbose.response");
 
     private final ExecutionEnvironment env;
@@ -105,6 +105,10 @@ public class DirectoryReaderFS implements DirectoryReader {
     private DirectoryReaderFS(ExecutionEnvironment env) {
         this.env = env;
         this.dispatcher = new FSSDispatcher(env);
+    }
+    
+    public boolean isValid() {
+        return dispatcher.isValid();
     }
 
     public void warmap(String path) {
@@ -162,7 +166,7 @@ public class DirectoryReaderFS implements DirectoryReader {
                 return;
             }
         } catch (ConnectException ex) {
-            Exceptions.printStackTrace(ex);
+            ex.printStackTrace(System.err);
         } catch (ExecutionException ex) {
             ex.printStackTrace(System.err);
         } finally {
@@ -232,7 +236,7 @@ public class DirectoryReaderFS implements DirectoryReader {
     }
 
     private List<DirEntry> readEntries(FSSResponse response, String path, int cnt, long reqId, AtomicInteger realCnt) 
-            throws IOException, InterruptedException {
+            throws IOException, InterruptedException, ExecutionException {
         try {
             RemoteLogger.finest("Reading response #{0} from fs_server for directry {1})",
                     reqId, path);
@@ -290,6 +294,14 @@ public class DirectoryReaderFS implements DirectoryReader {
         dispatcher.connected();
     }
     
+    private static boolean getBoolean(String name, boolean result) {
+        String text = System.getProperty(name);
+        if (text != null) {
+            result = Boolean.parseBoolean(text);
+        }
+        return result;
+    }    
+
     @OnStop
     public static class Closer implements Runnable {
         @Override
@@ -315,7 +327,10 @@ public class DirectoryReaderFS implements DirectoryReader {
         @Override
         public void connected(ExecutionEnvironment env) {
             if (USE_FS_SERVER) {
-                getInstance(env).connected();
+                DirectoryReaderFS instance = getInstance(env);
+                if (instance != null) {
+                    instance.connected();
+                }
             }
         }
 
