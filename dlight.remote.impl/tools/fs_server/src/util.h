@@ -19,11 +19,13 @@ extern "C" {
 typedef enum TraceLevel {
     TRACE_NONE = 0,
     TRACE_INFO = 1,
-    TRACE_FINE = 2
+    TRACE_FINE = 2,
+    TRACE_FINER = 3,
+    TRACE_FINEST = 4
 } TraceLevel;
 
 void set_trace(TraceLevel new_level);
-TraceLevel get_trace();
+bool is_traceable(TraceLevel level);
 void trace(TraceLevel level, const char *format, ...);
 
 void log_print(const char *format, ...);
@@ -44,7 +46,7 @@ int fclose_if_not_null(FILE* f);
 int closedir_if_not_null(DIR *d);
 
 void stopwatch_start();
-void stopwatch_stop(const char* message);
+void stopwatch_stop(TraceLevel level, const char* message);
 
 char *replace_first(char *s, char c, char replacement);
 

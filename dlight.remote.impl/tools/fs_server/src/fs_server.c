@@ -252,9 +252,9 @@ static void read_entries_from_cache(array/*<fs_entry>*/ *entries, FILE *cache_fp
             report_error("error: first line in cache for %s is not '%s', but is '%s'", path, path, buf);
         }
         while (fgets(buf, buf_size, cache_fp)) {
-            trace(TRACE_FINE, "\tread entry: %s", buf);
+            trace(TRACE_FINEST, "\tread entry: %s", buf);
             if (*buf == '\n' || *buf == 0) {
-                trace(TRACE_FINE, "an empty one; continuing...");
+                trace(TRACE_FINEST, "an empty one; continuing...");
                 continue;
             }
             fs_entry *entry = decode_entry_response(buf);
@@ -586,10 +586,10 @@ static int entry_comparator(const void *element1, const void *element2) {
 
 static bool refresh_visitor(const char* path, int index, dirtab_element* el) {
     if (is_prohibited(path)) {
-        trace(TRACE_INFO, "refresh manager: skipping %s\n", path);
+        trace(TRACE_FINE, "refresh manager: skipping %s\n", path);
         return true;
     }
-    trace(TRACE_INFO, "refresh manager: visiting %s\n", path);
+    trace(TRACE_FINE, "refresh manager: visiting %s\n", path);
     
     array/*<fs_entry>*/ old_entries;
     array/*<fs_entry>*/ new_entries;
@@ -667,7 +667,7 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el) {
     }
 
     if (differs) {
-        trace(TRACE_INFO, "refresh manager: sending notification for %s\n", path);
+        trace(TRACE_FINE, "refresh manager: sending notification for %s\n", path);
         // trailing '\n' already there, added by form_entry_response
         fprintf(stdout, "%c 0 %li %s\n", FS_RSP_CHANGE, (long) strlen(path), path);
         fflush(stdout);
@@ -689,7 +689,7 @@ static void *refresh_loop(void *data) {
         dirtab_flush(); // TODO: find the appropriate place
         stopwatch_start();
         dirtab_visit(refresh_visitor);
-        stopwatch_stop("refresh cycle");
+        stopwatch_stop(TRACE_INFO, "refresh cycle");
         if (refresh_sleep) {
             sleep(refresh_sleep);
         }
@@ -870,6 +870,8 @@ void process_options(int argc, char* argv[]) {
                     case TRACE_NONE:
                     case TRACE_INFO:
                     case TRACE_FINE:
+                    case TRACE_FINER:
+                    case TRACE_FINEST:
                         set_trace(new_trace_level);
                         break;
                     default:
@@ -919,8 +921,8 @@ int main(int argc, char* argv[]) {
     }
     lock_or_unloock(true);
     state_init();
-    if (get_trace() && ! dirtab_is_empty()) {
-        trace(TRACE_INFO, "loaded dirtab:\n");
+    if (is_traceable(TRACE_INFO) && ! dirtab_is_empty()) {
+        trace(TRACE_INFO, "loaded dirtab\n");
         dirtab_visit(print_visitor);
     }
     if (log_flag) {

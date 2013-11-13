@@ -20,8 +20,8 @@ void set_trace(TraceLevel new_level) {
     trace_level= new_level;
 }
 
-TraceLevel get_trace() {
-    return trace_level;
+bool is_traceable(TraceLevel level) {
+    return (trace_level >= level);
 }
 
 void report_error(const char *format, ...) {
@@ -132,12 +132,12 @@ void stopwatch_start() {
     }
 }
 
-void stopwatch_stop(const char* message) {
-    if (trace_level) {
+void stopwatch_stop(TraceLevel level, const char* message) {
+    if (trace_level >= level) {
         struct timeval curr_time;
         gettimeofday(&curr_time, 0);
         long end_time = curr_time.tv_sec * 1000 + curr_time.tv_usec / 1000;
-        trace(TRACE_INFO, "%s took %d ms\n", message, end_time - stopwatch_start_time);
+        trace(level, "%s took %d ms\n", message, end_time - stopwatch_start_time);
     }    
 }
 
