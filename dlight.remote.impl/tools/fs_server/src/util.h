@@ -44,6 +44,14 @@ char *replace_first(char *s, char c, char replacement);
 /** opens a file in write-only exclusive mode with O_CREAT flag and mode 600 */
 FILE* fopen600(const char* path);
 
+int escape_strlen(const char* s);
+
+char *escape_strcpy(char *dst, const char *src);
+
+int unescape_strlen(const char* s);
+
+char *unescape_strcpy(char *dst, const char *src);
+
 #ifdef	__cplusplus
 }
 #endif

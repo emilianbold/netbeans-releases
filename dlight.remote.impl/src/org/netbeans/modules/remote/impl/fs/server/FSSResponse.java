@@ -43,6 +43,7 @@
 package org.netbeans.modules.remote.impl.fs.server;
 
 import java.util.LinkedList;
+import java.util.concurrent.ExecutionException;
 import org.openide.util.NotImplementedException;
 
 /**
@@ -85,6 +86,7 @@ import org.openide.util.NotImplementedException;
     
     private final Object lock = new Object();
     private final LinkedList<Package> packages = new LinkedList<Package>();
+    private ExecutionException exception = null;
 
     public FSSResponse(FSSRequest request) {
         this.requestId = request.getId();
@@ -98,14 +100,17 @@ import org.openide.util.NotImplementedException;
         }
     }
     
-    public Package getNextPackage() throws InterruptedException {
+    public Package getNextPackage() throws InterruptedException, ExecutionException {
         return getNextPackage(0);
     }
     
-    public Package getNextPackage(final long timeToWait) throws InterruptedException {
+    public Package getNextPackage(final long timeToWait) throws InterruptedException, ExecutionException {
         long timeElapsed = 0;
         while (true) {
             synchronized (lock) {
+                if (exception != null) {
+                    throw exception;
+                }
                 if (packages.isEmpty()) {
                     if (timeToWait == 0) {
                         lock.wait();
@@ -125,9 +130,12 @@ import org.openide.util.NotImplementedException;
         }
     }
     
-    public Package tryGetNextPackage() {
+    public Package tryGetNextPackage() throws ExecutionException {
         while (true) {
             synchronized (lock) {
+                if (exception != null) {
+                    throw exception;
+                }
                 if (!packages.isEmpty()) {
                     return packages.pollFirst();
                 }
@@ -143,6 +151,13 @@ import org.openide.util.NotImplementedException;
         }
     }
     
+    public void failed(ExecutionException exception) {
+        synchronized (lock) {
+            this.exception = exception;
+            lock.notifyAll();
+        }
+    }
+
     public void cancel() {
         throw new NotImplementedException();
     }
