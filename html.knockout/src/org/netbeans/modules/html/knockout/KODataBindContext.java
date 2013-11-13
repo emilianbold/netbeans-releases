@@ -51,11 +51,21 @@ import java.util.List;
  */
 public class KODataBindContext {
 
-    private final List<ParentContext> parents = new ArrayList<>();
+    private final List<ParentContext> parents;
 
     private String data;
 
     private boolean inForEach;
+
+    public KODataBindContext() {
+        this.parents = new ArrayList<>();
+    }
+
+    public KODataBindContext(KODataBindContext context) {
+        this.parents = new ArrayList<>(context.parents);
+        this.data = context.data;
+        this.inForEach = context.inForEach;
+    }
 
     public void push(String newData, boolean foreach) {
         assert !foreach || newData != null;
@@ -81,6 +91,10 @@ public class KODataBindContext {
         }
         ParentContext context = parents.remove(parents.size() - 1);
         data = context.getValue();
+    }
+
+    public int size() {
+        return parents.size();
     }
 
     public void clear() {

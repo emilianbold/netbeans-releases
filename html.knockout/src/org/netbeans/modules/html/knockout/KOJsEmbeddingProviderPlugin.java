@@ -42,8 +42,12 @@
 package org.netbeans.modules.html.knockout;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import static org.netbeans.api.html.lexer.HTMLTokenId.TAG_CLOSE;
@@ -56,8 +60,10 @@ import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.spi.embedding.JsEmbeddingProviderPlugin;
 import org.netbeans.modules.html.knockout.KODataBindContext.ParentContext;
 import org.netbeans.modules.html.knockout.model.KOModel;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.openide.util.Pair;
 
 /**
  * Knockout javascript virtual source extension
@@ -67,8 +73,11 @@ import org.netbeans.modules.parsing.api.Snapshot;
 @MimeRegistration(mimeType = "text/html", service = JsEmbeddingProviderPlugin.class)
 public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
 
+    private static final Logger LOGGER = Logger.getLogger(KOJsEmbeddingProviderPlugin.class.getName());
+
     private static final String WITH_BIND = "with";
     private static final String FOREACH_BIND = "foreach";
+    private static final String TEMPLATE_BIND = "template";
 
     private TokenSequence<HTMLTokenId> tokenSequence;
     private Snapshot snapshot;
@@ -76,6 +85,10 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
     private final Language JS_LANGUAGE;
     private final LinkedList<StackItem> stack;
     private String lastTagOpen = null;
+
+    private final Map<String, KODataBindContext> templateUsages = new HashMap<>();
+
+    private final List<TemplateBoundary> templateBoundaries = new LinkedList<>();
 
     private final KODataBindContext dataBindContext = new KODataBindContext();
 
@@ -101,6 +114,23 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
 
     @Override
     public void endProcessing() {
+        int offset = 0;
+        for (TemplateBoundary boundary : templateBoundaries) {
+            if (boundary.isStart()) {
+                KODataBindContext context = templateUsages.get(boundary.getName());
+                if (context != null) {
+                    startKnockoutSnippet(context, boundary.getPosition() + offset);
+                    offset++;
+                } else {
+                    LOGGER.log(Level.WARNING, "No context for template {0}", boundary.getName());
+                }
+            } else {
+                endKnockoutSnippet(boundary.getPosition() + offset);
+                offset++;
+            }
+        }
+        templateUsages.clear();
+        templateBoundaries.clear();
         dataBindContext.clear();
         templateContext.clear();
         stack.clear();
@@ -111,7 +141,11 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
     public boolean processToken() {
         boolean processed = false;
 
-        templateContext.process(tokenSequence.token());
+        Pair<Boolean, String> templateCheck = templateContext.process(tokenSequence.token());
+//        if (templateCheck != null) {
+//            templateBoundaries.add(new TemplateBoundary(
+//                    templateCheck.second(), embeddings.size(), templateCheck.first()));
+//        }
 
         String tokenText = tokenSequence.token().text().toString();
 
@@ -137,7 +171,13 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
             case VALUE:
                 TokenSequence<KODataBindTokenId> embedded = tokenSequence.embedded(KODataBindTokenId.language());
                 boolean setData = false;
+                boolean setTemplate = false;
                 if (embedded != null) {
+                    String templateId = templateContext.getCurrentScriptId();
+                    if (templateId != null) {
+                        templateBoundaries.add(new TemplateBoundary(
+                                templateId, embeddings.size(), true));
+                    }
                     embedded.moveStart();
                     Token<KODataBindTokenId> dataValue = null;
                     boolean foreach = false;
@@ -148,15 +188,29 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
                                 stack.push(new StackItem(lastTagOpen));
                                 setData = true;
                                 foreach = FOREACH_BIND.equals(embedded.token().text().toString()); // NOI18N
+                            } else if (TEMPLATE_BIND.equals(embedded.token().text().toString())) {
+                                setTemplate = true;
                             }
                         }
                         if (setData && embedded.token().id() == KODataBindTokenId.VALUE && dataValue == null) {
                             dataValue = embedded.token();
                         }
+                        if (setTemplate && embedded.token().id() == KODataBindTokenId.VALUE && dataValue == null) {
+                            KODataBindContext templateBindContext = new KODataBindContext(dataBindContext);
+                            templateBindContext.push(embedded.token().text().toString().trim() + ".data", false); // NOI18N
+                            String templateName = KOTemplateContext.getTemplateName(
+                                    embedded.embedded(JsTokenId.javascriptLanguage()));
+                            // it may be defined as runtime expression wchich would return null here :(
+                            if (templateName != null) {
+                                templateUsages.put(templateName, templateBindContext);
+                            }
+                        }
                         if (embedded.embedded(JS_LANGUAGE) != null) {
                             processed = true;
 
-                            startKnockoutSnippet(dataBindContext);
+                            if (templateId == null) {
+                                startKnockoutSnippet(dataBindContext);
+                            }
 
                             boolean putParenthesis =
                                     !embedded.token().text().toString().trim().endsWith(";");
@@ -187,7 +241,9 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
                                 embeddings.add(snapshot.create(";", KOUtils.JAVASCRIPT_MIMETYPE));
                             }
 
-                            endKnockoutSnippet();
+                            if (templateId == null) {
+                                endKnockoutSnippet();
+                            }
                         }
                     }
                     if (setData) {
@@ -195,8 +251,12 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
                             dataBindContext.push(dataValue.text().toString().trim(), foreach);
                         }
                     }
-                    break;
+                    if (templateId != null) {
+                        templateBoundaries.add(new TemplateBoundary(
+                                templateId, embeddings.size(), false));
+                    }
                 }
+                break;
             default:
                 break;
         }
@@ -204,6 +264,10 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
     }
 
     private void startKnockoutSnippet(KODataBindContext context) {
+        startKnockoutSnippet(context, null);
+    }
+
+    private void startKnockoutSnippet(KODataBindContext context, Integer position) {
         StringBuilder sb = new StringBuilder();
         sb.append("(function(){\n"); // NOI18N
 
@@ -252,14 +316,26 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
 
         sb.append("with ($data) {\n");
 
-        embeddings.add(snapshot.create(sb.toString(), KOUtils.JAVASCRIPT_MIMETYPE));
+        if (position == null) {
+            embeddings.add(snapshot.create(sb.toString(), KOUtils.JAVASCRIPT_MIMETYPE));
+        } else {
+            embeddings.add(position, snapshot.create(sb.toString(), KOUtils.JAVASCRIPT_MIMETYPE));
+        }
     }
 
     private void endKnockoutSnippet() {
+        endKnockoutSnippet(null);
+    }
+
+    private void endKnockoutSnippet(Integer position) {
         StringBuilder sb = new StringBuilder();
         sb.append("}\n");
         sb.append("});\n");
-        embeddings.add(snapshot.create(sb.toString(), KOUtils.JAVASCRIPT_MIMETYPE));
+        if (position == null) {
+            embeddings.add(snapshot.create(sb.toString(), KOUtils.JAVASCRIPT_MIMETYPE));
+        } else {
+            embeddings.add(position, snapshot.create(sb.toString(), KOUtils.JAVASCRIPT_MIMETYPE));
+        }
     }
 
     private static void generateContext(StringBuilder sb, List<ParentContext> parents) {
@@ -346,6 +422,33 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
         public StackItem(String tag) {
             this.tag = tag;
             this.balance = 1;
+        }
+    }
+
+    private static class TemplateBoundary {
+
+        private final String name;
+
+        private final int position;
+
+        private final boolean start;
+
+        public TemplateBoundary(String name, int position, boolean start) {
+            this.name = name;
+            this.position = position;
+            this.start = start;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public int getPosition() {
+            return position;
+        }
+
+        public boolean isStart() {
+            return start;
         }
     }
 

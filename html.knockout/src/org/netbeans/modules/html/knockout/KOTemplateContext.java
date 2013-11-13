@@ -46,6 +46,11 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
+import org.openide.util.Pair;
 
 /**
  *
@@ -59,39 +64,84 @@ public class KOTemplateContext {
 
     private boolean isId;
 
-    public void process(@NonNull Token<HTMLTokenId> token) {
+    public static String getTemplateName(TokenSequence<? extends JsTokenId> ts) {
+        if (ts == null) {
+            return null;
+        }
+
+        ts.moveStart();
+        ts.moveNext();
+        Token<? extends JsTokenId> token = LexUtilities.findNextNonWsNonComment(ts);
+        if (token.id() == JsTokenId.BRACKET_LEFT_CURLY) {
+            // XXX this is ugly hack we need to properly iterate for the right property
+            if (ts.moveNext()) {
+                token = LexUtilities.findNextNonWsNonComment(ts);
+                if (token.id() == JsTokenId.IDENTIFIER && "name".equals(token.text().toString())) { // NOI18N
+                    if (ts.moveNext()) {
+                        token = LexUtilities.findNextNonWsNonComment(ts);
+                        if (token.id() == JsTokenId.OPERATOR_COLON) {
+                            if (ts.moveNext()) {
+                                token = LexUtilities.findNextNonWsNonComment(ts);
+                                if (token.id() == JsTokenId.STRING_BEGIN) {
+                                    if (ts.moveNext()) {
+                                        token = ts.token();
+                                        return token.text().toString();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public Pair<Boolean, String> process(@NonNull Token<HTMLTokenId> token) {
         switch (token.id()) {
             case TAG_OPEN:
                 isScriptStart = false;
-                if ("script".equals(token.text().toString())) {
+                if ("script".equals(token.text().toString())) { // NOI18N
                     isScriptStart = true;
                     scripts.push(new StackItem());
                 }
                 break;
             case TAG_CLOSE_SYMBOL:
+                if (isScriptStart && scripts.peek().getId() != null) {
+                return Pair.of(true, scripts.peek().getId());
+            }
                 isScriptStart = false;
             case TAG_CLOSE:
-                if ("script".equals(token.text().toString())) {
-                    scripts.pop();
+                if ("script".equals(token.text().toString())) { // NOI18N
+                StackItem item = scripts.pop();
+                if (item.getId() != null) {
+                    return Pair.of(false, item.getId());
                 }
+            }
                 break;
             case ARGUMENT:
                 if (isScriptStart) {
-                    isId = false;
-                    if ("id".equals(token.text().toString())) {
-                        isId = true;
-                    }
+                isId = false;
+                if ("id".equals(token.text().toString())) { // NOI18N
+                    isId = true;
                 }
+            }
                 break;
             case VALUE:
             case VALUE_CSS:
                 if (isScriptStart && isId) {
-                    scripts.peek().setId(token.text().toString());
+                CharSequence text = token.text();
+                // XXX
+                if (text.length() > 2) {
+                    scripts.peek().setId(token.text().subSequence(1, text.length() - 1).toString());
                 }
+            }
                 break;
             default:
                 break;
         }
+        return null;
     }
 
     @CheckForNull
