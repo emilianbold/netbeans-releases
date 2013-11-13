@@ -973,7 +973,12 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
     }
 
     private void fireSaved() {
-        support.firePropertyChange(EVENT_QUERY_SAVED, null, null);
+        support.firePropertyChange(PROP_CHANGED, null, null);
+    }
+
+    @Override
+    public boolean isChanged() {
+        return false;
     }
     
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);

@@ -62,6 +62,7 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import javax.swing.JTable;
+import javax.swing.event.ChangeListener;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaAttribute;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaOperation;
@@ -106,6 +107,7 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.modules.Places;
 import org.openide.util.NbBundle;
 import static org.netbeans.modules.bugzilla.issue.Bundle.*;
+import org.openide.util.ChangeSupport;
 
 /**
  *
@@ -205,12 +207,8 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         support.firePropertyChange(IssueProvider.EVENT_ISSUE_DATA_CHANGED, null, null);
     }
 
-    protected void fireUnsaved() {
-        support.firePropertyChange(IssueController.EVENT_ISSUE_CHANGED, null, null);
-    }
- 
-    protected void fireSaved() {
-        support.firePropertyChange(IssueController.EVENT_ISSUE_SAVED, null, null);
+    void fireChanged() {
+        support.firePropertyChange(IssueController.PROP_CHANGED, null, null);
     }
 
     @Override
@@ -1376,7 +1374,7 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
             controller.modelStateChanged(model.isDirty(), model.isDirty() || !model.getChangedAttributes().isEmpty());
         }
     }
-
+    
     @Override
     protected boolean synchronizeTask () {
         try {

@@ -422,22 +422,37 @@ public final class QueryTopComponent extends TopComponent
                     }
                 }
             });
-        } else if(evt.getPropertyName().equals(QueryController.EVENT_QUERY_CHANGED)) {
-            if (getLookup().lookup(QuerySavable.class) == null) {
-                instanceContent.add(new QuerySavable(this));
-                setNameAndTooltip();
+        } else if(evt.getPropertyName().equals(QueryController.PROP_CHANGED)) {
+            Object o = evt.getNewValue();
+            boolean changed;
+            if(o instanceof Boolean) {
+                changed = (Boolean) o;
+            } else {
+                changed = getController(query).isChanged();
             }
-        } else if(evt.getPropertyName().equals(QueryController.EVENT_QUERY_SAVED)) {
-            if(!isSaved()) {
-                openDashboard();                
+            if(changed) {
+                if (getLookup().lookup(QuerySavable.class) == null) {
+                    instanceContent.add(new QuerySavable(this));
+                    setNameAndTooltip();
+                }
+            } else {
+                String qn = query.getDisplayName();
+                if(qn != null && !"".equals(qn.trim())) {
+                    // was saved
+                    if(!isSaved()) {
+                        openDashboard();
+                        
+                        setSaved();
+                    }
+                }
+                QuerySavable savable = getSavable();
+                if(savable != null) {
+                    savable.destroy();
+                    setNameAndTooltip();
+                }                
             }
-            setSaved();
-            QuerySavable savable = getSavable();
-            if(savable != null) {
-                savable.destroy();
-                setNameAndTooltip();
-            }
-        }
+            
+        } 
     }
 
     private void openDashboard() {

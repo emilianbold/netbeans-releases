@@ -439,10 +439,8 @@ public class IssuePanel extends javax.swing.JPanel {
                 }
                 
                 if (isDirty) {
-                    issue.fireUnsaved();
-                } else {
-                    issue.fireSaved();
-                }
+                    issue.fireChanged();
+                } 
             }
         });
     }
@@ -3622,7 +3620,7 @@ public class IssuePanel extends javax.swing.JPanel {
         public boolean add (String value) {
             boolean added = super.add(value);
             if (added) {
-                issue.fireUnsaved();
+                issue.fireChanged();
             }
             return added;
         }
@@ -3631,7 +3629,7 @@ public class IssuePanel extends javax.swing.JPanel {
         public boolean remove (Object o) {
             boolean removed = super.remove(o);
             if (removed && isEmpty()) {
-                issue.fireSaved();
+                issue.fireChanged();
             }
             return removed;
         }
@@ -3641,7 +3639,7 @@ public class IssuePanel extends javax.swing.JPanel {
             boolean fire = !isEmpty();
             super.clear();
             if (fire) {
-                issue.fireSaved();
+                issue.fireChanged();
             }
         }
         

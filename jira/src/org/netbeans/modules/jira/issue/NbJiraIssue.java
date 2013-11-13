@@ -77,6 +77,7 @@ import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeListener;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.tasks.core.data.FileTaskAttachmentSource;
 import org.eclipse.mylyn.tasks.core.IRepositoryPerson;
@@ -114,6 +115,7 @@ import org.netbeans.modules.mylyn.util.commands.SubmitTaskCommand;
 import org.netbeans.modules.mylyn.util.commands.SynchronizeTasksCommand;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -495,15 +497,11 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
     private void fireStatusChanged() {
         support.firePropertyChange(IssueStatusProvider.EVENT_STATUS_CHANGED, null, null);
     }
-
-    protected void fireUnsaved() {
-        support.firePropertyChange(IssueController.EVENT_ISSUE_CHANGED, null, null);
+    
+    protected void fireChanged() {
+        support.firePropertyChange(IssueController.PROP_CHANGED, null, null);
     }
  
-    protected void fireSaved() {
-        support.firePropertyChange(IssueController.EVENT_ISSUE_SAVED, null, null);
-    }
-    
     void opened() {
         if(Jira.LOG.isLoggable(Level.FINE)) Jira.LOG.log(Level.FINE, "issue {0} open start", new Object[] {getKey()});
         open = true;
@@ -2030,6 +2028,7 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
 
         private void modelStateChanged (boolean modelDirty, boolean modelHasLocalChanges) {
             issuePanel.modelStateChanged(modelDirty, modelHasLocalChanges);
+            NbJiraIssue.this.fireChanged();
         }
 
         @Override
@@ -2051,6 +2050,12 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
         public void removePropertyChangeListener(PropertyChangeListener l) {
             NbJiraIssue.this.removePropertyChangeListener(l);
         }
+
+        @Override
+        public boolean isChanged() {
+            return NbJiraIssue.this.hasUnsavedChanges();
+        }
+        
     }
 
     public static final class Comment {

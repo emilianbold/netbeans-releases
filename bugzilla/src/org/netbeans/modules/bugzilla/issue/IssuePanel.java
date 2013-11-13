@@ -149,6 +149,7 @@ import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
@@ -379,16 +380,16 @@ public class IssuePanel extends javax.swing.JPanel {
                     enableMap.put(cancelButton, isModified || isDirty);
                 }
                 if (!initializingNewTask) {
-                    if(isDirty) { 
-                        issue.fireUnsaved();
-                    } else {
-                        issue.fireSaved();
-                    }
+                    issue.fireChanged();
                 }
             }
         });
     }
 
+    boolean initializingNewTask() {
+        return initializingNewTask;
+    }
+    
     public void setIssue(BugzillaIssue issue) {
         assert SwingUtilities.isEventDispatchThread() : "Accessing Swing components. Do not call outside event-dispatch thread!"; // NOI18N
         if (this.issue == null) {
@@ -3440,7 +3441,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         boolean fire = !unsavedFields.isEmpty();
         unsavedFields.clear();
         if(fire) {
-            issue.fireSaved();
+            issue.fireChanged();
         }        
     }
     
@@ -3448,9 +3449,13 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         boolean fire = unsavedFields.isEmpty();
         unsavedFields.add(fieldName);
         if(fire) {
-            issue.fireUnsaved();
+            issue.fireChanged();
         }
     }
+    
+    boolean isChanged() {
+        return !initializingNewTask() && getIssue().hasUnsavedChanges();
+    }    
     
     @NbBundle.Messages({
         "LBL_IssuePanel.deleteTask.title=Delete New Task?",

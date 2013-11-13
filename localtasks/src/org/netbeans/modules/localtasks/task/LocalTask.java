@@ -278,7 +278,7 @@ public final class LocalTask extends AbstractLocalTask {
     }
 
     public void delete () {
-        fireSaved();
+        fireChanged();
         if (controller != null) {
             controller.taskDeleted();
         }
@@ -362,14 +362,10 @@ public final class LocalTask extends AbstractLocalTask {
         support.firePropertyChange(IssueProvider.EVENT_ISSUE_DATA_CHANGED, null, null);
     }
 
-    protected void fireUnsaved() {
-        support.firePropertyChange(IssueController.EVENT_ISSUE_CHANGED, null, null);
+    protected void fireChanged() {
+        support.firePropertyChange(IssueController.PROP_CHANGED, null, null);
     }
  
-    protected void fireSaved() {
-        support.firePropertyChange(IssueController.EVENT_ISSUE_SAVED, null, null);
-    }
-
     private boolean hasUnsavedAttributes () {
         return unsavedAttachments != null || hasUnsavedPrivateTaskAttributes();
     }

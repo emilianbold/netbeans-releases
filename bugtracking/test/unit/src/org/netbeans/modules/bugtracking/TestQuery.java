@@ -116,6 +116,12 @@ public abstract class TestQuery {
                 public void removePropertyChangeListener(PropertyChangeListener l) {
                     support.removePropertyChangeListener(l);
                 }
+
+                @Override
+                public boolean isChanged() {
+                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                }
+                
             };
         }
         return controller;

@@ -153,6 +153,7 @@ import org.netbeans.modules.spellchecker.api.Spellchecker;
 import org.netbeans.modules.team.ide.spi.IDEServices;
 import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.openide.awt.HtmlBrowser;
+import org.openide.util.ChangeSupport;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -337,12 +338,6 @@ public class IssuePanel extends javax.swing.JPanel {
                     cancelButton.setEnabled(isModified || isDirty);
                 } else {
                     enableMap.put(cancelButton, isModified || isDirty);
-                }
-                
-                if (isDirty) {
-                    issue.fireUnsaved();
-                } else {
-                    issue.fireSaved();
                 }
             }
         });
@@ -3250,7 +3245,7 @@ public class IssuePanel extends javax.swing.JPanel {
 //            updateMessagePanel();
         }
     }
-
+    
     private static class TooltipsMap extends HashMap<JLabel, Map<String, String>> {
 
         private void removeTooltip (JLabel label, String fieldKey) {
@@ -3792,7 +3787,7 @@ public class IssuePanel extends javax.swing.JPanel {
         public boolean add (String value) {
             boolean added = super.add(value);
             if (added) {
-                issue.fireUnsaved();
+                issue.fireChanged();
             }
             return added;
         }
@@ -3801,7 +3796,7 @@ public class IssuePanel extends javax.swing.JPanel {
         public boolean remove (Object o) {
             boolean removed = super.remove(o);
             if (removed && isEmpty()) {
-                issue.fireSaved();
+                issue.fireChanged();
             }
             return removed;
         }
@@ -3811,7 +3806,7 @@ public class IssuePanel extends javax.swing.JPanel {
             boolean fire = !isEmpty();
             super.clear();
             if (fire) {
-                issue.fireSaved();
+                issue.fireChanged();
             }
         }
         

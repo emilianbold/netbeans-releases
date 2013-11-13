@@ -115,4 +115,9 @@ public class ODCSIssueController implements IssueController {
         panel.getIssue().removePropertyChangeListener(l);
     }
 
+    @Override
+    public boolean isChanged() {
+        return panel.getIssue().hasUnsavedChanges();
+    }
+    
 }

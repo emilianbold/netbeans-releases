@@ -643,7 +643,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         saveQuery();
         query.setSaved(true);
         setAsSaved();
-        fireSaved();
+        fireChanged();
     }
 
     private String getSaveName() {
@@ -1044,12 +1044,13 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
             public void run() {
                 if (!ignoreChanges && isChanged()) {
                     panel.saveChangesButton.setEnabled(true);
-                    fireUnsaved();
+                    fireChanged();
                 }                
             }
         });
     }
 
+    @Override
     public boolean isChanged() {
         for(QueryParameter p : parameters.values()) {
             if(p.isChanged()) {
@@ -1095,12 +1096,8 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         support.removePropertyChangeListener(l);
     }
 
-    private void fireUnsaved() {
-        support.firePropertyChange(QueryController.EVENT_QUERY_CHANGED, null, null);
-    }
- 
-    private void fireSaved() {
-        support.firePropertyChange(QueryController.EVENT_QUERY_SAVED, null, null);
+    private void fireChanged() {
+        support.firePropertyChange(QueryController.PROP_CHANGED, null, null);
     }
 
     /**

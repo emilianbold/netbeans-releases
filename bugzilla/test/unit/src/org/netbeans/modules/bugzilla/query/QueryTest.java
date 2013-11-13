@@ -424,7 +424,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
                 }
                 removed++;
             }
-            if(evt.getPropertyName().equals(QueryController.EVENT_QUERY_SAVED)) {
+            if(evt.getPropertyName().equals(QueryController.PROP_CHANGED)) {
                 saved++;
             }
         }

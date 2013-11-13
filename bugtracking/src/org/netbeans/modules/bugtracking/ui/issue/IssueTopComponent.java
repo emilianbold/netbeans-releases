@@ -629,20 +629,29 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                     }
                 }
             });
-        } else if(evt.getPropertyName().equals(IssueController.EVENT_ISSUE_CHANGED)) {
-            if (getLookup().lookup(IssueSavable.class) == null) {
-                instanceContent.add(new IssueSavable(IssueTopComponent.this));
-                setNameAndTooltip();
+        } else if(evt.getPropertyName().equals(IssueController.PROP_CHANGED)) {
+            Object o = evt.getNewValue();
+            boolean changed;
+            if(o instanceof Boolean) {
+                changed = (Boolean) o;
+            } else {
+                changed = getController().isChanged();
             }
-        } else if(evt.getPropertyName().equals(IssueController.EVENT_ISSUE_SAVED)) {
-            IssueSavable savable = getSavable();
-            if(savable != null) {
-                savable.destroy();
-                setNameAndTooltip();
+            if(changed) {
+                if (getLookup().lookup(IssueSavable.class) == null) {
+                    instanceContent.add(new IssueSavable(IssueTopComponent.this));
+                    setNameAndTooltip();
+                }            
+            } else {
+                IssueSavable savable = getSavable();
+                if(savable != null) {
+                    savable.destroy();
+                    setNameAndTooltip();
+                }
             }
-        }
+        } 
     }
-
+    
     private IssueSavable getSavable() {
         return getLookup().lookup(IssueSavable.class);
     }
