@@ -167,7 +167,7 @@ public class WrongParamNameHint extends HintRule {
             try {
                 result = Utilities.getRowEnd(doc, paramVariable.getStartOffset());
             } catch (BadLocationException ex) {
-                LOGGER.log(Level.WARNING, null, ex);
+                LOGGER.log(Level.FINE, null, ex);
             }
             return result;
         }
