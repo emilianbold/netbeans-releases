@@ -265,6 +265,7 @@ public final class ODCSServer {
         prefs.setWikiLanguage(WikiMarkupLanguage.valueOf(wikiStyle));
         project.setProjectPreferences(prefs);
         Project created = client.createProject(project);
+        created = client.getProjectById(created.getIdentifier());
         return setODCSProjectData(created.getIdentifier(), created);
     }
 
