@@ -1234,7 +1234,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             if (infos != null) {
                 if (chkNbOnly.isSelected()) { // #181656: show only NB modules
                     List<NBVersionInfo> refined = new ArrayList<NBVersionInfo>();
-                    Set<String> check = new HashSet<String>(); // class index works only on JAR artifacts
+                    Map<String, NBVersionInfo> check = new HashMap<String, NBVersionInfo>(); // class index works only on JAR artifacts
                     Set<String> found = new HashSet<String>(); // but search string might also be found in other fields
                     for (NBVersionInfo nbvi : infos) {
                         String key = key(nbvi);
@@ -1242,18 +1242,13 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                             refined.add(nbvi);
                             found.add(key);
                         } else {
-                            check.add(key);
+                            check.put(key, nbvi);
                         }
                     }
-                    QueryField qf = new QueryField();
-                    qf.setField(QueryField.FIELD_PACKAGING);
-                    qf.setValue(NbMavenProject.TYPE_NBM);
-                    qf.setMatch(QueryField.MATCH_EXACT);
-                    qf.setOccur(QueryField.OCCUR_MUST);
-                    for (NBVersionInfo alt : RepositoryQueries.findResult(Collections.singletonList(qf), RepositoryPreferences.getInstance().getRepositoryInfos()).getResults()) {
-                        String key = key(alt);
-                        if (check.contains(key) && !found.contains(key)) {
-                            refined.add(alt);
+                    final Result<String> findResult = RepositoryQueries.getGAVsForPackaging(NbMavenProject.TYPE_NBM, RepositoryPreferences.getInstance().getRepositoryInfos());
+                    for (String alt : findResult.getResults()) {
+                        if (check.containsKey(alt) && !found.contains(alt)) {
+                            refined.add(check.get(alt));
                         }
                     }
                     Collections.sort(refined);
