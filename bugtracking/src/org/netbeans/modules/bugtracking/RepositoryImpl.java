@@ -480,5 +480,10 @@ public final class RepositoryImpl<R, Q, I> {
         BugtrackingOwnerSupport.getInstance().setLooseAssociation(SELECTED_FILE_AND_ALL_PROJECTS, this);
     }
 
+    private int fakeIdCounter = 0;
+    String getNextFakeIssueID() {
+        return (--fakeIdCounter) + "";
+    }
+
 }
 

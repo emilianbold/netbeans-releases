@@ -73,6 +73,7 @@ public final class IssueImpl<R, I> {
     private final RepositoryImpl<R, ?, I> repo;
     private final IssueProvider<I> issueProvider;
     private final I data;
+    private String fakeId;
 
     IssueImpl(RepositoryImpl<R, ?, I> repo, IssueProvider<I> issueProvider, I data) {
         this.issueProvider = issueProvider;
@@ -148,7 +149,16 @@ public final class IssueImpl<R, I> {
     }
 
     public String getID() {
-        return issueProvider.getID(data);
+        String id = issueProvider.getID(data);
+        if(id == null) {
+            synchronized(repo) {
+                if(fakeId == null) {
+                    fakeId = repo.getNextFakeIssueID();
+                }
+                return fakeId;
+            }
+        }
+        return id;
     }
     public String getSummary() {
         return issueProvider.getSummary(data);
