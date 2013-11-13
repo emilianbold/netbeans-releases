@@ -482,7 +482,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
                 sb.append(" ").append(it.next());
             }
             //XXX here we somehow assume that the last entry in line is the goal and it doesn't need to be enclosed in quotes itself. 3 quotes in line would break things.
-            sb.append("\"\"");
+            sb.append("\""); //#237398 apparently one doublequote is more than enough. Not sure why 2 two doublequotes were initially added. but it broke issue 237398 and a single double quote appears to work fine with nb/maven/project in space in path combinations..
             cmdLine = Arrays.asList(new String[] {
                 "cmd", "/c", sb.toString() //merge everything into one item here..
             });
