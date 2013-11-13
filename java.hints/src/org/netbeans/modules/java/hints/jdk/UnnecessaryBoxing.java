@@ -1,7 +1,6 @@
 package org.netbeans.modules.java.hints.jdk;
 
 
-import com.sun.javafx.fxml.expression.BinaryExpression;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
