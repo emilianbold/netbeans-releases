@@ -47,7 +47,9 @@ import java.io.FilenameFilter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.javascript.karma.exec.KarmaExecutable;
 import org.netbeans.modules.web.clientproject.api.ProjectDirectoriesProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -86,6 +88,51 @@ public final class KarmaUtils {
             return Collections.emptyList();
         }
         return Arrays.asList(configs);
+    }
+
+    /**
+     * Tries to find the "best" Karma config file.
+     */
+    @CheckForNull
+    public static File findKarmaConfig(File configDir) {
+        List<File> karmaConfigs = findKarmaConfigs(configDir);
+        int indexOf = karmaConfigs.indexOf(new File(configDir, "karma.conf.js")); // NOI18N
+        if (indexOf != -1) {
+            return karmaConfigs.get(indexOf);
+        }
+        File firstConfig = null;
+        for (File config : karmaConfigs) {
+            if (firstConfig == null) {
+                firstConfig = config;
+            }
+            String configName = config.getName().toLowerCase();
+            if (configName.contains("share")
+                    || configName.contains("common")) {
+                continue;
+            }
+            return config;
+        }
+        return firstConfig;
+    }
+
+    /**
+     * Tries to find the "best" Karma file (first project one, then a system one).
+     */
+    @CheckForNull
+    public static File findKarma(Project project) {
+        // first, project karma
+        FileObject projectKarma = project.getProjectDirectory().getFileObject(KarmaExecutable.PROJECT_KARMA_PATH);
+        if (projectKarma != null
+                && projectKarma.isValid()
+                && projectKarma.isData()) {
+            return FileUtil.toFile(projectKarma);
+        }
+        // search on user's PATH
+        List<String> karmas = FileUtils.findFileOnUsersPath(KarmaExecutable.KARMA_NAME, KarmaExecutable.KARMA_LONG_NAME);
+        if (!karmas.isEmpty()) {
+            return new File(karmas.get(0));
+        }
+        return null;
     }
 
 }
