@@ -416,6 +416,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         });
     }
 
+    private boolean ignoreChanges = false;
     protected void populate(final String urlParameters) {
         if(Bugzilla.LOG.isLoggable(Level.FINE)) {
             Bugzilla.LOG.log(Level.FINE, "Starting populate query controller{0}", (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
@@ -429,6 +430,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
+                ignoreChanges = true;
                 try {
                     productParameter.setParameterValues(toParameterValues(bc.getProducts()));
                     populateProductDetails();
@@ -454,6 +456,8 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
                     Bugzilla.LOG.log(Level.FINE, "populated query {0}", query.getDisplayName()); // NOI18N
                     
                 } finally {
+                    resetParameters();
+                    ignoreChanges = false;
                     querySemaphore.release();
                     Bugzilla.LOG.log(Level.FINE, "released lock on query {0}", query.getDisplayName()); // NOI18N
                     
@@ -1038,7 +1042,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         BugzillaUtil.runInAWT(new Runnable() {
             @Override
             public void run() {
-                if (isChanged()) {
+                if (!ignoreChanges && isChanged()) {
                     panel.saveChangesButton.setEnabled(true);
                     fireUnsaved();
                 }                
