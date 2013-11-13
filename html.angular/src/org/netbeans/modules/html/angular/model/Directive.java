@@ -54,11 +54,13 @@ import static org.netbeans.modules.html.angular.model.DirectiveType.*;
 public enum Directive {
     //      requir.|attr |class |element
     app     (false, true, true,  false, angularModule), 
-    bind    (true,  true, true,  false, expression), 
+    bind    (true,  true, true,  false, expression),
+    bindHtml(true,  true, false,  false, expression),
     bindHtmlUnsafe
             (true,  true, true,  false, expression), 
     bindTemplate
-            (true,  true, true,  false, expression), 
+            (true,  true, true,  false, expression),
+    blur    (true,  true, true,  false, expression),
     change  (true,  true, false, true,  expression), 
     checked (true,  true, false, false, expression),
     _class  (true,  true, true,  false, expression), //real name is "class"
@@ -68,15 +70,22 @@ public enum Directive {
     click   (true,  true, true,  false, expression),
     cloak   (true,  true, true,  false, noValue),
     controller
-            (true,  true, true,  false, expression), 
+            (true,  true, true,  false, expression),
+    copy    (true,  true, true,  false, expression),
     csp     (false, true, true,  false, noValue),
+    cut     (true,  true, true,  false, expression),
     dblclick(true,  true, true,  false, expression),
     disabled(true,  true, false, false, expression),
+    focus   (true,  true, false, false, expression),
     form    (true,  true, true,  true,  string),
     hide    (true,  true, true,  false, expression),
     href    (true,  true, false, false, template),
+    _if      (true,  true, true,  true,  expression), // real name is "if"
     include (true,  true, true,  true,  expression),
     init    (true,  true, true,  false, expression),
+    keydown (true,  true, true,  false, expression),
+    keypress(true,  true, true,  false, expression),
+    keyup   (true,  true, true,  false, expression),
     list    (true,  true, true,  false, string),
     model   (true,  true, true,  false, expression),
     mousedown
@@ -93,6 +102,8 @@ public enum Directive {
     multiple(true,  true, false, false, expression),
     nonBindable
             (true,  true, true,  false, noValue),
+    open    (true,  true, true,  false, expression),
+    paste   (true,  true, true,  false, expression),
     //TODO add sub directives
     pluralize
             (true,  true, false, true,  noValue),    
@@ -103,13 +114,18 @@ public enum Directive {
     selected(false, true, false, false, expression),
     show    (true,  true, true,  false, expression),
     src     (true,  true, false, false, template),
+    srcset  (true,  true, false, false, template),
     style   (true,  true, true,  false, expression),
     submit  (true,  true, true,  false, expression),
     
-    //TODO add sub directives 
     _switch (true,  true, false, true,  expression), //??? //real name is "switch"
+    _switch_when
+            (true,  true, false, true,  string),
+    _switch_default
+            (true,  true, false, true,  string),
     transclude
             (true,  true, true,  false, noValue),
+    value   (true,  true, false, false, string),
     view    (false, true, true,  true,  noValue);
     
     //ngdoc parser is here: https://github.com/angular/angular.js/blob/master/docs/src/ngdoc.js
@@ -218,7 +234,11 @@ public enum Directive {
      * Name of the directive. Use this method instead of {@link #name()}.
      */
     private String getCleanCoreName() {
-        return name().charAt(0) == '_' ? name().substring(1) : name();
+        String name = name().charAt(0) == '_' ? name().substring(1) : name();
+        if (name.indexOf('_') > -1) {
+            name = name.replace('_', '-');
+        }
+        return name;
     }
      
     public boolean isAttributeValueTypicallyUsed() {
