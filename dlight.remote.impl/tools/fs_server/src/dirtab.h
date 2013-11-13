@@ -36,9 +36,11 @@ const char* dirtab_get_tempdir();
 
 dirtab_element *dirtab_get_element(const char* abspath);
 
-FILE* dirtab_get_element_cache(dirtab_element *e, bool writing);
+void dirtab_lock(dirtab_element *el);
 
-void dirtab_release_element_cache(dirtab_element *e);
+void dirtab_unlock(dirtab_element *el);
+
+const char*  dirtab_get_element_cache_path(dirtab_element *e);
 
 void dirtab_visit(bool (*visitor) (const char* path, int index, dirtab_element* el));
 

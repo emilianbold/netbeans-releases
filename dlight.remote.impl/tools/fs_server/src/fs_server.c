@@ -239,17 +239,20 @@ static fs_entry *decode_entry_response(char* buf) {
     return create_fs_entry(&tmp);
 }
 
-static void read_entries_from_cache(array/*<fs_entry>*/ *entries, FILE *cache_fp, const char* path) {
+static bool read_entries_from_cache(array/*<fs_entry>*/ *entries, dirtab_element* el, const char* path) {
+    const char *cache_path = dirtab_get_element_cache_path(el);
+    FILE* cache_fp = fopen(cache_path, "r");
     array_init(entries, 100);
+    bool success = false;
     if (cache_fp) {
         int buf_size = PATH_MAX + 40;
         char *buf = malloc(buf_size);
         if (!fgets(buf, buf_size, cache_fp)) {
-            report_error("error reading cache for %s: %s\n", path, strerror(errno));
+            report_error("error reading cache from %s for %s: %s\n", cache_path, path, strerror(errno));
         }
         unescape_strcpy(buf, buf);
         if (strncmp(path, buf, strlen(path)) != 0) {
-            report_error("error: first line in cache for %s is not '%s', but is '%s'", path, path, buf);
+            report_error("error: first line in cache %s for %s is not '%s', but is '%s'", cache_path, path, path, buf);
         }
         while (fgets(buf, buf_size, cache_fp)) {
             trace(TRACE_FINEST, "\tread entry: %s", buf);
@@ -261,16 +264,19 @@ static void read_entries_from_cache(array/*<fs_entry>*/ *entries, FILE *cache_fp
             if (entry) {
                 array_add(entries, entry);
             } else {
-                report_error("error reading entry from cache: %s\n", buf);
+                report_error("error reading entry from cache (%s): %s\n", cache_path, buf);
             }
         }
         if (!feof(cache_fp)) {
-            report_error("error reading cache for %s: %s\n", path, strerror(errno));
+            report_error("error reading cache from %s for %s: %s\n", cache_path, path, strerror(errno));
         }
         free(buf);
         // do not close cache_fp, it's caller's responsibility
+        fclose(cache_fp);
+        success = true;
     }
-    array_truncate(entries);
+    array_truncate(entries);    
+    return success;
 }
 
 static bool visit_dir_entries(const char* path, 
@@ -454,13 +460,16 @@ static void response_ls(int request_id, const char* path, bool recursive, int ne
         dirtab_element *el = NULL;
         if (persistence) {
             el = dirtab_get_element(path);
-            cache_fp = dirtab_get_element_cache(el, true);
-            if (!cache_fp) {
+            dirtab_lock(el);
+            cache_fp = fopen600(dirtab_get_element_cache_path(el));
+            if (cache_fp) {
+                escape_strcpy(work_buf, path);
+                fprintf(cache_fp, "%s\n", work_buf);
+            } else {
                 report_error("error opening cache file for %s: %s\n", path, strerror(errno));
+                dirtab_unlock(el);
             }
-            escape_strcpy(work_buf, path);
-            fprintf(cache_fp, "%s\n", work_buf);
-        }        
+        }
         int cnt = 0;
         while (true) {
             if (readdir_r(d, &entry_buf.d, &entry)) {
@@ -545,7 +554,7 @@ static void response_ls(int request_id, const char* path, bool recursive, int ne
             }
         }
         if (cache_fp) {
-            dirtab_release_element_cache(el);
+            dirtab_unlock(el);
         }
     } else {
         report_error("error opening directory '%s': %s\n", path, strerror(errno));
@@ -593,11 +602,10 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el) {
     
     array/*<fs_entry>*/ old_entries;
     array/*<fs_entry>*/ new_entries;
-    FILE* cache_fp = dirtab_get_element_cache(el, false);
-    if (cache_fp) {
-        read_entries_from_cache(&old_entries, cache_fp, path);
-        dirtab_release_element_cache(el);
-    } else {
+    dirtab_lock(el);
+    bool success = read_entries_from_cache(&old_entries, el, path);
+    dirtab_unlock(el);
+    if (!success) {
         report_error("error refreshing %s: can't open cache\n", path);
         return true;
     }

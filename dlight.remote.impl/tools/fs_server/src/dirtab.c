@@ -348,55 +348,20 @@ static void trace_lock_unlock(dirtab_element *el, bool lock) {
 };
 
 /** just a wrapper for tracing/logging/debugging */
-static void lock(dirtab_element *el) {
+void dirtab_lock(dirtab_element *el) {
     trace_lock_unlock(el, true);
     mutex_lock(&el->mutex);
 }
 
 /** just a wrapper for tracing/logging/debugging */
-static void unlock(dirtab_element *el) {
+void dirtab_unlock(dirtab_element *el) {
     trace_lock_unlock(el, false);
     mutex_unlock(&el->mutex);
 }
 
-FILE* dirtab_get_element_cache(dirtab_element *el, bool writing) {
-    lock(el);
-    if (el->cache_fp) {
-        report_error("error: attempt to open cache twice for %s\n", el->abspath);
-        unlock(el);
-        exit(FAILURE_DIRTAB_DOUBLE_CACHE_OPEN);
-    }
-    if (writing) {
-        el->cache_fp = fopen600(el->cache_path);
-    } else {
-        el->cache_fp = fopen(el->cache_path, "r");
-    }
-    if (!el->cache_fp) {
-        report_error("error opening cache for %s: %s\n", el->abspath, strerror(errno));
-        unlock(el);
-    }
-    return el->cache_fp;
+const char*  dirtab_get_element_cache_path(dirtab_element *el) {
+    return el->cache_path;
 }
-
-//FILE* dirtapthread_mutex_unlock(&el->mutex);b_get_cache(const char* abspath, bool writing) {
-//    dirtab_element *el = dirtab_get_element(abspath);
-//    return dirtab_get_element_cache(el, writing);
-//}
-
-void dirtab_release_element_cache(dirtab_element *el) {
-    if (!el->cache_fp) {
-        report_error("error: attempt to release closed cache for %s\n", el->abspath);
-    } else {
-        fclose(el->cache_fp);
-        el->cache_fp = NULL;
-        unlock(el);
-    }
-}
-
-//void dirtab_release_cache(const char* abspath) {
-//    dirtab_element *el = dirtab_get_element(abspath);
-//    return dirtab_release_element_cache(el);
-//}
 
 #ifdef TEST
 static const char* get_cache_path(const char* abspath) {
