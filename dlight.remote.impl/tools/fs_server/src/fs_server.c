@@ -124,7 +124,7 @@ static bool is_prohibited(const char* abspath) {
 /** 
  * Decodes in-place fs_raw_request into fs_request
  */
-static fs_request* decode_request(char* raw_request, fs_request* request, int request_size) {
+static fs_request* decode_request(char* raw_request, fs_request* request, int request_max_size) {
     const char* p = raw_request + 2;
     //soft_assert(*p == ' ', "incorrect request format: '%s'", request);
     //p++;
@@ -134,29 +134,29 @@ static fs_request* decode_request(char* raw_request, fs_request* request, int re
         return NULL;
     }
     //soft_assert(*p == ' ', "incorrect request format: '%s'", request);
-    int len;
-    p = decode_int(p, &len);
+    int path_len;
+    p = decode_int(p, &path_len);
     if (p == NULL) {
         return NULL;
     }   
-    if (!len && *raw_request != FS_REQ_QUIT) {
+    if (!path_len && *raw_request != FS_REQ_QUIT) {
         report_error("wrong (zero path) request: %s", raw_request);
         return NULL;
     }
-    if (len > (request_size - sizeof(fs_request) - 1)) {
+    if (path_len > (request_max_size - sizeof(fs_request) - 1)) {
         report_error("wrong (too long path) request: %s", raw_request);
         return NULL;
     }
     //fs_request->kind = request->kind;
     //soft_assert(*p == ' ', "incorrect request format: '%s'", request);
     request->kind = raw_request[0];
-    strncpy(request->path, p, len);
-    request->path[len] = 0;
+    strncpy(request->path, p, path_len);
+    request->path[path_len] = 0;
     unescape_strcpy(request->path, request->path);
-    len = strlen(request->path);
+    path_len = strlen(request->path);
     request->id = id;
-    request->len = len;
-    request->size = offsetof(fs_request, path)+len+1; //(request->path-&request)+len+1;
+    request->len = path_len;
+    request->size = offsetof(fs_request, path)+path_len+1; //(request->path-&request)+len+1;
     return request;
 }
 
@@ -718,7 +718,7 @@ static void *rp_loop(void *data) {
     return NULL;
 }
 
-static void lock_or_unloock(bool lock) {
+static void lock_or_unlock(bool lock) {
     const char* lock_file_name = "lock";
     static int lock_fd = -1;
     if (lock) {
@@ -742,16 +742,16 @@ static void lock_or_unloock(bool lock) {
 
 static void exit_function() {
     dirtab_flush();
-    lock_or_unloock(false);    
+    lock_or_unlock(false);    
 }
 
 static void main_loop() {
     //TODO: handshake with version    
     
+    int thread_num[rp_thread_count];
     if (rp_thread_count > 1) {
         blocking_queue_init(&req_queue);
-        trace(TRACE_INFO, "Staring %d threads\n", rp_thread_count);
-        int thread_num[rp_thread_count];
+        trace(TRACE_INFO, "Staring %d threads\n", rp_thread_count);        
         for (int i = 0; i < rp_thread_count; i++) {
             trace(TRACE_INFO, "Starting thread #%d...\n", i);
             thread_num[i] = i;
@@ -919,7 +919,7 @@ int main(int argc, char* argv[]) {
         report_error("cannot change current directory to %s: %s\n", basedir, strerror(errno));
         exit(FAILED_CHDIR);
     }
-    lock_or_unloock(true);
+    lock_or_unlock(true);
     state_init();
     if (is_traceable(TRACE_INFO) && ! dirtab_is_empty()) {
         trace(TRACE_INFO, "loaded dirtab\n");

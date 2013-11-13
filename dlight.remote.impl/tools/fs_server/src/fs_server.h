@@ -34,15 +34,6 @@ enum fs_response_kind {
     FS_RSP_CHANGE = 'c'
 };
 
-/**
- * Request in text mode (as it is passed via stream).
- */
-typedef struct fs_raw_request {    
-    enum fs_request_kind kind : 8;
-    char gap;
-    char data[];
-} fs_raw_request;
-
 typedef struct fs_request {
     int size;
     /** request kind */

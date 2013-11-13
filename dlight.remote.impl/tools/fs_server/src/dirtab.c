@@ -17,15 +17,15 @@ static char* root = NULL;
 static char* temp_path = NULL;
 static char* cache_path = NULL;
 static char* dirtab_file_path = NULL;
-static const char* cahe_subdir_name = "cache";
+static const char* cache_subdir_name = "cache";
 
-typedef struct dirtab_element_impl {
+struct dirtab_element {
     int index;
     char* cache_path;
     pthread_mutex_t mutex;
     FILE* cache_fp;
     char abspath[];
-} dirtab_element_impl;
+};
 
 /**guarder by dirtab_mutex */
 typedef struct dirtab {
@@ -45,7 +45,7 @@ typedef struct dirtab {
      * List of directories under control
      * sorted in alphabetical order
      */
-    dirtab_element_impl** paths;
+    dirtab_element** paths;
     
     /** the next unoccupied index */
     int next_index;
@@ -77,14 +77,14 @@ static void init_table() {
     table.dirty =  false;
     table.size =  0;
     table.limit = 1024;
-    table.paths = malloc(table.limit * (sizeof(dirtab_element_impl*)));
+    table.paths = malloc(table.limit * (sizeof(dirtab_element*)));
     table.next_index = 0;
 }
 
 static void expand_table_if_needed() {
     if (table.limit <= table.size) {
         table.limit *= 2;
-        table.paths = realloc(table.paths, table.limit * (sizeof(dirtab_element_impl*)));
+        table.paths = realloc(table.paths, table.limit * (sizeof(dirtab_element*)));
         if (!table.paths) {
             exit(NO_MEMORY_EXPANDING_DIRTAB);
         }
@@ -98,34 +98,34 @@ static int compare_dirtab_elements_4qsort(const void *d1, const void *d2) {
     } else if (!d2) {
         return 1;
     } else {
-        dirtab_element_impl *el1 = *((dirtab_element_impl **) d1);
-        dirtab_element_impl *el2 = *((dirtab_element_impl **) d2);
+        dirtab_element *el1 = *((dirtab_element **) d1);
+        dirtab_element *el2 = *((dirtab_element **) d2);
         int result = strcmp(el1->abspath, el2->abspath);
         return result;
     }
 }
 
 /** to use with bsearch */
-static int compare_dirtab_elements_4search(const void *d1, const void *d2) {
-    if (!d1) {
+static int compare_dirtab_elements_4search(const void *to_find, const void *d2) {
+    if (!to_find) {
         return d2 ? -1 : 0;
     } else if (!d2) {
         return 1;
     } else {
-        char *path = (char *) d1;
-        dirtab_element_impl *el2 = *((dirtab_element_impl **) d2);
+        char *path = (char *) to_find;
+        dirtab_element *el2 = *((dirtab_element **) d2);
         int result = strcmp(path, el2->abspath);
         return result;
     }
 }
 
-static dirtab_element_impl *new_dirtab_element(const char* path, int index) {
+static dirtab_element *new_dirtab_element(const char* path, int index) {
     char cache[32];
-    sprintf(cache, "%s/%d", cahe_subdir_name, index);
+    sprintf(cache, "%s/%d", cache_subdir_name, index);
     int path_len = strlen(path);
     int cache_len = strlen(cache);
-    int size = sizeof(dirtab_element_impl) + path_len + cache_len + 2;
-    dirtab_element_impl *el = malloc(size);
+    int size = sizeof(dirtab_element) + path_len + cache_len + 2;
+    dirtab_element *el = malloc(size);
     el->index = index;
     strcpy(el->abspath, path);
     el->cache_path = el->abspath + path_len + 1;
@@ -135,19 +135,20 @@ static dirtab_element_impl *new_dirtab_element(const char* path, int index) {
     return el;
 }
 
-static dirtab_element_impl *add_path(const char* path) {
-    dirtab_element_impl *el = new_dirtab_element(path, table.next_index++);
-    strcpy(el->abspath, path);
+static dirtab_element *add_path(const char* path) {
+    dirtab_element *el = new_dirtab_element(path, table.next_index++);
     expand_table_if_needed();
     table.paths[table.size++] = el;
     table.dirty = true;
-    qsort(table.paths, table.size, sizeof(dirtab_element_impl *), compare_dirtab_elements_4qsort);
+    qsort(table.paths, table.size, sizeof(dirtab_element *), compare_dirtab_elements_4qsort);
     return el;
 }
 
 static bool load_impl() {
     FILE *f = fopen(dirtab_file_path, "r");
     if (!f) {
+        // TODO: should we really report an error? what if this is just 1-st launch?
+        // TODO: if dirtab does not exist, remove all caches
         report_error("error opening %s: %s\n", dirtab_file_path, strerror(errno));
         return false;
     }
@@ -290,7 +291,7 @@ void dirtab_init() {
     
     strcpy(cache_path, root);
     strcat(cache_path, "/");
-    strcat(cache_path, cahe_subdir_name);
+    strcat(cache_path, cache_subdir_name);
     mkdir_or_die(cache_path, FAILURE_CREATING_CACHE_DIR, FAILURE_ACCESSING_CACHE_DIR);
 
     strcpy(temp_path, root);
@@ -327,10 +328,10 @@ dirtab_element *dirtab_get_element(const char* abspath) {
 
     mutex_lock(&table.mutex);
     
-    dirtab_element_impl *el;
+    dirtab_element *el;
     
-    dirtab_element_impl **found = (dirtab_element_impl**) bsearch(abspath, table.paths, table.size, 
-            sizeof(dirtab_element_impl *), compare_dirtab_elements_4search);
+    dirtab_element **found = (dirtab_element**) bsearch(abspath, table.paths, table.size, 
+            sizeof(dirtab_element *), compare_dirtab_elements_4search);
     if (found) {
         el = *found;
     } else {
@@ -339,31 +340,26 @@ dirtab_element *dirtab_get_element(const char* abspath) {
 
     mutex_unlock(&table.mutex);
 
-    return (dirtab_element*) el;    
+    return el;    
 }
 
-//static dirtab_element_impl *get_element_impl(const char* abspath) {
-//    return (dirtab_element_impl*) dirtab_get_element(abspath);
-//}
-
-static void trace_lock_unlock(dirtab_element_impl *el, bool lock) {
+static void trace_lock_unlock(dirtab_element *el, bool lock) {
     //trace("# %s mutex for %s\n", lock ? "locking" : "unlocking", el->abspath);
 };
 
 /** just a wrapper for tracing/logging/debugging */
-static void lock(dirtab_element_impl *el) {
+static void lock(dirtab_element *el) {
     trace_lock_unlock(el, true);
     mutex_lock(&el->mutex);
 }
 
 /** just a wrapper for tracing/logging/debugging */
-static void unlock(dirtab_element_impl *el) {
+static void unlock(dirtab_element *el) {
     trace_lock_unlock(el, false);
     mutex_unlock(&el->mutex);
 }
 
-FILE* dirtab_get_element_cache(dirtab_element *e, bool writing) {
-    dirtab_element_impl *el = (dirtab_element_impl*) e;
+FILE* dirtab_get_element_cache(dirtab_element *el, bool writing) {
     lock(el);
     if (el->cache_fp) {
         report_error("error: attempt to open cache twice for %s\n", el->abspath);
@@ -387,8 +383,7 @@ FILE* dirtab_get_element_cache(dirtab_element *e, bool writing) {
 //    return dirtab_get_element_cache(el, writing);
 //}
 
-void dirtab_release_element_cache(dirtab_element *e) {
-    dirtab_element_impl *el = (dirtab_element_impl*) e;
+void dirtab_release_element_cache(dirtab_element *el) {
     if (!el->cache_fp) {
         report_error("error: attempt to release closed cache for %s\n", el->abspath);
     } else {
@@ -405,7 +400,7 @@ void dirtab_release_element_cache(dirtab_element *e) {
 
 #ifdef TEST
 static const char* get_cache_path(const char* abspath) {
-    const dirtab_element_impl *el = (dirtab_element_impl *) dirtab_get_element(abspath);
+    const dirtab_element *el = (dirtab_element *) dirtab_get_element(abspath);
     return el->cache_path;
 }
 #endif
@@ -413,13 +408,13 @@ static const char* get_cache_path(const char* abspath) {
 void dirtab_visit(bool (*visitor) (const char* path, int index, dirtab_element* el)) {
     mutex_lock(&table.mutex);
     int size = table.size;
-    int mem_size = size * sizeof(dirtab_element_impl**);
-    dirtab_element_impl** paths = malloc(mem_size);
+    int mem_size = size * sizeof(dirtab_element**);
+    dirtab_element** paths = malloc(mem_size);
     memcpy(paths, table.paths, mem_size);
     mutex_unlock(&table.mutex);
     for (int i = 0; i < size; i++) {
-        dirtab_element_impl* el = paths[i];
-        bool proceed = visitor(el->abspath, el->index, (dirtab_element*) el);
+        dirtab_element* el = paths[i];
+        bool proceed = visitor(el->abspath, el->index, el);
         if (!proceed) {
             break;
         }
