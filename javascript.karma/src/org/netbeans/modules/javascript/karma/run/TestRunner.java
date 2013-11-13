@@ -272,7 +272,7 @@ public final class TestRunner {
     private static final class CallStackCallback implements JumpToCallStackAction.Callback {
 
         private static final String LOCALHOST = "http://localhost:"; // NOI18N
-        private static final Pattern FILE_LINE_PATTERN = Pattern.compile(LOCALHOST + "\\d+/base/(.+)\\?\\d+:(\\d+):\\d+"); // NOI18N
+        private static final Pattern FILE_LINE_PATTERN = Pattern.compile(LOCALHOST + "\\d+/base/(?<FILE>.+)\\?\\d+:(?<LINE>\\d+)"); // NOI18N
 
         private final File projectDir;
 
@@ -289,8 +289,8 @@ public final class TestRunner {
             }
             Matcher matcher = FILE_LINE_PATTERN.matcher(callStack);
             if (matcher.find()) {
-                String path = matcher.group(1).replace('/', File.separatorChar); // NOI18N
-                return Pair.of(new File(projectDir, path), Integer.parseInt(matcher.group(2)));
+                String path = matcher.group("FILE").replace('/', File.separatorChar); // NOI18N
+                return Pair.of(new File(projectDir, path), Integer.parseInt(matcher.group("LINE")));
             }
             assert false : callStack;
             LOGGER.log(Level.FINE, "Unexpected callstack line: {0}", callStack);

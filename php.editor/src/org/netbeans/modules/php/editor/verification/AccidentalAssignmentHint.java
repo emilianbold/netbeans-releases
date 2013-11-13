@@ -137,7 +137,7 @@ public class AccidentalAssignmentHint extends HintRule implements CustomisableRu
                 int end = assignment.getEndOffset();
                 retval = doc.getText(start, end - start);
             } catch (BadLocationException ex) {
-                LOGGER.log(Level.WARNING, "Can't obtain assignment text.", ex);
+                LOGGER.log(Level.FINE, "Can't obtain assignment text.", ex);
             }
             return retval;
         }
@@ -242,7 +242,7 @@ public class AccidentalAssignmentHint extends HintRule implements CustomisableRu
                 sb.append(getExpressionText(assignment.getRightHandSide()));
                 return sb.toString();
             } catch (BadLocationException ex) {
-                LOGGER.log(Level.WARNING, "Can't obtain corrected assignment text.", ex);
+                LOGGER.log(Level.FINE, "Can't obtain corrected assignment text.", ex);
             }
             return sb.toString();
         }

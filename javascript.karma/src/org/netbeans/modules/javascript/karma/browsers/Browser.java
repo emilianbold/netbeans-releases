@@ -39,44 +39,33 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.verification;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.text.BadLocationException;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
-import org.netbeans.modules.csl.api.OffsetRange;
+package org.netbeans.modules.javascript.karma.browsers;
 
-/**
- *
- * @author Ondrej Brejla <obrejla@netbeans.org>
- */
-public final class VerificationUtils {
-    private static final Logger LOGGER = Logger.getLogger(VerificationUtils.class.getName());
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.openide.util.Pair;
 
-    private VerificationUtils() {
-    }
 
-    public static boolean isBefore(int caret, int margin) {
-        return caret <= margin;
-    }
+public abstract class Browser {
 
-    public static OffsetRange createLineBounds(int caretOffset, BaseDocument doc) {
-        assert doc != null;
-        OffsetRange result = OffsetRange.NONE;
-        if (caretOffset != -1) {
-            try {
-                int lineBegin = caretOffset > 0 ? Utilities.getRowStart(doc, caretOffset) : -1;
-                int lineEnd = (lineBegin != -1) ? Utilities.getRowEnd(doc, caretOffset) : -1;
-                if (lineBegin > -1 && lineEnd != -1 && lineBegin <= lineEnd) {
-                    result = new OffsetRange(lineBegin, lineEnd);
-                }
-            } catch (BadLocationException ex) {
-                LOGGER.log(Level.FINE, null, ex);
-            }
+    public abstract String getIdentifier();
+
+    protected abstract Pattern getOutputFileLinePattern();
+
+    public Pair<String, Integer> getOutputFileLine(String line) {
+        if (!isOutputFileLine(line)) {
+            return null;
         }
-        return result;
+        Matcher matcher = getOutputFileLinePattern().matcher(line);
+        if (matcher.find()) {
+            return Pair.of(matcher.group("FILE"), Integer.valueOf(matcher.group("LINE"))); // NOI18N
+        }
+        return null;
+    }
+
+    private boolean isOutputFileLine(String line) {
+        return line.contains(".js:"); // NOI18N
     }
 
 }

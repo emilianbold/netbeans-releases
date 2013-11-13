@@ -48,7 +48,7 @@ var DEBUG = Boolean(process.env.DEBUG);
 var AUTOWATCH = Boolean(process.env.AUTOWATCH);
 var KARMA_NETBEANS_REPORTER = process.env.KARMA_NETBEANS_REPORTER;
 
-var BROWSER_COUNT_MESSAGE = '$NB$netbeans browserCount %d';
+var BROWSERS_MESSAGE = '$NB$netbeans browsers %s';
 
 var util = require('util');
 var projectConf = require(PROJECT_CONFIG);
@@ -109,7 +109,7 @@ module.exports = function(config) {
     if (DEBUG) {
         config.browsers = ['Chrome'];
     }
-    printMessage(BROWSER_COUNT_MESSAGE, config.browsers.length);
+    printMessage(BROWSERS_MESSAGE, config.browsers.join(','));
 
     config.colors = true;
 
