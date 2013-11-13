@@ -146,7 +146,17 @@ public final class Utils {
     /**
      * Keeps forbidden folders without metadata
      */
-    private static HashSet<String> forbiddenFolders;
+    private static final Set<String> forbiddenFolders;
+    static {
+        List<String> files = new ArrayList<String>();
+        try {
+            String forbidden = System.getProperty("versioning.forbiddenFolders", ""); //NOI18N
+            files.addAll(Arrays.asList(forbidden.split("\\;"))); //NOI18N
+        } catch (Exception e) {
+            Logger.getLogger(Utils.class.getName()).log(Level.INFO, e.getMessage(), e);
+        }
+        forbiddenFolders = new HashSet<String>(files);
+    }
 
     private Utils() {
     }
@@ -288,16 +298,6 @@ public final class Utils {
      * @since 1.54
      */
     public static boolean isForbiddenFolder (String folderPath) {
-        if (forbiddenFolders == null) {
-            List<String> files = new ArrayList<String>();
-            try {
-                String forbidden = System.getProperty("versioning.forbiddenFolders", ""); //NOI18N
-                files.addAll(Arrays.asList(forbidden.split("\\;"))); //NOI18N
-            } catch (Exception e) {
-                Logger.getLogger(Utils.class.getName()).log(Level.INFO, e.getMessage(), e);
-            }
-            forbiddenFolders = new HashSet<String>(files);
-        }
         return forbiddenFolders.contains(folderPath);
     }
 
