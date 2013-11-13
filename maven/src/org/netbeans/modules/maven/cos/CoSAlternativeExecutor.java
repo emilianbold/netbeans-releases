@@ -55,7 +55,7 @@ import org.openide.util.Parameters;
  * @see CoSAlternativeExecutorImplementation
  *
  * @author Martin Janicek <mjanicek@netbeans.org>
- * @since 2.97
+ * @since 2.99
  */
 public final class CoSAlternativeExecutor {
 

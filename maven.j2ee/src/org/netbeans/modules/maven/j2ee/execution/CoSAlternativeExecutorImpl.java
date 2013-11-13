@@ -63,7 +63,7 @@ import org.netbeans.spi.project.ProjectServiceProvider;
  * This class is <i>immutable</i> and thus <i>thread safe</i>.
  *
  * @author Martin Janicek <mjanicek@netbeans.org>
- * @since 2.97
+ * @since 2.99
  */
 @ProjectServiceProvider(
     service = {

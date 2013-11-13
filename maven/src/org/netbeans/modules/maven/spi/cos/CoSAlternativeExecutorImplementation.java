@@ -69,7 +69,7 @@ import org.netbeans.modules.maven.api.execute.RunConfig;
  * @see CoSAlternativeExecutor
  *
  * @author Martin Janicek <mjanicek@netbeans.org>
- * @since 2.97
+ * @since 2.99
  */
 public interface CoSAlternativeExecutorImplementation {
 
