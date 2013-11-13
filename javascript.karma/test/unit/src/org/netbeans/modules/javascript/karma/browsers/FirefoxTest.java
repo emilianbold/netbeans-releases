@@ -40,45 +40,43 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.javascript.karma.exec;
+package org.netbeans.modules.javascript.karma.browsers;
 
-import java.util.regex.Matcher;
-import org.junit.Assert;
 import org.junit.Test;
+import org.netbeans.modules.javascript.karma.browsers.util.TestUtils;
 
-public class ServerLineConvertorTest {
+public class FirefoxTest {
 
     @Test
     public void testValidFilePatterns() {
-        assertFilePattern("at null.<anonymous> (/home/gapon/NetBeansProjects/angular.js/test/ngCookies/cookiesSpec.js:34:19)",
-                "/home/gapon/NetBeansProjects/angular.js/test/ngCookies/cookiesSpec.js", 34);
-        assertFilePattern("at null.<anonymous> (C:\\NetBeansProjects\\angular.js\\test\\ngCookies\\cookiesSpec.js:34:19)",
-                "C:\\NetBeansProjects\\angular.js\\test\\ngCookies\\cookiesSpec.js", 34);
+        assertFilePattern("angular.mock.inject@/home/gapon/NetBeansProjects/AngularSeeed/test/lib/angular/angular-mocks.js:1939",
+                "/home/gapon/NetBeansProjects/AngularSeeed/test/lib/angular/angular-mocks.js", 1939);
+        assertFilePattern("@/home/gapon/NetBeansProjects/AngularSeeed/test/unit/directivesSpec.js:16",
+                "/home/gapon/NetBeansProjects/AngularSeeed/test/unit/directivesSpec.js", 16);
+        assertFilePattern("angular.mock.inject@/home/gapon/NetBeans Projects/AngularSeeed/test/lib/angular/angular-mocks.js:1939",
+                "/home/gapon/NetBeans Projects/AngularSeeed/test/lib/angular/angular-mocks.js", 1939);
+        assertFilePattern("@/home/gapon/NetBeans Projects/AngularSeeed/test/unit/directivesSpec.js:16",
+                "/home/gapon/NetBeans Projects/AngularSeeed/test/unit/directivesSpec.js", 16);
+        assertFilePattern("angular.mock.inject@C:\\NetBeansProjects\\angular.js\\test\\ngCookies\\cookiesSpec.js:1939",
+                "C:\\NetBeansProjects\\angular.js\\test\\ngCookies\\cookiesSpec.js", 1939);
+        assertFilePattern("@C:\\NetBeansProjects\\angular.js\\test\\ngCookies\\cookiesSpec.js:16",
+                "C:\\NetBeansProjects\\angular.js\\test\\ngCookies\\cookiesSpec.js", 16);
+        assertFilePattern("angular.mock.inject@C:\\NetBeans Projects\\angular.js\\test\\ngCookies\\cookiesSpec.js:1939",
+                "C:\\NetBeans Projects\\angular.js\\test\\ngCookies\\cookiesSpec.js", 1939);
+        assertFilePattern("@C:\\NetBeans Projects\\angular.js\\test\\ngCookies\\cookiesSpec.js:16",
+                "C:\\NetBeans Projects\\angular.js\\test\\ngCookies\\cookiesSpec.js", 16);
     }
 
     @Test
     public void testInvalidFilePatterns() {
-        assertFilePattern("at null.<anonymous> /home/gapon/NetBeansProjects/angular.js/test/ngCookies/cookiesSpec.js:34:19",
+        assertFilePattern("/home/gapon/NetBeansProjects/angular.js/src/auto/injector.js:6",
                 null, -1);
-        assertFilePattern("at null.<anonymous> (/home/gapon/NetBeansProjects/angular.js/test/ngCookies/cookiesSpec.js:34:19:-1)",
-                null, -1);
-        assertFilePattern("/home/gapon/NetBeansProjects/angular.js/src/auto/injector.js:6:12604",
-                null, -1);
-        assertFilePattern("C:\\NetBeansProjects\\angular.js\\src\\auto\\injector.js:6:12604",
-                null, -1);
-        assertFilePattern("(/home/gapon/NetBeansProjects/angular.js/src/auto/injector.js:6)",
+        assertFilePattern("C:\\NetBeansProjects\\angular.js\\src\\auto\\injector.js:6",
                 null, -1);
     }
 
     private void assertFilePattern(String input, String file, int line) {
-        Matcher matcher = KarmaExecutable.ServerLineConvertor.FILE_PATTERN.matcher(input);
-        if (file == null) {
-            Assert.assertFalse(input, matcher.find());
-            return;
-        }
-        Assert.assertTrue(input, matcher.find());
-        Assert.assertEquals(file, matcher.group(1));
-        Assert.assertEquals(String.valueOf(line), matcher.group(2));
+        TestUtils.assertFileLinePattern(Firefox.OUTPUT_FILE_LINE_PATTERN, input, file, line);
     }
 
 }
