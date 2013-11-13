@@ -1253,7 +1253,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
     }
 
     @Override
-    public boolean saveChanges() {
+    public boolean saveChanges(String name) {
         return true;
     }
 

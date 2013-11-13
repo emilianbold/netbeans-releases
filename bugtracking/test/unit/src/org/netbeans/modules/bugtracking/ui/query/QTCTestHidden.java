@@ -259,7 +259,7 @@ public class QTCTestHidden extends NbTestCase {
             @Override public void opened() { }
             @Override public void closed() { }
             @Override
-            public boolean saveChanges() {
+            public boolean saveChanges(String name) {
                 return true;
             }
             @Override

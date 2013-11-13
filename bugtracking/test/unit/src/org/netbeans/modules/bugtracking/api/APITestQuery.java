@@ -113,7 +113,7 @@ public class APITestQuery extends TestQuery {
                     return true;
                 }
                 @Override
-                public boolean saveChanges() {
+                public boolean saveChanges(String name) {
                     return true;
                 }
                 @Override

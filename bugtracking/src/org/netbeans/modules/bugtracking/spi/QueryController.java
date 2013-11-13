@@ -152,10 +152,11 @@ public interface QueryController {
      * This method is called when the general IDE Save button is pressed or when 
      * Save was chosen on close of an Query TopComponent.
      * 
+     * @param name in case the Query wasn't saved yet a new name is provided. Otherwise might be null.
      * @return <code>true</code> in case the save worked, otherwise <code>false</code>
      * @since 1.85
      */
-    public boolean saveChanges();
+    public boolean saveChanges(String name);
 
     /**
      * This method is called when Discard was chosen on close of an Query TopComponent.

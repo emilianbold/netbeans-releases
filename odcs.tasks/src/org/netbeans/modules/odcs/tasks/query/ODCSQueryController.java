@@ -963,7 +963,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
     }
 
     @Override
-    public boolean saveChanges() {
+    public boolean saveChanges(String name) {
         return true;
     }
 

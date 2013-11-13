@@ -87,6 +87,7 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.commons.LinkButton;
 import org.netbeans.modules.bugtracking.commons.NBBugzillaUtils;
 import org.netbeans.modules.bugtracking.commons.NoContentPanel;
+import org.netbeans.modules.bugtracking.commons.SaveQueryPanel;
 import org.netbeans.modules.bugtracking.team.TeamRepositories;
 import org.netbeans.modules.bugtracking.ui.repository.RepositoryComboSupport;
 import org.netbeans.modules.team.spi.TeamAccessorUtils;
@@ -491,7 +492,7 @@ public final class QueryTopComponent extends TopComponent
                 Object ret = DialogDisplayer.getDefault().notify(nd);
                 boolean canClose = false;
                 if(ret == save) {
-                    canClose = query.getController().saveChanges();
+                    canClose = save();
                 } else if(ret == discard) {
                     canClose = query.getController().discardUnsavedChanges();
                 } if(canClose) {
@@ -501,6 +502,28 @@ public final class QueryTopComponent extends TopComponent
             }
         }
         return super.canClose(); 
+    }
+    
+    private boolean save() {
+        String newName = null;
+        if(query.getDisplayName() == null) {
+            newName = SaveQueryPanel.show(new SaveQueryPanel.QueryNameValidator() {
+    @Override
+                public String isValid(String name) {
+                    Collection<QueryImpl> queries = query.getRepositoryImpl().getQueries();
+                    for (QueryImpl q : queries) {
+                        if(name.equals(q.getDisplayName())) {
+                            return NbBundle.getMessage(QueryTopComponent.class, "MSG_SAME_NAME"); // NOI18N
+                        }
+                    }
+                    return null;
+                }
+            }, null);
+            if(newName == null) {
+                return false;
+            }
+        }
+        return query.getController().saveChanges(newName);
     }
     
     @Override
@@ -812,7 +835,7 @@ public final class QueryTopComponent extends TopComponent
         @Override
         protected void handleSave() throws IOException {
             if(tc.query != null) {
-                tc.query.getController().saveChanges();
+                tc.save();
             }
         }
 
