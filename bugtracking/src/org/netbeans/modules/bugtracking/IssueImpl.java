@@ -52,7 +52,7 @@ import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
-import org.netbeans.modules.bugtracking.spi.IssueSchedulingProvider;
+import org.netbeans.modules.bugtracking.spi.IssueScheduleProvider;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.tasks.TaskSchedulingManager;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
@@ -260,13 +260,13 @@ public final class IssueImpl<R, I> {
     }
 
     public boolean hasSchedule() {
-        IssueSchedulingProvider<I> isp = repo.getSchedulingProvider();
+        IssueScheduleProvider<I> isp = repo.getSchedulingProvider();
         return isp != null;
     }
     
     
     public void setDueDate(Date date) {
-        IssueSchedulingProvider<I> isp = repo.getSchedulingProvider();
+        IssueScheduleProvider<I> isp = repo.getSchedulingProvider();
         assert isp != null : "do no call .setDueDate() if .hasSchedule() is false"; // NOI18N
         if(isp != null) {
             isp.setDueDate(data, date);
@@ -274,7 +274,7 @@ public final class IssueImpl<R, I> {
     }
 
     public void setSchedule(IssueScheduleInfo info) {
-        IssueSchedulingProvider<I> isp = repo.getSchedulingProvider();
+        IssueScheduleProvider<I> isp = repo.getSchedulingProvider();
         assert isp != null : "do no call .setSchedule() if .hasSchedule() is false"; // NOI18N
         if(isp != null) {
             isp.setSchedule(data, info);
@@ -282,7 +282,7 @@ public final class IssueImpl<R, I> {
     }
 
     public void setEstimate(int hours) {
-        IssueSchedulingProvider<I> isp = repo.getSchedulingProvider();
+        IssueScheduleProvider<I> isp = repo.getSchedulingProvider();
         assert isp != null : "do no call .setEstimate() if .hasSchedule() is false"; // NOI18N
         if(isp != null) {
             isp.setEstimate(data, hours);
@@ -290,17 +290,17 @@ public final class IssueImpl<R, I> {
     }
 
     public Date getDueDate() {
-        IssueSchedulingProvider<I> isp = repo.getSchedulingProvider();
+        IssueScheduleProvider<I> isp = repo.getSchedulingProvider();
         return isp != null ? isp.getDueDate(data) : null;
     }
 
     public IssueScheduleInfo getSchedule() {
-        IssueSchedulingProvider<I> isp = repo.getSchedulingProvider();
+        IssueScheduleProvider<I> isp = repo.getSchedulingProvider();
         return isp != null ? isp.getSchedule(data) : null;
     }
 
     public int getEstimate() {
-        IssueSchedulingProvider<I> isp = repo.getSchedulingProvider();
+        IssueScheduleProvider<I> isp = repo.getSchedulingProvider();
         return isp != null ? isp.getEstimate(data) : null;
     }
     

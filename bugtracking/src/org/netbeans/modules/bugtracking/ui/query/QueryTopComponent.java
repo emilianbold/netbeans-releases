@@ -422,12 +422,12 @@ public final class QueryTopComponent extends TopComponent
                     }
                 }
             });
-        } else if(evt.getPropertyName().equals(QueryController.PROPERTY_QUERY_CHANGED)) {
+        } else if(evt.getPropertyName().equals(QueryController.EVENT_QUERY_CHANGED)) {
             if (getLookup().lookup(QuerySavable.class) == null) {
                 instanceContent.add(new QuerySavable(this));
                 setNameAndTooltip();
             }
-        } else if(evt.getPropertyName().equals(QueryController.PROPERTY_QUERY_SAVED)) {
+        } else if(evt.getPropertyName().equals(QueryController.EVENT_QUERY_SAVED)) {
             if(!isSaved()) {
                 openDashboard();                
             }

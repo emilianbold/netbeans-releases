@@ -168,7 +168,7 @@ public class JiraRepository {
     }
     
     public String getID() {
-        return info.getId();
+        return info.getID();
     }
 
     public JiraQuery createQuery() {
@@ -224,7 +224,7 @@ public class JiraRepository {
 
     synchronized void setInfoValues(String name, String url, String user, char[] password, String httpUser, char[] httpPassword) {
         setTaskRepository(name, url, user, password, httpUser, httpPassword);
-        String id = info != null ? info.getId() : name + System.currentTimeMillis();
+        String id = info != null ? info.getID() : name + System.currentTimeMillis();
         info = createInfo(id, url, name, user, httpUser, password, httpPassword);
     }
 

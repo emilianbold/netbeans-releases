@@ -161,7 +161,7 @@ public class BugzillaRepository {
     }
 
     public String getID() {
-        return info.getId();
+        return info.getID();
     }
 
     public TaskRepository getTaskRepository() {
@@ -490,12 +490,12 @@ public class BugzillaRepository {
 
     public synchronized void setInfoValues(String user, char[] password) {
         setTaskRepository(info.getDisplayName(), info.getUrl(), user, password, null, null, Boolean.parseBoolean(info.getValue(IBugzillaConstants.REPOSITORY_SETTING_SHORT_LOGIN)));
-        info = createInfo(info.getId(), info.getUrl(), info.getDisplayName(), user, null, password, null);
+        info = createInfo(info.getID(), info.getUrl(), info.getDisplayName(), user, null, password, null);
     }
     
     synchronized void setInfoValues(String name, String url, String user, char[] password, String httpUser, char[] httpPassword, boolean localUserEnabled) {
         setTaskRepository(name, url, user, password, httpUser, httpPassword, localUserEnabled);
-        String id = info != null ? info.getId() : name + System.currentTimeMillis();
+        String id = info != null ? info.getID() : name + System.currentTimeMillis();
         info = createInfo(id, url, name, user, httpUser, password, httpPassword);
     }
 

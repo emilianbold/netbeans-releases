@@ -1188,11 +1188,11 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
     }
 
     protected void fireUnsaved() {
-        support.firePropertyChange(IssueController.PROPERTY_ISSUE_CHANGED, null, null);
+        support.firePropertyChange(IssueController.EVENT_ISSUE_CHANGED, null, null);
     }
  
     protected void fireSaved() {
-        support.firePropertyChange(IssueController.PROPERTY_ISSUE_SAVED, null, null);
+        support.firePropertyChange(IssueController.EVENT_ISSUE_SAVED, null, null);
     }
 
     private boolean refresh(boolean afterSubmitRefresh) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache

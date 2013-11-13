@@ -292,7 +292,7 @@ public class QueryTableCellRendererTest {
 
         Object propertyValue;
         public RendererNode(RendererIssue issue, String value, RendererRepository rendererRepository) {
-            super("testconnector", issue.repo.info.getId(), issue, new TestIssueProvider(), new TestStatusProvider(), new TestChangesProvider());
+            super("testconnector", issue.repo.info.getID(), issue, new TestIssueProvider(), new TestStatusProvider(), new TestChangesProvider());
             propertyValue = value;
         }
         RendererIssueProperty createProperty() {

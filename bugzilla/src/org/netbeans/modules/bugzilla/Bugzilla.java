@@ -62,7 +62,7 @@ import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.bugtracking.spi.IssuePriorityInfo;
 import org.netbeans.modules.bugtracking.spi.IssuePriorityProvider;
 import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
-import org.netbeans.modules.bugtracking.spi.IssueSchedulingProvider;
+import org.netbeans.modules.bugtracking.spi.IssueScheduleProvider;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
@@ -90,7 +90,7 @@ public class Bugzilla {
     private IssueStatusProvider<BugzillaRepository, BugzillaIssue> sp;    
     private IssuePriorityProvider<BugzillaIssue> pp;
     private IssueNode.ChangesProvider<BugzillaIssue> bcp;
-    private IssueSchedulingProvider<BugzillaIssue> schedulingProvider;
+    private IssueScheduleProvider<BugzillaIssue> schedulingProvider;
     private IssueFinder issueFinder;
 
     private Bugzilla() {
@@ -229,9 +229,9 @@ public class Bugzilla {
             };
     }
 
-    public IssueSchedulingProvider<BugzillaIssue> getSchedulingProvider() {
+    public IssueScheduleProvider<BugzillaIssue> getSchedulingProvider() {
         if(schedulingProvider == null) {
-            schedulingProvider = new IssueSchedulingProvider<BugzillaIssue>() {
+            schedulingProvider = new IssueScheduleProvider<BugzillaIssue>() {
 
                 @Override
                 public void setDueDate (BugzillaIssue i, Date date) {

@@ -166,7 +166,7 @@ public final class RepositoryInfo {
      * @return id
      * @since 1.85
      */
-    public String getId() {
+    public String getID() {
         return map.get(PROPERTY_ID);
     }
     

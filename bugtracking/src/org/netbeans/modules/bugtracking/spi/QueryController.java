@@ -58,8 +58,8 @@ import org.openide.util.HelpCtx;
  * 
  * <p>
  * When editing or creating a Query, the UI is presented in an 
- * TopComponent in the editor area. Fire <code>PROPERTY_QUERY_CHANGED</code> and 
- * <code>PROPERTY_QUERY_SAVED</code> to notify the Issue TopComponent about the 
+ * TopComponent in the editor area. Fire <code>EVENT_QUERY_CHANGED</code> and 
+ * <code>EVENT_QUERY_SAVED</code> to notify the Issue TopComponent about the 
  * UI state, so that it's state can be accordingly rendered and the IDE-s general SaveAction enabled. 
  * On save or TopComponent close are then the <code>saveChanges()</code> and <code>discardUnsavedChanges()</code> 
  * methods called accordingly.
@@ -81,13 +81,13 @@ public interface QueryController {
      * The Issue UI contains unsaved changes.
      * @since 1.85
      */
-    public static String PROPERTY_QUERY_CHANGED = "bugtracking.query.changed";
+    public static String EVENT_QUERY_CHANGED = "bugtracking.query.changed";
     
     /**
      * The Issue UI does not contain unsaved changes.
      * @since 1.85
      */
-    public static String PROPERTY_QUERY_SAVED = "bugtracking.query.saved";
+    public static String EVENT_QUERY_SAVED = "bugtracking.query.saved";
     
     /**
      * The mode in which this controllers component is shown.
