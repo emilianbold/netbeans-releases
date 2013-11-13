@@ -46,9 +46,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.Action;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2me.project.J2MEProject;
 import org.netbeans.modules.j2me.project.ui.customizer.J2MEProjectProperties;
@@ -60,6 +60,7 @@ import org.netbeans.modules.java.api.common.project.ui.ProjectUISupport;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.netbeans.spi.project.ui.support.NodeList;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -136,7 +137,14 @@ public class LibrariesNodeProvider implements NodeFactory {
         public Node node(@NonNull final NodeType key) {
             Parameters.notNull("key", key); //NOI18N
             switch (key) {
-                case SOURCES:                    
+                case SOURCES:
+                    ClassPath bootCp;
+                    final FileObject[] roots = sources.getRoots();
+                    if (roots.length > 0) {
+                        bootCp = prj.getClassPathProvider().findClassPath(roots[0], ClassPath.BOOT);
+                    } else {
+                        bootCp = prj.getClassPathProvider().getProjectClassPaths(ClassPath.BOOT)[0];
+                    }
                     return new LibrariesNode.Builder(
                             prj,
                             prj.evaluator(),
@@ -148,6 +156,7 @@ public class LibrariesNodeProvider implements NodeFactory {
                         addClassPathIgnoreRefs(ProjectProperties.BUILD_CLASSES_DIR).
                         setPlatformProperty(ProjectProperties.PLATFORM_ACTIVE).
                         setPlatformType(J2MEProjectProperties.PLATFORM_TYPE_J2ME).
+                        setBootPath(bootCp).
                         addLibrariesNodeActions(
                             LibrariesNode.createAddProjectAction(prj, sources),
                             LibrariesNode.createAddLibraryAction(prj.getReferenceHelper(), sources, null),

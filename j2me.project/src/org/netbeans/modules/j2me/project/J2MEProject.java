@@ -214,7 +214,7 @@ public class J2MEProject implements Project {
     }
 
     @NonNull
-    ClassPathProviderImpl getClassPathProvider() {
+    public ClassPathProviderImpl getClassPathProvider() {
         return cpProvider;
     }
 
