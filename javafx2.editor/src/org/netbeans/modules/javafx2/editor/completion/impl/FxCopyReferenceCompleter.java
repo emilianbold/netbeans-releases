@@ -124,7 +124,7 @@ public class FxCopyReferenceCompleter implements Completer, Completer.Factory {
             if (!(FxXmlSymbols.FX_REFERENCE.startsWith(tn) ||
                 FxXmlSymbols.FX_COPY.startsWith(tn))) {
 
-                String prefix = ctx.findNsPrefix(JavaFXEditorUtils.FXML_FX_NAMESPACE);
+                String prefix = ctx.findFxmlNsPrefix();
                 if (prefix == null) {
                     prefix = JavaFXEditorUtils.FXML_FX_PREFIX;
                 }
