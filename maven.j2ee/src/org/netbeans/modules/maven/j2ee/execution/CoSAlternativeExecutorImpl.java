@@ -40,40 +40,53 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.j2ee.ui.util;
+package org.netbeans.modules.maven.j2ee.execution;
 
-import java.util.prefs.Preferences;
-import org.openide.util.NbPreferences;
+import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.execute.ExecutionContext;
+import org.netbeans.modules.maven.api.execute.RunConfig;
+import org.netbeans.modules.maven.spi.cos.CoSAlternativeExecutorImplementation;
+import org.netbeans.spi.project.ProjectServiceProvider;
 
 /**
+ * Implementation of the {@link CoSAlternativeExecutorImplementation} enables to changes the default
+ * run/debug/profile behavior and does not force rebuild of application when one of these action is invoked.
  *
- * @author Martin Janicek
+ * <p>
+ * In combination with CoS/DoS feature this save time that was earlier needed for rebuild
+ * application started before actual redeployment.
+ *
+ * <p>
+ * See issue 230565 for some details about why this was needed.
+ *
+ * <p>
+ * This class is <i>immutable</i> and thus <i>thread safe</i>.
+ *
+ * @author Martin Janicek <mjanicek@netbeans.org>
+ * @since 2.97
  */
-public final class WarningPanelSupport {
-
-    private static final String JAVA_EE_VERSION_CHANGE = "showJavaEEVersionChangeWarning"; // NOI18N
-    private static final String AUTOMATIC_BUILD = "automaticBuildWarning";                 // NOI18N
-
-    private WarningPanelSupport() {
+@ProjectServiceProvider(
+    service = {
+        CoSAlternativeExecutorImplementation.class
+    },
+    projectType = {
+        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
+        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB,
+        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT,
+        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR,
+        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_OSGI
     }
+)
+public class CoSAlternativeExecutorImpl implements CoSAlternativeExecutorImplementation {
 
-    private static Preferences getPreferences() {
-        return NbPreferences.root().node("org/netbeans/modules/maven/showQuestions"); //NOI18N
-    }
+    @Override
+    public boolean execute(RunConfig config, ExecutionContext executionContext) {
+        Object skipBuild = config.getInternalProperties().get("skip.build"); //NOI18N
 
-    public static boolean isJavaEEChangeWarningActivated() {
-        return getPreferences().getBoolean(JAVA_EE_VERSION_CHANGE, true);
-    }
-
-    public static void dontShowJavaEEChangeWarning() {
-        getPreferences().putBoolean(JAVA_EE_VERSION_CHANGE, false);
-    }
-
-    public static boolean isAutomaticBuildWarningActivated() {
-        return getPreferences().getBoolean(AUTOMATIC_BUILD, true);
-    }
-
-    public static void dontShowAutomaticBuildWarning() {
-        getPreferences().putBoolean(AUTOMATIC_BUILD, false);
+        if (skipBuild instanceof Boolean && (Boolean) skipBuild) {
+            return DeploymentHelper.perform(config, executionContext);
+        }
+        // If the skip.build property is not set, it means we do want to proceed standard execution
+        return false;
     }
 }

@@ -40,40 +40,49 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.j2ee.ui.util;
+package org.netbeans.modules.maven.spi.cos;
 
-import java.util.prefs.Preferences;
-import org.openide.util.NbPreferences;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.maven.cos.CoSAlternativeExecutor;
+import org.netbeans.modules.maven.api.execute.ExecutionContext;
+import org.netbeans.modules.maven.api.execute.RunConfig;
 
 /**
+ * Alternative executor enables to rewrite the way how compile on save execution is
+ * performed by default.
  *
- * @author Martin Janicek
+ * <p>
+ * This can be useful in cases when we don't need to execute standard run behavior.
+ * For example when re-running Maven Web application with enabled CoS/DoS, we don't
+ * want to rebuild whole project every-time and simply re-opening index.html is enough.
+ *
+ * <p>
+ * If the project want to use {@link CoSAlternativeExecutorImplementation} it should register
+ * it in it's project {@link Lookup}.
+ *
+ * <p>
+ * This class should not be used directly. Use {@link CoSAlternativeExecutor} API class instead.
+ *
+ * <p>
+ * See issue 230565 for some details about why this was needed in the first place.
+ *
+ * @see CoSAlternativeExecutor
+ *
+ * @author Martin Janicek <mjanicek@netbeans.org>
+ * @since 2.97
  */
-public final class WarningPanelSupport {
+public interface CoSAlternativeExecutorImplementation {
 
-    private static final String JAVA_EE_VERSION_CHANGE = "showJavaEEVersionChangeWarning"; // NOI18N
-    private static final String AUTOMATIC_BUILD = "automaticBuildWarning";                 // NOI18N
+    /**
+     * Perform an alternative execution.
+     *
+     * <p>
+     * SPI client should perform whatever he wants to do instead of the default CoS execution behavior.
+     *
+     * @param config configuration
+     * @param executionContext execution context
+     * @return {@code true} if the execution was successful, {@code false} otherwise
+     */
+    boolean execute(@NonNull RunConfig config, @NonNull ExecutionContext executionContext);
 
-    private WarningPanelSupport() {
-    }
-
-    private static Preferences getPreferences() {
-        return NbPreferences.root().node("org/netbeans/modules/maven/showQuestions"); //NOI18N
-    }
-
-    public static boolean isJavaEEChangeWarningActivated() {
-        return getPreferences().getBoolean(JAVA_EE_VERSION_CHANGE, true);
-    }
-
-    public static void dontShowJavaEEChangeWarning() {
-        getPreferences().putBoolean(JAVA_EE_VERSION_CHANGE, false);
-    }
-
-    public static boolean isAutomaticBuildWarningActivated() {
-        return getPreferences().getBoolean(AUTOMATIC_BUILD, true);
-    }
-
-    public static void dontShowAutomaticBuildWarning() {
-        getPreferences().putBoolean(AUTOMATIC_BUILD, false);
-    }
 }
