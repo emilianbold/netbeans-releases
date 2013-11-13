@@ -40,75 +40,57 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.remote.impl.fs.server;
+package org.netbeans.modules.cnd.apt.impl.support;
 
-import java.nio.BufferUnderflowException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.WeakHashMap;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 
 /**
  *
- * @author vkvashin
+ * @author Alexander Simon
  */
-
-/*package*/ final class Buffer {
-    private final CharSequence text;
-    private int curr;
-
-    public Buffer(CharSequence text) {
-        this.text = text;
-        curr = 0;
+public class ResolverResultsCache {
+    private static final Map<String, Map<APTIncludeResolverImpl, ResolvedPath>> cache = new HashMap<String, Map<APTIncludeResolverImpl, ResolvedPath>>();
+    private static final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+    private ResolverResultsCache(){
     }
     
-    public String getString() throws BufferUnderflowException {
-        int len = getInt();
-        StringBuilder sb = new StringBuilder(len);
-        int limit = curr + len;
-        while (curr < limit) {
-            sb.append(text.charAt(curr++));
-        }
-        skipSpaces();
-        return sb.toString();
-    }
-
-    char getChar() {
-        return text.charAt(curr++);
-    }
-
-    public int getInt() throws BufferUnderflowException {
-        skipSpaces();
-        StringBuilder sb = new StringBuilder(16);
-        int result = 0;
-        while (curr < text.length()) {
-            char c = text.charAt(curr++);
-            if (Character.isDigit(c)) {
-                result *= 10;
-                result += (int) c - (int) '0';
-            } else {
-                break;
+    static ResolvedPath getResolvedPath(String include, APTIncludeResolverImpl resolver) {
+        lock.readLock().lock();
+        try {
+            Map<APTIncludeResolverImpl, ResolvedPath> results = cache.get(include);
+            if (results != null) {
+                return results.get(resolver);
             }
+        } finally {
+            lock.readLock().unlock();
         }
-        return result;
+        return null;
     }
 
-    public long getLong() throws BufferUnderflowException {
-        skipSpaces();
-        StringBuilder sb = new StringBuilder(16);
-        long result = 0;
-        while (curr < text.length()) {
-            char c = text.charAt(curr++);
-            if (Character.isDigit(c)) {
-                result *= 10;
-                result += (int) c - (int) '0';
-            } else {
-                break;
+    static void putResolvedPath(String include, APTIncludeResolverImpl resolver, ResolvedPath resolvedPath) {
+        lock.writeLock().lock();
+        try {
+            Map<APTIncludeResolverImpl, ResolvedPath> results = cache.get(include);
+            if (results == null) {
+                results = new WeakHashMap<APTIncludeResolverImpl, ResolvedPath>();
+                cache.put(include, results);
             }
-        }
-        return result;
-    }
-
-    private void skipSpaces() {
-        if (curr < text.length() && Character.isSpaceChar(text.charAt(curr))) {
-            curr++;
+            results.put(resolver, resolvedPath);
+        } finally {
+            lock.writeLock().unlock();
         }
     }
     
+    public static void clearCache() {
+        lock.writeLock().lock();
+        try {
+            cache.clear();
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
 }

@@ -64,6 +64,13 @@ import org.openide.filesystems.FileObject;
  */
 public class RemoteFileSystemTestCase extends RemoteFileTestBase {
 
+    static {
+//        System.setProperty("remote.fs_server.verbose", "true");
+//        System.setProperty("remote.fs_server.log", "true");
+//        System.setProperty("remote.fs_server.verbose.response", "true");
+        System.setProperty("remote.fs_server.refresh", "0");
+    }
+
     public RemoteFileSystemTestCase(String testName) {
         super(testName);
     }
@@ -285,7 +292,7 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
             long skew = HostInfoUtils.getHostInfo(getTestExecutionEnvironment()).getClockSkew();
             long delta = Math.abs(localDate.getTime() - lastMod.getTime());
             if (delta > Math.abs(skew) + (long)(1000*60*15)) {
-                assertTrue("Dates differ to much: " + localDate +  " vs " + lastMod + 
+                assertTrue("Dates differ to much for " + fo + ": " + localDate +  " vs " + lastMod + 
                         " delta " + delta + " ms; skew " + skew, false);
             }
             fo.delete();

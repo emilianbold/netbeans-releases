@@ -53,6 +53,7 @@ import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.util.Exceptions;
 
 /**
@@ -103,6 +104,7 @@ public class RemoteMirrorPathProvider implements MirrorPathProvider {
         if (POSTFIX != null) {
             result += '-' + POSTFIX;
         }
-        return result;
+        String canonical = FileSystemProvider.getCanonicalPath(executionEnvironment, result);
+        return (canonical == null) ? result : canonical;
     }
 }
