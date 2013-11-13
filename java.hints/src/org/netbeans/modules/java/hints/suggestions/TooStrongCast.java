@@ -41,37 +41,24 @@
  */
 package org.netbeans.modules.java.hints.suggestions;
 
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
-import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Type.TypeVar;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.TypeUtilities;
-import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
@@ -238,15 +225,14 @@ public class TooStrongCast {
      * @return 
      */
     private static boolean checkAmbiguous(CompilationInfo info, final TreePath parentExec, int argIndex, TypeMirror casteeType, TreePath realArgTree) {
-        ExecutableElement el = (ExecutableElement)info.getTrees().getElement(parentExec);
+        CharSequence altType = info.getTypeUtilities().getTypeName(casteeType, TypeUtilities.TypeNameOptions.PRINT_FQN);
+        String prefix = null;
+        if (!(casteeType.getKind() == TypeKind.NULL || casteeType.getKind() == TypeKind.INTERSECTION)) {
+            prefix = "(" + altType + ")"; // NOI18N
+        }
         Tree leaf = parentExec.getLeaf();
-        
         List<? extends Tree> arguments;
         TreePath origT = null;
-        TreePath newT = null;
-        
-        SourcePositions spos = info.getTrees().getSourcePositions();
-        CharSequence altType = info.getTypeUtilities().getTypeName(casteeType, TypeUtilities.TypeNameOptions.PRINT_FQN);
         if (leaf instanceof MethodInvocationTree) {
             MethodInvocationTree mi = (MethodInvocationTree)leaf;
             arguments = mi.getArguments();
@@ -254,52 +240,9 @@ public class TooStrongCast {
         } else {
             arguments = ((NewClassTree)leaf).getArguments();
         }
-            
         Tree argTree = arguments.get(argIndex);
-        int exprStart = (int)spos.getStartPosition(info.getCompilationUnit(), leaf);
-        int exprEnd = (int)spos.getEndPosition(info.getCompilationUnit(), leaf);
-        int argStart = (int)spos.getStartPosition(info.getCompilationUnit(), argTree);
-        int realArgStart = (int)spos.getStartPosition(info.getCompilationUnit(), realArgTree.getLeaf());
-        CharSequence text = info.getSnapshot().getText();
-
-        // create an expression from parentExec.getLeaf(), but add the proposed typecast in front of the modified
-        // argument.
-        StringBuilder testStatement = new StringBuilder(exprEnd - exprStart);
-        testStatement.append(text.subSequence(exprStart, argStart));
-        if (!(casteeType.getKind() == TypeKind.NULL || casteeType.getKind() == TypeKind.INTERSECTION)) {
-            testStatement.append("(").append(altType).append(")"); // NOI18N
-        }
-        testStatement.append(text.subSequence(realArgStart, exprEnd));
-
-        SourcePositions[] poss = new SourcePositions[1];
-        ExpressionTree exp = info.getTreeUtilities().parseExpression(testStatement.toString(), poss);
-        if (exp != null) {
-            Scope scope = info.getTrees().getScope(parentExec.getParentPath());
-            info.getTreeUtilities().attributeTree(exp, scope);
-
-            // check that the proposed argument type does not make the resolver to select a different method.
-            TreePath tp = new TreePath(parentExec.getParentPath(), exp);
-            if (exp instanceof MethodInvocationTree) {
-                newT = new TreePath(tp, ((MethodInvocationTree)exp).getMethodSelect());
-            }
-
-            Element altEl = info.getTrees().getElement(tp);
-            if (altEl != el) {
-                return true;
-            }
-            // the new method does not resolve ?
-            if (origT != null && newT == null) {
-                return true;
-            }
-            // check the type of the result tree.
-            TypeMirror origType = info.getTrees().getTypeMirror(origT);
-            TypeMirror resType = info.getTrees().getTypeMirror(newT);
-            if (info.getTypes().isSameType(origType, resType)) {
-                // OK, gives the same methodtype.
-                return false;
-            }
-        }
-        return true;
+        TreePath argPath = new TreePath(parentExec, argTree);
+        return !Utilities.checkAlternativeInvocation(info, parentExec, argPath, realArgTree, prefix);
     }
 
     /**
