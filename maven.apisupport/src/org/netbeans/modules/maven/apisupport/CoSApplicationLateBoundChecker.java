@@ -77,6 +77,9 @@ public class CoSApplicationLateBoundChecker implements LateBoundPrerequisitesChe
         if (config.getProject() == null) {
             return true;
         }
+        if (!RunUtils.isCompileOnSaveEnabled(config)) { //#236324
+            return true;
+        }        
         DependencyProjectsProvider dpp = config.getProject().getLookup().lookup(DependencyProjectsProvider.class);
         String params = config.getProperties().get(NetBeansRunParamsIDEChecker.PROPERTY);
         StringBuilder sb = new StringBuilder(params != null ? params : "");
