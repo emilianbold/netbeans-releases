@@ -255,8 +255,14 @@ static bool read_entries_from_cache(array/*<fs_entry>*/ *entries, dirtab_element
     if (cache_fp) {
         int buf_size = PATH_MAX + 40;
         char *buf = malloc(buf_size);
-        if (!fgets(buf, buf_size, cache_fp)) {
-            report_error("error reading cache from %s for %s: %s\n", cache_path, path, strerror(errno));
+        if (!fgets(buf, buf_size, cache_fp)) {            
+            if (feof(cache_fp)) {
+                report_error("error reading cache from %s for %s: preliminary EOF\n", cache_path, path);
+            } else {
+                report_error("error reading cache from %s for %s: %s\n", cache_path, path, strerror(errno));
+            }
+            fclose(cache_fp);
+            return false;
         }
         unescape_strcpy(buf, buf);
         if (strncmp(path, buf, strlen(path)) != 0) {
@@ -383,7 +389,7 @@ static bool fs_entry_creating_visitor(char* name, struct stat *stat_buf, char* l
     return true;
 }
 
-static void read_entries_from_dir(array/*<fs_entry>*/ *entries, const char* path) {
+static void read_entries_from_dir(array/*<fs_entry>*/ *entries, const char* path) {    
     array_init(entries, 100);
     visit_dir_entries(path, fs_entry_creating_visitor, entries);
     array_truncate(entries);
@@ -562,6 +568,7 @@ static void response_ls(int request_id, const char* path, bool recursive, int ne
             }
         }
         if (cache_fp) {
+            fclose(cache_fp);
             dirtab_unlock(el);
         }
     } else {
@@ -613,16 +620,21 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el) {
     dirtab_lock(el);
     bool success = read_entries_from_cache(&old_entries, el, path);
     dirtab_unlock(el);
-    if (!success) {
-        report_error("error refreshing %s: can't open cache\n", path);
-        return true;
+    bool differs;
+    if (success) {
+        read_entries_from_dir(&new_entries, path);
+        array_qsort(&old_entries, entry_comparator);
+        array_qsort(&new_entries, entry_comparator);
+        differs = false;
+    } else {
+        array_init(&new_entries, 4);
+        report_error("error refreshing %s: error reading cache\n", path);
+        differs = true;
     }
-    read_entries_from_dir(&new_entries, path);
-
-    array_qsort(&old_entries, entry_comparator);
-    array_qsort(&new_entries, entry_comparator);
     
-    bool differs = array_size(&new_entries) != array_size(&old_entries);
+    if (!differs) {
+        differs = array_size(&new_entries) != array_size(&old_entries);
+    }
     if (!differs) {
         for (int i = 0; i < new_entries.size; i++) {
             fs_entry *new_entry = array_get(&new_entries, i);

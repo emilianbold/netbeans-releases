@@ -66,7 +66,7 @@ void array_free(array *a) {
             free(a->data[i]);
         }
         free(a->data);
+        a->size = 0;
+        a->data = NULL;
     }
-    a->size = 0;
-    a->data = NULL;
 }
