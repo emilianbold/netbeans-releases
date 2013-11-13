@@ -48,7 +48,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
-import java.util.List;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -60,17 +59,14 @@ import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.javascript.karma.exec.KarmaExecutable;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferencesValidator;
-import org.netbeans.modules.javascript.karma.util.FileUtils;
 import org.netbeans.modules.javascript.karma.util.KarmaUtils;
 import org.netbeans.modules.javascript.karma.util.ValidationResult;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileChooserBuilder;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -281,18 +277,9 @@ public class CustomizerKarma extends JPanel {
 
     @NbBundle.Messages("CustomizerKarma.karma.none=No Karma executable was found.")
     private void karmaSearchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_karmaSearchButtonActionPerformed
-        // first, project karma
-        FileObject projectKarma = project.getProjectDirectory().getFileObject(KarmaExecutable.PROJECT_KARMA_PATH);
-        if (projectKarma != null
-                && projectKarma.isValid()
-                && projectKarma.isData()) {
-            karmaTextField.setText(FileUtil.toFile(projectKarma).getAbsolutePath());
-            return;
-        }
-        // search on user's PATH
-        List<String> karmas = FileUtils.findFileOnUsersPath(KarmaExecutable.KARMA_NAME, KarmaExecutable.KARMA_LONG_NAME);
-        if (!karmas.isEmpty()) {
-            karmaTextField.setText(new File(karmas.get(0)).getAbsolutePath());
+        File karma = KarmaUtils.findKarma(project);
+        if (karma != null) {
+            karmaTextField.setText(karma.getAbsolutePath());
             return;
         }
         // no karma found
@@ -301,9 +288,9 @@ public class CustomizerKarma extends JPanel {
 
     @NbBundle.Messages("CustomizerKarma.config.none=No Karma configuration was found.")
     private void configSearchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_configSearchButtonActionPerformed
-        List<File> configs = KarmaUtils.findKarmaConfigs(KarmaUtils.getConfigDir(project));
-        if (!configs.isEmpty()) {
-            configTextField.setText(configs.get(0).getAbsolutePath());
+        File karmaConfig = KarmaUtils.findKarmaConfig(KarmaUtils.getConfigDir(project));
+        if (karmaConfig != null) {
+            configTextField.setText(karmaConfig.getAbsolutePath());
             return;
         }
         // no config found

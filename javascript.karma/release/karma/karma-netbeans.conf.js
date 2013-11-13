@@ -42,6 +42,7 @@
 
 var FILE_SEPARATOR = process.env.FILE_SEPARATOR;
 var PROJECT_CONFIG = process.env.PROJECT_CONFIG;
+var BASE_DIR = process.env.BASE_DIR;
 var PROJECT_WEB_ROOT = process.env.PROJECT_WEB_ROOT;
 var COVERAGE = Boolean(process.env.COVERAGE);
 var DEBUG = Boolean(process.env.DEBUG);
@@ -72,10 +73,10 @@ module.exports = function(config) {
                 || config.basePath.substr(1, 2) === ':\\') { // windows
             // absolute path, do nothing
         } else {
-            config.basePath = PROJECT_WEB_ROOT + FILE_SEPARATOR + config.basePath;
+            config.basePath = BASE_DIR + FILE_SEPARATOR + config.basePath;
         }
     } else {
-        config.basePath = PROJECT_WEB_ROOT + FILE_SEPARATOR;
+        config.basePath = BASE_DIR + FILE_SEPARATOR;
     }
 
     config.reporters = config.reporters || [];

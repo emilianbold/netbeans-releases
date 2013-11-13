@@ -491,6 +491,24 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
             }
         }
         
+        // resolving prototype types
+        JsObject prototype = getProperty(ModelUtils.PROTOTYPE);
+        if (prototype != null) {
+            Collection<? extends TypeUsage> protoAssignments = prototype.getAssignments();
+            if (protoAssignments != null && !protoAssignments.isEmpty()) {
+                protoAssignments = new ArrayList(protoAssignments);
+                Collection<? extends JsObject> variables = ModelUtils.getVariables(ModelUtils.getDeclarationScope(this));
+                for (TypeUsage typeUsage : protoAssignments) {
+                    for (JsObject variable: variables) {
+                        if (typeUsage.getType().equals(variable.getName())) {
+                            if (!typeUsage.getType().equals(variable.getFullyQualifiedName())) {
+                                prototype.addAssignment(new TypeUsageImpl(variable.getFullyQualifiedName(), typeUsage.getOffset(), true), typeUsage.getOffset());
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
     
     protected void clearOccurrences() {
