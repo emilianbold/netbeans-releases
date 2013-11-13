@@ -94,7 +94,8 @@ public class SymfonyScript {
 
     private static final String XML_CHARSET_NAME = "UTF-8"; // NOI18N
 
-    public static final String OPTIONS_SUB_PATH = "Symfony"; // NOI18N
+    public static final String OPTIONS_ID = "Symfony"; // NOI18N
+    public static final String OPTIONS_SUB_PATH = UiUtils.FRAMEWORKS_AND_TOOLS_SUB_PATH+"/"+OPTIONS_ID; // NOI18N
 
     private static final String DEFAULT_PARAM = "--color"; // NOI18N
 
@@ -158,7 +159,7 @@ public class SymfonyScript {
      * @return full IDE options Symfony path
      */
     public static String getOptionsPath() {
-        return UiUtils.OPTIONS_PATH + "/" + getOptionsSubPath(); // NOI18N
+        return UiUtils.FRAMEWORKS_AND_TOOLS_OPTIONS_PATH + "/" + getOptionsSubPath(); // NOI18N
     }
 
     /**
