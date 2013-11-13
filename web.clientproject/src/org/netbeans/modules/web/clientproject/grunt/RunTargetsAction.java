@@ -85,7 +85,7 @@ import org.openide.util.actions.SystemAction;
 @ActionRegistration(displayName = "#LBL_run_targets_action", lazy = false)
 @ActionReferences(value = {
     @ActionReference(position = 900, path = "Editors/text/grunt+javascript/Popup"),
-    @ActionReference(position = 200, path = "Loaders/text/grunt+javascript/Actions")
+    @ActionReference(position = 150, path = "Loaders/text/grunt+javascript/Actions")
 })
 public final class RunTargetsAction extends SystemAction implements ContextAwareAction {
 
