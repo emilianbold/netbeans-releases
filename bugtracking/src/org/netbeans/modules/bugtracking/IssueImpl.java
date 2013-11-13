@@ -54,6 +54,7 @@ import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
 import org.netbeans.modules.bugtracking.spi.IssueSchedulingProvider;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
+import org.netbeans.modules.bugtracking.tasks.TaskSchedulingManager;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 
 /**
@@ -82,10 +83,11 @@ public final class IssueImpl<R, I> {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if(IssueProvider.EVENT_ISSUE_DATA_CHANGED.equals(evt.getPropertyName())) {
-                    // XXX store changed scheduling facts (if changed)
+                    handleScheduling();
                 }
             }
         });
+        handleScheduling();
     }
 
     public synchronized Issue getIssue() {
@@ -302,6 +304,10 @@ public final class IssueImpl<R, I> {
     
     public Image getPriorityIcon() {
         return repo.getPriorityIcon(data);
+    }
+
+    private void handleScheduling () {
+        TaskSchedulingManager.getInstance().handleTask(IssueImpl.this);
     }
     
 }

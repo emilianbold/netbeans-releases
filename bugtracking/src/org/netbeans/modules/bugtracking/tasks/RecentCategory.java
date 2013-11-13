@@ -89,4 +89,8 @@ public class RecentCategory extends Category {
         };
     }
 
+     @Override
+    public int sortIndex() {
+        return 800;
+    }
 }

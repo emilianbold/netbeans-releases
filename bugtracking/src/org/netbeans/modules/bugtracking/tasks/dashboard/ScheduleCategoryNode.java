@@ -39,41 +39,79 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.bugtracking.tasks.dashboard;
 
-package org.netbeans.modules.bugtracking.tasks;
-
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
-import org.netbeans.modules.bugtracking.IssueImpl;
+import javax.swing.Action;
+import javax.swing.ImageIcon;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.bugtracking.tasks.Category;
+import org.netbeans.modules.bugtracking.tasks.TaskSchedulingManager;
+import org.netbeans.modules.bugtracking.tasks.TaskSorter;
+import org.netbeans.modules.team.commons.treelist.TreeListNode;
+import org.openide.util.ImageUtilities;
 
-public class UnsubmittedCategory extends Category {
+/**
+ *
+ * @author jpeska
+ */
+public class ScheduleCategoryNode extends CategoryNode {
 
-    private RepositoryImpl repository;
+    private static final ImageIcon SCHEDULE_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/category_schedule.png", true);
+    private final TaskSchedulingManager schedulingManager;
+    private final ScheduleCategoryListener listener;
 
-    public UnsubmittedCategory(List<IssueImpl> tasks, RepositoryImpl repository) {
-        super(NbBundle.getMessage(UnsubmittedCategory.class, "LBL_Unsubmitted") + " [" + repository.getDisplayName() + "]", tasks, true);
-        this.repository = repository;
-    }
-
-    public UnsubmittedCategory(RepositoryImpl repository) {
-        this(new ArrayList<IssueImpl>(0), repository);
-    }
-
-    @Override
-    public boolean persist() {
-        return false;
-    }
-
-    @Override
-    public List<IssueImpl> getTasks() {
-        return new ArrayList<IssueImpl>(repository.getUnsubmittedIssues());
+    public ScheduleCategoryNode(Category category) {
+        super(category, false);
+        this.schedulingManager = TaskSchedulingManager.getInstance();
+        this.listener = new ScheduleCategoryListener();
     }
 
     @Override
-    public int sortIndex() {
-        return 900;
+    ImageIcon getIcon() {
+        return SCHEDULE_ICON;
+    }
+
+    @Override
+    List<Action> getCategoryActions(List<TreeListNode> selectedNodes) {
+        List<Action> actions = new ArrayList<Action>();
+        return actions;
+    }
+
+    @Override
+    void adjustTaskNode(TaskNode taskNode) {
+    }
+
+    @Override
+    Comparator<TaskNode> getSpecialComparator() {
+        return TaskSorter.getScheduleComparator();
+    }
+
+    @Override
+    protected void attach() {
+        super.attach();
+        schedulingManager.addPropertyChangeListener(listener);
+    }
+
+
+    @Override
+    protected void dispose() {
+        super.dispose();
+        schedulingManager.removePropertyChangeListener(listener);
+    }
+
+     private class ScheduleCategoryListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getPropertyName().equals(TaskSchedulingManager.PROPERTY_SCHEDULED_TASKS_CHANGED)) {
+                ScheduleCategoryNode.this.updateContent();
+            }
+        }
     }
 
 }

@@ -39,41 +39,59 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.bugtracking.tasks;
+package org.netbeans.modules.bugtracking.tasks.filter;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.bugtracking.IssueImpl;
-import org.netbeans.modules.bugtracking.RepositoryImpl;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
+import org.netbeans.modules.bugtracking.tasks.Category;
+import org.netbeans.modules.bugtracking.tasks.ScheduleCategory;
+import org.netbeans.modules.bugtracking.tasks.dashboard.CategoryNode;
 
-public class UnsubmittedCategory extends Category {
+/**
+ *
+ * @author jpeska
+ */
+public class ScheduleCategoryFilter implements DashboardFilter<CategoryNode> {
 
-    private RepositoryImpl repository;
+    private final List<IssueScheduleInfo> allowedInfos;
 
-    public UnsubmittedCategory(List<IssueImpl> tasks, RepositoryImpl repository) {
-        super(NbBundle.getMessage(UnsubmittedCategory.class, "LBL_Unsubmitted") + " [" + repository.getDisplayName() + "]", tasks, true);
-        this.repository = repository;
+    public ScheduleCategoryFilter(List<IssueScheduleInfo> allowedInfos) {
+        this.allowedInfos = allowedInfos;
     }
 
-    public UnsubmittedCategory(RepositoryImpl repository) {
-        this(new ArrayList<IssueImpl>(0), repository);
+    public ScheduleCategoryFilter() {
+        this(new ArrayList<IssueScheduleInfo>());
+    }
+
+    public void removeInfo(IssueScheduleInfo scheduleInfo) {
+        allowedInfos.remove(scheduleInfo);
+    }
+
+    public void addInfo(IssueScheduleInfo scheduleInfo) {
+        if (!allowedInfos.contains(scheduleInfo)) {
+            allowedInfos.add(scheduleInfo);
+        }
     }
 
     @Override
-    public boolean persist() {
+    public boolean isInFilter(CategoryNode entry) {
+        Category category = entry.getCategory();
+        if (category instanceof ScheduleCategory) {
+            IssueScheduleInfo info = ((ScheduleCategory) category).getScheduleInfo();
+            return allowedInfos.contains(info);
+        } else {
+            return true;
+        }
+    }
+
+    @Override
+    public boolean expandNodes() {
         return false;
     }
 
     @Override
-    public List<IssueImpl> getTasks() {
-        return new ArrayList<IssueImpl>(repository.getUnsubmittedIssues());
+    public boolean showHitCount() {
+        return false;
     }
-
-    @Override
-    public int sortIndex() {
-        return 900;
-    }
-
 }

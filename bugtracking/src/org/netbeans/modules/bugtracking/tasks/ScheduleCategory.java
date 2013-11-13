@@ -39,26 +39,34 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.bugtracking.tasks;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
+import org.netbeans.modules.bugtracking.tasks.dashboard.DashboardViewer;
 
-public class UnsubmittedCategory extends Category {
+/**
+ *
+ * @author jpeska
+ */
+public class ScheduleCategory extends Category {
 
-    private RepositoryImpl repository;
+    private final IssueScheduleInfo scheduleInfo;
+    private final TaskSchedulingManager schedulingManager;
+    private final DashboardViewer dashboardViewer;
+    private final int sortIndexAddition;
 
-    public UnsubmittedCategory(List<IssueImpl> tasks, RepositoryImpl repository) {
-        super(NbBundle.getMessage(UnsubmittedCategory.class, "LBL_Unsubmitted") + " [" + repository.getDisplayName() + "]", tasks, true);
-        this.repository = repository;
-    }
 
-    public UnsubmittedCategory(RepositoryImpl repository) {
-        this(new ArrayList<IssueImpl>(0), repository);
+    public ScheduleCategory(String name, IssueScheduleInfo scheduleInfo, int sortIndexAddition) {
+        super(name, new ArrayList<IssueImpl>(0), true);
+        this.scheduleInfo = scheduleInfo;
+        this.schedulingManager = TaskSchedulingManager.getInstance();
+        this.dashboardViewer = DashboardViewer.getInstance();
+        this.sortIndexAddition = sortIndexAddition;
     }
 
     @Override
@@ -68,12 +76,16 @@ public class UnsubmittedCategory extends Category {
 
     @Override
     public List<IssueImpl> getTasks() {
-        return new ArrayList<IssueImpl>(repository.getUnsubmittedIssues());
+        IssueImpl[] scheduledTasks = schedulingManager.getScheduledTasks(scheduleInfo, dashboardViewer.getRepositories(true).toArray(new RepositoryImpl[0]));
+        return Arrays.asList(scheduledTasks);
+    }
+
+    public IssueScheduleInfo getScheduleInfo() {
+        return scheduleInfo;
     }
 
     @Override
     public int sortIndex() {
-        return 900;
+        return 200 + sortIndexAddition;
     }
-
 }
