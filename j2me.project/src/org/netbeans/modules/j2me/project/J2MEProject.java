@@ -281,7 +281,6 @@ public class J2MEProject implements Project {
                     updateHelper,
                     sourceRoots,
                     testRoots),
-                cpProvider,
                 QuerySupport.createProjectInformation(helper, this, ImageUtilities.loadImageIcon(ICON, false)),
                 encodingQuery,
                 QuerySupport.createSourceLevelQuery2(eval),
