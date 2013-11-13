@@ -2,24 +2,23 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Web Service Attributes Editor: Quality of Service: Operation</title>
+<title>Web Service Attributes Editor: Quality of Service: Input Message</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="org.netbeans.modules.websvc.wsitconf.ui.nodes.OperationNode" name="org.netbeans.modules.websvc.wsitconf.ui.nodes.OperationNode"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref678" name="sthref678"></a>
-<h1>Web Service Attributes Editor: Quality of Service: Operation</h1>
+<p><a id="org.netbeans.modules.websvc.wsitconf.ui.nodes.BindingInputNode" name="org.netbeans.modules.websvc.wsitconf.ui.nodes.BindingInputNode"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref682" name="sthref682"></a>
+<h1>Web Service Attributes Editor: Quality of Service: Input Message</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>In the Quality of Service tab's Operations section, on the service side, you can add Quality of Service security to a specific web service operation. 
+<p>In the Input Message section of the WSIT configuration editor, you can select the following options for securing an input message. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1941">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG2873">
 <param name="text" value="<html><u>More</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
-<p>In the Operation section of the Quality of Service configuration editor, you can select the following options for securing a web service operation:</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
@@ -33,32 +32,33 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t92" headers="r1c1-t92">
-<p>Transaction</p>
+<p>Authentication Token</p>
 </td>
 <td align="left" headers="r2c1-t92 r1c2-t92">
-<p>Select an option from the Transactions list to specify a level at which transactions will be secured. For this release, transactions will only use SSL for security.</p>
+<p>Select a supporting token that will be used to sign and/or encrypt the specified message parts. Options include Username, X509, SAML, Issued, or None.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t92" headers="r1c1-t92">
-<p>Secure This Operation</p>
+<p>Signed</p>
 </td>
 <td align="left" headers="r3c1-t92 r1c2-t92">
-<p>Select this option to secure the web service operation. This option will be grayed out if Secure All Service Operations (in the PortBinding section) is selected because it would be redundant. Once selected, the list of security mechanisms is enabled.</p>
+<p>Specifies that the authentication token must be a signed, supporting token. A signed supporting token is also signed by the primary message signature.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t92" headers="r1c1-t92">
-<p>Security Mechanism</p>
+<p>Endorsing</p>
 </td>
 <td align="left" headers="r4c1-t92 r1c2-t92">
-<p>Select a security mechanism from the list. The security mechanisms are fully functional as selected. To customize the security mechanism, select the Configure button.</p>
+<p>Specifies that the authentication token must be endorsed. With an endorsing supporting token, the key represented by the token is used to endorse/sign the primary message signature.</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
+<p>Click Message Parts to specify which parts of the message need to be encrypted, signed, and/or required.</p>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
