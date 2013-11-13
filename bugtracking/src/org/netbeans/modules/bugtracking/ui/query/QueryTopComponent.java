@@ -665,7 +665,13 @@ public final class QueryTopComponent extends TopComponent
     }
 
     private static String getFQQueryName(QueryImpl query) throws MissingResourceException {
-        return NbBundle.getMessage(QueryTopComponent.class, "LBL_QueryName", new Object[]{query.getRepositoryImpl().getDisplayName(), query.getDisplayName()});
+        String repoName = query.getRepositoryImpl().getDisplayName();
+        final String queryName = query.getDisplayName();
+        if(queryName != null) {
+            return NbBundle.getMessage(QueryTopComponent.class, "LBL_QueryName", new Object[]{repoName, queryName});
+        } else {
+            return NbBundle.getMessage(QueryTopComponent.class, "LBL_UnsavedQuery", new Object[]{repoName});
+        }
     }
 
     private void setSaved() {
