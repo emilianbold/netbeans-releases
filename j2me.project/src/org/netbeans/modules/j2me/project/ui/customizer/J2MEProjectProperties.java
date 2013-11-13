@@ -474,7 +474,12 @@ public final class J2MEProjectProperties {
                 }
             });
             // and save the project
-            ProjectManager.getDefault().saveProject(project);
+            project.setProjectPropertiesSave(true);
+            try {
+                ProjectManager.getDefault().saveProject(project);
+            } finally {
+                project.setProjectPropertiesSave(false);
+            }
         } catch (MutexException e) {
             ErrorManager.getDefault().notify((IOException) e.getException());
         } catch (IOException ex) {
