@@ -50,6 +50,7 @@ import java.util.prefs.Preferences;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.javascript.karma.util.KarmaUtils;
 import org.netbeans.modules.javascript.karma.util.StringUtils;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileUtil;
@@ -127,10 +128,33 @@ public final class KarmaPreferences {
             if (preferences == null) {
                 preferences = ProjectUtils.getPreferences(project, KarmaPreferences.class, false);
                 CACHE.put(project, preferences);
+                // run autodetection
+                detectKarma(project);
+                detectConfig(project);
             }
         }
         assert preferences != null;
         return preferences;
+    }
+
+    private static void detectKarma(Project project) {
+        if (getKarma(project) != null) {
+            return;
+        }
+        File karma = KarmaUtils.findKarma(project);
+        if (karma != null) {
+            setKarma(project, karma.getAbsolutePath());
+        }
+    }
+
+    private static void detectConfig(Project project) {
+        if (getConfig(project) != null) {
+            return;
+        }
+        File config = KarmaUtils.findKarmaConfig(KarmaUtils.getConfigDir(project));
+        if (config != null) {
+            setConfig(project, config.getAbsolutePath());
+        }
     }
 
     private static String relativizePath(Project project, String filePath) {
