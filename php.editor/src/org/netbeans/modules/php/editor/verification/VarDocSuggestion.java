@@ -129,7 +129,7 @@ public class VarDocSuggestion extends SuggestionRule {
                     }
                 }
             } catch (BadLocationException ex) {
-                LOGGER.log(Level.WARNING, null, ex);
+                LOGGER.log(Level.FINE, null, ex);
             }
         }
     }

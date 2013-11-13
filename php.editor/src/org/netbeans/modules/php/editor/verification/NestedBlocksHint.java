@@ -124,7 +124,7 @@ public class NestedBlocksHint extends HintRule implements CustomisableRule {
             try {
                 lineEnd = Utilities.getRowEnd(baseDocument, block.getStartOffset());
             } catch (BadLocationException ex) {
-                LOGGER.log(Level.WARNING, null, ex);
+                LOGGER.log(Level.FINE, null, ex);
             }
             OffsetRange offsetRange = new OffsetRange(block.getStartOffset(), lineEnd);
             if (showHint(offsetRange, baseDocument)) {
