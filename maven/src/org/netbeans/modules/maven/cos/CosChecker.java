@@ -589,7 +589,8 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
             }
             Artifact a = pair.getArtifact();
             if ((!pair.getArtifact().hasClassifier() || "tests".equals(pair.getArtifact().getClassifier())) 
-                    && RunUtils.isCompileOnSaveEnabled(pair.getProject())) {
+                    && RunUtils.isCompileOnSaveEnabled(pair.getProject()) 
+                    && OpenProjects.getDefault().isProjectOpen(pair.getProject())) { //#237528
                 if (value.length() != 0) {
                     value.append(",");
                 }
