@@ -143,8 +143,10 @@ public final class TestRunner {
         getManager().testStarted(testSession);
     }
 
+    @NbBundle.Messages("TestRunner.output.full=Full output can be found in Output window.")
     private void sessionFinished(String line) {
         assert testSession != null;
+        getManager().displayOutput(testSession, Bundle.TestRunner_output_full(), false);
         getManager().sessionFinished(testSession);
         testSession = null;
     }
