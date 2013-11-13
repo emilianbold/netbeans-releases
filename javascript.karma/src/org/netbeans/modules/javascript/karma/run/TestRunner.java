@@ -91,6 +91,7 @@ public final class TestRunner {
     private TestSession testSession;
     private TestSuite testSuite;
     private long testSuiteRuntime = 0;
+    private boolean hasTests = false;
 
 
     public TestRunner(RunInfo runInfo) {
@@ -143,12 +144,22 @@ public final class TestRunner {
         getManager().testStarted(testSession);
     }
 
-    @NbBundle.Messages("TestRunner.output.full=Full output can be found in Output window.")
+    @NbBundle.Messages({
+        "TestRunner.tests.none.1=No tests executed - perhaps an error occured?",
+        "TestRunner.tests.none.2=Full output can be verified in Output window.",
+        "TestRunner.output.full=Full output can be found in Output window.",
+    })
     private void sessionFinished(String line) {
         assert testSession != null;
-        getManager().displayOutput(testSession, Bundle.TestRunner_output_full(), false);
+        if (!hasTests) {
+            getManager().displayOutput(testSession, Bundle.TestRunner_tests_none_1(), true);
+            getManager().displayOutput(testSession, Bundle.TestRunner_tests_none_2(), true);
+        } else {
+            getManager().displayOutput(testSession, Bundle.TestRunner_output_full(), false);
+        }
         getManager().sessionFinished(testSession);
         testSession = null;
+        hasTests = false;
     }
 
     @NbBundle.Messages({
@@ -190,6 +201,7 @@ public final class TestRunner {
 
     private void testFinished(String line) {
         assert testSession != null;
+        hasTests = true;
         if (line.startsWith(TEST_PASS)) {
             testPass(line);
         } else if (line.startsWith(TEST_FAILURE)) {
