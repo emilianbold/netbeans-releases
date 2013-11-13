@@ -150,7 +150,7 @@ public class J2MEProjectWizardIterator implements WizardDescriptor.ProgressInsta
         handle.progress(NbBundle.getMessage(J2MEProjectWizardIterator.class, "LBL_NewJ2MEProjectWizardIterator_WizardProgress_CreatingProject"), 1); //NOI18N
         switch (type) {
             default:
-                String midletTemplate = "Templates/j2me/Midlet.java"; //NOI18N
+                String midletTemplate = "Templates/j2me/MEEPlet.java"; //NOI18N
                 AntProjectHelper h = J2MEProjectBuilder.forDirectory(dirF, name, platform).
                         addDefaultSourceRoots().
                         setMainMIDLetName(midletClass).

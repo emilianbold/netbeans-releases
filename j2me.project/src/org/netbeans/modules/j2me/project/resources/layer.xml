@@ -160,21 +160,21 @@ made subject to such option by the copyright holder.
                 <attr name="displayName" bundlevalue="org.netbeans.modules.j2me.project.wizard.Bundle#Templates/Project/JavaME"/>
                 <attr name="position" intvalue="460"/>
             </folder>
-        </folder>        
+        </folder>
 
         <folder name="j2me">
             <attr name="displayName" bundlevalue="org.netbeans.modules.j2me.project.wizard.Bundle#Templates/Project/javame"/>
             <attr name="position" intvalue="910"/>
-            
-            <file name="Midlet.java" url="../templates/Midlet.template">
-                <attr name="displayName" bundlevalue="org.netbeans.modules.j2me.project.resources.Bundle#Templates/javame/Midlet.java"/>
+
+            <file name="MEEPlet.java" url="../templates/MEEPlet.template">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.j2me.project.resources.Bundle#Templates/javame/MEEPlet.java"/>
                 <attr name="iconBase" stringvalue="org/netbeans/modules/java/resources/class.gif"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2me.project.wizard.NewJ2MEFileWizardIterator.createNewMidletWizardIterator"/>
                 <attr name="isMIDletTemplate" boolvalue="true"/>
                 <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javame/project/templates/Midlet.html"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javame/project/templates/MEEPlet.html"/>
                 <attr name="templateCategory" stringvalue="javame"/>
             </file>
         </folder>
