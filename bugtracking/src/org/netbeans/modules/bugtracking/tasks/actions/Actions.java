@@ -566,7 +566,7 @@ public class Actions {
         @Override
         public void actionPerformed(ActionEvent e) {
             for (TaskNode taskNode : getTaskNodes()) {
-                IssueAction.openIssue(taskNode.getTask().getRepositoryImpl(), taskNode.getTask().getID());
+                taskNode.getTask().open();
             }
         }
     }
