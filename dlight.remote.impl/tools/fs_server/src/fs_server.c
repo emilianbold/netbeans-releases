@@ -188,7 +188,7 @@ static fs_entry* create_fs_entry(fs_entry *entry2clone) {
  * Creates a fs_entry on heap.
  * NB: modifies buf: can unescape and zero-terminate strings
  */
-static fs_entry *decode_entry_response(char* buf) {
+static fs_entry *decode_entry_response(char* buf, int buf_size) {
 
     // format: name_len name uid gid mode size mtime link_len link
     fs_entry tmp; // a temporary one since we don't know names size
@@ -197,6 +197,10 @@ static fs_entry *decode_entry_response(char* buf) {
     if (!p) { return NULL; }; // decode_int already printed error message
     
     tmp.name = (char*) p;
+    if (p + tmp.name_len >= buf + buf_size) {
+        report_error("wrong entry format: too long (%i) name: %s", tmp.name_len, buf);
+        return NULL;
+    }        
     tmp.name[tmp.name_len] = 0;
     unescape_strcpy(tmp.name, tmp.name);
     p += tmp.name_len + 1;
@@ -220,8 +224,12 @@ static fs_entry *decode_entry_response(char* buf) {
     p = decode_int(p, &tmp.link_len);
     if (!p) { return NULL; };
 
-    if (tmp.link_len) {
+    if (tmp.link_len) {        
         tmp.link = (char*) p;
+        if (p + tmp.link_len >= buf + buf_size) {
+            report_error("wrong entry format: too long (%i) link name: %s", tmp.link_len, buf);
+            return NULL;
+        }        
         tmp.link[tmp.link_len] = 0;
         unescape_strcpy(tmp.link, tmp.link);
         tmp.link_len = strlen(tmp.link);
@@ -260,7 +268,7 @@ static bool read_entries_from_cache(array/*<fs_entry>*/ *entries, dirtab_element
                 trace(TRACE_FINEST, "an empty one; continuing...");
                 continue;
             }
-            fs_entry *entry = decode_entry_response(buf);
+            fs_entry *entry = decode_entry_response(buf, buf_size);
             if (entry) {
                 array_add(entries, entry);
             } else {
