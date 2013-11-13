@@ -482,7 +482,7 @@ public final class RepositoryImpl<R, Q, I> {
 
     private int fakeIdCounter = 0;
     String getNextFakeIssueID() {
-        return (--fakeIdCounter) + "";
+        return getConnectorId() + "<=>" + getId() + "<=>" + (--fakeIdCounter);
     }
 
 }
