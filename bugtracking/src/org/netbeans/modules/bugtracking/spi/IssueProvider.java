@@ -79,7 +79,7 @@ public interface IssueProvider<I> {
     public String getTooltip(I i);
 
     /**
-     * Returns this issues unique ID.
+     * Returns this issues unique ID. Might be null in case this Issue is locally new.
      * 
      * @param i an implementation specific issue instance
      * @return id of the given Issue
