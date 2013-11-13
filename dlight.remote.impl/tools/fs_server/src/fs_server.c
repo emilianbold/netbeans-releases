@@ -375,7 +375,7 @@ static void read_entries_from_dir(array/*<fs_entry>*/ *entries, const char* path
     array_truncate(entries);
 }
 
-static bool form_entry_response(char* response_buf, const int response_buf_size, 
+static bool response_entry_create(char* response_buf, const int response_buf_size, 
         const char *abspath, const struct dirent *entry, 
         char* work_buf, int work_buf_size) {
     struct stat stat_buf;
@@ -507,7 +507,7 @@ static void response_ls(int request_id, const char* path, bool recursive, int ne
                 continue;
             }
             strcpy(child_abspath + base_len + 1, entry->d_name);
-            if (form_entry_response(response_buf, response_buf_size, child_abspath, entry, work_buf, work_buf_size)) {
+            if (response_entry_create(response_buf, response_buf_size, child_abspath, entry, work_buf, work_buf_size)) {
                 fprintf(stdout, "%c %d %s", FS_RSP_ENTRY, request_id, response_buf);
                 if (cache_fp) {
                     fprintf(cache_fp, "%s",response_buf); // trailing '\n' already there, added by form_entry_response
