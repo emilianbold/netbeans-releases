@@ -136,9 +136,11 @@ public class AngularJsCodeCompletion implements CompletionProvider {
             case ARGUMENT:
                 String argument = token.text().toString();   
                 Directive directive = Directive.getDirective(argument);
-                switch (directive) {
-                    case controller :
-                        return AngularContext.CONTROLLER;
+                if (directive != null) {
+                    switch (directive) {
+                        case controller :
+                            return AngularContext.CONTROLLER;
+                    }
                 }
         }
         return AngularContext.UNKNOWN;

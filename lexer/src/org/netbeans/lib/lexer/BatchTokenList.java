@@ -269,6 +269,11 @@ extends ArrayList<TokenOrEmbedding<T>> implements TokenList<T> {
     }
 
     @Override
+    public StringBuilder dumpInfo(StringBuilder sb) {
+        return sb;
+    }
+
+    @Override
     public String dumpInfoType() {
         return "BTL";
     }
