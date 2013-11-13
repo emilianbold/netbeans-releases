@@ -41,6 +41,7 @@
  */
 package org.netbeans.test.java.editor.formatting;
 
+import org.netbeans.test.java.editor.formatting.operators.BracesOperator;
 import org.netbeans.test.java.editor.formatting.operators.FormattingOptionsOperator;
 import org.netbeans.test.java.editor.formatting.operators.JavaTabsAndIndentsOperator;
 import org.netbeans.test.java.editor.formatting.operators.WrappingOperator;
@@ -183,7 +184,7 @@ public class WrappingTest extends FormattingOptionsTest {
             fo.getAllLanguageTabsAndIndentsOperator().getRightMargin().setValue(48);
             fo.getWrappingOperator().getChainedMethodCalls().selectItem(WrappingOperator.IF_LONG);
             fo.ok();
-            formatFileAndCompare("general", "Wrapping1.java");
+           formatFileAndCompare("general", "Wrapping1.java");
         } finally {
             FormattingOptionsOperator.restoreDefaultValues();
         }
@@ -300,6 +301,221 @@ public class WrappingTest extends FormattingOptionsTest {
             fo.getWrappingOperator().getDisjunctiveCatchTypes().selectItem(WrappingOperator.IF_LONG);
             fo.ok();
             formatFileAndCompare("general", "Wrapping1.java");
+        } finally {
+            FormattingOptionsOperator.restoreDefaultValues();
+        }
+    }       
+    
+    private void disabledBracesGeneration() {
+        fo.getBracesOperator().getIfBrace().selectItem(BracesOperator.BRACES_LEAVE_ALONE);
+        fo.getBracesOperator().getForBrace().selectItem(BracesOperator.BRACES_LEAVE_ALONE);
+        fo.getBracesOperator().getWhileBrace().selectItem(BracesOperator.BRACES_LEAVE_ALONE);
+        fo.getBracesOperator().getDoWhileBrace().selectItem(BracesOperator.BRACES_LEAVE_ALONE);
+    }
+    
+    public void testFor_Always() {
+        try {
+            disabledBracesGeneration();
+            fo.getWrappingOperator().getForArgs().selectItem(WrappingOperator.ALWAYS);
+            fo.ok();
+            formatFileAndCompare("general", "Wrapping2.java");
+        } finally {
+            FormattingOptionsOperator.restoreDefaultValues();
+        }
+    }
+    
+    public void testFor_IfLong() {
+        try {
+            disabledBracesGeneration();
+            fo.getAllLanguageTabsAndIndentsOperator().getRightMargin().setValue(45);
+            fo.getWrappingOperator().getForArgs().selectItem(WrappingOperator.IF_LONG);
+            fo.ok();
+            formatFileAndCompare("general", "Wrapping2.java");
+        } finally {
+            FormattingOptionsOperator.restoreDefaultValues();
+        }
+    }
+    
+     public void testForStatement_Never() {
+        try {
+            disabledBracesGeneration();
+            fo.getWrappingOperator().getForStatement().selectItem(WrappingOperator.NEVER);
+            fo.ok();
+            formatFileAndCompare("general", "Wrapping2.java");
+        } finally {
+            FormattingOptionsOperator.restoreDefaultValues();
+        }
+    }
+    
+    public void testForStatement_IfLong() {
+        try {
+            disabledBracesGeneration();
+            fo.getAllLanguageTabsAndIndentsOperator().getRightMargin().setValue(45);
+            fo.getWrappingOperator().getForStatement().selectItem(WrappingOperator.IF_LONG);
+            fo.ok();
+            formatFileAndCompare("general", "Wrapping2.java");
+        } finally {
+            FormattingOptionsOperator.restoreDefaultValues();
+        }
+    }
+    
+    
+    public void testIfStatement_Never() {
+        try {
+            disabledBracesGeneration();
+            fo.getWrappingOperator().getIfStatement().selectItem(WrappingOperator.NEVER);
+            fo.ok();
+            formatFileAndCompare("general", "Wrapping2.java");
+        } finally {
+            FormattingOptionsOperator.restoreDefaultValues();
+        }
+    }
+    
+    public void testIfStatement_IfLong() {
+        try {
+            disabledBracesGeneration();
+            fo.getAllLanguageTabsAndIndentsOperator().getRightMargin().setValue(45);
+            fo.getWrappingOperator().getIfStatement().selectItem(WrappingOperator.IF_LONG);
+            fo.ok();
+            formatFileAndCompare("general", "Wrapping2.java");
+        } finally {
+            FormattingOptionsOperator.restoreDefaultValues();
+        }
+    }
+    
+    public void testWhileStatement_Never() {
+        try {
+            disabledBracesGeneration();
+            fo.getWrappingOperator().getWhileStatment().selectItem(WrappingOperator.NEVER);
+            fo.ok();
+            formatFileAndCompare("general", "Wrapping2.java");
+        } finally {
+            FormattingOptionsOperator.restoreDefaultValues();
+        }
+    }
+    
+    public void testWhileStatement_IfLong() {
+        try {
+            disabledBracesGeneration();
+            fo.getAllLanguageTabsAndIndentsOperator().getRightMargin().setValue(45);
+            fo.getWrappingOperator().getWhileStatment().selectItem(WrappingOperator.IF_LONG);
+            fo.ok();
+            formatFileAndCompare("general", "Wrapping2.java");
+        } finally {
+            FormattingOptionsOperator.restoreDefaultValues();
+        }
+    }
+    
+    public void testDoWhileStatement_Never() {
+        try {
+            disabledBracesGeneration();
+            fo.getWrappingOperator().getDoWhileStatements().selectItem(WrappingOperator.NEVER);
+            fo.ok();
+            formatFileAndCompare("general", "Wrapping2.java");
+        } finally {
+            FormattingOptionsOperator.restoreDefaultValues();
+        }
+    }
+    
+    public void testDoWhileStatement_IfLong() {
+        try {
+            disabledBracesGeneration();
+            fo.getAllLanguageTabsAndIndentsOperator().getRightMargin().setValue(25);
+            fo.getWrappingOperator().getDoWhileStatements().selectItem(WrappingOperator.IF_LONG);
+            fo.ok();
+            formatFileAndCompare("general", "Wrapping2.java");
+        } finally {
+            FormattingOptionsOperator.restoreDefaultValues();
+        }
+    }
+    
+    public void testCaseStatement_Never() {
+        try {
+            disabledBracesGeneration();
+            fo.getWrappingOperator().getCaseStatements().selectItem(WrappingOperator.NEVER);
+            fo.ok();
+            formatFileAndCompare("general", "Wrapping2.java");
+        } finally {
+            FormattingOptionsOperator.restoreDefaultValues();
+        }
+    }
+    
+    public void testCaseStatement_IfLong() {
+        try {
+            disabledBracesGeneration();
+            fo.getAllLanguageTabsAndIndentsOperator().getRightMargin().setValue(25);
+            fo.getWrappingOperator().getCaseStatements().selectItem(WrappingOperator.IF_LONG);
+            fo.ok();
+            formatFileAndCompare("general", "Wrapping2.java");
+        } finally {
+            FormattingOptionsOperator.restoreDefaultValues();
+        }
+    }
+    
+    public void testAssert_Always() {
+        try {
+            disabledBracesGeneration();
+            fo.getWrappingOperator().getAssertStatement().selectItem(WrappingOperator.ALWAYS);
+            fo.ok();
+            formatFileAndCompare("general", "Wrapping2.java");
+        } finally {
+            FormattingOptionsOperator.restoreDefaultValues();
+        }
+    }
+    
+    public void testAssert_IfLong() {
+        try {
+            disabledBracesGeneration();
+            fo.getAllLanguageTabsAndIndentsOperator().getRightMargin().setValue(25);
+            fo.getWrappingOperator().getCaseStatements().selectItem(WrappingOperator.IF_LONG);
+            fo.ok();
+            formatFileAndCompare("general", "Wrapping2.java");
+        } finally {
+            FormattingOptionsOperator.restoreDefaultValues();
+        }
+    }
+    
+    public void testEnumConstants_Always() {
+        try {
+            disabledBracesGeneration();
+            fo.getWrappingOperator().getEnumConstants().selectItem(WrappingOperator.ALWAYS);
+            fo.ok();
+            formatFileAndCompare("general", "Wrapping2.java");
+        } finally {
+            FormattingOptionsOperator.restoreDefaultValues();
+        }
+    }
+    
+    public void testEnumConstants_IfLong() {
+        try {
+            disabledBracesGeneration();
+            fo.getAllLanguageTabsAndIndentsOperator().getRightMargin().setValue(45);
+            fo.getWrappingOperator().getEnumConstants().selectItem(WrappingOperator.IF_LONG);
+            fo.ok();
+            formatFileAndCompare("general", "Wrapping2.java");
+        } finally {
+            FormattingOptionsOperator.restoreDefaultValues();
+        }
+    }
+    
+    public void testAnnotations_Never() {
+        try {
+            disabledBracesGeneration();
+            fo.getWrappingOperator().getAnnotations().selectItem(WrappingOperator.NEVER);
+            fo.ok();
+            formatFileAndCompare("general", "Wrapping2.java");
+        } finally {
+            FormattingOptionsOperator.restoreDefaultValues();
+        }
+    }
+    
+    public void testAnnotations_IfLong() {
+        try {
+            disabledBracesGeneration();
+            fo.getAllLanguageTabsAndIndentsOperator().getRightMargin().setValue(30);
+            fo.getWrappingOperator().getAnnotations().selectItem(WrappingOperator.IF_LONG);
+            fo.ok();
+            formatFileAndCompare("general", "Wrapping2.java");
         } finally {
             FormattingOptionsOperator.restoreDefaultValues();
         }
