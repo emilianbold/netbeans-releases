@@ -216,9 +216,8 @@ public final class KarmaExecutable {
 
     }
 
-    static final class ServerLineConvertor implements LineConvertor {
+    private static final class ServerLineConvertor implements LineConvertor {
 
-        private static final String NB_BROWSER_COUNT = "$NB$netbeans browserCount "; // NOI18N
         private static final String NB_BROWSERS = "$NB$netbeans browsers "; // NOI18N
 
         private final RunInfo runInfo;
@@ -227,9 +226,8 @@ public final class KarmaExecutable {
 
         private boolean firstLine = true;
         private boolean startFinishedTaskRun = false;
-        private int browserCount = -1;
-        private int connectedBrowsers = 0;
         private List<Browser> browsers = null;
+        private int connectedBrowsers = 0;
 
 
         public ServerLineConvertor(RunInfo runInfo, Runnable startFinishedTask) {
@@ -250,11 +248,6 @@ public final class KarmaExecutable {
                         line.replace(runInfo.getNbConfigFile(), runInfo.getProjectConfigFile()), null));
             }
             // server start
-            if (browserCount == -1
-                    && line.startsWith(NB_BROWSER_COUNT)) {
-                browserCount = Integer.parseInt(line.substring(NB_BROWSER_COUNT.length()));
-                return Collections.emptyList();
-            }
             if (browsers == null
                     && line.startsWith(NB_BROWSERS)) {
                 browsers = Browsers.getBrowsers(StringUtils.explode(line.substring(NB_BROWSERS.length()), ",")); // NOI18N
@@ -263,8 +256,9 @@ public final class KarmaExecutable {
             if (startFinishedTask != null
                     && !startFinishedTaskRun
                     && line.contains("Connected on socket")) { // NOI18N
+                assert browsers != null;
                 connectedBrowsers++;
-                if (connectedBrowsers == browserCount) {
+                if (connectedBrowsers == browsers.size()) {
                     startFinishedTask.run();
                     startFinishedTaskRun = true;
                 }
