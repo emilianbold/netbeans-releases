@@ -388,6 +388,7 @@ public class ClientSideProject implements Project {
                                         Collections.<String, String>emptyMap());
                     }
                 });
+                return jsTestingProvider;
             }
         }
         return null;
