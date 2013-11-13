@@ -187,6 +187,7 @@ public final class KarmaServer {
         Map<String, String> envVars = new HashMap<>();
         envVars.put("FILE_SEPARATOR", File.separator); // NOI18N
         envVars.put("PROJECT_CONFIG", projectConfigFile); // NOI18N
+        envVars.put("BASE_DIR", new File(projectConfigFile).getParentFile().getAbsolutePath()); // NOI18N
         Collection<FileObject> webRoots = ProjectWebRootQuery.getWebRoots(project);
         if (webRoots.isEmpty()) {
             throw new IllegalStateException("Project " + project.getClass().getName() + " must provide ProjectWebRootProvider in its lookup");
