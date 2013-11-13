@@ -106,8 +106,8 @@ public final class KarmaUtils {
                 firstConfig = config;
             }
             String configName = config.getName().toLowerCase();
-            if (configName.contains("share")
-                    || configName.contains("common")) {
+            if (configName.contains("share") // NOI18N
+                    || configName.contains("common")) { // NOI18N
                 continue;
             }
             return config;
