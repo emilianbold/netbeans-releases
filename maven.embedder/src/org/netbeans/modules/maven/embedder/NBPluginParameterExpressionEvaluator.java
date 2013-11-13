@@ -43,6 +43,7 @@
 package org.netbeans.modules.maven.embedder;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.Map;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.path.DefaultPathTranslator;
@@ -54,9 +55,12 @@ import org.codehaus.plexus.util.introspection.ReflectionValueExtractor;
 
 /**
  * a stripped down version of plugin parameter expression evaluator
- * (PluginParameterExpressionEvaluator)
+ * (PluginParameterExpressionEvaluator).
+ * Please do not use directly, use <code>PluginPropertyUtils.createEvaluator()</code> instead.
+ * @deprecated only public for simplicity reasons, do not use
  * @author mkleint
  */
+@Deprecated
 public class NBPluginParameterExpressionEvaluator 
     implements ExpressionEvaluator
 {
@@ -66,17 +70,28 @@ public class NBPluginParameterExpressionEvaluator
 
     private final String basedir;
 
-    private final Map<? extends String,? extends String> properties;
+    private final Map<? extends String,? extends String> systemProperties;
+    private final Map<? extends String,? extends String> userProperties;
     
-    private Settings settings;
+    private final Settings settings;
 
+    @Deprecated
     public NBPluginParameterExpressionEvaluator( 
                                                MavenProject project, 
                                                Settings settings,
-                                               Map<? extends String,? extends String> properties )
+                                               Map<? extends String,? extends String> systemProperties)
+    {
+        this(project, settings, systemProperties, Collections.<String, String>emptyMap());
+    }
+    public NBPluginParameterExpressionEvaluator( 
+                                               MavenProject project, 
+                                               Settings settings,
+                                               Map<? extends String,? extends String> systemProperties,
+                                               Map<? extends String,? extends String> userProperties)
     {
         this.pathTranslator = new DefaultPathTranslator();
-        this.properties = properties;
+        this.systemProperties = systemProperties;
+        this.userProperties = userProperties;
         this.project = project;
         this.settings = settings;
 
@@ -327,21 +342,30 @@ public class NBPluginParameterExpressionEvaluator
         {
             // The CLI should win for defining properties
 
-            if ( ( value == null ) && ( properties != null ) )
+            if ( ( value == null ) && ( userProperties != null ) )
             {
                 // We will attempt to get nab a system property as a way to specify a
                 // parameter to a plugins. My particular case here is allowing the surefire
                 // plugin to run a single test so I want to specify that class on the cli
                 // as a parameter.
 
-                value = properties.get(expression);
+                value = userProperties.get(expression);
             }
 
             if ( ( value == null ) && ( ( project != null ) && ( project.getProperties() != null ) ) )
             {
                 value = project.getProperties().getProperty( expression );
             }
+            //system props come after model props
+            if ( ( value == null ) && ( systemProperties != null ) )
+            {
+                // We will attempt to get nab a system property as a way to specify a
+                // parameter to a plugins. My particular case here is allowing the surefire
+                // plugin to run a single test so I want to specify that class on the cli
+                // as a parameter.
 
+                value = systemProperties.get(expression);
+            }
         }
 
         if ( value instanceof String )
