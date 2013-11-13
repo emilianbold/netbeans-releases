@@ -105,6 +105,22 @@ is the proper place.
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
+        <change id="LibrariesNode-bootcp">
+            <api name="java-api-common"/>
+            <summary>Possibility to override project's bootstrap libraries</summary>
+            <version major="1" minor="68"/>
+            <date day="13" month="11" year="2013"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                   Added possibility to override project's bootstrap libraries.
+                    In case when project's bootstrap libraries differ from <code>JavaPlatform</code>'s bootstrap libraries
+                    the <code>LibrariesNode.Builder.setBootPath</code> method can be used to override the shown platform's libraries.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.project.ui" name="LibrariesNode"/>
+        </change>
         <change id="ClassPathProviderImpl-bootcp-props">
             <api name="java-api-common"/>
             <summary>Possibility to create project's boot classpath based on project properties</summary>
