@@ -2301,12 +2301,13 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         final GdbWatch watch = new GdbWatch(GdbDebuggerImpl.this, mcd, expr);
         createMIVar(watch, false);
         
-        final Node node = new VariableNode(watch, new GdbVariableNodeChildren(watch));
+        final Node node = new VariableNode(watch, new GdbVariableNodeChildren(watch, false));
         
         final ActionListener disposeListener = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                MICommand cmd = new DeleteMIVarCommand(watch);
+                MiCommandImpl cmd = new DeleteMIVarCommand(watch);
+                cmd.dontReportError();
                 sendCommandInt(cmd);
             }
         };
@@ -2332,14 +2333,16 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     
     private static final class GdbVariableNodeChildren extends VariableNodeChildren {
 
-        public GdbVariableNodeChildren(Variable v) {
-            super(v);            
-            ((GdbDebuggerImpl) v.getDebugger()).getMIChildren((GdbVariable) v, ((GdbVariable) v).getMIName(), 0);
+        public GdbVariableNodeChildren(Variable v, boolean requestChildren) {
+            super(v);           
+            if (requestChildren) {
+                ((GdbDebuggerImpl) v.getDebugger()).getMIChildren((GdbVariable) v, ((GdbVariable) v).getMIName(), 0);
+            }
         }
 
         @Override
         protected Node[] createNodes(Variable key) {
-            return new Node[]{new VariableNode(key, new GdbVariableNodeChildren(key))};
+            return new Node[]{new VariableNode(key, new GdbVariableNodeChildren(key, true))};
         }
     }
 
