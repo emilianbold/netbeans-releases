@@ -70,8 +70,6 @@ import org.openide.util.lookup.ServiceProvider;
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
 public class PhpOptionsPanelControllerProcessor extends LayerGeneratingProcessor {
 
-    private Element originatingElement;
-
     @Override
     public Set<String> getSupportedAnnotationTypes() {
         return new HashSet<>(Arrays.asList(
@@ -87,7 +85,7 @@ public class PhpOptionsPanelControllerProcessor extends LayerGeneratingProcessor
         for (Element e : roundEnv.getElementsAnnotatedWith(PhpOptionsPanelRegistration.class)) {
             PhpOptionsPanelRegistration r = e.getAnnotation(PhpOptionsPanelRegistration.class);
             if( r.id().isEmpty() ) {
-                throw new LayerGenerationException("Registratrion id cannot be empty", originatingElement);
+                throw new LayerGenerationException("Registration id cannot be empty", e);
             }
             File file = layer(e).instanceFile(FrameworksOptionsPanelController.FRAMEWORKS_AND_TOOLS_OPTIONS_PATH, r.id(), r, null).
                     methodvalue("instanceCreate", AdvancedOption.class.getName(), "createSubCategory").
