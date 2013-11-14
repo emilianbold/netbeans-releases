@@ -42,11 +42,14 @@
 
 package org.netbeans.modules.javascript.karma.browsers;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -54,16 +57,28 @@ public final class Browsers {
 
     private static final Logger LOGGER = Logger.getLogger(Browsers.class.getName());
 
-    private static final Map<String, Browser> BROWSERS;
+    private static final Map<String, List<Browser>> BROWSERS;
+    private static final List<String> SILENT_BROWSERS = Arrays.asList(
+            "IE", // NOI18N
+            "Safari", // NOI18N
+            "PhantomJS" // NOI18N
+    );
 
     static {
-        List<Browser> browsers = Arrays.asList(
-                new Chrome(),
+        List<Browser> allBrowsers = Arrays.asList(
+                new ChromeBased(),
                 new Firefox(),
-                new Opera());
+                new OperaLegacy());
         BROWSERS = new ConcurrentHashMap<>();
-        for (Browser browser : browsers) {
-            BROWSERS.put(browser.getIdentifier(), browser);
+        for (Browser browser : allBrowsers) {
+            for (String identifier : browser.getIdentifiers()) {
+                List<Browser> browsers = BROWSERS.get(identifier);
+                if (browsers == null) {
+                    browsers = new CopyOnWriteArrayList<>();
+                    BROWSERS.put(identifier, browsers);
+                }
+                browsers.add(browser);
+            }
         }
     }
 
@@ -71,17 +86,24 @@ public final class Browsers {
     private Browsers() {
     }
 
-    public static List<Browser> getBrowsers(List<String> identifiers) {
-        List<Browser> browsers = new ArrayList<>(identifiers.size());
+    public static Collection<Browser> getBrowsers(String... identifiers) {
+        return getBrowsers(Arrays.asList(identifiers));
+    }
+
+    public static Collection<Browser> getBrowsers(List<String> identifiers) {
+        Set<Browser> result = new HashSet<>();
         for (String identifier : identifiers) {
-            Browser browser = BROWSERS.get(identifier);
-            if (browser == null) {
+            if (SILENT_BROWSERS.contains(identifier)) {
+                continue;
+            }
+            List<Browser> browsers = BROWSERS.get(identifier);
+            if (browsers == null) {
                 LOGGER.log(Level.INFO, "Unknown karma browser: {0}", identifier);
                 continue;
             }
-            browsers.add(browser);
+            result.addAll(browsers);
         }
-        return browsers;
+        return result;
     }
 
 }

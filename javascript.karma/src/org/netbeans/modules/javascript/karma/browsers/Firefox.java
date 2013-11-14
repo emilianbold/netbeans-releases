@@ -42,16 +42,18 @@
 
 package org.netbeans.modules.javascript.karma.browsers;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.regex.Pattern;
 
-public final class Firefox extends Browser {
+final class Firefox extends Browser {
 
     // e.g.: @/home/gapon/NetBeansProjects/AngularSeeed/test/unit/directivesSpec.js:16
     static final Pattern OUTPUT_FILE_LINE_PATTERN = Pattern.compile("@(?<FILE>.+?):(?<LINE>\\d+)$"); // NOI18N
 
     @Override
-    public String getIdentifier() {
-        return "Firefox"; // NOI18N
+    protected List<String> getIdentifiers() {
+        return Collections.singletonList("Firefox"); // NOI18N
     }
 
     @Override

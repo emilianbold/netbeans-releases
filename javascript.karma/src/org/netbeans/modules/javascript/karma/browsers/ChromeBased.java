@@ -42,17 +42,19 @@
 
 package org.netbeans.modules.javascript.karma.browsers;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Pattern;
 
-public final class Chrome extends Browser {
+final class ChromeBased extends Browser {
 
     // e.g.: (/home/gapon/NetBeansProjects/angular.js/src/auto/injector.js:6:12604)
     // e.g.: at /home/gapon/NetBeansProjects/AngularSeeed/test/unit/directivesSpec.js:16:19
     static final Pattern OUTPUT_FILE_LINE_PATTERN = Pattern.compile("(?:\\(|at )(?<FILE>[^(]+?):(?<LINE>\\d+):\\d+\\)?"); // NOI18N
 
     @Override
-    public String getIdentifier() {
-        return "Chrome"; // NOI18N
+    protected List<String> getIdentifiers() {
+        return Arrays.asList("Chrome", "Chrome Canary", "Opera"); // NOI18N
     }
 
     @Override
