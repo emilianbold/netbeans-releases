@@ -2,7 +2,7 @@
 
 function function_name() {
     ?>
-<form action="">
-    <?
+    <form action="">
+        <?
     }
     ?>
