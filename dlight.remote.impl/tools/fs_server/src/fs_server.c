@@ -24,6 +24,7 @@
 #include <getopt.h>
 #include <sys/stat.h> 
 #include <fcntl.h>
+#include <signal.h>
 
 #define MAX_THREAD_COUNT 32
 #define DEFAULT_THREAD_COUNT 4
@@ -713,8 +714,19 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el) {
     return true;        
 }
 
+static void block_thread_signals() {
+    sigset_t set;
+    sigfillset(&set);
+    //sigdelset(&set, SIGPIPE);
+    int res = pthread_sigmask(SIG_BLOCK, &set, NULL);
+    if (res) {
+        report_error("error blocking signals for thread: %s\n", strerror(res));
+    }
+}
+
 static void *refresh_loop(void *data) {    
     trace(TRACE_INFO, "refresh manager started; sleep interval is %d\n", refresh_sleep);
+    block_thread_signals();
     int pass = 0;
     while (dirtab_is_empty()) { //TODO: replace with notification?
         sleep(refresh_sleep ? refresh_sleep : 2);
@@ -737,6 +749,7 @@ static void *refresh_loop(void *data) {
 static void *rp_loop(void *data) {
     int thread_num = *((int*) data);
     trace(TRACE_INFO, "Thread #%d started\n", thread_num);
+    block_thread_signals();
     while (true) {
         fs_request* request = blocking_queue_poll(&req_queue);
         if (request) {
@@ -914,6 +927,21 @@ static bool print_visitor(const char* path, int index, dirtab_element* el) {
     return true;
 }
 
+static void sigaction_wrapper(int sig, const struct sigaction* new_action, struct sigaction *old_action) {
+    int rc = sigaction(sig, new_action, old_action);
+    if (rc) {
+        report_error("error setting signal handler\n");
+        exit(FAILURE_SETTING_SIGNAL_HANDLER);
+    }
+}
+
+static void shutdown();
+
+static void signal_handler(int signal) {
+    trace(TRACE_INFO, "exiting by signal %s (%d)\n", signal_name(signal), signal);
+    shutdown();
+}
+
 static void startup() {
     dirtab_init();
     const char* basedir = dirtab_get_basedir();
@@ -945,8 +973,16 @@ static void startup() {
     }
     if (atexit(exit_function)) {
         report_error("error setting exit function: %s\n", strerror(errno));
+        exit(FAILURE_SETTING_EXIT_FUNCTION);
     }
     
+    struct sigaction new_sigaction;
+    new_sigaction.sa_handler = signal_handler;
+    new_sigaction.sa_flags = SA_RESTART;
+    sigemptyset(&new_sigaction.sa_mask);
+    sigaction_wrapper(SIGHUP, &new_sigaction, NULL);
+    sigaction_wrapper(SIGQUIT, &new_sigaction, NULL);
+    sigaction_wrapper(SIGINT, &new_sigaction, NULL);    
 }
 
 static void shutdown() {    

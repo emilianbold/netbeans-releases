@@ -12,6 +12,7 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <sys/time.h>
+#include <signal.h>
 
 static TraceLevel trace_level = TRACE_NONE;
 static FILE *log_file = NULL;
@@ -235,4 +236,50 @@ char *unescape_strcpy(char *dst, const char *src) {
     }
     *d = 0;
     return dst;
+}
+
+char* signal_name(int signal) {
+    switch (signal) {
+        case SIGHUP:    return "SIGHUP";
+        case SIGINT:    return "SIGINT";
+        case SIGQUIT:   return "SIGQUIT";
+        case SIGILL:    return "SIGILL";
+        case SIGTRAP:   return "SIGTRAP";
+        case SIGABRT:   return "SIGABRT";
+//        case SIGIOT:    return "SIGIOT";
+        case SIGBUS:    return "SIGBUS";
+        case SIGFPE:    return "SIGFPE";
+        case SIGKILL:   return "SIGKILL";
+        case SIGUSR1:   return "SIGUSR1";
+        case SIGSEGV:   return "SIGSEGV";
+        case SIGUSR2:   return "SIGUSR2";
+        case SIGPIPE:   return "SIGPIPE";
+        case SIGALRM:   return "SIGALRM";
+        case SIGTERM:   return "SIGTERM";
+#if __linux__        
+        case SIGSTKFLT: return "SIGSTKFLT";
+#endif        
+//        case SIGCLD:    return "SIGCLD"; // dup
+        case SIGCHLD:   return "SIGCHLD";
+        case SIGCONT:   return "SIGCONT";
+        case SIGSTOP:   return "SIGSTOP";
+        case SIGTSTP:   return "SIGTSTP";
+        case SIGTTIN:   return "SIGTTIN";
+        case SIGTTOU:   return "SIGTTOU";
+        case SIGURG:    return "SIGURG";
+        case SIGXCPU:   return "SIGXCPU";
+        case SIGXFSZ:   return "SIGXFSZ";
+        case SIGVTALRM: return "SIGVTALRM";
+        case SIGPROF:   return "SIGPROF";
+        case SIGWINCH:  return "SIGWINCH";
+//        case SIGPOLL:   return "SIGPOLL"; // dup
+        case SIGIO:     return "SIGIO (SIGPOLL)";
+#if __linux__ || __sun__        
+        case SIGPWR:    return "SIGPWR";
+#endif        
+#if __FreeBSD__
+        case SIGINFO:    return "SIGINFO";
+#endif        
+        default:        return "SIG???";
+    }
 }

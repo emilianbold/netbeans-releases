@@ -61,6 +61,8 @@ int unescape_strlen(const char* s);
 
 char *unescape_strcpy(char *dst, const char *src);
 
+char* signal_name(int signal);
+
 #ifdef	__cplusplus
 }
 #endif
