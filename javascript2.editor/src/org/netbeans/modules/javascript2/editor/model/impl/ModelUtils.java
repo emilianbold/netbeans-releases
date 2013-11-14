@@ -480,11 +480,28 @@ public class ModelUtils {
         } else if (type.getType().startsWith(SemiTypeResolverVisitor.ST_CALL)) {
             result.addAll(resolveSemiTypeCallChain(object, type));
         } else if(type.getType().startsWith(SemiTypeResolverVisitor.ST_ANONYM)){
-            int start = Integer.parseInt(type.getType().substring(8));
+            String offsetPart = type.getType().substring(8);
+            String rest = "";
+            int index = offsetPart.indexOf(SemiTypeResolverVisitor.ST_START_DELIMITER);
+            if (index > -1) {
+                rest = offsetPart.substring(index);
+                offsetPart = offsetPart.substring(0, index);
+            }
+            int start = Integer.parseInt(offsetPart);
 //            JsObject globalObject = ModelUtils.getGlobalObject(object);
             JsObject byOffset = ModelUtils.findJsObject(object, start);
+            if (byOffset == null) {
+                JsObject globalObject = ModelUtils.getGlobalObject(object);
+                byOffset = ModelUtils.findJsObject(globalObject, start);
+            }
             if(byOffset != null && byOffset.isAnonymous()) {
-                result.add(new TypeUsageImpl(byOffset.getFullyQualifiedName(), byOffset.getOffset(), true));
+                if (rest.isEmpty()) {
+                    result.add(new TypeUsageImpl(byOffset.getFullyQualifiedName(), byOffset.getOffset(), true));
+                } else {
+                    String newType= SemiTypeResolverVisitor.ST_EXP + byOffset.getFullyQualifiedName().replace(".", SemiTypeResolverVisitor.ST_PRO);
+                    newType = newType + rest;
+                    result.add(new TypeUsageImpl(newType, byOffset.getOffset(), false));
+                }
             }
 //            for(JsObject children : globalObject.getProperties().values()) {
 //                if(children.getOffset() == start && children.getName().startsWith("Anonym$")) {
@@ -707,6 +724,13 @@ public class ModelUtils {
             for (int i = exp.size() - 1; i > -1; i--) {
                 String kind = exp.get(i);
                 String name = exp.get(--i);
+                if (name.startsWith("@ano:")){
+                    String[] parts = name.split(":");
+                    int anoOffset = Integer.parseInt(parts[1]);
+                    JsObject anonym = ModelUtils.findJsObject(model, anoOffset);
+                    lastResolvedObjects.add(anonym);
+                    continue;
+                }
                 if ("this".equals(name)) {
                     JsObject thisObject = ModelUtils.findJsObject(model, offset);
                     JsObject first = thisObject;
@@ -1475,6 +1499,20 @@ public class ModelUtils {
             } else if (exp.isEmpty() && !lookBefore && offsetFirstRightParen > -1) {
                 // in the case when the expression is like ( new Object()).someMethod
                 exp.addAll(resolveExpressionChain(snapshot, offsetFirstRightParen - 1, true));
+            } else if (wasLastDot && !lookBefore && token.id() == JsTokenId.BRACKET_RIGHT_CURLY) {
+                int balancer = 1;
+                while (balancer > 0 && ts.movePrevious()) {
+                    token = ts.token();
+                    if (token.id() == JsTokenId.BRACKET_RIGHT_CURLY) {
+                        balancer++;
+                    } else {
+                        if (token.id() == JsTokenId.BRACKET_LEFT_CURLY) {
+                            balancer--;
+                        }
+                    }
+                }
+                exp.add("@ano:" + ts.offset());
+                exp.add("@pro");
             }
             return exp;
         }
