@@ -84,6 +84,7 @@ class ModuleData {
     private final String[] provides;
     private final Dependency[] dependencies;
     private final Set<String> coveredPackages;
+    private final String agentClass;
     
     
     ModuleData(Manifest mf, Module forModule) throws InvalidException {
@@ -214,6 +215,7 @@ class ModuleData {
             throw (InvalidException) new InvalidException("While parsing " + codeName + " a dependency attribute: " + iae.toString()).initCause(iae); // NOI18N
         }
         this.coveredPackages = new HashSet<String>();
+        this.agentClass = attr.getValue("Agent-Class");
     }
     
     ModuleData(Manifest mf, NetigsoModule m) throws InvalidException {
@@ -246,6 +248,7 @@ class ModuleData {
         this.provides = computeProvides(m, mf.getMainAttributes(), false, true);
         this.dependencies = computeImported(mf.getMainAttributes());
         this.coveredPackages = new HashSet<String>();
+        this.agentClass = getMainAttribute(mf, "Agent-Class"); // NOI18N
     }
     
     ModuleData(ObjectInput dis) throws IOException {
@@ -261,6 +264,7 @@ class ModuleData {
             this.friendNames = readStrings(dis, new HashSet<String>(), false);
             this.specVers = new SpecificationVersion(dis.readUTF());
             this.publicPackages = Module.PackageExport.read(dis);
+            this.agentClass = dis.readUTF();
         } catch (ClassNotFoundException cnfe) {
             throw new IOException(cnfe);
         }
@@ -278,6 +282,7 @@ class ModuleData {
         writeStrings(dos, friendNames);
         dos.writeUTF(specVers != null ? specVers.toString() : "0");
         Module.PackageExport.write(dos, publicPackages);
+        dos.writeUTF(agentClass == null ? "" : agentClass);
     }
 
     private Dependency[] computeImported(Attributes attr) {
@@ -528,4 +533,7 @@ class ModuleData {
         return new SpecificationVersion(v.substring(0, pos));
     }
 
+    final String getAgentClass() {
+        return agentClass == null || agentClass.isEmpty() ? null : agentClass;
+    }
 }
