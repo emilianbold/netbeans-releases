@@ -90,14 +90,14 @@ public class ODCSQueryProvider implements QueryProvider<ODCSQuery, ODCSIssue> {
 
     @Override
     public void rename(ODCSQuery q, String displayName) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        
     }
     
     @Override
-    public Collection<ODCSIssue> getIssues(ODCSQuery q) {
-        return q.getIssues();
+    public void setIssueContainer(ODCSQuery q, IssueContainer<ODCSIssue> c) {
+        q.getController().setIssueContainer(c);
     }
-
+    
     @Override
     public void refresh(ODCSQuery q) {
         if(q.getRepository().needsAndHasNoLogin(q)) {

@@ -116,10 +116,6 @@ public class BugzillaQuery {
         support.removePropertyChangeListener(listener);
     }
 
-    private void fireQueryIssuesChanged() {
-        support.firePropertyChange(QueryProvider.EVENT_QUERY_REFRESHED, null, null);
-    }  
-    
     public String getDisplayName() {
         return name;
     }
@@ -361,8 +357,10 @@ public class BugzillaQuery {
         @Override
         public void taskRemoved (NbTask task) {
             issues.remove(task.getTaskId());
-            // when issue table or task dashboard is able to handle removals
-            // fire an event from here
+            BugzillaIssue issue = repository.getIssueForTask(task);
+            if (issue != null) {
+                fireNotifyDataRemoved(issue); 
+            }
         }
 
         @Override
@@ -440,7 +438,6 @@ public class BugzillaQuery {
             r.run();
         } finally {
             fireFinished();
-            fireQueryIssuesChanged();
             lastRefresh = System.currentTimeMillis();
         }
     }

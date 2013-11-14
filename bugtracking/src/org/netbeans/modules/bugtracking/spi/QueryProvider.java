@@ -43,7 +43,6 @@
 package org.netbeans.modules.bugtracking.spi;
 
 import java.beans.PropertyChangeListener;
-import java.util.Collection;
 
 /**
  * Provides access to a bugtracking query.
@@ -55,12 +54,6 @@ import java.util.Collection;
  * @since 1.85
  */
 public interface QueryProvider<Q, I> {
-
-    /**
-     * Fired when a queries list of issue was changed.
-     * @since 1.85
-     */
-    public final static String EVENT_QUERY_REFRESHED = "bugtracking.query.refreshed";   // NOI18N
 
     /**
      * Returns the queries display name
@@ -121,14 +114,13 @@ public interface QueryProvider<Q, I> {
     public void rename(Q q, String newName);
     
     /**
-     * Returns all issues from this queries last refresh.
+     * Sets a {@link IssueContainer}. 
      * 
      * @param q the particular query instance
-     * @return issues from the given query
-     * @since 1.85
+     * @param c a IssueContainer
      */
-    public Collection<I> getIssues(Q q);
-
+    void setIssueContainer(Q q, IssueContainer<I> c);
+    
     /**
      * Refreshes the given query. 
      * 
@@ -159,4 +151,37 @@ public interface QueryProvider<Q, I> {
      */
     public void addPropertyChangeListener(Q q, PropertyChangeListener listener);
 
+    /**
+     * Callback for Queries to notify about refreshing progress 
+     * and retrieved Issues
+     * 
+     * @param <I> the implementation specific issue type
+     * @since 1.85
+     */
+    public interface IssueContainer<I> {
+        
+        /**
+         * The Query refreshing started.
+         */
+        void refreshingStarted();
+        
+        /**
+         * The Query refreshing finished.
+         */
+        void refreshingFinished();
+        
+        /**
+         * Add an Issue.
+         * 
+         * @param issue a particular issue instance
+         */
+        void add(I issue);
+        
+        /**
+         * Add an Issue.
+         * 
+         * @param issue a particular issue instance
+         */
+        void remove(I issue);
+    }
 }

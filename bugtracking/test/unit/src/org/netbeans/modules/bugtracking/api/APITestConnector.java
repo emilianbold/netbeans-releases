@@ -155,11 +155,6 @@ public class APITestConnector implements BugtrackingConnector {
         }
 
         @Override
-        public Collection<APITestIssue> getIssues(APITestQuery q) {
-            return q.getIssues();
-        }
-
-        @Override
         public void refresh(APITestQuery q) {
             q.refresh();
         }
@@ -187,6 +182,11 @@ public class APITestConnector implements BugtrackingConnector {
         @Override
         public boolean canRemove(APITestQuery q) {
             return q.canRemove();
+        }
+
+        @Override
+        public void setIssueContainer(APITestQuery q, IssueContainer<APITestIssue> c) {
+            q.setIssueContainer(c);
         }
 
     }

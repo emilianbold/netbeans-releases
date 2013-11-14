@@ -91,10 +91,10 @@ public class BugzillaQueryProvider implements QueryProvider<BugzillaQuery, Bugzi
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
-    @Override
-    public Collection<BugzillaIssue> getIssues(BugzillaQuery query) {
-        return query.getIssues();
-    }
+//    @Override
+//    public Collection<BugzillaIssue> getIssues(BugzillaQuery query) {
+//        return query.getIssues();
+//    }
 
     @Override
     public void removePropertyChangeListener(BugzillaQuery query, PropertyChangeListener listener) {
@@ -106,6 +106,11 @@ public class BugzillaQueryProvider implements QueryProvider<BugzillaQuery, Bugzi
         query.addPropertyChangeListener(listener);
     }
 
+    @Override
+    public void setIssueContainer(BugzillaQuery query, IssueContainer<BugzillaIssue> c) {
+        query.getController().setContainer(c);
+    }
+    
     @Override
     public void refresh(BugzillaQuery query) {
         if(needsAndHasNoLogin(query)) {
@@ -127,5 +132,5 @@ public class BugzillaQueryProvider implements QueryProvider<BugzillaQuery, Bugzi
         }
         return false;
     }
-    
+
 }

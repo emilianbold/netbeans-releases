@@ -90,11 +90,6 @@ public class QueryProviderImpl implements QueryProvider<LocalQuery, LocalTask> {
     }
     
     @Override
-    public Collection<LocalTask> getIssues (LocalQuery q) {
-        return q.getIssues();
-    }
-
-    @Override
     public void refresh (LocalQuery query) {
         query.refresh();
     }
@@ -107,6 +102,11 @@ public class QueryProviderImpl implements QueryProvider<LocalQuery, LocalTask> {
     @Override
     public void removePropertyChangeListener (LocalQuery q, PropertyChangeListener listener) {
         q.removePropertyChangeListener(listener);
+    }
+
+    @Override
+    public void setIssueContainer(LocalQuery query, IssueContainer<LocalTask> c) {
+        query.setIssueContainer(c);
     }
 
 }

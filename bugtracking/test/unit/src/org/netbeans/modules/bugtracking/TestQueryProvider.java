@@ -75,11 +75,6 @@ public class TestQueryProvider implements QueryProvider<TestQuery, TestIssue> {
     }
     
     @Override
-    public Collection<TestIssue> getIssues(TestQuery q) {
-        return (Collection<TestIssue>) q.getIssues();
-    }
-
-    @Override
     public void refresh(TestQuery q) {
         q.refresh();
     }
@@ -107,6 +102,11 @@ public class TestQueryProvider implements QueryProvider<TestQuery, TestIssue> {
     @Override
     public boolean canRemove(TestQuery q) {
         return q.canRemove();
+    }
+
+    @Override
+    public void setIssueContainer(TestQuery q, IssueContainer<TestIssue> c) {
+        q.setIssueContainer(c);
     }
 
 }

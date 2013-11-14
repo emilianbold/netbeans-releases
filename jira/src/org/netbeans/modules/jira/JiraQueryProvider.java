@@ -92,11 +92,6 @@ public class JiraQueryProvider implements QueryProvider<JiraQuery, NbJiraIssue> 
     }
     
     @Override
-    public Collection<NbJiraIssue> getIssues(JiraQuery query) {
-        return query.getIssues();
-    }
-
-    @Override
     public void removePropertyChangeListener(JiraQuery query, PropertyChangeListener listener) {
         query.removePropertyChangeListener(listener);
     }
@@ -106,6 +101,11 @@ public class JiraQueryProvider implements QueryProvider<JiraQuery, NbJiraIssue> 
         query.addPropertyChangeListener(listener);
     }
 
+    @Override
+    public void setIssueContainer(JiraQuery query, IssueContainer<NbJiraIssue> c) {
+        query.getController().setIssueContainer(c);
+    }
+    
     @Override
     public void refresh(JiraQuery query) {
         if(needsAndHasNoLogin(query)) {

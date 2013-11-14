@@ -46,6 +46,7 @@ import java.beans.PropertyChangeSupport;
 import java.util.Collection;
 import javax.swing.JComponent;
 import org.netbeans.modules.bugtracking.spi.QueryController;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.openide.util.HelpCtx;
 
 /**
@@ -131,10 +132,6 @@ public abstract class TestQuery {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public Collection<? extends TestIssue> getIssues() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
     public void remove() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -152,6 +149,10 @@ public abstract class TestQuery {
     }
 
     boolean canRemove() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    void setIssueContainer(QueryProvider.IssueContainer<TestIssue> c) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     

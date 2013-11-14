@@ -71,6 +71,7 @@ public class APITestQuery extends TestQuery {
     QueryController.QueryMode openedMode;
     private final APITestRepository repo;
     private QueryController controller;
+    private QueryProvider.IssueContainer<APITestIssue> issueContainer;
 
     public APITestQuery(String name, APITestRepository repo) {
         this.name = name;
@@ -136,12 +137,8 @@ public class APITestQuery extends TestQuery {
         return isSaved;
     }
 
-    @Override
-    public Collection<APITestIssue> getIssues() {
-        return repo.getIssues(APITestIssue.ID_1);
-    }
-
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
+    
     @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
@@ -159,8 +156,10 @@ public class APITestQuery extends TestQuery {
 
     @Override
     public void refresh() {
+        issueContainer.refreshingStarted();
+        issueContainer.add(repo.getIssues(APITestIssue.ID_1).iterator().next());
         wasRefreshed = true;
-        support.firePropertyChange(QueryProvider.EVENT_QUERY_REFRESHED, null, null);
+        issueContainer.refreshingFinished();
     }
 
     @Override
@@ -175,6 +174,10 @@ public class APITestQuery extends TestQuery {
 
     boolean canRemove() {
         return true;
+    }
+
+    void setIssueContainer(QueryProvider.IssueContainer<APITestIssue> c) {
+        issueContainer = c;
     }
     
 }
