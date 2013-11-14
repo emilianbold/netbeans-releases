@@ -69,7 +69,7 @@ import org.openide.util.lookup.Lookups;
     displayName="#LBL_OptionsPanelName",
     location="Team",
     keywords="#KW_VersioningOptions",
-    keywordsCategory="Advanced/Versioning")
+    keywordsCategory="Team/Versioning")
 public class VcsAdvancedOptions extends OptionsPanelController {
     
     public static final String ID = "Versioning"; //NOI18N
