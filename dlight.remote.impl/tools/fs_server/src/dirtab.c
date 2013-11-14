@@ -23,6 +23,7 @@ struct dirtab_element {
     int index;
     char* cache_path;
     pthread_mutex_t mutex;
+    dirtab_state state;
     char abspath[];
 };
 
@@ -126,6 +127,7 @@ static dirtab_element *new_dirtab_element(const char* path, int index) {
     int size = sizeof(dirtab_element) + path_len + cache_len + 2;
     dirtab_element *el = malloc(size);
     el->index = index;
+    el->state = DE_STATE_INITIAL;
     strcpy(el->abspath, path);
     el->cache_path = el->abspath + path_len + 1;
     strcpy(el->cache_path, cache);
@@ -225,6 +227,14 @@ static bool flush_impl() {
         report_error("error closing %s for writing: %s\n", dirtab_file_path, strerror(errno));
         return false;
     }
+}
+
+dirtab_state dirtab_get_state(dirtab_element *el) {
+    return el->state;
+}
+
+void dirtab_set_state(dirtab_element *el, dirtab_state state) {
+    el->state = state;
 }
 
 bool dirtab_flush() {

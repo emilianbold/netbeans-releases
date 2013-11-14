@@ -17,6 +17,12 @@ extern "C" {
  * dirtab_* maintains a list of all known directories
  */    
 
+typedef enum {
+    DE_STATE_INITIAL = 0,
+    DE_STATE_LS_SENT = 1,
+    DE_STATE_REFRESH_SENT = 2
+} dirtab_state;
+    
 struct dirtab_element;
 typedef struct dirtab_element dirtab_element;
     
@@ -48,6 +54,12 @@ bool dirtab_is_empty();
 
 /** frees all resources*/    
 void dirtab_free();
+
+/** call dirtab_lock() before!  */
+dirtab_state dirtab_get_state(dirtab_element *el);
+
+/** call dirtab_lock() before!  */
+void dirtab_set_state(dirtab_element *el, dirtab_state state);
 
 #ifdef	__cplusplus
 }

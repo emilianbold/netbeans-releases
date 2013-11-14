@@ -576,8 +576,11 @@ static void response_ls(int request_id, const char* path, bool recursive, int ne
                 fflush(stdout);
             }
         }
-        if (cache_fp) {
-            fclose(cache_fp);
+        if (el) {
+            if (cache_fp) {
+                fclose(cache_fp);
+            }
+            dirtab_set_state(el, DE_STATE_LS_SENT);
             dirtab_unlock(el);
         }
     } else {
@@ -627,8 +630,13 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el) {
     array/*<fs_entry>*/ old_entries;
     array/*<fs_entry>*/ new_entries;
     dirtab_lock(el);
+    dirtab_state state = dirtab_get_state(el);
+    if (state == DE_STATE_REFRESH_SENT) {
+        dirtab_unlock(el);
+        trace(TRACE_FINE, "refresh notification already sent for %s\n", path);
+        return true;
+    }
     bool success = read_entries_from_cache(&old_entries, el, path);
-    dirtab_unlock(el);
     bool differs;
     if (success) {
         read_entries_from_dir(&new_entries, path);
@@ -708,7 +716,9 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el) {
         // trailing '\n' already there, added by form_entry_response
         fprintf(stdout, "%c 0 %li %s\n", FS_RSP_CHANGE, (long) strlen(path), path);
         fflush(stdout);
-    }     
+        dirtab_set_state(el, DE_STATE_REFRESH_SENT);
+    }
+    dirtab_unlock(el);
     array_free(&old_entries);
     array_free(&new_entries);
     return true;        
