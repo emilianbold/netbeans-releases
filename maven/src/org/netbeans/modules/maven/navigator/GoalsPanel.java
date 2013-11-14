@@ -44,7 +44,10 @@ package org.netbeans.modules.maven.navigator;
 
 import java.awt.Image;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -62,6 +65,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.maven.ActionProviderImpl;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -105,14 +109,19 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
     private final transient ExplorerManager explorerManager = new ExplorerManager();
     
     private final BeanTreeView treeView;
-    private DataObject current;
-    private final FileChangeAdapter adapter = new FileChangeAdapter(){
-            @Override
-            public void fileChanged(FileEvent fe) {
+    private NbMavenProject current;
+    private Project currentP;
+    
+    private final PropertyChangeListener pchadapter = new PropertyChangeListener() {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
                 showWaitNode();
                 RequestProcessor.getDefault().post(GoalsPanel.this);
             }
-        };
+        }
+    };
 
     /** Creates new form POMInheritancePanel */
     public GoalsPanel() {
@@ -127,26 +136,34 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
 
     void navigate(DataObject d) {
         if (current != null) {
-            //TODO listen on project changes instead
-            current.getPrimaryFile().removeFileChangeListener(adapter);
+            current.removePropertyChangeListener(pchadapter);
         }
-        if (d.getPrimaryFile().isFolder()) {
-            FileObject pom = d.getPrimaryFile().getFileObject("pom.xml");
-            if (pom != null) {
-                try {
-                    d = DataObject.find(pom);
-                } catch (DataObjectNotFoundException ex) {
-                    Exceptions.printStackTrace(ex);
-                    release();
-                    return;
-                }
-            } else {
-                release();
-                return;
+        NbMavenProject n = null;
+
+        FileObject f = d.getPrimaryFile();
+        if (!f.isFolder()) {
+            f = f.getParent();
+        }
+        Project p = null;
+        try {
+            p = ProjectManager.getDefault().findProject(f);
+            if (p != null) {
+                n = p.getLookup().lookup(NbMavenProject.class);
             }
+        } catch (IOException ex) {
+            //Exceptions.printStackTrace(ex);
+        } catch (IllegalArgumentException ex) {
+            //Exceptions.printStackTrace(ex);
         }
-        current = d;
-        current.getPrimaryFile().addFileChangeListener(adapter);
+
+        if (n == null) {
+            release();
+            return;
+        }
+         
+        current = n;
+        currentP = p;
+        current.addPropertyChangeListener(pchadapter);
         showWaitNode();
         RequestProcessor.getDefault().post(this);
     }
@@ -155,29 +172,22 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
     public void run() {
         //#164852 somehow a folder dataobject slipped in, test mimetype to avoid that.
         // the root cause of the problem is unknown though
-        if (current != null && Constants.POM_MIME_TYPE.equals(current.getPrimaryFile().getMIMEType())) { //NOI18N
-            File file = FileUtil.toFile(current.getPrimaryFile());
-            // can be null for stuff in jars?
-            if (file != null && "pom.xml".equals(file.getName())) {
-
-                Project p = FileOwnerQuery.getOwner(current.getPrimaryFile());
-                if (p != null) {
-                    NbMavenProject mpp = p.getLookup().lookup(NbMavenProject.class);
-                    if (mpp != null) {
-                        final Children ch = Children.create(new PluginChildren(p), false);
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                treeView.setRootVisible(false);
-                                explorerManager.setRootContext(new AbstractNode(ch));
-                                treeView.expandAll();
-                            }
-                        });
-                        return;
+        if (currentP != null ) { //NOI18N
+         
+            NbMavenProject mpp = currentP.getLookup().lookup(NbMavenProject.class);
+            if (mpp != null) {
+                final Children ch = Children.create(new PluginChildren(currentP), false);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        treeView.setRootVisible(false);
+                        explorerManager.setRootContext(new AbstractNode(ch));
+                        treeView.expandAll();
                     }
-                }
-
+                });
+                return;
             }
+
 
         }
         SwingUtilities.invokeLater(new Runnable() {
@@ -194,10 +204,10 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
      */
     void release() {
         if (current != null) {
-            //TODO listen on project changes instead
-            current.getPrimaryFile().removeFileChangeListener(adapter);
+            current.removePropertyChangeListener(pchadapter);
         }
         current = null;
+        currentP = null;
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
