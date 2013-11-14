@@ -66,7 +66,7 @@ public final class QueryImpl<Q, I>  {
     private Query query;
     private final Q data;
     private final IssueContainer issueContainer;
-            
+    private boolean wasRefreshed = false;
     QueryImpl(RepositoryImpl repository, QueryProvider<Q, I> queryProvider, IssueProvider<I> issueProvider, Q data) {
         this.queryProvider = queryProvider;
         this.issueProvider = issueProvider;
@@ -127,6 +127,10 @@ public final class QueryImpl<Q, I>  {
         queryProvider.refresh(data);
     }
     
+    public boolean wasRefreshed() {
+        return wasRefreshed;
+    }
+    
     public String getDisplayName() {
         return queryProvider.getDisplayName(data);
     }
@@ -166,6 +170,7 @@ public final class QueryImpl<Q, I>  {
         private final Set<IssueImpl> issues = new HashSet<IssueImpl>();
         @Override
         public void refreshingStarted() {
+            wasRefreshed = true;
             support.firePropertyChange(EVENT_QUERY_STARTED, null, null);
         }
 

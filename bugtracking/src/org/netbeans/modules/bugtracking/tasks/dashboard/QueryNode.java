@@ -79,8 +79,8 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
 
     private static final ImageIcon QUERY_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/query.png", true);
 
-    public QueryNode(QueryImpl query, TreeListNode parent, boolean refresh) {
-        super(refresh, true, parent, query.getDisplayName(), QUERY_ICON);
+    public QueryNode(QueryImpl query, TreeListNode parent) {
+        super(!query.wasRefreshed(), true, parent, query.getDisplayName(), QUERY_ICON);
         this.query = query;
         queryListener = new QueryListener();
     }
