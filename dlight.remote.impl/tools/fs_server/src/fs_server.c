@@ -907,9 +907,7 @@ static bool print_visitor(const char* path, int index, dirtab_element* el) {
     return true;
 }
 
-int main(int argc, char* argv[]) {
-    process_options(argc, argv);
-    trace(TRACE_INFO, "Version %d.%d (%s %s)\n", FS_SERVER_MAJOR_VERSION, FS_SERVER_MINOR_VERSION, __DATE__, __TIME__);
+static void startup() {
     dirtab_init();
     const char* basedir = dirtab_get_basedir();
     if (chdir(basedir)) {
@@ -922,25 +920,6 @@ int main(int argc, char* argv[]) {
         trace(TRACE_INFO, "loaded dirtab\n");
         dirtab_visit(print_visitor);
     }
-    if (log_flag) {
-       log_open("log") ;
-       log_print("\n--------------------------------------\nfs_server version %d.%d (%s %s) started on ", 
-               FS_SERVER_MAJOR_VERSION, FS_SERVER_MINOR_VERSION, __DATE__, __TIME__);
-       time_t t = time(NULL);
-       struct tm *tt = localtime(&t);
-       if (tt) {
-           log_print("%d/%02d/%02d at %02d:%02d:%02d\n", 
-                   tt->tm_year+1900, tt->tm_mon + 1, tt->tm_mday, 
-                   tt->tm_hour, tt->tm_min, tt->tm_sec);
-       } else {
-           log_print("<error getting time: %s>\n", strerror(errno));
-       }       
-       for (int i = 0; i < argc; i++) {
-           log_print("%s ", argv[i]);
-       }
-       log_print("\n");
-    }
-
     int thread_num[rp_thread_count];
     if (rp_thread_count > 1) {
         blocking_queue_init(&req_queue);
@@ -961,8 +940,9 @@ int main(int argc, char* argv[]) {
         report_error("error setting exit function: %s\n", strerror(errno));
     }
     
-    main_loop();
-    
+}
+
+static void shutdown() {    
     state_set_proceed(false);
     blocking_queue_shutdown(&req_queue);
     trace(TRACE_INFO, "Max. requests queue size: %d\n", blocking_queue_max_size(&req_queue));
@@ -980,5 +960,36 @@ int main(int argc, char* argv[]) {
     }
     dirtab_free();
     log_close();
+    exit(0);
+}
+
+static void log_header(int argc, char* argv[]) {
+    if (log_flag) {
+       log_open("log") ;
+       log_print("\n--------------------------------------\nfs_server version %d.%d (%s %s) started on ", 
+               FS_SERVER_MAJOR_VERSION, FS_SERVER_MINOR_VERSION, __DATE__, __TIME__);
+       time_t t = time(NULL);
+       struct tm *tt = localtime(&t);
+       if (tt) {
+           log_print("%d/%02d/%02d at %02d:%02d:%02d\n", 
+                   tt->tm_year+1900, tt->tm_mon + 1, tt->tm_mday, 
+                   tt->tm_hour, tt->tm_min, tt->tm_sec);
+       } else {
+           log_print("<error getting time: %s>\n", strerror(errno));
+       }       
+       for (int i = 0; i < argc; i++) {
+           log_print("%s ", argv[i]);
+       }
+       log_print("\n");
+    }    
+}
+
+int main(int argc, char* argv[]) {
+    process_options(argc, argv);
+    trace(TRACE_INFO, "Version %d.%d (%s %s)\n", FS_SERVER_MAJOR_VERSION, FS_SERVER_MINOR_VERSION, __DATE__, __TIME__);
+    log_header(argc, argv);
+    startup();
+    main_loop();    
+    shutdown();
     return 0;
 }
