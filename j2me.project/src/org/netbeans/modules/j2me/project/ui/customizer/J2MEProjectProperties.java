@@ -322,6 +322,9 @@ public final class J2MEProjectProperties {
 
     public static void postSave(@NonNull final Runnable action) {
         Parameters.notNull("action", action);   //NOI18N
+        if (!isPropertiesSave()) {
+            throw new IllegalStateException("Not in properties save");  //NOI18N
+        }
         List<Runnable> l = postSaveAction.get();
         if (l == null) {
             l = new ArrayList<>();
@@ -510,13 +513,8 @@ public final class J2MEProjectProperties {
                     return null;
                 }
             });
-            // and save the project
-            project.setProjectPropertiesSave(true);
-            try {
-                ProjectManager.getDefault().saveProject(project);
-            } finally {
-                project.setProjectPropertiesSave(false);
-            }
+            // and save the project            
+            ProjectManager.getDefault().saveProject(project);            
         } catch (MutexException e) {
             ErrorManager.getDefault().notify((IOException) e.getException());
         } catch (IOException ex) {
