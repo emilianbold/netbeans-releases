@@ -91,7 +91,14 @@ final class PlatformListener implements Runnable, PropertyChangeListener {
 
     @Override
     public void run() {
-        if (ProjectManager.mutex().isWriteAccess()) {
+        if (J2MEProjectProperties.isPropertiesSave()) {
+            J2MEProjectProperties.postSave(new Runnable() {
+                @Override
+                public void run() {
+                    updateIfNeeded();
+                }
+            });
+        } else if (ProjectManager.mutex().isWriteAccess()) {
             updateIfNeeded();
         } else if (ProjectManager.mutex().isReadAccess()) {
             RP.execute(this);
