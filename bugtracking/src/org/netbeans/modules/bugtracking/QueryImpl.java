@@ -136,12 +136,10 @@ public final class QueryImpl<Q, I>  {
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
-        queryProvider.addPropertyChangeListener(data, listener);
         issueContainer.addPropertyChangeListener(listener);
     }
 
     public void removePropertyChangeListener(PropertyChangeListener listener) {
-        queryProvider.removePropertyChangeListener(data, listener);                   
         issueContainer.removePropertyChangeListener(listener);
     }
 

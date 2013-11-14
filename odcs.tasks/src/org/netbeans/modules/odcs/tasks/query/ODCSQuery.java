@@ -90,7 +90,6 @@ public abstract class ODCSQuery {
     private ODCSQueryController controller;
 
     private final List<QueryNotifyListener> notifyListeners = new ArrayList<QueryNotifyListener>();
-    private final PropertyChangeSupport support = new PropertyChangeSupport(this);;
     private String name;
     private long lastRefresh;
     
@@ -249,14 +248,6 @@ public abstract class ODCSQuery {
             controller = new ODCSQueryController(repository, this, getCriteria(), isModifiable());
         }
         return controller;
-    }
-
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        support.addPropertyChangeListener(listener);
-    }
-    
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        support.removePropertyChangeListener(listener);
     }
 
     public void refresh() {

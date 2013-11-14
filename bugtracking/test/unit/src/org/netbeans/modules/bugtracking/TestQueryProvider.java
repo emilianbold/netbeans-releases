@@ -80,16 +80,6 @@ public class TestQueryProvider implements QueryProvider<TestQuery, TestIssue> {
     }
 
     @Override
-    public void removePropertyChangeListener(TestQuery q, PropertyChangeListener listener) {
-        q.removePropertyChangeListener(listener);
-    }
-
-    @Override
-    public void addPropertyChangeListener(TestQuery q, PropertyChangeListener listener) {
-        q.addPropertyChangeListener(listener);
-    }
-
-    @Override
     public boolean canRename(TestQuery q) {
         return q.canRename();
     }

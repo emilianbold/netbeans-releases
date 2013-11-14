@@ -82,7 +82,6 @@ public class BugzillaQuery {
     private OwnerInfo info;
     private boolean saved;
     protected long lastRefresh;
-    private final PropertyChangeSupport support;
     private IRepositoryQuery iquery;
         
     public BugzillaQuery(BugzillaRepository repository) {
@@ -100,20 +99,11 @@ public class BugzillaQuery {
         this.iquery = query;
         this.urlParameters = urlParameters;
         this.initialUrlDef = urlDef;
-        this.support = new PropertyChangeSupport(this);
         this.lastRefresh = BugzillaConfig.getInstance().getLastQueryRefresh(repository, getStoredQueryName());
         
         if(initControler) {
             controller = createControler(repository, this, urlParameters);
         }
-    }
-
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        support.addPropertyChangeListener(listener);
-    }
-    
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        support.removePropertyChangeListener(listener);
     }
 
     public String getDisplayName() {

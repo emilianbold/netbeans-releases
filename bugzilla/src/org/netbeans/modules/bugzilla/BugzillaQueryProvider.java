@@ -91,21 +91,6 @@ public class BugzillaQueryProvider implements QueryProvider<BugzillaQuery, Bugzi
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
-//    @Override
-//    public Collection<BugzillaIssue> getIssues(BugzillaQuery query) {
-//        return query.getIssues();
-//    }
-
-    @Override
-    public void removePropertyChangeListener(BugzillaQuery query, PropertyChangeListener listener) {
-        query.removePropertyChangeListener(listener);
-    }
-
-    @Override
-    public void addPropertyChangeListener(BugzillaQuery query, PropertyChangeListener listener) {
-        query.addPropertyChangeListener(listener);
-    }
-
     @Override
     public void setIssueContainer(BugzillaQuery query, IssueContainer<BugzillaIssue> c) {
         query.getController().setContainer(c);

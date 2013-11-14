@@ -106,14 +106,4 @@ public class ODCSQueryProvider implements QueryProvider<ODCSQuery, ODCSIssue> {
         q.getController().refresh(true);
     }
 
-    @Override
-    public void removePropertyChangeListener(ODCSQuery q, PropertyChangeListener listener) {
-        q.removePropertyChangeListener(listener);
-    }
-
-    @Override
-    public void addPropertyChangeListener(ODCSQuery q, PropertyChangeListener listener) {
-        q.addPropertyChangeListener(listener);
-    }
-
 }

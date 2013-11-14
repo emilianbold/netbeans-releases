@@ -137,18 +137,6 @@ public class APITestQuery extends TestQuery {
         return isSaved;
     }
 
-    private final PropertyChangeSupport support = new PropertyChangeSupport(this);
-    
-    @Override
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        support.removePropertyChangeListener(listener);
-    }
-
-    @Override
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        support.addPropertyChangeListener(listener);
-    }
-
     @Override
     public void remove() {
         wasRemoved = true;

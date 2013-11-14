@@ -86,7 +86,6 @@ public class JiraQuery {
     private boolean firstRun = true;
     private boolean saved;
     protected long lastRefresh;
-    private final PropertyChangeSupport support;
     private SynchronizeQueryCommand queryCmd;
     private IRepositoryQuery iquery;
     private final Object ISSUES_LOCK = new Object();
@@ -105,7 +104,6 @@ public class JiraQuery {
         this.name = name;
         this.jiraFilter = jiraFilter;
         this.lastRefresh = JiraConfig.getInstance().getLastQueryRefresh(repository, getStoredQueryName());
-        this.support = new PropertyChangeSupport(this);
         
         if(initControler) {
             // enforce controller creation
@@ -117,14 +115,6 @@ public class JiraQuery {
                 getRepository().scheduleForRefresh(this);
             }
         }
-    }
-
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        support.addPropertyChangeListener(listener);
-    }
-    
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        support.removePropertyChangeListener(listener);
     }
 
     public String getDisplayName() {

@@ -50,8 +50,6 @@ import java.util.Map;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.DelegatingConnector;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
-import org.netbeans.modules.bugtracking.TestKit;
-import static org.netbeans.modules.bugtracking.api.APITestKit.getAPIRepo;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.spi.BugtrackingSupport;
@@ -157,16 +155,6 @@ public class APITestConnector implements BugtrackingConnector {
         @Override
         public void refresh(APITestQuery q) {
             q.refresh();
-        }
-
-        @Override
-        public void removePropertyChangeListener(APITestQuery q, PropertyChangeListener listener) {
-            q.removePropertyChangeListener(listener);
-        }
-
-        @Override
-        public void addPropertyChangeListener(APITestQuery q, PropertyChangeListener listener) {
-            q.addPropertyChangeListener(listener);
         }
 
         @Override

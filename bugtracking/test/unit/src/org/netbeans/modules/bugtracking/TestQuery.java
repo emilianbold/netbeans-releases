@@ -55,10 +55,6 @@ import org.openide.util.HelpCtx;
  */
 public abstract class TestQuery {
 
-    public void removePropertyChangeListener(PropertyChangeListener listener) { }
-
-    public void addPropertyChangeListener(PropertyChangeListener listener) { }
-    
     public String getDisplayName() {
         throw new UnsupportedOperationException("Not supported yet.");
     }

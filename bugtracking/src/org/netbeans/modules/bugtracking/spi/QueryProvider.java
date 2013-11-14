@@ -132,24 +132,6 @@ public interface QueryProvider<Q, I> {
      * @since 1.85
      */
     public void refresh(Q q);
-    
-    /**
-     * Remove a PropertyChangeListener from the given query.
-     * 
-     * @param q the particular query instance
-     * @param listener a PropertyChangeListener
-     * @since 1.85
-     */
-    public void removePropertyChangeListener(Q q, PropertyChangeListener listener);
-
-    /**
-     * Add a PropertyChangeListener to the given query.
-     * 
-     * @param q the particular query instance
-     * @param listener a PropertyChangeListener
-     * @since 1.85
-     */
-    public void addPropertyChangeListener(Q q, PropertyChangeListener listener);
 
     /**
      * Callback for Queries to notify about refreshing progress 
