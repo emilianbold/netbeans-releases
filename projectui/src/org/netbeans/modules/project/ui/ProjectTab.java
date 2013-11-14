@@ -819,7 +819,7 @@ public class ProjectTab extends TopComponent
                     Rectangle projectNodeCoordinates = tree.getPathBounds(path);
                     Rectangle prjTabScrollCoordinates = tree.getVisibleRect();
                     //Constant 0.75 was choosed, b/c sometimes is project node partially visible
-                    if (prjTabScrollCoordinates.y <= ( projectNodeCoordinates.y + (projectNodeCoordinates.height * 0.75) )) {
+                    if (prjTabScrollCoordinates.y <= ( projectNodeCoordinates.y + (projectNodeCoordinates.height * 0.5) )) {
                         nodeSelectionProjectPanel.minimize();
                     } else {
                         nodeSelectionProjectPanel.maximize();
