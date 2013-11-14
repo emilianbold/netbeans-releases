@@ -1030,8 +1030,8 @@ static void log_header(int argc, char* argv[]) {
 int main(int argc, char* argv[]) {
     process_options(argc, argv);
     trace(TRACE_INFO, "Version %d.%d (%s %s)\n", FS_SERVER_MAJOR_VERSION, FS_SERVER_MINOR_VERSION, __DATE__, __TIME__);
-    log_header(argc, argv);
     startup();
+    log_header(argc, argv);
     main_loop();    
     shutdown();
     return 0;
