@@ -59,10 +59,12 @@ import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
 import org.netbeans.modules.javascript.karma.run.RunInfo;
 import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.ChangeSupport;
+import org.openide.util.NbBundle;
 
 public final class KarmaServer {
 
@@ -87,6 +89,7 @@ public final class KarmaServer {
         this.project = project;
     }
 
+    @NbBundle.Messages("KarmaServer.start.error=Karma cannot start (incorrect Karma set?), review IDE log for details")
     public synchronized boolean start() {
         assert Thread.holdsLock(this);
         if (isStarted()) {
@@ -110,6 +113,8 @@ public final class KarmaServer {
         starting = false;
         if (server != null) {
             started = true;
+        } else {
+            StatusDisplayer.getDefault().setStatusText(Bundle.KarmaServer_start_error());
         }
         fireChange();
         return started;
