@@ -25,9 +25,10 @@
 #include <sys/stat.h> 
 #include <fcntl.h>
 
-#define MAX_RP_THREADS 32
-static int rp_thread_count = 4;
-static pthread_t rp_threads[MAX_RP_THREADS];
+#define MAX_THREAD_COUNT 32
+#define DEFAULT_THREAD_COUNT 4
+static int rp_thread_count = DEFAULT_THREAD_COUNT;
+static pthread_t rp_threads[MAX_THREAD_COUNT];
 static pthread_t refresh_thread;
 
 static blocking_queue req_queue;
@@ -775,27 +776,6 @@ static void exit_function() {
 
 static void main_loop() {
     //TODO: handshake with version    
-    
-    int thread_num[rp_thread_count];
-    if (rp_thread_count > 1) {
-        blocking_queue_init(&req_queue);
-        trace(TRACE_INFO, "Staring %d threads\n", rp_thread_count);        
-        for (int i = 0; i < rp_thread_count; i++) {
-            trace(TRACE_INFO, "Starting thread #%d...\n", i);
-            thread_num[i] = i;
-            pthread_create(&rp_threads[i], NULL, &rp_loop, &thread_num[i]);
-        }
-    } else {
-        trace(TRACE_INFO, "Starting in single-thread mode\n");
-    }
-
-    if (refresh) {
-        pthread_create(&refresh_thread, NULL, &refresh_loop, NULL);
-    }
-    if (atexit(exit_function)) {
-        report_error("error setting exit function: %s\n", strerror(errno));
-    }
-
     int buf_size = 256 + PATH_MAX;
     char *raw_req_buffer = malloc(buf_size);
     char *req_buffer = malloc(buf_size);
@@ -838,17 +818,6 @@ static void main_loop() {
     }
     free(req_buffer);
     free(raw_req_buffer);
-    state_set_proceed(false);
-    blocking_queue_shutdown(&req_queue);
-    trace(TRACE_INFO, "Max. requests queue size: %d\n", blocking_queue_max_size(&req_queue));
-    if (statistics) {
-        fprintf(stderr, "Max. requests queue size: %d\n", blocking_queue_max_size(&req_queue));
-    }
-    trace(TRACE_INFO, "Shutting down. Joining threads...\n");
-    for (int i = 0; i < rp_thread_count; i++) {
-        trace(TRACE_INFO, "Shutting down. Joining thread #%i [%ui]\n", i, rp_threads[i]);
-        pthread_join(rp_threads[i], NULL);
-    }
 }
 
 static void usage(char* argv[]) {
@@ -862,7 +831,7 @@ static void usage(char* argv[]) {
             "   -l log all requests into log file\n"
             "   -s statistics: print some statistics output to stderr\n"
             "   -d persistence directory: where to log responses (valid only if -p is set)\n"
-            , prog_name ? prog_name : argv[0], rp_thread_count);
+            , prog_name ? prog_name : argv[0], DEFAULT_THREAD_COUNT);
 }
 
 void process_options(int argc, char* argv[]) {
@@ -912,9 +881,9 @@ void process_options(int argc, char* argv[]) {
             case 't':
                 new_thread_count = atoi(optarg);
                 if (new_thread_count > 0) {
-                    if (new_thread_count > MAX_RP_THREADS) {
-                        report_error("incorrect value of -t flag: %d. Should not exceed %d.\n", new_thread_count, MAX_RP_THREADS);
-                        rp_thread_count = MAX_RP_THREADS;
+                    if (new_thread_count > MAX_THREAD_COUNT) {
+                        report_error("incorrect value of -t flag: %d. Should not exceed %d.\n", new_thread_count, MAX_THREAD_COUNT);
+                        rp_thread_count = MAX_THREAD_COUNT;
                     } else {
                         rp_thread_count = new_thread_count;
                     }
@@ -949,7 +918,7 @@ int main(int argc, char* argv[]) {
     }
     lock_or_unlock(true);
     state_init();
-    if (is_traceable(TRACE_INFO) && ! dirtab_is_empty()) {
+    if (is_traceable(TRACE_FINER) && ! dirtab_is_empty()) {
         trace(TRACE_INFO, "loaded dirtab\n");
         dirtab_visit(print_visitor);
     }
@@ -971,7 +940,41 @@ int main(int argc, char* argv[]) {
        }
        log_print("\n");
     }
+
+    int thread_num[rp_thread_count];
+    if (rp_thread_count > 1) {
+        blocking_queue_init(&req_queue);
+        trace(TRACE_INFO, "Staring %d threads\n", rp_thread_count);        
+        for (int i = 0; i < rp_thread_count; i++) {
+            trace(TRACE_INFO, "Starting thread #%d...\n", i);
+            thread_num[i] = i;
+            pthread_create(&rp_threads[i], NULL, &rp_loop, &thread_num[i]);
+        }
+    } else {
+        trace(TRACE_INFO, "Starting in single-thread mode\n");
+    }
+
+    if (refresh) {
+        pthread_create(&refresh_thread, NULL, &refresh_loop, NULL);
+    }
+    if (atexit(exit_function)) {
+        report_error("error setting exit function: %s\n", strerror(errno));
+    }
+    
     main_loop();
+    
+    state_set_proceed(false);
+    blocking_queue_shutdown(&req_queue);
+    trace(TRACE_INFO, "Max. requests queue size: %d\n", blocking_queue_max_size(&req_queue));
+    if (statistics) {
+        fprintf(stderr, "Max. requests queue size: %d\n", blocking_queue_max_size(&req_queue));
+    }
+    trace(TRACE_INFO, "Shutting down. Joining threads...\n");
+    for (int i = 0; i < rp_thread_count; i++) {
+        trace(TRACE_INFO, "Shutting down. Joining thread #%i [%ui]\n", i, rp_threads[i]);
+        pthread_join(rp_threads[i], NULL);
+    }
+    
     if (!dirtab_flush()) {
         report_error("error storing dirtab\n");
     }
