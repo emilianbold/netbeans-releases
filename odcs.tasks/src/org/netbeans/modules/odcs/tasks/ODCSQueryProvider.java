@@ -90,7 +90,7 @@ public class ODCSQueryProvider implements QueryProvider<ODCSQuery, ODCSIssue> {
 
     @Override
     public void rename(ODCSQuery q, String displayName) {
-        
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
     @Override
