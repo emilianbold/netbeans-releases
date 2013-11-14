@@ -943,7 +943,7 @@ public class ModelVisitor extends PathNodeVisitor {
             } else if (lastVisited instanceof PropertyNode) {
                 fqName = getName((PropertyNode) lastVisited);
                 isDeclaredInParent = true;
-            } else if (lastVisited instanceof ExecuteNode) {
+            } else if (lastVisited instanceof ExecuteNode || lastVisited instanceof AccessNode) {
                 treatAsAnonymous = true;
             } else if (lastVisited instanceof BinaryNode) {
                 BinaryNode binNode = (BinaryNode) lastVisited;
