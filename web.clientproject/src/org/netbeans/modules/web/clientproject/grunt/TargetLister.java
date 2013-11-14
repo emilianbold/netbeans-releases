@@ -62,20 +62,22 @@ public class TargetLister {
     
     public static Collection<Target> getTargets(FileObject pr) throws IOException { 
         Pair<Long, Collection<Target>> targetPair = cache.get(pr.getPath());
-        if (targetPair != null && targetPair.first().equals(pr.lastModified().getTime())) {
-            return targetPair.second();
+        if (targetPair != null) {
+            if (targetPair.first().equals(pr.lastModified().getTime())) {
+                return targetPair.second();
+            } 
         } else {
+            cache.put(pr.getPath(), Pair.of(-1L, (Collection<Target>)null));
             read(pr);
         }
-        
         Collection<Target> loading = new ArrayList<>();
         loading.add(new Target("default", pr));//NOI18N
         return loading; 
     }
     
     public static void read(final FileObject gruntFile) {
-        RP.post(new Runnable() {
-
+        RequestProcessor.Task post = RP.post(new Runnable() {
+            
             @Override
             public void run() {
                 try {
@@ -83,11 +85,11 @@ public class TargetLister {
 
                     String work = gruntFile.getParent().getPath();
                     if (Utilities.isWindows()) {
-                        data = ProcessUtilities.callProcess("cmd", work, true, 60 , "/C grunt -h --no-color");//NOI18N
+                        data = ProcessUtilities.callProcess("cmd", work, true, 3 * 60 * 1000 , "/C grunt -h --no-color");//NOI18N
                     } else if (Utilities.isMac()) {
-                        data = ProcessUtilities.callProcess("/bin/bash", work, true, 60 , "-lc", "grunt -h --no-color");//NOI18N
+                        data = ProcessUtilities.callProcess("/bin/bash", work, true, 3 * 60 * 1000 , "-lc", "grunt -h --no-color");//NOI18N
                     } else {
-                        data = ProcessUtilities.callProcess("grunt", work, true, 60 , "-h", "--no-color");//NOI18N
+                        data = ProcessUtilities.callProcess("grunt", work, true, 3 * 60 * 1000 , "-h", "--no-color");//NOI18N
                     }
 
                     parse(data, gruntFile);
@@ -129,7 +131,6 @@ public class TargetLister {
             l = l.substring(0,l.indexOf(" "));
             col.add(new Target(l, gruntFile));
         }
-        cache.clear();
         cache.put(gruntFile.getPath(), Pair.of(gruntFile.lastModified().getTime(), col));
     }
 
