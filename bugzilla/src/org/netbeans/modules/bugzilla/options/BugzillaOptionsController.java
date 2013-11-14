@@ -58,13 +58,14 @@ import org.openide.util.NbBundle;
 public final class BugzillaOptionsController extends OptionsPanelController implements DocumentListener {
     
     private final BugzillaOptionsPanel panel;
-    private PropertyChangeSupport support = new PropertyChangeSupport(this);
+    private final PropertyChangeSupport support = new PropertyChangeSupport(this);
     private boolean valid = false;
 
     public BugzillaOptionsController() {
         panel = new BugzillaOptionsPanel();
     }
     
+    @Override
     public void update() {
         panel.issuesTextField.getDocument().removeDocumentListener(this); // #163955 - do not fire change events on load
         panel.queriesTextField.getDocument().removeDocumentListener(this);
@@ -74,6 +75,7 @@ public final class BugzillaOptionsController extends OptionsPanelController impl
         panel.queriesTextField.getDocument().addDocumentListener(this);
     }
     
+    @Override
     public void applyChanges() {
         String queryRefresh = panel.queriesTextField.getText().trim();
         int r = queryRefresh.equals("") ? 0 : Integer.parseInt(queryRefresh);   // NOI18N
@@ -84,10 +86,12 @@ public final class BugzillaOptionsController extends OptionsPanelController impl
         BugzillaConfig.getInstance().setIssueRefreshInterval(r);
     }
     
+    @Override
     public void cancel() {
         update();
     }
     
+    @Override
     public boolean isValid() {
         validate(false);
         return valid;
@@ -109,35 +113,43 @@ public final class BugzillaOptionsController extends OptionsPanelController impl
         return true;
     }
 
+    @Override
     public boolean isChanged() {
         return !panel.issuesTextField.getText().trim().equals(BugzillaConfig.getInstance().getIssueRefreshInterval() + "") ||  // NOI18N
                !panel.queriesTextField.getText().trim().equals(BugzillaConfig.getInstance().getQueryRefreshInterval() + "");   // NOI18N
     }
         
+    @Override
     public org.openide.util.HelpCtx getHelpCtx() {
         return new org.openide.util.HelpCtx(getClass());
     }
     
+    @Override
     public javax.swing.JComponent getComponent(org.openide.util.Lookup masterLookup) {
         return panel;
     }
     
+    @Override
     public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
         support.addPropertyChangeListener(l);
     }
     
+    @Override
     public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
         support.removePropertyChangeListener(l);
     }
 
+    @Override
     public void insertUpdate(DocumentEvent e) {
         validate(true);
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         validate(true);
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {
         validate(true);
     }
