@@ -147,7 +147,7 @@ public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(6, 8, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 8, 8, 0);
         add(scrollPane, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(bAdd, org.openide.util.NbBundle.getMessage(J2MEAPIPermissionsPanel.class, "J2MEAPIPermissionsPanel.bAdd.text")); // NOI18N
@@ -189,7 +189,7 @@ public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(11, 8, 8, 8);
+        gridBagConstraints.insets = new java.awt.Insets(3, 8, 8, 8);
         add(lError, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
