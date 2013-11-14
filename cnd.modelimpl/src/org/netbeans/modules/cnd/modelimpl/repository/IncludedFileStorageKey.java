@@ -44,8 +44,6 @@ package org.netbeans.modules.cnd.modelimpl.repository;
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
-import org.netbeans.modules.cnd.repository.impl.spi.UnitsConverter;
-import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
@@ -56,65 +54,29 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
  * @author Vladimir Voskresensky
  */
 public final class IncludedFileStorageKey extends ProjectContainerKey {
-    private final int includedUnitIndex;
 
-    public IncludedFileStorageKey(ProjectBase startProject, ProjectBase includedProject) {
+    public IncludedFileStorageKey(ProjectBase startProject) {
 	super(startProject.getUnitId());
-        includedUnitIndex = includedProject.getUnitId();
     }
 
     /*package*/ IncludedFileStorageKey(RepositoryDataInput aStream) throws IOException {
 	super(aStream);
-        this.includedUnitIndex = aStream.readUnitId();
     }
 
     @Override
     public void write(RepositoryDataOutput aStream) throws IOException {
         super.write(aStream);
-        aStream.writeUnitId(includedUnitIndex);
     }
 
     IncludedFileStorageKey(KeyDataPresentation presentation) {
         super(presentation);
-        includedUnitIndex = presentation.getUnitPresentation();
     }
 
-    public int getIncludedUnitIndex() {
-        return includedUnitIndex;
-    }
-    
     @Override
     public String toString() {
-	return "IncludedFileContainerKey (" + getProjectName() + ", " + KeyUtilities.getUnitName(this.includedUnitIndex) + ")"; // NOI18N
+	return "IncludedFileContainerKey (" + getProjectName() + ")"; // NOI18N
     }
-
-    @Override
-    public int hashCode() {
-        return 19*includedUnitIndex + super.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (!super.equals(obj)) {
-            return false;
-        }
-        final IncludedFileStorageKey other = (IncludedFileStorageKey) obj;
-        return this.includedUnitIndex == other.includedUnitIndex;
-    }
-        
-    @Override
-    public int hashCode(UnitsConverter unitsConverter) {
-        return 19*RepositoryUtils.clientToLayer(unitsConverter, includedUnitIndex) + super.hashCode(unitsConverter);
-    }
-
-    @Override
-    public boolean equals(UnitsConverter unitsConverter, Key object) {
-        if (!super.equals(unitsConverter, object)) {
-            return false;
-        }
-        final IncludedFileStorageKey other = (IncludedFileStorageKey) object;
-        return RepositoryUtils.clientToLayer(unitsConverter, includedUnitIndex) == RepositoryUtils.clientToLayer(unitsConverter, other.includedUnitIndex);
-    }
+  
 
     @Override
     public PersistentFactory getPersistentFactory() {
@@ -123,18 +85,13 @@ public final class IncludedFileStorageKey extends ProjectContainerKey {
 
     @Override
     public int getSecondaryDepth() {
-	return 2;
+    	return 1;
     }
 
     @Override
     public int getSecondaryAt(int level) {
-	assert level == 0 || level == 1;
-        if (level == 0) {
-            return this.includedUnitIndex;
-        } else if (level == 1) {
-            return getHandler();
-        }
-        throw new IllegalArgumentException("invalid level " + level + " for " + this); // NOI18N
+        assert (level == 0);
+        return getHandler();
     }
 
     @Override

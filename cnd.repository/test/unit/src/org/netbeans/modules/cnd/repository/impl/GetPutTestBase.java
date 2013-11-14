@@ -115,7 +115,7 @@ public abstract class GetPutTestBase extends CndBaseTestCase {
             return 1;
         }
         @Override
-        public final boolean equals(UnitsConverter unitsConverter, Key object) {
+        public final boolean equals(int thisUnitID, Key object, int objectUnitID) {
             if (object == null || (this.getClass() != object.getClass())) {
                 return false;
             }
@@ -141,15 +141,15 @@ public abstract class GetPutTestBase extends CndBaseTestCase {
         }
 
         @Override
-        public final int hashCode(UnitsConverter unitsConverter) {
+        public final int hashCode(int unitID) {
             int hash = this.key != null ? this.key.hashCode() : 0;
             hash = 59 * hash + (this.unitName != null ? this.unitName.hashCode() : 0);
-            return hash + (unitsConverter == null ? getUnitId() : unitsConverter.clientToLayer(getUnitId()));
+            return hash + unitID;
         }
 
         @Override
         public final int hashCode() {
-            return hashCode(null);
+            return hashCode(getUnitId());
         }
 
     }
