@@ -54,6 +54,8 @@ import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
+import org.netbeans.modules.maven.j2ee.execution.DeploymentLogger;
+import static org.netbeans.modules.maven.j2ee.ui.customizer.impl.CustomizerRunWeb.PROP_ALWAYS_BUILD_BEFORE_RUNNING;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.util.Exceptions;
@@ -86,6 +88,16 @@ public class J2EEPrerequisitesChecker implements PrerequisitesChecker, LateBound
 
     @Override
     public boolean checkRunConfig(RunConfig config) {
+        // To be able to skip standard run behavior we need to set this property
+        // with respect to the current CoS/DoS setting --> See issue 230565
+        Boolean alwaysBuild = (Boolean) config.getProject().getProjectDirectory().getAttribute(PROP_ALWAYS_BUILD_BEFORE_RUNNING);
+        if (alwaysBuild == null) {
+            alwaysBuild = Boolean.FALSE;
+        }
+
+        // If we don't want to build always, set skip.build property
+        config.setInternalProperty("skip.build", !alwaysBuild); //NOI18N
+
         String actionName = config.getActionName();
         if (!applicableActions.contains(actionName)) {
             return true;
@@ -134,7 +146,7 @@ public class J2EEPrerequisitesChecker implements PrerequisitesChecker, LateBound
                 return true;
             }
             try {
-                Deployment.getDefault ().undeploy(provider, false, new ExecutionChecker.DLogger(con.getInputOutput().getOut()));
+                Deployment.getDefault ().undeploy(provider, false, new DeploymentLogger(con.getInputOutput().getOut()));
             } catch (DeploymentException ex) {
                 Exceptions.printStackTrace(ex);
             }

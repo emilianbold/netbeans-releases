@@ -121,14 +121,17 @@ public final class KarmaUtils {
     @CheckForNull
     public static File findKarma(Project project) {
         // first, project karma
-        FileObject projectKarma = project.getProjectDirectory().getFileObject(KarmaExecutable.PROJECT_KARMA_PATH);
+        FileObject projectKarma = project.getProjectDirectory().getFileObject(KarmaExecutable.PROJECT_KARMA_LONG_PATH);
+        if (projectKarma == null) {
+            projectKarma = project.getProjectDirectory().getFileObject(KarmaExecutable.PROJECT_KARMA_PATH);
+        }
         if (projectKarma != null
                 && projectKarma.isValid()
                 && projectKarma.isData()) {
             return FileUtil.toFile(projectKarma);
         }
         // search on user's PATH
-        List<String> karmas = FileUtils.findFileOnUsersPath(KarmaExecutable.KARMA_NAME, KarmaExecutable.KARMA_LONG_NAME);
+        List<String> karmas = FileUtils.findFileOnUsersPath(KarmaExecutable.KARMA_LONG_NAME, KarmaExecutable.KARMA_NAME);
         if (!karmas.isEmpty()) {
             return new File(karmas.get(0));
         }
