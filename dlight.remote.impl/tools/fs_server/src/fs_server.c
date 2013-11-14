@@ -126,31 +126,38 @@ static bool is_prohibited(const char* abspath) {
  * Decodes in-place fs_raw_request into fs_request
  */
 static fs_request* decode_request(char* raw_request, fs_request* request, int request_max_size) {
-    const char* p = raw_request + 2;
+    request->kind = raw_request[0];
     //soft_assert(*p == ' ', "incorrect request format: '%s'", request);
     //p++;
     int id;
-    p = decode_int(p, &id);
-    if (p == NULL) {
-        return NULL;
-    }
-    //soft_assert(*p == ' ', "incorrect request format: '%s'", request);
     int path_len;
-    p = decode_int(p, &path_len);
-    if (p == NULL) {
-        return NULL;
-    }   
-    if (!path_len && *raw_request != FS_REQ_QUIT) {
-        report_error("wrong (zero path) request: %s", raw_request);
-        return NULL;
-    }
-    if (path_len > (request_max_size - sizeof(fs_request) - 1)) {
-        report_error("wrong (too long path) request: %s", raw_request);
-        return NULL;
+    const char* p;
+    if (*raw_request == FS_REQ_QUIT) {
+        id = 0;
+        path_len = 0;
+        p = "";
+    } else {
+        p = raw_request + 2;
+        p = decode_int(p, &id);
+        if (p == NULL) {
+            return NULL;
+        }
+        //soft_assert(*p == ' ', "incorrect request format: '%s'", request);
+        p = decode_int(p, &path_len);
+        if (p == NULL) {
+            return NULL;
+        }
+        if (!path_len && *raw_request != FS_REQ_QUIT) {
+            report_error("wrong (zero path) request: %s", raw_request);
+            return NULL;
+        }
+        if (path_len > (request_max_size - sizeof (fs_request) - 1)) {
+            report_error("wrong (too long path) request: %s", raw_request);
+            return NULL;
+        }
     }
     //fs_request->kind = request->kind;
     //soft_assert(*p == ' ', "incorrect request format: '%s'", request);
-    request->kind = raw_request[0];
     strncpy(request->path, p, path_len);
     request->path[path_len] = 0;
     unescape_strcpy(request->path, request->path);
