@@ -256,6 +256,49 @@ static fs_entry *decode_entry_response(char* buf, int buf_size) {
     return create_fs_entry(&tmp);
 }
 
+static bool read_entries_from_cache_impl(array/*<fs_entry>*/ *entries, FILE* cache_fp, 
+        const char *cache_path, char *buf, int buf_size, const char* path) {
+
+    if (!fgets(buf, buf_size, cache_fp)) {            
+        if (feof(cache_fp)) {
+            report_error("error reading cache from %s for %s: preliminary EOF\n", cache_path, path);
+        } else {
+            report_error("error reading cache from %s for %s: %s\n", cache_path, path, strerror(errno));
+        }        
+        return false;
+    }
+
+    unescape_strcpy(buf, buf);
+    if (strncmp(path, buf, strlen(path)) != 0) {
+        report_error("error: first line in cache %s for %s is not '%s', but is '%s'", cache_path, path, path, buf);
+            return false;
+    }
+
+    bool success = true;
+    while (fgets(buf, buf_size, cache_fp)) {
+        trace(TRACE_FINEST, "\tread entry: %s", buf);
+        if (*buf == '\n' || *buf == 0) {
+            trace(TRACE_FINEST, "an empty one; continuing...");
+            continue;
+        }
+        fs_entry *entry = decode_entry_response(buf, buf_size);
+        if (entry) {
+            array_add(entries, entry);
+        } else {
+            report_error("error reading entry from cache (%s): %s\n", cache_path, buf);
+            success = false;
+            break;
+        }
+    }
+
+    if (success && !feof(cache_fp)) { // we got here because fgets returned NULL, which means EOF or error
+        report_error("error reading cache from %s for %s: %s\n", cache_path, path, strerror(errno));
+        success = false;
+    }
+
+    return success;
+}
+    
 static bool read_entries_from_cache(array/*<fs_entry>*/ *entries, dirtab_element* el, const char* path) {
     const char *cache_path = dirtab_get_element_cache_path(el);
     FILE* cache_fp = fopen(cache_path, "r");
@@ -264,39 +307,9 @@ static bool read_entries_from_cache(array/*<fs_entry>*/ *entries, dirtab_element
     if (cache_fp) {
         int buf_size = PATH_MAX + 40;
         char *buf = malloc(buf_size);
-        if (!fgets(buf, buf_size, cache_fp)) {            
-            if (feof(cache_fp)) {
-                report_error("error reading cache from %s for %s: preliminary EOF\n", cache_path, path);
-            } else {
-                report_error("error reading cache from %s for %s: %s\n", cache_path, path, strerror(errno));
-            }
-            fclose(cache_fp);
-            return false;
-        }
-        unescape_strcpy(buf, buf);
-        if (strncmp(path, buf, strlen(path)) != 0) {
-            report_error("error: first line in cache %s for %s is not '%s', but is '%s'", cache_path, path, path, buf);
-        }
-        while (fgets(buf, buf_size, cache_fp)) {
-            trace(TRACE_FINEST, "\tread entry: %s", buf);
-            if (*buf == '\n' || *buf == 0) {
-                trace(TRACE_FINEST, "an empty one; continuing...");
-                continue;
-            }
-            fs_entry *entry = decode_entry_response(buf, buf_size);
-            if (entry) {
-                array_add(entries, entry);
-            } else {
-                report_error("error reading entry from cache (%s): %s\n", cache_path, buf);
-            }
-        }
-        if (!feof(cache_fp)) {
-            report_error("error reading cache from %s for %s: %s\n", cache_path, path, strerror(errno));
-        }
+        success = read_entries_from_cache_impl(entries, cache_fp, cache_path, buf, buf_size, path);
         free(buf);
-        // do not close cache_fp, it's caller's responsibility
         fclose(cache_fp);
-        success = true;
     }
     array_truncate(entries);    
     return success;
