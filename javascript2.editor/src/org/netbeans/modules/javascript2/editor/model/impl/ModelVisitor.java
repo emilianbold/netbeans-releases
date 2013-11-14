@@ -530,7 +530,6 @@ public class ModelVisitor extends PathNodeVisitor {
                         String newType = type.getType().substring(0, index) + SemiTypeResolverVisitor.ST_ARR + type.getType().substring(index + SemiTypeResolverVisitor.ST_PRO.length());
                         type = new TypeUsageImpl(newType, type.getOffset(), false);
                     }
-                    System.out.println(type.getType());
                     variable.addAssignment(type, forNode.getModify().getStart());
                 }
             }
