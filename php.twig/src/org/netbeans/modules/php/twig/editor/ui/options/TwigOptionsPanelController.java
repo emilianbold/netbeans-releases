@@ -44,22 +44,21 @@ package org.netbeans.modules.php.twig.editor.ui.options;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import javax.swing.JComponent;
+import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
-@OptionsPanelController.SubRegistration(
-    location = TwigOptionsPanelController.OPTIONS_PATH,
-    id = TwigOptionsPanelController.OPTIONS_SUB_PATH,
+@UiUtils.PhpOptionsPanelRegistration(
+    id = TwigOptionsPanelController.ID,
     displayName = "#LBL_TwigOptionsName",
     position = 1000
 )
 public final class TwigOptionsPanelController extends OptionsPanelController {
-    /**
-     * @see org.netbeans.modules.php.api.util.UiUtils#OPTIONS_PATH
-     */
-    static final String OPTIONS_PATH = "org-netbeans-modules-php-project-ui-options-PHPOptionsCategory"; // NOI18N
-    static final String OPTIONS_SUB_PATH = "Twig"; //NOI18N
+
+    static final String ID = "Twig"; // NOI18N
+    static final String OPTIONS_PATH = UiUtils.FRAMEWORKS_AND_TOOLS_SUB_PATH + "/" + ID; // NOI18N
+
     private TwigPanel panel;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private volatile boolean changed;
