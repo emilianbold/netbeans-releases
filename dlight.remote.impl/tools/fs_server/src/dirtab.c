@@ -23,7 +23,6 @@ struct dirtab_element {
     int index;
     char* cache_path;
     pthread_mutex_t mutex;
-    FILE* cache_fp;
     char abspath[];
 };
 
@@ -131,7 +130,6 @@ static dirtab_element *new_dirtab_element(const char* path, int index) {
     el->cache_path = el->abspath + path_len + 1;
     strcpy(el->cache_path, cache);
     pthread_mutex_init(&el->mutex, NULL);
-    el->cache_fp = NULL;
     return el;
 }
 
