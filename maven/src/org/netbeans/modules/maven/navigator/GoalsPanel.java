@@ -76,8 +76,10 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
@@ -127,6 +129,21 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
         if (current != null) {
             //TODO listen on project changes instead
             current.getPrimaryFile().removeFileChangeListener(adapter);
+        }
+        if (d.getPrimaryFile().isFolder()) {
+            FileObject pom = d.getPrimaryFile().getFileObject("pom.xml");
+            if (pom != null) {
+                try {
+                    d = DataObject.find(pom);
+                } catch (DataObjectNotFoundException ex) {
+                    Exceptions.printStackTrace(ex);
+                    release();
+                    return;
+                }
+            } else {
+                release();
+                return;
+            }
         }
         current = d;
         current.getPrimaryFile().addFileChangeListener(adapter);

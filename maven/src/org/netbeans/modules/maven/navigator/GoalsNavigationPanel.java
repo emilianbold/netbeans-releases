@@ -58,7 +58,10 @@ import static org.netbeans.modules.maven.navigator.Bundle.*;
  *
  * @author mkleint
  */
-@NavigatorPanel.Registration(mimeType=Constants.POM_MIME_TYPE, position=250, displayName="#GOALS_NAME")
+@NavigatorPanel.Registrations({
+    @NavigatorPanel.Registration(mimeType=Constants.POM_MIME_TYPE, position=250, displayName="#GOALS_NAME"),
+    @NavigatorPanel.Registration(mimeType="application/maven-project", position=250, displayName="#GOALS_NAME")
+})
 public class GoalsNavigationPanel implements NavigatorPanel {
     private GoalsPanel component;
     

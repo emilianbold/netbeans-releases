@@ -53,6 +53,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.maven.navigator.GoalsNavigatorHint;
 import org.netbeans.modules.maven.nodes.MavenProjectNode;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ProjectServiceProvider;
@@ -95,7 +96,7 @@ public class LogicalViewProviderImpl implements LogicalViewProvider {
             return Lookups.fixed(project);
         }
         DataFolder rootFolder = DataFolder.findFolder( project.getProjectDirectory() );
-        return Lookups.fixed(project, rootFolder, project.getProjectDirectory());
+        return Lookups.fixed(project, rootFolder, project.getProjectDirectory(), new GoalsNavigatorHint());
     }
     
     /**
