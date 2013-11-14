@@ -202,6 +202,7 @@ public class J2MEPushRegistryPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(8, 8, 0, 0);
         add(lTable, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -210,7 +211,7 @@ public class J2MEPushRegistryPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 8, 0, 0);
         add(scrollPane, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(bAdd, org.openide.util.NbBundle.getMessage(J2MEPushRegistryPanel.class, "J2MEPushRegistryPanel.bAdd.text")); // NOI18N
@@ -224,7 +225,7 @@ public class J2MEPushRegistryPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 8);
         add(bAdd, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(bEdit, org.openide.util.NbBundle.getMessage(J2MEPushRegistryPanel.class, "J2MEPushRegistryPanel.bEdit.text")); // NOI18N
@@ -238,7 +239,7 @@ public class J2MEPushRegistryPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 8);
         add(bEdit, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(bRemove, org.openide.util.NbBundle.getMessage(J2MEPushRegistryPanel.class, "J2MEPushRegistryPanel.bRemove.text")); // NOI18N
@@ -252,7 +253,7 @@ public class J2MEPushRegistryPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 8);
         add(bRemove, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(bMoveUp, org.openide.util.NbBundle.getMessage(J2MEPushRegistryPanel.class, "J2MEPushRegistryPanel.bMoveUp.text")); // NOI18N
@@ -266,7 +267,7 @@ public class J2MEPushRegistryPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 8);
         add(bMoveUp, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(bMoveDown, org.openide.util.NbBundle.getMessage(J2MEPushRegistryPanel.class, "J2MEPushRegistryPanel.bMoveDown.text")); // NOI18N
@@ -281,26 +282,28 @@ public class J2MEPushRegistryPanel extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 8);
         add(bMoveDown, gridBagConstraints);
 
         javax.swing.GroupLayout errorPanelLayout = new javax.swing.GroupLayout(errorPanel);
         errorPanel.setLayout(errorPanelLayout);
         errorPanelLayout.setHorizontalGroup(
             errorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
+            .addGap(0, 0, Short.MAX_VALUE)
         );
         errorPanelLayout.setVerticalGroup(
             errorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 100, Short.MAX_VALUE)
+            .addGap(0, 0, Short.MAX_VALUE)
         );
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 8, 8);
         add(errorPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 

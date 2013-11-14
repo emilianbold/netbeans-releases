@@ -138,7 +138,7 @@ public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
+        gridBagConstraints.insets = new java.awt.Insets(8, 8, 0, 6);
         add(lTable, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -147,7 +147,7 @@ public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 8, 0, 0);
         add(scrollPane, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(bAdd, org.openide.util.NbBundle.getMessage(J2MEAPIPermissionsPanel.class, "J2MEAPIPermissionsPanel.bAdd.text")); // NOI18N
@@ -161,7 +161,7 @@ public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(6, 11, 5, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 11, 5, 8);
         add(bAdd, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(bRemove, org.openide.util.NbBundle.getMessage(J2MEAPIPermissionsPanel.class, "J2MEAPIPermissionsPanel.bRemove.text")); // NOI18N
@@ -178,7 +178,7 @@ public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 11, 5, 0);
+        gridBagConstraints.insets = new java.awt.Insets(5, 11, 5, 8);
         add(bRemove, gridBagConstraints);
 
         lError.setForeground(new java.awt.Color(89, 79, 191));
@@ -187,8 +187,9 @@ public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(11, 8, 8, 8);
         add(lError, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
