@@ -185,7 +185,12 @@ public final class J2MEProjectProperties {
             return Boolean.FALSE;
         }
     };
-    private static final ThreadLocal<List<Runnable>> postSaveAction = new ThreadLocal<List<Runnable>>();
+    private static final ThreadLocal<List<Runnable>> postSaveAction = new ThreadLocal<List<Runnable>>() {
+        @Override
+        protected List<Runnable> initialValue() {
+            return new ArrayList<>();
+        }
+    };
     // MODELS FOR VISUAL CONTROLS
     // CustomizerSources
     DefaultTableModel SOURCE_ROOTS_MODEL;
@@ -325,11 +330,7 @@ public final class J2MEProjectProperties {
         if (!isPropertiesSave()) {
             throw new IllegalStateException("Not in properties save");  //NOI18N
         }
-        List<Runnable> l = postSaveAction.get();
-        if (l == null) {
-            l = new ArrayList<>();
-            postSaveAction.set(l);
-        }
+        List<Runnable> l = postSaveAction.get();        
         l.add(action);
     }
 
