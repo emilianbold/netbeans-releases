@@ -100,8 +100,12 @@ static int compare_dirtab_elements_4qsort(const void *d1, const void *d2) {
     } else {
         dirtab_element *el1 = *((dirtab_element **) d1);
         dirtab_element *el2 = *((dirtab_element **) d2);
-        int result = strcmp(el1->abspath, el2->abspath);
-        return result;
+        if (el1 && el1) {
+            int result = strcmp(el1->abspath, el2->abspath);
+            return result;
+        } else { // should never occur, but we'd better check
+            return el1 ? 1 : (el2 ? -1 : 0);
+        }
     }
 }
 
@@ -114,8 +118,12 @@ static int compare_dirtab_elements_4search(const void *to_find, const void *d2) 
     } else {
         char *path = (char *) to_find;
         dirtab_element *el2 = *((dirtab_element **) d2);
-        int result = strcmp(path, el2->abspath);
-        return result;
+        if (el2) {
+            int result = strcmp(path, el2->abspath);
+            return result;
+        } else { // should never occur, but we'd better check
+            return 1;
+        }
     }
 }
 
@@ -170,11 +178,10 @@ static bool load_impl() {
         }
         char* path = ++p;
         // cut off '\n\ before trailing '\0'
-        while (*p++);
+        while (*p) {
+            p++;
+        }        
         // p points to trailing '\0'
-        if (p >= path) {
-            p--;
-        }
         if (p >= path) {
             p--;
         }
@@ -281,11 +288,17 @@ void dirtab_init() {
     dirtab_file_path = malloc(PATH_MAX);
 
     if (persistence_dir) {
+        int len = strlen(persistence_dir);
+        if (len > PATH_MAX) {
+            report_error("too long persistence path\n");
+            exit(WRONG_ARGUMENT);
+        }
         strcpy(root, persistence_dir);
         free(persistence_dir);
     } else {
         const char* home = get_home_dir();
         if (!home) {
+            report_error("can't determine home directory\n");
             exit(FAILURE_GETTING_HOME_DIR);
         }
         strncpy(root, home, PATH_MAX);
