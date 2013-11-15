@@ -68,6 +68,7 @@ import org.netbeans.modules.web.jsf.editor.facelets.AbstractFaceletsLibrary;
 import org.netbeans.modules.web.jsf.editor.facelets.CompositeComponentLibrary;
 import org.netbeans.modules.web.jsf.editor.hints.HintsRegistry;
 import org.netbeans.modules.web.jsfapi.api.Attribute;
+import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.api.LibraryComponent;
 import org.netbeans.modules.web.jsfapi.api.NamespaceUtils;
@@ -309,8 +310,14 @@ public class JsfHtmlExtension extends HtmlExtension {
         OpenTag ot = (OpenTag) queriedNode;
         CharSequence nsPrefix = ot.namespacePrefix();
         if (nsPrefix == null) {
-            //jsf tag always have a prefix
-            return Collections.emptyList();
+            // this must be at attribute from JSF namespace or not JSF tag (without the prefiex)
+            String jsfPrefix = declaredNS.get(DefaultLibraryInfo.JSF.getNamespace());
+            if (context.getItemText().startsWith(jsfPrefix + ":")) { //NOI18N
+                Library htmlLibrary = NamespaceUtils.getForNs(libs, DefaultLibraryInfo.HTML.getNamespace());
+                return JsfAttributesCompletionHelper.getJsfItemsForHtmlElement(context, htmlLibrary, context.getItemText());
+            } else {
+                return Collections.emptyList();
+            }
         }
         String tagName = ot.unqualifiedName().toString();
 
@@ -322,44 +329,7 @@ public class JsfHtmlExtension extends HtmlExtension {
             return Collections.emptyList();
         }
 
-        LibraryComponent comp = flib.getComponent(tagName);
-        if (comp != null) {
-            Tag tag = comp.getTag();
-            if (tag != null) {
-                Collection<Attribute> attrs = tag.getAttributes();
-                //TODO resolve help
-                Collection<String> existingAttrNames = new ArrayList<>();
-                for (org.netbeans.modules.html.editor.lib.api.elements.Attribute a : ot.attributes()) {
-                    existingAttrNames.add(a.name().toString());
-                }
-
-                for (Attribute a : attrs) {
-                    String attrName = a.getName();
-                    if (!existingAttrNames.contains(attrName)
-                            || existingAttrNames.contains(context.getItemText())) {
-                        //show only unused attributes except the one where the caret currently stays
-                        //this is because of we need to show the item in the completion since
-                        //use might want to see javadoc of already used attribute
-                        items.add(JsfCompletionItem.createAttribute(attrName, context.getCCItemStartOffset(), flib, tag, a));
-                    }
-                }
-            }
-
-        }
-
-
-        if (context.getPrefix().length() > 0) {
-            //filter the items according to the prefix
-            Iterator<CompletionItem> itr = items.iterator();
-            while (itr.hasNext()) {
-                CharSequence insertPrefix = itr.next().getInsertPrefix();
-                if(insertPrefix != null) {
-                    if (!CharSequenceUtilities.startsWith(insertPrefix, context.getPrefix())) {
-                        itr.remove();
-                    }
-                }
-            }
-        }
+        JsfAttributesCompletionHelper.completeAttributes(context, items, "", flib, tagName, context.getPrefix());
 
         return items;
     }
