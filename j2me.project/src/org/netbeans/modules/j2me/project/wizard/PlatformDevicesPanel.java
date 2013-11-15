@@ -905,7 +905,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
 
     @Override
     void store(WizardDescriptor d) {
-        d.putProperty(J2MEProjectWizardIterator.PLATFORM, platformComboBox.getSelectedIndex() == -1 ? "" : getPlatform());
+        d.putProperty(J2MEProjectWizardIterator.PLATFORM, platformComboBox.getSelectedIndex() == -1 ? null : getPlatform());
         d.putProperty(J2MEProjectWizardIterator.DEVICE, deviceComboBox.getSelectedIndex() == -1 ? "" : getDevice().getName());
         d.putProperty(J2MEProjectWizardIterator.CONFIGURATION, getConfiguration());
         d.putProperty(J2MEProjectWizardIterator.PROFILE, getProfile());
@@ -934,8 +934,13 @@ public class PlatformDevicesPanel extends SettingsPanel {
 
     private String getBootClasspath() {
         StringBuilder sbBootCP = new StringBuilder();
-        sbBootCP.append(name2profile.get(getConfiguration()).getClassPath());
-        sbBootCP.append(":").append(name2profile.get(getProfile()).getClassPath()); //NOI18N
+        J2MEPlatform.J2MEProfile configProfile = name2profile.get(getConfiguration());
+        J2MEPlatform.J2MEProfile profileProfile = name2profile.get(getProfile());
+        if (configProfile == null || profileProfile == null) {
+            return ""; //NOI18N
+        }
+        sbBootCP.append(configProfile.getClassPath());
+        sbBootCP.append(":").append(profileProfile.getClassPath()); //NOI18N
         String[] optionalPkgs = getOptionalAPI().split(","); //NOI18N
         for (String pkg : optionalPkgs) {
             J2MEPlatform.J2MEProfile profile = name2profile.get(pkg);
