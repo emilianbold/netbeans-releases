@@ -54,7 +54,7 @@ with (ko.$bindings) {
 var $data = buyer || seller;
 }
 with ($data) {
-(name);}
+( );}
 });
 (function(){
 var $element;
