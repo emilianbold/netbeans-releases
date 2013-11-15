@@ -116,18 +116,22 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
     @Override
     public void endProcessing() {
         int offset = 0;
-        for (TemplateBoundary boundary : templateBoundaries) {
-            if (boundary.isStart()) {
-                KODataBindContext context = templateUsages.get(boundary.getName());
-                if (context != null) {
-                    startKnockoutSnippet(context, boundary.getPosition() + offset);
-                    offset++;
+        // XXX JsEmbeddingProvider:179 - embeddings are cleared on cancel
+        // before (!) calling endProcessing
+        if (!embeddings.isEmpty()) {
+            for (TemplateBoundary boundary : templateBoundaries) {
+                if (boundary.isStart()) {
+                    KODataBindContext context = templateUsages.get(boundary.getName());
+                    if (context != null) {
+                        startKnockoutSnippet(context, boundary.getPosition() + offset);
+                        offset++;
+                    } else {
+                        LOGGER.log(Level.WARNING, "No context for template {0}", boundary.getName());
+                    }
                 } else {
-                    LOGGER.log(Level.WARNING, "No context for template {0}", boundary.getName());
+                    endKnockoutSnippet(boundary.getPosition() + offset);
+                    offset++;
                 }
-            } else {
-                endKnockoutSnippet(boundary.getPosition() + offset);
-                offset++;
             }
         }
         templateUsages.clear();
