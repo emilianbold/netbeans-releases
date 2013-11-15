@@ -206,7 +206,6 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         Mnemonics.setLocalizedText(generateFinderMethodsCheckBox,
                 NbBundle.getMessage(EntityClassesPanel.class, "TXT_GenerateNamedQueryAnnotations"));
         // hide local interface checkbox
-        mappedSuperclassCheckBox.setVisible(false);
 
         updatePersistenceUnitButton(true);
         Sources sources=ProjectUtils.getSources(project);
