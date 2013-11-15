@@ -69,8 +69,10 @@ import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmCondition;
+import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmExceptionHandler;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpressionStatement;
@@ -352,11 +354,31 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
                 return null;
             }
             case RETURN:
-            case DECLARATION:
             {
                 StatementResult res = new StatementResult();
                 res.container = st;
                 return res;
+            }
+            case DECLARATION:
+            {
+                CsmDeclarationStatement decls = (CsmDeclarationStatement) st;
+                List<CsmDeclaration> declarators = decls.getDeclarators();
+                for(CsmDeclaration decl : declarators) {
+                    if (decl instanceof CsmVariable) {
+                        CsmVariable d = (CsmVariable) decl;
+                        if (d.getStartOffset() <= selectionStrat && selectionEnd <= d.getEndOffset()) {
+                            CsmExpression initialValue = d.getInitialValue();
+                            if (initialValue != null) {
+                                if (initialValue.getStartOffset() <= selectionStrat && selectionEnd <= initialValue.getEndOffset()) {
+                                    StatementResult res = new StatementResult();
+                                    res.container = st;
+                                    return res;
+                                }
+                            }
+                        }
+                    }
+                }
+                return null;
             }
             case EXPRESSION:
             {
@@ -408,6 +430,7 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
         final int startOffset = expression.getStartOffset();
         final int endOffset = expression.getEndOffset();
         final AtomicBoolean isAssignment = new AtomicBoolean(false);
+        final AtomicBoolean isSingleID = new AtomicBoolean(true);
         doc.render(new Runnable() {
 
             @Override
@@ -433,10 +456,20 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
                         isAssignment.set(true);
                         break;
                     }
+                    if (CppTokenId.COMMENT_CATEGORY.equals(token.id().primaryCategory()) ||
+                        CppTokenId.WHITESPACE_CATEGORY.equals(token.id().primaryCategory()) ||
+                        CppTokenId.IDENTIFIER_CATEGORY.equals(token.id().primaryCategory())) {
+                        //
+                    } else {
+                        isSingleID.set(false);
+                    }
                 }
             }
         });
         if (isAssignment.get()) {
+            return false;
+        }
+        if (isSingleID.get()) {
             return false;
         }
         CsmType resolveType = CsmTypeResolver.resolveType(expression, null);
@@ -744,11 +777,11 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
                         doc.insertString(expression.getStartOffset(), aName, null);
                         Position exprStart = NbDocument.createPosition(doc, expression.getStartOffset(), Position.Bias.Forward);
                         Position exprEnd = NbDocument.createPosition(doc, expression.getStartOffset() + aName.length(), Position.Bias.Backward);
-                        changeInfo.add(fo, exprStart, exprEnd);
                         doc.insertString(st.getStartOffset(), text, null);
                         Position stmtStart = NbDocument.createPosition(doc, st.getStartOffset() + typeTextPrefix.length(), Position.Bias.Forward);
                         Position stmtEnd = NbDocument.createPosition(doc, st.getStartOffset() + typeTextPrefix.length() +aName.length(), Position.Bias.Backward);
                         changeInfo.add(fo, stmtStart, stmtEnd);
+                        changeInfo.add(fo, exprStart, exprEnd);
                         Indent indent = Indent.get(doc);
                         indent.lock();
                         try {
@@ -766,6 +799,7 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
                     @Override
                     public void run() {
                         try {
+                            comp.setCaretPosition(changeInfo.get(0).getEnd().getOffset());
                             InstantRenamePerformer.invokeInstantRename(comp, changeInfo);
                         } catch (BadLocationException ex) {
                             Exceptions.printStackTrace(ex);
