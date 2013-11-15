@@ -59,7 +59,7 @@ import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.bugtracking.spi.IssuePriorityInfo;
 import org.netbeans.modules.bugtracking.spi.IssuePriorityProvider;
 import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
-import org.netbeans.modules.bugtracking.spi.IssueSchedulingProvider;
+import org.netbeans.modules.bugtracking.spi.IssueScheduleProvider;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
@@ -95,7 +95,7 @@ public class ODCS {
     private BugtrackingSupport<ODCSRepository, ODCSQuery, ODCSIssue> bf;
     private IssueNode.ChangesProvider<ODCSIssue> ocp;
     private IssueFinder issueFinder;
-    private IssueSchedulingProvider<ODCSIssue> ischp;
+    private IssueScheduleProvider<ODCSIssue> ischp;
 
     private void init() {
         rc = MylynRepositoryConnectorProvider.getInstance().getConnector();
@@ -204,9 +204,9 @@ public class ODCS {
         return ipp;
     }
     
-    public IssueSchedulingProvider<ODCSIssue> getSchedulingProvider () {
+    public IssueScheduleProvider<ODCSIssue> getSchedulingProvider () {
         if(ischp == null) {
-            ischp = new IssueSchedulingProvider<ODCSIssue>() {
+            ischp = new IssueScheduleProvider<ODCSIssue>() {
 
                 @Override
                 public void setDueDate (ODCSIssue i, Date date) {

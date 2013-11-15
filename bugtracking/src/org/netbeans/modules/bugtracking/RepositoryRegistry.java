@@ -245,7 +245,7 @@ public class RepositoryRegistry {
     }
 
     private String getRepositoryKey(RepositoryInfo info) {
-        return BUGTRACKING_REPO + info.getConnectorId() + DELIMITER + info.getId();
+        return BUGTRACKING_REPO + info.getConnectorId() + DELIMITER + info.getID();
     }
     
     private RepositoriesMap getStoredRepositories() {

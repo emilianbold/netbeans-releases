@@ -149,6 +149,7 @@ import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
@@ -169,7 +170,6 @@ import org.openide.windows.WindowManager;
 public class IssuePanel extends javax.swing.JPanel {
     private static Color incomingChangesColor = null;
     private static final RequestProcessor RP = new RequestProcessor("Bugzilla Issue Panel", 5, false); // NOI18N
-    private static final String YYYY_MM_DD = NbBundle.getMessage(IssuePanel.class, "IssuePanel.deadlineField.text");
     private static final URL ICON_REMOTE_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/bugzilla/resources/remote.png"); //NOI18N
     private static final ImageIcon ICON_REMOTE = ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/remote.png", true); //NOI18N
     private static final URL ICON_CONFLICT_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/bugzilla/resources/conflict.png"); //NOI18N
@@ -208,6 +208,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private Action[] commentsSectionActions;
     private Action[] privateSectionActions;
     private final IDEServices.DatePickerComponent dueDatePicker;
+    private final IDEServices.DatePickerComponent deadlinePicker;
     private final SchedulingPicker scheduleDatePicker;
     private static final NumberFormatter estimateFormatter = new NumberFormatter(new java.text.DecimalFormat("#0")) {
 
@@ -268,6 +269,8 @@ public class IssuePanel extends javax.swing.JPanel {
         ((GroupLayout) commentsSectionPanel.getLayout()).replace(dummyCommentsPanel, commentsPanel);
         ((GroupLayout) attributesSectionPanel.getLayout()).replace(dummyTimetrackingPanel, timetrackingPanel);
         ((GroupLayout) attachmentsSectionPanel.getLayout()).replace(dummyAttachmentsPanel, attachmentsPanel);
+        deadlinePicker = UIUtils.createDatePickerComponent();
+        ((GroupLayout) timetrackingPanel.getLayout()).replace(dummyDeadlineField, deadlinePicker.getComponent());
         GroupLayout layout = (GroupLayout) privatePanel.getLayout();
         dueDatePicker = UIUtils.createDatePickerComponent();
         scheduleDatePicker = new SchedulingPicker();
@@ -377,16 +380,16 @@ public class IssuePanel extends javax.swing.JPanel {
                     enableMap.put(cancelButton, isModified || isDirty);
                 }
                 if (!initializingNewTask) {
-                    if(isDirty) { 
-                        issue.fireUnsaved();
-                    } else {
-                        issue.fireSaved();
-                    }
+                    issue.fireChanged();
                 }
             }
         });
     }
 
+    boolean initializingNewTask() {
+        return initializingNewTask;
+    }
+    
     public void setIssue(BugzillaIssue issue) {
         assert SwingUtilities.isEventDispatchThread() : "Accessing Swing components. Do not call outside event-dispatch thread!"; // NOI18N
         if (this.issue == null) {
@@ -676,11 +679,7 @@ public class IssuePanel extends javax.swing.JPanel {
                     reloadField(force, estimatedField, IssueField.ESTIMATED_TIME);
                     reloadField(force, workedField, IssueField.WORK_TIME);
                     reloadField(force, remainingField, IssueField.REMAINING_TIME);
-                    reloadField(force, deadlineField, IssueField.DEADLINE);
-                    if("".equals(deadlineField.getText().trim())) {
-                        deadlineField.setText(YYYY_MM_DD); // NOI18N
-                        deadlineField.setForeground(javax.swing.UIManager.getDefaults().getColor("TextField.inactiveForeground")); // NOI18N
-                    }
+                    reloadField(force, deadlinePicker, IssueField.DEADLINE);
 
                     String actualString = issue.getFieldValue(IssueField.ACTUAL_TIME);
                     if(actualString.trim().equals("")) {                            // NOI18N    
@@ -797,11 +796,11 @@ public class IssuePanel extends javax.swing.JPanel {
         textField.setPreferredSize(fixedDim);
     }
 
-    private void reloadField(boolean force, JComponent component, IssueField field) {
+    private void reloadField (boolean force, Object component, IssueField field) {
         reloadField(component, field);
     }
     
-    private void reloadField (JComponent component, IssueField field) {
+    private void reloadField (Object component, IssueField field) {
         String newValue;
         if (component instanceof JList) {
             newValue = mergeValues(issue.getFieldValues(field));
@@ -828,15 +827,22 @@ public class IssuePanel extends javax.swing.JPanel {
                 }
             } else if (component instanceof JCheckBox) {
                 ((JCheckBox) component).setSelected("1".equals(newValue));
+            } else if (component instanceof IDEServices.DatePickerComponent) {
+                IDEServices.DatePickerComponent picker = (IDEServices.DatePickerComponent) component;
+                try {
+                    picker.setDate(BugzillaIssue.DUE_DATE_FORMAT.parse(newValue));
+                } catch (ParseException ex) {
+                    picker.setDate(null);
+                }
             }
         }
     }
     
-    private void updateFieldDecorations (JComponent component, IssueField field, JLabel warningLabel, JComponent fieldLabel) {
+    private void updateFieldDecorations (Object component, IssueField field, JLabel warningLabel, JComponent fieldLabel) {
         updateFieldDecorations(warningLabel, fieldLabel, fieldName(fieldLabel), Pair.of(field, component));
     }
     
-    private void updateFieldDecorations (JLabel warningLabel, JComponent fieldLabel, Pair<IssueField, ? extends JComponent>... fields) {
+    private void updateFieldDecorations (JLabel warningLabel, JComponent fieldLabel, Pair<IssueField, ? extends Object>... fields) {
         updateFieldDecorations(warningLabel, fieldLabel, fieldName(fieldLabel), fields);
     }
     
@@ -882,14 +888,14 @@ public class IssuePanel extends javax.swing.JPanel {
             + "<p>A new comment was added but not yet submitted.</p>"
     })
     private void updateFieldDecorations (JLabel warningLabel, JComponent fieldLabel, String fieldName,
-            Pair<IssueField, ? extends JComponent>... fields) {
+            Pair<IssueField, ? extends Object>... fields) {
         boolean isNew = issue.isNew();
         String newValue = "", lastSeenValue = "", repositoryValue = ""; //NOI18N
         boolean fieldDirty = false;
         boolean valueModifiedByUser = false;
         boolean valueModifiedByServer = false;
-        for (Pair<IssueField, ? extends JComponent> p : fields) {
-            JComponent component = p.second();
+        for (Pair<IssueField, ? extends Object> p : fields) {
+            Object component = p.second();
             IssueField field = p.first();
             if (component instanceof JList) {
                 newValue += " " + mergeValues(issue.getFieldValues(field));
@@ -1252,7 +1258,7 @@ public class IssuePanel extends javax.swing.JPanel {
         updateFieldDecorations(estimatedField, IssueField.ESTIMATED_TIME, timetrackingWarning, estimatedLabel);
         updateFieldDecorations(remainingField, IssueField.REMAINING_TIME, timetrackingWarning, remainingLabel);
         updateFieldDecorations(workedField, IssueField.WORK_TIME, timetrackingWarning, workedLabel);
-        updateFieldDecorations(deadlineField, IssueField.DEADLINE, timetrackingWarning, deadlineLabel);
+        updateFieldDecorations(deadlinePicker, IssueField.DEADLINE, timetrackingWarning, deadlineLabel);
         updateFieldStatus(newCommentSection.getLabelComponent());
         updateFieldDecorations(addCommentArea, IssueField.COMMENT, commentWarning, newCommentSection.getLabelComponent());
         updateCustomFieldStatuses();
@@ -1738,7 +1744,7 @@ public class IssuePanel extends javax.swing.JPanel {
         gainLabel = new javax.swing.JLabel();
         gainField = new javax.swing.JTextField();
         deadlineLabel = new javax.swing.JLabel();
-        deadlineField = new javax.swing.JTextField();
+        dummyDeadlineField = new javax.swing.JTextField();
         actualWarning = new javax.swing.JLabel();
         deadlineWarning = new javax.swing.JLabel();
         completeWarning = new javax.swing.JLabel();
@@ -1951,10 +1957,6 @@ public class IssuePanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(deadlineLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.deadlineLabel.text")); // NOI18N
 
-        deadlineField.setForeground(javax.swing.UIManager.getDefaults().getColor("TextField.inactiveForeground"));
-        deadlineField.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.deadlineField.text")); // NOI18N
-        deadlineField.addFocusListener(formListener);
-
         javax.swing.GroupLayout timetrackingPanelLayout = new javax.swing.GroupLayout(timetrackingPanel);
         timetrackingPanel.setLayout(timetrackingPanelLayout);
         timetrackingPanelLayout.setHorizontalGroup(
@@ -2003,7 +2005,7 @@ public class IssuePanel extends javax.swing.JPanel {
                         .addComponent(gainWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(9, 9, 9)
                         .addGroup(timetrackingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(deadlineField, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(dummyDeadlineField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(deadlineLabel))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(deadlineWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -2043,7 +2045,7 @@ public class IssuePanel extends javax.swing.JPanel {
             .addGroup(timetrackingPanelLayout.createSequentialGroup()
                 .addComponent(deadlineLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(deadlineField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(dummyDeadlineField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         attributesSectionPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
@@ -2889,17 +2891,11 @@ public class IssuePanel extends javax.swing.JPanel {
         }
 
         public void focusGained(java.awt.event.FocusEvent evt) {
-            if (evt.getSource() == deadlineField) {
-                IssuePanel.this.deadlineFieldFocusGained(evt);
-            }
         }
 
         public void focusLost(java.awt.event.FocusEvent evt) {
             if (evt.getSource() == workedField) {
                 IssuePanel.this.workedFieldFocusLost(evt);
-            }
-            else if (evt.getSource() == deadlineField) {
-                IssuePanel.this.deadlineFieldFocusLost(evt);
             }
         }
     }// </editor-fold>//GEN-END:initComponents
@@ -3301,21 +3297,6 @@ private void urlButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         HtmlBrowser.URLDisplayer.getDefault().showURL(url);
     }
 }//GEN-LAST:event_urlButtonActionPerformed
-
-private void deadlineFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_deadlineFieldFocusGained
-    if(deadlineField.getText().trim().equals(YYYY_MM_DD)) { // NOI18N
-        deadlineField.setText("");
-    }
-    deadlineField.setForeground(workedField.getForeground()); 
-}//GEN-LAST:event_deadlineFieldFocusGained
-
-private void deadlineFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_deadlineFieldFocusLost
-    if("".equals(deadlineField.getText().trim())) { 
-        deadlineField.setText(YYYY_MM_DD);
-        deadlineField.setForeground(javax.swing.UIManager.getDefaults().getColor("TextField.inactiveForeground")); // NOI18N
-    }
-}//GEN-LAST:event_deadlineFieldFocusLost
-
 private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_workedFieldFocusLost
     if(!"".equals(workedField.getText().trim())) { 
         String workedString = workedField.getText().trim();
@@ -3460,7 +3441,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         boolean fire = !unsavedFields.isEmpty();
         unsavedFields.clear();
         if(fire) {
-            issue.fireSaved();
+            issue.fireChanged();
         }        
     }
     
@@ -3468,9 +3449,13 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         boolean fire = unsavedFields.isEmpty();
         unsavedFields.add(fieldName);
         if(fire) {
-            issue.fireUnsaved();
+            issue.fireChanged();
         }
     }
+    
+    boolean isChanged() {
+        return !initializingNewTask() && getIssue().hasUnsavedChanges();
+    }    
     
     @NbBundle.Messages({
         "LBL_IssuePanel.deleteTask.title=Delete New Task?",
@@ -3532,7 +3517,6 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     private javax.swing.JLabel componentWarning;
     private javax.swing.JPanel customFieldsPanelLeft;
     private javax.swing.JPanel customFieldsPanelRight;
-    private javax.swing.JTextField deadlineField;
     private javax.swing.JLabel deadlineLabel;
     private javax.swing.JLabel deadlineWarning;
     private javax.swing.JTextField dependsField;
@@ -3542,6 +3526,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     private javax.swing.JLabel dueDateLabel;
     private javax.swing.JPanel dummyAttachmentsPanel;
     private javax.swing.JPanel dummyCommentsPanel;
+    private javax.swing.JTextField dummyDeadlineField;
     private javax.swing.JTextField dummyDueDateField;
     private javax.swing.JLabel dummyLabel1;
     private javax.swing.JLabel dummyLabel2;
@@ -3874,11 +3859,22 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         estimatedField.getDocument().addDocumentListener(new FieldChangeListener(estimatedField, IssueField.ESTIMATED_TIME, timetrackingWarning, estimatedLabel));
         workedField.getDocument().addDocumentListener(new FieldChangeListener(workedField, IssueField.WORK_TIME, timetrackingWarning, workedLabel));
         remainingField.getDocument().addDocumentListener(new FieldChangeListener(remainingField, IssueField.REMAINING_TIME, timetrackingWarning, remainingLabel));
-        deadlineField.getDocument().addDocumentListener(new FieldChangeListener(deadlineField, IssueField.DEADLINE, timetrackingWarning, deadlineLabel) {
+        deadlinePicker.addChangeListener(new FieldChangeListener(deadlinePicker.getComponent(),
+                IssueField.DEADLINE, timetrackingWarning, deadlineLabel, Pair.of(IssueField.DEADLINE, deadlinePicker)) {
+
             @Override
-            public boolean isEnabled () {
-                return super.isEnabled() && !deadlineField.getText().trim().equals(YYYY_MM_DD);
+            void fieldModified () {
+                if (!reloading && isEnabled()) {
+                    Date date = deadlinePicker.getDate();
+                    String value = date == null ? "" : BugzillaIssue.DUE_DATE_FORMAT.format(date);
+                    if (!issue.getFieldValue(IssueField.DEADLINE).equals(value)) {
+                        addUnsavedField(IssueField.DEADLINE.getKey());
+                        issue.setFieldValue(IssueField.DEADLINE, value);
+                        updateDecorations();
+                    }
+                }
             }
+
         });
         attachLogCheckBox.addActionListener(new FieldChangeListener(attachLogCheckBox, IssueField.NB_ATTACH_IDE_LOG) {
             @Override
@@ -4150,13 +4146,14 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         
     }
 
-    private class FieldChangeListener implements DocumentListener, ActionListener, ListSelectionListener {
+    private class FieldChangeListener implements DocumentListener, ActionListener,
+            ListSelectionListener, ChangeListener {
         private final IssueField field;
         private final JComponent component;
         private final JLabel warningLabel;
         private final JComponent fieldLabel;
         private final String fieldName;
-        private Pair<IssueField, ? extends JComponent>[] decoratedFields;
+        private Pair<IssueField, ? extends Object>[] decoratedFields;
 
         public FieldChangeListener (JComponent component, IssueField field) {
             this(component, field, null, null);
@@ -4173,13 +4170,13 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         }
         
         public FieldChangeListener (JComponent component, IssueField field, JLabel warningLabel,
-                JComponent fieldLabel, Pair<IssueField, ? extends JComponent>... multiField) {
+                JComponent fieldLabel, Pair<IssueField, ? extends Object>... multiField) {
             this(component, field, warningLabel, fieldLabel,
                     fieldLabel == null ? null : fieldName(fieldLabel), multiField);
         }
         
         public FieldChangeListener (JComponent component, IssueField field, JLabel warningLabel,
-                JComponent fieldLabel, String fieldName, Pair<IssueField, ? extends JComponent>... multiField) {
+                JComponent fieldLabel, String fieldName, Pair<IssueField, ? extends Object>... multiField) {
             this.component = component;
             this.field = field;
             this.warningLabel = warningLabel;
@@ -4215,6 +4212,11 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
             if (!e.getValueIsAdjusting() && e.getSource() == component) {
                 fieldModified();
             }
+        }
+
+        @Override
+        public void stateChanged (ChangeEvent e) {
+            fieldModified();
         }
         
         void fieldModified () {

@@ -901,10 +901,8 @@ final class TaskPanel extends javax.swing.JPanel {
                 }
                 
                 if (dirty) {
-                    task.fireUnsaved();
-                } else {
-                    task.fireSaved();
-                }
+                    task.fireChanged();
+                } 
             }
         });
     }
@@ -1187,6 +1185,14 @@ final class TaskPanel extends javax.swing.JPanel {
         return true;
     }
 
+    void addChangeListener(ChangeListener l) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    void removeChangeListener(ChangeListener l) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
     private class SubTaskTableMouseListener extends MouseAdapter {
 
         @Override
@@ -1419,7 +1425,7 @@ final class TaskPanel extends javax.swing.JPanel {
         public boolean add (String value) {
             boolean added = super.add(value);
             if (added) {
-                task.fireUnsaved();
+                task.fireChanged();
             }
             return added;
         }
@@ -1428,7 +1434,7 @@ final class TaskPanel extends javax.swing.JPanel {
         public boolean remove (Object o) {
             boolean removed = super.remove(o);
             if (removed && isEmpty()) {
-                task.fireSaved();
+                task.fireChanged();
             }
             return removed;
         }
@@ -1438,7 +1444,7 @@ final class TaskPanel extends javax.swing.JPanel {
             boolean fire = !isEmpty();
             super.clear();
             if (fire) {
-                task.fireSaved();
+                task.fireChanged();
             }
         }
         

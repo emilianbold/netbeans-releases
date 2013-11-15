@@ -510,26 +510,37 @@ public class DashboardUtils {
         return new SchedulingMenu(previousSchedule);
     }
 
-    public static boolean isMatchingInterval(IssueScheduleInfo interval1, IssueScheduleInfo interval2) {
-        if (interval2 == null || interval1 == null) {
-            return false;
-        }
-        Calendar interval1Start = Calendar.getInstance();
-        interval1Start.setTime(interval1.getDate());
-        Calendar interval1End = Calendar.getInstance();
-        interval1End.setTime(interval1.getDate());
-        interval1End.add(Calendar.DATE, interval1.getInterval());
+    public static IssueScheduleInfo getToday() {
+        Calendar calendar = getTodayCalendar();
+        return new IssueScheduleInfo(calendar.getTime());
+    }
 
-        Calendar interval2Start = Calendar.getInstance();
-        interval2Start.setTime(interval2.getDate());
-        Calendar interva2End = Calendar.getInstance();
-        interva2End.setTime(interval2.getDate());
-        interva2End.add(Calendar.DATE, interval2.getInterval());
+    public static IssueScheduleInfo getThisWeek() {
+        Calendar calendar = getTodayCalendar();
+        calendar.set(Calendar.DAY_OF_WEEK, calendar.getFirstDayOfWeek());
+        return new IssueScheduleInfo(calendar.getTime(), 7);
+    }
 
-        return interval2Start.get(Calendar.YEAR) == interval1Start.get(Calendar.YEAR)
-                && interval2Start.get(Calendar.DAY_OF_YEAR) == interval1Start.get(Calendar.DAY_OF_YEAR)
-                && interva2End.get(Calendar.YEAR) == interval1End.get(Calendar.YEAR)
-                && interva2End.get(Calendar.DAY_OF_YEAR) == interval1End.get(Calendar.DAY_OF_YEAR);
+    public static IssueScheduleInfo getNextWeek() {
+        Calendar calendar = getTodayCalendar();
+        calendar.set(Calendar.DAY_OF_WEEK, calendar.getFirstDayOfWeek());
+        calendar.add(Calendar.DATE, 7);
+        return new IssueScheduleInfo(calendar.getTime(), 7);
+    }
+
+    public static IssueScheduleInfo getAll() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(0);
+        return new IssueScheduleInfo(calendar.getTime(), Integer.MAX_VALUE);
+    }
+
+    private static Calendar getTodayCalendar() {
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal;
     }
 
     public static final class SchedulingMenu {
@@ -566,21 +577,16 @@ public class DashboardUtils {
             menu.addSeparator();
             menuItems.add(null);
 
-            Calendar calendar = getTodayCalendar();
-            calendar.set(Calendar.DAY_OF_WEEK, calendar.getFirstDayOfWeek());
             JMenuItem thisWeek = new JCheckBoxMenuItem(new ScheduleItemAction(
                     Bundle.CTL_ThisWeek(),
-                    new IssueScheduleInfo(calendar.getTime(), 7)));
+                    getThisWeek()));
 
             menu.add(thisWeek);
             menuItems.add(thisWeek);
 
-            calendar = getTodayCalendar();
-            calendar.set(Calendar.DAY_OF_WEEK, calendar.getFirstDayOfWeek());
-            calendar.add(Calendar.DATE, 7);
             JMenuItem nextWeek = new JCheckBoxMenuItem(new ScheduleItemAction(
                     Bundle.CTL_NextWeek(),
-                    new IssueScheduleInfo(calendar.getTime(), 7)));
+                    getNextWeek()));
 
             menu.add(nextWeek);
             menuItems.add(nextWeek);
@@ -627,7 +633,7 @@ public class DashboardUtils {
             for (JMenuItem item : menuItems) {
                 if (item != null && item.getAction() instanceof ScheduleItemAction) {
                     IssueScheduleInfo assignedSchedule = ((ScheduleItemAction) item.getAction()).getAssignedSchedule();
-                    if (findPrevious && isMatchingInterval(assignedSchedule, previousSchedule)) {
+                    if (findPrevious && assignedSchedule.equals(previousSchedule)) {
                         item.setSelected(true);
                         return;
                     }
@@ -656,15 +662,6 @@ public class DashboardUtils {
 
         public void removeChangeListener(ChangeListener listener) {
             support.removeChangeListener(listener);
-        }
-
-        private Calendar getTodayCalendar () {
-            Calendar cal = Calendar.getInstance();
-            cal.set(Calendar.HOUR_OF_DAY, 0);
-            cal.set(Calendar.MINUTE, 0);
-            cal.set(Calendar.SECOND, 0);
-            cal.set(Calendar.MILLISECOND, 0);
-            return cal;
         }
 
         private class ScheduleItemAction extends AbstractAction {

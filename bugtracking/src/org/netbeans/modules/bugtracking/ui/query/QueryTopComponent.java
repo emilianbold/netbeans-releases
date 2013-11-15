@@ -87,6 +87,7 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.commons.LinkButton;
 import org.netbeans.modules.bugtracking.commons.NBBugzillaUtils;
 import org.netbeans.modules.bugtracking.commons.NoContentPanel;
+import org.netbeans.modules.bugtracking.commons.SaveQueryPanel;
 import org.netbeans.modules.bugtracking.team.TeamRepositories;
 import org.netbeans.modules.bugtracking.ui.repository.RepositoryComboSupport;
 import org.netbeans.modules.team.spi.TeamAccessorUtils;
@@ -421,22 +422,37 @@ public final class QueryTopComponent extends TopComponent
                     }
                 }
             });
-        } else if(evt.getPropertyName().equals(QueryController.PROPERTY_QUERY_CHANGED)) {
-            if (getLookup().lookup(QuerySavable.class) == null) {
-                instanceContent.add(new QuerySavable(this));
-                setNameAndTooltip();
+        } else if(evt.getPropertyName().equals(QueryController.PROP_CHANGED)) {
+            Object o = evt.getNewValue();
+            boolean changed;
+            if(o instanceof Boolean) {
+                changed = (Boolean) o;
+            } else {
+                changed = getController(query).isChanged();
             }
-        } else if(evt.getPropertyName().equals(QueryController.PROPERTY_QUERY_SAVED)) {
-            if(!isSaved()) {
-                openDashboard();                
+            if(changed) {
+                if (getLookup().lookup(QuerySavable.class) == null) {
+                    instanceContent.add(new QuerySavable(this));
+                    setNameAndTooltip();
+                }
+            } else {
+                String qn = query.getDisplayName();
+                if(qn != null && !"".equals(qn.trim())) {
+                    // was saved
+                    if(!isSaved()) {
+                        openDashboard();
+                        
+                        setSaved();
+                    }
+                }
+                QuerySavable savable = getSavable();
+                if(savable != null) {
+                    savable.destroy();
+                    setNameAndTooltip();
+                }                
             }
-            setSaved();
-            QuerySavable savable = getSavable();
-            if(savable != null) {
-                savable.destroy();
-                setNameAndTooltip();
-            }
-        }
+            
+        } 
     }
 
     private void openDashboard() {
@@ -491,7 +507,7 @@ public final class QueryTopComponent extends TopComponent
                 Object ret = DialogDisplayer.getDefault().notify(nd);
                 boolean canClose = false;
                 if(ret == save) {
-                    canClose = query.getController().saveChanges();
+                    canClose = save();
                 } else if(ret == discard) {
                     canClose = query.getController().discardUnsavedChanges();
                 } if(canClose) {
@@ -501,6 +517,28 @@ public final class QueryTopComponent extends TopComponent
             }
         }
         return super.canClose(); 
+    }
+    
+    private boolean save() {
+        String newName = null;
+        if(query.getDisplayName() == null) {
+            newName = SaveQueryPanel.show(new SaveQueryPanel.QueryNameValidator() {
+    @Override
+                public String isValid(String name) {
+                    Collection<QueryImpl> queries = query.getRepositoryImpl().getQueries();
+                    for (QueryImpl q : queries) {
+                        if(name.equals(q.getDisplayName())) {
+                            return NbBundle.getMessage(QueryTopComponent.class, "MSG_SAME_NAME"); // NOI18N
+                        }
+                    }
+                    return null;
+                }
+            }, null);
+            if(newName == null) {
+                return false;
+            }
+        }
+        return query.getController().saveChanges(newName);
     }
     
     @Override
@@ -665,7 +703,13 @@ public final class QueryTopComponent extends TopComponent
     }
 
     private static String getFQQueryName(QueryImpl query) throws MissingResourceException {
-        return NbBundle.getMessage(QueryTopComponent.class, "LBL_QueryName", new Object[]{query.getRepositoryImpl().getDisplayName(), query.getDisplayName()});
+        String repoName = query.getRepositoryImpl().getDisplayName();
+        final String queryName = query.getDisplayName();
+        if(queryName != null) {
+            return NbBundle.getMessage(QueryTopComponent.class, "LBL_QueryName", new Object[]{repoName, queryName});
+        } else {
+            return NbBundle.getMessage(QueryTopComponent.class, "LBL_UnsavedQuery", new Object[]{repoName});
+        }
     }
 
     private void setSaved() {
@@ -806,7 +850,7 @@ public final class QueryTopComponent extends TopComponent
         @Override
         protected void handleSave() throws IOException {
             if(tc.query != null) {
-                tc.query.getController().saveChanges();
+                tc.save();
             }
         }
 

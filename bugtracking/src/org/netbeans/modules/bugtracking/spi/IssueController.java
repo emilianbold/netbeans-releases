@@ -57,10 +57,11 @@ import org.openide.util.HelpCtx;
  * 
  * <p>
  * When viewing, creating or editing a new Issue, the UI is presented in an 
- * TopComponent in the editor area. Fire <code>PROPERTY_ISSUE_CHANGED</code> and 
- * <code>PROPERTY_ISSUE_SAVED</code> to notify the Issue TopComponent about the 
- * UI state, so that it's state can be accordingly rendered and the IDE-s general SaveAction enabled. 
- * On save or TopComponent close are then the <code>saveChanges()</code> and <code>discardUnsavedChanges()</code> 
+ * TopComponent in the editor area. Fire <code>PROP_CHANGED</code> to notify the Issue 
+ * TopComponent that the UI state changed, {@link #isChanged()} will be called 
+ * accordingly to determine if the IDE-s general SaveAction should be enabled. 
+ * On save or TopComponent close are then the <code>saveChanges()</code> 
+ * and <code>discardUnsavedChanges()</code> 
  * methods called accordingly.
  * </p>
  * 
@@ -72,12 +73,7 @@ public interface IssueController {
     /**
      * Fired when the data presented in the Issue UI were changed by the user.
      */
-    public static String PROPERTY_ISSUE_CHANGED = "bugtracking.issue.changed";
-    
-    /**
-     *  Fired when the data presented in the Issue UI aren't changed anymore - e.g. by saving or submit.
-     */
-    public static String PROPERTY_ISSUE_SAVED = "bugtracking.issue.saved";
+    public static String PROP_CHANGED = "bugtracking.changed";
     
     /**
      * Returns a visual Issue component.
@@ -127,6 +123,13 @@ public interface IssueController {
      */
     public boolean discardUnsavedChanges();
 
+    /**
+     * Determines whether the state of the UI has changed and is supposed to be saved.
+     * 
+     * @return <code>true</code> in case there are changes to be saved, otherwise <code>false</code>
+     */
+    public boolean isChanged();
+    
     /**
      * Registers a PropertyChangeListener.
      * 

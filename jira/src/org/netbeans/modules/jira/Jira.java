@@ -56,7 +56,7 @@ import org.netbeans.modules.bugtracking.spi.BugtrackingSupport;
 import org.netbeans.modules.bugtracking.spi.IssuePriorityInfo;
 import org.netbeans.modules.bugtracking.spi.IssuePriorityProvider;
 import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
-import org.netbeans.modules.bugtracking.spi.IssueSchedulingProvider;
+import org.netbeans.modules.bugtracking.spi.IssueScheduleProvider;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.query.JiraQuery;
@@ -85,7 +85,7 @@ public class Jira {
     private IssueStatusProvider<JiraRepository, NbJiraIssue> isp;
     private IssueNode.ChangesProvider<NbJiraIssue> jcp;
     private IssuePriorityProvider<NbJiraIssue> ipp;
-    private IssueSchedulingProvider<NbJiraIssue> ischp;
+    private IssueScheduleProvider<NbJiraIssue> ischp;
     
     
     private Jira() {
@@ -239,9 +239,9 @@ public class Jira {
         return jcp;
     }    
     
-    public IssueSchedulingProvider<NbJiraIssue> getSchedulingProvider () {
+    public IssueScheduleProvider<NbJiraIssue> getSchedulingProvider () {
         if(ischp == null) {
-            ischp = new IssueSchedulingProvider<NbJiraIssue>() {
+            ischp = new IssueScheduleProvider<NbJiraIssue>() {
 
                 @Override
                 public void setDueDate (NbJiraIssue i, Date date) {

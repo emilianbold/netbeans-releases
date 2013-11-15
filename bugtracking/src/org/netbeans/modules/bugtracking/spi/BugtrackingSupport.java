@@ -103,7 +103,7 @@ public final class BugtrackingSupport<R, Q, I> {
      * @param issueStatusProvider an {@link IssueStatusProvider} to provide status information 
      *                            of an implementation specific issue.<br/> 
      *                            Might be null.
-     * @param issueSchedulingProvider an {@link IssueSchedulingProvider} to provide scheduling information 
+     * @param issueSchedulingProvider an {@link IssueScheduleProvider} to provide scheduling information 
      *                                of an implementation specific issue.<br/> 
      *                                Might be null.
      * @param issuePriorityProvider an {@link IssuePriorityProvider} to provide priority information 
@@ -117,7 +117,7 @@ public final class BugtrackingSupport<R, Q, I> {
      */
     public Repository createRepository(R r,
             IssueStatusProvider<R, I> issueStatusProvider,
-            IssueSchedulingProvider<I> issueSchedulingProvider,
+            IssueScheduleProvider<I> issueSchedulingProvider,
             IssuePriorityProvider<I> issuePriorityProvider,
             IssueFinder issueFinder)
     {
@@ -232,7 +232,7 @@ public final class BugtrackingSupport<R, Q, I> {
     
     private RepositoryImpl getRepositoryImpl(R r) {
        RepositoryInfo info = repositoryProvider.getInfo(r);
-       return info != null ? getRepositoryImpl(info.getConnectorId(), info.getId()) : null;
+       return info != null ? getRepositoryImpl(info.getConnectorId(), info.getID()) : null;
     }
     
     private RepositoryImpl getRepositoryImpl(String connectorId, String repositoryId) {
@@ -242,7 +242,7 @@ public final class BugtrackingSupport<R, Q, I> {
     private Repository getRepository(R r) {
         RepositoryInfo info = repositoryProvider.getInfo(r);
         if (info != null) {
-            String repositoryId = info.getId();
+            String repositoryId = info.getID();
             String connectorId = repositoryProvider.getInfo(r).getConnectorId();
             Repository repo = getRepository(connectorId, repositoryId);
             return repo;

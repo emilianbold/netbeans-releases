@@ -62,7 +62,7 @@
                               <Component id="priorityCombo" linkSize="3" alignment="0" min="-2" max="-2" attributes="0"/>
                               <Component id="productCombo" linkSize="3" alignment="0" pref="167" max="32767" attributes="1"/>
                               <Component id="foundInField" alignment="0" min="-2" pref="167" max="-2" attributes="0"/>
-                              <Component id="dueDateField" min="-2" pref="166" max="-2" attributes="0"/>
+                              <Component id="dummyDueDateField" alignment="0" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
@@ -209,7 +209,7 @@
                   <Group type="103" groupAlignment="2" attributes="0">
                       <Component id="dueDateWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
                       <Component id="dueDateLabel" alignment="2" min="-2" max="-2" attributes="0"/>
-                      <Component id="dueDateField" alignment="2" min="-2" max="-2" attributes="0"/>
+                      <Component id="dummyDueDateField" alignment="2" min="-2" max="-2" attributes="0"/>
                       <Component id="estimateWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
                       <Component id="estimateLabel" alignment="2" min="-2" max="-2" attributes="0"/>
                       <Component id="estimateField" alignment="2" min="-2" max="-2" attributes="0"/>
@@ -553,12 +553,7 @@
         </Component>
         <Component class="javax.swing.JLabel" name="foundInWarning">
         </Component>
-        <Component class="javax.swing.JTextField" name="dueDateField">
-          <Properties>
-            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/odcs/tasks/issue/Bundle.properties" key="IssuePanel.dueDateField.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-            </Property>
-          </Properties>
+        <Component class="javax.swing.JTextField" name="dummyDueDateField">
         </Component>
         <Component class="javax.swing.JLabel" name="ownerLabel">
           <Properties>
@@ -972,7 +967,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="privateNotesFieldScrollPane" max="32767" attributes="0"/>
                       <Group type="102" attributes="0">
-                          <Component id="dummyDueDateField" min="-2" max="-2" attributes="0"/>
+                          <Component id="dummyPrivateDueDateField" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="scheduleDateLabel" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
@@ -992,7 +987,7 @@
               <Group type="102" alignment="0" attributes="0">
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="privateDueDateLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="dummyDueDateField" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="dummyPrivateDueDateField" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="scheduleDateLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="dummyScheduleDateField" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="privateEstimateLabel" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -1011,7 +1006,7 @@
         <Component class="javax.swing.JLabel" name="privateDueDateLabel">
           <Properties>
             <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-              <ComponentRef name="dummyDueDateField"/>
+              <ComponentRef name="dummyPrivateDueDateField"/>
             </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/odcs/tasks/issue/Bundle.properties" key="IssuePanel.privateDueDateLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -1021,7 +1016,7 @@
             </Property>
           </Properties>
         </Component>
-        <Component class="javax.swing.JTextField" name="dummyDueDateField">
+        <Component class="javax.swing.JTextField" name="dummyPrivateDueDateField">
         </Component>
         <Component class="javax.swing.JLabel" name="scheduleDateLabel">
           <Properties>

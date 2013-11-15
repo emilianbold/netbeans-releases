@@ -58,11 +58,11 @@ import org.openide.util.HelpCtx;
  * 
  * <p>
  * When editing or creating a Query, the UI is presented in an 
- * TopComponent in the editor area. Fire <code>PROPERTY_QUERY_CHANGED</code> and 
- * <code>PROPERTY_QUERY_SAVED</code> to notify the Issue TopComponent about the 
- * UI state, so that it's state can be accordingly rendered and the IDE-s general SaveAction enabled. 
- * On save or TopComponent close are then the <code>saveChanges()</code> and <code>discardUnsavedChanges()</code> 
- * methods called accordingly.
+ * TopComponent in the editor area. Fire <code>PROP_CHANGED</code> to notify the Query 
+ * TopComponent that the UI state changed, {@link #isChanged()} will be called 
+ * accordingly to determine if the IDE-s general SaveAction should be enabled. 
+ * On save or TopComponent close are then the <code>saveChanges()</code> 
+ * and <code>discardUnsavedChanges()</code> methods called accordingly.
  * </p>
  * 
  * <p>
@@ -78,16 +78,10 @@ import org.openide.util.HelpCtx;
 public interface QueryController {
 
     /**
-     * The Issue UI contains unsaved changes.
+     * Fired when the data presented in the Query UI were changed by the user.
      * @since 1.85
      */
-    public static String PROPERTY_QUERY_CHANGED = "bugtracking.query.changed";
-    
-    /**
-     * The Issue UI does not contain unsaved changes.
-     * @since 1.85
-     */
-    public static String PROPERTY_QUERY_SAVED = "bugtracking.query.saved";
+    public static String PROP_CHANGED = "bugtracking.query.changed";
     
     /**
      * The mode in which this controllers component is shown.
@@ -152,10 +146,11 @@ public interface QueryController {
      * This method is called when the general IDE Save button is pressed or when 
      * Save was chosen on close of an Query TopComponent.
      * 
+     * @param name in case the Query wasn't saved yet a new name is provided. Otherwise might be null.
      * @return <code>true</code> in case the save worked, otherwise <code>false</code>
      * @since 1.85
      */
-    public boolean saveChanges();
+    public boolean saveChanges(String name);
 
     /**
      * This method is called when Discard was chosen on close of an Query TopComponent.
@@ -165,6 +160,13 @@ public interface QueryController {
      */
     public boolean discardUnsavedChanges();
 
+    /**
+     * Determines whether the state of the UI has changed and is supposed to be saved.
+     * 
+     * @return <code>true</code> in case there are changes to be saved, otherwise <code>false</code>
+     */
+    public boolean isChanged();
+    
     /**
      * Registers a PropertyChangeListener.
      * 

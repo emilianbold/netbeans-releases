@@ -43,14 +43,14 @@
  */
 package org.netbeans.core.multitabs.prefs;
 
-import org.netbeans.core.windows.options.WinSysOptionsPanelController;
-import org.netbeans.core.windows.options.WinSysPanel;
+import org.netbeans.core.windows.options.TabsOptionsPanelController;
+import org.netbeans.core.windows.options.TabsPanel;
 
 /**
  * 
  * @author S. Aubrecht
  */
-public final class MultiTabsOptionsPanelController extends WinSysOptionsPanelController {
+public final class MultiTabsOptionsPanelController extends TabsOptionsPanelController {
 
     private MultiTabsPanel panel;
 
@@ -60,7 +60,7 @@ public final class MultiTabsOptionsPanelController extends WinSysOptionsPanelCon
     }
 
     @Override
-    protected WinSysPanel getPanel() {
+    protected TabsPanel getPanel() {
         if (panel == null) {
             panel = new MultiTabsPanel(this);
         }

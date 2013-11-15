@@ -75,7 +75,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.86</specification-version>
+                        <specification-version>1.88</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

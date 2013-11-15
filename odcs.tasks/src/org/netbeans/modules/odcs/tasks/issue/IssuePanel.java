@@ -74,7 +74,6 @@ import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -162,6 +161,7 @@ import org.openide.windows.WindowManager;
 })
 public class IssuePanel extends javax.swing.JPanel {
     final static SimpleDateFormat INPUT_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd"); // NOI18N
+    final static DateFormat READABLE_DATE_FORMAT = DateFormat.getDateInstance(DateFormat.MEDIUM);
     
     private static Color highlightColor = null;
     static {
@@ -230,11 +230,10 @@ public class IssuePanel extends javax.swing.JPanel {
     private WikiPanel addCommentPanel;
     private static String wikiLanguage = "";
     private static final RequestProcessor RP = new RequestProcessor("ODCS Task Panel", 5, false); //NOI18N
-    private Set<String> invalidDateFields = new HashSet<String>(2);
-    private static final Set<IssueField> DATE_INPUT_FIELDS = new HashSet<IssueField>(Arrays.asList(IssueField.DUEDATE));
     
     private JTable subTaskTable;
     private JScrollPane subTaskScrollPane;
+    private final IDEServices.DatePickerComponent privateDueDatePicker;
     private final IDEServices.DatePickerComponent dueDatePicker;
     private final SchedulingPicker scheduleDatePicker;
     private static final NumberFormatter estimateFormatter = new NumberFormatter(new java.text.DecimalFormat("#0")) { //NOI18N
@@ -290,11 +289,13 @@ public class IssuePanel extends javax.swing.JPanel {
         attachmentsPanel = new AttachmentsPanel(this);
         ((GroupLayout) commentsSectionPanel.getLayout()).replace(dummyCommentsPanel, commentsPanel);
         ((GroupLayout) attachmentsSectionPanel.getLayout()).replace(dummyAttachmentsPanel, attachmentsPanel);
-        GroupLayout layout = (GroupLayout) privatePanel.getLayout();
         dueDatePicker = UIUtils.createDatePickerComponent();
+        ((GroupLayout) attributesSectionPanel.getLayout()).replace(dummyDueDateField, dueDatePicker.getComponent());
+        GroupLayout layout = (GroupLayout) privatePanel.getLayout();
+        privateDueDatePicker = UIUtils.createDatePickerComponent();
         scheduleDatePicker = new SchedulingPicker();
-        layout.replace(dummyDueDateField, dueDatePicker.getComponent());
-        dueDateLabel.setLabelFor(dueDatePicker.getComponent());
+        layout.replace(dummyPrivateDueDateField, privateDueDatePicker.getComponent());
+        dueDateLabel.setLabelFor(privateDueDatePicker.getComponent());
         layout.replace(dummyScheduleDateField, scheduleDatePicker.getComponent());
         scheduleDateLabel.setLabelFor(scheduleDatePicker.getComponent());
         initSpellChecker();
@@ -438,10 +439,8 @@ public class IssuePanel extends javax.swing.JPanel {
                 }
                 
                 if (isDirty) {
-                    issue.fireUnsaved();
-                } else {
-                    issue.fireSaved();
-                }
+                    issue.fireChanged();
+                } 
             }
         });
     }
@@ -716,18 +715,18 @@ public class IssuePanel extends javax.swing.JPanel {
             fixPrefSize(modifiedField);
             
             privateNotesField.setText(issue.getPrivateNotes());
-            dueDatePicker.setDate(issue.getDueDate());
+            privateDueDatePicker.setDate(issue.getDueDate());
             NbDateRange scheduleDate = issue.getScheduleDate();
             scheduleDatePicker.setScheduleDate(scheduleDate == null ? null : scheduleDate.toSchedulingInfo());
             privateEstimateField.setValue(issue.getEstimate());
-            dueDatePicker.getComponent().setEnabled(false);
+            privateDueDatePicker.getComponent().setEnabled(false);
         }
 
         reloadField(ownerCombo, IssueField.OWNER);
         reloadField(ccField, IssueField.CC);
         reloadField(subtaskField, IssueField.SUBTASK);
         reloadField(parentField, IssueField.PARENT);
-        reloadField(dueDateField, IssueField.DUEDATE);
+        reloadField(dueDatePicker, IssueField.DUEDATE);
         reloadField(estimateField, IssueField.ESTIMATE);
         reloadField(foundInField, IssueField.FOUNDIN);
         int newCommentCount = issue.getComments().length;
@@ -834,7 +833,7 @@ public class IssuePanel extends javax.swing.JPanel {
         textField.setPreferredSize(fixedDim);
     }
     
-    private void reloadField (JComponent component, IssueField field) {
+    private void reloadField (Object component, IssueField field) {
         String newValue;
         if (component instanceof JList) {
             newValue = mergeValues(issue.getFieldValues(field));
@@ -848,12 +847,7 @@ public class IssuePanel extends javax.swing.JPanel {
                 selectInCombo(combo, newValue, true);
             } else if (component instanceof JTextComponent) {
                 String value = newValue;
-                if (DATE_INPUT_FIELDS.contains(field) && !newValue.isEmpty()) {
-                    Date date = ODCSUtil.parseLongDate(newValue, new DateFormat[] { INPUT_DATE_FORMAT });
-                    if (date != null) {
-                        value = INPUT_DATE_FORMAT.format(date);
-                    }
-                }
+                
                 ((JTextComponent)component).setText(value);
             } else if (component instanceof JList) {
                 JList list = (JList)component;
@@ -868,11 +862,14 @@ public class IssuePanel extends javax.swing.JPanel {
                 }
             } else if (component instanceof WikiPanel) {
                 ((WikiPanel)component).setWikiFormatText(newValue);
+            } else if (component instanceof IDEServices.DatePickerComponent) {
+                IDEServices.DatePickerComponent picker = (IDEServices.DatePickerComponent) component;
+                picker.setDate(ODCSUtil.parseLongDate(newValue, new DateFormat[] { INPUT_DATE_FORMAT, READABLE_DATE_FORMAT }));
             }
         }
     }
     
-    private void updateFieldDecorations (JComponent component, IssueField field, JLabel warningLabel, JComponent fieldLabel) {
+    private void updateFieldDecorations (Object component, IssueField field, JLabel warningLabel, JComponent fieldLabel) {
         updateFieldDecorations(warningLabel, fieldLabel, fieldName(fieldLabel), Pair.of(field, component));
     }
     
@@ -918,23 +915,23 @@ public class IssuePanel extends javax.swing.JPanel {
             + "<p>A new comment was added but not yet submitted.</p>"
     })
     private void updateFieldDecorations (JLabel warningLabel, JComponent fieldLabel, String fieldName,
-            Pair<IssueField, ? extends JComponent>... fields) {
+            Pair<IssueField, ? extends Object>... fields) {
         boolean isNew = issue.isNew();
         String newValue = "", lastSeenValue = "", repositoryValue = ""; //NOI18N
         boolean fieldDirty = false;
         boolean valueModifiedByUser = false;
         boolean valueModifiedByServer = false;
-        for (Pair<IssueField, ? extends JComponent> p : fields) {
-            JComponent component = p.second();
+        for (Pair<IssueField, ? extends Object> p : fields) {
+            Object component = p.second();
             IssueField field = p.first();
             if (component instanceof JList) {
-                newValue += " " + mergeValues(issue.getFieldValues(field));
-                lastSeenValue += " " + mergeValues(issue.getLastSeenFieldValues(field));
-                repositoryValue += " " + mergeValues(issue.getRepositoryFieldValues(field));
+                newValue += " " + mergeValues(toReadable(issue.getFieldValues(field), field));
+                lastSeenValue += " " + mergeValues(toReadable(issue.getLastSeenFieldValues(field), field));
+                repositoryValue += " " + mergeValues(toReadable(issue.getRepositoryFieldValues(field), field));
             } else {
-                newValue += " " + issue.getFieldValue(field);
-                lastSeenValue += " " + issue.getLastSeenFieldValue(field);
-                repositoryValue += " " + issue.getRepositoryFieldValue(field);
+                newValue += " " + toReadable(issue.getFieldValue(field), field);
+                lastSeenValue += " " + toReadable(issue.getLastSeenFieldValue(field), field);
+                repositoryValue += " " + toReadable(issue.getRepositoryFieldValue(field), field);
             }
             fieldDirty |= unsavedFields.contains(field.getKey());
             valueModifiedByUser |= (issue.getFieldStatus(field) & ODCSIssue.FIELD_STATUS_OUTGOING) != 0;
@@ -1214,7 +1211,6 @@ public class IssuePanel extends javax.swing.JPanel {
         parentField.getDocument().addDocumentListener(cyclicDependencyListener);
         subtaskField.getDocument().addDocumentListener(cyclicDependencyListener);
         duplicateField.getDocument().addDocumentListener(new DuplicateListener());
-        dueDateField.getDocument().addDocumentListener(new DateFieldListener(dueDateField, dueDateLabel));
     }
 
     private void updateFieldStatuses() {
@@ -1241,7 +1237,7 @@ public class IssuePanel extends javax.swing.JPanel {
         updateFieldStatus(IssueField.MILESTONE, releaseLabel);
         updateFieldDecorations(releaseCombo, IssueField.MILESTONE, releaseWarning, releaseLabel);
         updateFieldStatus(IssueField.DUEDATE, dueDateLabel);
-        updateFieldDecorations(dueDateField, IssueField.DUEDATE, dueDateWarning, dueDateLabel);
+        updateFieldDecorations(dueDatePicker, IssueField.DUEDATE, dueDateWarning, dueDateLabel);
         updateFieldStatus(IssueField.ITERATION, iterationLabel);
         updateFieldDecorations(iterationCombo, IssueField.ITERATION, iterationWarning, iterationLabel);
         updateFieldStatus(IssueField.OWNER, ownerLabel);
@@ -1520,13 +1516,14 @@ public class IssuePanel extends javax.swing.JPanel {
             }
         });
         
-        dueDateField.getDocument().addDocumentListener(new FieldChangeListener(dueDateField, IssueField.DUEDATE,
-                dueDateWarning, dueDateLabel) {
+        dueDatePicker.addChangeListener(new FieldChangeListener(dueDatePicker.getComponent(), IssueField.DUEDATE,
+                dueDateWarning, dueDateLabel, fieldName(dueDateLabel), Pair.of(IssueField.DUEDATE, dueDatePicker)) {
             @Override
             public void fieldModified () {
-                if (!reloading) {
-                    Date dueDate = ODCSUtil.parseTextDate(dueDateField.getText().trim(), INPUT_DATE_FORMAT);
-                    storeFieldValue(IssueField.DUEDATE, dueDate == null ? "" : Long.toString(dueDate.getTime())); //NOI18N
+                if (!reloading && isEnabled()) {
+                    Date dueDate = dueDatePicker.getDate();
+                    String value = dueDate == null ? "" : Long.toString(dueDate.getTime()); //NOI18N
+                    storeFieldValue(IssueField.DUEDATE, value); //NOI18N
                     updateDecorations();
                 }
             }
@@ -1563,12 +1560,12 @@ public class IssuePanel extends javax.swing.JPanel {
                 return true;
             }
         });
-        dueDatePicker.addChangeListener(new DatePickerListener(dueDatePicker.getComponent(),
+        privateDueDatePicker.addChangeListener(new DatePickerListener(privateDueDatePicker.getComponent(),
                 ATTRIBUTE_DUE_DATE, privateDueDateLabel) {
 
             @Override
             protected boolean storeValue () {
-                issue.setTaskDueDate(dueDatePicker.getDate(), false);
+                issue.setTaskDueDate(privateDueDatePicker.getDate(), false);
                 return true;
             }
         });
@@ -1633,13 +1630,14 @@ public class IssuePanel extends javax.swing.JPanel {
         }
     }
     
-    private class FieldChangeListener implements DocumentListener, ActionListener, ListSelectionListener {
+    private class FieldChangeListener implements DocumentListener, ActionListener,
+            ListSelectionListener, ChangeListener {
         private final IssueField field;
         private final JComponent component;
         private final JLabel warningLabel;
         private final JComponent fieldLabel;
         private final String fieldName;
-        private Pair<IssueField, ? extends JComponent>[] decoratedFields;
+        private Pair<IssueField, ? extends Object>[] decoratedFields;
 
         public FieldChangeListener (JComponent component, IssueField field) {
             this(component, field, null, null);
@@ -1658,7 +1656,7 @@ public class IssuePanel extends javax.swing.JPanel {
         }
         
         public FieldChangeListener (JComponent component, IssueField field, JLabel warningLabel,
-                JComponent fieldLabel, String fieldName, Pair<IssueField, ? extends JComponent>... multiField) {
+                JComponent fieldLabel, String fieldName, Pair<IssueField, ? extends Object>... multiField) {
             this.component = component;
             this.field = field;
             this.warningLabel = warningLabel;
@@ -1694,6 +1692,11 @@ public class IssuePanel extends javax.swing.JPanel {
             if (!e.getValueIsAdjusting() && e.getSource() == component) {
                 fieldModified();
             }
+        }
+
+        @Override
+        public void stateChanged (ChangeEvent e) {
+            fieldModified();
         }
         
         void fieldModified () {
@@ -1957,39 +1960,6 @@ public class IssuePanel extends javax.swing.JPanel {
             updateNoDuplicateId();
         }
     }
-
-    private class DateFieldListener implements DocumentListener {
-        private final JTextComponent comp;
-        private final JLabel fieldLabel;
-
-        public DateFieldListener (JTextComponent comp, JLabel fieldLabel) {
-            this.comp = comp;
-            this.fieldLabel = fieldLabel;
-        }
-        
-        @Override
-        public void insertUpdate(DocumentEvent e) {
-            changedUpdate(e);
-        }
-
-        @Override
-        public void removeUpdate(DocumentEvent e) {
-            changedUpdate(e);
-        }
-
-        @Override
-        public void changedUpdate(DocumentEvent e) {
-            invalidDateFields.remove(fieldName(fieldLabel));
-            String dateText = comp.getText().trim();
-            if (!dateText.isEmpty()) {
-                Date date = ODCSUtil.parseTextDate(dateText, INPUT_DATE_FORMAT);
-                if (date == null) {
-                    invalidDateFields.add(fieldName(fieldLabel));
-                }
-            }
-            updateMessagePanel();
-        }
-    }
     
     private void updateNoDuplicateId() {
         boolean newNoDuplicateId = "DUPLICATE".equals(getSelectedValue(resolutionCombo)) && "".equals(duplicateField.getText().trim());
@@ -2041,13 +2011,7 @@ public class IssuePanel extends javax.swing.JPanel {
             noDuplicateLabel.setIcon(new ImageIcon(ImageUtilities.loadImage(ICON_PATH_ERROR)));
             messagePanel.add(noDuplicateLabel);
         }
-        if (!invalidDateFields.isEmpty()) {
-            JLabel invalidDateLabel = new JLabel();
-            invalidDateLabel.setText(NbBundle.getMessage(IssuePanel.class, "IssuePanel.invalidDateField", invalidDateFields.iterator().next(), INPUT_DATE_FORMAT.toPattern())); // NOI18N
-            invalidDateLabel.setIcon(new ImageIcon(ImageUtilities.loadImage(ICON_PATH_ERROR)));
-            messagePanel.add(invalidDateLabel);
-        }
-        if (noSummary || sameParent || cyclicDependency || invalidTag || noComponent || noIteration || noTargetMilestione || noDuplicateId || !invalidDateFields.isEmpty()) {
+        if (noSummary || sameParent || cyclicDependency || invalidTag || noComponent || noIteration || noTargetMilestione || noDuplicateId) {
             submitButton.setEnabled(false);
         } else {
             submitButton.setEnabled(true);
@@ -2064,7 +2028,7 @@ public class IssuePanel extends javax.swing.JPanel {
             }
         }
         if (noSummary || sameParent || cyclicDependency || invalidTag || noComponent || noIteration
-                || noTargetMilestione || noDuplicateId || !invalidDateFields.isEmpty()
+                || noTargetMilestione || noDuplicateId
                 || (fieldsConflict.size() + fieldsIncoming.size() + fieldsLocal.size() > 0)) {
             messagePanel.setVisible(true);
             messagePanel.revalidate();
@@ -2117,7 +2081,7 @@ public class IssuePanel extends javax.swing.JPanel {
         severityWarning = new javax.swing.JLabel();
         issueTypeLabel = new javax.swing.JLabel();
         foundInWarning = new javax.swing.JLabel();
-        dueDateField = new javax.swing.JTextField();
+        dummyDueDateField = new javax.swing.JTextField();
         ownerLabel = new javax.swing.JLabel();
         externalLabel = new javax.swing.JLabel();
         dummyDescriptionPanel = new javax.swing.JPanel();
@@ -2150,7 +2114,7 @@ public class IssuePanel extends javax.swing.JPanel {
         dummyCommentsPanel = new javax.swing.JPanel();
         privatePanel = new javax.swing.JPanel();
         privateDueDateLabel = new javax.swing.JLabel();
-        dummyDueDateField = new javax.swing.JTextField();
+        dummyPrivateDueDateField = new javax.swing.JTextField();
         scheduleDateLabel = new javax.swing.JLabel();
         dummyScheduleDateField = new javax.swing.JTextField();
         privateEstimateLabel = new javax.swing.JLabel();
@@ -2313,8 +2277,6 @@ public class IssuePanel extends javax.swing.JPanel {
             }
         });
 
-        dueDateField.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.dueDateField.text")); // NOI18N
-
         org.openide.awt.Mnemonics.setLocalizedText(ownerLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.ownerLabel.text_1")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(externalLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.externalLabel.text")); // NOI18N
@@ -2436,7 +2398,7 @@ public class IssuePanel extends javax.swing.JPanel {
                             .addComponent(priorityCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(productCombo, 0, 167, Short.MAX_VALUE)
                             .addComponent(foundInField, javax.swing.GroupLayout.PREFERRED_SIZE, 167, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(dueDateField, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(dummyDueDateField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(resolutionWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -2568,7 +2530,7 @@ public class IssuePanel extends javax.swing.JPanel {
                 .addGroup(attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
                     .addComponent(dueDateWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(dueDateLabel)
-                    .addComponent(dueDateField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(dummyDueDateField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(estimateWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(estimateLabel)
                     .addComponent(estimateField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -2734,7 +2696,7 @@ public class IssuePanel extends javax.swing.JPanel {
 
         privatePanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
 
-        privateDueDateLabel.setLabelFor(dummyDueDateField);
+        privateDueDateLabel.setLabelFor(dummyPrivateDueDateField);
         org.openide.awt.Mnemonics.setLocalizedText(privateDueDateLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.privateDueDateLabel.text")); // NOI18N
         privateDueDateLabel.setToolTipText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.privateDueDateLabel.TTtext")); // NOI18N
 
@@ -2771,7 +2733,7 @@ public class IssuePanel extends javax.swing.JPanel {
                 .addGroup(privatePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(privateNotesFieldScrollPane)
                     .addGroup(privatePanelLayout.createSequentialGroup()
-                        .addComponent(dummyDueDateField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(dummyPrivateDueDateField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(scheduleDateLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -2787,7 +2749,7 @@ public class IssuePanel extends javax.swing.JPanel {
             .addGroup(privatePanelLayout.createSequentialGroup()
                 .addGroup(privatePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(privateDueDateLabel)
-                    .addComponent(dummyDueDateField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(dummyPrivateDueDateField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(scheduleDateLabel)
                     .addComponent(dummyScheduleDateField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(privateEstimateLabel)
@@ -3385,7 +3347,6 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JLabel componentWarning;
     private javax.swing.JLabel descriptionLabel;
     private javax.swing.JLabel descriptionWarning;
-    private javax.swing.JTextField dueDateField;
     private javax.swing.JLabel dueDateLabel;
     private javax.swing.JLabel dueDateWarning;
     private javax.swing.JPanel dummyAddCommentPanel;
@@ -3393,6 +3354,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private javax.swing.JPanel dummyCommentsPanel;
     private javax.swing.JPanel dummyDescriptionPanel;
     private javax.swing.JTextField dummyDueDateField;
+    private javax.swing.JTextField dummyPrivateDueDateField;
     private javax.swing.JTextField dummyScheduleDateField;
     private javax.swing.JPanel dummySubtaskPanel;
     final javax.swing.JButton duplicateButton = new javax.swing.JButton();
@@ -3525,6 +3487,24 @@ public class IssuePanel extends javax.swing.JPanel {
         tooltipsIncoming.removeTooltip(label, field);
         tooltipsLocal.removeTooltip(label, field);
     }
+
+    private String toReadable (String value, IssueField field) {
+        if (field == IssueField.DUEDATE) {
+            Date date = ODCSUtil.parseLongDate(value, new DateFormat[] { INPUT_DATE_FORMAT, READABLE_DATE_FORMAT });
+            if (date != null) {
+                value = READABLE_DATE_FORMAT.format(date);
+            }
+        }
+        return value;
+    }
+
+    private List<String> toReadable (List<String> values, IssueField field) {
+        List<String> readable = new ArrayList<>(values.size());
+        for (String value : values) {
+            readable.add(toReadable(value, field));
+        }
+        return readable;
+    }
     
     @NbBundle.Messages("IssuePanel.reloadButton.text=Reload Attributes")
     private Action[] getAttributesSectionActions () {
@@ -3640,7 +3620,7 @@ public class IssuePanel extends javax.swing.JPanel {
         public boolean add (String value) {
             boolean added = super.add(value);
             if (added) {
-                issue.fireUnsaved();
+                issue.fireChanged();
             }
             return added;
         }
@@ -3649,7 +3629,7 @@ public class IssuePanel extends javax.swing.JPanel {
         public boolean remove (Object o) {
             boolean removed = super.remove(o);
             if (removed && isEmpty()) {
-                issue.fireSaved();
+                issue.fireChanged();
             }
             return removed;
         }
@@ -3659,7 +3639,7 @@ public class IssuePanel extends javax.swing.JPanel {
             boolean fire = !isEmpty();
             super.clear();
             if (fire) {
-                issue.fireSaved();
+                issue.fireChanged();
             }
         }
         

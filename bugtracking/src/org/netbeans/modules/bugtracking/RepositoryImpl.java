@@ -87,7 +87,7 @@ public final class RepositoryImpl<R, Q, I> {
     private final IssueProvider<I> issueProvider;
     private final QueryProvider<Q, I> queryProvider;
     private final IssueStatusProvider<R, I> issueStatusProvider;    
-    private final IssueSchedulingProvider<I> issueSchedulingProvider;    
+    private final IssueScheduleProvider<I> issueSchedulingProvider;    
     private final IssuePriorityProvider<I> issuePriorityProvider;
     private final R r;
 
@@ -103,7 +103,7 @@ public final class RepositoryImpl<R, Q, I> {
             QueryProvider<Q, I> queryProvider, 
             IssueProvider<I> issueProvider, 
             IssueStatusProvider<R, I> issueStatusProvider, 
-            IssueSchedulingProvider<I> issueSchedulingProvider,
+            IssueScheduleProvider<I> issueSchedulingProvider,
             IssuePriorityProvider<I> issuePriorityProvider,
             IssueFinder issueFinder) 
     {
@@ -201,7 +201,7 @@ public final class RepositoryImpl<R, Q, I> {
      * @return
      */
     public String getId() { // XXX API its either Id or ID
-        return getInfo().getId();
+        return getInfo().getID();
     }
 
     public RepositoryInfo getInfo() {
@@ -292,7 +292,7 @@ public final class RepositoryImpl<R, Q, I> {
         return issueStatusProvider;
     }
     
-    IssueSchedulingProvider<I> getSchedulingProvider() {
+    IssueScheduleProvider<I> getSchedulingProvider() {
         return issueSchedulingProvider;
     }
     
@@ -478,6 +478,11 @@ public final class RepositoryImpl<R, Q, I> {
 
     private void setLooseAssociation() {
         BugtrackingOwnerSupport.getInstance().setLooseAssociation(SELECTED_FILE_AND_ALL_PROJECTS, this);
+    }
+
+    private int fakeIdCounter = 0;
+    String getNextFakeIssueID() {
+        return getConnectorId() + "<=>" + getId() + "<=>" + (--fakeIdCounter);
     }
 
 }

@@ -469,7 +469,7 @@ public final class ModeImpl implements Mode {
      * @param minimized 
      * @since 2.30
      */
-    void setMinimized( boolean minimized ) {
+    public void setMinimized( boolean minimized ) {
         getCentral().setModeMinimized( this, minimized );
     }
     

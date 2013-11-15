@@ -1187,14 +1187,10 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
         support.firePropertyChange(IssueStatusProvider.EVENT_STATUS_CHANGED, null, null);
     }
 
-    protected void fireUnsaved() {
-        support.firePropertyChange(IssueController.PROPERTY_ISSUE_CHANGED, null, null);
+    protected void fireChanged() {
+        support.firePropertyChange(IssueController.PROP_CHANGED, null, null);
     }
  
-    protected void fireSaved() {
-        support.firePropertyChange(IssueController.PROPERTY_ISSUE_SAVED, null, null);
-    }
-
     private boolean refresh(boolean afterSubmitRefresh) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         NbTask task = getNbTask();

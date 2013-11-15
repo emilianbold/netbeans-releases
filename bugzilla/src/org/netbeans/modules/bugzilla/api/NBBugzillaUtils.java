@@ -82,7 +82,10 @@ public class NBBugzillaUtils {
         RequestProcessor.getDefault().post(new Runnable() {
             @Override
             public void run() {
-                Util.createNewIssue(NBRepositorySupport.getInstance().getNBRepository(true));
+                Repository nbRepo = NBRepositorySupport.getInstance().getNBRepository(true);
+                if(nbRepo != null) {
+                    Util.createNewIssue(nbRepo);
+                }
             }
         });
     }

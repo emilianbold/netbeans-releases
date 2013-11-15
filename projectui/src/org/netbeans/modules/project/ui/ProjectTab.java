@@ -87,6 +87,8 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
@@ -174,6 +176,8 @@ public class ProjectTab extends TopComponent
 
     private static final int NODE_SELECTION_DELAY = 200;
     
+    private final NodeSelectionProjectPanel nodeSelectionProjectPanel;
+    
     public ProjectTab( String id ) {
         this();
         this.id = id;
@@ -221,10 +225,11 @@ public class ProjectTab extends TopComponent
         synchronizeViews = nbPrefs.getBoolean(SyncEditorWithViewsAction.SYNC_ENABLED_PROP_NAME, false);
         nbPrefs.addPreferenceChangeListener(new NbPrefsListener());
         
-        NodeSelectionProjectPanel pnl = new NodeSelectionProjectPanel();
-        ActualSelectionProject actualSelectionProject = new ActualSelectionProject(pnl);
+        nodeSelectionProjectPanel = new NodeSelectionProjectPanel();
+        ActualSelectionProject actualSelectionProject = new ActualSelectionProject(nodeSelectionProjectPanel);
         manager.addPropertyChangeListener(actualSelectionProject);
-        add(pnl, BorderLayout.SOUTH);        
+        btv.getViewport().addChangeListener(actualSelectionProject);
+        add(nodeSelectionProjectPanel, BorderLayout.SOUTH);        
     }
 
     /**
@@ -796,6 +801,32 @@ public class ProjectTab extends TopComponent
                 });
             }
         }
+        
+        public void showOrHideNodeSelectionProjectPanel(final Node n) {
+            SwingUtilities.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    TreeNode tn = Visualizer.findVisualizer(n);
+                    if (tn == null) {
+                        return;
+                    }
+                    TreeModel model = tree.getModel();
+                    if (!(model instanceof DefaultTreeModel)) {
+                        return;
+                    }
+                    TreePath path = new TreePath(((DefaultTreeModel) model).getPathToRoot(tn));
+                    Rectangle projectNodeCoordinates = tree.getPathBounds(path);
+                    Rectangle prjTabScrollCoordinates = tree.getVisibleRect();
+                    //Constant 0.75 was choosed, b/c sometimes is project node partially visible
+                    if (prjTabScrollCoordinates.y <= ( projectNodeCoordinates.y + (projectNodeCoordinates.height * 0.75) )) {
+                        nodeSelectionProjectPanel.minimize();
+                    } else {
+                        nodeSelectionProjectPanel.maximize();
+                    }
+                }
+            });
+    }
     }
     
 
@@ -963,11 +994,13 @@ public class ProjectTab extends TopComponent
     
     @Messages({"MSG_none_node_selected=None of the nodes selected",
         "MSG_nodes_from_more_projects=Selected nodes are from more than one project"})
-    private class ActualSelectionProject implements PropertyChangeListener {
+    private class ActualSelectionProject implements PropertyChangeListener, ChangeListener {
         
         private final JPanel selectionsProjectPanel;
         
         private JLabel actualProjectLabel;
+        
+        private Node [] lastSelectedNodes;
         
         public ActualSelectionProject(JPanel selectionsProjectPanel) {
             this.selectionsProjectPanel = selectionsProjectPanel;
@@ -978,8 +1011,9 @@ public class ProjectTab extends TopComponent
         
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if ( evt.getPropertyName().equals("selectedNodes")) {
-                performChange((Node [])evt.getNewValue());
+            if ( evt.getPropertyName().equals("selectedNodes") 
+                    &&  NodeSelectionProjectPanel.prefs.getBoolean(NodeSelectionProjectPanel.KEY_ACTUALSELECTIONPROJECT, false) ) {
+                performChange(lastSelectedNodes = (Node [])evt.getNewValue());
             }
         }
         
@@ -1008,6 +1042,7 @@ public class ProjectTab extends TopComponent
                     }
                 }
                 if ( projectNode != null ) {
+                    ProjectTab.this.btv.showOrHideNodeSelectionProjectPanel(projectNode);
                     text = projectNode.getDisplayName();
                 }
             } else {
@@ -1030,6 +1065,13 @@ public class ProjectTab extends TopComponent
                 this.actualProjectLabel.setIcon(null);
             }
             this.actualProjectLabel.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 0));
+        }
+
+        @Override
+        public void stateChanged(ChangeEvent evt) {
+            if ( NodeSelectionProjectPanel.prefs.getBoolean(NodeSelectionProjectPanel.KEY_ACTUALSELECTIONPROJECT, false) ) {
+                performChange(lastSelectedNodes);
+            }
         }
     }
     

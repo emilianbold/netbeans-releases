@@ -416,6 +416,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         });
     }
 
+    private boolean ignoreChanges = false;
     protected void populate(final String urlParameters) {
         if(Bugzilla.LOG.isLoggable(Level.FINE)) {
             Bugzilla.LOG.log(Level.FINE, "Starting populate query controller{0}", (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
@@ -429,6 +430,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
+                ignoreChanges = true;
                 try {
                     productParameter.setParameterValues(toParameterValues(bc.getProducts()));
                     populateProductDetails();
@@ -454,6 +456,8 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
                     Bugzilla.LOG.log(Level.FINE, "populated query {0}", query.getDisplayName()); // NOI18N
                     
                 } finally {
+                    resetParameters();
+                    ignoreChanges = false;
                     querySemaphore.release();
                     Bugzilla.LOG.log(Level.FINE, "released lock on query {0}", query.getDisplayName()); // NOI18N
                     
@@ -604,20 +608,20 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
        Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
-                if(saveSynchronously(refresh)) return;
+                saveSynchronously(null, refresh);
             }
        });
     }
 
-    boolean saveSynchronously(boolean refresh) {
+    boolean saveSynchronously(String name, boolean refresh) {
         Bugzilla.LOG.fine("on save start");
-        String name = query.getDisplayName();
         if (!query.isSaved()) {
-            name = getSaveName();
+            name = name == null ? getSaveName() : name;
             if (name == null) {
-                return true;
+                return false;
             }
         }
+        name = name == null ? query.getDisplayName() : name;
         assert name != null;
         Bugzilla.LOG.log(Level.FINE, "saving query '{0}'", new Object[]{name});
         save(name);
@@ -631,7 +635,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         if(refresh) {
             onRefresh();
         }
-        return false;
+        return true;
     }
 
     void save(String name) {
@@ -639,7 +643,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         saveQuery();
         query.setSaved(true);
         setAsSaved();
-        fireSaved();
+        fireChanged();
     }
 
     private String getSaveName() {
@@ -1038,14 +1042,15 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         BugzillaUtil.runInAWT(new Runnable() {
             @Override
             public void run() {
-                if (isChanged()) {
+                if (!ignoreChanges && isChanged()) {
                     panel.saveChangesButton.setEnabled(true);
-                    fireUnsaved();
+                    fireChanged();
                 }                
             }
         });
     }
 
+    @Override
     public boolean isChanged() {
         for(QueryParameter p : parameters.values()) {
             if(p.isChanged()) {
@@ -1070,8 +1075,8 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
     }
 
     @Override
-    public boolean saveChanges() {
-        return saveSynchronously(true);
+    public boolean saveChanges(String name) {
+        return saveSynchronously(name, true);
     }
 
     @Override
@@ -1091,12 +1096,8 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         support.removePropertyChangeListener(l);
     }
 
-    private void fireUnsaved() {
-        support.firePropertyChange(QueryController.PROPERTY_QUERY_CHANGED, null, null);
-    }
- 
-    private void fireSaved() {
-        support.firePropertyChange(QueryController.PROPERTY_QUERY_SAVED, null, null);
+    private void fireChanged() {
+        support.firePropertyChange(QueryController.PROP_CHANGED, null, null);
     }
 
     /**

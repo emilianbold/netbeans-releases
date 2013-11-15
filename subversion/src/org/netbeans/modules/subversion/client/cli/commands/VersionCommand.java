@@ -128,15 +128,6 @@ public class VersionCommand extends SvnCommand {
     public boolean isMetadataFormatSupported() {
         return supportedMetadataFormat;
     }
-
-    public boolean isSupportedJavaHl() {
-        for (String string : output) {
-            if(string.indexOf("version 1.5") > -1) {
-                return true;
-            }
-        }
-        return false;
-    }
     
     public String getOutput() {
         StringBuffer sb = new StringBuffer();

@@ -51,7 +51,6 @@ import java.util.Collections;
 import javax.swing.UIManager;
 import javax.swing.text.Document;
 import javax.swing.text.html.HTMLDocument;
-import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
@@ -62,7 +61,7 @@ import org.openide.util.Utilities;
  * @author Tomas Stupka
  */
 @OptionsPanelController.Keywords(keywords={"svn", "subversion", "#SvnOptionsPanel.kw1", "#SvnOptionsPanel.kw2", "#SvnOptionsPanel.kw3",
-    "#SvnOptionsPanel.kw4", "#SvnOptionsPanel.kw5"}, location=OptionsDisplayer.ADVANCED, tabTitle="#CTL_OptionsPanel.title")
+    "#SvnOptionsPanel.kw4", "#SvnOptionsPanel.kw5"}, location="Team", tabTitle="#CTL_OptionsPanel.title")
 @NbBundle.Messages({
     "CTL_OptionsPanel.title=Versioning",
     "SvnOptionsPanel.kw1=versioning",

@@ -963,7 +963,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
     }
 
     @Override
-    public boolean saveChanges() {
+    public boolean saveChanges(String name) {
         return true;
     }
 
@@ -973,7 +973,12 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
     }
 
     private void fireSaved() {
-        support.firePropertyChange(PROPERTY_QUERY_SAVED, null, null);
+        support.firePropertyChange(PROP_CHANGED, null, null);
+    }
+
+    @Override
+    public boolean isChanged() {
+        return false;
     }
     
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);

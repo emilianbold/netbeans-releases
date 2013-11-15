@@ -102,10 +102,10 @@ public class APITestConnector implements BugtrackingConnector {
 
     @Override
     public Repository createRepository(RepositoryInfo info) {
-        APITestRepository  apiRepo = apiRepos.get(info.getId());
+        APITestRepository  apiRepo = apiRepos.get(info.getID());
         if (apiRepo == null) {
             apiRepo = createAPIRepo(getInfo());
-            apiRepos.put(info.getId(), apiRepo);
+            apiRepos.put(info.getID(), apiRepo);
         }
         return factory.createRepository(apiRepo);
     }

@@ -96,7 +96,7 @@
                           <Component id="gainWarning" min="-2" pref="16" max="-2" attributes="0"/>
                           <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="deadlineField" alignment="0" min="-2" pref="113" max="-2" attributes="1"/>
+                              <Component id="dummyDeadlineField" alignment="0" min="-2" max="-2" attributes="1"/>
                               <Component id="deadlineLabel" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
@@ -147,7 +147,7 @@
               <Group type="102" alignment="0" attributes="0">
                   <Component id="deadlineLabel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="deadlineField" min="-2" max="-2" attributes="0"/>
+                  <Component id="dummyDeadlineField" min="-2" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -270,19 +270,7 @@
             </Property>
           </Properties>
         </Component>
-        <Component class="javax.swing.JTextField" name="deadlineField">
-          <Properties>
-            <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-              <Color blue="80" green="80" id="TextField.inactiveForeground" palette="3" red="80" type="palette"/>
-            </Property>
-            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.deadlineField.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-            </Property>
-          </Properties>
-          <Events>
-            <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="deadlineFieldFocusGained"/>
-            <EventHandler event="focusLost" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="deadlineFieldFocusLost"/>
-          </Events>
+        <Component class="javax.swing.JTextField" name="dummyDeadlineField">
         </Component>
         <Component class="javax.swing.JLabel" name="actualWarning">
         </Component>

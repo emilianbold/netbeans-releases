@@ -133,7 +133,6 @@ public class J2MEProject implements Project {
     private final Lookup lkp;
     private final SourceRoots sourceRoots;
     private final SourceRoots testRoots;
-    private final ThreadLocal<Boolean> projectPropertiesSave;
     private volatile PlatformListener platformListener;
 
     @SuppressWarnings("LeakingThisInConstructor")
@@ -157,13 +156,7 @@ public class J2MEProject implements Project {
                 sourceRoots,
                 testRoots).
             setBootClasspathProperties(J2MEProjectProperties.PROP_PLATFORM_BOOTCLASSPATH).
-            build();
-        this.projectPropertiesSave = new ThreadLocal<Boolean>() {
-            @Override
-            protected Boolean initialValue() {
-                return Boolean.FALSE;
-            }
-        };
+            build();        
         this.lkp = createLookup(buildExtender, newProjectOperationsCallback(this, updates));
     }
 
@@ -207,10 +200,6 @@ public class J2MEProject implements Project {
     @NonNull
     public PropertyEvaluator evaluator() {
         return eval;
-    }
-
-    public void setProjectPropertiesSave(boolean value) {
-        this.projectPropertiesSave.set(value);
     }
 
     @NonNull
@@ -317,7 +306,7 @@ public class J2MEProject implements Project {
                         setOverrideModifiedBuildImplPredicate(new Callable<Boolean>() {
                             @Override
                             public Boolean call() throws Exception {
-                                return projectPropertiesSave.get();
+                                return J2MEProjectProperties.isPropertiesSave();
                             }
                         }).
                         build(),

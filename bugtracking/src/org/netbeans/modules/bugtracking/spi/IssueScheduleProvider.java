@@ -69,7 +69,7 @@ import java.util.Date;
  * @param <I> the implementation specific issue type
  * @since 1.85
  */
-public interface IssueSchedulingProvider<I> {
+public interface IssueScheduleProvider<I> {
         
     /**
      * Sets the date when the Issue is to be finished. 

@@ -43,10 +43,10 @@
 package org.netbeans.modules.bugzilla.issue;
 
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import javax.swing.JComponent;
 import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.commons.UIUtils;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 
 /**
@@ -116,6 +116,11 @@ public class BugzillaIssueController implements IssueController {
     @Override
     public void removePropertyChangeListener(PropertyChangeListener l) {
         issuePanel.getIssue().removePropertyChangeListener(l);
+    }
+
+    @Override
+    public boolean isChanged() {
+        return issuePanel.isChanged();
     }
 
 }

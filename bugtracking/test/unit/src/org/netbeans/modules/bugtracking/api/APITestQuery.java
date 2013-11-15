@@ -113,7 +113,7 @@ public class APITestQuery extends TestQuery {
                     return true;
                 }
                 @Override
-                public boolean saveChanges() {
+                public boolean saveChanges(String name) {
                     return true;
                 }
                 @Override
@@ -122,6 +122,10 @@ public class APITestQuery extends TestQuery {
                 }
                 @Override public void addPropertyChangeListener(PropertyChangeListener l) { }
                 @Override public void removePropertyChangeListener(PropertyChangeListener l) { }
+                 @Override
+                public boolean isChanged() {
+                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                }
             }; 
         }
         return controller;

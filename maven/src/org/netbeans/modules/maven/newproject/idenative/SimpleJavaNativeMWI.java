@@ -42,17 +42,12 @@
 
 package org.netbeans.modules.maven.newproject.idenative;
 
+import org.netbeans.modules.maven.spi.newproject.CreateProjectBuilder;
 import java.io.File;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.maven.api.archetype.ArchetypeWizards;
-import org.netbeans.modules.maven.model.ModelOperation;
-import org.netbeans.modules.maven.model.pom.POMModel;
-import org.netbeans.modules.maven.model.pom.Project;
+import org.netbeans.modules.maven.api.archetype.ProjectInfo;
 import static org.netbeans.modules.maven.newproject.idenative.Bundle.LBL_Maven_Quickstart_Archetype;
 import org.openide.util.NbBundle.Messages;
 
@@ -60,36 +55,33 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author mkleint
  */
-//@TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=101, displayName="#LBL_Maven_Quickstart_Archetype", iconBase="org/netbeans/modules/maven/resources/jaricon.png", description="quickstart.html")
-@Messages("LBL_Maven_Quickstart_Archetype=XXXJava Application")
+@TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=100, displayName="#LBL_Maven_Quickstart_Archetype", iconBase="org/netbeans/modules/maven/resources/jaricon.png", description="quickstart.html")
+@Messages("LBL_Maven_Quickstart_Archetype=Java Application")
 public class SimpleJavaNativeMWI extends IDENativeMavenWizardIterator {
 
     public SimpleJavaNativeMWI() {
-        super(LBL_Maven_Quickstart_Archetype(), "org.apache.maven.archetypes:maven-archetype-quickstart:1.1");
+        super(LBL_Maven_Quickstart_Archetype(), "org.apache.maven.archetypes:maven-archetype-quickstart:1.1", "jar");
     }
 
     @Override
-    protected List<ModelOperation<POMModel>> getOperations(Context context) {
-        return Collections.<ModelOperation<POMModel>>singletonList(new ModelOperation<POMModel>() {
-
+    protected CreateProjectBuilder createBuilder(File projFile, ProjectInfo vi, ProgressHandle handle) {
+        return super.createBuilder(projFile, vi, handle).setAdditionalNonPomWork(new CreateProjectBuilder.AdditionalChangeHandle() {
             @Override
-            public void performOperation(POMModel model) {
-                Project root = model.getProject();
-                if (root != null) {
-                    root.setPackaging("jar");
-                }
+            public Runnable createAdditionalChange(final CreateProjectBuilder.Context context) {
+                return new Runnable() {
+
+                    @Override
+                    public void run() {
+                        File src = new File(context.getProjectDirectory(), "src" + File.separator + "main" + File.separator + "java");
+                        src.mkdirs();
+                        if (context.getPackageName() != null) {
+                            String path = context.getPackageName().replace(".", File.separator);
+                            new File(src, path).mkdirs();
+                        }
+                    }
+                };
             }
         });
     }
-
-    @Override
-    protected void afterProjectCreatedActions(Context context, ProgressHandle handle) {
-        File src = new File(context.projectDirectory, "src" + File.separator + "main" + File.separator + "java");
-        src.mkdirs();
-        String path = context.projectInfo.packageName.replace(".", File.separator);
-        new File(src, path).mkdirs();
-    }
-
-    
     
 }

@@ -179,6 +179,13 @@ public final class J2MEProjectProperties {
     private static final Integer BOOLEAN_KIND_YN = new Integer(1);
     private static final Integer BOOLEAN_KIND_ED = new Integer(2);
 
+    private static final ThreadLocal<Boolean> propertiesSave = new ThreadLocal<Boolean>() {
+        @Override
+        protected Boolean initialValue() {
+            return Boolean.FALSE;
+        }
+    };
+    private static final ThreadLocal<List<Runnable>> postSaveAction = new ThreadLocal<List<Runnable>>();
     // MODELS FOR VISUAL CONTROLS
     // CustomizerSources
     DefaultTableModel SOURCE_ROOTS_MODEL;
@@ -307,6 +314,23 @@ public final class J2MEProjectProperties {
         projectGroup = new StoreGroup();
         additionalProperties = new HashMap<>();
         init();
+    }
+
+    public static boolean isPropertiesSave() {
+        return propertiesSave.get();
+    }
+
+    public static void postSave(@NonNull final Runnable action) {
+        Parameters.notNull("action", action);   //NOI18N
+        if (!isPropertiesSave()) {
+            throw new IllegalStateException("Not in properties save");  //NOI18N
+        }
+        List<Runnable> l = postSaveAction.get();
+        if (l == null) {
+            l = new ArrayList<>();
+            postSaveAction.set(l);
+        }
+        l.add(action);
     }
 
     private void init() {
@@ -463,6 +487,7 @@ public final class J2MEProjectProperties {
     }
 
     void storeData() {
+        propertiesSave.set(Boolean.TRUE);
         try {
             saveLibrariesLocation();
             // Store properties
@@ -470,20 +495,32 @@ public final class J2MEProjectProperties {
                 @Override
                 public Void run() throws IOException {
                     storeProperties();
+                    try {
+                        for (Runnable action : postSaveAction.get()) {
+                            try {
+                                action.run();
+                            } catch (Throwable t) {
+                                if (t instanceof ThreadDeath) {
+                                    throw (ThreadDeath) t;
+                                } else {
+                                    Exceptions.printStackTrace(t);
+                                }
+                            }
+                        }
+                    } finally {
+                        postSaveAction.remove();
+                    }
                     return null;
                 }
             });
-            // and save the project
-            project.setProjectPropertiesSave(true);
-            try {
-                ProjectManager.getDefault().saveProject(project);
-            } finally {
-                project.setProjectPropertiesSave(false);
-            }
+            // and save the project            
+            ProjectManager.getDefault().saveProject(project);            
         } catch (MutexException e) {
             ErrorManager.getDefault().notify((IOException) e.getException());
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
+        } finally {
+            propertiesSave.remove();
         }
     }
 

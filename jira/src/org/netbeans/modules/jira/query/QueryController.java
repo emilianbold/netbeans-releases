@@ -1253,7 +1253,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
     }
 
     @Override
-    public boolean saveChanges() {
+    public boolean saveChanges(String name) {
         return true;
     }
 
@@ -1263,8 +1263,14 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
     }
 
     public void fireSaved() {
-        support.firePropertyChange(PROPERTY_QUERY_SAVED, null, null);
+        support.firePropertyChange(PROP_CHANGED, null, null);
     }
+
+    @Override
+    public boolean isChanged() {
+        return false;
+    }
+    
     
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
     @Override

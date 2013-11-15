@@ -59,14 +59,14 @@ import org.openide.util.NbBundle;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-@OptionsPanelController.SubRegistration(
-    location = UiUtils.OPTIONS_PATH,
-    id = Nette2OptionsPanelController.OPTIONS_SUBPATH,
+@UiUtils.PhpOptionsPanelRegistration(
+    id = Nette2OptionsPanelController.ID,
     displayName = "#LBL_Nette2OptionsName",
     position=401
 )
 public class Nette2OptionsPanelController extends OptionsPanelController implements ChangeListener {
-    public static final String OPTIONS_SUBPATH = "Nette2"; //NOI18N
+    static final String ID = "Nette2"; //NOI18N
+    public static final String OPTIONS_SUBPATH = UiUtils.FRAMEWORKS_AND_TOOLS_SUB_PATH+"/"+ID; // NOI18N
     private static final String LOADER_FILE = "loader.php"; //NOI18N
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
     private volatile boolean changed = false;

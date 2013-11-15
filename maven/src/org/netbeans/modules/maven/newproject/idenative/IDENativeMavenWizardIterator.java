@@ -42,36 +42,24 @@
 
 package org.netbeans.modules.maven.newproject.idenative;
 
+import org.netbeans.modules.maven.spi.newproject.CreateProjectBuilder;
 import java.io.File;
 import org.netbeans.modules.maven.newproject.*;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.StringUtils;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.validation.adapters.WizardDescriptorAdapter;
-import org.netbeans.modules.maven.api.FileUtilities;
-import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.archetype.ProjectInfo;
-import org.netbeans.modules.maven.model.ModelOperation;
-import org.netbeans.modules.maven.model.Utilities;
-import org.netbeans.modules.maven.model.pom.POMModel;
-import org.netbeans.modules.maven.model.pom.Parent;
-import org.netbeans.modules.maven.model.pom.Properties;
 import static org.netbeans.modules.maven.newproject.idenative.Bundle.LBL_CreateProjectStep2;
 import static org.netbeans.modules.maven.newproject.idenative.Bundle.NameFormat;
-import org.netbeans.modules.xml.xam.ModelSource;
 
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.validation.api.ui.ValidationGroup;
@@ -85,8 +73,6 @@ import org.openide.util.NbBundle.Messages;
  *@author mkleint
  */
 public abstract class IDENativeMavenWizardIterator implements WizardDescriptor.InstantiatingIterator<WizardDescriptor>, WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor> {
-    private static final String SKELETON = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project xmlns=\"http://maven.apache.org/POM/4.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd\">\n" +
-        "    <modelVersion>4.0.0</modelVersion>\n" + "</project>";
     private static final long serialVersionUID = 1L;
     
     private transient int index;
@@ -96,10 +82,12 @@ public abstract class IDENativeMavenWizardIterator implements WizardDescriptor.I
     private final AtomicBoolean hasNextCalled = new AtomicBoolean(); //#216236
     private final String titlename;
     private final String log;
+    private final String packaging;
 
-    public IDENativeMavenWizardIterator(String title, String log) {
+    public IDENativeMavenWizardIterator(String title, String log, String packaging) {
         this.titlename = title;
         this.log = log;
+        this.packaging = packaging;
     }
     
     @Override
@@ -116,43 +104,22 @@ public abstract class IDENativeMavenWizardIterator implements WizardDescriptor.I
             String[] splitlog = StringUtils.split(log, ":");
             ArchetypeWizardUtils.logUsage(splitlog[0], splitlog[1], splitlog[2]);
             File projFile = FileUtil.normalizeFile((File) wiz.getProperty(CommonProjectActions.PROJECT_PARENT_FOLDER)); // NOI18N
-            projFile.mkdirs();
-            handle.progress("Looking for parent project");
-            List<ModelOperation<POMModel>> operations = new ArrayList<ModelOperation<POMModel>>();
-            Project parentProject = FileOwnerQuery.getOwner(org.openide.util.Utilities.toURI(projFile));
-            MavenProject parent = null;
-            if (parentProject != null) {
-                NbMavenProject nbMavenParent = parentProject.getLookup().lookup(NbMavenProject.class);
-                if (nbMavenParent != null && "pom".equals(nbMavenParent.getMavenProject().getPackaging())) {
-                    parent = nbMavenParent.getMavenProject();
-                }
-            }
-            operations.add(new BasicPropertiesOperation(vi, parent, projFile));
-
-            operations.addAll(getOperations(new Context(projFile, parent, vi)));
-            handle.progress("Writing pom.xml");
-            ModelSource model = Utilities.createModelSourceForMissingFile(new File(projFile, "pom.xml"), true, SKELETON, "text/x-maven-pom+xml");
-            Utilities.performPOMModelOperations(model, operations);
-
-            if (parent != null) {
-                handle.progress("Updating parent pom.xml");
-                ModelSource pmodel = Utilities.createModelSource(parentProject.getProjectDirectory().getFileObject("pom.xml"));
-                Utilities.performPOMModelOperations(pmodel, Collections.singletonList(new AddModuleToParentOperation(parentProject.getProjectDirectory(), projFile)));
-            }
-            
-            handle.progress("Writing additional files");
-            afterProjectCreatedActions(new Context(projFile, parent, vi), handle);
+            CreateProjectBuilder builder = createBuilder(projFile, vi, handle);
+            builder.create();
             handle.progress("Finishing...");
             return ArchetypeWizardUtils.openProjects(projFile, null);   
         } finally {
             handle.finish();
         }
     }
-      
-    protected abstract List<ModelOperation<POMModel>> getOperations(Context context);
     
-    protected abstract void afterProjectCreatedActions(Context context, ProgressHandle handle);
-        
+    protected CreateProjectBuilder createBuilder(File projFile, ProjectInfo vi, ProgressHandle handle) {
+            CreateProjectBuilder builder = new CreateProjectBuilder(projFile, vi.groupId, vi.artifactId, vi.version)
+                    .setProgressHandle(handle)
+                    .setPackaging(packaging)
+                    .setPackageName(vi.packageName);
+            return builder;
+    }
     
     @Override
     @Messages("LBL_CreateProjectStep2=Name and Location")
@@ -234,98 +201,5 @@ public abstract class IDENativeMavenWizardIterator implements WizardDescriptor.I
     public @Override void addChangeListener(ChangeListener l) {}
     
     public @Override void removeChangeListener(ChangeListener l) {}
-
-    private static class BasicPropertiesOperation implements ModelOperation<POMModel> {
-        private final @NullAllowed MavenProject parent;
-        private final ProjectInfo vi;
-        private final File projectDir;
-
-        public BasicPropertiesOperation(ProjectInfo vi, MavenProject parent, File projectDir) {
-            this.vi = vi;
-            this.parent = parent;
-            this.projectDir = projectDir;
-        }
-
-        @Override
-        public void performOperation(POMModel model) {
-            org.netbeans.modules.maven.model.pom.Project root = model.getProject();
-            if (root != null) {
-                root.setArtifactId(vi.artifactId);
-                if (parent == null || !vi.groupId.equals(parent.getGroupId())) {
-                    root.setGroupId(vi.groupId);
-                }
-                if (parent == null || !vi.version.equals(parent.getVersion())) {
-                    root.setVersion(vi.version);
-                }
-                
-                if (parent != null) {
-                    Parent parentpom = model.getFactory().createParent();
-                    parentpom.setGroupId(parent.getGroupId());
-                    parentpom.setArtifactId(parent.getArtifactId());
-                    parentpom.setVersion(parent.getVersion());
-                    File pfile = FileUtil.normalizeFile(parent.getFile());
-                    String rel = FileUtilities.relativizeFile(projectDir, pfile);
-                    if (rel != null) {
-                        if ("..".equals(rel) || "../pom.xml".equals(rel)) {
-                            
-                        } else {
-                            parentpom.setRelativePath(rel);
-                        }
-                    } else {
-                        parentpom.setRelativePath("");
-                    }
-                    root.setPomParent(parentpom);
-                    
-                }
-                boolean setEncoding = true;
-                if (parent != null) {
-                    java.util.Properties parentprops = parent.getProperties();
-                    if (parentprops != null && parentprops.containsKey("project.build.sourceEncoding")) {
-                        setEncoding = false;
-                    }
-                }
-                if (setEncoding) {
-                    Properties props = root.getProperties();
-                    if (props == null) {
-                        props = model.getFactory().createProperties();
-                        root.setProperties(props);
-                    }
-                    props.setProperty("project.build.sourceEncoding", "UTF-8");
-                }
-            }
-        }
-    }
-
-    private static class AddModuleToParentOperation implements ModelOperation<POMModel> {
-        private final String relPath;
-
-        public AddModuleToParentOperation(FileObject projectDirectory, File projFile) {
-            FileObject dir = FileUtil.toFileObject(projFile);
-            relPath = FileUtil.getRelativePath(projectDirectory, dir);
-        }
-
-        @Override
-        public void performOperation(POMModel model) {
-            if (relPath != null && model.getProject() != null) {
-                List<String> modules = model.getProject().getModules();
-                if (modules == null || !modules.contains(relPath)) {
-                    model.getProject().addModule(relPath);
-                }
-            }
-        }
-    }
-    
-    public final class Context {
-        public final File projectDirectory;
-        public final MavenProject parentMavenProject;
-        public final ProjectInfo projectInfo;
-
-        private Context(File projectDirectory, MavenProject parentMavenProject, ProjectInfo projectInfo) {
-            this.projectDirectory = projectDirectory;
-            this.parentMavenProject = parentMavenProject;
-            this.projectInfo = projectInfo;
-        }
-        
-    }
 
 }

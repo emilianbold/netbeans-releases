@@ -57,7 +57,10 @@ public class ODCSQueryProvider implements QueryProvider<ODCSQuery, ODCSIssue> {
 
     @Override
     public String getDisplayName(ODCSQuery q) {
-        return q.getDisplayName() + (q.getRepository().needsAndHasNoLogin(q) ? " " +  NbBundle.getMessage(ODCSQueryProvider.class, "LBL_NotLoggedIn") : "");
+        String name = q.getDisplayName();
+        return name != null ?
+                name + (q.getRepository().needsAndHasNoLogin(q) ? " " +  NbBundle.getMessage(ODCSQueryProvider.class, "LBL_NotLoggedIn") : "") : 
+                null;
     }
 
     @Override

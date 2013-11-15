@@ -73,6 +73,7 @@ import org.netbeans.modules.bugtracking.tasks.Category;
 import org.netbeans.modules.bugtracking.settings.DashboardSettings;
 import org.netbeans.modules.bugtracking.tasks.DashboardUtils;
 import org.netbeans.modules.bugtracking.tasks.RecentCategory;
+import org.netbeans.modules.bugtracking.tasks.ScheduleCategory;
 import org.netbeans.modules.bugtracking.tasks.UnsubmittedCategory;
 import org.netbeans.modules.bugtracking.tasks.filter.UnsubmittedCategoryFilter;
 import org.netbeans.modules.team.commons.treelist.ColorManager;
@@ -280,7 +281,7 @@ public final class DashboardViewer implements PropertyChangeListener {
             for (QueryNode queryNode : queryNodes) {
                 if (queryNode.getQuery().equals(query)) {
                     select(Arrays.asList(queryNode));
-                    if(expand) {
+                    if (expand) {
                         queryNode.setExpanded(true);
                     }
                     return;
@@ -674,7 +675,7 @@ public final class DashboardViewer implements PropertyChangeListener {
                 addRepositoryToModel(newNode);
             }
             storeClosedRepositories();
-            
+
             REQUEST_PROCESSOR.post(new Runnable() {
                 @Override
                 public void run() {
@@ -774,6 +775,13 @@ public final class DashboardViewer implements PropertyChangeListener {
     public int removeTaskFilter(DashboardFilter<TaskNode> taskFilter, boolean refresh) {
         appliedTaskFilters.removeFilter(taskFilter);
         return manageRemoveFilter(refresh, taskFilter.expandNodes());
+    }
+
+    public int updateCategoryFilter(DashboardFilter<CategoryNode> filter) {
+        if (filter != null) {
+            appliedCategoryFilters.removeFilter(filter);
+        }
+        return applyCategoryFilter(filter, true);
     }
 
     public int applyCategoryFilter(DashboardFilter<CategoryNode> categoryFilter, boolean refresh) {
@@ -907,6 +915,7 @@ public final class DashboardViewer implements PropertyChangeListener {
                     catNodes.add(new ClosedCategoryNode(new Category(categoryEntry.getCategoryName())));
                 }
             }
+            catNodes.addAll(loadScheduledCategories());
             catNodes.add(getRecentCategoryNode());
             catNodes.addAll(loadUnsubmitedCategories());
 
@@ -920,8 +929,34 @@ public final class DashboardViewer implements PropertyChangeListener {
     private CategoryNode getRecentCategoryNode() {
         Category recentCategory = new RecentCategory();
         RecentCategoryNode recentCategoryNode = new RecentCategoryNode(recentCategory);
-        recentCategoryNode.updateContent();
         return recentCategoryNode;
+    }
+
+    private List<CategoryNode> loadScheduledCategories() {
+        List<CategoryNode> catNodes = new ArrayList<CategoryNode>();
+
+        ScheduleCategory todayCat = new ScheduleCategory(
+                NbBundle.getMessage(DashboardViewer.class, "LBL_Today"),
+                DashboardUtils.getToday(), 1
+        );
+        ScheduleCategoryNode today = new ScheduleCategoryNode(todayCat);
+        catNodes.add(today);
+
+        ScheduleCategory thisWeekCat = new ScheduleCategory(
+                NbBundle.getMessage(DashboardViewer.class, "LBL_ThisWeek"),
+                DashboardUtils.getThisWeek(), 2
+        );
+        ScheduleCategoryNode thisWeek = new ScheduleCategoryNode(thisWeekCat);
+        catNodes.add(thisWeek);
+
+        ScheduleCategory allCat = new ScheduleCategory(
+                NbBundle.getMessage(DashboardViewer.class, "LBL_All"),
+                DashboardUtils.getAll(), 10
+        );
+        ScheduleCategoryNode all = new ScheduleCategoryNode(allCat);
+        catNodes.add(all);
+
+        return catNodes;
     }
 
     private List<CategoryNode> loadUnsubmitedCategories() {
@@ -969,8 +1004,7 @@ public final class DashboardViewer implements PropertyChangeListener {
 
     private UnsubmittedCategoryNode createUnsubmittedCategoryNode(RepositoryImpl repository) {
         Category unsubmittedCategory = new UnsubmittedCategory(repository);
-        UnsubmittedCategoryNode unsubmittedCategoryNode = new UnsubmittedCategoryNode(unsubmittedCategory, repository, false);
-        unsubmittedCategoryNode.updateContent();
+        UnsubmittedCategoryNode unsubmittedCategoryNode = new UnsubmittedCategoryNode(unsubmittedCategory, repository);
         return unsubmittedCategoryNode;
     }
 

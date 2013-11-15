@@ -112,6 +112,18 @@ public class NodeSelectionProjectPanel extends javax.swing.JPanel implements Pre
         }
         revalidate();
     }
+    
+    void minimize() {
+        setPreferredSize(new Dimension(0, 0));
+        setMaximumSize(new Dimension(0, 0));
+        revalidate();
+    }
+    
+    void maximize() {
+        setPreferredSize(new Dimension(Integer.MAX_VALUE, COMPONENT_HEIGHT + BORDER_WIDTH));
+        setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+        revalidate();
+    }
 
     private static final class SeparatorBorder implements Border {
 

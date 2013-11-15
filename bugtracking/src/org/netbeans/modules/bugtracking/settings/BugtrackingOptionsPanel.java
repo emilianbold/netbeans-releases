@@ -50,14 +50,13 @@ import java.awt.CardLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout;
 import javax.swing.JComponent;
-import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.spi.options.OptionsPanelController;
 
 /**
  *
  * @author Tomas Stupka
  */
-@OptionsPanelController.Keywords(keywords={"issue tracking", "#KW_IssueTracking"}, location=OptionsDisplayer.ADVANCED, tabTitle="#LBL_IssueTracking")
+@OptionsPanelController.Keywords(keywords={"issue tracking", "#KW_IssueTracking"}, location="Team", tabTitle="#LBL_IssueTracking")
 class BugtrackingOptionsPanel extends javax.swing.JPanel {
     
     /** Creates new form VcsAdvancedOptionsPanel */
