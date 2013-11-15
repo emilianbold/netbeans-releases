@@ -48,6 +48,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -60,7 +61,9 @@ import javax.swing.SwingUtilities;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
+import org.apache.maven.model.Plugin;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
@@ -90,6 +93,7 @@ import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
+import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
@@ -170,7 +174,7 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
          
             NbMavenProject mpp = currentP.getLookup().lookup(NbMavenProject.class);
             if (mpp != null) {
-                final Children ch = Children.create(new PluginChildren(currentP), false);
+                final Children ch = Children.create(new PluginChildren(currentP), true);
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
@@ -306,9 +310,50 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
                                 continue;
                             }
                             String goalString = XMLUtil.findText(goal).trim();
-                            if (!"help".equals(goalString)) {
-                                goals.add(new Mojo(XMLUtil.findText(goalPrefix).trim(), XMLUtil.findText(goal).trim(), p));
+                            List<Param> params = new ArrayList<Param>();
+                            Element parameters = XMLUtil.findElement(mojo, "parameters", null);
+                            if (parameters != null) {
+                                for (Element param : XMLUtil.findSubElements(parameters)) {
+                                    if (!param.getTagName().equals("parameter")) {
+                                        continue;
+                                    }
+                                    Element nameEl = XMLUtil.findElement(param, "name", null);
+                                    Element editableEl = XMLUtil.findElement(param, "editable", null);
+                                    Element requiredEl = XMLUtil.findElement(param, "required", null);
+                                    if (nameEl != null && requiredEl != null && editableEl != null && "true".equals(XMLUtil.findText(editableEl))) {
+                                        String r = XMLUtil.findText(requiredEl);
+                                        Param par = new Param(XMLUtil.findText(nameEl), "true".equals(r));
+                                        params.add(par);
+                                    }
+                                }
                             }
+                            Element config = XMLUtil.findElement(mojo, "configuration", null);
+                            if (config != null) {
+                                for (Param par : params) {
+                                    Element pconfEl = XMLUtil.findElement(config, par.parameterName, null);
+                                    if (pconfEl != null) {
+                                        Attr attr = pconfEl.getAttributeNode("default-value");
+                                        if (attr != null) {
+                                            par.defValue = attr.getValue();
+                                        }
+                                        String val = XMLUtil.findText(pconfEl);
+                                        if (val != null && val.startsWith("${") && val.endsWith("}")) {
+                                            par.property = val.substring(2, val.length() - 1);
+                                        }
+                                    }
+                                    Plugin pl = mp.getPlugin(Plugin.constructKey(p.getGroupId(), p.getArtifactId()));
+                                    if (pl != null) {
+                                        Xpp3Dom c = (Xpp3Dom) pl.getConfiguration();
+                                        if (c != null) {
+                                            par.parameterInModel = c.getChild(par.parameterName) != null;
+                                        }
+                                    }
+                                    if (par.property != null) {
+                                        par.propertyInModel = mp.getProperties().getProperty(par.property) != null;
+                                    }
+                                }
+                            }
+                            goals.add(new Mojo(XMLUtil.findText(goalPrefix).trim(), goalString, p, params));
                         }
 
                     }
@@ -333,11 +378,23 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
         final Artifact a;
         final String goal;
         final String prefix;
+        final List<Param> parameters;
 
-        public Mojo(String prefix, String goal, Artifact a) {
+        public Mojo(String prefix, String goal, Artifact a, List<Param> parameters) {
             this.a = a;
             this.goal = goal;
             this.prefix = prefix;
+            this.parameters = parameters;
+        }
+        
+        List<Param> getNotSetParams() {
+            List<Param> toRet = new ArrayList<Param>();
+            for (Param p : parameters) {
+                if (p.required && !p.parameterInModel && (p.property == null || !p.propertyInModel)) {
+                    toRet.add(p);
+                }
+            }
+            return toRet;
         }
 
         @Override
@@ -377,6 +434,21 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
         
     }
     
+    private static final class Param {
+        final String parameterName;
+        final boolean required;
+        String property;
+        String defValue;
+        boolean parameterInModel = false; //calculated from presence of parameterName in <configuration> and property in <properties>
+        boolean propertyInModel = false;
+
+        public Param(String parameterName, boolean required) {
+            this.parameterName = parameterName;
+            this.required = required;
+        }
+        
+    }
+    
      private static class MojoNode extends AbstractNode {
         
  
@@ -393,6 +465,11 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
         @Override
         public Action[] getActions(boolean context) {
             NetbeansActionMapping mapp = new NetbeansActionMapping();
+            for (Param p : mojo.getNotSetParams()) {
+                if (p.property != null) {
+                    mapp.addProperty(p.property, "");
+                }
+            }
             mapp.setGoals(Collections.singletonList(mojo.a.getGroupId() + ":" + mojo.a.getArtifactId() + ":" + mojo.a.getVersion() + ":" + mojo.goal));
             Action a = ActionProviderImpl.createCustomMavenAction(mojo.prefix + ":" + mojo.goal, mapp, true, Lookup.EMPTY, project);
             a.putValue(Action.NAME, "Execute Mojo With Modifiers...");
