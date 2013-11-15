@@ -44,11 +44,16 @@ package org.netbeans.modules.web.jsf.editor.completion;
 import java.awt.Color;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.PackageElement;
@@ -65,8 +70,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
-import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
+import org.netbeans.modules.html.editor.api.gsf.HtmlExtension.CompletionContext;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
@@ -98,6 +104,7 @@ import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.api.LibraryComponent;
 import org.netbeans.modules.web.jsfapi.api.NamespaceUtils;
+import org.netbeans.modules.web.jsfapi.api.Tag;
 import org.netbeans.modules.web.jsfapi.spi.LibraryUtils;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.filesystems.FileObject;
@@ -112,10 +119,93 @@ public class JsfAttributesCompletionHelper {
 
     private static final FilenameSupport FILENAME_SUPPORT = new FilenameSupport();
 
+    private static final Map<String, Set<String>> HTML_TO_JSF_MAPPING = new HashMap<>();
+    static {
+        // according to JavaDoc of the TagDecorator
+        HTML_TO_JSF_MAPPING.put("a", new HashSet<>(Arrays.asList("commandLink", "outputLink", "link")));        //NOI18N
+        HTML_TO_JSF_MAPPING.put("body", new HashSet<>(Arrays.asList("body")));                                  //NOI18N
+        HTML_TO_JSF_MAPPING.put("button", new HashSet<>(Arrays.asList("commandButton", "button")));             //NOI18N
+        HTML_TO_JSF_MAPPING.put("form", new HashSet<>(Arrays.asList("form")));                                  //NOI18N
+        HTML_TO_JSF_MAPPING.put("head", new HashSet<>(Arrays.asList("head")));                                  //NOI18N
+        HTML_TO_JSF_MAPPING.put("img", new HashSet<>(Arrays.asList("graphicImage")));                           //NOI18N
+        HTML_TO_JSF_MAPPING.put("input", new HashSet<>(Arrays.asList("commandButton", "selectBooleanCheckbox",  //NOI18N
+                "inputText", "inputFile", "inputHidden", "inputSecret")));                                      //NOI18N
+        HTML_TO_JSF_MAPPING.put("label", new HashSet<>(Arrays.asList("outputLabel")));                          //NOI18N
+        HTML_TO_JSF_MAPPING.put("link", new HashSet<>(Arrays.asList("outputStylesheet")));                      //NOI18N
+        HTML_TO_JSF_MAPPING.put("script", new HashSet<>(Arrays.asList("outputScript")));                        //NOI18N
+        HTML_TO_JSF_MAPPING.put("select", new HashSet<>(Arrays.asList("selectManyListbox", "selectOneListbox")));//NOI18N
+        HTML_TO_JSF_MAPPING.put("textarea", new HashSet<>(Arrays.asList("inputTextArea")));                     //NOI18N
+    }
+
     private JsfAttributesCompletionHelper() {
     }
 
-    public static void completeJavaClasses(final HtmlExtension.CompletionContext context, final List<CompletionItem> items, String ns, OpenTag openTag) {
+    public static List<CompletionItem> getJsfItemsForHtmlElement(CompletionContext context, Library htmlLibrary, String prefix) {
+        List<CompletionItem> result = new ArrayList<>();
+        OpenTag ot = (OpenTag) context.getCurrentNode();
+        Set<String> mapped = HTML_TO_JSF_MAPPING.get(ot.name().toString());
+        if (mapped == null) {
+            return Collections.emptyList();
+        }
+
+        // complete all attributes of JSF elements
+        String prefixNs = prefix.substring(0, prefix.indexOf(":"));      // NOI18N
+        String prefixValue = prefix.substring(prefix.indexOf(":") + 1); // NOI18N
+        for (String jsfComponent : mapped) {
+            completeAttributes(context, result, prefixNs, htmlLibrary, jsfComponent, prefixValue);
+        }
+        return result;
+    }
+
+    public static void completeAttributes(CompletionContext context, List<CompletionItem> items, String attrPrefix, Library lib, String component, String prefix) {
+        OpenTag ot = (OpenTag) context.getCurrentNode();
+        LibraryComponent comp = lib.getComponent(component);
+        if (comp != null) {
+            Tag tag = comp.getTag();
+            if (tag != null) {
+                Collection<Attribute> attrs = tag.getAttributes();
+                //TODO resolve help
+                Collection<String> existingAttrNames = new ArrayList<>();
+                for (org.netbeans.modules.html.editor.lib.api.elements.Attribute a : ot.attributes()) {
+                    existingAttrNames.add(a.name().toString());
+                }
+
+                int replaceOffset = attrPrefix.isEmpty() ? context.getCCItemStartOffset() : context.getCCItemStartOffset() + attrPrefix.length() + 1;
+                for (Attribute a : attrs) {
+                    String attrName = a.getName();
+                    if ((!existingAttrNames.contains(attrName)|| existingAttrNames.contains(context.getItemText()))
+                            && !containsCCEntry(items, attrName)) {
+                        items.add(JsfCompletionItem.createAttribute(attrName, replaceOffset, lib, tag, a)); //NOI18N
+                    }
+                }
+            }
+
+        }
+
+        if (!prefix.isEmpty()) {
+            //filter the items according to the prefix
+            Iterator<CompletionItem> itr = items.iterator();
+            while (itr.hasNext()) {
+                CharSequence insertPrefix = itr.next().getInsertPrefix();
+                if(insertPrefix != null) {
+                    if (!CharSequenceUtilities.startsWith(insertPrefix, prefix)) {
+                        itr.remove();
+                    }
+                }
+            }
+        }
+    }
+
+    private static boolean containsCCEntry(List<CompletionItem> items, String entry) {
+        for (CompletionItem completionItem : items) {
+            if (completionItem.getInsertPrefix().equals(entry)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static void completeJavaClasses(final CompletionContext context, final List<CompletionItem> items, String ns, OpenTag openTag) {
         // <cc:attribute type="com.example.|
         String tagName = openTag.unqualifiedName().toString();
         String attrName = context.getAttributeName();
@@ -153,7 +243,7 @@ public class JsfAttributesCompletionHelper {
         }
     }
 
-    private static void addPackages(HtmlExtension.CompletionContext context, CompilationController controler, List<CompletionItem> items, String prefix) {
+    private static void addPackages(CompletionContext context, CompilationController controler, List<CompletionItem> items, String prefix) {
         int dotOffset = prefix.lastIndexOf('.');
         for (String pkgName : controler.getClasspathInfo().getClassIndex().getPackageNames(prefix, true, EnumSet.of(ClassIndex.SearchScope.SOURCE))) {
             items.add(HtmlCompletionItem.createAttributeValue(
@@ -162,7 +252,7 @@ public class JsfAttributesCompletionHelper {
         }
     }
 
-    private static void addTypesFromPackages(HtmlExtension.CompletionContext context, CompilationController cc, List<CompletionItem> items, String prefix, String packageName) {
+    private static void addTypesFromPackages(CompletionContext context, CompilationController cc, List<CompletionItem> items, String prefix, String packageName) {
         int dotOffset = prefix.lastIndexOf('.');
         PackageElement pkgElem = cc.getElements().getPackageElement(packageName);
         if (pkgElem == null) {
@@ -179,7 +269,7 @@ public class JsfAttributesCompletionHelper {
         }
     }
 
-    public static void completeSectionsOfTemplate(final HtmlExtension.CompletionContext context, final List<CompletionItem> items, String ns, OpenTag openTag) {
+    public static void completeSectionsOfTemplate(final CompletionContext context, final List<CompletionItem> items, String ns, OpenTag openTag) {
         // <ui:define name="|" ...
         String tagName = openTag.unqualifiedName().toString();
         String attrName = context.getAttributeName();
@@ -295,7 +385,7 @@ public class JsfAttributesCompletionHelper {
     //<cc:render/insertFacet name="|" />
     //</cc:implementation>
     //offsers facet declarations only from within this document
-    public static void completeFacetsInCCImpl(HtmlExtension.CompletionContext context, List<CompletionItem> items, String ns, OpenTag openTag, JsfSupportImpl jsfs) {
+    public static void completeFacetsInCCImpl(CompletionContext context, List<CompletionItem> items, String ns, OpenTag openTag, JsfSupportImpl jsfs) {
         if ("http://java.sun.com/jsf/composite".equalsIgnoreCase(ns) || "http://xmlns.jcp.org/jsf/composite".equalsIgnoreCase(ns)) {
             String tagName = openTag.unqualifiedName().toString();
             if ("renderFacet".equalsIgnoreCase(tagName) || "insertFacet".equalsIgnoreCase(tagName)) { //NOI18N
@@ -314,7 +404,7 @@ public class JsfAttributesCompletionHelper {
 
     //2.<f:facet name="|">
     //offsers all facetes
-    public static void completeFacets(HtmlExtension.CompletionContext context, List<CompletionItem> items, String ns, OpenTag openTag, JsfSupportImpl jsfs) {
+    public static void completeFacets(CompletionContext context, List<CompletionItem> items, String ns, OpenTag openTag, JsfSupportImpl jsfs) {
         if ("http://java.sun.com/jsf/core".equalsIgnoreCase(ns) || "http://xmlns.jcp.org/jsf/core".equalsIgnoreCase(ns)) {
             String tagName = openTag.unqualifiedName().toString();
             if ("facet".equalsIgnoreCase(tagName)) { //NOI18N
@@ -340,7 +430,7 @@ public class JsfAttributesCompletionHelper {
         }
     }
 
-    public static void completeValueAccordingToType(HtmlExtension.CompletionContext context, List<CompletionItem> items, String ns, OpenTag openTag, JsfSupportImpl jsfs) {
+    public static void completeValueAccordingToType(CompletionContext context, List<CompletionItem> items, String ns, OpenTag openTag, JsfSupportImpl jsfs) {
         Library lib = jsfs.getLibrary(ns);
         if (lib == null) {
             return;
@@ -369,7 +459,7 @@ public class JsfAttributesCompletionHelper {
 
     }
 
-    public static void completeFaceletsFromProject(HtmlExtension.CompletionContext context, List<CompletionItem> items, String ns, OpenTag openTag) {
+    public static void completeFaceletsFromProject(CompletionContext context, List<CompletionItem> items, String ns, OpenTag openTag) {
         // <ui:include src="|" ...
         String tagName = openTag.unqualifiedName().toString();
         String attrName = context.getAttributeName();
@@ -382,7 +472,7 @@ public class JsfAttributesCompletionHelper {
         }
     }
 
-    public static void completeXMLNSAttribute(HtmlExtension.CompletionContext context, List<CompletionItem> items, JsfSupportImpl jsfs) {
+    public static void completeXMLNSAttribute(CompletionContext context, List<CompletionItem> items, JsfSupportImpl jsfs) {
         if (context.getAttributeName().toLowerCase(Locale.ENGLISH).startsWith("xmlns")) { //NOI18N
             //xml namespace completion for facelets namespaces
             Set<String> nss = NamespaceUtils.getAvailableNss(jsfs.getLibraries(), jsfs.isJsf22Plus());
@@ -397,7 +487,7 @@ public class JsfAttributesCompletionHelper {
         }
     }
 
-    public static void completeTagLibraryMetadata(HtmlExtension.CompletionContext context, List<CompletionItem> items, String ns, OpenTag openTag) {
+    public static void completeTagLibraryMetadata(CompletionContext context, List<CompletionItem> items, String ns, OpenTag openTag) {
         String attrName = context.getAttributeName();
         String tagName = openTag.unqualifiedName().toString();
         LibraryMetadata lib = FaceletsLibraryMetadata.get(ns);
