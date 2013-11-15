@@ -77,7 +77,7 @@ public class SimulatorDebugTransport extends IOSDebugTransport {
     }
 
     private void sendBinaryMessage(byte[] bytes) throws IOException {
-        if (socket.isClosed()) {
+        if (socket == null || socket.isClosed()) {
             return;
         }
         OutputStream os = socket.getOutputStream();
