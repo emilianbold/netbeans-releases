@@ -42,8 +42,14 @@
 
 package org.netbeans.modules.maven.navigator;
 
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -55,9 +61,21 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JComponent;
+import javax.swing.JToggleButton;
+import javax.swing.JToolBar;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.border.EmptyBorder;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
@@ -89,7 +107,9 @@ import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
@@ -109,7 +129,9 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
     private final BeanTreeView treeView;
     private NbMavenProject current;
     private Project currentP;
-    
+    private final TapPanel filtersPanel;
+    private final Preferences preferences;
+
     private final PropertyChangeListener pchadapter = new PropertyChangeListener() {
 
         @Override
@@ -125,6 +147,24 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
     public GoalsPanel() {
         initComponents();
         treeView = (BeanTreeView)jScrollPane1;
+        preferences = NbPreferences.forModule(GoalsPanel.class).node("goalNavigator");
+        filtersPanel = new TapPanel();
+        filtersPanel.setOrientation(TapPanel.DOWN);
+        // tooltip
+        KeyStroke toggleKey = KeyStroke.getKeyStroke(KeyEvent.VK_T,
+                Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
+        String keyText = Utilities.keyToString(toggleKey);
+        filtersPanel.setToolTipText("Click or press " +  keyText + " to hide/show when the Navigator is active"); //NOI18N
+
+        JComponent buttons = createFilterButtons();
+        buttons.setBorder(BorderFactory.createEmptyBorder(0, 5, 5, 0));
+        filtersPanel.add(buttons);
+        if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) {
+            filtersPanel.setBackground(UIManager.getColor("NbExplorerView.background"));//NOI18N
+        } 
+
+        add(filtersPanel, BorderLayout.SOUTH);
+        
     }
     
     @Override
@@ -239,16 +279,8 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
 
         jScrollPane1 = new BeanTreeView();
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 307, Short.MAX_VALUE)
-        );
+        setLayout(new java.awt.BorderLayout());
+        add(jScrollPane1, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
 
@@ -270,11 +302,61 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
         return an;
     }
 
-    private static class PluginChildren extends ChildFactory<Mojo> {
+    private JComponent createFilterButtons() {
+        Box box = new Box(BoxLayout.X_AXIS);
+        box.setBorder(new EmptyBorder(1, 2, 3, 5));
+
+            // configure toolbar
+        JToolBar toolbar = new JToolBar(JToolBar.HORIZONTAL) {
+            @Override
+            protected void paintComponent(Graphics g) {
+            }
+        };
+            toolbar.setFloatable(false);
+            toolbar.setRollover(true);
+            toolbar.setBorderPainted(false);
+            toolbar.setBorder(BorderFactory.createEmptyBorder());
+            toolbar.setOpaque(false);
+            toolbar.setFocusable(false);
+            final JToggleButton tg1 = new JToggleButton();
+            tg1.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/maven/navigator/help.png", true));
+            tg1.setToolTipText("Show help goals");
+            tg1.setSelected(preferences.getBoolean("showHelpGoals", false));
+            tg1.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    preferences.putBoolean("showHelpGoals", tg1.isSelected());
+                    
+                }
+            });
+            toolbar.add(tg1);
+//            final JToggleButton tg2 = new JToggleButton();
+//            tg2.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/maven/navigator/thread_running_16.png", true));
+//            tg1.setText("Show only marked goals");
+//            tg2.setSelected(preferences.getBoolean("showOnlyImportant", false));
+//            tg1.addActionListener(new ActionListener() {
+//
+//                @Override
+//                public void actionPerformed(ActionEvent e) {
+//                    preferences.putBoolean("showOnlyImportant", tg1.isSelected());
+//                }
+//            });
+//            toolbar.add(tg2);
+            Dimension space = new Dimension(3, 0);
+            toolbar.addSeparator(space);
+
+            box.add(toolbar);
+            return box;
+
+    }
+
+    private class PluginChildren extends ChildFactory<Mojo> implements PreferenceChangeListener {
         private final Project prj;
 
         PluginChildren(Project prj) {
             this.prj = prj;
+            preferences.addPreferenceChangeListener(this);
         }
 
         protected @Override
@@ -310,6 +392,9 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
                                 continue;
                             }
                             String goalString = XMLUtil.findText(goal).trim();
+                            if ("help".equals(goalString) && !preferences.getBoolean("showHelpGoals", false)) {
+                                continue;
+                            }
                             List<Param> params = new ArrayList<Param>();
                             Element parameters = XMLUtil.findElement(mojo, "parameters", null);
                             if (parameters != null) {
@@ -370,6 +455,11 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
         protected @Override
         Node createNodeForKey(Mojo mdl) {
             return new MojoNode(mdl, prj);
+        }
+
+        @Override
+        public void preferenceChange(PreferenceChangeEvent evt) {
+            refresh(false);
         }
     }
 
