@@ -591,9 +591,9 @@ is divided into following sections:
             <target name="-init-javame">
                 <xsl:attribute name="depends">-init-user,-init-project,-init-passwords</xsl:attribute>
                 <fail unless="libs.j2me_ant_ext.classpath">Classpath to J2ME Ant extension library (libs.j2me_ant_ext.classpath property) is not set. For example: location of javame/modules/org-netbeans-mobility-antext.jar file in the IDE installation directory.</fail>
-                <taskdef resource="org/netbeans/mobility/antext/defs.properties">
+                <taskdef resource="org/netbeans/modules/j2me/common/ant/defs.properties">
                     <classpath>
-                        <pathelement path="${{libs.j2me_ant_ext.classpath}}"/>
+                        <pathelement path="${{libs.j2me_common_ant.classpath}}"/>
                     </classpath>
                 </taskdef>
             </target>

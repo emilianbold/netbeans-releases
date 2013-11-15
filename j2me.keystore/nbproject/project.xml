@@ -65,9 +65,17 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.j2me.project</friend>
+                <friend>org.netbeans.modules.mobility.antext</friend>
+                <friend>org.netbeans.modules.mobility.project</friend>
                 <package>org.netbeans.modules.j2me.keystore</package>
                 <package>org.netbeans.modules.j2me.keystore.ui</package>
             </friend-packages>
+            <extra-compilation-unit>
+                <package-root>antsrc</package-root>
+                <classpath>${module.classpath}:${ant.jar}:${tools.jar}:build/classes</classpath>
+                <built-to>build/antclasses</built-to>
+                <built-to>${cluster}/ant/nblib/${code.name.base.dashes}.jar</built-to>
+            </extra-compilation-unit>
         </data>
     </configuration>
 </project>
