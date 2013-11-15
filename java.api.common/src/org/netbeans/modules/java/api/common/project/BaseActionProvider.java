@@ -475,13 +475,21 @@ public abstract class BaseActionProvider implements ActionProvider {
                 if (targetNames == null) {
                     return;
                 }
+                final String command2execute;
+                if(COMMAND_TEST_SINGLE.equals(command) && targetNames.length == 1 && targetNames[0].equals(COMMAND_TEST)) {
+                    //multiple files or package(s) selected so we need to call test target instead of test-single
+                    command2execute = COMMAND_TEST;
+                    p.put("nb.internal.action.name", command2execute);
+                } else {
+                    command2execute = command;
+                }
                 if (isCompileOnSaveEnabled) {
-                    if (COMMAND_BUILD.equals(command) && !allowAntBuild()) {
+                    if (COMMAND_BUILD.equals(command2execute) && !allowAntBuild()) {
                         showBuildActionWarning(context);
                         return ;
                     }
                     Map<String, Object> execProperties = new HashMap<String, Object>();
-                    execProperties.put("nb.internal.action.name", command);
+                    execProperties.put("nb.internal.action.name", command2execute);
 
                     copyMultiValue(ProjectProperties.RUN_JVM_ARGS, execProperties);
                     prepareWorkDir(execProperties);
@@ -508,7 +516,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                                 String url = p.getProperty("applet.url");
                                 execProperties.put("applet.url", url);
                                 execProperties.put(JavaRunner.PROP_EXECUTE_FILE, file);
-                                prepareSystemProperties(execProperties, command, context, false);
+                                prepareSystemProperties(execProperties, command2execute, context, false);
                                 task =
                                 JavaRunner.execute(targetNames[0], execProperties);
                             }
@@ -517,50 +525,50 @@ public abstract class BaseActionProvider implements ActionProvider {
                         }
                         return;
                     }
-                    if (!isServerExecution() && (COMMAND_RUN.equals(command) || COMMAND_DEBUG.equals(command) || COMMAND_DEBUG_STEP_INTO.equals(command) || COMMAND_PROFILE.equals(command))) {
-                        prepareSystemProperties(execProperties, command, context, false);
+                    if (!isServerExecution() && (COMMAND_RUN.equals(command2execute) || COMMAND_DEBUG.equals(command2execute) || COMMAND_DEBUG_STEP_INTO.equals(command2execute) || COMMAND_PROFILE.equals(command2execute))) {
+                        prepareSystemProperties(execProperties, command2execute, context, false);
                         AtomicReference<ExecutorTask> _task = new AtomicReference<ExecutorTask>();
-                        bypassAntBuildScript(command, context, execProperties, _task);
+                        bypassAntBuildScript(command2execute, context, execProperties, _task);
                         task = _task.get();
                         return ;
                     }
                     // for example RUN_SINGLE Java file with Servlet must be run on server and not locally
                     boolean serverExecution = p.getProperty(PROPERTY_RUN_SINGLE_ON_SERVER) != null;
                     p.remove(PROPERTY_RUN_SINGLE_ON_SERVER);
-                    if (!serverExecution && (COMMAND_RUN_SINGLE.equals(command) || COMMAND_DEBUG_SINGLE.equals(command) || COMMAND_PROFILE_SINGLE.equals(command))) {
-                        prepareSystemProperties(execProperties, command, context, false);
-                        if (COMMAND_RUN_SINGLE.equals(command)) {
+                    if (!serverExecution && (COMMAND_RUN_SINGLE.equals(command2execute) || COMMAND_DEBUG_SINGLE.equals(command2execute) || COMMAND_PROFILE_SINGLE.equals(command2execute))) {
+                        prepareSystemProperties(execProperties, command2execute, context, false);
+                        if (COMMAND_RUN_SINGLE.equals(command2execute)) {
                             execProperties.put(JavaRunner.PROP_CLASSNAME, p.getProperty("run.class"));
-                        } else if (COMMAND_DEBUG_SINGLE.equals(command)) {
+                        } else if (COMMAND_DEBUG_SINGLE.equals(command2execute)) {
                             execProperties.put(JavaRunner.PROP_CLASSNAME, p.getProperty("debug.class")); 
                         } else {
                             execProperties.put(JavaRunner.PROP_CLASSNAME, p.getProperty("profile.class"));
                         }
                         AtomicReference<ExecutorTask> _task = new AtomicReference<ExecutorTask>();
-                        bypassAntBuildScript(command, context, execProperties, _task);
+                        bypassAntBuildScript(command2execute, context, execProperties, _task);
                         task = _task.get();
                         return;
                     }
                     String buildDir = evaluator.getProperty(ProjectProperties.BUILD_DIR);
-                    if (COMMAND_TEST_SINGLE.equals(command) || COMMAND_DEBUG_TEST_SINGLE.equals(command) || COMMAND_PROFILE_TEST_SINGLE.equals(command)) {
+                    if (COMMAND_TEST_SINGLE.equals(command2execute) || COMMAND_DEBUG_TEST_SINGLE.equals(command2execute) || COMMAND_PROFILE_TEST_SINGLE.equals(command2execute)) {
                         @SuppressWarnings("MismatchedReadAndWriteOfArray")
                         FileObject[] files = findTestSources(context, true);
                         try {
-                            prepareSystemProperties(execProperties, command, context, true);
+                            prepareSystemProperties(execProperties, command2execute, context, true);
                             execProperties.put(JavaRunner.PROP_EXECUTE_FILE, files[0]);
                             if (buildDir != null) { // #211543
                                 execProperties.put("tmp.dir", updateHelper.getAntProjectHelper().resolvePath(buildDir));
                             }
-                            updateJavaRunnerClasspath(command, execProperties);
+                            updateJavaRunnerClasspath(command2execute, execProperties);
                             task =
-                            JavaRunner.execute(command.equals(COMMAND_TEST_SINGLE) ? JavaRunner.QUICK_TEST : (COMMAND_DEBUG_TEST_SINGLE.equals(command) ? JavaRunner.QUICK_TEST_DEBUG :JavaRunner.QUICK_TEST_PROFILE),
+                            JavaRunner.execute(command2execute.equals(COMMAND_TEST_SINGLE) ? JavaRunner.QUICK_TEST : (COMMAND_DEBUG_TEST_SINGLE.equals(command2execute) ? JavaRunner.QUICK_TEST_DEBUG :JavaRunner.QUICK_TEST_PROFILE),
                                                execProperties);
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
                         }
                         return;
                     }
-                    if (SingleMethod.COMMAND_RUN_SINGLE_METHOD.equals(command) || SingleMethod.COMMAND_DEBUG_SINGLE_METHOD.equals(command)) {
+                    if (SingleMethod.COMMAND_RUN_SINGLE_METHOD.equals(command2execute) || SingleMethod.COMMAND_DEBUG_SINGLE_METHOD.equals(command2execute)) {
                         SingleMethod methodSpec = findTestMethods(context)[0];
                         try {
                             execProperties.put("methodname", methodSpec.getMethodName());//NOI18N
@@ -568,9 +576,9 @@ public abstract class BaseActionProvider implements ActionProvider {
                             if (buildDir != null) {
                                 execProperties.put("tmp.dir",updateHelper.getAntProjectHelper().resolvePath(buildDir));
                             }
-                            updateJavaRunnerClasspath(command, execProperties);
+                            updateJavaRunnerClasspath(command2execute, execProperties);
                             task =
-                            JavaRunner.execute(command.equals(SingleMethod.COMMAND_RUN_SINGLE_METHOD) ? JavaRunner.QUICK_TEST : JavaRunner.QUICK_TEST_DEBUG,
+                            JavaRunner.execute(command2execute.equals(SingleMethod.COMMAND_RUN_SINGLE_METHOD) ? JavaRunner.QUICK_TEST : JavaRunner.QUICK_TEST_DEBUG,
                                                   execProperties);
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
@@ -578,12 +586,12 @@ public abstract class BaseActionProvider implements ActionProvider {
                         return;
                     }
                 }
-                collectStartupExtenderArgs(p, command);
-                Set<String> concealedProperties = collectAdditionalProperties(p, command, context);
+                collectStartupExtenderArgs(p, command2execute);
+                Set<String> concealedProperties = collectAdditionalProperties(p, command2execute, context);
                 if (targetNames.length == 0) {
                     targetNames = null;
                 }
-                if (isCompileOnSaveEnabled && !NO_SYNC_COMMANDS.contains(command)) {
+                if (isCompileOnSaveEnabled && !NO_SYNC_COMMANDS.contains(command2execute)) {
                     p.put("nb.wait.for.caches", "true");
                 }
                 final Callback cb = getCallback();
@@ -599,7 +607,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                         DialogDisplayer.getDefault().notify(nd);
                     } else {
                         if (cb2 != null) {
-                            cb2.antTargetInvocationStarted(command, context);
+                            cb2.antTargetInvocationStarted(command2execute, context);
                         }
                         try {
                             task = ActionUtils.runTarget(buildFo, targetNames, p, concealedProperties);
@@ -615,19 +623,19 @@ public abstract class BaseActionProvider implements ActionProvider {
                                         }
                                     } finally {
                                         if (cb2 != null) {
-                                            cb2.antTargetInvocationFinished(command, context, task.result());
+                                            cb2.antTargetInvocationFinished(command2execute, context, task.result());
                                         }
                                     }
                                 }
                             });
                         } catch (IOException ex) {
                             if (cb2 != null) {
-                                cb2.antTargetInvocationFailed(command, context);
+                                cb2.antTargetInvocationFailed(command2execute, context);
                             }
                             throw ex;
                         } catch (RuntimeException ex) {
                             if (cb2 != null) {
-                                cb2.antTargetInvocationFailed(command, context);
+                                cb2.antTargetInvocationFailed(command2execute, context);
                             }
                             throw ex;
                         }
@@ -792,11 +800,17 @@ public abstract class BaseActionProvider implements ActionProvider {
             targetNames = getCommands().get(command);
         } else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
             p.setProperty("ignore.failing.tests", "true");  //NOI18N
-            final FileObject[] files = findTestSources(context, true);
+            final FileObject[] files = findTestSourcesForFiles(context);
             if (files == null) {
                 return null;
             }
+            if(files.length == 1 && files[0].isData()) {
+                //one file or a package containing one file selected
             targetNames = setupTestSingle(p, files);            
+            } else {
+                //multiple files or package(s) selected
+                targetNames = setupTestFilesOrPackages(p, files);
+            }
         } else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
             final FileObject[] files = findTestSources(context, true);
             if (files == null) {
@@ -1366,6 +1380,15 @@ public abstract class BaseActionProvider implements ActionProvider {
         return new String[] {"test-single"}; // NOI18N
     }
 
+    private String[] setupTestFilesOrPackages(Properties p, FileObject[] files) {
+        if (files != null) {
+            FileObject root = getRoot(projectTestRoots.getRoots(), files[0]);
+            // the replace part is so that we can test everything under a package recusively
+            p.setProperty("includes", ActionUtils.antIncludesList(files, root).replace("**", "**/*Test.java")); // NOI18N
+        }
+        return new String[]{"test"}; // NOI18N
+    }
+
     private String[] setupDebugTestSingle(Properties p, FileObject[] files) {
         FileObject[] testSrcPath = projectTestRoots.getRoots();
         FileObject root = getRoot(testSrcPath, files[0]);
@@ -1443,8 +1466,8 @@ public abstract class BaseActionProvider implements ActionProvider {
                     || findSourcesAndPackages( context, projectTestRoots.getRoots()) != null;
         }
         else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
-            FileObject[] fos = findTestSources(context, true);
-            return fos != null && fos.length == 1;
+            FileObject[] fos = findTestSourcesForFiles(context);
+            return fos != null;
         }
         else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
             FileObject[] fos = findTestSources(context, true);
@@ -1545,9 +1568,21 @@ public abstract class BaseActionProvider implements ActionProvider {
      */
     @org.netbeans.api.annotations.common.SuppressWarnings("PZLA_PREFER_ZERO_LENGTH_ARRAYS")
     private @CheckForNull FileObject[] findSources(Lookup context) {
+        return findSources(context, true, false);
+    }
+    
+    /**
+     * Find selected source files
+     *
+     * @param context the lookup in which files should be found
+     * @param strict if true, all files in the selection have to be accepted
+     * @param findInPackages if true, all files under a selected package in the selection will also be checked
+     */
+    @org.netbeans.api.annotations.common.SuppressWarnings("PZLA_PREFER_ZERO_LENGTH_ARRAYS")
+    private @CheckForNull FileObject[] findSources(Lookup context, boolean strict, boolean findInPackages) {
         FileObject[] srcPath = projectSourceRoots.getRoots();
         for (int i=0; i< srcPath.length; i++) {
-            FileObject[] files = ActionUtils.findSelectedFiles(context, srcPath[i], ".java", true); // NOI18N
+            FileObject[] files = ActionUtils.findSelectedFiles(context, srcPath[i], findInPackages ? null : ".java", strict); // NOI18N
             if (files != null) {
                 return files;
             }
@@ -1588,34 +1623,115 @@ public abstract class BaseActionProvider implements ActionProvider {
      */
     @org.netbeans.api.annotations.common.SuppressWarnings("PZLA_PREFER_ZERO_LENGTH_ARRAYS")
     private @CheckForNull FileObject[] findTestSources(Lookup context, boolean checkInSrcDir) {
+        return findTestSources(context, checkInSrcDir, true, false);
+    }
+    
+    /**
+     * Find selected tests and/or tests which belong to selected source files
+     *
+     * @param context the lookup in which files should be found
+     * @param checkInSrcDir if true, tests which belong to selected source files will be searched for
+     * @param strict if true, all files in the selection have to be accepted
+     * @param findInPackages if true, all files under a selected package in the selection will also be checked
+     */
+    @org.netbeans.api.annotations.common.SuppressWarnings("PZLA_PREFER_ZERO_LENGTH_ARRAYS")
+    private @CheckForNull
+    FileObject[] findTestSources(Lookup context, boolean checkInSrcDir, boolean strict, boolean findInPackages) {
         //XXX: Ugly, should be rewritten
-        FileObject[] testSrcPath = projectTestRoots.getRoots();
-        for (int i=0; i< testSrcPath.length; i++) {
-            FileObject[] files = ActionUtils.findSelectedFiles(context, testSrcPath[i], ".java", true); // NOI18N
+        FileObject[] testSrcPaths = projectTestRoots.getRoots();
+        for (FileObject testSrcPath : testSrcPaths) {
+            FileObject[] files = ActionUtils.findSelectedFiles(context, testSrcPath, findInPackages ? null : ".java", strict); // NOI18N
+            ArrayList<FileObject> testFOs = new ArrayList<>();
             if (files != null) {
-                return files;
+                for (FileObject file : files) {
+                    if ((file.hasExt("java") || findInPackages && file.isFolder())) {
+                        testFOs.add(file);
+                    }
+                }
+                return testFOs.toArray(new FileObject[testFOs.size()]);
             }
         }
-        if (checkInSrcDir && testSrcPath.length>0) {
-            FileObject[] files = findSources (context);
+        if (checkInSrcDir && testSrcPaths.length > 0) {
+            FileObject[] files = findSources(context, strict, findInPackages);
             if (files != null) {
                 //Try to find the test under the test roots
-                FileObject srcRoot = getRoot(projectSourceRoots.getRoots(),files[0]);
-                for (int i=0; i<testSrcPath.length; i++) {
-                    FileObject[] files2 = ActionUtils.regexpMapFiles(files,srcRoot, SRCDIRJAVA, testSrcPath[i], SUBST, true);
+                FileObject srcRoot = getRoot(projectSourceRoots.getRoots(), files[0]);
+                for (FileObject testSrcPath : testSrcPaths) {
+                    FileObject[] files2 = ActionUtils.regexpMapFiles(files, srcRoot, SRCDIRJAVA, testSrcPath, SUBST, strict);
                     if (files2 != null) {
                         return files2;
                     }
-                    FileObject[] files2NG = ActionUtils.regexpMapFiles(files, srcRoot, SRCDIRJAVA, testSrcPath[i], SUBSTNG, true);
+                    FileObject[] files2NG = ActionUtils.regexpMapFiles(files, srcRoot, SRCDIRJAVA, testSrcPath, SUBSTNG, strict);
                     if (files2NG != null) {
                         return files2NG;
                     }
+                }
+                // no test files found. The selected FOs must be folders under source packages
+                files = ActionUtils.findSelectedFiles(context, srcRoot, findInPackages ? null : ".java", strict); // NOI18N
+                ArrayList<FileObject> testFOs = new ArrayList<>();
+                if (files != null) {
+                    for (FileObject file : files) {
+                        if (findInPackages && file.isFolder()) {
+                            String relativePath = FileUtil.getRelativePath(srcRoot, file);
+                            if (relativePath != null) {
+                                for (FileObject testSrcPath : testSrcPaths) {
+                                    FileObject testFO = FileUtil.toFileObject(new File(FileUtil.toFile(testSrcPath).getPath().concat(File.separator).concat(relativePath)));
+                                    if (testFO != null) {
+                                        testFOs.add(testFO);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    return testFOs.toArray(new FileObject[testFOs.size()]);
                 }
             }
         }
         return null;
     }
 
+    /**
+     * Find selected tests and tests which belong to selected source files
+     * when package(s) or multiple files are selected.
+     *
+     * @param context the lookup in which files should be found
+     */
+    @org.netbeans.api.annotations.common.SuppressWarnings("PZLA_PREFER_ZERO_LENGTH_ARRAYS")
+    private @CheckForNull FileObject[] findTestSourcesForFiles(Lookup context) {
+        FileObject[] sourcesFOs = findSources(context, false, true);
+        FileObject[] testSourcesFOs = findTestSources(context, false, false, true);
+        HashSet<FileObject> testFiles = new HashSet<>();
+        if(testSourcesFOs == null) { // no test files were selected
+            return findTestSources(context, true, false, true); // return tests which belong to selected source files, if any
+        } else {
+            if(sourcesFOs == null) { // only test files were selected
+                return testSourcesFOs;
+            } else { // both test and source files were selected, do not return any dublicates
+                testFiles.addAll(Arrays.asList(testSourcesFOs));
+                //Try to find the test under the test roots
+                FileObject srcRoot = getRoot(projectSourceRoots.getRoots(),sourcesFOs[0]);
+                for (FileObject testRoot : projectTestRoots.getRoots()) {
+                    FileObject[] files2 = ActionUtils.regexpMapFiles(sourcesFOs, srcRoot, SRCDIRJAVA, testRoot, SUBST, true);
+                    if (files2 != null) {
+                        for (FileObject fo : files2) {
+                            if(!testFiles.contains(fo)) {
+                                testFiles.add(fo);
+                            }
+                        }
+                    }
+                    FileObject[] files2NG = ActionUtils.regexpMapFiles(sourcesFOs, srcRoot, SRCDIRJAVA, testRoot, SUBSTNG, true);
+                    if (files2NG != null) {
+                        for (FileObject fo : files2NG) {
+                            if(!testFiles.contains(fo)) {
+                                testFiles.add(fo);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return testFiles.isEmpty() ? null : testFiles.toArray(new FileObject[testFiles.size()]);
+    }
 
     /**
      * Finds single method specification objects corresponding to JUnit test
