@@ -58,6 +58,7 @@ import org.netbeans.jemmy.operators.*;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.netbeans.modules.options.indentation.FormattingPanel;
+import static org.netbeans.test.java.editor.formatting.operators.FormattingPanelOperator.isModified;
 
 /**
  *
@@ -246,11 +247,21 @@ public class FormattingOptionsOperator extends NbDialogOperator {
     public static void restoreDefaultValues() {
         FormattingOptionsOperator formattingOperator = FormattingOptionsOperator.invoke(true);
         try {
-            formattingOperator.getAllLanguageTabsAndIndentsOperator().restoreDefaultsValues();
-            formattingOperator.getJavaTabsAndIndentsOperator().restoreDefaultsValues();
-            formattingOperator.getAlignmentOperator().restoreDefaultsValues();
-            formattingOperator.getBracesOperator().restoreDefaultsValues();
-            formattingOperator.getWrappingOperator().restoreDefaultsValues();
+            if(isModified(AllLanguageTabsAndIndentsOperator.Settings.class)) {
+                formattingOperator.getAllLanguageTabsAndIndentsOperator().restoreDefaultsValues();
+            }
+            if(isModified(JavaTabsAndIndentsOperator.Settings.class)) {
+                formattingOperator.getJavaTabsAndIndentsOperator().restoreDefaultsValues();
+            }
+            if(isModified(AlignmentOperator.Settings.class)) {
+                formattingOperator.getAlignmentOperator().restoreDefaultsValues();
+            }
+            if(isModified(BracesOperator.Settings.class)) {
+                formattingOperator.getBracesOperator().restoreDefaultsValues();
+            }
+            if(isModified(WrappingOperator.Settings.class)) {
+                formattingOperator.getWrappingOperator().restoreDefaultsValues();
+            }
         } finally {
             formattingOperator.ok();
         }
