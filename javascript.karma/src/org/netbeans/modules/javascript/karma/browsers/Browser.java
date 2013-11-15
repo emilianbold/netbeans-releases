@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.javascript.karma.browsers;
 
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.openide.util.Pair;
@@ -49,7 +50,7 @@ import org.openide.util.Pair;
 
 public abstract class Browser {
 
-    public abstract String getIdentifier();
+    protected abstract List<String> getIdentifiers();
 
     protected abstract Pattern getOutputFileLinePattern();
 

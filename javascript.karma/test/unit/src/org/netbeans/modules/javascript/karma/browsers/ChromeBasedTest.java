@@ -45,7 +45,7 @@ package org.netbeans.modules.javascript.karma.browsers;
 import org.junit.Test;
 import org.netbeans.modules.javascript.karma.browsers.util.TestUtils;
 
-public class ChromeTest {
+public class ChromeBasedTest {
 
     @Test
     public void testValidFilePatterns() {
@@ -77,8 +77,8 @@ public class ChromeTest {
                 null, -1);
     }
 
-    private void assertFilePattern(String input, String file, int line) {
-        TestUtils.assertFileLinePattern(Chrome.OUTPUT_FILE_LINE_PATTERN, input, file, line);
+    void assertFilePattern(String input, String file, int line) {
+        TestUtils.assertFileLinePattern(ChromeBased.OUTPUT_FILE_LINE_PATTERN, input, file, line);
     }
 
 }

@@ -64,6 +64,7 @@ import org.openide.util.NbBundle;
  * 
  * @author S. Aubrecht
  */
+@org.netbeans.api.annotations.common.SuppressWarnings("SE_BAD_FIELD_STORE")
 final class FrameworksPanel extends javax.swing.JPanel {
 
     private final Lookup masterLookup;

@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript.karma.exec;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -228,7 +229,8 @@ public final class KarmaExecutable {
 
         private boolean firstLine = true;
         private boolean startFinishedTaskRun = false;
-        private List<Browser> browsers = null;
+        private Collection<Browser> browsers = null;
+        private int browserCount = -1;
         private int connectedBrowsers = 0;
 
 
@@ -252,7 +254,9 @@ public final class KarmaExecutable {
             // server start
             if (browsers == null
                     && line.startsWith(NB_BROWSERS)) {
-                browsers = Browsers.getBrowsers(StringUtils.explode(line.substring(NB_BROWSERS.length()), ",")); // NOI18N
+                List<String> allBrowsers = StringUtils.explode(line.substring(NB_BROWSERS.length()), ","); // NOI18N
+                browserCount = allBrowsers.size();
+                browsers = Browsers.getBrowsers(allBrowsers);
                 return Collections.emptyList();
             }
             if (startFinishedTask != null
@@ -260,7 +264,7 @@ public final class KarmaExecutable {
                     && line.contains("Connected on socket")) { // NOI18N
                 assert browsers != null;
                 connectedBrowsers++;
-                if (connectedBrowsers == browsers.size()) {
+                if (connectedBrowsers == browserCount) {
                     startFinishedTask.run();
                     startFinishedTaskRun = true;
                 }

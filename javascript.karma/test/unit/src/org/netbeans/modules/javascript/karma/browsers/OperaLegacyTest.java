@@ -45,7 +45,7 @@ package org.netbeans.modules.javascript.karma.browsers;
 import org.junit.Test;
 import org.netbeans.modules.javascript.karma.browsers.util.TestUtils;
 
-public class OperaTest {
+public class OperaLegacyTest {
 
     @Test
     public void testValidFilePatterns() {
@@ -86,7 +86,7 @@ public class OperaTest {
     }
 
     private void assertFilePattern(String input, String file, int line) {
-        TestUtils.assertFileLinePattern(Opera.OUTPUT_FILE_LINE_PATTERN, input, file, line);
+        TestUtils.assertFileLinePattern(OperaLegacy.OUTPUT_FILE_LINE_PATTERN, input, file, line);
     }
 
 }
