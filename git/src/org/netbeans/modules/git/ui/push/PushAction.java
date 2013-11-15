@@ -103,6 +103,13 @@ import org.openide.util.RequestProcessor.Task;
 public class PushAction extends SingleRepositoryAction {
     
     private static final String ICON_RESOURCE = "org/netbeans/modules/git/resources/icons/push-setting.png"; //NOI18N
+    private static final Set<GitRefUpdateResult> UPDATED_STATUSES = new HashSet<>(Arrays.asList(
+            GitRefUpdateResult.FAST_FORWARD,
+            GitRefUpdateResult.FORCED,
+            GitRefUpdateResult.NEW,
+            GitRefUpdateResult.OK,
+            GitRefUpdateResult.RENAMED
+    ));
     
     public PushAction () {
         super(ICON_RESOURCE);
@@ -307,12 +314,14 @@ public class PushAction extends SingleRepositoryAction {
                             } else {
                                 logger.outputLine(Bundle.MSG_PushAction_updates_updateBranch(update.getLocalName(),
                                         update.getOldObjectId(), update.getNewObjectId(), update.getResult()));
-                                if (remote) {
-                                    LogUtils.logBranchUpdateReview(repository, update.getRemoteName(),
-                                            update.getOldObjectId(), update.getNewObjectId(), logger);
-                                } else {
-                                    LogUtils.logBranchUpdateReview(repository, update.getLocalName(),
-                                            update.getOldObjectId(), update.getNewObjectId(), logger);
+                                if (UPDATED_STATUSES.contains(update.getResult())) {
+                                    if (remote) {
+                                        LogUtils.logBranchUpdateReview(repository, update.getRemoteName(),
+                                                update.getOldObjectId(), update.getNewObjectId(), logger);
+                                    } else {
+                                        LogUtils.logBranchUpdateReview(repository, update.getLocalName(),
+                                                update.getOldObjectId(), update.getNewObjectId(), logger);
+                                    }
                                 }
                             }
                         } else {
