@@ -46,7 +46,6 @@ package org.netbeans.modules.jira.options;
 import java.awt.Color;
 import java.awt.Image;
 import javax.swing.ImageIcon;
-import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.ImageUtilities;
 
@@ -54,7 +53,7 @@ import org.openide.util.ImageUtilities;
  *
  * @author Tomas Stupka
  */
-@OptionsPanelController.Keywords(keywords={"jira", "#KW_IssueTracking"}, location=OptionsDisplayer.ADVANCED, tabTitle="#LBL_IssueTracking")
+@OptionsPanelController.Keywords(keywords={"jira", "#KW_IssueTracking"}, location="Team", tabTitle="#LBL_IssueTracking")
 public class JiraOptionsPanel extends javax.swing.JPanel {
 
     /** Creates new form SvnOptionsPanel */

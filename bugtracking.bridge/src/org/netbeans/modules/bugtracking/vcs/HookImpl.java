@@ -259,7 +259,7 @@ class HookImpl {
         }
         
         panel = new HookPanel(
-                        referenceFile,
+                        FileUtil.toFileObject(referenceFile),
                         config.getLink(),
                         config.getResolve(),
                         afterCommit != null ? afterCommit : config.getAfterCommit());

@@ -62,6 +62,7 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import javax.swing.JTable;
+import javax.swing.event.ChangeListener;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaAttribute;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaOperation;
@@ -79,11 +80,11 @@ import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
-import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
+import org.netbeans.modules.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
-import org.netbeans.modules.bugtracking.util.AttachmentsPanel;
-import org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils;
-import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.netbeans.modules.bugtracking.commons.AttachmentsPanel;
+import org.netbeans.modules.bugtracking.commons.NBBugzillaUtils;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.commands.AddAttachmentCommand;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
@@ -106,6 +107,7 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.modules.Places;
 import org.openide.util.NbBundle;
 import static org.netbeans.modules.bugzilla.issue.Bundle.*;
+import org.openide.util.ChangeSupport;
 
 /**
  *
@@ -118,7 +120,7 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
     public static final String RESOLVE_DUPLICATE = "DUPLICATE";                                                 // NOI18N
     public static final String VCSHOOK_BUGZILLA_FIELD = "netbeans.vcshook.bugzilla.";                           // NOI18N
     private static final SimpleDateFormat CC_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");            // NOI18N
-    private static final SimpleDateFormat DUE_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");                 // NOI18N
+    static final SimpleDateFormat DUE_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");                 // NOI18N
 
     private final BugzillaRepository repository;
 
@@ -205,12 +207,8 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         support.firePropertyChange(IssueProvider.EVENT_ISSUE_DATA_CHANGED, null, null);
     }
 
-    protected void fireUnsaved() {
-        support.firePropertyChange(IssueController.PROPERTY_ISSUE_CHANGED, null, null);
-    }
- 
-    protected void fireSaved() {
-        support.firePropertyChange(IssueController.PROPERTY_ISSUE_SAVED, null, null);
+    void fireChanged() {
+        support.firePropertyChange(IssueController.PROP_CHANGED, null, null);
     }
 
     @Override
@@ -1376,7 +1374,7 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
             controller.modelStateChanged(model.isDirty(), model.isDirty() || !model.getChangedAttributes().isEmpty());
         }
     }
-
+    
     @Override
     protected boolean synchronizeTask () {
         try {

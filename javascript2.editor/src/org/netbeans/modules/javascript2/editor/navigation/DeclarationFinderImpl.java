@@ -64,6 +64,8 @@ import org.netbeans.modules.javascript2.editor.model.Occurrence;
 import org.netbeans.modules.javascript2.editor.model.OccurrencesSupport;
 import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
+import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
+import org.netbeans.modules.javascript2.editor.model.impl.SemiTypeResolverVisitor;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
@@ -86,6 +88,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
     public DeclarationLocation findDeclaration(ParserResult info, int caretOffset) {
         JsParserResult jsResult = (JsParserResult)info;
         Model model = jsResult.getModel();
+        model.resolve();
         int offset = info.getSnapshot().getEmbeddedOffset(caretOffset);
         OccurrencesSupport os = model.getOccurrencesSupport();
         Occurrence occurrence = os.getOccurrence(offset);
@@ -146,10 +149,17 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                     if (ts.moveNext() && ts.token().id() == JsTokenId.IDENTIFIER) {
                         String propertyName = ts.token().text().toString();
                         for (Type type : assignments) {
+                            String fqn = type.getType();
+                            if (fqn.startsWith(SemiTypeResolverVisitor.ST_EXP)) {
+                                fqn = fqn.substring(SemiTypeResolverVisitor.ST_EXP.length());
+                            }
+                            if (fqn.contains(SemiTypeResolverVisitor.ST_PRO)) {
+                                fqn = fqn.replace(SemiTypeResolverVisitor.ST_PRO, ".");     //NOI18N
+                            }
                             Collection<? extends IndexResult> items = jsIndex.findByFqn(
-                                    type.getType() + "." + propertyName, JsIndex.TERMS_BASIC_INFO); // NOI18N
+                                    fqn + "." + propertyName, JsIndex.TERMS_BASIC_INFO); // NOI18N
                             if(items.isEmpty()) {
-                                items = jsIndex.findByFqn(type.getType() + ".prototype." + propertyName, JsIndex.TERMS_BASIC_INFO); // NOI18N
+                                items = jsIndex.findByFqn(fqn + ".prototype." + propertyName, JsIndex.TERMS_BASIC_INFO); // NOI18N
                             }
                             indexResults.addAll(items);
                         }

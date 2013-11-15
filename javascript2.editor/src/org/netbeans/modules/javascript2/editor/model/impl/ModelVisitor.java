@@ -72,6 +72,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import jdk.nashorn.internal.ir.ExecuteNode;
+import jdk.nashorn.internal.ir.ForNode;
 import jdk.nashorn.internal.ir.WithNode;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -420,6 +421,11 @@ public class ModelVisitor extends PathNodeVisitor {
                 CallNode constructor = (CallNode) un.rhs();
                 createFunctionArgument(constructor.getFunction(), position, functionArguments, result);
             }
+        } else if (argument instanceof ReferenceNode) {
+            ReferenceNode reference = (ReferenceNode) argument;
+            result.add(FunctionArgumentAccessor.getDefault().createForReference(
+                    position, argument.getStart(),
+                    Collections.singletonList(reference.getReference().getName())));
         } else {
             result.add(FunctionArgumentAccessor.getDefault().createForUnknown(position));
         }
@@ -504,6 +510,35 @@ public class ModelVisitor extends PathNodeVisitor {
     }
 
     @Override
+    public Node enter(ForNode forNode) {
+        if (forNode.getInit() instanceof IdentNode) {
+            JsObject parent = modelBuilder.getCurrentObject();
+            while (parent instanceof JsWith) {
+                parent = parent.getParent();
+            }
+            IdentNode name = (IdentNode)forNode.getInit();
+            JsObjectImpl variable = (JsObjectImpl)parent.getProperty(name.getName());
+            if (variable != null) {
+                Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(modelBuilder, forNode.getModify());
+                for (TypeUsage type : types) {
+                    if (type.getType().contains(SemiTypeResolverVisitor.ST_VAR)) {
+                        int index = type.getType().lastIndexOf(SemiTypeResolverVisitor.ST_VAR);
+                        String newType = type.getType().substring(0, index) + SemiTypeResolverVisitor.ST_ARR + type.getType().substring(index + SemiTypeResolverVisitor.ST_VAR.length());
+                        type = new TypeUsageImpl(newType, type.getOffset(), false);
+                    } else if (type.getType().contains(SemiTypeResolverVisitor.ST_PRO)) {
+                        int index = type.getType().lastIndexOf(SemiTypeResolverVisitor.ST_PRO);
+                        String newType = type.getType().substring(0, index) + SemiTypeResolverVisitor.ST_ARR + type.getType().substring(index + SemiTypeResolverVisitor.ST_PRO.length());
+                        type = new TypeUsageImpl(newType, type.getOffset(), false);
+                    }
+                    System.out.println(type.getType());
+                    variable.addAssignment(type, forNode.getModify().getStart());
+                }
+            }
+        }
+        return super.enter(forNode); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    @Override
     public Node enter(FunctionNode functionNode) {
         addToPath(functionNode);
         List<FunctionNode> functions = new ArrayList<FunctionNode>(functionNode.getFunctions());
@@ -575,7 +610,7 @@ public class ModelVisitor extends PathNodeVisitor {
             boolean isAnonymous = false;
             if (getPreviousFromPath(2) instanceof ReferenceNode) {
                 Node node = getPreviousFromPath(3);
-                if (node instanceof CallNode || node instanceof ExecuteNode) {
+                if (node instanceof CallNode || node instanceof ExecuteNode || node instanceof LiteralNode.ArrayLiteralNode) {
                     isAnonymous = true;
                 } else if (node instanceof AccessNode && getPreviousFromPath(4) instanceof CallNode) {
                     String methodName = ((AccessNode)node).getProperty().getName();
@@ -615,7 +650,8 @@ public class ModelVisitor extends PathNodeVisitor {
                 for (Occurrence occurrence : previousUsage.getOccurrences()) {
                     fncScope.addOccurrence(occurrence.getOffsetRange());
                 }
-                for (JsObject property : previousUsage.getProperties().values()) {
+                Collection<? extends JsObject> propertiesCopy = new ArrayList(previousUsage.getProperties().values());
+                for (JsObject property : propertiesCopy) {
                     ModelUtils.moveProperty(fncScope, property);
                 }
             }
@@ -1120,6 +1156,7 @@ public class ModelVisitor extends PathNodeVisitor {
     }
 
     @Override
+
     public Node enter(VarNode varNode) {
          if (!(varNode.getInit() instanceof ObjectNode || varNode.getInit() instanceof ReferenceNode
                  || varNode.getInit() instanceof LiteralNode.ArrayLiteralNode)) {

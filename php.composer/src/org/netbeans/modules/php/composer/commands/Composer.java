@@ -94,6 +94,7 @@ public final class Composer {
     private static final String AUTHOR_PARAM = "--author=%s <%s>"; // NOI18N
     private static final String DESCRIPTION_PARAM = "--description=%s"; // NOI18N
     private static final String DEV_PARAM = "--dev"; // NOI18N
+    private static final String NO_DEV_PARAM = "--no-dev"; // NOI18N
     private static final String ONLY_NAME_PARAM = "--only-name"; // NOI18N
     private static final List<String> DEFAULT_PARAMS = Arrays.asList(
         ANSI_PARAM,
@@ -188,6 +189,12 @@ public final class Composer {
         return runCommand(phpModule, INSTALL_COMMAND, Bundle.Composer_run_installDev(), Collections.singletonList(DEV_PARAM));
     }
 
+    @NbBundle.Messages("Composer.run.installNoDev=Composer (install no-dev)")
+    public Future<Integer> installNoDev(PhpModule phpModule) {
+        assert phpModule != null;
+        return runCommand(phpModule, INSTALL_COMMAND, Bundle.Composer_run_installNoDev(), Collections.singletonList(NO_DEV_PARAM));
+    }
+
     @NbBundle.Messages("Composer.run.update=Composer (update)")
     public Future<Integer> update(PhpModule phpModule) {
         assert phpModule != null;
@@ -198,6 +205,12 @@ public final class Composer {
     public Future<Integer> updateDev(PhpModule phpModule) {
         assert phpModule != null;
         return runCommand(phpModule, UPDATE_COMMAND, Bundle.Composer_run_updateDev(), Collections.singletonList(DEV_PARAM));
+    }
+
+    @NbBundle.Messages("Composer.run.updateNoDev=Composer (update no-dev)")
+    public Future<Integer> updateNoDev(PhpModule phpModule) {
+        assert phpModule != null;
+        return runCommand(phpModule, UPDATE_COMMAND, Bundle.Composer_run_updateNoDev(), Collections.singletonList(NO_DEV_PARAM));
     }
 
     @NbBundle.Messages("Composer.run.require=Composer (require)")

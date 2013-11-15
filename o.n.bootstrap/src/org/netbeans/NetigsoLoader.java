@@ -46,6 +46,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Enumeration;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 
 /**
  *
@@ -90,12 +91,16 @@ final class NetigsoLoader extends ClassLoader {
 
     private ClassLoader getDelegate() {
         if (!mi.isEnabled()) {
+            Mutex.Privileged p = mi.getManager().mutexPrivileged();
             try {
+                p.enterWriteAccess();
                 mi.getManager().enable(mi, false);
             } catch (IllegalArgumentException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (InvalidException ex) {
                 Exceptions.printStackTrace(ex);
+            } finally {
+                p.exitWriteAccess();
             }
         }
         return mi.getClassLoader();

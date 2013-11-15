@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.38.1
+#Version 1.42.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -56,6 +56,12 @@ intf java.lang.annotation.Annotation
 meth public abstract !hasdefault boolean autostore()
 meth public abstract !hasdefault java.lang.String[] ignoreChanges()
 meth public abstract java.lang.String dtd()
+
+CLSS public abstract interface !annotation org.netbeans.api.settings.FactoryMethod
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.String value()
 
 CLSS abstract interface org.netbeans.api.settings.package-info
 

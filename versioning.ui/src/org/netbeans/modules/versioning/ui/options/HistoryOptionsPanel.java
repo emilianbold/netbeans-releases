@@ -46,7 +46,6 @@ package org.netbeans.modules.versioning.ui.options;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
 
@@ -54,7 +53,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Stupka
  */
-@OptionsPanelController.Keywords(keywords={"#HistoryOptionsPanel.kw1", "#HistoryOptionsPanel.kw2", "#HistoryOptionsPanel.kw2"}, location=OptionsDisplayer.ADVANCED, tabTitle="#CTL_HistoryOptionsPanel.tabName")
+@OptionsPanelController.Keywords(keywords={"#HistoryOptionsPanel.kw1", "#HistoryOptionsPanel.kw2", "#HistoryOptionsPanel.kw2"}, location="Team", tabTitle="#CTL_HistoryOptionsPanel.tabName")
 @NbBundle.Messages({
     "CTL_HistoryOptionsPanel.tabName=Versioning",
     "HistoryOptionsPanel.kw1=history",

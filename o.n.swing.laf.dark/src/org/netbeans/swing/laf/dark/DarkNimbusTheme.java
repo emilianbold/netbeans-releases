@@ -106,6 +106,7 @@ public class DarkNimbusTheme {
         UIManager.put( "nb.bugtracking.new.color", new Color(0, 224, 0)); //NOI18N
         UIManager.put( "nb.bugtracking.modified.color", new Color(81, 182, 255)); //NOI18N
         UIManager.put( "nb.bugtracking.obsolete.color", new Color(153, 153, 153)); //NOI18N
+        UIManager.put( "nb.bugtracking.conflict.color", new Color(255, 51, 51)); //NOI18N
 
         UIManager.put( "nb.html.link.foreground", new Color(164,164,255) ); //NOI18N
         UIManager.put( "nb.html.link.foreground.hover", new Color(255,216,0) ); //NOI18N
@@ -225,5 +226,9 @@ public class DarkNimbusTheme {
         UIManager.put( "List[Selected].textForeground", UIManager.getColor( "nimbusSelectedText" ) );
 
         UIManager.put( "nb.explorer.noFocusSelectionBackground", UIManager.get( "nimbusSelectionBackground") );
+
+        //search in projects
+        UIManager.put("nb.search.sandbox.highlight", new Color(104, 93, 156));
+        UIManager.put("nb.search.sandbox.regexp.wrong", new Color(255, 71, 71));
    }
 }

@@ -80,17 +80,18 @@ import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.spi.IssueController;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
-import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
+import org.netbeans.modules.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryController.QueryMode;
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.util.LinkButton;
-import org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils;
-import org.netbeans.modules.bugtracking.util.NoContentPanel;
+import org.netbeans.modules.bugtracking.commons.LinkButton;
+import org.netbeans.modules.bugtracking.commons.NBBugzillaUtils;
+import org.netbeans.modules.bugtracking.commons.NoContentPanel;
+import org.netbeans.modules.bugtracking.commons.SaveQueryPanel;
+import org.netbeans.modules.bugtracking.team.TeamRepositories;
 import org.netbeans.modules.bugtracking.ui.repository.RepositoryComboSupport;
+import org.netbeans.modules.team.spi.TeamAccessorUtils;
+import org.netbeans.modules.team.spi.TeamProject;
 import org.netbeans.spi.actions.AbstractSavable;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -209,9 +210,17 @@ public final class QueryTopComponent extends TopComponent
             repositoryComboBox.setEnabled(false);
             newButton.setEnabled(false);
         }
-
+        
         if (query != null) {
             if(!isNew) {
+                RepositoryImpl repoImpl = query.getRepositoryImpl();
+                if(repoImpl.isTeamRepository()) {
+                        TeamProject teamProject = TeamRepositories.getInstance().getTeamProject(defaultRepository);
+                        if(teamProject != null) {
+                            instanceContent.add(query.getQuery());
+                            instanceContent.add(teamProject);
+                        }
+                    }
                 setSaved();
             } else {
                 if(!suggestedSelectionOnly) {
@@ -413,22 +422,37 @@ public final class QueryTopComponent extends TopComponent
                     }
                 }
             });
-        } else if(evt.getPropertyName().equals(QueryController.PROPERTY_QUERY_CHANGED)) {
-            if (getLookup().lookup(QuerySavable.class) == null) {
-                instanceContent.add(new QuerySavable(this));
-                setNameAndTooltip();
+        } else if(evt.getPropertyName().equals(QueryController.PROP_CHANGED)) {
+            Object o = evt.getNewValue();
+            boolean changed;
+            if(o instanceof Boolean) {
+                changed = (Boolean) o;
+            } else {
+                changed = getController(query).isChanged();
             }
-        } else if(evt.getPropertyName().equals(QueryController.PROPERTY_QUERY_SAVED)) {
-            if(!isSaved()) {
-                openDashboard();                
+            if(changed) {
+                if (getLookup().lookup(QuerySavable.class) == null) {
+                    instanceContent.add(new QuerySavable(this));
+                    setNameAndTooltip();
+                }
+            } else {
+                String qn = query.getDisplayName();
+                if(qn != null && !"".equals(qn.trim())) {
+                    // was saved
+                    if(!isSaved()) {
+                        openDashboard();
+                        
+                        setSaved();
+                    }
+                }
+                QuerySavable savable = getSavable();
+                if(savable != null) {
+                    savable.destroy();
+                    setNameAndTooltip();
+                }                
             }
-            setSaved();
-            QuerySavable savable = getSavable();
-            if(savable != null) {
-                savable.destroy();
-                setNameAndTooltip();
-            }
-        }
+            
+        } 
     }
 
     private void openDashboard() {
@@ -481,16 +505,40 @@ public final class QueryTopComponent extends TopComponent
                         NotifyDescriptor.INFORMATION_MESSAGE, 
                         new Object[] {save, discard, NotifyDescriptor.CANCEL_OPTION}, null);
                 Object ret = DialogDisplayer.getDefault().notify(nd);
+                boolean canClose = false;
                 if(ret == save) {
-                    return query.getController().saveChanges();
+                    canClose = save();
                 } else if(ret == discard) {
-                    return query.getController().discardUnsavedChanges();
-                } else {
-                    return false;
+                    canClose = query.getController().discardUnsavedChanges();
+                } if(canClose) {
+                    savable.destroy();
                 }
+                return canClose;
             }
         }
         return super.canClose(); 
+    }
+    
+    private boolean save() {
+        String newName = null;
+        if(query.getDisplayName() == null) {
+            newName = SaveQueryPanel.show(new SaveQueryPanel.QueryNameValidator() {
+    @Override
+                public String isValid(String name) {
+                    Collection<QueryImpl> queries = query.getRepositoryImpl().getQueries();
+                    for (QueryImpl q : queries) {
+                        if(name.equals(q.getDisplayName())) {
+                            return NbBundle.getMessage(QueryTopComponent.class, "MSG_SAME_NAME"); // NOI18N
+                        }
+                    }
+                    return null;
+                }
+            }, null);
+            if(newName == null) {
+                return false;
+            }
+        }
+        return query.getController().saveChanges(newName);
     }
     
     @Override
@@ -586,7 +634,7 @@ public final class QueryTopComponent extends TopComponent
                     }
 
                     if(context != null && NBBugzillaUtils.isNbRepository(repo.getUrl())) {
-                        OwnerInfo ownerInfo = TeamUtil.getOwnerInfo(context);
+                        OwnerInfo ownerInfo = TeamAccessorUtils.getOwnerInfo(context);
                         if(ownerInfo != null) {
                             query.setContext(ownerInfo);
                         }
@@ -654,8 +702,14 @@ public final class QueryTopComponent extends TopComponent
         });
     }
 
-    private String getFQQueryName(QueryImpl query) throws MissingResourceException {
-        return NbBundle.getMessage(QueryTopComponent.class, "LBL_QueryName", new Object[]{query.getRepositoryImpl().getDisplayName(), query.getDisplayName()});
+    private static String getFQQueryName(QueryImpl query) throws MissingResourceException {
+        String repoName = query.getRepositoryImpl().getDisplayName();
+        final String queryName = query.getDisplayName();
+        if(queryName != null) {
+            return NbBundle.getMessage(QueryTopComponent.class, "LBL_QueryName", new Object[]{repoName, queryName});
+        } else {
+            return NbBundle.getMessage(QueryTopComponent.class, "LBL_UnsavedQuery", new Object[]{repoName});
+        }
     }
 
     private void setSaved() {
@@ -783,17 +837,20 @@ public final class QueryTopComponent extends TopComponent
         QuerySavable(QueryTopComponent tc) {
             this.tc = tc;
             register();
-}
+        }
 
         @Override
         protected String findDisplayName() {
-            return tc.getDisplayName();
+            if(tc.query != null) {
+                return getFQQueryName(tc.query);
+            }
+            return tc.getName();
         }
 
         @Override
         protected void handleSave() throws IOException {
             if(tc.query != null) {
-                tc.query.getController().saveChanges();
+                tc.save();
             }
         }
 

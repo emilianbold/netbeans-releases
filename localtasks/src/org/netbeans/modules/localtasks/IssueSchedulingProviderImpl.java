@@ -44,14 +44,14 @@ package org.netbeans.modules.localtasks;
 
 import java.util.Date;
 import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
-import org.netbeans.modules.bugtracking.spi.IssueSchedulingProvider;
+import org.netbeans.modules.bugtracking.spi.IssueScheduleProvider;
 import org.netbeans.modules.localtasks.task.LocalTask;
 
 /**
  *
  * @author Ondrej Vrabec
  */
-class IssueSchedulingProviderImpl implements IssueSchedulingProvider<LocalTask> {
+class IssueSchedulingProviderImpl implements IssueScheduleProvider<LocalTask> {
 
     @Override
     public void setDueDate (LocalTask i, Date date) {

@@ -50,23 +50,27 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.javascript.karma.browsers.Browser;
+import org.netbeans.modules.javascript.karma.browsers.Browsers;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferencesValidator;
+import org.netbeans.modules.javascript.karma.run.RunInfo;
+import org.netbeans.modules.javascript.karma.run.TestRunner;
 import org.netbeans.modules.javascript.karma.ui.customizer.KarmaCustomizer;
 import org.netbeans.modules.javascript.karma.util.ExternalExecutable;
 import org.netbeans.modules.javascript.karma.util.FileUtils;
+import org.netbeans.modules.javascript.karma.util.StringUtils;
 import org.netbeans.modules.javascript.karma.util.ValidationResult;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputEvent;
@@ -76,8 +80,10 @@ public final class KarmaExecutable {
 
     private static final Logger LOGGER = Logger.getLogger(KarmaExecutable.class.getName());
 
-    // XXX
-    private static final String KARMA_NETBEANS_CONFIG_FILE = "config/karma-netbeans.conf.js";
+    public static final String KARMA_NAME = "karma"; // NOI18N
+    public static final String KARMA_LONG_NAME = KARMA_NAME + FileUtils.getScriptExtension(true, false);
+    public static final String PROJECT_KARMA_PATH = "node_modules/karma/bin/karma"; // NOI18N
+
     private static final String START_COMMAND = "start";
     private static final String RUN_COMMAND = "run";
     private static final String PORT_PARAMETER = "--port";
@@ -89,7 +95,7 @@ public final class KarmaExecutable {
     private KarmaExecutable(Project project) {
         assert project != null;
         this.project = project;
-        karmaPath = KarmaPreferences.getInstance().getKarma(project);
+        karmaPath = KarmaPreferences.getKarma(project);
         assert karmaPath != null;
     }
 
@@ -112,10 +118,10 @@ public final class KarmaExecutable {
         "KarmaExecutable.start=Karma ({0})",
     })
     @CheckForNull
-    public Future<Integer> start(int port, String configFile) {
+    public Future<Integer> start(int port, RunInfo runInfo) {
         List<String> params = new ArrayList<>(4);
         params.add(START_COMMAND);
-        params.add(KARMA_NETBEANS_CONFIG_FILE);
+        params.add(runInfo.getNbConfigFile());
         params.add(PORT_PARAMETER);
         params.add(Integer.toString(port));
         final CountDownLatch countDownLatch = new CountDownLatch(1);
@@ -127,10 +133,11 @@ public final class KarmaExecutable {
         };
         Future<Integer> task = getExecutable(Bundle.KarmaExecutable_start(ProjectUtils.getInformation(project).getDisplayName()), getProjectDir())
                 .additionalParameters(params)
-                .run(getStartDescriptor(configFile, countDownTask));
+                .environmentVariables(runInfo.getEnvVars())
+                .run(getStartDescriptor(runInfo, countDownTask));
         assert task != null : karmaPath;
         try {
-            countDownLatch.await(1, TimeUnit.MINUTES);
+            countDownLatch.await(15, TimeUnit.SECONDS);
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         }
@@ -163,13 +170,14 @@ public final class KarmaExecutable {
                 .noOutput(false);
     }
 
-    private ExecutionDescriptor getStartDescriptor(String configFile, Runnable serverStartTask) {
+    private ExecutionDescriptor getStartDescriptor(RunInfo runInfo, Runnable serverStartTask) {
         return new ExecutionDescriptor()
                 .frontWindow(false)
                 .frontWindowOnError(false)
                 .outLineBased(true)
                 .errLineBased(true)
-                .outConvertorFactory(new ServerLineConvertorFactory(configFile, serverStartTask));
+                .outConvertorFactory(new ServerLineConvertorFactory(runInfo, serverStartTask))
+                .postExecution(serverStartTask);
     }
 
     private ExecutionDescriptor getRunDescriptor() {
@@ -192,75 +200,82 @@ public final class KarmaExecutable {
 
     private static final class ServerLineConvertorFactory implements ExecutionDescriptor.LineConvertorFactory {
 
-        private final String configFile;
-        private final Runnable startFinishedTask;
+        private final LineConvertor serverLineConvertor;
 
 
-        public ServerLineConvertorFactory(String configFile, Runnable startFinishedTask) {
-            assert configFile != null;
+        public ServerLineConvertorFactory(RunInfo runInfo, Runnable startFinishedTask) {
+            assert runInfo != null;
             assert startFinishedTask != null;
-            this.configFile = configFile;
-            this.startFinishedTask = startFinishedTask;
+            serverLineConvertor = new ServerLineConvertor(runInfo, startFinishedTask);
         }
 
         @Override
         public LineConvertor newLineConvertor() {
-            return new ServerLineConvertor(configFile, startFinishedTask);
+            return serverLineConvertor;
         }
 
     }
 
-    static final class ServerLineConvertor implements LineConvertor {
+    private static final class ServerLineConvertor implements LineConvertor {
 
-        // XXX browser specific
-        // e.g.: (/home/gapon/NetBeansProjects/angular.js/src/auto/injector.js:6:12604)
-        static final Pattern FILE_PATTERN = Pattern.compile("\\((.+?):(\\d+):\\d+\\)"); // NOI18N
+        private static final String NB_BROWSERS = "$NB$netbeans browsers "; // NOI18N
 
-        private final String configFile;
+        private final RunInfo runInfo;
         private final Runnable startFinishedTask;
+        private final TestRunner testRunner;
 
         private boolean firstLine = true;
         private boolean startFinishedTaskRun = false;
+        private List<Browser> browsers = null;
+        private int connectedBrowsers = 0;
 
 
-        public ServerLineConvertor(String configFile, Runnable startFinishedTask) {
-            assert configFile != null;
+        public ServerLineConvertor(RunInfo runInfo, Runnable startFinishedTask) {
+            assert runInfo != null;
             assert startFinishedTask != null;
-            this.configFile = configFile;
+            this.runInfo = runInfo;
             this.startFinishedTask = startFinishedTask;
+            testRunner = new TestRunner(runInfo);
         }
-
 
         @Override
         public List<ConvertedLine> convert(String line) {
             // info
             if (firstLine
-                    && line.contains(KARMA_NETBEANS_CONFIG_FILE)) {
+                    && line.contains(runInfo.getNbConfigFile())) {
                 firstLine = false;
                 return Collections.singletonList(ConvertedLine.forText(
-                        line.replace(KARMA_NETBEANS_CONFIG_FILE, configFile), null));
+                        line.replace(runInfo.getNbConfigFile(), runInfo.getProjectConfigFile()), null));
             }
             // server start
-            // XXX wait for start of all browsers
+            if (browsers == null
+                    && line.startsWith(NB_BROWSERS)) {
+                browsers = Browsers.getBrowsers(StringUtils.explode(line.substring(NB_BROWSERS.length()), ",")); // NOI18N
+                return Collections.emptyList();
+            }
             if (startFinishedTask != null
                     && !startFinishedTaskRun
                     && line.contains("Connected on socket")) { // NOI18N
-                startFinishedTask.run();
-                startFinishedTaskRun = true;
-            }
-            // test result
-            if (line.startsWith("$$netbeans ")) {
-                // XXX
-                //System.out.println("------- nb test: " + line);
+                assert browsers != null;
+                connectedBrowsers++;
+                if (connectedBrowsers == browsers.size()) {
+                    startFinishedTask.run();
+                    startFinishedTaskRun = true;
+                }
+            } else if (line.startsWith(TestRunner.NB_LINE)) {
+                // test result
+                testRunner.process(line);
                 return Collections.emptyList();
             }
             // karma log
-            OutputListener outputListener;
-            Matcher matcher = FILE_PATTERN.matcher(line);
-            if (matcher.find()) {
-                outputListener = new FileOutputListener(matcher.group(1), Integer.valueOf(matcher.group(2)));
-            } else {
-                outputListener = null;
+            assert browsers != null;
+            OutputListener outputListener = null;
+            for (Browser browser : browsers) {
+                Pair<String, Integer> fileLine = browser.getOutputFileLine(line);
+                if (fileLine != null) {
+                    outputListener = new FileOutputListener(fileLine.first(), fileLine.second());
+                    break;
+                }
             }
             return Collections.singletonList(ConvertedLine.forText(line, outputListener));
         }

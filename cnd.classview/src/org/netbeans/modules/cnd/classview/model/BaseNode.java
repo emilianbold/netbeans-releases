@@ -55,7 +55,7 @@ import org.openide.util.RequestProcessor;
  * @author Vladimir Kvasihn
  */
 public abstract class BaseNode extends AbstractCsmNode {
-    protected volatile Image image;
+    private Image image;
     protected static final RequestProcessor RP = new RequestProcessor("Class view icon updater",1); //NOI18N
 
     public BaseNode() {
@@ -70,13 +70,20 @@ public abstract class BaseNode extends AbstractCsmNode {
         super(children, lookup);
     }
 
+    protected void resetIcon(Image image) {
+        synchronized(this) {
+            this.image = image;
+        }
+    }
+    
     @Override
     public Image getIcon(int param) {
-        Image anImage = image;
-        if (anImage == null) {
-            return superGetIcon(param);
+        synchronized(this) {
+            if (image == null) {
+                return superGetIcon(param);
+            }
+            return image;
         }
-        return anImage;
     }
 
     protected interface Callback {

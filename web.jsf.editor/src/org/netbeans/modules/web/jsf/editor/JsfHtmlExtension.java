@@ -56,38 +56,24 @@ import org.netbeans.modules.csl.api.HintsProvider.HintsManager;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.parsing.api.*;
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
-import org.netbeans.modules.web.common.api.LexerUtils;
-import org.netbeans.modules.web.common.taginfo.AttrValueType;
-import org.netbeans.modules.web.common.taginfo.LibraryMetadata;
-import org.netbeans.modules.web.common.taginfo.TagAttrMetadata;
-import org.netbeans.modules.web.common.taginfo.TagMetadata;
 import org.netbeans.modules.web.jsf.api.editor.JsfFacesComponentsProvider.FacesComponentLibrary;
+import org.netbeans.modules.web.jsf.editor.completion.JsfAttributesCompletionHelper;
 import org.netbeans.modules.web.jsf.editor.completion.JsfCompletionItem;
 import org.netbeans.modules.web.jsf.editor.facelets.AbstractFaceletsLibrary;
 import org.netbeans.modules.web.jsf.editor.facelets.CompositeComponentLibrary;
-import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryMetadata;
 import org.netbeans.modules.web.jsf.editor.hints.HintsRegistry;
-import org.netbeans.modules.web.jsf.editor.index.CompositeComponentModel;
-import org.netbeans.modules.web.jsf.editor.index.JsfPageModelFactory;
 import org.netbeans.modules.web.jsfapi.api.Attribute;
-import org.netbeans.modules.web.jsfapi.api.JsfUtils;
 import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.api.LibraryComponent;
 import org.netbeans.modules.web.jsfapi.api.NamespaceUtils;
 import org.netbeans.modules.web.jsfapi.api.Tag;
-import org.netbeans.modules.web.jsfapi.spi.LibraryUtils;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.lexer.MutableTextInput;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 
 /**
  * XXX should be rather done by dynamic artificial embedding creation. The
@@ -96,7 +82,7 @@ import org.openide.util.Exceptions;
  *
  * @author marekfukala
  */
-@MimeRegistration(mimeType=JsfUtils.JSF_XHTML_FILE_MIMETYPE, service=HtmlExtension.class)
+@MimeRegistration(mimeType=org.netbeans.modules.web.jsfapi.api.JsfUtils.JSF_XHTML_FILE_MIMETYPE, service=HtmlExtension.class)
 public class JsfHtmlExtension extends HtmlExtension {
 
     private static final String EL_ENABLED_KEY = "el_enabled"; //NOI18N
@@ -122,7 +108,7 @@ public class JsfHtmlExtension extends HtmlExtension {
             inputAttributes = new InputAttributes();
             doc.putProperty(InputAttributes.class, inputAttributes);
         }
-        Language xhtmlLang = Language.find(org.netbeans.modules.web.jsf.editor.JsfUtils.XHTML_MIMETYPE); //NOI18N
+        Language xhtmlLang = Language.find(JsfUtils.XHTML_MIMETYPE); //NOI18N
         if (inputAttributes.getValue(LanguagePath.get(xhtmlLang), EL_ENABLED_KEY) == null) {
             inputAttributes.setValue(LanguagePath.get(xhtmlLang), EL_ENABLED_KEY, new Object(), false);
 
@@ -389,7 +375,7 @@ public class JsfHtmlExtension extends HtmlExtension {
 
         //complete xmlns attribute value
         if(jsfs != null) {
-            completeXMLNSAttribute(context, items, jsfs);
+            JsfAttributesCompletionHelper.completeXMLNSAttribute(context, items, jsfs);
         }
         
         if(ns == null || openTag == null) {
@@ -397,151 +383,29 @@ public class JsfHtmlExtension extends HtmlExtension {
         }
         
         //first try to complete using special metadata
-        completeTagLibraryMetadata(context, items, ns, openTag);
+        JsfAttributesCompletionHelper.completeTagLibraryMetadata(context, items, ns, openTag);
 
         if(jsfs == null) {
             return items;
         }
 
         //then try to complete according to the attribute type (taken from the library descriptor)
-        completeValueAccordingToType(context, items, ns, openTag, jsfs);
+        JsfAttributesCompletionHelper.completeValueAccordingToType(context, items, ns, openTag, jsfs);
+
+        // completion for files in cases of ui:include src attribute
+        JsfAttributesCompletionHelper.completeFaceletsFromProject(context, items, ns, openTag);
+
+        // completion for sections in cases of ui:define name attribute
+        JsfAttributesCompletionHelper.completeSectionsOfTemplate(context, items, ns, openTag);
+
+        // completion for java classes in <cc:attribute type="com.example.|
+        JsfAttributesCompletionHelper.completeJavaClasses(context, items, ns, openTag);
 
         //facets
-        completeFacetsInCCImpl(context, items, ns, openTag, jsfs);
-        completeFacets(context, items, ns, openTag, jsfs);
+        JsfAttributesCompletionHelper.completeFacetsInCCImpl(context, items, ns, openTag, jsfs);
+        JsfAttributesCompletionHelper.completeFacets(context, items, ns, openTag, jsfs);
 
         return items;
-    }
-
-    //1.
-    //<cc:implementation>
-    //<cc:render/insertFacet name="|" />  
-    //</cc:implementation>
-    //offsers facet declarations only from within this document
-    private void completeFacetsInCCImpl(CompletionContext context, List<CompletionItem> items, String ns, OpenTag openTag, JsfSupportImpl jsfs) {
-        if ("http://java.sun.com/jsf/composite".equalsIgnoreCase(ns) || "http://xmlns.jcp.org/jsf/composite".equalsIgnoreCase(ns)) {
-            String tagName = openTag.unqualifiedName().toString();
-            if ("renderFacet".equalsIgnoreCase(tagName) || "insertFacet".equalsIgnoreCase(tagName)) { //NOI18N
-                if ("name".equalsIgnoreCase(context.getAttributeName())) { //NOI18N
-                    CompositeComponentModel ccModel = (CompositeComponentModel) JsfPageModelFactory.getFactory(CompositeComponentModel.Factory.class).getModel(context.getResult());
-                    if (ccModel != null) {
-                        Collection<String> facets = ccModel.getDeclaredFacets();
-                        for (String facet : facets) {
-                            items.add(HtmlCompletionItem.createAttributeValue(facet, context.getCCItemStartOffset(), !context.isValueQuoted())); //NOI18N
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    //2.<f:facet name="|">
-    //offsers all facetes
-    private void completeFacets(CompletionContext context, List<CompletionItem> items, String ns, OpenTag openTag, JsfSupportImpl jsfs) {
-        if ("http://java.sun.com/jsf/core".equalsIgnoreCase(ns) || "http://xmlns.jcp.org/jsf/core".equalsIgnoreCase(ns)) {
-            String tagName = openTag.unqualifiedName().toString();
-            if ("facet".equalsIgnoreCase(tagName)) { //NOI18N
-                if ("name".equalsIgnoreCase(context.getAttributeName())) { //NOI18N
-                    //try to get composite library model for all declared libraries and extract facets from there
-                    for(String libraryNs : context.getResult().getNamespaces().keySet()) {
-                        Library library = jsfs.getLibrary(libraryNs);
-                        if(library != null) {
-                            if(library instanceof CompositeComponentLibrary) {
-                                Collection<? extends LibraryComponent> lcs = library.getComponents();
-                                for(LibraryComponent lc : lcs) {
-                                    CompositeComponentLibrary.CompositeComponent ccomp = (CompositeComponentLibrary.CompositeComponent)lc;
-                                    CompositeComponentModel model = ccomp.getComponentModel();
-                                    for(String facetName : model.getDeclaredFacets()) {
-                                        items.add(HtmlCompletionItem.createAttributeValue(facetName, context.getCCItemStartOffset(), !context.isValueQuoted())); //NOI18N
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private void completeValueAccordingToType(CompletionContext context, List<CompletionItem> items, String ns, OpenTag openTag, JsfSupportImpl jsfs) {
-        Library lib = jsfs.getLibrary(ns);
-        if (lib == null) {
-            return;
-        }
-
-        String tagName = openTag.unqualifiedName().toString();
-
-        LibraryComponent comp = lib.getComponent(tagName);
-        if (comp == null) {
-            return;
-        }
-
-        String attrName = context.getAttributeName();
-        Attribute attr = comp.getTag().getAttribute(attrName);
-        if (attr == null) {
-            return;
-        }
-
-        //TODO: Add more types and generalize the code then
-        String aType = attr.getType();
-        if ("boolean".equals(aType) || "java.lang.Boolean".equals(aType)) { //NOI18N
-            //boolean type
-            items.add(HtmlCompletionItem.createAttributeValue("true", context.getCCItemStartOffset(), !context.isValueQuoted())); //NOI18N
-            items.add(HtmlCompletionItem.createAttributeValue("false", context.getCCItemStartOffset(), !context.isValueQuoted())); //NOI18N
-        }
-
-    }
-
-    private void completeXMLNSAttribute(CompletionContext context, List<CompletionItem> items, JsfSupportImpl jsfs) {
-        if (context.getAttributeName().toLowerCase(Locale.ENGLISH).startsWith("xmlns")) { //NOI18N
-            //xml namespace completion for facelets namespaces
-            Set<String> nss = NamespaceUtils.getAvailableNss(jsfs.getLibraries(), jsfs.isJsf22Plus());
-
-            //add also xhtml ns to the completion
-            nss.add(LibraryUtils.XHTML_NS);
-            for (String namespace : nss) {
-                if (namespace.startsWith(context.getPrefix())) {
-                    items.add(HtmlCompletionItem.createAttributeValue(namespace, context.getCCItemStartOffset(), !context.isValueQuoted()));
-                }
-            }
-        }
-    }
-
-    private void completeTagLibraryMetadata(CompletionContext context, List<CompletionItem> items, String ns, OpenTag openTag) {
-        String attrName = context.getAttributeName();
-        String tagName = openTag.unqualifiedName().toString();
-        LibraryMetadata lib = FaceletsLibraryMetadata.get(ns);
-
-        if (lib != null) {
-            TagMetadata tag = lib.getTag(tagName);
-
-            if (tag != null) {
-                TagAttrMetadata attr = tag.getAttribute(attrName);
-
-                if (attr != null) {
-                    Collection<AttrValueType> valueTypes = attr.getValueTypes();
-
-                    if (valueTypes != null) {
-                        for (AttrValueType valueType : valueTypes) {
-                            String[] possibleVals = valueType.getPossibleValues();
-
-                            if (possibleVals != null) {
-                                for (String val : possibleVals) {
-                                    if (val.startsWith(context.getPrefix())) {
-                                        CompletionItem itm = HtmlCompletionItem.createAttributeValue(val,
-                                                context.getCCItemStartOffset(),
-                                                !context.isValueQuoted());
-
-                                        items.add(itm);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
     }
 
     @Override
@@ -569,10 +433,29 @@ public class JsfHtmlExtension extends HtmlExtension {
             return DeclarationLocation.NONE;
         }
 
-        if (lib instanceof CompositeComponentLibrary) {
-            return JsfNavigationHelper.goToCompositeComponentLibrary(htmlresult, caretOffset, lib);
-        } else if (lib instanceof FacesComponentLibrary) {
-            return JsfNavigationHelper.goToFacesComponentLibrary(htmlresult, caretOffset, (FacesComponentLibrary) lib);
+        TokenSequence ts = JsfNavigationHelper.getTokenSequenceAtCaret(result.getSnapshot().getTokenHierarchy(), caretOffset);
+        if (ts == null) {
+            return DeclarationLocation.NONE;
+        }
+
+        Token t = ts.token();
+        if (t.id() == HTMLTokenId.VALUE) {
+            String value = CharSequenceUtilities.toString(ts.token().text()).replaceAll("[\"']", ""); //NOI18N
+            String attribute = ""; //NOI18N
+            while (ts.movePrevious()) {
+                if (ts.token().id() == HTMLTokenId.TAG_OPEN) {
+                    String tag = CharSequenceUtilities.toString(ts.token().text());
+                    return JsfNavigationHelper.goToReferencedFile(htmlresult, caretOffset, tag, attribute, value);
+                } else if (ts.token().id() == HTMLTokenId.ARGUMENT && attribute.isEmpty()) {
+                    attribute = CharSequenceUtilities.toString(ts.token().text());
+                }
+            }
+        } else {
+            if (lib instanceof CompositeComponentLibrary) {
+                return JsfNavigationHelper.goToCompositeComponentLibrary(htmlresult, caretOffset, lib);
+            } else if (lib instanceof FacesComponentLibrary) {
+                return JsfNavigationHelper.goToFacesComponentLibrary(htmlresult, caretOffset, (FacesComponentLibrary) lib);
+            }
         }
 
         return DeclarationLocation.NONE;
@@ -582,44 +465,48 @@ public class JsfHtmlExtension extends HtmlExtension {
     @Override
     public OffsetRange getReferenceSpan(final Document doc, final int caretOffset) {
         TokenHierarchy th = TokenHierarchy.get(doc);
-        List<TokenSequence> seqs = th.embeddedTokenSequences(caretOffset, false);
-        TokenSequence ts = null;
-        for (TokenSequence _ts : seqs) {
-            if (_ts.language() == HTMLTokenId.language()) {
-                ts = _ts;
-                break;
-            }
-        }
-
+        TokenSequence ts = JsfNavigationHelper.getTokenSequenceAtCaret(th, caretOffset);
         if (ts == null) {
             return OffsetRange.NONE;
         }
 
-        ts.move(caretOffset);
-        if (ts.moveNext() || ts.movePrevious()) {
-            Token t = ts.token();
-            if (t.id() == HTMLTokenId.TAG_OPEN) {
-                if (CharSequenceUtilities.indexOf(t.text(), ':') != -1) {
-                    return new OffsetRange(ts.offset(), ts.offset() + t.length());
-                }
-            } else if (t.id() == HTMLTokenId.ARGUMENT) {
-                int from = ts.offset();
-                int to = from + t.text().length();
-                //try to find the tag and check if there is a prefix
-                while (ts.movePrevious()) {
-                    if (ts.token().id() == HTMLTokenId.TAG_OPEN) {
-                        if (CharSequenceUtilities.indexOf(ts.token().text(), ':') != -1) {
-                            return new OffsetRange(from, to);
-                        } else {
-                            break;
-                        }
+        Token t = ts.token();
+        if (t.id() == HTMLTokenId.TAG_OPEN) {
+            if (CharSequenceUtilities.indexOf(t.text(), ':') != -1) {
+                return new OffsetRange(ts.offset(), ts.offset() + t.length());
+            }
+        } else if (t.id() == HTMLTokenId.ARGUMENT) {
+            int from = ts.offset();
+            int to = from + t.text().length();
+            //try to find the tag and check if there is a prefix
+            while (ts.movePrevious()) {
+                if (ts.token().id() == HTMLTokenId.TAG_OPEN) {
+                    if (CharSequenceUtilities.indexOf(ts.token().text(), ':') != -1) {
+                        return new OffsetRange(from, to);
+                    } else {
+                        break;
                     }
+                }
+            }
+        } else if (t.id() == HTMLTokenId.VALUE) {
+            CharSequence value = ts.token().text();
+            int from = ts.offset();
+            int to = from + t.text().length();
+            //try to find the tag and check if there is a prefix
+            while (ts.movePrevious()) {
+                if (ts.token().id() == HTMLTokenId.TAG_OPEN) {
+                    if (CharSequenceUtilities.indexOf(ts.token().text(), "include") != -1) {
+                        if (CharSequenceUtilities.indexOf(value, "'") != -1 || CharSequenceUtilities.indexOf(value, "\"") != -1) {
+                            from++; to--;
+                        }
+                        return new OffsetRange(from, to);
+                    }
+                    break;
                 }
             }
         }
 
         return OffsetRange.NONE;
-
     }
 
     @Override
@@ -636,4 +523,5 @@ public class JsfHtmlExtension extends HtmlExtension {
             hints.add(injectCC);
         }
     }
+
 }

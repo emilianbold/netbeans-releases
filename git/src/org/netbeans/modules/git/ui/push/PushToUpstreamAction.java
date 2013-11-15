@@ -46,6 +46,7 @@ import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.modules.git.Git;
@@ -86,13 +87,13 @@ public class PushToUpstreamAction extends MultipleRepositoryAction {
     
     @Override
     protected RequestProcessor.Task performAction (File repository, File[] roots, VCSContext context) {
-        return push(repository);
+        return push(repository, GitUtils.getRepositoryRoots(context));
     }
     
     @NbBundle.Messages({"LBL_Push.pushToUpstreamFailed=Push to Upstream Failed",
         "LBL_PushToUpstreamAction.preparing=Preparing Push...",
-        "MSG_Err.unknownRemoteBranchName=Cannot guess remote branch name for {0}"})
-    private Task push (final File repository) {
+        "# {0} - local branch", "MSG_Err.unknownRemoteBranchName=Cannot guess remote branch name for {0}"})
+    Task push (final File repository, final Set<File> repositories) {
         final Task[] t = new Task[1];
         GitProgressSupport supp = new GitProgressSupport.NoOutputLogging() {
             @Override
@@ -122,7 +123,8 @@ public class PushToUpstreamAction extends MultipleRepositoryAction {
                 pushMappings.add(new PushMapping.PushBranchMapping(remoteBranchName, trackedBranch.getId(), activeBranch, false, false));
                 Utils.logVCSExternalRepository("GIT", uri); //NOI18N
                 if (!isCanceled()) {
-                    t[0] = SystemAction.get(PushAction.class).push(repository, uri, pushMappings, cfg.getFetchRefSpecs());
+                    t[0] = SystemAction.get(PushAction.class).push(repository, uri, pushMappings,
+                            cfg.getFetchRefSpecs(), null, repositories, true);
                 }
             }
         };

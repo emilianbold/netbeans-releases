@@ -256,7 +256,7 @@ public class Utilities {
                         }
                         OutputStream os = fo.getOutputStream();
                         try {
-                            os.write(text.getBytes(FileEncodingQuery.getEncoding(fo)));
+                            os.write(text.getBytes("UTF-8"));
                         } finally {
                             os.close();
                         }
@@ -275,7 +275,7 @@ public class Utilities {
             }
         }
     }
-
+    
     /**
      * performs model modifying operations on top of the POM model. After modifications,
      * the model is persisted to file.
@@ -284,10 +284,23 @@ public class Utilities {
      */
     public static void performPOMModelOperations(final FileObject pomFileObject, List<? extends ModelOperation<POMModel>> operations) {
         assert pomFileObject != null;
-        assert operations != null;
         ModelSource source = Utilities.createModelSource(pomFileObject);
+        performPOMModelOperations(source, operations);
+    }
+
+    /**
+     * performs model modifying operations on top of the POM model. After modifications,
+     * the model is persisted to file.
+     * @param source
+     * @param operations
+     * @since 1.36
+     */
+    public static void performPOMModelOperations(final ModelSource source, List<? extends ModelOperation<POMModel>> operations) {
+        assert source != null;
+        assert operations != null;
+        
         if (source.getLookup().lookup(BaseDocument.class) == null) {
-            logger.log(Level.WARNING, "#193187: no Document associated with {0}", pomFileObject);
+            logger.log(Level.WARNING, "#193187: no Document associated with {0}", getPathFromSource(source));
             return;
         }
         POMModel model = POMModelFactory.getDefault().getModel(source);
@@ -299,13 +312,13 @@ public class Utilities {
                     return;
                 }
                 if (!model.startTransaction()) {
-                    logger.log(Level.WARNING, "Could not start transaction on {0}", pomFileObject);
+                    logger.log(Level.WARNING, "Could not start transaction on {0}", getPathFromSource(source));
                     return;
                 }
                 final AtomicBoolean modified = new AtomicBoolean();
                 ComponentListener listener = new ComponentListener() {
                     private void change(ComponentEvent evt) {
-                        logger.log(Level.FINE, "{0}: {1}", new Object[] {pomFileObject, evt});
+                        logger.log(Level.FINE, "{0}: {1}", new Object[] {getPathFromSource(source), evt});
                         modified.set(true);
                     }
                     @Override public void valueChanged(ComponentEvent evt) {
@@ -330,7 +343,7 @@ public class Utilities {
                 if (modified.get()) {
                     Utilities.saveChanges(model);
                 } else {
-                    logger.log(Level.FINE, "no changes recorded in {0}", pomFileObject);
+                    logger.log(Level.FINE, "no changes recorded in {0}", getPathFromSource(source));
                 }
             } catch (IOException ex) {
                 StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Utilities.class, "ERR_POM", ex.getLocalizedMessage()), StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT).clear(10000);
@@ -345,8 +358,20 @@ public class Utilities {
                 }
             }
         } else {
-            logger.log(Level.WARNING, "Cannot create model from current content of {0}", pomFileObject);
+            logger.log(Level.WARNING, "Cannot create model from current content of {0}", getPathFromSource(source));
         }
+    }
+    
+    private static String getPathFromSource(ModelSource source) {
+        File f = source.getLookup().lookup(File.class);
+        if (f != null) {
+            return f.getAbsolutePath();
+        }
+        DataObject dob = source.getLookup().lookup(DataObject.class);
+        if (dob != null) {
+            return dob.getPrimaryFile().getPath();
+        }
+        return source.toString();
     }
 
     /**

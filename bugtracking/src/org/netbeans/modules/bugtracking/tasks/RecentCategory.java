@@ -42,30 +42,21 @@
 package org.netbeans.modules.bugtracking.tasks;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.tasks.dashboard.TaskNode;
-import org.netbeans.modules.bugtracking.team.spi.RecentIssue;
 import org.openide.util.NbBundle;
 
 public class RecentCategory extends Category {
 
     private final BugtrackingManager bugtrackingManager;
-    private final RecentComparator recentComparator;
-    private List<RecentIssue> recentIssues;
-    private final Map<IssueImpl, RecentIssue> issue2recent = new HashMap<IssueImpl, RecentIssue>();
+    private List<String> recentIdx;
 
     public RecentCategory() {
         super(NbBundle.getMessage(RecentCategory.class, "LBL_Recent"), new ArrayList<IssueImpl>(), true);
         bugtrackingManager = BugtrackingManager.getInstance();
-        recentComparator = new RecentComparator();
     }
 
     @Override
@@ -75,44 +66,31 @@ public class RecentCategory extends Category {
 
     @Override
     public List<IssueImpl> getTasks() {
-        List<IssueImpl> result;
-        synchronized (issue2recent) {
-            recentIssues = new ArrayList<RecentIssue>();
-            Collection<List<RecentIssue>> values = bugtrackingManager.getAllRecentIssues().values();
-            for (List<RecentIssue> list : values) {
-                recentIssues.addAll(list);
+        synchronized (this) {
+            List<IssueImpl> recent = bugtrackingManager.getAllRecentIssues();
+            recentIdx = new ArrayList<String>(recent.size());
+            for (IssueImpl recentIssue : recent) {
+                recentIdx.add(recentIssue.getID());
             }
-            Collections.sort(recentIssues, recentComparator);
-
-            result = new ArrayList<IssueImpl>(recentIssues.size());
-            for (RecentIssue recentIssue : recentIssues) {
-                IssueImpl impl = APIAccessor.IMPL.getImpl(recentIssue.getIssue());
-                result.add(impl);
-                issue2recent.put(impl, recentIssue);
-            }
+            return new ArrayList<IssueImpl>(recent);
         }
-        return result;
-    }
-
-    private RecentIssue getRecentIssue(IssueImpl impl) {
-        return issue2recent.get(impl);
     }
 
     public Comparator<TaskNode> getTaskNodeComparator() {
         return new Comparator<TaskNode>() {
-
             @Override
             public int compare(TaskNode o1, TaskNode o2) {
-                return recentComparator.compare(getRecentIssue(o1.getTask()), getRecentIssue(o2.getTask()));
+                IssueImpl issue1 = o1.getTask();
+                IssueImpl issue2 = o2.getTask();
+                Integer i1 = issue1 != null ? recentIdx.indexOf(issue1.getID()) : -1;
+                Integer i2 = issue2 != null ? recentIdx.indexOf(issue2.getID()) : -1;
+                return i1.compareTo(i2);
             }
         };
     }
 
-    private static class RecentComparator implements Comparator<RecentIssue> {
-
-        @Override
-        public int compare(RecentIssue i1, RecentIssue i2) {
-            return -Long.compare(i1.getTimestamp(), i2.getTimestamp());
-        }
+     @Override
+    public int sortIndex() {
+        return 800;
     }
 }

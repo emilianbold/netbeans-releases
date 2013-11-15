@@ -46,14 +46,13 @@ import java.awt.BorderLayout;
 import java.util.HashMap;
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
-import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.spi.options.OptionsPanelController;
 
 /**
  *
  * @author  pbuzek
  */
-@OptionsPanelController.Keywords(keywords={"systems", "versioning", "#KW_VersioningOptions"}, location=OptionsDisplayer.ADVANCED, tabTitle="Versioning")
+@OptionsPanelController.Keywords(keywords={"systems", "versioning", "#KW_VersioningOptions"}, location="Team", tabTitle="Versioning")
 public class VcsAdvancedOptionsPanel extends javax.swing.JPanel {
 
     HashMap<String, JComponent> versioningPanels = new HashMap<String, JComponent>();

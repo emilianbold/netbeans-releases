@@ -18,10 +18,18 @@ public class Wrapping2 {
         if(11111==111111) System.out.println("yes");
         while(111==a) System.out.println("yes");        
         do System.out.println(""); while(a==111111);
+        switch(a) {
+            case 1: System.out.println("");
+        }
         assert a == (10000000+1000000) : "Error";
-        int aaa = 1000000+ 1000000+ 1000000;
+        int aaa = 1000000 + 1000000 + 1000000;
         System.out.println(a > 1111111 ? "Big" : "Small");
         int aaaaaaaaaaaaaaaaaaaa = 1111111111;
+        FuncIface i = (x,y) -> 1;
+    }
+    
+    interface FuncIface {
+        int meth(int a,int b);
     }
 
     @Deprecated @SuppressWarnings(value={}) 
