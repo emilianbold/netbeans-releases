@@ -40,7 +40,7 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.navigator;
+package org.netbeans.modules.maven.execute.navigator;
 
 import org.netbeans.spi.navigator.NavigatorLookupHint;
 import org.netbeans.spi.project.ProjectServiceProvider;

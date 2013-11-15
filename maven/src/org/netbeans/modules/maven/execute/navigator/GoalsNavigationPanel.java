@@ -40,7 +40,7 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.navigator;
+package org.netbeans.modules.maven.execute.navigator;
 
 import java.util.Collection;
 import javax.swing.JComponent;
@@ -52,7 +52,7 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
-import static org.netbeans.modules.maven.navigator.Bundle.*;
+import static org.netbeans.modules.maven.execute.navigator.Bundle.*;
 
 /**
  *

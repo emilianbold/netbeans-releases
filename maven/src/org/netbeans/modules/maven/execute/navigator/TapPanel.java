@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.maven.navigator;
+package org.netbeans.modules.maven.execute.navigator;
 
 import javax.swing.*;
 import java.awt.*;

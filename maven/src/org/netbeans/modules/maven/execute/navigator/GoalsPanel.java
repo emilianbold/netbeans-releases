@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.navigator;
+package org.netbeans.modules.maven.execute.navigator;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -94,6 +94,7 @@ import org.netbeans.modules.maven.configurations.M2ConfigProvider;
 import org.netbeans.modules.maven.configurations.M2Configuration;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
+import org.netbeans.modules.maven.execute.navigator.Bundle;
 import org.netbeans.modules.maven.spi.IconResources;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
@@ -107,7 +108,6 @@ import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
@@ -319,7 +319,7 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
             toolbar.setOpaque(false);
             toolbar.setFocusable(false);
             final JToggleButton tg1 = new JToggleButton();
-            tg1.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/maven/navigator/help.png", true));
+            tg1.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/maven/execute/navigator/help.png", true));
             tg1.setToolTipText("Show help goals");
             tg1.setSelected(preferences.getBoolean("showHelpGoals", false));
             tg1.addActionListener(new ActionListener() {
