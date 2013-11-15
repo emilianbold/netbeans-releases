@@ -46,7 +46,6 @@ package org.netbeans.modules.j2ee.persistence.wizard.fromdb;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.logging.Level;
@@ -58,7 +57,6 @@ import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.core.api.support.wizard.Wizards;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceLocation;
@@ -74,7 +72,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -86,8 +83,6 @@ import org.openide.util.RequestProcessor;
 public class RelatedCMPWizard implements TemplateWizard.Iterator {
 
     private static final String PROP_HELPER = "wizard-helper"; //NOI18N
-    private static final String PROP_CMP = "wizard-is-cmp"; //NOI18N
-    private static final String TYPE_CMP = "cmp"; // NOI18N
     private static final String TYPE_JPA = "jpa"; // NOI18N
     private static final Lookup.Result<PersistenceGeneratorProvider> PERSISTENCE_PROVIDERS =
             Lookup.getDefault().lookupResult(PersistenceGeneratorProvider.class);
@@ -105,10 +100,6 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
         return new RelatedCMPWizard(TYPE_JPA);
     }
 
-    public static RelatedCMPWizard createForCMP() {
-        return new RelatedCMPWizard(TYPE_CMP);
-    }
-
     private static PersistenceGenerator createPersistenceGenerator(String type) {
         assert type != null;
 
@@ -123,10 +114,6 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
 
     static RelatedCMPHelper getHelper(WizardDescriptor wizardDescriptor) {
         return (RelatedCMPHelper) wizardDescriptor.getProperty(PROP_HELPER);
-    }
-
-    static boolean isCMP(WizardDescriptor wizardDescriptor) {
-        return ((Boolean) wizardDescriptor.getProperty(PROP_CMP)).booleanValue();
     }
 
     public RelatedCMPWizard(String type) {
@@ -180,14 +167,10 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
 
     private WizardDescriptor.Panel[] createPanels() {
 
-        String wizardBundleKey = isCMP() ? "Templates/J2EE/RelatedCMP" : "Templates/Persistence/RelatedCMP"; // NOI18N
+        String wizardBundleKey = "Templates/Persistence/RelatedCMP"; // NOI18N
         String wizardTitle = NbBundle.getMessage(RelatedCMPWizard.class, wizardBundleKey);
 
-        if (isCMP()) {
-            return new WizardDescriptor.Panel[]{
-                        new DatabaseTablesPanel.WizardPanel(wizardTitle),
-                        new EntityClassesPanel.WizardPanel(),};
-        } else {
+        {
 //            boolean showPUStep = false;
 //            try {
 //                showPUStep = !ProviderUtil.persistenceExists(project);
@@ -211,11 +194,7 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
     }
 
     private String[] createSteps() {
-        if (isCMP()) {
-            return new String[]{
-                        NbBundle.getMessage(RelatedCMPWizard.class, "LBL_DatabaseTables"),
-                        NbBundle.getMessage(RelatedCMPWizard.class, isCMP() ? "LBL_EntityBeansLocation" : "LBL_EntityClasses"),};
-        } else {
+           {
 //            boolean showPUStep = false;
 //            try {
 //                showPUStep = !ProviderUtil.persistenceExists(project);
@@ -238,10 +217,6 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
         }
     }
 
-    private boolean isCMP() {
-        return TYPE_CMP.equals(type);
-    }
-
     @Override
     public final void initialize(TemplateWizard wiz) {
         wizardDescriptor = wiz;
@@ -259,7 +234,6 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
         helper = new RelatedCMPHelper(project, configFilesFolder, generator);
 
         wiz.putProperty(PROP_HELPER, helper);
-        wiz.putProperty(PROP_CMP, isCMP());
 
         generator.init(wiz);
     }
@@ -278,7 +252,7 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
             Util.addPersistenceUnitToProject(project);
         }
 
-        final String title = NbBundle.getMessage(RelatedCMPWizard.class, isCMP() ? "TXT_EjbGeneration" : "TXT_EntityClassesGeneration");
+        final String title = NbBundle.getMessage(RelatedCMPWizard.class, "TXT_EntityClassesGeneration");
         final ProgressContributor progressContributor = AggregateProgressFactory.createProgressContributor(title);
         final AggregateProgressHandle handle =
                 AggregateProgressFactory.createHandle(title, new ProgressContributor[]{progressContributor}, null, null);
@@ -366,7 +340,7 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
             FileObject dbschemaFile = helper.getDBSchemaFile();
             if (dbschemaFile == null) {
                 FileObject configFilesFolder = getHelper(wiz).getConfigFilesFolder();
-                if (configFilesFolder == null && !isCMP()) {
+                if (configFilesFolder == null) {
                     // if we got here, this must be an entity class library project or just a
                     // project without persistence.xml
                     configFilesFolder = PersistenceLocation.createLocation(project);
@@ -376,15 +350,9 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                     return;
                 }
-
-                String projectName = ProjectUtils.getInformation(project).getDisplayName();
-                if (isCMP()) {
-                    dbschemaFile = DBSchemaManager.updateDBSchemas(helper.getSchemaElement(), helper.getDBSchemaFileList(), configFilesFolder, projectName);
-                }
             }
 
-            String extracting = NbBundle.getMessage(RelatedCMPWizard.class, isCMP()
-                    ? "TXT_ExtractingBeansAndRelationships" : "TXT_ExtractingEntityClassesAndRelationships");
+            String extracting = NbBundle.getMessage(RelatedCMPWizard.class, "TXT_ExtractingEntityClassesAndRelationships");
 
             handle.progress(extracting);
             progressPanel.setText(extracting);

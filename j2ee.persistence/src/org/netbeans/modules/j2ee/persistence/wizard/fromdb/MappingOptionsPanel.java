@@ -285,7 +285,6 @@ public class MappingOptionsPanel extends javax.swing.JPanel {
         private MappingOptionsPanel component;
         private boolean componentInitialized;
         private WizardDescriptor wizardDescriptor;
-        private boolean cmp;
 
         public MappingOptionsPanel getComponent() {
             if (component == null) {
@@ -296,11 +295,7 @@ public class MappingOptionsPanel extends javax.swing.JPanel {
         }
 
         public HelpCtx getHelp() {
-            if (cmp) {
-                return new HelpCtx("org.netbeans.modules.j2ee.ejbcore.ejb.wizard.cmp." + MappingOptionsPanel.class.getSimpleName()); // NOI18N
-            } else {
                 return new HelpCtx(MappingOptionsPanel.class);
-            }
         }
 
         public void readSettings(WizardDescriptor settings) {
@@ -309,7 +304,6 @@ public class MappingOptionsPanel extends javax.swing.JPanel {
             if (!componentInitialized) {
                 componentInitialized = true;
 
-                cmp = RelatedCMPWizard.isCMP(wizardDescriptor);
                 RelatedCMPHelper helper = RelatedCMPWizard.getHelper(wizardDescriptor);
                 FetchType fetchType = helper.getFetchType();
                 boolean fullTblName = helper.isFullyQualifiedTableNames();
