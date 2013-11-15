@@ -48,14 +48,21 @@ import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.spi.options.AdvancedOption;
 import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -64,6 +71,8 @@ import org.openide.util.NbBundle;
  * 
  * @author S. Aubrecht
  */
+@OptionsPanelController.Keywords(keywords={"php"},
+        location=UiUtils.OPTIONS_PATH, tabTitle="#LBL_FrameworksTabTitle")
 final class FrameworksPanel extends javax.swing.JPanel {
 
     private final Lookup masterLookup;
@@ -71,6 +80,7 @@ final class FrameworksPanel extends javax.swing.JPanel {
     private final ArrayList<AdvancedOption> options;
     private final Map<AdvancedOption, OptionsPanelController> option2controller;
     private final Map<AdvancedOption, JComponent> option2panel;
+    private final Map<AdvancedOption, List<String>> option2keywords;
     private final PropertyChangeListener changeListener = new PropertyChangeListener() {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
@@ -93,6 +103,7 @@ final class FrameworksPanel extends javax.swing.JPanel {
         });
         option2controller = new HashMap<>(options.size());
         option2panel = new HashMap<>(options.size());
+        option2keywords = new HashMap<>(options.size());
         DefaultListModel model = new DefaultListModel();
         for( AdvancedOption ao : this.options ) {
             model.addElement( ao.getDisplayName() );
@@ -185,15 +196,8 @@ final class FrameworksPanel extends javax.swing.JPanel {
         
         AdvancedOption selOption = getSelectedOption();
         if( null != selOption ) {
-            OptionsPanelController controller = option2controller.get(selOption);
-            if( null == controller ) {
-                controller = selOption.create();
-                option2controller.put(selOption, controller);
-                JComponent panel = controller.getComponent(masterLookup);
-                option2panel.put(selOption, panel);
-                controller.addPropertyChangeListener(changeListener);
-                controller.update();
-            }
+            OptionsPanelController controller = getController(selOption);
+            controller.update();
         }
         OptionsPanelController selection = getSelectedController();
         if( null != selection ) {
@@ -202,6 +206,54 @@ final class FrameworksPanel extends javax.swing.JPanel {
         panelContent.invalidate();
         panelContent.revalidate();
         panelContent.repaint();
+    }
+    
+    private OptionsPanelController getController( AdvancedOption option ) {
+        OptionsPanelController controller = option2controller.get(option);
+        if( null == controller ) {
+            controller = option.create();
+            option2controller.put(option, controller);
+            JComponent panel = controller.getComponent(masterLookup);
+            option2panel.put(option, panel);
+            controller.addPropertyChangeListener(changeListener);
+        }
+        return controller;
+    }
+    
+    void handleSearch( List<String> matchedKeywords ) {
+        for( AdvancedOption option : options ) {
+            List<String> keywords = option2keywords.get(option);
+            if( null == keywords ) {
+                keywords = loadKeywords( option );
+                option2keywords.put(option, keywords);
+            }
+            for( String kw : matchedKeywords ) {
+                if( keywords.contains(kw) ) {
+                    setSelecteOption(option);
+                    return;
+                }
+            }
+        }
+    }
+    
+    private List<String> loadKeywords( AdvancedOption option ) {
+        OptionsPanelController controller = getController(option);
+        JComponent panel = controller.getComponent(masterLookup);
+        String id = "OptionsDialog/Keywords/" + panel.getClass().getName(); //NOI18N
+        ArrayList<String> res = new ArrayList<>(20);
+        FileObject keywordsFO = FileUtil.getConfigFile(id);
+        if( null != keywordsFO ) {
+            Enumeration<String> attributes = keywordsFO.getAttributes();
+            while(attributes.hasMoreElements()) {
+                String attribute = attributes.nextElement();
+                if(attribute.startsWith("keywords")) { //NOI18N
+                    String word = keywordsFO.getAttribute(attribute).toString();
+                    res.add(word.toUpperCase());
+                }
+            }
+        }
+        
+        return res;
     }
 
     void update() {

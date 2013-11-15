@@ -57,10 +57,11 @@ import org.openide.util.NbBundle;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
+@NbBundle.Messages({"Nette.options.keywords.TabTitle=Frameworks & Tools"})
 @OptionsPanelController.Keywords(
     keywords = {"php", "nette", "nette2", "framework"},
     location = UiUtils.OPTIONS_PATH,
-    tabTitle = "#LBL_Nette2OptionsName"
+    tabTitle = "#Nette.options.keywords.TabTitle"
 )
 public class Nette2OptionsPanel extends javax.swing.JPanel {
     private static final String NETTE_DIRECTORY_SUFFIX = ".nette-directory"; //NOI18N
