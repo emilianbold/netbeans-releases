@@ -94,7 +94,8 @@ public class TargetLister {
 
                     parse(data, gruntFile);
                 } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    //Exceptions.printStackTrace(ex);
+                    cache.remove(gruntFile.getPath());
                 }
             }
 
