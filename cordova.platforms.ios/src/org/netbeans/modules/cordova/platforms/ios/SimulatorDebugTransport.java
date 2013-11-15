@@ -50,9 +50,10 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.json.simple.JSONObject;
 import org.netbeans.modules.cordova.platforms.api.WebKitDebuggingSupport;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -119,7 +120,7 @@ public class SimulatorDebugTransport extends IOSDebugTransport {
         try {
             socket.close();
         } catch (Exception e) {
-            Exceptions.printStackTrace(e);
+            Logger.getLogger(SimulatorDebugTransport.class.getName()).log(Level.FINE , e.getMessage(), e);
         }
     }
 
