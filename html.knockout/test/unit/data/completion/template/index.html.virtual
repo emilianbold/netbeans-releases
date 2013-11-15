@@ -51,7 +51,7 @@ $context.$parentContext.$data = ko.$bindings;
 $parentContext.$data = ko.$bindings;
 var $parents = [$parentContext.$data];
 with (ko.$bindings) {
-var $data = { name: 'person-template', data: buyer }.data || { name: 'person-template', data: seller }.data;
+var $data = buyer || seller;
 }
 with ($data) {
 (name);}
@@ -75,7 +75,7 @@ $context.$parentContext.$data = ko.$bindings;
 $parentContext.$data = ko.$bindings;
 var $parents = [$parentContext.$data];
 with (ko.$bindings) {
-var $data = { name: 'person-template', data: buyer }.data || { name: 'person-template', data: seller }.data;
+var $data = buyer || seller;
 }
 with ($data) {
 (credits);}

@@ -47,9 +47,9 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.util.Pair;
 
 /**
@@ -64,37 +64,88 @@ public class KOTemplateContext {
 
     private boolean isId;
 
-    public static String getTemplateName(TokenSequence<? extends JsTokenId> ts) {
+    public static TemplateDescriptor getTemplateDescriptor(Snapshot snapshot, TokenSequence<? extends JsTokenId> ts) {
         if (ts == null) {
             return null;
         }
 
         ts.moveStart();
         ts.moveNext();
+        String name = null;
+        String data = null;
         Token<? extends JsTokenId> token = LexUtilities.findNextNonWsNonComment(ts);
         if (token.id() == JsTokenId.BRACKET_LEFT_CURLY) {
-            // XXX this is ugly hack we need to properly iterate for the right property
-            if (ts.moveNext()) {
-                token = LexUtilities.findNextNonWsNonComment(ts);
-                if (token.id() == JsTokenId.IDENTIFIER && "name".equals(token.text().toString())) { // NOI18N
-                    if (ts.moveNext()) {
+            while ((token = findNext(ts, JsTokenId.IDENTIFIER, false)) != null) {
+                String text = token.text().toString();
+                if ("name".equals(text) && ts.moveNext()) { // NOI18N
+                    token = LexUtilities.findNextNonWsNonComment(ts);
+                    if (token.id() == JsTokenId.OPERATOR_COLON && ts.moveNext()) {
                         token = LexUtilities.findNextNonWsNonComment(ts);
-                        if (token.id() == JsTokenId.OPERATOR_COLON) {
-                            if (ts.moveNext()) {
-                                token = LexUtilities.findNextNonWsNonComment(ts);
-                                if (token.id() == JsTokenId.STRING_BEGIN) {
-                                    if (ts.moveNext()) {
-                                        token = ts.token();
-                                        return token.text().toString();
-                                    }
-                                }
+                        if (token.id() == JsTokenId.STRING_BEGIN && ts.moveNext()) {
+                            token = LexUtilities.findNextNonWsNonComment(ts);
+                            if (token.id() == JsTokenId.STRING) {
+                                name = token.text().toString();
                             }
                         }
                     }
+                } else if ("data".equals(text) && ts.moveNext()) { // NOI18N
+                    token = LexUtilities.findNextNonWsNonComment(ts);
+                    if (token.id() == JsTokenId.OPERATOR_COLON && ts.moveNext()) {
+                        LexUtilities.findNextNonWsNonComment(ts);
+                        int start = ts.offset();
+                        token = findNext(ts, JsTokenId.OPERATOR_COMMA, true);
+                        if (token != null) {
+                            data = snapshot.getText().subSequence(start, ts.offset()).toString().trim();
+                        }
+                    }
                 }
+                if (token == null || token.id() != JsTokenId.OPERATOR_COMMA) {
+                    findNext(ts, JsTokenId.OPERATOR_COMMA, false);
+                }
+            }
+            if (name != null && data != null) {
+                return new TemplateDescriptor(name, data);
             }
         }
 
+        return null;
+    }
+
+    private static Token<? extends JsTokenId> findNext(TokenSequence<? extends JsTokenId> ts, JsTokenId toFind, boolean findEnd) {
+        LinkedList<JsTokenId> stack = new LinkedList<>();
+        while (ts.moveNext()) {
+            Token<? extends JsTokenId> token = LexUtilities.findNextNonWsNonComment(ts);
+            JsTokenId id = token.id();
+            switch (id) {
+                case BRACKET_LEFT_BRACKET:
+                case BRACKET_LEFT_CURLY:
+                case BRACKET_LEFT_PAREN:
+                    stack.push(id);
+                    break;
+                case BRACKET_RIGHT_BRACKET:
+                    if (stack.isEmpty() || stack.pop() != JsTokenId.BRACKET_LEFT_BRACKET) {
+                        return null;
+                    }
+                    break;
+                case BRACKET_RIGHT_CURLY:
+                    if (stack.isEmpty() && findEnd) {
+                        return token;
+                    }
+                    if (stack.isEmpty() || stack.pop() != JsTokenId.BRACKET_LEFT_CURLY) {
+                        return null;
+                    }
+                    break;
+                case BRACKET_RIGHT_PAREN:
+                    if (stack.isEmpty() || stack.pop() != JsTokenId.BRACKET_LEFT_PAREN) {
+                        return null;
+                    }
+                    break;
+                default:
+                    if (toFind == id && stack.isEmpty()) {
+                        return token;
+                    }
+            }
+        }
         return null;
     }
 
@@ -161,6 +212,26 @@ public class KOTemplateContext {
         scripts.clear();
         isScriptStart = false;
         isId = false;
+    }
+
+    public static class TemplateDescriptor {
+
+        private final String name;
+
+        private final String data;
+
+        public TemplateDescriptor(String name, String data) {
+            this.name = name;
+            this.data = data;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getData() {
+            return data;
+        }
     }
 
     private static class StackItem {

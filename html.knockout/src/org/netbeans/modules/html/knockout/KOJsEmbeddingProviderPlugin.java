@@ -198,11 +198,11 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
                         }
                         if (setTemplate && embedded.token().id() == KODataBindTokenId.VALUE && dataValue == null) {
                             KODataBindContext templateBindContext = new KODataBindContext(dataBindContext);
-                            templateBindContext.push(embedded.token().text().toString().trim() + ".data", false); // NOI18N
-                            String templateName = KOTemplateContext.getTemplateName(
-                                    embedded.embedded(JsTokenId.javascriptLanguage()));
-                            // it may be defined as runtime expression wchich would return null here :(
-                            if (templateName != null) {
+                            KOTemplateContext.TemplateDescriptor desc = KOTemplateContext.getTemplateDescriptor(
+                                    snapshot, embedded.embedded(JsTokenId.javascriptLanguage()));
+                            if (desc != null) {
+                                templateBindContext.push(desc.getData(), false);
+                                String templateName = desc.getName();
                                 KODataBindContext current = templateUsages.get(templateName);
                                 if (current == null) {
                                     templateUsages.put(templateName, templateBindContext);
