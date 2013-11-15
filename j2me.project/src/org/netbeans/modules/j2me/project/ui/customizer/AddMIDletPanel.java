@@ -200,6 +200,11 @@ public class AddMIDletPanel extends JPanel implements DocumentListener, ActionLi
 
         jComboBoxClass.setEditable(true);
         jComboBoxClass.setPreferredSize(new java.awt.Dimension(250, 24));
+        jComboBoxClass.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jComboBoxClassActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -243,6 +248,11 @@ public class AddMIDletPanel extends JPanel implements DocumentListener, ActionLi
         gridBagConstraints.weighty = 1.0;
         add(errorPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void jComboBoxClassActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBoxClassActionPerformed
+        String midletClass = getClazz();
+        jTextFieldName.setText(midletClass.substring(midletClass.lastIndexOf('.')+1));
+    }//GEN-LAST:event_jComboBoxClassActionPerformed
     
     private void initAccessibility() {
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddMIDletPanel.class, "ACSN_AddMIDlet"));
