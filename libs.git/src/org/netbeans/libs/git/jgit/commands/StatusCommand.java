@@ -219,6 +219,9 @@ public class StatusCommand extends GitCommand {
                             continue;
                         }
                     } else {
+                        if (mWorking == FileMode.TYPE_GITLINK || mHead == FileMode.TYPE_GITLINK || mIndex == FileMode.TYPE_GITLINK) {
+                            isFolder = file.isDirectory();
+                        }
                         if (mWorking == FileMode.MISSING.getBits() && mIndex != FileMode.MISSING.getBits()) {
                             statusIndexWC = GitStatus.Status.STATUS_REMOVED;
                         } else if (mIndex == FileMode.MISSING.getBits() && mWorking != FileMode.MISSING.getBits()) {
