@@ -63,6 +63,8 @@ char *unescape_strcpy(char *dst, const char *src);
 
 char* signal_name(int signal);
 
+long long get_mtime(struct stat *stat_buf);
+
 #ifdef	__cplusplus
 }
 #endif

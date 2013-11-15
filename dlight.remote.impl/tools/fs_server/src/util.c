@@ -238,6 +238,23 @@ char *unescape_strcpy(char *dst, const char *src) {
     return dst;
 }
 
+long long get_mtime(struct stat *stat_buf) {
+    long long  result = stat_buf->st_mtime;
+    result *= 1000;
+#if __FreeBSD__
+    #if __BSD_VISIBLE
+        result += stat_buf->st_mtimespec.tv_nsec/1000000;
+    #else
+        result += stat_buf->__st_mtimensec/1000000;
+    #endif
+#elif __APPLE__
+    result += stat_buf->st_mtimespec.tv_nsec/1000000;
+#else
+    result +=  stat_buf->st_mtim.tv_nsec/1000000;    
+#endif
+    return result;
+}
+
 char* signal_name(int signal) {
     switch (signal) {
         case SIGHUP:    return "SIGHUP";

@@ -373,23 +373,6 @@ static bool visit_dir_entries(const char* path,
     }
 }
 
-static long long get_mtime(struct stat *stat_buf) {
-    long long  result = stat_buf->st_mtime;
-    result *= 1000;
-#if __FreeBSD__
-    #if __BSD_VISIBLE
-        result += stat_buf->st_mtimespec.tv_nsec/1000000;
-    #else
-        result += stat_buf->__st_mtimensec/1000000;
-    #endif
-#elif __APPLE__
-    result += stat_buf->st_mtimespec.tv_nsec/1000000;
-#else
-    result +=  stat_buf->st_mtim.tv_nsec/1000000;    
-#endif
-    return result;
-}
-
 static bool fs_entry_creating_visitor(char* name, struct stat *stat_buf, char* link, const char* abspath, void *data) {
     fs_entry tmp;
     tmp.name_len = strlen(name);
@@ -418,13 +401,13 @@ static void read_entries_from_dir(array/*<fs_entry>*/ *entries, const char* path
 }
 
 static bool response_entry_create(char* response_buf, const int response_buf_size, 
-        const char *abspath, const struct dirent *entry, 
+        const char *abspath, const char *basename, 
         char* work_buf, int work_buf_size) {
     struct stat stat_buf;
     if (lstat(abspath, &stat_buf) == 0) {
         
         //int escaped_name_size = escape_strlen(entry->d_name);
-        escape_strcpy(work_buf, entry->d_name);
+        escape_strcpy(work_buf, basename);
         char *escaped_name = work_buf;
         int escaped_name_size = strlen(escaped_name);
         work_buf_size -= (escaped_name_size + 1);
@@ -552,13 +535,13 @@ static void response_ls(int request_id, const char* path, bool recursive, int ne
                 continue;
             }
             strcpy(child_abspath + base_len + 1, entry->d_name);
-            if (response_entry_create(response_buf, response_buf_size, child_abspath, entry, work_buf, work_buf_size)) {
+            if (response_entry_create(response_buf, response_buf_size, child_abspath, entry->d_name, work_buf, work_buf_size)) {
                 fprintf(stdout, "%c %d %s", FS_RSP_ENTRY, request_id, response_buf);
                 if (cache_fp) {
                     fprintf(cache_fp, "%s",response_buf); // trailing '\n' already there, added by form_entry_response
                 }
             } else {
-                report_error("error forming entry response for '%s'\n", child_abspath);
+                report_error("error formatting response for '%s'\n", child_abspath);
             }
         }
         fprintf(stdout, "%c %d %li %s\n", FS_RSP_END, request_id, (long) strlen(path), path);
@@ -605,8 +588,56 @@ static void response_ls(int request_id, const char* path, bool recursive, int ne
     free(response_buf);
 }
 
-static void response_stat(int request_id, const char* path) {
-    
+static void response_stat(int request_id, const char* path) {  
+    struct stat stat_buf;    
+    if (stat(path, &stat_buf) == 0) {
+
+        int buf_size = MAXNAMLEN * 2 + 80; // *2 because of escaping. TODO: accurate size calculation
+        char* escaped_name = malloc(buf_size);
+        const char* basename = strrchr(path, '/');
+        if (!basename) {
+            basename = path;
+        }    
+        
+        escape_strcpy(escaped_name, basename);
+        int escaped_name_size = strlen(escaped_name);
+        fprintf(stdout, "%c %i %i %s %li %li %li %lu %lli\n",
+                FS_REQ_STAT,
+                request_id,
+                escaped_name_size,
+                escaped_name,
+                (long) stat_buf.st_uid,
+                (long) stat_buf.st_gid,
+                (long) stat_buf.st_mode,
+                (unsigned long) stat_buf.st_size,
+                get_mtime(&stat_buf));
+        fflush(stdout);
+        free(escaped_name);        
+    }  else {
+        report_error("error getting stat for '%s': %s\n", path, strerror(errno));
+    }
+}
+
+static void response_lstat(int request_id, const char* path) {    
+    int response_buf_size = PATH_MAX * 2; // *2 because of escaping. TODO: accurate size calculation
+    char* response_buf = malloc(response_buf_size); 
+    int work_buf_size = (PATH_MAX + MAXNAMLEN) * 2 + 2;
+    char* work_buf = malloc(work_buf_size);
+    const char* basename = strrchr(path, '/');
+    if (!basename) {
+        basename = path;
+    }
+    if (response_entry_create(response_buf, response_buf_size, path, basename, work_buf, work_buf_size)) {
+        fprintf(stdout, "%c %d %s", FS_RSP_ENTRY, request_id, response_buf);
+        fflush(stdout);
+//        if (cache_fp) {
+//            fprintf(cache_fp, "%s",response_buf); // trailing '\n' already there, added by form_entry_response
+//        }
+    } else {
+        report_error("error formatting response for '%s'\n", path);
+    }
+    free(response_buf);
+    free(work_buf);
 }
 
 static void process_request(fs_request* request) {
@@ -619,6 +650,10 @@ static void process_request(fs_request* request) {
             break;
         case FS_REQ_STAT:
             response_stat(request->id, request->path);
+            break;
+        case FS_REQ_LSTAT:
+            response_lstat(request->id, request->path);
+            break;
         default:
             report_error("unexpected mode: '%c'\n", request->kind);
     }
