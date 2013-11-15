@@ -157,13 +157,13 @@ made subject to such option by the copyright holder.
     <folder name="Templates">
         <folder name="Project">
             <folder name="JavaME">
-                <attr name="displayName" bundlevalue="org.netbeans.modules.j2me.project.wizard.Bundle#Templates/Project/JavaME"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.j2me.project.resources.Bundle#Templates/Project/JavaME"/>
                 <attr name="position" intvalue="460"/>
             </folder>
         </folder>
 
         <folder name="j2me">
-            <attr name="displayName" bundlevalue="org.netbeans.modules.j2me.project.wizard.Bundle#Templates/Project/javame"/>
+            <attr name="displayName" bundlevalue="org.netbeans.modules.j2me.project.resources.Bundle#Templates/javame"/>
             <attr name="position" intvalue="910"/>
 
             <file name="MEEPlet.java" url="../templates/MEEPlet.template">
