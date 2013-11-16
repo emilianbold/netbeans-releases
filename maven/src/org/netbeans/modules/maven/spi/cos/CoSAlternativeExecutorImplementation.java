@@ -40,75 +40,49 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.remote.impl.fs.server;
+package org.netbeans.modules.maven.spi.cos;
 
-import java.nio.BufferUnderflowException;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.maven.cos.CoSAlternativeExecutor;
+import org.netbeans.modules.maven.api.execute.ExecutionContext;
+import org.netbeans.modules.maven.api.execute.RunConfig;
 
 /**
+ * Alternative executor enables to rewrite the way how compile on save execution is
+ * performed by default.
  *
- * @author vkvashin
+ * <p>
+ * This can be useful in cases when we don't need to execute standard run behavior.
+ * For example when re-running Maven Web application with enabled CoS/DoS, we don't
+ * want to rebuild whole project every-time and simply re-opening index.html is enough.
+ *
+ * <p>
+ * If the project want to use {@link CoSAlternativeExecutorImplementation} it should register
+ * it in it's project {@link Lookup}.
+ *
+ * <p>
+ * This class should not be used directly. Use {@link CoSAlternativeExecutor} API class instead.
+ *
+ * <p>
+ * See issue 230565 for some details about why this was needed in the first place.
+ *
+ * @see CoSAlternativeExecutor
+ *
+ * @author Martin Janicek <mjanicek@netbeans.org>
+ * @since 2.99
  */
+public interface CoSAlternativeExecutorImplementation {
 
-/*package*/ final class Buffer {
-    private final CharSequence text;
-    private int curr;
+    /**
+     * Perform an alternative execution.
+     *
+     * <p>
+     * SPI client should perform whatever he wants to do instead of the default CoS execution behavior.
+     *
+     * @param config configuration
+     * @param executionContext execution context
+     * @return {@code true} if the execution was successful, {@code false} otherwise
+     */
+    boolean execute(@NonNull RunConfig config, @NonNull ExecutionContext executionContext);
 
-    public Buffer(CharSequence text) {
-        this.text = text;
-        curr = 0;
-    }
-    
-    public String getString() throws BufferUnderflowException {
-        int len = getInt();
-        StringBuilder sb = new StringBuilder(len);
-        int limit = curr + len;
-        while (curr < limit) {
-            sb.append(text.charAt(curr++));
-        }
-        skipSpaces();
-        return sb.toString();
-    }
-
-    char getChar() {
-        return text.charAt(curr++);
-    }
-
-    public int getInt() throws BufferUnderflowException {
-        skipSpaces();
-        StringBuilder sb = new StringBuilder(16);
-        int result = 0;
-        while (curr < text.length()) {
-            char c = text.charAt(curr++);
-            if (Character.isDigit(c)) {
-                result *= 10;
-                result += (int) c - (int) '0';
-            } else {
-                break;
-            }
-        }
-        return result;
-    }
-
-    public long getLong() throws BufferUnderflowException {
-        skipSpaces();
-        StringBuilder sb = new StringBuilder(16);
-        long result = 0;
-        while (curr < text.length()) {
-            char c = text.charAt(curr++);
-            if (Character.isDigit(c)) {
-                result *= 10;
-                result += (int) c - (int) '0';
-            } else {
-                break;
-            }
-        }
-        return result;
-    }
-
-    private void skipSpaces() {
-        if (curr < text.length() && Character.isSpaceChar(text.charAt(curr))) {
-            curr++;
-        }
-    }
-    
 }

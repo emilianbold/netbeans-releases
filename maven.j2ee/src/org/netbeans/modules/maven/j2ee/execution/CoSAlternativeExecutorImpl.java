@@ -40,75 +40,53 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.remote.impl.fs.server;
+package org.netbeans.modules.maven.j2ee.execution;
 
-import java.nio.BufferUnderflowException;
+import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.execute.ExecutionContext;
+import org.netbeans.modules.maven.api.execute.RunConfig;
+import org.netbeans.modules.maven.spi.cos.CoSAlternativeExecutorImplementation;
+import org.netbeans.spi.project.ProjectServiceProvider;
 
 /**
+ * Implementation of the {@link CoSAlternativeExecutorImplementation} enables to changes the default
+ * run/debug/profile behavior and does not force rebuild of application when one of these action is invoked.
  *
- * @author vkvashin
+ * <p>
+ * In combination with CoS/DoS feature this save time that was earlier needed for rebuild
+ * application started before actual redeployment.
+ *
+ * <p>
+ * See issue 230565 for some details about why this was needed.
+ *
+ * <p>
+ * This class is <i>immutable</i> and thus <i>thread safe</i>.
+ *
+ * @author Martin Janicek <mjanicek@netbeans.org>
+ * @since 2.99
  */
-
-/*package*/ final class Buffer {
-    private final CharSequence text;
-    private int curr;
-
-    public Buffer(CharSequence text) {
-        this.text = text;
-        curr = 0;
+@ProjectServiceProvider(
+    service = {
+        CoSAlternativeExecutorImplementation.class
+    },
+    projectType = {
+        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
+        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB,
+        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT,
+        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR,
+        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_OSGI
     }
-    
-    public String getString() throws BufferUnderflowException {
-        int len = getInt();
-        StringBuilder sb = new StringBuilder(len);
-        int limit = curr + len;
-        while (curr < limit) {
-            sb.append(text.charAt(curr++));
+)
+public class CoSAlternativeExecutorImpl implements CoSAlternativeExecutorImplementation {
+
+    @Override
+    public boolean execute(RunConfig config, ExecutionContext executionContext) {
+        Object skipBuild = config.getInternalProperties().get("skip.build"); //NOI18N
+
+        if (skipBuild instanceof Boolean && (Boolean) skipBuild) {
+            return DeploymentHelper.perform(config, executionContext);
         }
-        skipSpaces();
-        return sb.toString();
+        // If the skip.build property is not set, it means we do want to proceed standard execution
+        return false;
     }
-
-    char getChar() {
-        return text.charAt(curr++);
-    }
-
-    public int getInt() throws BufferUnderflowException {
-        skipSpaces();
-        StringBuilder sb = new StringBuilder(16);
-        int result = 0;
-        while (curr < text.length()) {
-            char c = text.charAt(curr++);
-            if (Character.isDigit(c)) {
-                result *= 10;
-                result += (int) c - (int) '0';
-            } else {
-                break;
-            }
-        }
-        return result;
-    }
-
-    public long getLong() throws BufferUnderflowException {
-        skipSpaces();
-        StringBuilder sb = new StringBuilder(16);
-        long result = 0;
-        while (curr < text.length()) {
-            char c = text.charAt(curr++);
-            if (Character.isDigit(c)) {
-                result *= 10;
-                result += (int) c - (int) '0';
-            } else {
-                break;
-            }
-        }
-        return result;
-    }
-
-    private void skipSpaces() {
-        if (curr < text.length() && Character.isSpaceChar(text.charAt(curr))) {
-            curr++;
-        }
-    }
-    
 }

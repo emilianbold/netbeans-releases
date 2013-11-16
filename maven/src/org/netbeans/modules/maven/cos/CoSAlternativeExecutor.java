@@ -40,75 +40,55 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.remote.impl.fs.server;
+package org.netbeans.modules.maven.cos;
 
-import java.nio.BufferUnderflowException;
+import java.util.Collection;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.maven.api.execute.ExecutionContext;
+import org.netbeans.modules.maven.api.execute.RunConfig;
+import org.netbeans.modules.maven.spi.cos.CoSAlternativeExecutorImplementation;
+import org.openide.util.Parameters;
 
 /**
+ * API for an alternative Compile on Save execution.
  *
- * @author vkvashin
+ * @see CoSAlternativeExecutorImplementation
+ *
+ * @author Martin Janicek <mjanicek@netbeans.org>
+ * @since 2.99
  */
+public final class CoSAlternativeExecutor {
 
-/*package*/ final class Buffer {
-    private final CharSequence text;
-    private int curr;
-
-    public Buffer(CharSequence text) {
-        this.text = text;
-        curr = 0;
-    }
-    
-    public String getString() throws BufferUnderflowException {
-        int len = getInt();
-        StringBuilder sb = new StringBuilder(len);
-        int limit = curr + len;
-        while (curr < limit) {
-            sb.append(text.charAt(curr++));
-        }
-        skipSpaces();
-        return sb.toString();
+    private CoSAlternativeExecutor() {
     }
 
-    char getChar() {
-        return text.charAt(curr++);
-    }
+    /**
+     * Perform an alternative execution of all registered {@link CoSAlternativeExecutorImplementation}.
+     *
+     * <p>
+     * Using the given {@link RunConfig}, finds all {@link CoSAlternativeExecutorImplementation}
+     * registered for the project and performs their execute method. We only perform executors until
+     * one of them is able to take over the build. The rest of executors are skipped in such case.
+     *
+     * <p>
+     * If none of the executors is able to take over the build, the default execution is proceed.
+     *
+     * @param config configuration
+     * @param context execution context
+     * @return {@code true} if one of the registered execution was successful,
+     *         {@code false} if all registered executions were not successful
+     */
+    public static boolean execute(@NonNull RunConfig config, @NonNull ExecutionContext context) {
+        Parameters.notNull("config", config);   // NOI18N
+        Parameters.notNull("context", context); // NOI18N
 
-    public int getInt() throws BufferUnderflowException {
-        skipSpaces();
-        StringBuilder sb = new StringBuilder(16);
-        int result = 0;
-        while (curr < text.length()) {
-            char c = text.charAt(curr++);
-            if (Character.isDigit(c)) {
-                result *= 10;
-                result += (int) c - (int) '0';
-            } else {
-                break;
+        Collection<? extends CoSAlternativeExecutorImplementation> impls = config.getProject().getLookup().lookupAll(CoSAlternativeExecutorImplementation.class);
+        for (CoSAlternativeExecutorImplementation impl : impls) {
+            if (impl.execute(config, context)) {
+                return true;
             }
         }
-        return result;
+        // None of the implementations were able to take over the build
+        return false;
     }
-
-    public long getLong() throws BufferUnderflowException {
-        skipSpaces();
-        StringBuilder sb = new StringBuilder(16);
-        long result = 0;
-        while (curr < text.length()) {
-            char c = text.charAt(curr++);
-            if (Character.isDigit(c)) {
-                result *= 10;
-                result += (int) c - (int) '0';
-            } else {
-                break;
-            }
-        }
-        return result;
-    }
-
-    private void skipSpaces() {
-        if (curr < text.length() && Character.isSpaceChar(text.charAt(curr))) {
-            curr++;
-        }
-    }
-    
 }

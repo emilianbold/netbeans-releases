@@ -120,7 +120,7 @@ void stopwatch_start() {
     if (trace_flag) {
         struct timeval curr_time;
         gettimeofday(&curr_time, 0);
-        stopwatch_start_time = curr_time.tv_sec * 1000 + curr_time.tv_usec;
+        stopwatch_start_time = curr_time.tv_sec * 1000 + curr_time.tv_usec / 1000;
     }
 }
 
@@ -128,7 +128,7 @@ void stopwatch_stop(const char* message) {
     if (trace_flag) {
         struct timeval curr_time;
         gettimeofday(&curr_time, 0);
-        long end_time = curr_time.tv_sec * 1000 + curr_time.tv_usec;
+        long end_time = curr_time.tv_sec * 1000 + curr_time.tv_usec / 1000;
         trace("%s took %d ms\n", message, end_time - stopwatch_start_time);
     }    
 }
@@ -150,4 +150,81 @@ FILE* fopen600(const char* path) {
     } else {
         return fdopen(fd, "w");
     }
+}
+
+/**
+ * escapre rules are:
+ * "\n" -> "\\n"
+ * "\" -> "\\\\"
+ */
+int escape_strlen(const char* s) {
+    if (!s) {
+        return 0;
+    }
+    int len = 0;  
+    for (const char *p = s; *p; p++) {
+        len += (*p == '\n' || *p == '\\') ? 2 : 1;
+    }
+    return len;
+}
+
+char *escape_strcpy(char *dst, const char *src) {
+    char* d = dst;
+    for (const char *p = src; *p; p++) {
+        if (*p == '\n') {
+            *d++ = '\\';
+            *d++ = 'n';
+        } else if (*p == '\\') {
+            *d++ = '\\';
+            *d++ = '\\';
+        } else {
+            *d++ = *p;
+        }
+    }
+    *d = 0;
+    return dst;
+}
+
+int unescape_strlen(const char* s) {    
+    bool escape = false;
+    int len = 0;
+    for (const char *p = s; *p; p++) {
+        if (escape) {
+            escape = false;
+            len++;
+        } else {
+            if (*p == '\\') {
+                escape = true;
+            } else {
+                len++;
+            }
+        }
+    }
+    return len;
+}
+
+char *unescape_strcpy(char *dst, const char *src) {
+    bool escape = false;
+    char *d = dst;
+    for (const char *p = src; *p; p++) {
+        if (escape) {
+            escape = false;
+            if (*p == '\\') {
+                *d++ = '\\';
+            } else if (*p == 'n') {
+                *d++ = '\n';
+            } else {
+                report_error("wrong character '%c' in line %s\n", *p, src);
+                *d++ = *p;
+            }
+        } else {
+            if (*p == '\\') {
+                escape = true;
+            } else {
+                *d++ = *p;
+            }
+        }
+    }
+    *d = 0;
+    return dst;
 }

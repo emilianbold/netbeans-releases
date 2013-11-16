@@ -40,75 +40,30 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.remote.impl.fs.server;
+package org.netbeans.modules.maven.j2ee.execution;
 
-import java.nio.BufferUnderflowException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.openide.windows.OutputWriter;
 
 /**
+ * Simple implementation of the {@link Deployment.Logger} used by the infrastructure to log deployment messages.
  *
- * @author vkvashin
+ * <p>
+ * This class is <i>immutable</i> and thus <i>thread safe</i>.
+ * </p>
+ *
+ * @author Martin Janicek <mjanicek@netbeans.org>
  */
+public class DeploymentLogger implements Deployment.Logger {
 
-/*package*/ final class Buffer {
-    private final CharSequence text;
-    private int curr;
+    private final OutputWriter logger;
 
-    public Buffer(CharSequence text) {
-        this.text = text;
-        curr = 0;
-    }
-    
-    public String getString() throws BufferUnderflowException {
-        int len = getInt();
-        StringBuilder sb = new StringBuilder(len);
-        int limit = curr + len;
-        while (curr < limit) {
-            sb.append(text.charAt(curr++));
-        }
-        skipSpaces();
-        return sb.toString();
+    public DeploymentLogger(OutputWriter logger) {
+        this.logger = logger;
     }
 
-    char getChar() {
-        return text.charAt(curr++);
+    @Override
+    public void log(String string) {
+        logger.println(string);
     }
-
-    public int getInt() throws BufferUnderflowException {
-        skipSpaces();
-        StringBuilder sb = new StringBuilder(16);
-        int result = 0;
-        while (curr < text.length()) {
-            char c = text.charAt(curr++);
-            if (Character.isDigit(c)) {
-                result *= 10;
-                result += (int) c - (int) '0';
-            } else {
-                break;
-            }
-        }
-        return result;
-    }
-
-    public long getLong() throws BufferUnderflowException {
-        skipSpaces();
-        StringBuilder sb = new StringBuilder(16);
-        long result = 0;
-        while (curr < text.length()) {
-            char c = text.charAt(curr++);
-            if (Character.isDigit(c)) {
-                result *= 10;
-                result += (int) c - (int) '0';
-            } else {
-                break;
-            }
-        }
-        return result;
-    }
-
-    private void skipSpaces() {
-        if (curr < text.length() && Character.isSpaceChar(text.charAt(curr))) {
-            curr++;
-        }
-    }
-    
 }
