@@ -193,7 +193,7 @@ class IndexedStorageFile extends FileStorage {
                     fileRWAccessSize.set(0);
                     usedSize = 0;
                 } else {
-                    usedSize -= -oldSize;
+                    usedSize -= oldSize;
                 }
             }
         }

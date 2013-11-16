@@ -274,7 +274,7 @@ public final class Terminal extends JComponent {
 		if (currentLength > MAX_TITLE_LENGTH) {
 		    title = prefix + title.substring(currentLength - MAX_TITLE_LENGTH);
 		}
-		setTitle(title);
+		updateName(title);
 	    }
 	}
     }
@@ -504,8 +504,13 @@ public final class Terminal extends JComponent {
     }
 
     public void setTitle(String title) {
-        this.title = title;
-	updateName();
+	customTitle = true;
+	updateName(title);
+    }
+
+    public void resetTitle() {
+	customTitle = false;
+	updateName("");	//NOI18N
     }
 
     public String getTitle() {
@@ -588,7 +593,7 @@ public final class Terminal extends JComponent {
             dump("unrecognized", term.getUnrecognizedSequences()); // NOI18N
         }
     }
-    
+
     private final class SetTitleAction extends AbstractAction {
 
 	public SetTitleAction() {
@@ -603,13 +608,14 @@ public final class Terminal extends JComponent {
 	    if (DialogDisplayer.getDefault().notify(inputLine) == NotifyDescriptor.OK_OPTION) {
 		String newTitle = inputLine.getInputText().trim();
 		if (!newTitle.equals(title)) {
-		    customTitle = !newTitle.isEmpty();
-		    setTitle(newTitle);
+		    if (!newTitle.isEmpty()) {
+			setTitle(newTitle);
+		    } else {
+			resetTitle();
+		    }
 		}
 	    }
-	    
 	}
-	
     }
 
     private final class CopyAction extends AbstractAction {
@@ -808,6 +814,11 @@ public final class Terminal extends JComponent {
 	return closable;
     }
 
+    public void updateName(final String name) {
+	this.title = name;
+	updateName();
+    }
+
     private void updateName() {
 	Task task = new Task.UpdateName(ioContainer, this);
 	task.post();
@@ -1001,8 +1012,11 @@ public final class Terminal extends JComponent {
 		}
 	    }
 	    term.setKeymap(Lookup.getDefault().lookup(Keymap.class), actions);
+	    // needed for Ctrl+Tab, Ctrl+Shift+Tab switching
+	    term.getScreen().setFocusTraversalKeysEnabled(false);
 	} else {
 	    term.setKeymap(null, null);
+	    term.getScreen().setFocusTraversalKeysEnabled(true);
 	}
     }
     

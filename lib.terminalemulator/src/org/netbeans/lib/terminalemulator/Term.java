@@ -1780,6 +1780,13 @@ public class Term extends JComponent implements Accessible {
                     c = (char) 13;
                 }
 
+                // Consume ctrl+tab, ctrl+shift+tab event, see #237990
+                if (keymap != null && (c == KeyEvent.VK_TAB)
+                        && ((e.getModifiers() == KeyEvent.CTRL_MASK)
+                        || (e.getModifiers() == (KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK)))) {
+                    e.consume();
+                }
+
                 if (passOn && maybeConsume(e)) {
                     on_char(c);
                     possiblyScrollOnInput();

@@ -11,7 +11,6 @@
             <make-dep-projects/>
             <sourceRootList>
                 <sourceRootElem>.</sourceRootElem>
-                <sourceRootElem>.</sourceRootElem>
             </sourceRootList>
             <confList>
                 <confElem>
@@ -44,6 +43,18 @@
                 </confElem>
                 <confElem>
                     <name>Linux64</name>
+                    <type>0</type>
+                </confElem>
+                <confElem>
+                    <name>Debug_Linux32</name>
+                    <type>0</type>
+                </confElem>
+                <confElem>
+                    <name>Debug_Linux64</name>
+                    <type>0</type>
+                </confElem>
+                <confElem>
+                    <name>Debug_Solaris-x86</name>
                     <type>0</type>
                 </confElem>
             </confList>

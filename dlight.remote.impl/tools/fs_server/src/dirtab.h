@@ -17,6 +17,9 @@ extern "C" {
  * dirtab_* maintains a list of all known directories
  */    
 
+struct dirtab_element;
+typedef struct dirtab_element dirtab_element;
+    
 /** initializes dirtab;must be called before any other dirtab_* function */    
 void dirtab_init();
 
@@ -29,18 +32,21 @@ const char* dirtab_get_basedir();
 /** to be called only after init */
 const char* dirtab_get_tempdir(); 
 
-/** 
- * Returns a relative path of cache for the given path.
- * If there is no such a file, it is added.
- * The string is allocated in internal dirtab data
- */
-const char *dirtab_get_cache(const char* path);
+dirtab_element *dirtab_get_element(const char* abspath);
+
+FILE* dirtab_get_element_cache(dirtab_element *e, bool writing);
+
+void dirtab_release_element_cache(dirtab_element *e);
+
+//FILE* dirtab_get_cache(const char* abspath, bool writing);
+
+//void dirtab_release_cache(const char* abspath);
 
 void  dirtab_lock_cache_mutex();
 
 void  dirtab_unlock_cache_mutex();
 
-void dirtab_visit(bool (*visitor) (const char* path, int index, const char* cache));
+void dirtab_visit(bool (*visitor) (const char* path, int index, dirtab_element* el));
 
 bool dirtab_is_empty();
 
