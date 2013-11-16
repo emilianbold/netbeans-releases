@@ -80,10 +80,12 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.model.Plugin;
+import org.apache.maven.model.PluginExecution;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.maven.ActionProviderImpl;
@@ -123,6 +125,9 @@ import org.xml.sax.InputSource;
  * @author  mkleint
  */
 public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Provider, Runnable {
+    private static final @StaticResource String LIFECYCLE_ICON = "org/netbeans/modules/maven/execute/navigator/thread_running_16.png";
+    private static final @StaticResource String HELP_ICON = "org/netbeans/modules/maven/execute/navigator/help.png";
+    private static final Logger LOG = Logger.getLogger(GoalsPanel.class.getName());
 
     private final transient ExplorerManager explorerManager = new ExplorerManager();
     
@@ -319,7 +324,7 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
             toolbar.setOpaque(false);
             toolbar.setFocusable(false);
             final JToggleButton tg1 = new JToggleButton();
-            tg1.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/maven/execute/navigator/help.png", true));
+            tg1.setIcon(ImageUtilities.loadImageIcon(HELP_ICON, true));
             tg1.setToolTipText("Show help goals");
             tg1.setSelected(preferences.getBoolean("showHelpGoals", false));
             tg1.addActionListener(new ActionListener() {
@@ -331,18 +336,18 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
                 }
             });
             toolbar.add(tg1);
-//            final JToggleButton tg2 = new JToggleButton();
-//            tg2.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/maven/navigator/thread_running_16.png", true));
-//            tg1.setText("Show only marked goals");
-//            tg2.setSelected(preferences.getBoolean("showOnlyImportant", false));
-//            tg1.addActionListener(new ActionListener() {
-//
-//                @Override
-//                public void actionPerformed(ActionEvent e) {
-//                    preferences.putBoolean("showOnlyImportant", tg1.isSelected());
-//                }
-//            });
-//            toolbar.add(tg2);
+            final JToggleButton tg2 = new JToggleButton();
+            tg2.setIcon(ImageUtilities.loadImageIcon(LIFECYCLE_ICON, true));
+            tg2.setToolTipText("Show lifecycle bound goals");
+            tg2.setSelected(preferences.getBoolean("showLifecycleGoals", false));
+            tg2.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    preferences.putBoolean("showLifecycleGoals", tg2.isSelected());
+                }
+            });
+            toolbar.add(tg2);
             Dimension space = new Dimension(3, 0);
             toolbar.addSeparator(space);
 
@@ -364,7 +369,6 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
             Set<Mojo> goals = new TreeSet<Mojo>();
             MavenProject mp = prj.getLookup().lookup(NbMavenProject.class).getMavenProject();
             for (Artifact p : mp.getPluginArtifacts()) {
-                EmbedderFactory.getProjectEmbedder().getLifecyclePhases();
                 try {
 
                     EmbedderFactory.getOnlineEmbedder().resolve(p, mp.getPluginArtifactRepositories(), EmbedderFactory.getOnlineEmbedder().getLocalRepository());
@@ -438,7 +442,25 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
                                     }
                                 }
                             }
-                            goals.add(new Mojo(XMLUtil.findText(goalPrefix).trim(), goalString, p, params));
+                            Plugin plg = mp.getPlugin(Plugin.constructKey(p.getGroupId(), p.getArtifactId()));
+                            boolean lifecycleBound = false;
+                            List<PluginExecution> execs = plg.getExecutions();
+                            if (execs != null) {
+                                for (PluginExecution exec : execs) {
+                                    //TODO there are also executions defined in the pom, that don't have the default id and don't have phase defined.
+                                    //however phase is defined also in the plugin.xml .. do we want to include these?
+//                                    String execgoal = exec.getGoals() != null && exec.getGoals().size() == 1 ? exec.getGoals().get(0) : null;
+                                    if (exec.getGoals().contains(goalString) /*&& exec.getPhase() != null && ("default-" + execgoal).equals(exec.getId())*/) {
+                                        //a bit of a heuristics applied..
+                                        lifecycleBound = true;
+                                        break;
+                                    }
+                                }
+                                if (lifecycleBound && !preferences.getBoolean("showLifecycleGoals", false)) {
+                                    continue; //skip lifecycle goals
+                                }
+                            }
+                            goals.add(new Mojo(XMLUtil.findText(goalPrefix).trim(), goalString, p, params, lifecycleBound));
                         }
 
                     }
@@ -469,12 +491,14 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
         final String goal;
         final String prefix;
         final List<Param> parameters;
+        final boolean lifecycleBound;
 
-        public Mojo(String prefix, String goal, Artifact a, List<Param> parameters) {
+        public Mojo(String prefix, String goal, Artifact a, List<Param> parameters, boolean lifecycleBound) {
             this.a = a;
             this.goal = goal;
             this.prefix = prefix;
             this.parameters = parameters;
+            this.lifecycleBound = lifecycleBound;
         }
         
         List<Param> getNotSetParams() {
@@ -547,7 +571,7 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
         private MojoNode(@NonNull Mojo mojo, Project p) {
             super(Children.LEAF);
             setDisplayName(mojo.goal);
-            setShortDescription("<html>Plugin:" + mojo.a.getId() + "<br/>Goal:" + mojo.goal + "<br/>Prefix:" + mojo.prefix);
+            setShortDescription("<html>Plugin:" + mojo.a.getId() + "<br/>Goal:" + mojo.goal + "<br/>Prefix:" + mojo.prefix + (mojo.lifecycleBound ? "<br/>Bound to lifecycle in current POM." : ""));
             this.mojo = mojo;
             this.project = p;
         }
@@ -581,7 +605,14 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
 
         @Override
         public Image getIcon(int type) {
-             return ImageUtilities.loadImage(IconResources.MOJO_ICON);
+            if ("help".equals(mojo.goal)) {
+                return ImageUtilities.loadImage(HELP_ICON);
+            }
+            if (mojo.lifecycleBound) {
+                return ImageUtilities.loadImage(LIFECYCLE_ICON);
+            } else {
+                return ImageUtilities.loadImage(IconResources.MOJO_ICON);
+            }
         }
 
         @Override
@@ -589,7 +620,6 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
             return getIcon(type);
         }
     }
-    private static final Logger LOG = Logger.getLogger(GoalsPanel.class.getName());
      
     private static @CheckForNull Document loadPluginXml(File jar) {
         if (!jar.isFile() || !jar.getName().endsWith(".jar")) {
