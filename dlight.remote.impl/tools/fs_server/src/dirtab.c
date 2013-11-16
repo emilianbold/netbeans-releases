@@ -21,11 +21,13 @@ static const char* cahe_subdir_name = "cache";
 
 static pthread_mutex_t cache_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-typedef struct dirtab_element {
+typedef struct dirtab_element_impl {
     int index;
-    char* cache;
-    char path[];
-} dirtab_element;
+    char* cache_path;
+    pthread_mutex_t mutex;
+    FILE* cache_fp;
+    char abspath[];
+} dirtab_element_impl;
 
 /**guarder by dirtab_mutex */
 typedef struct dirtab {
@@ -45,7 +47,7 @@ typedef struct dirtab {
      * List of directories under control
      * sorted in alphabetical order
      */
-    dirtab_element** paths;
+    dirtab_element_impl** paths;
     
     /** the next unoccupied index */
     int next_index;
@@ -58,14 +60,14 @@ static void init_table() {
     table.dirty =  false;
     table.size =  0;
     table.limit = 1024;
-    table.paths = malloc(table.limit * (sizeof(dirtab_element*)));
+    table.paths = malloc(table.limit * (sizeof(dirtab_element_impl*)));
     table.next_index = 0;
 }
 
 static void expand_table_if_needed() {
     if (table.limit <= table.size) {
         table.limit *= 2;
-        table.paths = realloc(table.paths, table.limit * (sizeof(dirtab_element*)));
+        table.paths = realloc(table.paths, table.limit * (sizeof(dirtab_element_impl*)));
         if (!table.paths) {
             exit(NO_MEMORY_EXPANDING_DIRTAB);
         }
@@ -79,9 +81,9 @@ static int compare_dirtab_elements_4qsort(const void *d1, const void *d2) {
     } else if (!d2) {
         return 1;
     } else {
-        dirtab_element *el1 = *((dirtab_element **) d1);
-        dirtab_element *el2 = *((dirtab_element **) d2);
-        int result = strcmp(el1->path, el2->path);
+        dirtab_element_impl *el1 = *((dirtab_element_impl **) d1);
+        dirtab_element_impl *el2 = *((dirtab_element_impl **) d2);
+        int result = strcmp(el1->abspath, el2->abspath);
         return result;
     }
 }
@@ -94,33 +96,35 @@ static int compare_dirtab_elements_4search(const void *d1, const void *d2) {
         return 1;
     } else {
         char *path = (char *) d1;
-        dirtab_element *el2 = *((dirtab_element **) d2);
-        int result = strcmp(path, el2->path);
+        dirtab_element_impl *el2 = *((dirtab_element_impl **) d2);
+        int result = strcmp(path, el2->abspath);
         return result;
     }
 }
 
-static dirtab_element *new_dirtab_element(const char* path, int index) {
+static dirtab_element_impl *new_dirtab_element(const char* path, int index) {
     char cache[32];
     sprintf(cache, "%s/%d", cahe_subdir_name, index);
     int path_len = strlen(path);
     int cache_len = strlen(cache);
-    int size = sizeof(dirtab_element) + path_len + cache_len + 2;
-    dirtab_element *el = malloc(size);
+    int size = sizeof(dirtab_element_impl) + path_len + cache_len + 2;
+    dirtab_element_impl *el = malloc(size);
     el->index = index;
-    strcpy(el->path, path);
-    el->cache = el->path + path_len + 1;
-    strcpy(el->cache, cache);
+    strcpy(el->abspath, path);
+    el->cache_path = el->abspath + path_len + 1;
+    strcpy(el->cache_path, cache);
+    pthread_mutex_init(&el->mutex, NULL);
+    el->cache_fp = NULL;
     return el;
 }
 
-static const dirtab_element *add_path(const char* path) {
-    dirtab_element *el = new_dirtab_element(path, table.next_index++);
-    strcpy(el->path, path);
+static dirtab_element_impl *add_path(const char* path) {
+    dirtab_element_impl *el = new_dirtab_element(path, table.next_index++);
+    strcpy(el->abspath, path);
     expand_table_if_needed();
     table.paths[table.size++] = el;
     table.dirty = true;
-    qsort(table.paths, table.size, sizeof(dirtab_element *), compare_dirtab_elements_4qsort);
+    qsort(table.paths, table.size, sizeof(dirtab_element_impl *), compare_dirtab_elements_4qsort);
     return el;
 }
 
@@ -159,6 +163,7 @@ static bool load_impl() {
         if (*p == '\n') {
             *p = 0;
         }
+        unescape_strcpy(path, path);
         expand_table_if_needed();
         table.paths[table.size] = new_dirtab_element(path, index);
         table.size++;
@@ -186,16 +191,19 @@ static bool load_table() {
 }
 
 static bool flush_impl() {
-    FILE *f = fopen600(dirtab_file_path);
-    if (!f){
+    FILE *fp = fopen600(dirtab_file_path);
+    if (!fp){
         report_error("error opening %s for writing: %s\n", dirtab_file_path, strerror(errno));
         return false;
     }
     int i;
+    char* buf = malloc(PATH_MAX * 2); 
     for (i = 0; i < table.size; i++) {
-        fprintf(f, "%d %s\n", table.paths[i]->index, table.paths[i]->path);
+        escape_strcpy(buf, table.paths[i]->abspath);
+        fprintf(fp, "%d %s\n", table.paths[i]->index, buf);
     }
-    if (fclose(f) == 0) {
+    free(buf);
+    if (fclose(fp) == 0) {
         return true;
     } else {
         report_error("error closing %s for writing: %s\n", dirtab_file_path, strerror(errno));
@@ -301,35 +309,103 @@ void  dirtab_unlock_cache_mutex() {
     mutex_unlock(&cache_mutex);
 }
 
-const char* dirtab_get_cache(const char* path) {
+dirtab_element *dirtab_get_element(const char* abspath) {
 
     mutex_lock(&table.mutex);
     
-    const dirtab_element *el;
+    dirtab_element_impl *el;
     
-    dirtab_element **found = (dirtab_element**) bsearch(path, table.paths, table.size, 
-            sizeof(dirtab_element *), compare_dirtab_elements_4search);
+    dirtab_element_impl **found = (dirtab_element_impl**) bsearch(abspath, table.paths, table.size, 
+            sizeof(dirtab_element_impl *), compare_dirtab_elements_4search);
     if (found) {
         el = *found;
     } else {
-        el = add_path(path);
+        el = add_path(abspath);
     }
 
     mutex_unlock(&table.mutex);
 
-    return el->cache;
+    return (dirtab_element*) el;    
 }
 
-void dirtab_visit(bool (*visitor) (const char* path, int index, const char* cache)) {
+//static dirtab_element_impl *get_element_impl(const char* abspath) {
+//    return (dirtab_element_impl*) dirtab_get_element(abspath);
+//}
+
+static void trace_lock_unlock(dirtab_element_impl *el, bool lock) {
+    //trace("# %s mutex for %s\n", lock ? "locking" : "unlocking", el->abspath);
+};
+
+/** just a wrapper for tracing/logging/debugging */
+static void lock(dirtab_element_impl *el) {
+    trace_lock_unlock(el, true);
+    mutex_lock(&el->mutex);
+}
+
+/** just a wrapper for tracing/logging/debugging */
+static void unlock(dirtab_element_impl *el) {
+    trace_lock_unlock(el, false);
+    mutex_unlock(&el->mutex);
+}
+
+FILE* dirtab_get_element_cache(dirtab_element *e, bool writing) {
+    dirtab_element_impl *el = (dirtab_element_impl*) e;
+    lock(el);
+    if (el->cache_fp) {
+        report_error("error: attempt to open cache twice for %s\n", el->abspath);
+        unlock(el);
+        exit(FAILURE_DIRTAB_DOUBLE_CACHE_OPEN);
+    }
+    if (writing) {
+        el->cache_fp = fopen600(el->cache_path);
+    } else {
+        el->cache_fp = fopen(el->cache_path, "r");
+    }
+    if (!el->cache_fp) {
+        report_error("error opening cache for %s: %s\n", el->abspath, strerror(errno));
+        unlock(el);
+    }
+    return el->cache_fp;
+}
+
+//FILE* dirtapthread_mutex_unlock(&el->mutex);b_get_cache(const char* abspath, bool writing) {
+//    dirtab_element *el = dirtab_get_element(abspath);
+//    return dirtab_get_element_cache(el, writing);
+//}
+
+void dirtab_release_element_cache(dirtab_element *e) {
+    dirtab_element_impl *el = (dirtab_element_impl*) e;
+    if (!el->cache_fp) {
+        report_error("error: attempt to release closed cache for %s\n", el->abspath);
+    } else {
+        fclose(el->cache_fp);
+        el->cache_fp = NULL;
+        unlock(el);
+    }
+}
+
+//void dirtab_release_cache(const char* abspath) {
+//    dirtab_element *el = dirtab_get_element(abspath);
+//    return dirtab_release_element_cache(el);
+//}
+
+#ifdef TEST
+static const char* get_cache_path(const char* abspath) {
+    const dirtab_element_impl *el = (dirtab_element_impl *) dirtab_get_element(abspath);
+    return el->cache_path;
+}
+#endif
+
+void dirtab_visit(bool (*visitor) (const char* path, int index, dirtab_element* el)) {
     mutex_lock(&table.mutex);
     int size = table.size;
-    int mem_size = size * sizeof(dirtab_element**);
-    dirtab_element** paths = malloc(mem_size);
+    int mem_size = size * sizeof(dirtab_element_impl**);
+    dirtab_element_impl** paths = malloc(mem_size);
     memcpy(paths, table.paths, mem_size);
     mutex_unlock(&table.mutex);
     for (int i = 0; i < size; i++) {
-        dirtab_element* el = paths[i];
-        bool proceed = visitor(el->path, el->index, el->cache);
+        dirtab_element_impl* el = paths[i];
+        bool proceed = visitor(el->abspath, el->index, (dirtab_element*) el);
         if (!proceed) {
             break;
         }

@@ -81,8 +81,10 @@ public final class KarmaExecutable {
     private static final Logger LOGGER = Logger.getLogger(KarmaExecutable.class.getName());
 
     public static final String KARMA_NAME = "karma"; // NOI18N
-    public static final String KARMA_LONG_NAME = KARMA_NAME + FileUtils.getScriptExtension(true, false);
-    public static final String PROJECT_KARMA_PATH = "node_modules/karma/bin/karma"; // NOI18N
+    public static final String KARMA_LONG_NAME = KARMA_NAME + FileUtils.getScriptExtension(true, true);
+    private static final String PROJECT_KARMA_BASE_PATH = "node_modules/karma/bin/"; // NOI18N
+    public static final String PROJECT_KARMA_PATH = PROJECT_KARMA_BASE_PATH + KARMA_NAME;
+    public static final String PROJECT_KARMA_LONG_PATH = PROJECT_KARMA_BASE_PATH + KARMA_LONG_NAME;
 
     private static final String START_COMMAND = "start";
     private static final String RUN_COMMAND = "run";

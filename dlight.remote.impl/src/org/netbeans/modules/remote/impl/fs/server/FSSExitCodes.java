@@ -42,73 +42,44 @@
 
 package org.netbeans.modules.remote.impl.fs.server;
 
-import java.nio.BufferUnderflowException;
+import org.netbeans.modules.nativeexecution.api.util.Signal;
 
 /**
  *
  * @author vkvashin
  */
+public class FSSExitCodes {
 
-/*package*/ final class Buffer {
-    private final CharSequence text;
-    private int curr;
+    // see "exitcodes.h" in fs_server sources
+    
+    static final int FAILURE_LOCKING_MUTEX                  = 201;
+    static final int FAILURE_UNLOCKING_MUTEX                = 202;
+    static final int WRONG_ARGUMENT                         = 203;
+    static final int FAILURE_GETTING_HOME_DIR               = 204;
+    static final int FAILURE_CREATING_STORAGE_SUPER_DIR     = 205;
+    static final int FAILURE_ACCESSING_STORAGE_SUPER_DIR    = 206;
+    static final int FAILURE_CREATING_STORAGE_DIR           = 207;
+    static final int FAILURE_ACCESSING_STORAGE_DIR          = 208;
+    static final int FAILURE_CREATING_TEMP_DIR              = 209;
+    static final int FAILURE_ACCESSING_TEMP_DIR             = 210;
+    static final int FAILURE_CREATING_CACHE_DIR             = 211;
+    static final int FAILURE_ACCESSING_CACHE_DIR            = 212;
+    static final int NO_MEMORY_EXPANDING_DIRTAB             = 213;
+    static final int FAILED_CHDIR                           = 214;
+    static final int FAILURE_OPENING_LOCK_FILE              = 215;
+    static final int FAILURE_LOCKING_LOCK_FILE              = 216;
+    static final int FAILURE_DIRTAB_DOUBLE_CACHE_OPEN       = 217;
 
-    public Buffer(CharSequence text) {
-        this.text = text;
-        curr = 0;
+    static final int FS_SPECIFIC_START = FAILURE_LOCKING_MUTEX;
+    static final int FS_SPECIFIC_END = FAILURE_DIRTAB_DOUBLE_CACHE_OPEN;
+
+    static final int GENERAL_ERROR = 1;
+    
+    public static boolean isSignal(int exitCode) {
+        return getSignal(exitCode) != null;
     }
     
-    public String getString() throws BufferUnderflowException {
-        int len = getInt();
-        StringBuilder sb = new StringBuilder(len);
-        int limit = curr + len;
-        while (curr < limit) {
-            sb.append(text.charAt(curr++));
-        }
-        skipSpaces();
-        return sb.toString();
+    public static Signal getSignal(int exitCode) {
+        return Signal.valueOf(exitCode - 128);
     }
-
-    char getChar() {
-        return text.charAt(curr++);
-    }
-
-    public int getInt() throws BufferUnderflowException {
-        skipSpaces();
-        StringBuilder sb = new StringBuilder(16);
-        int result = 0;
-        while (curr < text.length()) {
-            char c = text.charAt(curr++);
-            if (Character.isDigit(c)) {
-                result *= 10;
-                result += (int) c - (int) '0';
-            } else {
-                break;
-            }
-        }
-        return result;
-    }
-
-    public long getLong() throws BufferUnderflowException {
-        skipSpaces();
-        StringBuilder sb = new StringBuilder(16);
-        long result = 0;
-        while (curr < text.length()) {
-            char c = text.charAt(curr++);
-            if (Character.isDigit(c)) {
-                result *= 10;
-                result += (int) c - (int) '0';
-            } else {
-                break;
-            }
-        }
-        return result;
-    }
-
-    private void skipSpaces() {
-        if (curr < text.length() && Character.isSpaceChar(text.charAt(curr))) {
-            curr++;
-        }
-    }
-    
 }
