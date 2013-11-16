@@ -1658,15 +1658,15 @@ public abstract class BaseActionProvider implements ActionProvider {
                 FileObject srcRoot = getRoot(projectSourceRoots.getRoots(), files[0]);
                 for (FileObject testSrcPath : testSrcPaths) {
                     FileObject[] files2 = ActionUtils.regexpMapFiles(files, srcRoot, SRCDIRJAVA, testSrcPath, SUBST, strict);
-                    if (files2 != null) {
+                    if (files2 != null && files2.length != 0) {
                         return files2;
                     }
                     FileObject[] files2NG = ActionUtils.regexpMapFiles(files, srcRoot, SRCDIRJAVA, testSrcPath, SUBSTNG, strict);
-                    if (files2NG != null) {
+                    if (files2NG != null && files2NG.length != 0) {
                         return files2NG;
                     }
                 }
-                // no test files found. The selected FOs must be folders under source packages
+                // no test files found. The selected FOs might be folders under source packages
                 files = ActionUtils.findSelectedFiles(context, srcRoot, findInPackages ? null : ".java", strict); // NOI18N
                 ArrayList<FileObject> testFOs = new ArrayList<>();
                 if (files != null) {
@@ -1682,6 +1682,9 @@ public abstract class BaseActionProvider implements ActionProvider {
                                 }
                             }
                         }
+                    }
+                    if(testFOs.isEmpty()) { // The selected FOs are files without tests
+                        return null;
                     }
                     return testFOs.toArray(new FileObject[testFOs.size()]);
                 }
