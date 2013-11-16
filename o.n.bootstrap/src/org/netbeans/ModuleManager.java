@@ -1197,9 +1197,13 @@ public final class ModuleManager extends Modules {
         }
         // register bytecode manipulation agents
         for (Module m : toEnable) {
-            final String agentClass = m.data().getAgentClass();
-            if (agentClass != null) {
-                m.assignInstrumentation(NbInstrumentation.registerAgent(m.getClassLoader(), agentClass));
+            try {
+                final String agentClass = m.dataWithCheck().getAgentClass();
+                if (agentClass != null) {
+                    m.assignInstrumentation(NbInstrumentation.registerAgent(m.getClassLoader(), agentClass));
+                }
+            } catch (InvalidException ex) {
+                Util.err.log(Level.FINE, null, ex);
             }
         }
         {
