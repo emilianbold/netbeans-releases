@@ -80,7 +80,7 @@ import org.openide.util.actions.SystemAction;
  * various targets from the project. Distinction made between the main target,
  * other documented targets, and other undocumented targets.
  */
-@MIMEResolver.Registration(displayName = "Gruntfile", resource = "grunt-resolver.xml", position = 100)
+@MIMEResolver.Registration(displayName = "Gruntfile", resource = "grunt-resolver.xml", position = 123)
 @ActionID(id = "org.netbeans.modules.web.clientproject.ui.action.RunTargetsAction", category = "Build")
 @ActionRegistration(displayName = "#LBL_run_targets_action", lazy = false)
 @ActionReferences(value = {
