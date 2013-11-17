@@ -97,6 +97,7 @@ public final class J2MEProjectBuilder {
     private static final Logger LOG = Logger.getLogger(J2MEProjectBuilder.class.getName());
     private static final String DEFAULT_MAIN_TEMPLATE = "Templates/j2me/Midlet.java";  //NOI18N
     private static final SpecificationVersion VERSION_8 = new SpecificationVersion("8.0"); //NOI18N
+    private static final String ME_PROCESSOR_PATH = "lib/me_plugin.jar";    //NOI18N
 
     private final File projectDirectory;
     private final String name;
@@ -465,9 +466,10 @@ public final class J2MEProjectBuilder {
         }, false);
         //Jar options
         ep.setProperty(ProjectProperties.JAR_COMPRESS, "false"); // NOI18N
+        final boolean meProcessor = setUpMEProcessor(ep, platform);
         //Javac options
         ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_ENABLED, "true"); // NOI18N
-        ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, "false"); // NOI18N
+        ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, Boolean.toString(meProcessor));
         ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, "true"); // NOI18N
         ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ""); // NOI18N
         ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT, "${build.generated.sources.dir}/ap-source-output"); // NOI18N
@@ -556,6 +558,50 @@ public final class J2MEProjectBuilder {
         h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
         logUsage();
         return h;
+    }
+
+    private static boolean setUpMEProcessor(
+        @NonNull final EditableProperties pp,
+        @NonNull final JavaPlatform meSdk) {
+        final Collection< ? extends FileObject> locs = meSdk.getInstallFolders();
+        final FileObject sdkHome = locs.isEmpty() ? null : locs.iterator().next();
+        if (sdkHome != null) {
+            final FileObject ap = sdkHome.getFileObject(ME_PROCESSOR_PATH);
+            if (ap != null) {
+                final String meProcessorResolved = String.format(
+                        "${platform.home}/%s",                                  //NOI18N
+                        ME_PROCESSOR_PATH);
+                String path = pp.getProperty(ProjectProperties.JAVAC_PROCESSORPATH);
+                if (path == null || path.isEmpty()) {
+                    pp.setProperty(
+                        ProjectProperties.JAVAC_PROCESSORPATH,
+                        meProcessorResolved);
+                } else {
+                    final String[] pathElements = PropertyUtils.tokenizePath(path);
+                    final String[] newPathElements = new String[pathElements.length+1];
+                    newPathElements[0] = toPathEntry(meProcessorResolved, false);
+                    for (int i=0; i<pathElements.length; i++) {
+                        newPathElements[1+i] = toPathEntry(
+                            pathElements[i],
+                            i == (pathElements.length -1));
+                    }
+                    pp.setProperty(
+                        ProjectProperties.JAVAC_PROCESSORPATH,
+                        newPathElements);
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @NonNull
+    private static String toPathEntry(
+        @NonNull final String entry,
+        final boolean last) {
+        return last ?
+            entry :
+            String.format("%s:", entry);  //NOI18N
     }
 
 
