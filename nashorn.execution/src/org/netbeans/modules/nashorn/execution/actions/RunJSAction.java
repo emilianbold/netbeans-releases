@@ -84,15 +84,15 @@ public class RunJSAction extends ExecJSAction {
     @Override
     public Action createContextAwareInstance(Lookup actionContext) {
         if (!isEnabled()) {
-            return null;
+            return NO_ACTION;
         }
         FileObject fo = actionContext.lookup(FileObject.class);
         if (fo == null) {
-            return null;
+            return NO_ACTION;
         }
         if (isEnabledAction(ActionProvider.COMMAND_RUN_SINGLE, fo, actionContext)) {
             // There's a project's run action already.
-            return null;
+            return NO_ACTION;
         }
         return new RunJSAction(fo);
     }
