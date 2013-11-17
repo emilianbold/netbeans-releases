@@ -963,9 +963,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                     return vote;
                 }
 
-                APTUtils aptUtils = APTUtils.get(root);
-
-                if (aptUtils != null && aptUtils.verifyAttributes(context.getRoot(), false)) {
+                if (APTUtils.get(root).verifyAttributes(context.getRoot(), false)) {
                     vote = false;
                 }
 

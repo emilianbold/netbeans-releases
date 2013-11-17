@@ -53,63 +53,63 @@ public class JavaTabsAndIndentsOperator extends AllLanguageTabsAndIndentsOperato
         super(formattingOperator, JAVA__LANGUAGES);
     }
 
-    private enum Settings implements OperatorGetter {
+    enum Settings implements OperatorGetter {
 
-        EXPANDTAB {
+        JAVA_EXPANDTAB {
                     @Override
                     public Operator getOperator(FormattingPanelOperator fpo) {
                         return ((AllLanguageTabsAndIndentsOperator) fpo).getExpandTabsToSpaces();
                     }
                 },
-        NUMBEROFSPACES {
+        JAVA_NUMBEROFSPACES {
                     @Override
                     public Operator getOperator(FormattingPanelOperator fpo) {
                         return ((AllLanguageTabsAndIndentsOperator) fpo).getNumberOfSpacesPerIndent();
                     }
                 },
-        RIGHTMARGIN {
+        JAVA_RIGHTMARGIN {
                     @Override
                     public Operator getOperator(FormattingPanelOperator fpo) {
                         return ((AllLanguageTabsAndIndentsOperator) fpo).getRightMargin();
                     }
                 },
-        TABSIZE {
+        JAVA_TABSIZE {
                     @Override
                     public Operator getOperator(FormattingPanelOperator fpo) {
                         return ((AllLanguageTabsAndIndentsOperator) fpo).getTabSize();
                     }
                 },        
-        CONTINUATIONINDENTATION {
+        JAVA_CONTINUATIONINDENTATION {
                     @Override
                     public Operator getOperator(FormattingPanelOperator fpo) {
                         return ((JavaTabsAndIndentsOperator) fpo).getContinuationIndentationSize();
                     }
                 },
-        LABELINDENTATION {
+        JAVA_LABELINDENTATION {
                     @Override
                     public Operator getOperator(FormattingPanelOperator fpo) {
                         return ((JavaTabsAndIndentsOperator) fpo).getLabelIndentation();
                     }
                 },
-        ABSOLUTELABELINDENTATION {
+        JAVA_ABSOLUTELABELINDENTATION {
                     @Override
                     public Operator getOperator(FormattingPanelOperator fpo) {
                         return ((JavaTabsAndIndentsOperator) fpo).getAbsoluteLabelIndentation();
                     }
                 },
-        INDENTTOPLEVELMEMBERS {
+        JAVA_INDENTTOPLEVELMEMBERS {
                     @Override
                     public Operator getOperator(FormattingPanelOperator fpo) {
                         return ((JavaTabsAndIndentsOperator) fpo).getIndentTopLevelClassMembers();
                     }
                 },
-        INDENTCASE {
+        JAVA_INDENTCASE {
                     @Override
                     public Operator getOperator(FormattingPanelOperator fpo) {
                         return ((JavaTabsAndIndentsOperator) fpo).getIndentCaseStatementsInSwitch();
                     }
                 },
-        USEALLLANGUAGES {
+        JAVA_USEALLLANGUAGES {
                     @Override
                     public Operator getOperator(FormattingPanelOperator fpo) {
                         return ((JavaTabsAndIndentsOperator) fpo).getUseAllLanguages();
@@ -133,7 +133,7 @@ public class JavaTabsAndIndentsOperator extends AllLanguageTabsAndIndentsOperato
     public JCheckBoxOperator getUseAllLanguages() {
         if (useAllLanguages == null) {
             useAllLanguages = formattingOperator.getCheckboxOperatorByLabel("Use All Languages Settings");
-            storeDefaultValue(Settings.USEALLLANGUAGES);
+            storeDefaultValue(Settings.JAVA_USEALLLANGUAGES);
         }
         return useAllLanguages;
     }
@@ -141,7 +141,7 @@ public class JavaTabsAndIndentsOperator extends AllLanguageTabsAndIndentsOperato
     public JTextFieldOperator getContinuationIndentationSize() {
         if (continuationIndentationSize == null) {
             continuationIndentationSize = formattingOperator.getTextFieldByLabel("Continuation Indentation Size:");
-            storeDefaultValue(Settings.CONTINUATIONINDENTATION);
+            storeDefaultValue(Settings.JAVA_CONTINUATIONINDENTATION);
         }
         return continuationIndentationSize;
     }
@@ -149,7 +149,7 @@ public class JavaTabsAndIndentsOperator extends AllLanguageTabsAndIndentsOperato
     public JTextFieldOperator getLabelIndentation() {
         if (labelIndentation == null) {
             labelIndentation = formattingOperator.getTextFieldByLabel("Label Indentation:");
-            storeDefaultValue(Settings.LABELINDENTATION);
+            storeDefaultValue(Settings.JAVA_LABELINDENTATION);
         }
         return labelIndentation;
     }
@@ -157,7 +157,7 @@ public class JavaTabsAndIndentsOperator extends AllLanguageTabsAndIndentsOperato
     public JCheckBoxOperator getAbsoluteLabelIndentation() {
         if (absoluteLabelIndentation == null) {
             absoluteLabelIndentation = formattingOperator.getCheckboxOperatorByLabel("Absolute Label Indentation");
-            storeDefaultValue(Settings.ABSOLUTELABELINDENTATION);
+            storeDefaultValue(Settings.JAVA_ABSOLUTELABELINDENTATION);
         }
         return absoluteLabelIndentation;
     }
@@ -165,7 +165,7 @@ public class JavaTabsAndIndentsOperator extends AllLanguageTabsAndIndentsOperato
     public JCheckBoxOperator getIndentTopLevelClassMembers() {
         if (indentTopLevelClassMembers == null) {
             indentTopLevelClassMembers = formattingOperator.getCheckboxOperatorByLabel("Indent Top Level Class Members");
-            storeDefaultValue(Settings.INDENTTOPLEVELMEMBERS);
+            storeDefaultValue(Settings.JAVA_INDENTTOPLEVELMEMBERS);
         }
         return indentTopLevelClassMembers;
     }
@@ -173,7 +173,7 @@ public class JavaTabsAndIndentsOperator extends AllLanguageTabsAndIndentsOperato
     public JCheckBoxOperator getIndentCaseStatementsInSwitch() {
         if (indentCaseStatementsInSwitch == null) {
             indentCaseStatementsInSwitch = formattingOperator.getCheckboxOperatorByLabel("Indent Case Statements In Switch");
-            storeDefaultValue(Settings.INDENTCASE);
+            storeDefaultValue(Settings.JAVA_INDENTCASE);
         }
         return indentCaseStatementsInSwitch;
     }
