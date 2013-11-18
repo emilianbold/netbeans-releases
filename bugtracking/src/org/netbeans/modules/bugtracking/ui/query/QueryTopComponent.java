@@ -331,6 +331,21 @@ public final class QueryTopComponent extends TopComponent
         return null;
     }
 
+    public static void closeFor(RepositoryImpl repo) {
+        for (QueryTopComponent itc : openQueries) {
+            QueryImpl tcQuery = itc.getQuery(); 
+            if(tcQuery == null) {
+                continue;
+            }
+            RepositoryImpl tcRepo = tcQuery.getRepositoryImpl(); 
+            if(tcRepo.getId().equals(repo.getId()) && 
+               tcRepo.getConnectorId().equals(repo.getConnectorId()) ) 
+            {
+                itc.closeInAwt();
+            }
+        }
+    }
+
     @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_NEVER;

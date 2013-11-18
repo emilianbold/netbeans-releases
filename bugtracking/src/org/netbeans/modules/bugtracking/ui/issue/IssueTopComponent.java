@@ -103,7 +103,6 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
-import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
 
 /**
@@ -113,7 +112,7 @@ import org.openide.windows.TopComponent;
  */
 public final class IssueTopComponent extends TopComponent implements PropertyChangeListener {
     /** Set of opened {@code IssueTopComponent}s. */
-    private static Set<IssueTopComponent> openIssues = new HashSet<IssueTopComponent>();
+    private static final Set<IssueTopComponent> openIssues = new HashSet<IssueTopComponent>();
     /** Issue displayed by this top-component. */
     private IssueImpl issue;
     private RequestProcessor rp = new RequestProcessor("Bugtracking issue", 1, true); // NOI18N
@@ -550,6 +549,21 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         return super.canClose(); 
     }
     
+    public static void closeFor(RepositoryImpl repo) {
+        for (IssueTopComponent itc : openIssues) {
+            IssueImpl tcIssue = itc.getIssue();
+            if(tcIssue == null) {
+                continue;
+            }
+            RepositoryImpl tcRepo = tcIssue.getRepositoryImpl();
+            if(tcRepo.getId().equals(repo.getId()) && 
+               tcRepo.getConnectorId().equals(repo.getConnectorId()) ) 
+            {
+                itc.close();
+            }
+        }
+    }
+
     /**
      * Returns top-component that should display the given issue.
      *
@@ -661,6 +675,23 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         } 
     }
     
+    private void closeInAwt() {
+        runInAWT(new Runnable() {
+            @Override
+            public void run() {
+                close();
+            }
+        });
+    }
+        
+    private static void runInAWT(Runnable r) {
+        if(SwingUtilities.isEventDispatchThread()) {
+            r.run();
+        } else {
+            SwingUtilities.invokeLater(r);
+        }
+    }
+
     private IssueSavable getSavable() {
         return getLookup().lookup(IssueSavable.class);
     }
