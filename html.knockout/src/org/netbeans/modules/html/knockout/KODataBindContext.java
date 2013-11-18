@@ -78,7 +78,7 @@ public class KODataBindContext {
         String toAdd = newData.replaceAll("$data", replacement); // NOI18N
 
         if (foreach) {
-            toAdd = toAdd + "[0]"; // NOI18N
+            toAdd = "(" + toAdd + ")[0]"; // NOI18N
         }
         if (data == null || "$root".equals(data)) { // NOI18N
             parents.add(new ParentContext("ko.$bindings", false)); // NOI18N

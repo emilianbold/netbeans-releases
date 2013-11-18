@@ -205,7 +205,7 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
                             KOTemplateContext.TemplateDescriptor desc = KOTemplateContext.getTemplateDescriptor(
                                     snapshot, embedded.embedded(JsTokenId.javascriptLanguage()));
                             if (desc != null) {
-                                templateBindContext.push(desc.getData(), false);
+                                templateBindContext.push(desc.getData(), desc.isIsForEach());
                                 String templateName = desc.getName();
                                 KODataBindContext current = templateUsages.get(templateName);
                                 if (current == null) {

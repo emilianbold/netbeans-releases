@@ -73,6 +73,7 @@ public class KOTemplateContext {
         ts.moveNext();
         String name = null;
         String data = null;
+        boolean forEach = false;
         Token<? extends JsTokenId> token = LexUtilities.findNextNonWsNonComment(ts);
         if (token.id() == JsTokenId.BRACKET_LEFT_CURLY) {
             while ((token = findNext(ts, JsTokenId.IDENTIFIER, false)) != null) {
@@ -88,7 +89,7 @@ public class KOTemplateContext {
                             }
                         }
                     }
-                } else if ("data".equals(text) && ts.moveNext()) { // NOI18N
+                } else if (("data".equals(text) || "foreach".equals(text)) && ts.moveNext()) { // NOI18N
                     token = LexUtilities.findNextNonWsNonComment(ts);
                     if (token.id() == JsTokenId.OPERATOR_COLON && ts.moveNext()) {
                         LexUtilities.findNextNonWsNonComment(ts);
@@ -96,6 +97,7 @@ public class KOTemplateContext {
                         token = findNext(ts, JsTokenId.OPERATOR_COMMA, true);
                         if (token != null) {
                             data = snapshot.getText().subSequence(start, ts.offset()).toString().trim();
+                            forEach = "foreach".equals(text);
                         }
                     }
                 }
@@ -104,7 +106,7 @@ public class KOTemplateContext {
                 }
             }
             if (name != null && data != null) {
-                return new TemplateDescriptor(name, data);
+                return new TemplateDescriptor(name, data, forEach);
             }
         }
 
@@ -220,9 +222,12 @@ public class KOTemplateContext {
 
         private final String data;
 
-        public TemplateDescriptor(String name, String data) {
+        private final boolean isForEach;
+
+        public TemplateDescriptor(String name, String data, boolean isForEach) {
             this.name = name;
             this.data = data;
+            this.isForEach = isForEach;
         }
 
         public String getName() {
@@ -231,6 +236,10 @@ public class KOTemplateContext {
 
         public String getData() {
             return data;
+        }
+
+        public boolean isIsForEach() {
+            return isForEach;
         }
     }
 
