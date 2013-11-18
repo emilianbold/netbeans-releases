@@ -60,4 +60,7 @@ public interface CsmNamespaceDefinition extends CsmOffsetableDeclaration, CsmSco
     
     /** Returns true if it is inline namespace definition */
     boolean isInline();
+    
+    /** Returns true if it is inline namespace definition */
+    boolean isInline();
 }
