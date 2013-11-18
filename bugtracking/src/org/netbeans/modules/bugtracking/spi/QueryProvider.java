@@ -144,26 +144,31 @@ public interface QueryProvider<Q, I> {
         
         /**
          * The Query refreshing started.
+         * @since 1.85
          */
         void refreshingStarted();
         
         /**
          * The Query refreshing finished.
+         * 
+         * @since 1.85
          */
         void refreshingFinished();
         
         /**
-         * Add an Issue.
+         * Add Issues.
          * 
          * @param issue a particular issue instance
+         * @since 1.85
          */
-        void add(I issue);
+        void add(I... issue);
         
         /**
-         * Add an Issue.
+         * Remove Issues.
          * 
          * @param issue a particular issue instance
+         * @since 1.85
          */
-        void remove(I issue);
+        void remove(I... issue);
     }
 }

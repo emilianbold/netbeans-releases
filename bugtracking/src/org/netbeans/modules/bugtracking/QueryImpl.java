@@ -167,7 +167,7 @@ public final class QueryImpl<Q, I>  {
     public static final String EVENT_QUERY_STARTED = "bugtracking.query.started";
     public static final String EVENT_QUERY_FINISHED = "bugtracking.query.finished";
     private class IssueContainer implements QueryProvider.IssueContainer<I> {
-        private final Set<IssueImpl> issues = new HashSet<IssueImpl>();
+        private final Set<IssueImpl> issueImpls = new HashSet<IssueImpl>();
         @Override
         public void refreshingStarted() {
             wasRefreshed = true;
@@ -180,23 +180,27 @@ public final class QueryImpl<Q, I>  {
         }
 
         @Override
-        public void add(I i) {
-            IssueImpl issue = repository.getIssue(i);
-            if(issue != null) {
-                issues.add(issue);
+        public void add(I... issues) {
+            for (I i : issues) {
+                IssueImpl issue = repository.getIssue(i);
+                if(issue != null) {
+                    issueImpls.add(issue);
+                }
             }
         }
 
         @Override
-        public void remove(I i) {
-            IssueImpl issue = repository.getIssue(i);
-            if(issue != null) {
-                issues.remove(issue);
-            }            
+        public void remove(I... issues) {
+            for (I i : issues) {
+                IssueImpl issue = repository.getIssue(i);
+                if(issue != null) {
+                    issueImpls.remove(issue);
+                }            
+            }
         }
         
         Collection<IssueImpl> getIssues() {
-            return Collections.unmodifiableCollection(issues);
+            return Collections.unmodifiableCollection(issueImpls);
         }
         
         private final PropertyChangeSupport support = new PropertyChangeSupport(data);
