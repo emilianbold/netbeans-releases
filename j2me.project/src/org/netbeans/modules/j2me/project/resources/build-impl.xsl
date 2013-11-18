@@ -590,7 +590,7 @@ is divided into following sections:
 
             <target name="-init-javame">
                 <xsl:attribute name="depends">-init-user,-init-project,-init-passwords</xsl:attribute>
-                <fail unless="libs.j2me_ant_ext.classpath">Classpath to J2ME Ant extension library (libs.j2me_ant_ext.classpath property) is not set. For example: location of javame/modules/org-netbeans-mobility-antext.jar file in the IDE installation directory.</fail>
+                <fail unless="libs.j2me_common_ant.classpath">Classpath to Java ME Common Ant library (libs.j2me_common_ant.classpath) is not set. For example: location of javame/modules/org-netbeans-j2me-common-ant.jar file in the IDE installation directory.</fail>
                 <taskdef resource="org/netbeans/modules/j2me/common/ant/defs.properties">
                     <classpath>
                         <pathelement path="${{libs.j2me_common_ant.classpath}}"/>
@@ -830,6 +830,10 @@ is divided into following sections:
                 updateManifest(midlets);
                 var others = new String(project.getProperty("manifest.others"));
                 updateManifest(others);
+                var apipermissions = new String(project.getProperty("manifest.apipermissions"));
+                updateManifest(apipermissions);
+                var pushregistry = new String(project.getProperty("manifest.pushregistry"));
+                updateManifest(pushregistry);
                 ]]></script>
             </target>
 
@@ -920,7 +924,7 @@ is divided into following sections:
                 <property name="obfuscator.srcjar" value="${{build.dir}}/unobfuscated.jar"/>
                 <property name="obfuscator.destjar" value="${{build.dir}}/obfuscated.jar"/>
                 <jar jarfile="${{obfuscator.srcjar}}" basedir="${{build.classes.dir}}"/>
-                <nb-obfuscate srcjar="${{obfuscator.srcjar}}" destjar="${{obfuscator.destjar}}" obfuscatorclasspath="${{obfuscator.classpath}}" classpath="${{platform.bootcp}}:${{extra.classpath}}" obfuscationLevel="${{obfuscation.level}}" extraScript="${{obfuscation.custom}}"/>
+                <nb-obfuscate srcjar="${{obfuscator.srcjar}}" destjar="${{obfuscator.destjar}}" obfuscatorclasspath="${{obfuscator.classpath}}" classpath="${{platform.bootcp}}:${{javac.classpath}}" obfuscationLevel="${{obfuscation.level}}" extraScript="${{obfuscation.custom}}"/>
                 <delete includeEmptyDirs="true">
                     <fileset dir="${{build.classes.dir}}" includes="**/*" defaultexcludes="no"/>
                 </delete>
