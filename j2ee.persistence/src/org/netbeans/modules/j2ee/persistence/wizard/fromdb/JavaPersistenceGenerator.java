@@ -1390,7 +1390,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
 
             @Override
             protected void afterMembersGenerated() {
-                if (!UpdateType.UPDATE.equals(updateType)) {
+                if (!UpdateType.UPDATE.equals(updateType) && !generateMappedSC) {
                     addFindAllNamedQueryAnnotation();
 
                     newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.persistence.NamedQueries", // NOI18N
