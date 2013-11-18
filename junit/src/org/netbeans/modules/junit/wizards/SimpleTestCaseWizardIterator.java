@@ -297,7 +297,10 @@ public class SimpleTestCaseWizardIterator
                 Exceptions.printStackTrace(ex1);
             }
         }
-	((SimpleTestStepLocation) getClassChooserPanel()).selectLocation(targetFolder.getPrimaryFile());
+        WizardDescriptor.Panel<WizardDescriptor> chooserPanel = getClassChooserPanel();
+        if(chooserPanel instanceof  SimpleTestStepLocation) {
+            ((SimpleTestStepLocation) chooserPanel).selectLocation(targetFolder.getPrimaryFile());
+        }
     }
 
     /**
