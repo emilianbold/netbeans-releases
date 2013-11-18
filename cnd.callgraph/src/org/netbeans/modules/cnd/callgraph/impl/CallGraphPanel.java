@@ -110,7 +110,6 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
     public static final String INITIAL_LAYOUT = "CallGraphLayout"; // NOI18N
     
     private CallGraphScene scene;
-    private static double dividerLocation = 0.5;
     private final transient FocusTraversalPolicy newPolicy;
     private static final boolean isMacLaf = "Aqua".equals(UIManager.getLookAndFeel().getID()); // NOI18N
     private static final Color macBackground = UIManager.getColor("NbExplorerView.background"); // NOI18N
@@ -148,49 +147,6 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
         };
         getExplorerManager().setRootContext(root);
         if (showGraph) {
-            addComponentListener(new ComponentListener() {
-                @Override
-                public void componentResized(ComponentEvent e) {
-                    isSetDividerLocation.set(true);
-                    jSplitPane1.setDividerLocation(dividerLocation);
-                    isSetDividerLocation.set(false);
-                }
-                @Override
-                public void componentMoved(ComponentEvent e) {
-                }
-                @Override
-                public void componentShown(ComponentEvent e) {
-                }
-                @Override
-                public void componentHidden(ComponentEvent e) {
-                }
-            });
-            jSplitPane1.addPropertyChangeListener(
-                            new PropertyChangeListener(){
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (JSplitPane.DIVIDER_LOCATION_PROPERTY.equals(evt.getPropertyName())) {
-                        if (isSetDividerLocation.get()) {
-                            return;
-                        }
-                        double width = jSplitPane1.getWidth();
-                        double size = jSplitPane1.getDividerSize();
-                        double location = jSplitPane1.getDividerLocation();
-                        if (width <= size) {
-                            return;
-                        }
-                        double x =  location/(width-size);
-                        if (x > 1.0) {
-                            x = 1.0;
-                        }
-                        if (x < 0.0) {
-                            x = 0.0;
-                        }
-                        dividerLocation = x;
-                    }
-                }
-            });
-        
             initGraph();
         } else {
             Component left = jSplitPane1.getLeftComponent();
