@@ -136,6 +136,9 @@ public class WebBrowserImplProvider {
             if (browserCL != null)
                 return browserCL;
             browserCL = createBrowserClassLoader( null );
+            if (browserCL == null) {
+                return WebBrowserImplProvider.class.getClassLoader();
+            }
             return browserCL;
         }
     }
