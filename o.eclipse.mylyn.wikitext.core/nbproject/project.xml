@@ -5,6 +5,7 @@
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.eclipse.mylyn.wikitext.core</code-name-base>
             <module-dependencies/>
+            <public-packages/>
             <class-path-extension>
                 <runtime-relative-path>org-eclipse-mylyn-wikitext-core.jar</runtime-relative-path>
                 <binary-origin>external/org.eclipse.mylyn.wikitext.core_1.9.0.20131007-2055.jar</binary-origin>
