@@ -82,14 +82,17 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
     private final CsmUID<CsmNamespace> namespaceUID;
     private final int leftBracketPos;
     
+    private final boolean inline;
+    
     private NamespaceDefinitionImpl(AST ast, CsmFile file, NamespaceImpl parent) {
-        this(NameCache.getManager().getString(AstUtil.getText(ast)), parent, file, getStartOffset(ast), getEndOffset(ast), calcLeftBracketPos(ast));
+        this(NameCache.getManager().getString(AstUtil.getText(ast)), parent, file, getStartOffset(ast), getEndOffset(ast), calcLeftBracketPos(ast), isInlineDefinition(ast));
     }
 
-    private NamespaceDefinitionImpl(CharSequence name, NamespaceImpl parent, CsmFile file, int startOffset, int endOffset, int leftBracketPos) {
+    private NamespaceDefinitionImpl(CharSequence name, NamespaceImpl parent, CsmFile file, int startOffset, int endOffset, int leftBracketPos, boolean inline) {
         super(file, startOffset, endOffset);
         declarations = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
         this.name = name;
+        this.inline = inline;
         NamespaceImpl nsImpl = ((ProjectBase) file.getProject()).findNamespaceCreateIfNeeded(parent, name);
         
         // set parent ns, do it in constructor to have final fields
@@ -102,10 +105,11 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         nsImpl.addNamespaceDefinition(NamespaceDefinitionImpl.this);
     }
 
-    private NamespaceDefinitionImpl(CharSequence name, NamespaceImpl parent, NamespaceImpl ns, CsmFile file, int startOffset, int endOffset, int leftBracketPos) {
+    private NamespaceDefinitionImpl(CharSequence name, NamespaceImpl parent, NamespaceImpl ns, CsmFile file, int startOffset, int endOffset, int leftBracketPos, boolean inline) {
         super(file, startOffset, endOffset);
         declarations = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
         this.name = name;
+        this.inline = inline;
         // set parent ns, do it in constructor to have final fields
         namespaceUID = UIDCsmConverter.namespaceToUID(ns);
         assert namespaceUID != null;
@@ -238,6 +242,11 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
     public CsmScope getScope() {
         return getContainingFile();
     }
+
+    @Override
+    public boolean isInline() {
+        return inline;
+    }
     
     @Override
     public Collection<CsmScopeElement> getScopeElements() {
@@ -295,6 +304,11 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         return (lcurly instanceof CsmAST) ? ((CsmAST) lcurly).getOffset() : -1;
     }
     
+    private static boolean isInlineDefinition(AST node) {
+        AST inline = AstUtil.findChildOfType(node, CPPTokenTypes.LITERAL_inline);
+        return inline != null;
+    }
+    
     public int getLeftBracketOffset() {
         return leftBracketPos;
     }
@@ -319,6 +333,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         private int bodyStartOffset;
         private int endOffset;
         private NamespaceBuilder parent;
+        private boolean inline;
 
         private NamespaceImpl namespace;
         private NamespaceDefinitionImpl instance;
@@ -353,6 +368,10 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         
         public void setParentNamespace(NamespaceBuilder parent) {
             this.parent = parent;
+        }
+        
+        public void setInline(boolean inline) {
+            this.inline = inline;
         }
 
         public void addDeclaration(CsmOffsetableDeclaration decl) {
@@ -394,7 +413,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
             NamespaceDefinitionImpl ns = getNamespaceDefinitionInstance();
             if (ns == null) {
                 NamespaceImpl parentNamespace = parent != null ? parent.getNamespace() : (NamespaceImpl)((ProjectBase) file.getProject()).getGlobalNamespace();
-                ns = new NamespaceDefinitionImpl(name, parentNamespace, getNamespace(), file, startOffset, endOffset, bodyStartOffset);
+                ns = new NamespaceDefinitionImpl(name, parentNamespace, getNamespace(), file, startOffset, endOffset, bodyStartOffset, inline);
                 if(parent != null) {
                     parent.addDeclaration(ns);
                 } else {
@@ -429,6 +448,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         }
         
         output.writeInt(leftBracketPos);
+        output.writeBoolean(inline);
     }  
 
     public NamespaceDefinitionImpl(RepositoryDataInput input) throws IOException {
@@ -455,5 +475,6 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         }
         
         this.leftBracketPos = input.readInt();
+        this.inline = input.readBoolean();
     }
 }

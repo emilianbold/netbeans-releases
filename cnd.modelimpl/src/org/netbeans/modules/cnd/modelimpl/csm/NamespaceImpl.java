@@ -356,7 +356,18 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     public boolean isGlobal() {
         return global;
     }
-    
+
+    @Override
+    public boolean isInline() {
+        Collection<CsmNamespaceDefinition> definitions = getDefinitions();
+        for (CsmNamespaceDefinition def : definitions)  {
+            if (def.isInline()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public CharSequence getQualifiedName() {
         return qualifiedName;
