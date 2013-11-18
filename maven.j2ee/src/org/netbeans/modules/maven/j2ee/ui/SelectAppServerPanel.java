@@ -67,7 +67,7 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
-import org.netbeans.modules.maven.j2ee.ExecutionChecker;
+import org.netbeans.modules.maven.j2ee.execution.ExecutionChecker;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.modules.maven.j2ee.OneTimeDeployment;
 import org.netbeans.modules.maven.j2ee.SessionContent;

@@ -60,7 +60,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedExcept
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
-import org.netbeans.modules.maven.j2ee.ExecutionChecker;
+import org.netbeans.modules.maven.j2ee.execution.ExecutionChecker;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.modules.maven.j2ee.utils.Server;
 import org.openide.WizardDescriptor;
