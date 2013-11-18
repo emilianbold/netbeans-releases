@@ -1,21 +1,5 @@
-__netbeans_import__('libs/knockout-2.2.1.js');
+__netbeans_import__('js/knockout-3.0.0.js');
 
-
-            function Bulici() {
-                this.pepa = new Clobrda("pepa");
-                this.lidickove = [ this.pepa, new Clobrda("jozin")];
-            }
-            function Clobrda(jmeno) {
-                this.jmeno = jmeno;
-                this.age = 1;
-            }
-            function init() {
-                ko.applyBindings(new Bulici());
-            }
-        
-(function(){
-init();;
-});
 (function(){
 var $element;
 var $root = ko.$bindings;
@@ -30,7 +14,7 @@ var $parent = undefined;
 var $parents = [];
 var $data = ko.$bindings;
 with ($data) {
-(lidickove );}
+({ name: 'person-template', foreach: people });}
 });
 (function(){
 var $element;
@@ -53,44 +37,44 @@ $context.$parentContext.$data = ko.$bindings;
 $parentContext.$data = ko.$bindings;
 var $parents = [$parentContext.$data];
 with (ko.$bindings) {
-var $data = (lidickove)[0];
+var $data = (people)[0];
 }
 with ($data) {
-(jmeno);}
+( );}
 });
 (function(){
 var $element;
 var $root = ko.$bindings;
+var $index = 0;
 var $parentContext = {
-$parentContext :{
 $parentContext :undefined,
-$root : ko.$bindings,
-},
 $root : ko.$bindings,
 };
 var $context = {
 $parentContext :{
-$parentContext :{
 $parentContext :undefined,
 $root : ko.$bindings,
 },
 $root : ko.$bindings,
-},
-$root : ko.$bindings,
+$index : 0,
 };
+var $parent = ko.$bindings;
+$context.$parentContext.$data = ko.$bindings;
+$parentContext.$data = ko.$bindings;
+var $parents = [$parentContext.$data];
 with (ko.$bindings) {
-var $parent = (lidickove)[0];
-$context.$parentContext.$data = (lidickove)[0];
-$parentContext.$data = (lidickove)[0];
-}
-$context.$parentContext.$parentContext.$data = ko.$bindings;
-$parentContext.$parentContext.$data = ko.$bindings;
-var $parents = [$parentContext.$parentContext.$data,$parentContext.$data];
-with (ko.$bindings) {
-with ((lidickove)[0]) {
-var $data = jmeno;
-}
+var $data = (people)[0];
 }
 with ($data) {
-(length);}
+(credits);}
 });
+
+
+ function MyViewModel() {
+     this.people = [
+         { name: 'Franklin', credits: 250 },
+         { name: 'Mario', credits: 5800 }
+     ]
+ }
+ ko.applyBindings(new MyViewModel());
+

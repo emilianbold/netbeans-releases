@@ -39,37 +39,14 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.knockout;
+@TemplateRegistration(folder = "Html5Tests",
+        content = "karma.conf.js",
+        scriptEngine = "freemarker",
+        position = 100,
+        displayName = "#Templates.karma.template.displayName",
+        description = "KarmaConfDescription.html")
+@NbBundle.Messages("Templates.karma.template.displayName=Karma Configuration File")
+package org.netbeans.modules.javascript.karma.ui.resources;
 
-import org.netbeans.modules.javascript2.editor.JsCodeCompletionBase;
-
-/**
- *
- * @author Petr Pisl
- */
-public class KOCodeCompletionTest extends JsCodeCompletionBase {
-
-    public KOCodeCompletionTest(String testName) {
-        super(testName);
-    }
-    
-    public void testForEach() throws Exception {
-        checkCompletion("completion/foreach/index.html", "            <div data-bind=\"text: ^ , css: jmeno == 'pepa' ? 'jouda' :", false);
-    }
-
-    public void testWith() throws Exception {
-        checkCompletion("completion/with/index.html", "            <div data-bind=\"text: ^\"></div>", false);
-    }
-
-    public void testIssue231569() throws Exception {
-        checkCompletion("completion/issue231569/index.html", "                <input data-bind='value: userNameToAdd, valueUpdate: \"keyup\", css: { invalid: ^ }' /></input>", false);
-    }
-
-    public void testTemplate() throws Exception {
-        checkCompletion("completion/template/index.html", "            <h3 data-bind=\"text: ^\"></h3>", false);
-    }
-
-    public void testTemplateForEach() throws Exception {
-        checkCompletion("completion/templateForEach/index.html", "    <h3 data-bind=\"text: ^\"></h3>", false);
-    }
-}
+import org.netbeans.api.templates.TemplateRegistration;
+import org.openide.util.NbBundle;
