@@ -97,11 +97,13 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.UndoRedo;
 import org.openide.util.Cancellable;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
 
 /**
@@ -127,7 +129,9 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
      */
     public IssueTopComponent() {
         initComponents();
+        instanceContent.add(getActionMap());
         associateLookup(new AbstractLookup(instanceContent));
+        
         RepositoryRegistry.getInstance().addPropertyChangeListener(this);
         preparingLabel.setVisible(false);
         newButton.addActionListener(new ActionListener() {
@@ -147,6 +151,11 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
             delegatingUndoRedoManager = new DelegatingUndoRedoManager();
         }
         return delegatingUndoRedoManager;
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return super.getLookup(); //To change body of generated methods, choose Tools | Templates.
     }
     
     /**

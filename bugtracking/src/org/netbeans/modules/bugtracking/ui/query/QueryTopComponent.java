@@ -130,6 +130,7 @@ public final class QueryTopComponent extends TopComponent
     
     QueryTopComponent() {
         initComponents();
+        instanceContent.add(getActionMap());
         associateLookup(new AbstractLookup(instanceContent));
         RepositoryRegistry.getInstance().addPropertyChangeListener(this);
         repositoryComboBox = new javax.swing.JComboBox();
