@@ -173,16 +173,16 @@ import org.openide.util.Parameters;
 public abstract class ProjectBase implements CsmProject, Persistent, SelfPersistent, CsmIdentifiable, 
         CndFileSystemProvider.CndFileSystemProblemListener {
 
-    protected ProjectBase(ModelImpl model, FileSystem fs, NativeProject platformProject, String name) {
+    protected ProjectBase(ModelImpl model, FileSystem fs, NativeProject platformProject, CharSequence name) {
         this(model, fs, (Object) platformProject, name, createProjectKey(fs, platformProject));
     }
 
-    protected ProjectBase(ModelImpl model, FileSystem fs, CharSequence platformProject, String name, CacheLocation cacheLocation) {
+    protected ProjectBase(ModelImpl model, FileSystem fs, CharSequence platformProject, CharSequence name, CacheLocation cacheLocation) {
         this(model, fs, (Object) platformProject, name, createProjectKey(fs, platformProject, cacheLocation));
     }
 
     /** Creates a new instance of CsmProjectImpl */
-    private ProjectBase(ModelImpl model, FileSystem fs, Object platformProject, String name, Key key) {
+    private ProjectBase(ModelImpl model, FileSystem fs, Object platformProject, CharSequence name, Key key) {
         namespaces = new ConcurrentHashMap<CharSequence, CsmUID<CsmNamespace>>();
         this.uniqueName = getUniqueName(fs, platformProject);
         RepositoryUtils.openUnit(key);
@@ -385,12 +385,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return readInstance(model, createProjectKey(fs, platformProject), platformProject, name);
     }
 
-    protected static ProjectBase readInstance(ModelImpl model, FileSystem fs, CharSequence platformProject, String name, CacheLocation cacheLocation) {
+    protected static ProjectBase readInstance(ModelImpl model, FileSystem fs, CharSequence platformProject, CharSequence name, CacheLocation cacheLocation) {
         ProjectBase instance = readInstance(model, createProjectKey(fs, platformProject, cacheLocation), platformProject, name);
         return instance;
     }
 
-    private static ProjectBase readInstance(ModelImpl model, Key key, Object platformProject, String name) {
+    private static ProjectBase readInstance(ModelImpl model, Key key, Object platformProject, CharSequence name) {
 
         long time = 0;
         if (TraceFlags.TIMING) {
@@ -570,7 +570,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return nsp;
     }
 
-    private static String getNestedNamespaceQualifiedName(CharSequence name, NamespaceImpl parent, boolean createForEmptyNames) {
+    private static CharSequence getNestedNamespaceQualifiedName(CharSequence name, NamespaceImpl parent, boolean createForEmptyNames) {
         StringBuilder sb = new StringBuilder(name);
         if (parent != null) {
             if (name.length() == 0 && createForEmptyNames) {
@@ -581,15 +581,15 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 sb.insert(0, parent.getQualifiedName());
             }
         }
-        return sb.toString();
+        return sb;
     }
 
     public final NamespaceImpl findNamespaceCreateIfNeeded(NamespaceImpl parent, CharSequence name) {
         synchronized (namespaceLock) {
-            String qualifiedName = ProjectBase.getNestedNamespaceQualifiedName(name, parent, true);
+            CharSequence qualifiedName = ProjectBase.getNestedNamespaceQualifiedName(name, parent, true);
             NamespaceImpl nsp = _getNamespace(qualifiedName);
             if (nsp == null) {
-                nsp = NamespaceImpl.create(this, parent, name.toString(), qualifiedName);
+                nsp = NamespaceImpl.create(this, parent, name, qualifiedName);
             }
             return nsp;
         }
@@ -2373,7 +2373,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return null;        
     }
     
-    public final boolean isMySource(String includePath) {
+    public final boolean isMySource(CharSequence includePath) {
         return getProjectRoots().isMySource(includePath);
     }
 
@@ -2767,7 +2767,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         //    res.add(lib);
         //}
         if (!isArtificial()) {
-            for (CsmUID<CsmProject> library : LibraryManager.getInstance(this).getLirariesKeys(getUID())) {
+            for (CsmUID<CsmProject> library : getLibraryManager().getLirariesKeys(getUID())) {
                 res.add(RepositoryUtils.UIDtoKey(library));
             }
         }
@@ -2794,7 +2794,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         //    res.add(lib);
         //}
         if (!isArtificial()) {
-            List<LibProjectImpl> libraries = LibraryManager.getInstance(this).getLibraries((ProjectImpl) this);
+            List<LibProjectImpl> libraries = getLibraryManager().getLibraries((ProjectImpl) this);
             int size = libraries.size();
             for (int i = 0; i < size; i++) {
                 res.add(libraries.get(i));
@@ -3661,7 +3661,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         assert classifierStorageKey != null : "classifierStorageKey can not be null";
         weakClassifierContainer = new WeakContainer<ClassifierContainer>(this, classifierStorageKey);
 
-        includedFileContainer = new IncludedFileContainer(this, aStream);
+        includedFileContainer = new IncludedFileContainer(aStream);
         
         uniqueName = APTSerializeUtils.readFileNameIndex(aStream, ProjectNameCache.getManager(), unitId);
         assert uniqueName != null : "uniqueName can not be null";

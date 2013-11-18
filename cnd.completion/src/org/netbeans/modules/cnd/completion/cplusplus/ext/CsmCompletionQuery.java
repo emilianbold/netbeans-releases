@@ -58,6 +58,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -91,6 +92,7 @@ import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
@@ -113,6 +115,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
+import org.netbeans.modules.cnd.api.model.services.CsmResolveContext;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilterBuilder;
@@ -126,7 +129,6 @@ import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem.VariableR
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver.QueryScope;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver.Result;
-import org.netbeans.modules.cnd.completion.csm.CompletionUtilities;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.AntiLoop;
 import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
@@ -157,16 +159,16 @@ abstract public class CsmCompletionQuery {
         query_type
     }
     
-    private static final ThreadLocal<Map<AntiloopClient, Set<CsmExpression>>> threadLocalAntiloopMap = new ThreadLocal<Map<AntiloopClient, Set<CsmExpression>>>() {
+    private static final ThreadLocal<Map<AntiloopClient, Set<CsmOffsetable>>> threadLocalAntiloopMap = new ThreadLocal<Map<AntiloopClient, Set<CsmOffsetable>>>() {
 
         @Override
-        protected Map<AntiloopClient, Set<CsmExpression>> initialValue() {
-            return new EnumMap<AntiloopClient, Set<CsmExpression>>(AntiloopClient.class);
+        protected Map<AntiloopClient, Set<CsmOffsetable>> initialValue() {
+            return new EnumMap<AntiloopClient, Set<CsmOffsetable>>(AntiloopClient.class);
         }
         
     };
 
-    Set<CsmExpression> antiLoop = new HashSet<CsmExpression>();
+    Set<CsmOffsetable> antiLoop = new HashSet<CsmOffsetable>();
         
     // the only purpose of this method is that NbJavaCompletionQuery
     // can use it to retrieve baseDocument's fileobject and create correct
@@ -235,7 +237,7 @@ abstract public class CsmCompletionQuery {
      * @param expression - expression to get type from
      * @param instantiations - context
      */
-    public CsmType queryType(CsmExpression expression, List<CsmInstantiation> instantiations) {
+    public CsmType queryType(CsmOffsetable expression, List<CsmInstantiation> instantiations) {
         if (enterThreadLocalAntiloop(AntiloopClient.query_type, expression)) {
             try {
                 CsmCacheManager.enter();
@@ -270,10 +272,16 @@ abstract public class CsmCompletionQuery {
                 CsmCompletionTokenProcessor tp = processTokensInFile(csmFile, startOffset, endOffset, baseDocument, docVersion);           
 
                 if (!checkErrorTokenState(tp)) {
-                    CsmCompletionExpression exp = tp.getResultExp();
-                    ret = getResultType(baseDocument, exp, instantiations, endOffset, true, true);
-                    if (TRACE_COMPLETION) {
-                        System.err.println("expression " + exp);
+                    try {
+                        pushResolveContext(CsmResolveContext.create(csmFile, startOffset));
+
+                        CsmCompletionExpression exp = tp.getResultExp();
+                        ret = getResultType(baseDocument, exp, instantiations, endOffset, true, true);
+                        if (TRACE_COMPLETION) {
+                            System.err.println("expression " + exp);
+                        }
+                    } finally {
+                        popResolveContext();
                     }
                 } else if (TRACE_COMPLETION) {
                     System.err.println("Error expression " + tp.getResultExp());
@@ -385,7 +393,7 @@ abstract public class CsmCompletionQuery {
     private CsmCompletionResult queryImpl(JTextComponent component, final BaseDocument doc, final int offset,
             boolean openingSource, boolean sort, boolean instantiateTypes, boolean tooltip) {
         // remember baseDocument here. it is accessible by getBaseDocument() {
-
+        
         // method for subclasses of JavaCompletionQuery, ie. NbJavaCompletionQuery
         baseDocument = doc;
 
@@ -425,47 +433,51 @@ abstract public class CsmCompletionQuery {
 //            }
 
             if (!checkErrorTokenState(tp)) {
-                CsmCompletionExpression exp = null;
-                if(!tooltip) {
-                    exp = tp.getResultExp();
-                    ret = getResult(component, doc, openingSource, offset, exp, sort, isInIncludeDirective(doc, offset), instantiateTypes);
-                } else {
-                    List<CsmCompletionExpression> stack = tp.getStack();
-                    for (int i = stack.size() - 1; i >= 0; i--) {
-                        CsmCompletionExpression e = stack.get(i);
-                        if(e.getExpID() == CsmCompletionExpression.METHOD_OPEN) {
-                            exp = e;
-                            break;
-                        } else if(e.getExpID() == CsmCompletionExpression.SCOPE) {
-                            if(e.getParameterCount() > 1 && 
-                                    e.getParameter(e.getParameterCount() - 1).getExpID() == CsmCompletionExpression.METHOD_OPEN) {
+                try {
+                    pushResolveContext(CsmResolveContext.create(csmFile, offset));
+
+                    CsmCompletionExpression exp = null;
+                    if(!tooltip) {
+                        exp = tp.getResultExp();
+                        ret = getResult(component, doc, openingSource, offset, exp, sort, isInIncludeDirective(doc, offset), instantiateTypes);
+                    } else {
+                        List<CsmCompletionExpression> stack = tp.getStack();
+                        for (int i = stack.size() - 1; i >= 0; i--) {
+                            CsmCompletionExpression e = stack.get(i);
+                            if(e.getExpID() == CsmCompletionExpression.METHOD_OPEN) {
                                 exp = e;
                                 break;
+                            } else if(e.getExpID() == CsmCompletionExpression.SCOPE) {
+                                if(e.getParameterCount() > 1 && 
+                                        e.getParameter(e.getParameterCount() - 1).getExpID() == CsmCompletionExpression.METHOD_OPEN) {
+                                    exp = e;
+                                    break;
+                                }
                             }
                         }
-                    }
-                    exp = (exp != null) ? exp : tp.getResultExp();
-                    ret = getResult(component, doc, openingSource, offset, exp, sort, isInIncludeDirective(doc, offset), instantiateTypes);
-                    if(ret == null && exp != null && exp.getParameterCount() >= 1 && exp.getParameter(0).getExpID() == CsmCompletionExpression.VARIABLE) {
-                        ret = getResult(component, doc, openingSource, offset, exp.getParameter(0), sort, isInIncludeDirective(doc, offset), instantiateTypes);
-                        if(ret != null && !ret.getItems().isEmpty()) {
-                            if(ret.getItems().get(0) instanceof CsmResultItem.VariableResultItem) {
-                                VariableResultItem item = (CsmResultItem.VariableResultItem)ret.getItems().get(0);
-                                if(item.getAssociatedObject() instanceof CsmObject && CsmKindUtilities.isVariable((CsmObject)item.getAssociatedObject())) {
-                                    CsmVariable var = (CsmVariable)item.getAssociatedObject();
-                                    if(var.getType() != null) {
-                                        CsmClassifier cls = (CsmClassifier) var.getType().getClassifier();
-                                        cls = CsmBaseUtilities.getOriginalClassifier(cls, getFinder().getCsmFile());
-                                        if(CsmKindUtilities.isClass(cls)) {
-                                            List<CsmMember> items = new ArrayList<CsmMember>();
-                                            for (CsmMember member : ((CsmClass)cls).getMembers()) {
-                                                if(CsmKindUtilities.isConstructor(member)) {
-                                                    items.add(member);
+                        exp = (exp != null) ? exp : tp.getResultExp();
+                        ret = getResult(component, doc, openingSource, offset, exp, sort, isInIncludeDirective(doc, offset), instantiateTypes);
+                        if(ret == null && exp != null && exp.getParameterCount() >= 1 && exp.getParameter(0).getExpID() == CsmCompletionExpression.VARIABLE) {
+                            ret = getResult(component, doc, openingSource, offset, exp.getParameter(0), sort, isInIncludeDirective(doc, offset), instantiateTypes);
+                            if(ret != null && !ret.getItems().isEmpty()) {
+                                if(ret.getItems().get(0) instanceof CsmResultItem.VariableResultItem) {
+                                    VariableResultItem item = (CsmResultItem.VariableResultItem)ret.getItems().get(0);
+                                    if(item.getAssociatedObject() instanceof CsmObject && CsmKindUtilities.isVariable((CsmObject)item.getAssociatedObject())) {
+                                        CsmVariable var = (CsmVariable)item.getAssociatedObject();
+                                        if(var.getType() != null) {
+                                            CsmClassifier cls = (CsmClassifier) var.getType().getClassifier();
+                                            cls = CsmBaseUtilities.getOriginalClassifier(cls, getFinder().getCsmFile());
+                                            if(CsmKindUtilities.isClass(cls)) {
+                                                List<CsmMember> items = new ArrayList<CsmMember>();
+                                                for (CsmMember member : ((CsmClass)cls).getMembers()) {
+                                                    if(CsmKindUtilities.isConstructor(member)) {
+                                                        items.add(member);
+                                                    }
                                                 }
-                                            }
-                                            if(!items.isEmpty()) {
-                                                CsmOffsetableDeclaration context = sup.getDefinition(csmFile, offset, getFileReferencesContext());
-                                                ret = new CsmCompletionResult(component, doc, items, cls.getName().toString(), exp, offset, 0, 0, isProjectBeeingParsed(openingSource), context, instantiateTypes);
+                                                if(!items.isEmpty()) {
+                                                    CsmOffsetableDeclaration context = sup.getDefinition(csmFile, offset, getFileReferencesContext());
+                                                    ret = new CsmCompletionResult(component, doc, items, cls.getName().toString(), exp, offset, 0, 0, isProjectBeeingParsed(openingSource), context, instantiateTypes);
+                                                }
                                             }
                                         }
                                     }
@@ -473,9 +485,11 @@ abstract public class CsmCompletionQuery {
                             }
                         }
                     }
-                }
-                if (TRACE_COMPLETION) {
-                    System.err.println("expression " + exp);
+                    if (TRACE_COMPLETION) {
+                        System.err.println("expression " + exp);
+                    }
+                } finally {
+                    popResolveContext();
                 }
             } else if (TRACE_COMPLETION) {
                 System.err.println("Error expression " + tp.getResultExp());
@@ -487,12 +501,12 @@ abstract public class CsmCompletionQuery {
         return ret;
     }
     
-    private boolean enterThreadLocalAntiloop(AntiloopClient client, CsmExpression expression) {
-        Map<AntiloopClient, Set<CsmExpression>> antiloopMap = threadLocalAntiloopMap.get();
-        Set<CsmExpression> antiloopSet = antiloopMap.get(client);
+    private boolean enterThreadLocalAntiloop(AntiloopClient client, CsmOffsetable expression) {
+        Map<AntiloopClient, Set<CsmOffsetable>> antiloopMap = threadLocalAntiloopMap.get();
+        Set<CsmOffsetable> antiloopSet = antiloopMap.get(client);
         
         if (antiloopSet == null) {
-            antiloopSet = new HashSet<CsmExpression>(4);
+            antiloopSet = new HashSet<CsmOffsetable>(4);
             antiloopMap.put(client, antiloopSet);
         }
         
@@ -503,13 +517,30 @@ abstract public class CsmCompletionQuery {
         return false;
     }
     
-    private void exitThreadLocalAntiloop(AntiloopClient client, CsmExpression expression) {
-        Map<AntiloopClient, Set<CsmExpression>> antiloopMap = threadLocalAntiloopMap.get();
-        Set<CsmExpression> antiloopSet = antiloopMap.get(client);
+    private void exitThreadLocalAntiloop(AntiloopClient client, CsmOffsetable expression) {
+        Map<AntiloopClient, Set<CsmOffsetable>> antiloopMap = threadLocalAntiloopMap.get();
+        Set<CsmOffsetable> antiloopSet = antiloopMap.get(client);
         
         assert antiloopSet != null : "Must be set in enter method!"; //NOI18N
         
         antiloopSet.remove(expression);
+    }
+    
+    private void pushResolveContext(CsmResolveContext context) {
+        Stack<CsmResolveContext> contexts = (Stack<CsmResolveContext>) CsmCacheManager.get(CsmResolveContext.class);
+        if (contexts == null) {
+            contexts = new Stack<CsmResolveContext>();
+            CsmCacheManager.put(CsmResolveContext.class, contexts);
+        }
+        contexts.push(context);
+    }
+    
+    private CsmResolveContext popResolveContext() {
+        Stack<CsmResolveContext> contexts = (Stack<CsmResolveContext>) CsmCacheManager.get(CsmResolveContext.class);
+        if (contexts != null && !contexts.isEmpty()) {
+            return contexts.pop();
+        }
+        return null;
     }
     
     private boolean checkErrorTokenState(CsmCompletionTokenProcessor tp) {
@@ -1217,7 +1248,7 @@ abstract public class CsmCompletionQuery {
             return resolveType;
         }
         
-        private CsmType findExpressionType(final CsmExpression expression) {
+        private CsmType findExpressionType(final CsmOffsetable expression) {
             if (expression != null && !antiLoop.contains(expression)) {
                 String expressionText = expression.getText().toString();
                 TokenHierarchy<String> hi = TokenHierarchy.create(expressionText, CndLexerUtilities.getLanguage(getBaseDocument()));
@@ -1343,17 +1374,23 @@ abstract public class CsmCompletionQuery {
                 return null;
             }
             for (CsmFunction fun : mtdList) {
-                if (CsmKindUtilities.isTemplate(fun)) {
-                    CsmObject inst = createInstantiation((CsmTemplate) fun, genericNameExp, typeList);
-                    if (CsmKindUtilities.isFunction(inst)) {
-                        fun = (CsmFunction) inst;
+                CsmObject entity = fun;
+
+                if (CsmKindUtilities.isConstructor(entity)) {
+                    entity = ((CsmConstructor) entity).getContainingClass();
+                }
+
+                if (CsmKindUtilities.isTemplate(entity)) {
+                    CsmObject inst = createInstantiation((CsmTemplate) entity, genericNameExp, typeList);                    
+                    if (CsmKindUtilities.isFunction(inst) || CsmKindUtilities.isClassifier(inst)) {
+                        entity = inst;
                     }
                 }
-                if (CsmKindUtilities.isConstructor(fun)) {
-                    CsmClassifier cls = ((CsmConstructor) fun).getContainingClass();
-                    out = CsmCompletion.createType(cls, 0, 0, 0, false);
-                } else {
-                    out = fun.getReturnType();
+                
+                if (CsmKindUtilities.isClassifier(entity)) {
+                    out = CsmCompletion.createType((CsmClassifier) entity, 0, 0, 0, false);
+                } else if (CsmKindUtilities.isFunction(entity)) {
+                    out = ((CsmFunction) entity).getReturnType();
                 }
                 if (out != null) {
                     break;
@@ -2033,7 +2070,9 @@ abstract public class CsmCompletionQuery {
                     if (resolve(item.getTokenOffset(0), operatorPrefix, false)) {
                         res = compResolver.getResult();
                     }
-                    res.addResulItemsToCol(mtdList);
+                    if (res != null) {
+                        res.addResulItemsToCol(mtdList);
+                    }
                     result = new CsmCompletionResult(component, getBaseDocument(), res, operatorPrefix, item, endOffset, 0, 0, isProjectBeeingParsed(), contextElement, instantiateTypes); // NOI18N
                     lastType = null;
                     switch (item.getTokenID(0)) {
@@ -2741,10 +2780,15 @@ abstract public class CsmCompletionQuery {
                                     if (type != null) {
                                         params.add(ip.createTypeBasedSpecializationParameter(type));
                                     } else {
-                                        params.add(ip.createExpressionBasedSpecializationParameter(paramInst.getTokenText(0),
-                                                contextFile, paramInst.getTokenOffset(0), paramInst.getTokenOffset(0) + paramInst.getTokenLength(0)));
+                                        RenderedExpression renderedExpression = renderExpression(paramInst);
+                                        params.add(ip.createExpressionBasedSpecializationParameter(
+                                                renderedExpression.text,
+                                                contextFile, 
+                                                renderedExpression.startOffset, 
+                                                renderedExpression.endOffset
+                                        ));
                                     }
-                            }
+                                }
                         } else {
                             break;
                         }
@@ -2808,6 +2852,115 @@ abstract public class CsmCompletionQuery {
             }
             
             return map;
+        }
+        
+        private RenderedExpression renderExpression(CsmCompletionExpression expr) {
+            if (expr == null) {
+                return null;
+            }            
+            switch (expr.getExpID()) {
+                case CsmCompletionExpression.SCOPE: {
+                    StringBuilder sb = new StringBuilder();
+                    int startExpOffset = -1;
+                    int endExprOffset = -1;
+
+                    int paramCount = expr.getParameterCount();
+                    int tokenCount = expr.getTokenCount();
+                    int paramIndex = 0;
+                    int tokenIndex = 0;
+                    
+                    RenderedExpression renderedParam = null;
+                    RenderedExpression renderedToken = null;                    
+                    boolean lastWasParam = false;
+                    boolean lastWasToken = false;
+                    
+                    boolean entityChanged = true;
+                    
+                    while (entityChanged) {
+                        entityChanged = false;
+                                                
+                        if (renderedParam == null && paramIndex < paramCount) {
+                            renderedParam = renderExpression(expr.getParameter(paramIndex));
+                            paramIndex++;
+                        }
+                        
+                        if (renderedToken == null && tokenIndex < tokenCount) {
+                            renderedToken = new RenderedExpression(
+                                expr.getTokenText(tokenIndex).toString(), 
+                                expr.getTokenOffset(tokenIndex), 
+                                expr.getTokenOffset(tokenIndex) + expr.getTokenLength(tokenIndex)
+                            );
+                            tokenIndex++;
+                        }
+                        
+                        RenderedExpression chosenExpression;
+                        
+                        if (renderedParam != null && renderedToken != null) {
+                            if (renderedParam.startOffset < renderedToken.startOffset) {
+                                chosenExpression = renderedParam;
+                            } else {
+                                chosenExpression = renderedToken;
+                            }
+                        } else if (renderedToken == null) {
+                            chosenExpression = renderedParam;
+                        } else {
+                            chosenExpression = renderedToken;
+                        }
+                        
+                        if (chosenExpression != null) {
+                            if (chosenExpression == renderedParam) {
+                                renderedParam = null;
+                                entityChanged = !lastWasParam;
+                                lastWasParam = true;
+                                lastWasToken = false;
+                            } else {
+                                renderedToken = null;
+                                entityChanged = !lastWasToken;
+                                lastWasToken = true;
+                                lastWasParam = false;
+                            }
+                            
+                            if (entityChanged) {
+                                sb.append(chosenExpression.text);
+                                if (startExpOffset == -1) {
+                                    startExpOffset = chosenExpression.startOffset;
+                                }
+                                endExprOffset = chosenExpression.endOffset;
+                            }
+                        }
+                    }
+                    
+                    return new RenderedExpression(sb.toString(), startExpOffset, endExprOffset);
+                }
+                
+                default: {
+                    return new RenderedExpression(
+                            expr.getTokenText(0), 
+                            expr.getTokenOffset(0), 
+                            expr.getTokenOffset(0) + expr.getTokenLength(0)
+                    );
+                }
+            }
+        }
+        
+        private class RenderedExpression {
+            
+            public final String text;
+            
+            public final int startOffset;
+            
+            public final int endOffset;
+
+            public RenderedExpression(String text, int startOffset, int endOffset) {
+                this.text = text;
+                this.startOffset = startOffset;
+                this.endOffset = endOffset;
+            }
+
+            @Override
+            public String toString() {
+                return text + "[" + startOffset + "," + endOffset + "]"; // NOI18N
+            }
         }
 
         private CsmType findBuiltInFunctionReturnType(String mtdName, int tokenOffset) {

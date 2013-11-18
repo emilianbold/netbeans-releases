@@ -42,6 +42,9 @@
 package org.netbeans.modules.css.editor.csl;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.csl.spi.DefaultError;
 import org.netbeans.modules.css.lib.api.FilterableError;
@@ -53,26 +56,43 @@ import org.openide.filesystems.FileObject;
  */
 public class CssErrorFactory {
 
-    public static FilterableError createError(String key, String displayName, String description, FileObject file, int start, int end, boolean lineError, Severity severity, boolean filtered) {
-        return new CssDefaultError(key, displayName, description, file, start, end, lineError, severity, filtered);
+    public static FilterableError createError(String key, String displayName, String description, FileObject file, int start, int end, boolean lineError, Severity severity, Collection<FilterableError.SetFilterAction> enableFilter, FilterableError.SetFilterAction disableFilter) {
+        return new CssDefaultError(key, displayName, description, file, start, end, lineError, severity, enableFilter, disableFilter);
     }
     
     public static FilterableError createError(String key, String displayName, String description, FileObject file, int start, int end, boolean lineError, Severity severity) {
-        return createError(key, displayName, description, file, start, end, lineError, severity, false);
+        return createError(key, displayName, description, file, start, end, lineError, severity, Collections.<FilterableError.SetFilterAction>emptyList(), null);
     }
     
-    private static class CssDefaultError extends DefaultError implements FilterableError {
+    private static class CssDefaultError extends DefaultError implements FilterableError, Error.Badging {
 
-        private boolean filtered;
+        private final Collection<SetFilterAction> enableFilter;
+        private final SetFilterAction disableFilter;
         
-        private CssDefaultError(String key, String displayName, String description, FileObject file, int start, int end, boolean lineError, Severity severity, boolean filtered) {
+        private CssDefaultError(String key, String displayName, String description, FileObject file, int start, int end, boolean lineError, Severity severity, Collection<SetFilterAction> enableFilter, SetFilterAction disableFilter) {
             super(key, displayName, description, file, start, end, lineError, severity);
-            this.filtered = filtered;
+            this.disableFilter = disableFilter;
+            this.enableFilter = enableFilter;
+        }
+
+         @Override
+        public boolean showExplorerBadge() {
+            return getSeverity() == Severity.ERROR || getSeverity() == Severity.FATAL;
+        }
+        
+        @Override
+        public boolean isFiltered() {
+            return disableFilter != null;
         }
 
         @Override
-        public boolean isFiltered() {
-            return filtered;
+        public Collection<SetFilterAction> getEnableFilterActions() {
+            return enableFilter;
+        }
+
+        @Override
+        public SetFilterAction getDisableFilterAction() {
+            return disableFilter;
         }
 
         @Override

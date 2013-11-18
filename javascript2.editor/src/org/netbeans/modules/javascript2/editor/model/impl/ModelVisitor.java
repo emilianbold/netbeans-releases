@@ -706,7 +706,8 @@ public class ModelVisitor extends PathNodeVisitor {
                 for (Occurrence occurrence : previousUsage.getOccurrences()) {
                     fncScope.addOccurrence(occurrence.getOffsetRange());
                 }
-                for (JsObject property : previousUsage.getProperties().values()) {
+                Collection<? extends JsObject> propertiesCopy = new ArrayList(previousUsage.getProperties().values());
+                for (JsObject property : propertiesCopy) {
                     ModelUtils.moveProperty(fncScope, property);
                 }
             }

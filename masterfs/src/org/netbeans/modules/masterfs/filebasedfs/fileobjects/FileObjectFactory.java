@@ -58,6 +58,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.masterfs.filebasedfs.children.ChildrenCache;
@@ -81,7 +83,9 @@ import org.openide.util.WeakSet;
 public final class FileObjectFactory {
     public static final Map<File, FileObjectFactory> AllFactories = new HashMap<File, FileObjectFactory>();
     public static boolean WARNINGS = true;
-    final Map<Integer, Object> allIBaseFileObjects = Collections.synchronizedMap(new WeakHashMap<Integer, Object>());
+    //@GuardedBy("allIBaseLock")
+    final Map<Integer, Object> allIBaseFileObjects = new WeakHashMap<Integer, Object>();
+    final ReadWriteLock allIBaseLock = new ReentrantReadWriteLock();
     private BaseFileObj root;
     private static final Logger LOG_REFRESH = Logger.getLogger("org.netbeans.modules.masterfs.REFRESH"); // NOI18N
 
@@ -156,8 +160,11 @@ public final class FileObjectFactory {
 
     private List<FileObject> existingFileObjects() {
         List<Object> list = new ArrayList<Object>();
-        synchronized (allIBaseFileObjects) {
+        allIBaseLock.readLock().lock();
+        try {
             list.addAll(allIBaseFileObjects.values());
+        } finally {
+            allIBaseLock.readLock().unlock();
         }
         List<FileObject> res = new ArrayList<FileObject>();
         for (Object obj : list) {
@@ -421,7 +428,8 @@ public final class FileObjectFactory {
                 return null;
             }
         }
-        synchronized (allIBaseFileObjects) {
+        allIBaseLock.writeLock().lock();
+        try {
             retVal = this.getCachedOnly(f);
             if (retVal == null || !retVal.isValid()) {
                 final File parent = f.getParentFile();
@@ -433,12 +441,15 @@ public final class FileObjectFactory {
 
             }
             return retVal;
+        } finally {
+            allIBaseLock.writeLock().unlock();
         }
     }
 
     void invalidateSubtree(BaseFileObj root, boolean fire, boolean expected) {
         List<BaseFileObj> notify = fire ? new ArrayList<BaseFileObj>() : Collections.<BaseFileObj>emptyList();
-        synchronized (allIBaseFileObjects) {
+        allIBaseLock.writeLock().lock();
+        try {
             for (FileNaming fn : NamingFactory.findSubTree(root.getFileName())) {
                 BaseFileObj cached = getCachedOnly(fn.getFile());
                 if (cached != null && cached.isValid()) {
@@ -448,6 +459,8 @@ public final class FileObjectFactory {
                     }
                 }
             }
+        } finally {
+            allIBaseLock.writeLock().unlock();
         }
         for (BaseFileObj fo : notify) {
             fo.notifyDeleted(expected);
@@ -497,7 +510,8 @@ public final class FileObjectFactory {
 
     private Set<BaseFileObj> collectForRefresh(boolean noRecListeners) {
         final Set<BaseFileObj> all2Refresh;
-        synchronized (allIBaseFileObjects) {
+        allIBaseLock.writeLock().lock();
+        try {
             all2Refresh = new WeakSet<BaseFileObj>(allIBaseFileObjects.size() * 3 + 11);
             final Iterator<Object> it = allIBaseFileObjects.values().iterator();
             while (it.hasNext()) {
@@ -524,6 +538,8 @@ public final class FileObjectFactory {
                     }
                 }
             }
+        } finally {
+            allIBaseLock.writeLock().unlock();
         }
         all2Refresh.remove(root); // #182793
         return all2Refresh;
@@ -606,7 +622,8 @@ public final class FileObjectFactory {
 
     public final void rename(Set<BaseFileObj> changeId) {
         final Map<Integer, Object> toRename = new HashMap<Integer, Object>();
-        synchronized (allIBaseFileObjects) {
+        allIBaseLock.writeLock().lock();
+        try {
             final Iterator<Map.Entry<Integer, Object>> it = allIBaseFileObjects.entrySet().iterator();
             while (it.hasNext()) {
                 Map.Entry<Integer, Object> entry = it.next();
@@ -645,6 +662,8 @@ public final class FileObjectFactory {
                     putInCache(bfo, bfo.getFileName().getId());
                 }
             }
+        } finally {
+            allIBaseLock.writeLock().unlock();
         }
     }
 
@@ -653,13 +672,17 @@ public final class FileObjectFactory {
     }
     public final BaseFileObj getCachedOnly(final File file, boolean checkExtension) {
         BaseFileObj retval;
-        synchronized (allIBaseFileObjects) {
-            final Object value = allIBaseFileObjects.get(NamingFactory.createID(file));
+        final Integer id = NamingFactory.createID(file);
+        allIBaseLock.readLock().lock();
+        try {
+            final Object value = allIBaseFileObjects.get(id);
             if (value instanceof Reference<?>) {
                 retval = getReference(Collections.nCopies(1, value), file);
             } else {
                 retval = getReference((List<?>) value, file);
             }
+        } finally {
+            allIBaseLock.readLock().unlock();
         }
         if (retval != null && checkExtension) {
             if (!file.getName().equals(retval.getNameExt())) {
@@ -693,7 +716,8 @@ public final class FileObjectFactory {
     }
 
     private BaseFileObj putInCache(final BaseFileObj newValue, final Integer id) {
-        synchronized (allIBaseFileObjects) {
+        allIBaseLock.writeLock().lock();
+        try {
             final WeakReference<BaseFileObj> newRef = new WeakReference<BaseFileObj>(newValue);
             final Object listOrReference = allIBaseFileObjects.put(id, newRef);
 
@@ -717,6 +741,8 @@ public final class FileObjectFactory {
                     }
                 }
             }
+        } finally {
+            allIBaseLock.writeLock().unlock();
         }
 
         return newValue;
@@ -725,8 +751,11 @@ public final class FileObjectFactory {
     @Override
     public String toString() {
         List<Object> list = new ArrayList<Object>();
-        synchronized (allIBaseFileObjects) {
+        allIBaseLock.readLock().lock();
+        try {
             list.addAll(allIBaseFileObjects.values());
+        } finally {
+            allIBaseLock.readLock().unlock();
         }
         List<String> l2 = new ArrayList<String>();
         for (Iterator<Object> it = list.iterator(); it.hasNext();) {

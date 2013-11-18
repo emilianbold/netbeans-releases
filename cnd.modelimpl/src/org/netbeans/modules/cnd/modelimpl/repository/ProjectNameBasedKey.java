@@ -44,6 +44,7 @@
 package org.netbeans.modules.cnd.modelimpl.repository;
 
 import java.io.IOException;
+import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
@@ -76,8 +77,13 @@ import org.openide.util.CharSequences;
     }
 
     @Override
+    public int hashCode(int unitID) {
+        return 37*getHandler() + unitID;
+    }
+
+    @Override
     public int hashCode() {
-        return unitIndex;
+        return hashCode(unitIndex);
     }
 
     @Override
@@ -85,14 +91,29 @@ import org.openide.util.CharSequences;
         return unitIndex;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (!super.equals(obj)) {
+   @Override
+    public boolean equals(int thisUnitID, Key object, int objectUnitID) {
+        if (this == object) {
+            return true;
+        }
+        if (object == null || (this.getClass() != object.getClass())) {
             return false;
         }
-        ProjectNameBasedKey other = (ProjectNameBasedKey) obj;
+        return thisUnitID == objectUnitID;
+    }
 
-        return this.unitIndex == other.unitIndex;
+
+    @Override
+    public final boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || (this.getClass() != obj.getClass())) {
+             return false;
+         }
+        ProjectNameBasedKey other = (ProjectNameBasedKey) obj;
+        return equals(unitIndex, other, other.unitIndex);
+
     }
 
     @Override

@@ -153,7 +153,8 @@ public class TraceFlags {
     public static final boolean TRACE_PC_STATE_COMPARISION = DebugUtils.getBoolean("cnd.pp.condition.comparision.trace", false); // NOI18N
 
     public static final int REPARSE_DELAY = DebugUtils.getInt("cnd.reparse.delay", 1001); // NOI18N
-
+    public static final boolean REPARSE_ON_DOCUMENT_CHANGED = DebugUtils.getBoolean("cnd.reparse.on.document.changed", true); // NOI18N
+    
     public static final boolean DYNAMIC_TESTS_TRACE = DebugUtils.getBoolean("cnd.modelimpl.dynamic.tests.trace", false); // NOI18N
     
     // experimental expression evaluator for template instantiations
@@ -161,7 +162,10 @@ public class TraceFlags {
     public static final boolean EXPRESSION_EVALUATOR_DEEP_VARIABLE_PROVIDER = DebugUtils.getBoolean("cnd.modelimpl.expression.evaluator.deep.variable.provider", true); // NOI18N
     public static final boolean EXPRESSION_EVALUATOR_RECURSIVE_CALC = DebugUtils.getBoolean("cnd.modelimpl.expression.evaluator.recursive.calc", true); // NOI18N
     public static final boolean EXPRESSION_EVALUATOR_EXTRA_SPEC_PARAMS_MATCHING = DebugUtils.getBoolean("cnd.modelimpl.expression.evaluator.extra.spec.params.matching", true); // NOI18N
-
+    public static final boolean COMPLETE_EXPRESSION_EVALUATOR = EXPRESSION_EVALUATOR &&
+                                                                EXPRESSION_EVALUATOR_DEEP_VARIABLE_PROVIDER && 
+                                                                EXPRESSION_EVALUATOR_RECURSIVE_CALC && 
+                                                                EXPRESSION_EVALUATOR_EXTRA_SPEC_PARAMS_MATCHING;
     /** 
      * swithces off parsing function bodies
      */

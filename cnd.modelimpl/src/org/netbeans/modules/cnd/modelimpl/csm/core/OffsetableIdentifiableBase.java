@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.CharSequences;
 
 /**
@@ -117,7 +118,7 @@ public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase imple
             // detect and merge ~ in destructor name
             if (!nameParts.isEmpty() && "~".contentEquals(getLastNamePart())) { //NOI18N
                 nameParts.remove(nameParts.size() - 1);
-                part = CharSequences.create("~" + part); //NOI18N
+                part = CharSequences.create(CharSequenceUtils.concatenate("~", part)); //NOI18N
             }
             nameParts.add(new NamePart(part));
         }
@@ -152,7 +153,7 @@ public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase imple
                 sb.append(part.part);
                 firstScope = false;
             }
-            return NameCache.getManager().getString(sb.toString());
+            return NameCache.getManager().getString(sb);
         }
         
         public CharSequence getLastNamePart() {

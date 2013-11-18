@@ -67,13 +67,14 @@ import javax.swing.ListCellRenderer;
  * @author theofanis
  */
 class ColorComboBoxRenderer extends JComponent implements
-ListCellRenderer, ComboBoxEditor {
+ListCellRenderer<ColorValue>, ComboBoxEditor {
 
     private int             SIZE = 9;
     private ColorValue      value;
-    private JComboBox       comboBox;
+    private JComboBox<ColorValue>
+                            comboBox;
 
-    ColorComboBoxRenderer (JComboBox comboBox) {
+    ColorComboBoxRenderer (JComboBox<ColorValue> comboBox) {
         this.comboBox = comboBox;
         setPreferredSize (new Dimension (
             50, 
@@ -136,14 +137,16 @@ ListCellRenderer, ComboBoxEditor {
         super.setEnabled (enabled);
     }
 
+    @Override
     public Component getListCellRendererComponent (
-        JList       list,
-        Object      value,
+        JList<? extends ColorValue>
+                    list,
+        ColorValue  value,
         int         index,
         boolean     isSelected,
         boolean     cellHasFocus
     ) {
-        this.value = (ColorValue) value;
+        this.value = value;
         setEnabled (list.isEnabled ());
         setBackground (isSelected ? 
             SystemColor.textHighlight : SystemColor.text
@@ -155,6 +158,7 @@ ListCellRenderer, ComboBoxEditor {
         return this;
     }
 
+    @Override
     public Component getEditorComponent () {
         setEnabled (comboBox.isEnabled ());
         setBackground (comboBox.isFocusOwner () ? 
@@ -166,17 +170,22 @@ ListCellRenderer, ComboBoxEditor {
         return this;
     }
 
+    @Override
     public void setItem (Object anObject) {
         Object oldValue = this.value;
         this.value = (ColorValue) anObject;
         firePropertyChange(ColorComboBox.PROP_COLOR, oldValue, anObject);
     }
 
+    @Override
     public Object getItem () {
         return value;
     }
     
+    @Override
     public void selectAll() {}
+    @Override
     public void addActionListener (ActionListener l) {}
+    @Override
     public void removeActionListener (ActionListener l) {}   
 }

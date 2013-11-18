@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.modelimpl.impl.services.MemberResolverImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 
 /**
  * Class for types B and C in the compound type A::B::C
@@ -190,9 +191,9 @@ public final class NestedType extends TypeImpl {
     @Override
     public CharSequence getClassifierText() {
         if (parentType != null) {
-            return parentType.getClassifierText().toString() + getInstantiationText(parentType) + "::" + super.getClassifierText(); // NOI18N
+            return CharSequenceUtils.concatenate(parentType.getClassifierText(), getInstantiationText(parentType), "::", super.getClassifierText()); // NOI18N
         } else {
-            return "::" + super.getClassifierText(); // NOI18N
+            return CharSequenceUtils.concatenate("::", super.getClassifierText()); // NOI18N
         }
     }
 

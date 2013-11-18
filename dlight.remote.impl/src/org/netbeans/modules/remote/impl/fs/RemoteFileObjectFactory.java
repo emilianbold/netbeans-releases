@@ -74,23 +74,12 @@ public class RemoteFileObjectFactory {
     private final Map<String, List<FileChangeListener>> pendingListeners = 
             new HashMap<String, List<FileChangeListener>>();
     
-    private final RequestProcessor.Task cleaningTask;
-    private static RequestProcessor RP = new RequestProcessor("File objects cache dead entries cleanup", 1); //NOI18N
-    private static final int CLEAN_INTERVAL = Integer.getInteger("rfs.cache.cleanup.interval", 10000); //NOI18N
-
     private int cacheRequests = 0;
     private int cacheHits = 0;
 
     public RemoteFileObjectFactory(RemoteFileSystem fileSystem) {
         this.fileSystem = fileSystem;
         this.env = fileSystem.getExecutionEnvironment();
-        cleaningTask = RP.create(new Runnable() {
-            @Override
-            public void run() {
-                cleanDeadEntries();
-            }
-        });
-        scheduleCleanDeadEntries();
     }
 
     /*package*/ Collection<RemoteFileObjectBase> getCachedFileObjects() {
@@ -105,32 +94,6 @@ public class RemoteFileObjectFactory {
     public RemoteFileObjectBase getCachedFileObject(String path) {
         String normalizedPath = PathUtilities.normalizeUnixPath(path);
         return fileObjectsCache.get(normalizedPath);
-    }
-
-    private void scheduleCleanDeadEntries() {
-        cleaningTask.schedule(CLEAN_INTERVAL);
-    }
-
-    private void cleanDeadEntries() {
-        boolean trace = RemoteLogger.getInstance().isLoggable(Level.FINEST);
-        if (trace)         {
-            int size = fileObjectsCache.size();
-            if (RemoteLogger.getInstance().isLoggable(Level.FINEST)) {
-                RemoteLogger.getInstance().log(Level.FINEST, "Cleaning file objects dead entries for {0} ... {1} entries and {2}% ({3} of {4}) hits so far",
-                        new Object[] {env, size, (cacheRequests == 0) ? 0 : ((cacheHits*100)/cacheRequests), cacheHits, cacheRequests});
-            }
-        }
-
-        fileObjectsCache.cleanDeadEntries();
-
-        if (trace)         {
-            int size = fileObjectsCache.size();
-            RemoteLogger.getInstance().log(Level.FINEST, "Cleaning file objects dead entries for {0} ... {1} entries left", new Object[] {env, size});
-        }
-
-        if (fileObjectsCache.size() > 0) {
-            scheduleCleanDeadEntries();
-        }
     }
 
     public void changeImplementor(RemoteDirectory parent, DirEntry oldEntry, DirEntry newEntry) {        
@@ -167,9 +130,6 @@ public class RemoteFileObjectFactory {
 
     private RemoteFileObjectBase createRemoteDirectory(RemoteFileObjectBase parent, String remotePath, File cacheFile, RemoteFileObject owner) {
         cacheRequests++;
-        if (fileObjectsCache.size() == 0) {
-            scheduleCleanDeadEntries(); // schedule on 1-st request
-        }
         String normalizedRemotePath = PathUtilities.normalizeUnixPath(remotePath);
         RemoteFileObjectBase fo = fileObjectsCache.get(normalizedRemotePath);
         if (fo instanceof RemoteDirectory && fo.isValid() && fo.getCache().equals(cacheFile)) {
@@ -198,9 +158,6 @@ public class RemoteFileObjectFactory {
 
     private RemoteFileObjectBase createRemotePlainFile(RemoteDirectory parent, String remotePath, File cacheFile, FileType fileType, RemoteFileObject owner) {
         cacheRequests++;
-        if (fileObjectsCache.size() == 0) {
-            scheduleCleanDeadEntries(); // schedule on 1-st request
-        }
         String normalizedRemotePath = PathUtilities.normalizeUnixPath(remotePath);
         RemoteFileObjectBase fo = fileObjectsCache.get(normalizedRemotePath);
         if (fo instanceof RemotePlainFile && fo.isValid() && fo.getCache().equals(cacheFile)) {
@@ -229,9 +186,6 @@ public class RemoteFileObjectFactory {
 
     private RemoteFileObjectBase createSpecialFile(RemoteDirectory parent, String remotePath, File cacheFile, FileType fileType, RemoteFileObject owner) {
         cacheRequests++;
-        if (fileObjectsCache.size() == 0) {
-            scheduleCleanDeadEntries(); // schedule on 1-st request
-        }
         String normalizedRemotePath = PathUtilities.normalizeUnixPath(remotePath);
         RemoteFileObjectBase fo = fileObjectsCache.get(normalizedRemotePath);
         if (fo instanceof SpecialRemoteFileObject && fo.isValid()) {
@@ -312,6 +266,7 @@ public class RemoteFileObjectFactory {
      * @return
      */
     private RemoteFileObjectBase putIfAbsent(String remotePath, RemoteFileObjectBase fo) {
+        fileObjectsCache.tryCleaningDeadEntries();
         synchronized (lock) {
             RemoteFileObjectBase prev = fileObjectsCache.get(remotePath);
             if (prev == null) {

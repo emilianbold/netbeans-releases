@@ -115,11 +115,15 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         public void onErrorDirective(APT apt) { }
         public void onPragmaOnceDirective(APT apt) { }
     };
+    private final CsmCorePackageAccessor csmCorePackageAccessor;
+
 
     public APTParseFileWalker(ProjectBase base, APTFile apt, FileImpl file, APTPreprocHandler preprocHandler, boolean triggerParsingActivity, EvalCallback evalCallback, APTFileCacheEntry cacheEntry) {
         super(base, apt, file, preprocHandler, cacheEntry);
         this.evalCallback = evalCallback != null ? evalCallback : EMPTY_EVAL_CALLBACK;
         this.triggerParsingActivity = triggerParsingActivity;
+        csmCorePackageAccessor = CsmCorePackageAccessor.get();
+        
     }
 
     public void setFileContent(FileContent content) {
@@ -328,7 +332,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
     }
     
     private FileIncludeOutParams includeFileWithTokens(FileIncludeInParams params) throws IOException {
-        APTFile aptFile = CsmCorePackageAccessor.get().getFileAPT(params.includedFile, true);
+        APTFile aptFile = getCsmCorePackageAccessor().getFileAPT(params.includedFile, true);
         if (aptFile != null) {
             APTPreprocHandler.State ppIncludeState = params.preprocHandler.getState();
             // ask for exclusive entry if absent
@@ -345,6 +349,10 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
             Utils.LOG.log(Level.INFO, "Can not find or build APT for file {0}", params.includedFile); //NOI18N
         }
         return null;
+    }
+
+    private CsmCorePackageAccessor getCsmCorePackageAccessor() {
+        return csmCorePackageAccessor;
     }
     /**
      * called to inform that file was #included from another file with specific
@@ -368,15 +376,15 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         // check post include cache
         if (params.postIncludeState != null && params.postIncludeState.hasDeadBlocks()) {
             assert params.postIncludeState.hasPostIncludeMacroState() : "how could it be? " + params.includedPath;
-            pcState = CsmCorePackageAccessor.get().createPCState(params.includedPath, params.postIncludeState.getDeadBlocks());
+            pcState = getCsmCorePackageAccessor().createPCState(params.includedPath, params.postIncludeState.getDeadBlocks());
             params.preprocHandler.getMacroMap().setState(params.postIncludeState.getPostIncludeMacroState());
             foundInCache = true;
         }
         // check visited file cache
-        boolean isFileCacheApplicable = (params.mode == ProjectBase.GATHERING_TOKENS) && (APTHandlersSupport.getIncludeStackDepth(newState) != 0);
+        boolean isFileCacheApplicable = (params.mode == ProjectBase.GATHERING_TOKENS) && (APTHandlersSupport.getIncludeStackDepth(newState) == 1);
         if (!foundInCache && isFileCacheApplicable) {
             
-            cachedOut = CsmCorePackageAccessor.get().getCachedVisitedState(params.includedFile, newState);
+            cachedOut = getCsmCorePackageAccessor().getCachedVisitedState(params.includedFile, newState);
             if (cachedOut != null) {
                 params.preprocHandler.getMacroMap().setState(APTHandlersSupport.extractMacroMapState(cachedOut.state));
                 pcState = cachedOut.pcState;
@@ -385,7 +393,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         }
         // if not found in caches => visit include file
         if (!foundInCache) {
-            APTFile aptLight = CsmCorePackageAccessor.get().getFileAPT(params.includedFile, false);
+            APTFile aptLight = getCsmCorePackageAccessor().getFileAPT(params.includedFile, false);
             if (aptLight == null) {
                 // in the case file was just removed
                 Utils.LOG.log(Level.INFO, "Can not find or build APT for file {0}", params.includedPath); //NOI18N
@@ -403,13 +411,13 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         // updated caches
         // update post include cache
         if (params.postIncludeState != null && !params.postIncludeState.hasDeadBlocks()) {
-            int[] deadBlocks = CsmCorePackageAccessor.get().getPCStateDeadBlocks(pcState);
+            int[] deadBlocks = getCsmCorePackageAccessor().getPCStateDeadBlocks(pcState);
             // cache info
             params.postIncludeState.setDeadBlocks(deadBlocks);
         }
         // updated visited file cache
         if (cachedOut == null && isFileCacheApplicable) {            
-            CsmCorePackageAccessor.get().cacheVisitedState(params.includedFile, newState, params.preprocHandler, pcState);
+            getCsmCorePackageAccessor().cacheVisitedState(params.includedFile, newState, params.preprocHandler, pcState);
         }
         return new FileIncludeOutParams(params, newState, pcState, aptCacheEntry);
     }

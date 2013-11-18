@@ -824,7 +824,12 @@ public final class CsmProjectContentResolver {
     @SuppressWarnings("unchecked")
     private List<CsmVariable> getNamespaceVariables(CsmNamespace ns, String strPrefix, boolean match, boolean sort, boolean searchNestedUnnamedNamespaces) {
         List res = getNamespaceMembers(ns, CsmDeclaration.Kind.VARIABLE, strPrefix, match, searchNestedUnnamedNamespaces, false);
-        Collection used = CsmUsingResolver.getDefault().findUsedDeclarations(ns);
+        Collection used;
+        if (match) {
+            used = CsmUsingResolver.getDefault().findUsedDeclarations(ns,strPrefix);
+        } else {
+            used = CsmUsingResolver.getDefault().findUsedDeclarations(ns);
+        }
         filterDeclarations(used.iterator(), res, new CsmDeclaration.Kind[]{CsmDeclaration.Kind.VARIABLE}, strPrefix, match, false);
         res = filterVariables(res);
         if (sort && res != null) {
@@ -865,7 +870,12 @@ public final class CsmProjectContentResolver {
             CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION
         };
         List res = getNamespaceMembers(ns, memberKinds, strPrefix, match, searchNestedUnnamedNamespaces, false);
-        Collection used = CsmUsingResolver.getDefault().findUsedDeclarations(ns);
+        Collection used;
+        if (match) {
+            used = CsmUsingResolver.getDefault().findUsedDeclarations(ns,strPrefix);
+        } else {
+            used = CsmUsingResolver.getDefault().findUsedDeclarations(ns);
+        }
         filterDeclarations(used.iterator(), res, memberKinds, strPrefix, match, false);
         res = filterFunctionDefinitions(res);
         if (sort && res != null) {
@@ -881,7 +891,12 @@ public final class CsmProjectContentResolver {
     @SuppressWarnings("unchecked")
     private List<CsmNamespaceAlias> getNamespaceAliases(CsmNamespace ns, String strPrefix, boolean match, boolean sort, boolean searchNestedUnnamedNamespaces) {
         List res = getNamespaceMembers(ns, CsmDeclaration.Kind.NAMESPACE_ALIAS, strPrefix, match, searchNestedUnnamedNamespaces, false);
-        Collection used = CsmUsingResolver.getDefault().findUsedDeclarations(ns);
+        Collection used;
+        if (match) {
+            used = CsmUsingResolver.getDefault().findUsedDeclarations(ns,strPrefix);
+        } else {
+            used = CsmUsingResolver.getDefault().findUsedDeclarations(ns);
+        }
         filterDeclarations(used.iterator(), res, new CsmDeclaration.Kind[]{CsmDeclaration.Kind.NAMESPACE_ALIAS}, strPrefix, match, false);
         if (sort && res != null) {
             CsmSortUtilities.sortMembers(res, isNaturalSort(), isCaseSensitive());
@@ -939,7 +954,12 @@ public final class CsmProjectContentResolver {
             CsmDeclaration.Kind.TYPEALIAS
         };
         List res = getNamespaceMembers(ns, classKinds, strPrefix, match, searchNestedUnnamedNamespaces, false);
-        Collection used = CsmUsingResolver.getDefault().findUsedDeclarations(ns);
+        Collection used;
+        if (match) {
+            used = CsmUsingResolver.getDefault().findUsedDeclarations(ns,strPrefix);
+        } else {
+            used = CsmUsingResolver.getDefault().findUsedDeclarations(ns);
+        }
         filterDeclarations(used.iterator(), res, classKinds, strPrefix, match, false);
         if (isSortNeeded() && res != null) {
             CsmSortUtilities.sortClasses(res, isCaseSensitive());
@@ -970,8 +990,12 @@ public final class CsmProjectContentResolver {
                 searchNestedUnnamedNamespaces,
                 searchNestedUnnamedNamespaces
         );
-        
-        Collection used = CsmUsingResolver.getDefault().findUsedDeclarations(ns);
+        Collection used;
+        if (match) {
+            used = CsmUsingResolver.getDefault().findUsedDeclarations(ns, strPrefix);
+        } else {
+            used = CsmUsingResolver.getDefault().findUsedDeclarations(ns);
+        }
         CsmDeclaration.Kind classAndEnumeratorKinds[] = {
             CsmDeclaration.Kind.ENUM,
             CsmDeclaration.Kind.ENUM_FORWARD_DECLARATION,

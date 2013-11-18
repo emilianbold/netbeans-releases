@@ -45,22 +45,49 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-    <folder name="Navigator">
-        <folder name="Panels">
-            <folder name="text">
-                <folder name="x-h">
-                    <file name="org-netbeans-modules-cnd-qnavigator-navigator-NavigatorComponent.instance"/>
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-c++">
+                <folder name="SideBar">
+                    <file name="breadcrumbs.instance">
+                        <attr name="location" stringvalue="South"/>
+                        <attr name="position" intvalue="5500"/>
+                        <attr name="scrollable" boolvalue="false"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.breadcrumbs.spi.BreadcrumbsController.createSideBarFactory"/>
+                    </file>
                 </folder>
-                <folder name="x-c++">
-                    <file name="org-netbeans-modules-cnd-qnavigator-navigator-NavigatorComponent.instance"/>
+            </folder>
+            <folder name="x-c">
+                <folder name="SideBar">
+                    <file name="breadcrumbs.instance">
+                        <attr name="location" stringvalue="South"/>
+                        <attr name="position" intvalue="5500"/>
+                        <attr name="scrollable" boolvalue="false"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.breadcrumbs.spi.BreadcrumbsController.createSideBarFactory"/>
+                    </file>
                 </folder>
-                <folder name="x-c">
-                    <file name="org-netbeans-modules-cnd-qnavigator-navigator-NavigatorComponent.instance"/>
+            </folder>
+            <folder name="x-h">
+                <folder name="SideBar">
+                    <file name="breadcrumbs.instance">
+                        <attr name="location" stringvalue="South"/>
+                        <attr name="position" intvalue="5500"/>
+                        <attr name="scrollable" boolvalue="false"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.breadcrumbs.spi.BreadcrumbsController.createSideBarFactory"/>
+                    </file>
                 </folder>
-                <folder name="x-fortran">
-                    <file name="org-netbeans-modules-cnd-qnavigator-navigator-NavigatorComponent.instance"/>
+            </folder>
+            <folder name="x-fortran">
+                <folder name="SideBar">
+                    <file name="breadcrumbs.instance">
+                        <attr name="location" stringvalue="South"/>
+                        <attr name="position" intvalue="5500"/>
+                        <attr name="scrollable" boolvalue="false"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.breadcrumbs.spi.BreadcrumbsController.createSideBarFactory"/>
+                    </file>
                 </folder>
             </folder>
         </folder>
     </folder>
+
 </filesystem>

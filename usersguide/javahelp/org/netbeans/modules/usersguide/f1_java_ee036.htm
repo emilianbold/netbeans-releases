@@ -2,17 +2,17 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Standard Enterprise Application Project Properties Dialog Box: Libraries</title>
+<title>Standard Enterprise Application Project Properties Dialog Box: Run</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="org.netbeans.modules.j2ee.earproject.ui.customizer.CustomizerLibraries" name="org.netbeans.modules.j2ee.earproject.ui.customizer.CustomizerLibraries"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref615" name="sthref615"></a>
-<h1>Standard Enterprise Application Project Properties Dialog Box: Libraries</h1>
+<p><a id="org.netbeans.modules.j2ee.earproject.ui.customizer.CustomizerRun" name="org.netbeans.modules.j2ee.earproject.ui.customizer.CustomizerRun"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref619" name="sthref619"></a>
+<h1>Standard Enterprise Application Project Properties Dialog Box: Run</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>The Libraries page lets you define the JARs, folders, libraries, and projects that are added to the runtime classpath of the enterprise application. The libraries that you add are then available to all the modules in the project.</p>
-<p>In the Libraries page, you can set the following properties:</p>
+<p>The Run page lets you configure options for running your project.</p>
+<p>In the Run page, you can set the following properties:</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
@@ -26,22 +26,50 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t30" headers="r1c1-t30">
-<p>Libraries Folder</p>
+<p>Client Module</p>
 </td>
 <td align="left" headers="r2c1-t30 r1c2-t30">
-<p>To make it easier to share libraries among different users and projects, you can set a folder to hold those libraries (or references to those libraries). You can create a new folder or specify an existing folder that already contains copies of the libraries on which your project depends.</p>
-<p>To specify the folder, click <b>Browse</b>. If there is already a libraries folder, a file chooser opens. If there is not a libraries folder, the New Libraries wizard opens. In the New Libraries wizard, you set a libraries folder and then specify how to reference each library. The simplest case is to have the libraries copied to that folder. You can also refer to the libraries in their existing location (with a relative path or an absolute path). If you have specified an existing folder, you also have the option of using copies of libraries that are already in that folder instead of the copies that are contained in the IDE's Ant Library Manager.</p>
+<p>Specifies the name of the WAR file or the client module in the EAR file.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t30" headers="r1c1-t30">
-<p>Embedded Classpath Elements</p>
+<p>Server</p>
 </td>
 <td align="left" headers="r3c1-t30 r1c2-t30">
-<p>You use this page to specify any projects, subprojects or libraries not listed in the Packaging page that you want the IDE to include in the classpath of the enterprise application when you debug the application.</p>
-<p>You use the Packaging page to specify the libraries that are packaged in the EAR archive when you build your enterprise application. However, your enterprise application may require elements such as special libraries (such as JDBC drivers or additional libraries), JARs or other projects that are not listed in the Packaging page. If you want to step through these elements when debugging the application, you need to explicitly specify the elements in the Libraries page.</p>
-<p>For example, the Packaging page may specify that your WAR archive will be bundled in the EAR archive. However, the web application may require a subproject that is not packaged in the WAR archive but which will be copied to the EAR archive when you build the enterprise application. If you want to be able to step through the subproject when debugging the enterprise application, you need to explicitly specify the subproject in the Libraries page.</p>
-<p>Use the buttons to add JAR files, projects or libraries to the classpath.</p>
+<p>Specifies the server where you want the enterprise application to be deployed. Only servers that are registered with the IDE are available to be selected here.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t30" headers="r1c1-t30">
+<p>Deploy on Save</p>
+</td>
+<td align="left" headers="r4c1-t30 r1c2-t30">
+<p>Specifies whether changed files are automatically redeployed. This option saves you time when you run or debug your application in the IDE.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t30" headers="r1c1-t30">
+<p>Display Browser on Run</p>
+</td>
+<td align="left" headers="r5c1-t30 r1c2-t30">
+<p>Specifies whether the browser is displayed. You can edit this if the selected Client Module is a web module.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t30" headers="r1c1-t30">
+<p>Relative URL</p>
+</td>
+<td align="left" headers="r6c1-t30 r1c2-t30">
+<p>Specifies the URL relative to the Client Module to run. You can edit this if the selected Client Module is a web module.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t30" headers="r1c1-t30">
+<p>Client Information</p>
+</td>
+<td align="left" headers="r7c1-t30 r1c2-t30">
+<p>Specifies options for running an enterprise application client. You can edit these fields if the selected Client Module is an application client.</p>
 </td>
 </tr>
 </tbody>
@@ -51,40 +79,8 @@
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG822">
-<param name="text" value="<html><u>&quot;Using the Debugger Windows&quot;</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p><i>Developing Applications with NetBeans IDE</i>, 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1218">
-<param name="text" value="<html><u>&quot;About Developing Enterprise Applications&quot;</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p><i>Developing Applications with NetBeans IDE</i>, 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG455">
-<param name="text" value="<html><u>&quot;Sharing Libraries with Other Users&quot;</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p><i>Developing Applications with NetBeans IDE</i>, 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1321">
-<param name="text" value="<html><u>&quot;Developing EJB 2.1 Entity Beans&quot;</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p><i>Developing Applications with NetBeans IDE</i>, 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG370">
-<param name="text" value="<html><u>&quot;Using Java Project Templates&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1216">
+<param name="text" value="<html><u>&quot;Developing Enterprise Applications&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

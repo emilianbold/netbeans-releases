@@ -711,7 +711,7 @@ public class LogReader {
             if (start > 0) {
                 prev = line.charAt(start-1);
             }
-            if (prev == ' ' || prev == '\t' || prev == '/' || prev == '\\') {
+            if (prev == ' ' || prev == '\t' || prev == '/' || prev == '\\' || prev == '"') {
                 if (start + pattern.length() >= line.length()) {
                     continue;
                 }
@@ -734,6 +734,9 @@ public class LogReader {
                     }
                     int end = start + pattern.length();
                     return new int[]{start,end, binaryStart};
+                } else if (next == '"' && prev == '"') {  //NOI18N
+                    int end = start + pattern.length();
+                    return new int[]{start,end, end+1};
                 }
             }
         }
@@ -889,6 +892,13 @@ public class LogReader {
             return trimBackApostropheCalls(out.toString(), pkgConfig);
         }
     }
+    
+    // boost 
+    // #./b2 -a -d+2
+    // prints:
+    // gcc.compile.c++ bin.v2/libs/graph/build/gcc-4.5.2/release/threading-multi/read_graphviz_new.o
+    //
+    //     "g++"  -ftemplate-depth-128 -O3 -finline-functions -Wno-inline -Wall -pthreads -fPIC  -DBOOST_ALL_NO_LIB=1 -DBOOST_GRAPH_DYN_LINK=1 -DNDEBUG  -I"." -I"libs/graph/src" -c -o "bin.v2/libs/graph/build/gcc-4.5.2/release/threading-multi/read_graphviz_new.o" "libs/graph/src/read_graphviz_new.cpp"
 
     private void gatherLine(LineInfo li, CompileLineStorage storage) {
         String line = li.compileLine;

@@ -22,6 +22,7 @@ AS=as
 
 # Macros
 CND_PLATFORM=GNU-MacOSX
+CND_DLIB_EXT=dylib
 CND_CONF=MacOSX-x86
 CND_DISTDIR=dist
 CND_BUILDDIR=build
@@ -55,11 +56,11 @@ LDLIBSOPTIONS=
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libBuildTrace.dylib
+	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libBuildTrace.${CND_DLIB_EXT}
 
-${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libBuildTrace.dylib: ${OBJECTFILES}
+${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libBuildTrace.${CND_DLIB_EXT}: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
-	${LINK.c} -arch i386 -arch x86_64 -dynamiclib -install_name libBuildTrace.dylib -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libBuildTrace.dylib -Wl,-S -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} 
+	${LINK.c} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libBuildTrace.${CND_DLIB_EXT} ${OBJECTFILES} ${LDLIBSOPTIONS} -arch i386 -arch x86_64 -dynamiclib -install_name libBuildTrace.${CND_DLIB_EXT} -Wl,-S -fPIC
 
 ${OBJECTDIR}/execint.o: execint.c 
 	${MKDIR} -p ${OBJECTDIR}
@@ -71,7 +72,7 @@ ${OBJECTDIR}/execint.o: execint.c
 # Clean Targets
 .clean-conf: ${CLEAN_SUBPROJECTS}
 	${RM} -r ${CND_BUILDDIR}/${CND_CONF}
-	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libBuildTrace.dylib
+	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libBuildTrace.${CND_DLIB_EXT}
 
 # Subprojects
 .clean-subprojects:

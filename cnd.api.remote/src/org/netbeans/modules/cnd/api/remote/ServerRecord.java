@@ -125,4 +125,5 @@ public interface ServerRecord {
     public void removePropertyChangeListener(PropertyChangeListener listener);    
     
     public static final String PROP_STATE_CHANGED = "stateChanged"; // NOI18N    
+    public static final String DISPLAY_NAME_CHANGED = "displayNameChanged"; // NOI18N    
 }

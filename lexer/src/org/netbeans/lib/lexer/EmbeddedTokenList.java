@@ -78,31 +78,55 @@ import org.netbeans.lib.lexer.token.TextToken;
  * @version 1.00
  */
 
-public final class EmbeddedTokenList<T extends TokenId>
-extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
+public final class EmbeddedTokenList<T extends TokenId, ET extends TokenId>
+extends FlyOffsetGapList<TokenOrEmbedding<ET>> implements MutableTokenList<ET>, TokenOrEmbedding<T>
+{
     
     /**
-     * Marker value that represents that an attempt to create default embedding was
-     * made but was unsuccessful.
+     * Token wrapped by this ETL.
      */
-    public static final EmbeddedTokenList<TokenId> NO_DEFAULT_EMBEDDING
-            = new EmbeddedTokenList<TokenId>(null, null, null);
+    private AbstractToken<T> branchToken; // 36 bytes (32=super + 4)
     
     /**
-     * Embedding container carries info about the token into which this
-     * token list is embedded.
+     * Cached start offset of the token for which this embedding container
+     * was created.
+     * <br/>
+     * Its value may be shared by multiple embedded token lists.
      */
-    private EmbeddingContainer<?> embeddingContainer; // 36 bytes (32-super + 4)
+    private int branchTokenStartOffset; // 40 bytes
+
+    /**
+     * Root token list of the hierarchy should never be null and is final.
+     * 
+     */
+    private final TokenList<?> rootTokenList; // 44 bytes
     
+    /**
+     * Cached modification count from root token list allows to determine whether the start offset
+     * of branch token needs to be recomputed.
+     */
+    private int rootModCount; // 48 bytes
+
+    /**
+     * Additional mod count added to the modCount variable when expressing modCount
+     * of this token list.
+     * It is incremented when
+     * 1) token(s) are being replaced in ETL due to modification inside branchToken
+     *    (when branchToken is retained).
+     * 2) join token list relexes due to modification.
+     * 3) join token list relexes due to custom embedding creation.
+     */
+    private int extraModCount; // 52 bytes
+
     /**
      * Language embedding for this embedded token list.
      */
-    private final LanguageEmbedding<T> embedding; // 40 bytes
+    private final LanguageEmbedding<ET> embedding; // 56 bytes
     
     /**
      * Language path of this token list.
      */
-    private final LanguagePath languagePath; // 44 bytes
+    private final LanguagePath languagePath; // 60 bytes
     
     /**
      * Storage for lookaheads and states.
@@ -110,12 +134,12 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
      * It's non-null only initialized for mutable token lists
      * or when in testing environment.
      */
-    private LAState laState; // 48 bytes
+    private LAState laState; // 64 bytes
     
     /**
      * Next embedded token list forming a single-linked list.
      */
-    private EmbeddedTokenList<?> nextEmbeddedTokenList; // 52 bytes
+    private EmbeddedTokenList<T,?> nextEmbeddedTokenList; // 68 bytes
     
     /**
      * Additional information in case this ETL is contained in a JoinTokenList.
@@ -124,28 +148,17 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
      * indexed structure so the EmbeddedTokenList members of TokenListList
      * must be binary-searched.
      */
-    public EmbeddedJoinInfo joinInfo; // 56 bytes
-
-    /**
-     * Extra mod count added to root-token-list's modCount to cover custom embedding creation
-     * that may lead to relexing parts of existing ETLs (for which token-sequences
-     * may already exist).
-     * Its value gets increased when some tokens in this ETL are replaced.
-     */
-    private int extraModCount;
+    private EmbeddedJoinInfo<ET> joinInfo; // 72 bytes
 
     
-    public EmbeddedTokenList(EmbeddingContainer<?> embeddingContainer,
-            LanguagePath languagePath, LanguageEmbedding<T> embedding
+    public EmbeddedTokenList(TokenList<?> rootTokenList,
+            LanguagePath languagePath, LanguageEmbedding<ET> embedding
     ) {
         super(1); // Suitable for adding join-token parts
-        this.embeddingContainer = embeddingContainer;
+        this.rootTokenList = rootTokenList;
         this.languagePath = languagePath;
         this.embedding = embedding;
-
-        if (embeddingContainer != null) { // ec may be null for NO_DEFAULT_EMBEDDING only
-            initLAState();
-        }
+        initLAState();
     }
 
     public void initAllTokens() {
@@ -153,39 +166,21 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
                 this + '\n' + dumpRelatedTLL();
 //        initLAState();
         // Lex the whole input represented by token at once
-        LexerInputOperation<T> lexerInputOperation = createLexerInputOperation(
+        LexerInputOperation<ET> lexerInputOperation = createLexerInputOperation(
                 0, startOffset(), null);
-        AbstractToken<T> token = lexerInputOperation.nextToken();
+        AbstractToken<ET> token = lexerInputOperation.nextToken();
         while (token != null) {
             addToken(token, lexerInputOperation);
             token = lexerInputOperation.nextToken();
         }
         lexerInputOperation.release();
-        lexerInputOperation = null;
         trimStorageToSize();
     }
 
     private void initLAState() {
-        this.laState = (modCount() != LexerUtilsConstants.MOD_COUNT_IMMUTABLE_INPUT || TokenList.LOG.isLoggable(Level.FINE))
+        this.laState = (rootModCount!= LexerUtilsConstants.MOD_COUNT_IMMUTABLE_INPUT || TokenList.LOG.isLoggable(Level.FINE))
                 ? LAState.empty() // Will collect LAState
                 : null;
-    }
-
-    /**
-     * Return join token list with active token list positioned to this ETL
-     * or return null if this.joinInfo == null.
-     */
-    public JoinTokenList<T> joinTokenList() {
-        if (joinInfo != null) {
-            TokenListList<T> tokenListList = rootTokenList().tokenHierarchyOperation().existingTokenListList(languagePath);
-            int etlIndex = tokenListList.findIndex(startOffset());
-            int tokenListStartIndex = etlIndex - joinInfo.tokenListIndex();
-            JoinTokenList<T> jtl = new JoinTokenList<T>(tokenListList, joinInfo.base, tokenListStartIndex);
-            // Position to this etl's join index
-            jtl.setActiveTokenListIndex(etlIndex - tokenListStartIndex);
-            return jtl;
-        }
-        return null;
     }
 
     /**
@@ -193,14 +188,14 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
      *
      * @param token non-null token
      */
-    public void addToken(AbstractToken<T> token) {
+    public void addToken(AbstractToken<ET> token) {
         if (!token.isFlyweight())
             token.setTokenList(this);
         updateElementOffsetAdd(token); // must subtract startOffset()
         add(token);
     }
 
-    public void addToken(AbstractToken<T> token, LexerInputOperation<T> lexerInputOperation) {
+    public void addToken(AbstractToken<ET> token, LexerInputOperation<ET> lexerInputOperation) {
         addToken(token);
         if (laState != null) { // maintaining lookaheads and states
             // Only get LA and state when necessary (especially lexerState() may be costly)
@@ -211,7 +206,7 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
     /**
      * Used when dealing with PartToken instances.
      */
-    public void addToken(AbstractToken<T> token, int lookahead, Object state) {
+    public void addToken(AbstractToken<ET> token, int lookahead, Object state) {
         addToken(token);
         if (laState != null) { // maintaining lookaheads and states
             laState = laState.add(lookahead, state);
@@ -224,28 +219,39 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
             laState.trimToSize();
     }
     
-    public EmbeddedTokenList<?> nextEmbeddedTokenList() {
+    public EmbeddedTokenList<T,?> nextEmbeddedTokenList() {
         return nextEmbeddedTokenList;
     }
     
-    void setNextEmbeddedTokenList(EmbeddedTokenList<?> nextEmbeddedTokenList) {
+    public void setNextEmbeddedTokenList(EmbeddedTokenList<T,?> nextEmbeddedTokenList) {
         this.nextEmbeddedTokenList = nextEmbeddedTokenList;
     }
     
+    @Override
     public LanguagePath languagePath() {
         return languagePath;
     }
     
-    public LanguageEmbedding embedding() {
+    public LanguageEmbedding languageEmbedding() {
         return embedding;
     }
 
+    @Override
     public int tokenCount() {
         return tokenCountCurrent();
     }
     
+    @Override
     public int tokenCountCurrent() {
         return size();
+    }
+    
+    public EmbeddedJoinInfo<ET> joinInfo() {
+        return joinInfo;
+    }
+    
+    public void setJoinInfo(EmbeddedJoinInfo<ET> joinInfo) {
+        this.joinInfo = joinInfo;
     }
 
     public int joinTokenCount() {
@@ -257,24 +263,35 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
 
     public boolean joinBackward() {
         if (tokenCountCurrent() > 0) {
-            AbstractToken<T> token = tokenOrEmbeddingUnsync(0).token();
+            AbstractToken<ET> token = tokenOrEmbeddingDirect(0).token();
             return (token.getClass() == PartToken.class) &&
-                    ((PartToken<T>)token).partTokenIndex() > 0;
+                    ((PartToken<ET>)token).partTokenIndex() > 0;
         } else { // tokenCount == 0
             return (joinInfo.joinTokenLastPartShift() > 0);
         }
     }
 
-    public TokenOrEmbedding<T> tokenOrEmbedding(int index) {
-        synchronized (rootTokenList()) {
-            return (index < size()) ? get(index) : null;
-        }
+    @Override
+    public TokenOrEmbedding<ET> tokenOrEmbedding(int index) {
+        return (index < size()) ? get(index) : null;
+    }
+
+    @Override
+    public AbstractToken<T> token() {
+        return branchToken;
+    }
+
+    @Override
+    public EmbeddedTokenList<T,ET> embedding() {
+        return this;
     }
     
+    @Override
     public int lookahead(int index) {
         return (laState != null) ? laState.lookahead(index) : -1;
     }
 
+    @Override
     public Object state(int index) {
         return (laState != null) ? laState.state(index) : null;
     }
@@ -286,12 +303,13 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
      * For token hierarchy snapshots the returned value is corrected
      * in the TokenSequence explicitly by adding TokenSequence.tokenOffsetDiff.
      */
+    @Override
     public int tokenOffset(int index) {
-//        embeddingContainer().checkStatusUpdated();
         return elementOffset(index);
     }
 
-    public int tokenOffset(AbstractToken<T> token) {
+    @Override
+    public int tokenOffset(AbstractToken<ET> token) {
         if (token.getClass() == JoinToken.class) {
             return token.offset(null);
         }
@@ -303,119 +321,194 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
         return startOffset() + relOffset;
     }
 
+    @Override
     public int[] tokenIndex(int offset) {
         return LexerUtilsConstants.tokenIndexBinSearch(this, offset, tokenCountCurrent());
     }
 
+    int branchTokenStartOffset() {
+        return branchTokenStartOffset;
+    }
+
+    @Override
     public int modCount() {
-        // Mod count of EC must be returned to allow custom removed embeddings to work
-        //  - they set LexerUtilsConstants.MOD_COUNT_REMOVED as cachedModCount.
-        return embeddingContainer.cachedModCount() + extraModCount;
+        return rootModCount + extraModCount;
     }
     
-    void resetExtraModCount() {
-        extraModCount = 0;
+    public void updateModCount() {
+        updateModCount(rootTokenList.modCount());
+    }
+
+    public void updateModCount(int rootModCount) {
+        if (this.rootModCount != LexerUtilsConstants.MOD_COUNT_REMOVED) {
+            if (rootModCount != this.rootModCount) {
+                this.rootModCount = rootModCount;
+                TokenList<T> parentTokenList = branchToken.tokenList();
+                if (parentTokenList.getClass() == EmbeddedTokenList.class) { // deeper level embedding
+                    ((EmbeddedTokenList<T,?>) parentTokenList).updateModCount(rootModCount);
+                }                    
+                branchTokenStartOffset = parentTokenList.tokenOffset(branchToken);
+            }
+        }
+    }
+
+    public void incrementExtraModCount() {
+        extraModCount++;
+    }
+
+    /**
+     * Mark removed without changing branchTokenStartOffset.
+     */
+    public void markRemoved() {
+        if (LOG.isLoggable(Level.FINE)) {
+            StringBuilder sb = new StringBuilder(100);
+            sb.append("ETL.markRemoved(): ETL-");
+            LexerUtilsConstants.appendIdentityHashCode(sb, this);
+            sb.append('\n');
+            LOG.fine(sb.toString());
+            if (LOG.isLoggable(Level.FINER)) { // Include stack trace of the removal marking
+                LOG.log(Level.INFO, "Embedded token list marked as removed:", new Exception());
+            }
+        }
+        rootModCount = LexerUtilsConstants.MOD_COUNT_REMOVED;
+        extraModCount = 0; // Ensure that modCount() will return MOD_COUNT_REMOVED
+    }
+    
+    /**
+     * Mark removed and explicitly set branchTokenStartOffset.
+     */
+    public void markRemoved(int branchTokenStartOffset) {
+        this.branchTokenStartOffset = branchTokenStartOffset;
+        markRemoved();
+    }
+
+    public void markRemovedChain(int branchTokenStartOffset) {
+        markRemoved(branchTokenStartOffset);
+        if (nextEmbeddedTokenList != null) {
+            nextEmbeddedTokenList.markRemoved(branchTokenStartOffset);
+        }
+    }
+
+    public void reinitChain(AbstractToken<T> branchToken, int branchTokenStartOffset, int modCount) {
+        reinit(branchToken, branchTokenStartOffset, modCount);
+        if (nextEmbeddedTokenList != null) {
+            nextEmbeddedTokenList.reinitChain(branchToken, branchTokenStartOffset, modCount);
+        }
+    }
+
+    void reinit(AbstractToken<T> branchToken, int branchTokenStartOffset, int modCount) {
+        this.branchToken = branchToken;
+        this.branchTokenStartOffset = branchTokenStartOffset;
+        this.rootModCount = modCount;
+    }
+
+    @Override
+    public int startOffset() { // used by FlyOffsetGapList
+        return branchTokenStartOffset + embedding.startSkipLength();
     }
     
     @Override
-    public int startOffset() { // used by FlyOffsetGapList
-//        embeddingContainer.checkStatusUpdated();
-        return embeddingContainer.branchTokenStartOffset() + embedding.startSkipLength();
-    }
-    
     public int endOffset() {
-//        embeddingContainer.checkStatusUpdated();
-        return embeddingContainer.branchTokenStartOffset() + embeddingContainer.token().length()
-                - embedding.endSkipLength();
+        return branchTokenStartOffset + branchToken.length() - embedding.endSkipLength();
     }
     
     public int textLength() {
-        return embeddingContainer.token().length() - embedding.startSkipLength() - embedding.endSkipLength();
+        return branchToken.length() - embedding.startSkipLength() - embedding.endSkipLength();
     }
     
-    public boolean isRemoved() {
-        return embeddingContainer.isRemoved();
+    @Override
+    public boolean isRemoved() { // Expects modCount up-to-date
+        return (rootModCount == LexerUtilsConstants.MOD_COUNT_REMOVED);
     }
 
+    @Override
     public TokenList<?> rootTokenList() {
-        return embeddingContainer.rootTokenList();
+        return rootTokenList;
     }
 
+    @Override
     public CharSequence inputSourceText() {
-        return rootTokenList().inputSourceText();
+        return rootTokenList.inputSourceText();
     }
 
+    @Override
     public TokenHierarchyOperation<?,?> tokenHierarchyOperation() {
-        return rootTokenList().tokenHierarchyOperation();
+        return rootTokenList.tokenHierarchyOperation();
     }
     
-    protected int elementRawOffset(TokenOrEmbedding<T> elem) {
+    @Override
+    protected int elementRawOffset(TokenOrEmbedding<ET> elem) {
         return elem.token().rawOffset();
     }
 
-    protected void setElementRawOffset(TokenOrEmbedding<T> elem, int rawOffset) {
+    @Override
+    protected void setElementRawOffset(TokenOrEmbedding<ET> elem, int rawOffset) {
         elem.token().setRawOffset(rawOffset);
     }
     
-    protected boolean isElementFlyweight(TokenOrEmbedding<T> elem) {
+    @Override
+    protected boolean isElementFlyweight(TokenOrEmbedding<ET> elem) {
         return elem.token().isFlyweight();
     }
     
-    protected int elementLength(TokenOrEmbedding<T> elem) {
+    @Override
+    protected int elementLength(TokenOrEmbedding<ET> elem) {
         return elem.token().length();
     }
     
-    public AbstractToken<T> replaceFlyToken(
-    int index, AbstractToken<T> flyToken, int offset) {
-        synchronized (rootTokenList()) {
-            TextToken<T> nonFlyToken = ((TextToken<T>)flyToken).createCopy(this, offset2Raw(offset));
-            set(index, nonFlyToken);
-            return nonFlyToken;
-        }
+    @Override
+    public AbstractToken<ET> replaceFlyToken(
+    int index, AbstractToken<ET> flyToken, int offset) {
+        TextToken<ET> nonFlyToken = ((TextToken<ET>)flyToken).createCopy(this, offset2Raw(offset));
+        set(index, nonFlyToken);
+        return nonFlyToken;
     }
 
-    public void wrapToken(int index, EmbeddingContainer<T> embeddingContainer) {
-        synchronized (rootTokenList()) {
-            set(index, embeddingContainer);
-        }
+    @Override
+    public void setTokenOrEmbedding(int index, TokenOrEmbedding<ET> t) {
+        set(index, t);
     }
 
+    @Override
     public InputAttributes inputAttributes() {
-        return rootTokenList().inputAttributes();
+        return rootTokenList.inputAttributes();
     }
 
     // MutableTokenList extra methods
-    public TokenOrEmbedding<T> tokenOrEmbeddingUnsync(int index) {
+    @Override
+    public TokenOrEmbedding<ET> tokenOrEmbeddingDirect(int index) {
         return get(index);
     }
 
-    public LexerInputOperation<T> createLexerInputOperation(
+    @Override
+    public LexerInputOperation<ET> createLexerInputOperation(
     int tokenIndex, int relexOffset, Object relexState) {
-//        embeddingContainer.checkStatusUpdated();
-//        AbstractToken<?> branchToken = embeddingContainer.token();
         int endOffset = endOffset();
+        assert isModCountUpdated() : modCountErrorInfo();
 //        assert (!branchToken.isRemoved()) : "No lexing when token is removed";
 //        assert (relexOffset >= startOffset()) : "Invalid relexOffset=" + relexOffset + " < startOffset()=" + startOffset();
         assert (relexOffset <= endOffset) : "Invalid relexOffset=" + relexOffset + " > endOffset()=" + endOffset;
-        return new TextLexerInputOperation<T>(this, tokenIndex, relexState, relexOffset, endOffset);
+        return new TextLexerInputOperation<ET>(this, tokenIndex, relexState, relexOffset, endOffset);
     }
 
+    @Override
     public boolean isFullyLexed() {
         return true;
     }
 
-    public void replaceTokens(TokenListChange<T> change, TokenHierarchyEventInfo eventInfo, boolean modInside) {
-        assert (embeddingContainer.checkStatusUpdated());
+    @Override
+    public void replaceTokens(TokenListChange<ET> change, TokenHierarchyEventInfo eventInfo, boolean modInside) {
+        assert isModCountUpdated() : modCountErrorInfo();
         // Increase the extraModCount which helps to invalidate token-sequence in case
         // when an explicit embedding was created in join-sections setup which can affect adjacent ETLs.
-        extraModCount++;
+        incrementExtraModCount();
         int index = change.index();
         // Remove obsolete tokens (original offsets are retained)
         int removedTokenCount = change.removedTokenCount();
-        AbstractToken<T> firstRemovedToken = null;
+        AbstractToken<ET> firstRemovedToken = null;
         if (removedTokenCount > 0) {
             @SuppressWarnings("unchecked")
-            TokenOrEmbedding<T>[] removedTokensOrEmbeddings = new TokenOrEmbedding[removedTokenCount];
+            TokenOrEmbedding<ET>[] removedTokensOrEmbeddings = new TokenOrEmbedding[removedTokenCount];
             copyElements(index, index + removedTokenCount, removedTokensOrEmbeddings, 0);
             firstRemovedToken = removedTokensOrEmbeddings[0].token();
             // Here a possible offset correction of the removed tokens needs to be made.
@@ -437,27 +530,27 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
             // and the token still starts at offset=0 so the previously mentioned condition would apply
             // and the tokens removed from a JS sections would have their offsets corrected which would be wrong.
             int removedOffsetShift = 0;
-            if (!embeddingContainer.isRemoved()
-                    && embeddingContainer.branchTokenStartOffset() >= eventInfo.modOffset() + eventInfo.insertedLength()
+            if (!isRemoved()
+                    && branchTokenStartOffset >= eventInfo.modOffset() + eventInfo.insertedLength()
                     && !change.parentChangeIsBoundsChange()
             ) {
                 removedOffsetShift -= eventInfo.diffLength();
             }
             for (int i = 0; i < removedTokenCount; i++) {
-                TokenOrEmbedding<T> tokenOrEmbedding = removedTokensOrEmbeddings[i];
+                TokenOrEmbedding<ET> tokenOrEmbedding = removedTokensOrEmbeddings[i];
                 // It's necessary to update-status of all removed tokens' contained embeddings
                 // since otherwise (if they would not be up-to-date) they could not be updated later
                 // as they lose their parent token list which the update-status relies on.
-                AbstractToken<T> token = tokenOrEmbedding.token();
+                AbstractToken<ET> token = tokenOrEmbedding.token();
                 if (!token.isFlyweight()) {
                     updateElementOffsetRemove(token);
                     if (removedOffsetShift != 0) {
                         token.setRawOffset(token.rawOffset() + removedOffsetShift);
                     }
                     token.setTokenList(null);
-                    EmbeddingContainer<T> ec = tokenOrEmbedding.embedding();
-                    if (ec != null) {
-                        ec.markRemoved(token.rawOffset());
+                    EmbeddedTokenList<ET,?> etl = tokenOrEmbedding.embedding();
+                    if (etl != null) {
+                        etl.markRemovedChain(token.rawOffset());
                     }
                 }
             }
@@ -483,10 +576,10 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
 
         // Add created tokens.
         // This should be called early when all the members are true tokens
-        List<TokenOrEmbedding<T>> addedTokenOrEmbeddings = change.addedTokenOrEmbeddings();
+        List<TokenOrEmbedding<ET>> addedTokenOrEmbeddings = change.addedTokenOrEmbeddings();
         if (addedTokenOrEmbeddings != null) {
-            for (TokenOrEmbedding<T> tokenOrEmbedding : addedTokenOrEmbeddings) {
-                AbstractToken<T> token = tokenOrEmbedding.token();
+            for (TokenOrEmbedding<ET> tokenOrEmbedding : addedTokenOrEmbeddings) {
+                AbstractToken<ET> token = tokenOrEmbedding.token();
                 if (!token.isFlyweight())
                     token.setTokenList(this);
                 updateElementOffsetAdd(token);
@@ -497,7 +590,7 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
             // Check for bounds change only
             if (removedTokenCount == 1 && addedTokenOrEmbeddings.size() == 1) {
                 // Compare removed and added token ids and part types
-                AbstractToken<T> addedToken = change.addedTokenOrEmbeddings().get(0).token();
+                AbstractToken<ET> addedToken = change.addedTokenOrEmbeddings().get(0).token();
                 if (firstRemovedToken.id() == addedToken.id()
                     && firstRemovedToken.partType() == addedToken.partType()
                 ) {
@@ -507,31 +600,48 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
         }
     }
 
+    void markChildrenRemovedDeep() { // Used by custom embedding removal
+        int rootModCount = rootTokenList.modCount();
+        for (int i = tokenCountCurrent() - 1; i >= 0; i--) {
+            EmbeddedTokenList<ET,?> etl = tokenOrEmbeddingDirect(i).embedding();
+            if (etl != null) {
+                etl.updateModCount(rootModCount);
+                etl.markRemovedChain(etl.branchTokenStartOffset());
+            }
+        }
+    }
+    
+    @Override
     public boolean isContinuous() {
         return true;
     }
 
-    public Set<T> skipTokenIds() {
+    @Override
+    public Set<ET> skipTokenIds() {
         return null;
     }
     
-    public EmbeddingContainer<?> embeddingContainer() {
-        return embeddingContainer;
+    /**
+     * Check if this ETL is up-to-date at places where code expects it.
+     * Method declared to return true so it can be used in assert stmts.
+     */
+    public boolean isModCountUpdated() {
+        return (rootModCount == LexerUtilsConstants.MOD_COUNT_REMOVED
+                || rootModCount == rootTokenList.modCount());
     }
     
-    public void setEmbeddingContainer(EmbeddingContainer<?> embeddingContainer) {
-        this.embeddingContainer = embeddingContainer;
+    public String modCountErrorInfo() {
+        return "!!!INTERNAL LEXER ERROR!!! Obsolete modCount in ETL " +
+                this + "\nin token hierarchy\n" + rootTokenList.tokenHierarchyOperation();
+        
     }
-    
+
+    @Override
     public StringBuilder dumpInfo(StringBuilder sb) {
-        if (sb == null) {
-            sb = new StringBuilder(50);
-        }
-        EmbeddingContainer ec = embeddingContainer;
-        if (ec != null && ec.isRemoved()) {
+        if (isRemoved()) {
             sb.append("REMOVED-");
         }
-        sb.append("ETL");
+        sb.append(dumpInfoType());
         if (embedding.joinSections())
             sb.append('j');
         sb.append('<').append(startOffset());
@@ -546,8 +656,13 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
         return sb;
     }
 
+    @Override
+    public String dumpInfoType() {
+        return "ETL";
+    }
+
     private String dumpRelatedTLL() {
-        TokenListList<T> tll = rootTokenList().tokenHierarchyOperation().existingTokenListList(languagePath);
+        TokenListList<ET> tll = rootTokenList.tokenHierarchyOperation().existingTokenListList(languagePath);
         return (tll != null)
                 ? tll.toString()
                 : "<No TokenListList for " + languagePath.mimePath() + ">";

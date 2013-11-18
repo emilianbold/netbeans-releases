@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.CharSequences;
 
 /**
@@ -116,7 +117,7 @@ public final class FunctionInstantiationImpl extends OffsetableDeclarationBase<C
         if( (scope instanceof CsmNamespace) || (scope instanceof CsmClass) || (scope instanceof CsmNamespaceDefinition) ) {
             CharSequence scopeQName = ((CsmQualifiedNamedElement) scope).getQualifiedName();
             if( scopeQName != null && scopeQName.length() > 0 ) {
-                return CharSequences.create(scopeQName.toString() + "::" + getQualifiedNamePostfix()); // NOI18N
+                return CharSequences.create(CharSequenceUtils.concatenate(scopeQName, "::", getQualifiedNamePostfix())); // NOI18N
             }
         }
         return getName();

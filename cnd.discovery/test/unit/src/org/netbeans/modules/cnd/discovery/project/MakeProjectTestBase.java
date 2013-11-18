@@ -108,7 +108,7 @@ public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends
             System.setProperty("cnd.discovery.trace.projectimport", "true"); // NOI18N
         }
         //System.setProperty("org.netbeans.modules.cnd.makeproject.api.runprofiles", "true"); // NOI18N
-        System.setProperty("cnd.modelimpl.assert.notfound", "true");
+//        System.setProperty("cnd.modelimpl.assert.notfound", "true");
         System.setProperty("cnd.mode.unittest", "true");
         System.setProperty("org.netbeans.modules.cnd.apt.level","OFF"); // NOI18N
         //System.setProperty("cnd.modelimpl.timing","true"); // NOI18N

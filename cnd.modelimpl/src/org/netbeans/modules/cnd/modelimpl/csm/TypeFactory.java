@@ -458,7 +458,7 @@ public class TypeFactory {
                     }
                 }
             } else if (specifierBuilder != null) {
-                CsmClassifier classifier = BuiltinTypes.getBuiltIn(specifierBuilder.toString());
+                CsmClassifier classifier = BuiltinTypes.getBuiltIn(specifierBuilder);
                 type = new TypeImpl(classifier, pointerDepth, reference, arrayDepth, _const, getFile(), getStartOffset(), getEndOffset());
             } else if (cls != null) {
                 type = new TypeImpl(cls, pointerDepth, reference, arrayDepth, _const, getFile(), getStartOffset(), getEndOffset());
@@ -663,7 +663,7 @@ public class TypeFactory {
             return format();
         }
 
-        public String format() {
+        public CharSequence format() {
             StringBuilder sb = new StringBuilder();
 	        if (isConst()) {
                 sb.append("const "); // NOI18N
@@ -678,12 +678,12 @@ public class TypeFactory {
             for (int i = 0; i < getArrayDepth(); i++) {
                 sb.append("[]"); // NOI18N
             }
-            return sb.toString();
+            return sb;
         }
 
         @Override
         public String toString() {
-            return "WRAPPED TYPE: " + format();  // NOI18N
+            return "WRAPPED TYPE: " + format().toString();  // NOI18N
         }        
         
     }

@@ -53,8 +53,6 @@ import java.util.concurrent.ExecutionException;
  */
 public interface DirectoryReader {
 
-    List<DirEntry> getEntries();
-
-    void readDirectory() throws IOException, InterruptedException, CancellationException, ExecutionException;
+    List<DirEntry> readDirectory(String path) throws IOException, InterruptedException, CancellationException, ExecutionException;
 
 }

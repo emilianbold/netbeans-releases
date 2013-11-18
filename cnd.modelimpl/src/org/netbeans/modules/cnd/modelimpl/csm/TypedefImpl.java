@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.CharSequences;
 
 /**
@@ -217,11 +218,11 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
     public CharSequence getQualifiedName() {
         CsmObject container = _getContainer();
         if (CsmKindUtilities.isClass(container)) {
-            return CharSequences.create(((CsmClass) container).getQualifiedName() + "::" + getQualifiedNamePostfix()); // NOI18N
+            return CharSequences.create(CharSequenceUtils.concatenate(((CsmClass) container).getQualifiedName(), "::", getQualifiedNamePostfix())); // NOI18N
         } else if (CsmKindUtilities.isNamespace(container)) {
             CharSequence nsName = ((CsmNamespace) container).getQualifiedName();
             if (nsName != null && nsName.length() > 0) {
-                return CharSequences.create(nsName.toString() + "::" + getQualifiedNamePostfix()); // NOI18N
+                return CharSequences.create(CharSequenceUtils.concatenate(nsName, "::", getQualifiedNamePostfix())); // NOI18N
             }
         }
         return getName();
@@ -273,7 +274,7 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
 
     @Override
     public CharSequence getDisplayName() {
-        return (templateDescriptor != null) ? CharSequences.create((getName().toString() + templateDescriptor.getTemplateSuffix())) : getName();
+        return (templateDescriptor != null) ? CharSequences.create(CharSequenceUtils.concatenate(getName(), templateDescriptor.getTemplateSuffix())) : getName();
     }    
     
     public void setTemplateDescriptor(TemplateDescriptor templateDescriptor) {

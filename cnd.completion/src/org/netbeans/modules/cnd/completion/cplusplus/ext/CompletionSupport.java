@@ -44,8 +44,13 @@ package org.netbeans.modules.cnd.completion.cplusplus.ext;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -67,6 +72,7 @@ import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
+import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.deep.CsmReturnStatement;
@@ -337,6 +343,9 @@ public final class CompletionSupport implements DocumentListener {
         if (tfrom.equals(tto)) {
             return true;
         }
+        if (CsmCompletion.isPrimitiveClass(fromCls) && CsmCompletion.isPrimitiveClass(toCls)) {
+            return true;
+        }
         if (CsmKindUtilities.isClass(toCls) && CsmKindUtilities.isClass(fromCls)) {
             return CsmInheritanceUtilities.isAssignableFrom((CsmClass)fromCls, (CsmClass)toCls);
         }
@@ -379,7 +388,13 @@ public final class CompletionSupport implements DocumentListener {
             boolean acceptMoreParameters, boolean acceptIfSameNumberParams) {
         Collection<CsmFunction> result = filterMethods(methodList, parmTypeList, acceptMoreParameters, acceptIfSameNumberParams, false);
         if (result.size() > 1) {
+            // it seems that this call couldn't filter anything
             result = filterMethods(result, parmTypeList, acceptMoreParameters, acceptIfSameNumberParams, true);
+            
+            // perform more accurate filtering if it is a strict request (for navigation probably)
+            if (!acceptMoreParameters && acceptIfSameNumberParams) {
+                result = accurateFilterMethods(result, parmTypeList);
+            }
         }
         return result;
     }
@@ -419,9 +434,15 @@ public final class CompletionSupport implements DocumentListener {
                         if (!methodParms[j].isVarArgs() && !equalTypes(t, mpt, ignoreConstAndRef)) {
                             bestMatch = false;
                             if (!isAssignable(t, mpt)) {
-                                accept = false;
-                            // TODO: do not break now, count matches
-                            // break;
+                                if (CsmKindUtilities.isTemplateParameterType(mpt)) {
+                                    if (mpt.getArrayDepth() + mpt.getPointerDepth() <= t.getArrayDepth() + t.getPointerDepth()) {
+                                        matched++;
+                                    } else {
+                                        accept = false;
+                                    }
+                                } else {
+                                    accept = false;
+                                }
                             } else {
                                 matched++;
                             }
@@ -461,6 +482,303 @@ public final class CompletionSupport implements DocumentListener {
             }
         }
         return ret;
+    }
+    
+    /**
+     * Perform more accurate filtering. Could be used for navigation tasks.
+     * Please note: This method is designed to be called after preliminary filtering.
+     *              But this is not a necessary requirement.
+     * 
+     * @param methods
+     * @param paramTypes
+     * 
+     * @return candidates
+     */
+    private static Collection<CsmFunction> accurateFilterMethods(Collection<CsmFunction> methods, List paramTypes) {
+        if (methods.size() <= 1) {
+            return methods;
+        }
+        
+        List<OverloadingCandidate> candidates = new ArrayList<OverloadingCandidate>();
+        
+        int paramsCnt = paramTypes.size();
+        
+        for (CsmFunction m : methods) {
+            CsmParameter[] methodParams = m.getParameters().toArray(new CsmParameter[m.getParameters().size()]);
+            int minParamLenght = 0;
+            for (CsmParameter parameter : methodParams) {
+                if (parameter.getInitialValue() == null) {
+                    minParamLenght++;
+                }
+            }
+            
+            if (methodParams.length >= paramsCnt && minParamLenght <= paramsCnt) {
+                List<Conversion> conversions = new ArrayList<Conversion>(methodParams.length);
+                
+                for (int j = 0; j < paramsCnt; j++) {
+                    CsmType methodParamType = methodParams[j].getType();
+                    CsmType paramType = (CsmType) paramTypes.get(j);
+                    if (paramType != null && methodParamType != null) {
+                        conversions.add(new Conversion(paramType, methodParamType));
+                    }
+                }
+                
+                if (!checkTemplateAcceptable(m, conversions)) {
+                    for (int i = 0; i < conversions.size(); i++) {
+                        Conversion conversion = conversions.get(i);
+                        if (ConversionCategory.Template.equals(conversion.category)) {
+                            conversions.set(i, new Conversion(conversion.from, conversion.to, ConversionCategory.NotConvertable));
+                        }
+                    }
+                }
+                
+                Collections.sort(conversions);
+                
+                candidates.add(new OverloadingCandidate(m, conversions));
+            }
+        }
+        
+        Collections.sort(candidates);
+        
+        List<CsmFunction> result = new ArrayList<CsmFunction>();
+        
+        OverloadingCandidate prev = null;
+        
+        for (OverloadingCandidate candidate : candidates) {
+            if (prev != null) {
+                if (candidate.compareTo(prev) != 0) {
+                    break;
+                }
+            }
+            prev = candidate;
+            result.add(candidate.function);
+        }
+        
+        return result.isEmpty() ? methods : result;
+    }
+    
+    /**
+     * Checks if template conversions are not conflicting
+     * @param function
+     * @param conversions
+     * @return true if there are no conflicts
+     */
+    private static boolean checkTemplateAcceptable(CsmFunction function, List<Conversion> conversions) {
+        if (CsmKindUtilities.isTemplate(function)) {
+            Map<String, String> map = new HashMap<String, String>();
+            
+            for (Conversion conversion : conversions) {
+                if (ConversionCategory.Template.equals(conversion.category)) {
+                    String paramCanonicalText = conversion.to.getCanonicalText().toString();
+                    
+                    if (map.containsKey(paramCanonicalText)) {
+                        String valueText = conversion.from.getCanonicalText().toString();
+                        if (!valueText.equals(map.get(paramCanonicalText))) {
+                            return false;
+                        } 
+                    } else {
+                        map.put(paramCanonicalText, conversion.from.getCanonicalText().toString());
+                    }
+                }
+            }
+        }
+        return true;
+    }
+    
+    /**
+     * Represents conversion from one type to another.
+     */
+    private static class Conversion implements Comparable<Conversion> {
+        
+        public final CsmType from;
+        
+        public final CsmType to;
+        
+        public final ConversionCategory category;
+        
+        public final int templateScore;
+
+        public Conversion(CsmType from, CsmType to) {
+            this.from = from;
+            this.to = to;
+            this.category = ConversionCategory.getWorstConversion(from, to);
+            this.templateScore = calcTemplateScore(from, to, category);
+        }
+        
+        public Conversion(CsmType from, CsmType to, ConversionCategory category) {
+            this.from = from;
+            this.to = to;
+            this.category = category;
+            this.templateScore = 0;
+        }
+        
+        public boolean isBetter(Conversion other) {
+            return category.rank < other.category.rank;
+        }
+        
+        public boolean isEqual(Conversion other) {
+            return category.rank == other.category.rank;
+        }
+        
+        public boolean isWorse(Conversion other) {
+            return category.rank > other.category.rank;
+        }
+
+        @Override
+        public int compareTo(Conversion o) {
+            return category.getRank() - o.category.getRank();
+        }
+        
+        private int calcTemplateScore(CsmType from, CsmType to, ConversionCategory category) {
+            if (ConversionCategory.Template.equals(category)) {
+                int score = 0;
+                
+                if (from.isConst() && to.isConst()) {
+                    score++;
+                }
+                if (from.isPointer() && to.isPointer()) {
+                    score++;
+                }
+                
+                return score;
+            }
+            return 0;
+        }
+    }
+    
+    /**
+     * Represents different conversion categories.
+     */
+    private static enum ConversionCategory {
+        Identity(1),
+        Qualification(1),
+        Template(1),
+        Promotion(2),
+        StandardConversion(3),
+        UserDefinedConversion(4),
+        NotConvertable(100);
+                
+        public int getRank() {
+            return rank;
+        }        
+        
+        public static ConversionCategory getWorstConversion(CsmType from, CsmType to) {
+            if (equalTypes(from, to, true)) {
+                return ConversionCategory.Identity;
+            } else if (CsmKindUtilities.isTemplateParameterType(to)) {
+                return ConversionCategory.Template;
+            }
+            
+            if (isAssignable(from, to)) {
+                CsmClassifier fromCls = from.getClassifier();
+                CsmClassifier toCls = to.getClassifier();                
+                
+                if (CsmCompletion.isPrimitiveClass(toCls) && CsmCompletion.isPrimitiveClass(fromCls)) {
+                    if (isPromotion(from.getClassifierText().toString(), to.getClassifierText().toString())) {
+                        return ConversionCategory.Promotion;
+                    } else {
+                        return ConversionCategory.StandardConversion;
+                    }
+                }
+                
+                return ConversionCategory.UserDefinedConversion;
+            }
+            
+            return ConversionCategory.NotConvertable;
+        }
+        
+        
+        private final int rank;
+        
+        private ConversionCategory(int rank) {
+            this.rank = rank;
+        }                
+        
+        private static boolean isPromotion(String from, String to) {
+            return (to.equals("int") && (from.equals("char") || from.equals("unsigned char") || from.equals("short"))) || // NOI18N
+                   (to.equals("double") && from.equals("float")) ||  // NOI18N
+                   (to.equals("int") && from.equals("bool"));  // NOI18N
+        }        
+    }
+    
+    /**
+     * Represents function with a list of conversions needed to call it.
+     */
+    private static class OverloadingCandidate implements Comparable<OverloadingCandidate> {
+        
+        public final CsmFunction function;
+        
+        public final List<Conversion> conversions;
+
+        public OverloadingCandidate(CsmFunction function, List<Conversion> conversions) {
+            this.function = function;
+            this.conversions = conversions;
+        }
+
+        @Override
+        public int compareTo(OverloadingCandidate o) {
+            if (conversions.isEmpty() && o.conversions.isEmpty())  {
+                return 0;
+            } else if (o.conversions.isEmpty()) {
+                return -1;
+            } else if (conversions.isEmpty()) {
+                return 1;
+            }
+            
+            // 1. Compare by conversions ranks
+            int ourWorst = 0;
+            int theirWorst = 0;
+            
+            while ((ourWorst != conversions.size() - 1 || theirWorst != o.conversions.size() - 1) && conversions.get(ourWorst).isEqual(o.conversions.get(theirWorst))) {
+                ourWorst = findNextWorstConversion(conversions, ourWorst);
+                theirWorst = findNextWorstConversion(o.conversions, theirWorst);                
+            }
+            
+            Conversion ourConversion = conversions.get(ourWorst);
+            Conversion theirConversion = o.conversions.get(theirWorst);
+            
+            if (!ourConversion.isEqual(theirConversion)) {
+                return ourConversion.category.getRank() - theirConversion.category.getRank();
+            }
+            
+            // They have similar set of conversion categories - check if one of them is template and other is not
+            if (CsmKindUtilities.isTemplate(function) != CsmKindUtilities.isTemplate(o.function)) {
+                if (CsmKindUtilities.isTemplate(o.function)) {
+                    return -1; // this is better;
+                } else {
+                    return 1;  // other is better
+                }
+            }
+            
+            // Check if they are not template
+            if (!CsmKindUtilities.isTemplate(function)) {
+                return 0;
+            }
+            
+            // Compare two template functions
+//            int ourTemplateScore = calcTemplateScore(conversions);
+//            int otherTemplateScore = calcTemplateScore(o.conversions);
+            return calcTemplateScore((CsmTemplate) o.function, o.conversions) - calcTemplateScore((CsmTemplate) function, conversions);
+        }
+        
+        private int findNextWorstConversion(List<Conversion> conversions, int from) {
+            int index = from;
+            Conversion current = conversions.get(index);
+            
+            do {
+                index++;
+            } while (index < conversions.size() && conversions.get(index).isEqual(current));
+            
+            return index < conversions.size() ? index : index - 1;
+        }
+        
+        private int calcTemplateScore(CsmTemplate template, List<Conversion> conversions) {
+            int score = 0;
+            for (Conversion conversion : conversions) {
+                score += conversion.templateScore;
+            }
+            return score - template.getTemplateParameters().size();
+        }
     }
 
     ////////////////////////////////////////////////
@@ -531,9 +849,13 @@ public final class CompletionSupport implements DocumentListener {
         return true;
     }
 
-    public static boolean needShowCompletionOnText(JTextComponent target, String typedText) throws BadLocationException {
+    public static boolean needShowCompletionOnTextLite(JTextComponent target, String typedText) {
         char typedChar = typedText.charAt(typedText.length() - 1);
-        if (typedChar == ' ' || typedChar == '>' || typedChar == ':' || typedChar == '.' || typedChar == '*') {
+        return typedChar == ' ' || typedChar == '>' || typedChar == ':' || typedChar == '.' || typedChar == '*';
+    }
+    
+    public static boolean needShowCompletionOnText(JTextComponent target, String typedText) throws BadLocationException {
+        if (needShowCompletionOnTextLite(target, typedText)) {
             int dotPos = target.getCaret().getDot();
             Document doc = target.getDocument();
             TokenSequence<TokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, dotPos, true, true);

@@ -80,6 +80,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.CharSequences;
 
 /**
@@ -169,14 +170,14 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
         return super.unregisterInProject();
     }
 
-    private String findQualifiedName() {
+    private CharSequence findQualifiedName() {
         CsmVariable declaration = _getDeclaration();
 	if( declaration != null ) {
-	    return declaration.getQualifiedName().toString();
+	    return declaration.getQualifiedName();
 	}
 	CsmObject owner = findOwner();
 	if( owner instanceof CsmQualifiedNamedElement  ) {
-	    return ((CsmQualifiedNamedElement) owner).getQualifiedName() + "::" + getQualifiedNamePostfix(); // NOI18N
+	    return CharSequenceUtils.concatenate(((CsmQualifiedNamedElement) owner).getQualifiedName(), "::", getQualifiedNamePostfix()); // NOI18N
 	}
 	else {
 	    CharSequence[] cnn = classOrNspNames;
@@ -198,7 +199,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
 	    }
 	    sb.append("::"); // NOI18N
 	    sb.append(getQualifiedNamePostfix());
-	    return sb.toString();
+	    return sb;
 	}
     }
 
@@ -228,7 +229,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
         if (!isValid()) {
             return null;
         }
-        String uname = CsmDeclaration.Kind.VARIABLE.toString() + UNIQUE_NAME_SEPARATOR + getQualifiedName();
+        String uname = CharSequenceUtils.toString(CsmDeclaration.Kind.VARIABLE.toString(), UNIQUE_NAME_SEPARATOR, getQualifiedName());
         CsmDeclaration def = getContainingFile().getProject().findDeclaration(uname);
 	if( def == null ) {
 	    CsmObject owner = findOwner();
@@ -263,7 +264,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
     /** @return either class or namespace */
     private CsmObject findOwner() {
 	CharSequence[] cnn = classOrNspNames;
-	if( cnn != null ) {
+	if( cnn != null && cnn.length > 0) {
             CsmObject obj = null;
             Resolver resolver = ResolverFactory.createResolver(this);
             try {
@@ -319,7 +320,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
 
     @Override
     public CharSequence getDisplayName() {
-        return (templateDescriptor != null) ? CharSequences.create((getName().toString() + templateDescriptor.getTemplateSuffix())) : getName(); // NOI18N
+        return (templateDescriptor != null) ? CharSequences.create(CharSequenceUtils.concatenate(getName(), templateDescriptor.getTemplateSuffix())) : getName(); // NOI18N
     }
     
     @Override

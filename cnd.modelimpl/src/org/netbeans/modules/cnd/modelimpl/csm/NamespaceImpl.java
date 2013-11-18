@@ -137,7 +137,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     
     private static final boolean CHECK_PARENT = false;
     
-    protected NamespaceImpl(ProjectBase project, NamespaceImpl parent, String name, String qualifiedName) {
+    protected NamespaceImpl(ProjectBase project, NamespaceImpl parent, CharSequence name, CharSequence qualifiedName) {
         this.name = NameCache.getManager().getString(name);
         this.global = false;
         assert project != null;
@@ -167,7 +167,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         
     }
 
-    public static NamespaceImpl create(ProjectBase project, NamespaceImpl parent, String name, String qualifiedName) {
+    public static NamespaceImpl create(ProjectBase project, NamespaceImpl parent, CharSequence name, CharSequence qualifiedName) {
         NamespaceImpl namespaceImpl = new NamespaceImpl(project, parent, name, qualifiedName);
         project.registerNamespace(namespaceImpl);
         if( parent != null ) {

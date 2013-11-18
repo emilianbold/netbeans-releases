@@ -77,6 +77,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.CharSequences;
 
 /**
@@ -93,7 +94,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
 
     @Override
     public CharSequence getUniqueName() {
-        return CharSequences.create(Utils.getCsmDeclarationKindkey(getKind()) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix());
+        return CharSequences.create(CharSequenceUtils.concatenate(Utils.getCsmDeclarationKindkey(getKind()), UNIQUE_NAME_SEPARATOR, getUniqueNameWithoutPrefix())); //NOI18N
     }
     
     public CharSequence getUniqueNameWithoutPrefix() {
@@ -134,7 +135,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
                 out.append(part);
             }
             out.append(')');
-            name = out.toString();
+            name = out;
         }
         return name;
     }
@@ -236,8 +237,8 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
                     inheritedTemplateParametersNumber = templateParams.size();
                 }
             }
-            CharSequence templateSuffix = "";
             if (_template) {                
+                CharSequence templateSuffix;
                 // 3. We are sure now what we have template-method, 
                 // let's check is it specialization template or not
                 if (specialization) {
@@ -252,7 +253,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
                     // 3b. no specialization, plain and simple template-method
                     StringBuilder sb  = new StringBuilder();
                     TemplateUtils.addSpecializationSuffix(templateNode.getFirstChild(), sb, null);
-                    templateSuffix = '<' + sb.toString() + '>';
+                    templateSuffix = CharSequenceUtils.concatenate("<", sb, ">"); //NOI18N
                 }                
                 if(templateParams != null) {
                     templateParams.addAll(TemplateUtils.getTemplateParameters(templateNode,
@@ -261,9 +262,10 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
                     templateParams = TemplateUtils.getTemplateParameters(templateNode,
                         file, scope, global);
                 }
-            }            
-            return new TemplateDescriptor(
-                templateParams, templateSuffix, inheritedTemplateParametersNumber, specialization, global);
+                return new TemplateDescriptor(templateParams, templateSuffix, inheritedTemplateParametersNumber, specialization, global);
+            } else {
+                return new TemplateDescriptor(templateParams, "", inheritedTemplateParametersNumber, specialization, global);
+            }
         }
         return null;
     }

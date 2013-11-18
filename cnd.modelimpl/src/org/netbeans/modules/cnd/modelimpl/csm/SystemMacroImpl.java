@@ -72,7 +72,7 @@ public final class SystemMacroImpl implements CsmMacro, CsmIdentifiable {
     private final CsmFile containingFile;
     private final CsmUID<CsmMacro> uid;
 
-    private SystemMacroImpl(CharSequence macroName, String macroBody, List<CharSequence> macroParams, CsmFile containingFile, Kind macroKind) {
+    private SystemMacroImpl(CharSequence macroName, CharSequence macroBody, List<CharSequence> macroParams, CsmFile containingFile, Kind macroKind) {
         this.macroName = NameCache.getManager().getString(macroName);
         this.macroBody = TextCache.getManager().getString(macroBody);
         this.macroKind = macroKind;
@@ -86,7 +86,7 @@ public final class SystemMacroImpl implements CsmMacro, CsmIdentifiable {
         this.uid = UIDProviderIml.createSelfUID((CsmMacro)this);
     }
 
-    public static SystemMacroImpl create(CharSequence macroName, String macroBody, List<CharSequence> macroParams, CsmFile containingFile, Kind macroKind) {
+    public static SystemMacroImpl create(CharSequence macroName, CharSequence macroBody, List<CharSequence> macroParams, CsmFile containingFile, Kind macroKind) {
         return new SystemMacroImpl(macroName, macroBody, macroParams, containingFile, macroKind);
     }
     

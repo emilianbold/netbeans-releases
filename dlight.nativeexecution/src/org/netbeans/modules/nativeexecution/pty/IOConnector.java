@@ -134,20 +134,23 @@ public final class IOConnector {
 
         ResizeListener(final ExecutionEnvironment env, final String tty) throws IOException, CancellationException {
             final HostInfo hinfo = HostInfoUtils.getHostInfo(env);
-            
+
             if (OSFamily.SUNOS.equals(hinfo.getOSFamily())) {
                 pxlsAware = true;
-                
+
                 // See IZ 192063  - Input is duplicated in internal terminal
                 // See CR 7009510 - Changing winsize (SIGWINCH) of pts causes entered text duplication
-                
+
                 // In case OpenSolaris/Solaris 11 will not react on window size
-                // change... This causes 'problems' with, say, vi started 
+                // change... This causes 'problems' with, say, vi started
                 // in the internal terminal... But 'solves' problems with input
                 // duplication, which is more important...
-                
+
                 String version = hinfo.getOS().getVersion();
-                if (version.contains("OpenSolaris") || version.contains("Solaris 11")) { // NOI18N
+                if (version.contains("Solaris 11.1")) { // NOI18N
+                    // update for IZ 236261: in Solaris 11+ this seems to work, so
+                    // will not disable listener for it...
+                } else if (version.contains("OpenSolaris") || version.contains("Solaris 11")) { // NOI18N
                     return;
                 }
             } else {

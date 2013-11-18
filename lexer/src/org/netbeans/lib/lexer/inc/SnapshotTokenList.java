@@ -50,7 +50,6 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.editor.util.CompactMap;
 import org.netbeans.lib.lexer.EmbeddedTokenList;
-import org.netbeans.lib.lexer.EmbeddingContainer;
 import org.netbeans.lib.lexer.LexerUtilsConstants;
 import org.netbeans.lib.lexer.TokenHierarchyOperation;
 import org.netbeans.lib.lexer.TokenList;
@@ -117,10 +116,12 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
         return snapshot;
     }
     
+    @Override
     public LanguagePath languagePath() {
         return liveTokenList.languagePath();
     }
     
+    @Override
     public TokenOrEmbedding<T> tokenOrEmbedding(int index) {
         if (liveTokenGapStart == -1 || index < liveTokenGapStart) {
             return liveTokenList.tokenOrEmbedding(index);
@@ -132,18 +133,21 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
         return liveTokenList.tokenOrEmbedding(liveTokenGapEnd + index - origTokenCount);
     }
 
+    @Override
     public int lookahead(int index) {
         // Lookahead not supported for certain snapshot's tokens
         // so better don't return it for any of them.
         return -1;
     }
 
+    @Override
     public Object state(int index) {
         // Lookahead not supported for certain snapshot's tokens
         // so better don't return it for any of them.
         return null;
     }
 
+    @Override
     public int tokenOffset(int index) {
         if (liveTokenGapStart == -1 || index < liveTokenGapStart) {
             return liveTokenList.tokenOffset(index);
@@ -154,12 +158,12 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
         }
         index -= origTokenCount;
 
-        AbstractToken<T> token = liveTokenList.tokenOrEmbeddingUnsync(liveTokenGapEnd + index).token();
+        AbstractToken<T> token = liveTokenList.tokenOrEmbeddingDirect(liveTokenGapEnd + index).token();
         int offset;
         if (token.isFlyweight()) {
             offset = token.length();
             while (--index >= 0) {
-                token = liveTokenList.tokenOrEmbeddingUnsync(liveTokenGapEnd + index).token();
+                token = liveTokenList.tokenOrEmbeddingDirect(liveTokenGapEnd + index).token();
                 if (token.isFlyweight()) {
                     offset += token.length();
                 } else { // non-flyweight element
@@ -180,6 +184,7 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
         return offset;
     }
 
+    @Override
     public int[] tokenIndex(int offset) {
         return LexerUtilsConstants.tokenIndexLazyTokenCreation(this, offset);
     }
@@ -209,7 +214,7 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
         //    In this case the offset of the corresponding rootBranchToken
         //    needs to be corrected if necessary.
         if (tokenList.getClass() == EmbeddedTokenList.class) {
-            EmbeddedTokenList<TT> etl = (EmbeddedTokenList<TT>)tokenList;
+            EmbeddedTokenList<?,TT> etl = (EmbeddedTokenList<?,TT>)tokenList;
             AbstractToken<?> rootBranchToken = null; // originally etl.rootToken();
             Token2OffsetEntry<T> entry = token2offset.get(rootBranchToken);
             if (entry != null) {
@@ -242,6 +247,7 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
         }
     }
     
+    @Override
     public int tokenCount() {
         return (liveTokenGapStart == -1)
                 ? liveTokenList.tokenCount()
@@ -249,6 +255,7 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
                     + origTokenCount;
     }
 
+    @Override
     public int tokenCountCurrent() {
         return (liveTokenGapStart == -1)
                 ? liveTokenList.tokenCountCurrent()
@@ -256,10 +263,12 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
                     + origTokenCount;
     }
 
+    @Override
     public int modCount() {
         return LexerUtilsConstants.MOD_COUNT_IMMUTABLE_INPUT;
     }
     
+    @Override
     public int tokenOffset(AbstractToken<T> token) {
         int rawOffset = token.rawOffset();
         // Offset of the standalone token is absolute
@@ -271,20 +280,22 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
         throw new IllegalStateException("Not expected to be called"); // NOI18N
     }
 
-    public void wrapToken(int index, EmbeddingContainer<T> embeddingContainer) {
+    @Override
+    public void setTokenOrEmbedding(int index, TokenOrEmbedding<T> t) {
         // Allow branching
         if (liveTokenGapStart == -1 || index < liveTokenGapStart) {
-            liveTokenList.wrapToken(index, embeddingContainer);
+            liveTokenList.setTokenOrEmbedding(index, t);
         } else {
             index -= liveTokenGapStart;
             if (index < origTokenCount) {
-                origTokenOrEmbeddings[origTokenStartIndex + index] = embeddingContainer;
+                origTokenOrEmbeddings[origTokenStartIndex + index] = t;
             } else {
-                liveTokenList.wrapToken(liveTokenGapEnd + index - origTokenCount, embeddingContainer);
+                liveTokenList.setTokenOrEmbedding(liveTokenGapEnd + index - origTokenCount, t);
             }
         }
     }
 
+    @Override
     public AbstractToken<T> replaceFlyToken(int index, AbstractToken<T> flyToken, int offset) {
         AbstractToken<T> nonFlyToken;
         if (liveTokenGapStart == -1 || index < liveTokenGapStart) {
@@ -303,36 +314,44 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
         return nonFlyToken;
     }
     
+    @Override
     public TokenList<?> rootTokenList() {
         return this;
     }
 
+    @Override
     public CharSequence inputSourceText() {
         return rootTokenList().inputSourceText();
     }
 
+    @Override
     public TokenHierarchyOperation<?,?> tokenHierarchyOperation() {
         return snapshot;
     }
     
+    @Override
     public InputAttributes inputAttributes() {
         return liveTokenList.inputAttributes();
     }
 
+    @Override
     public boolean isContinuous() {
         return true;
     }
 
+    @Override
     public Set<T> skipTokenIds() {
         return null;
     }
 
+    @Override
     public int startOffset() {
         if (tokenCountCurrent() > 0 || tokenCount() > 0)
             return tokenOffset(0);
         return 0;
     }
 
+    @Override
     public int endOffset() {
         int cntM1 = tokenCount() - 1;
         if (cntM1 >= 0)
@@ -340,6 +359,7 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
         return 0;
     }
     
+    @Override
     public boolean isRemoved() {
         return false;
     }
@@ -395,7 +415,7 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
             }
 
             while (index < liveTokenGapStart) {
-                TokenOrEmbedding<T> tokenOrEmbedding = liveTokenList.tokenOrEmbeddingUnsync(index + liveTokenIndexDiff);
+                TokenOrEmbedding<T> tokenOrEmbedding = liveTokenList.tokenOrEmbeddingDirect(index + liveTokenIndexDiff);
                 AbstractToken<T> t = tokenOrEmbedding.token();
                 if (!t.isFlyweight()) {
                     token2offset.putEntry(new Token2OffsetEntry<T>(t, offset));
@@ -439,7 +459,7 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
             }
 
             while (index >= liveTokenGapEnd) {
-                TokenOrEmbedding<T> tokenOrEmbedding = liveTokenList.tokenOrEmbeddingUnsync(index + liveTokenIndexDiff);
+                TokenOrEmbedding<T> tokenOrEmbedding = liveTokenList.tokenOrEmbeddingDirect(index + liveTokenIndexDiff);
                 AbstractToken<T> token = tokenOrEmbedding.token();
                 offset -= token.length();
                 if (!token.isFlyweight()) {
@@ -534,6 +554,16 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
         return liveTokenGapStartOffset + liveTokenOffsetDiff;
     }
 
+    @Override
+    public StringBuilder dumpInfo(StringBuilder sb) {
+        return sb;
+    }
+
+    @Override
+    public String dumpInfoType() {
+        return "SnapshotTL";
+    }
+
     private static final class Token2OffsetEntry<T extends TokenId>
     extends CompactMap.MapEntry<AbstractToken<T>,Token2OffsetEntry<T>> {
         
@@ -546,18 +576,22 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
             this.offset = offset;
         }
         
+        @Override
         public AbstractToken<T> getKey() {
             return token;
         }
 
+        @Override
         public Token2OffsetEntry<T> getValue() {
             return this;
         }
         
+        @Override
         protected int valueHashCode() {
             return offset;
         }
 
+        @Override
         protected boolean valueEquals(Object value2) {
             // In fact the second entry would have to be of <T> because
             // the tokens (as keys) must be the same objects to be equal
@@ -569,6 +603,7 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
             return offset;
         }
 
+        @Override
         public Token2OffsetEntry<T> setValue(Token2OffsetEntry<T> value) {
             throw new IllegalStateException("Prohibited"); // NOI18N
         }

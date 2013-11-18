@@ -46,14 +46,10 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
-import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
-import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
@@ -67,10 +63,10 @@ import static org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer.getClosest
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionStatementImpl;
+import org.netbeans.modules.cnd.modelimpl.util.MapHierarchy;
 import org.netbeans.modules.cnd.modelimpl.parser.FakeAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.utils.MutableObject;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.CharSequences;
 
 /**
@@ -84,7 +80,7 @@ public class TemplateUtils {
 //    public static final byte MASK_TEMPLATE = 0x01;
 //    public static final byte MASK_SPECIALIZATION = 0x02;
 
-    public static String getSpecializationSuffix(AST qIdToken, List<CsmTemplateParameter> parameters) {
+    public static CharSequence getSpecializationSuffix(AST qIdToken, List<CsmTemplateParameter> parameters) {
 	StringBuilder sb  = new StringBuilder();
 	for( AST child = qIdToken.getFirstChild(); child != null; child = child.getNextSibling() ) {
 	    if( child.getType() == CPPTokenTypes.LESSTHAN ) {
@@ -92,14 +88,14 @@ public class TemplateUtils {
 		break;
 	    }
 	}
-	return sb.toString();
+	return sb;
     }
     
     // in class our parser skips LESSTHAN symbols in templates...
-    public static String getClassSpecializationSuffix(AST qIdToken, List<CsmTemplateParameter> parameters) {
+    public static CharSequence getClassSpecializationSuffix(AST qIdToken, List<CsmTemplateParameter> parameters) {
 	StringBuilder sb  = new StringBuilder();
         addSpecializationSuffix(qIdToken.getFirstChild(), sb, parameters);
-	return sb.toString();
+	return sb;
     }
     
     public static final String TYPENAME_STRING = "class"; //NOI18N
@@ -111,7 +107,7 @@ public class TemplateUtils {
     public static void addSpecializationSuffix(AST firstChild, StringBuilder res, List<CsmTemplateParameter> parameters, boolean checkForSpecialization) {
         int depth = 0;
         int paramsNumber = 0;
-        StringBuilder sb = new StringBuilder(res.toString()); // NOI18N
+        StringBuilder sb = new StringBuilder(res); // NOI18N
         for (AST child = firstChild; child != null; child = child.getNextSibling()) {
             if (child.getType() == CPPTokenTypes.LESSTHAN) {
                 depth++;
@@ -123,7 +119,7 @@ public class TemplateUtils {
                     addSpecializationSuffix(grandChild, sb, parameters);
                     paramsNumber++;
                 }
-            } else if (child != null && child.getType() == CPPTokenTypes.LITERAL_template) {
+            } else if (child.getType() == CPPTokenTypes.LITERAL_template) {
                 sb.append(AstUtil.getText(child));
                 sb.append('<');
                 AST grandChild = child.getFirstChild();
@@ -140,10 +136,10 @@ public class TemplateUtils {
                     break;
                 }
             } else {
-                String text = child.getText();
+                CharSequence text = AstUtil.getText(child);
                 if (parameters != null) {
                     for (CsmTemplateParameter param : parameters) {
-                        if (param.getName().toString().equals(text)) {
+                        if (CharSequences.comparator().compare(param.getName(),text)==0) {
                             text = TYPENAME_STRING;
                             paramsNumber++;
                         }
@@ -162,7 +158,7 @@ public class TemplateUtils {
             }
         }
         if(!checkForSpecialization || parameters == null || paramsNumber != parameters.size()) {
-            res.append(sb.toString().substring(res.length()));
+            res.append(sb.substring(res.length()));
         }
     }
 
@@ -435,16 +431,15 @@ public class TemplateUtils {
         return type;
     }   
 
-    public static Map<CsmTemplateParameter, CsmSpecializationParameter> gatherMapping(CsmInstantiation inst) {
-        Map<CsmTemplateParameter, CsmSpecializationParameter> newMapping = new HashMap<CsmTemplateParameter, CsmSpecializationParameter>();
-        if (inst != null) {
-            CsmOffsetableDeclaration decl = inst.getTemplateDeclaration();
-            if(decl instanceof CsmInstantiation) {
-                newMapping.putAll(gatherMapping((CsmInstantiation) decl));
+    public static MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> gatherMapping(CsmInstantiation inst) {
+            MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> mapHierarchy = new MapHierarchy<>(inst.getMapping());
+            
+            while(CsmKindUtilities.isInstantiation(inst.getTemplateDeclaration())) {
+                inst = (CsmInstantiation) inst.getTemplateDeclaration();
+                mapHierarchy.push(inst.getMapping());
             }
-            newMapping.putAll(inst.getMapping());
-        }
-        return newMapping;
+            
+            return mapHierarchy;
     }
 
     public static boolean isTemplateQualifiedName(String name) {
@@ -466,7 +461,7 @@ public class TemplateUtils {
             }
         }     
         return type;
-    }    
+    }        
 
     private TemplateUtils() {
     }

@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!--
-Copyright &copy; 2007, 2009 Oracle and/or its affiliatesc. All rights reserved.
+Copyright &copy; 2007, 2013 Oracle and/or its affiliates. All rights reserved.
  -->
 <html>
 <head>
@@ -18,6 +18,11 @@ tab for each usages search. Each tab contains a tree view of the
 file names and the lines of code for the usage found in that file. 
 By default, the physical view of the usage tree is displayed.
 </p> 
+<p>The search results are displayed incrementally. 
+    The top line shows how many occurrences have been found and
+how many are filtered out by your selections in the Find Usages
+dialog box. You can click the Stop button on the left to discontinue
+the search and keep the results already displayed in the window.</p>
 <p>Double-click a usage line in the Usages window to go to the 
 corresponding line of code in the Source Editor.
 </p> 
@@ -29,6 +34,11 @@ the button. The right column lists the description.">
 <tr valign="top">
 <th scope="col" align="left">Button</th>
 <th scope="col" align="left">Description</th>
+</tr>
+<tr valign="top">
+<td><img src="../images/stop.png" alt="Stop button"></td>
+<td>Stops the search. This button is displayed only while the search is
+active. When Find Usages is complete, the Stop button is replaced with the Refresh button.</td>
 </tr>
 <tr valign="top">
 <td><img src="../images/refresh.png" alt="Refresh button"></td>

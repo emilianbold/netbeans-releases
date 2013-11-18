@@ -247,4 +247,16 @@ public class HintsTest extends PHPHintsTestBase {
         checkHints(new ParentConstructorCallHint(), "testIssue234983.php");
     }
 
+    public void testIssue237726_01() throws Exception {
+        checkHints(new UnnecessaryClosingDelimiterHint(), "testIssue237726_01.php");
+    }
+
+    public void testIssue237726_02() throws Exception {
+        checkHints(new UnnecessaryClosingDelimiterHint(), "testIssue237726_02.php");
+    }
+
+    public void testIssue237768() throws Exception {
+        checkHints(new UnnecessaryClosingDelimiterHint(), "testIssue237768.php");
+    }
+
 }

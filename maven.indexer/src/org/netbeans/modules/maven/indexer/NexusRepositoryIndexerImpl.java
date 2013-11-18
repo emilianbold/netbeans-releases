@@ -809,7 +809,44 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         return result;
     }
 
-
+    public Result<String> getGAVsForPackaging(final String packaging, List<RepositoryInfo> repos) {
+        RepositoryQueries.Result<String> result = ACCESSOR.createStringResult(new Redo<String>() {
+            @Override
+            public void run(Result<String> result) {
+                getGAVsForPackaging(packaging, result, ACCESSOR.getSkipped(result), false);
+            }
+        });
+        return getGAVsForPackaging(packaging,result, repos, true);
+    }
+    
+    private Result<String> getGAVsForPackaging(final String packaging, final Result<String> result, 
+                                             List<RepositoryInfo> repos, final boolean skipUnIndexed) {
+        final List<String> infos = new ArrayList<String>(result.getResults());
+        final SkippedAction skipAction = new SkippedAction(result);
+        iterate(repos, new RepoAction() {
+            @Override public void run(RepositoryInfo repo, IndexingContext context) throws IOException {
+                BooleanQuery bq = new BooleanQuery();
+                bq.add(new BooleanClause(new TermQuery(new Term(ArtifactInfo.PACKAGING, packaging)), BooleanClause.Occur.MUST));
+                IteratorSearchResponse response = repeatedPagedSearch(bq, Collections.singletonList(context), NO_CAP_RESULT_COUNT);
+                if (response != null) {
+                   try {
+                        for (ArtifactInfo ai : response.iterator()) {
+                            String gav = ai.groupId + ":" + ai.artifactId + ":" + ai.version;
+                            if (!infos.contains(gav)) {
+                                infos.add(gav);
+                            }
+                        }
+                    } finally {
+                        ACCESSOR.addReturnedResults(result, response.getTotalProcessedArtifactInfoCount());
+                        ACCESSOR.addTotalResults(result, response.getTotalHitsCount());
+                        response.close();
+                    }
+                }
+            }
+        }, skipAction, skipUnIndexed);
+        ACCESSOR.setStringResults(result, infos);
+        return result;        
+    }
     
 
     @Override

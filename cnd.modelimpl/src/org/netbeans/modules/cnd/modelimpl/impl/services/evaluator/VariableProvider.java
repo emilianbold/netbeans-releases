@@ -41,9 +41,11 @@
  */
 package org.netbeans.modules.cnd.modelimpl.impl.services.evaluator;
 
+import org.netbeans.modules.cnd.modelimpl.util.MapHierarchy;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -66,6 +68,7 @@ import org.netbeans.modules.cnd.api.model.CsmTemplateParameterType;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypeBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
+import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
@@ -92,7 +95,7 @@ public class VariableProvider {
 
     private final int level;
     private CsmOffsetableDeclaration decl;
-    private Map<CsmTemplateParameter, CsmSpecializationParameter> mapping;
+    private MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> mapping;
     private CsmFile variableFile; 
     private int variableStartOffset;
     private int variableEndOffset;
@@ -100,20 +103,18 @@ public class VariableProvider {
     
     public VariableProvider(int level) {
         this.level = level;
-    }
-
-    public VariableProvider(CsmOffsetableDeclaration decl, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping, int level) {
-        this(decl, mapping, null, 0, 0, level);
+        LOG.log(Level.FINE, "\nVARIABLE PROVIDER CREATED WITHOUT MAP HIERARCHY\n"); // NOI18N
     }
     
-    public VariableProvider(CsmOffsetableDeclaration decl, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping, CsmFile variableFile, int variableStartOffset, int variableEndOffset, int level) {
+    public VariableProvider(CsmOffsetableDeclaration decl, MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> mapping, CsmFile variableFile, int variableStartOffset, int variableEndOffset, int level) {
         this.decl = decl;
         this.mapping = mapping;
         this.variableFile = variableFile != null ? variableFile : (decl != null ? decl.getContainingFile() : null);
         this.variableStartOffset = variableStartOffset;
         this.variableEndOffset = variableEndOffset;
         this.level = level;
-    }
+        LOG.log(Level.FINE, "\nVARIABLE PROVIDER CREATED WITH MAP HIERARCHY:\n{0}\n", mapping); // NOI18N
+    }    
 
     public int getValue(String variableName) {
         if(level > INFINITE_RECURSION) {
@@ -129,10 +130,11 @@ public class VariableProvider {
                 return 0;
             }
             if (decl != null) {
-                for (CsmTemplateParameter param : mapping.keySet()) {
+                for (Map.Entry<CsmTemplateParameter, CsmSpecializationParameter> entry : mapping.entries()) {
+                    CsmTemplateParameter param = entry.getKey();
                     if (variableName.equals(param.getQualifiedName().toString()) ||
                             (decl.getQualifiedName() + "::" + variableName).equals(param.getQualifiedName().toString())) { // NOI18N
-                        CsmSpecializationParameter spec = mapping.get(param);
+                        CsmSpecializationParameter spec = entry.getValue();
                         if (CsmKindUtilities.isExpressionBasedSpecalizationParameter(spec)) {
                             Object eval = new ExpressionEvaluator(level+1).eval(((CsmExpressionBasedSpecializationParameter) spec).getText().toString(), decl, mapping);
                             if (eval instanceof Integer) {
@@ -217,7 +219,7 @@ public class VariableProvider {
                             if(CsmKindUtilities.isInstantiation(decl)) {
                                 type = checkTemplateType(type, (Instantiation)decl);
                             }
-                            for (CsmTemplateParameter csmTemplateParameter : mapping.keySet()) {
+                            for (CsmTemplateParameter csmTemplateParameter : mapping.keys()) {
                                 type = TemplateUtils.checkTemplateType(type, csmTemplateParameter.getScope());
                             }
 
@@ -245,7 +247,18 @@ public class VariableProvider {
 
                             CsmClassifier originalClassifier = CsmClassifierResolver.getDefault().getOriginalClassifier(type.getClassifier(), decl.getContainingFile());
                             if (CsmKindUtilities.isTemplate(originalClassifier)) {
-                                CsmObject instantiate = ((InstantiationProviderImpl)InstantiationProviderImpl.getDefault()).instantiate((CsmTemplate) originalClassifier, mapping);
+                                InstantiationProviderImpl ip = (InstantiationProviderImpl) InstantiationProviderImpl.getDefault();
+                                
+                                CsmObject instantiate = originalClassifier;                                
+                                List<Map<CsmTemplateParameter, CsmSpecializationParameter>> maps = mapping.getMaps(new MapHierarchy.NonEmptyFilter());
+                                
+                                for (int i = maps.size() - 1; i > 0; i--) {
+                                    instantiate = ip.instantiate((CsmTemplate) instantiate, variableFile, variableStartOffset, maps.get(i), false);
+                                }
+                                if (!maps.isEmpty()) {
+                                    instantiate = ip.instantiate((CsmTemplate) originalClassifier, variableFile, variableStartOffset, maps.get(0));
+                                }
+                                
                                 if (CsmKindUtilities.isClassifier(instantiate)) {
                                     originalClassifier = (CsmClassifier) instantiate;
                                 }

@@ -133,6 +133,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.ParserError;
 import org.netbeans.modules.cnd.modelimpl.parser.symtab.*;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.CharSequences;
 
 /**
@@ -987,7 +988,7 @@ public class CppParserActionImpl implements CppParserActionEx {
                         builder = new FunctionBuilder(declBuilder);
                     } else {
                         CharSequence name = declBuilder.getDeclaratorBuilder().getName();
-                        if(name != null && !name.toString().contains("::")) { //NOI18N
+                        if(name != null && CharSequenceUtils.indexOf(name,"::") < 0) { //NOI18N
                             builder = new VariableBuilder(declBuilder);
                         } else {
                             builder = new VariableDefinitionImpl.VariableDefinitionBuilder(declBuilder);
@@ -2575,7 +2576,7 @@ public class CppParserActionImpl implements CppParserActionEx {
             declaratorBuilder.setName(newName);
             declaratorBuilder.setNameBuilder(nameBuilder);
             declBuilder.setTypeBuilder(null);
-            if(newName != null && newName.toString().contains("~")) { // NOI18N
+            if(newName != null && CharSequenceUtils.indexOf(newName, "~") >= 0) { // NOI18N
                 assert false : "Unexpected name for DeclBuilder " + declBuilder + " - " + newName;
                 declBuilder.setDestructor();
             } else {
@@ -2912,7 +2913,7 @@ public class CppParserActionImpl implements CppParserActionEx {
             CharSequence name = declBuilder.getDeclaratorBuilder().getName();
                 
             if(declBuilder.isFriend()) {
-                if(name != null && !name.toString().contains("::")) { //NOI18N
+                if(name != null && CharSequenceUtils.indexOf(name,"::") < 0) { //NOI18N
                     builder = new FriendFunctionDDBuilder();
                 } else {
                     builder = new FriendFunctionDefinitionBuilder();
@@ -2954,7 +2955,7 @@ public class CppParserActionImpl implements CppParserActionEx {
                 throw new MyRecognitionException("Unexpected empty name at '"+token.getText()+"'", token); // NOI18N
             }
             FunctionBuilder builder;
-            if(name != null && !name.toString().contains("::")) { //NOI18N
+            if(name != null && CharSequenceUtils.indexOf(name,"::") < 0) { //NOI18N
                 builder = new FunctionDDBuilder();
             } else {
                 if(declBuilder.isConstructor()) {
@@ -3475,7 +3476,7 @@ public class CppParserActionImpl implements CppParserActionEx {
             NameBuilder nameBuilder = (NameBuilder) top;
             APTToken aToken = (APTToken) token;
             CharSequence part = aToken.getTextID();
-            nameBuilder.addNamePart(CharSequences.create("operator " + part)); // NOI18N
+            nameBuilder.addNamePart(CharSequences.create(CharSequenceUtils.concatenate("operator ", part))); // NOI18N
         }        
     }
     @Override public void end_operator_id(Token token) {}

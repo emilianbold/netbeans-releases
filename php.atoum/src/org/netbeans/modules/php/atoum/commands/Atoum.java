@@ -42,7 +42,6 @@
 package org.netbeans.modules.php.atoum.commands;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -54,6 +53,8 @@ import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.input.InputProcessor;
+import org.netbeans.api.extexecution.input.InputProcessors;
+import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.executable.PhpExecutable;
@@ -95,7 +96,7 @@ public final class Atoum {
     public static final String BOOTSTRAP_FILE_NAME = ".bootstrap.atoum.php"; // NOI18N
     public static final String CONFIGURATION_FILE_NAME = ".atoum.php"; // NOI18N
 
-    public static final Pattern LINE_PATTERN = Pattern.compile("([^:]+):(\\d+)"); // NOI18N
+    public static final Pattern LINE_PATTERN = Pattern.compile("(.+):(\\d+)"); // NOI18N
 
     private static final String ATOUM_PROJECT_FILE_PATH = "vendor/atoum/atoum/bin/atoum"; // NOI18N
 
@@ -272,10 +273,11 @@ public final class Atoum {
     }
 
     private ExecutionDescriptor getDescriptor() {
-        return PhpExecutable.DEFAULT_EXECUTION_DESCRIPTOR
+        return new ExecutionDescriptor()
                 .optionsPath(AtoumOptionsPanelController.OPTIONS_PATH)
-                .frontWindowOnError(false)
-                .inputVisible(false);
+                .showProgress(true)
+                .outLineBased(true)
+                .errLineBased(true);
     }
 
     @NbBundle.Messages({
@@ -339,16 +341,17 @@ public final class Atoum {
 
         @Override
         public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
-            return new ParsingProcessor(testSession);
+            return InputProcessors.bridge(new ParsingProcessor(testSession));
         }
 
     }
 
-    private static final class ParsingProcessor implements InputProcessor {
+    private static final class ParsingProcessor implements LineProcessor {
 
         private static final Logger LOGGER = Logger.getLogger(ParsingProcessor.class.getName());
 
         private final TestSession testSession;
+        private final StringBuilder buffer = new StringBuilder();
 
         private String testSuiteName = null;
         private TestSuite testSuite = null;
@@ -366,9 +369,39 @@ public final class Atoum {
         }
 
         @Override
-        public void processInput(char[] chars) throws IOException {
-            String input = new String(chars);
-            LOGGER.log(Level.FINEST, "Processing input {0}", input);
+        public void processLine(String line) {
+            LOGGER.log(Level.FINEST, "Processing line: {0}", line);
+            if (TapParser.isTestCaseStart(line)) {
+                process(buffer.toString());
+                buffer.setLength(0);
+            }
+            buffer.append(line);
+            buffer.append("\n"); // NOI18N
+        }
+
+        @Override
+        public void reset() {
+            LOGGER.fine("Resetting processor");
+            finish();
+        }
+
+        @Override
+        public void close() {
+            LOGGER.fine("Closing processor");
+            finish();
+        }
+
+        private void finish() {
+            process(buffer.toString());
+            if (testSuite != null) {
+                LOGGER.log(Level.FINE, "Test suite {0} found, finishing", testSuiteName);
+                testSuite.finish(testSuiteTime);
+                testSuite = null;
+            }
+        }
+
+        private void process(String input) {
+            LOGGER.log(Level.FINEST, "Parsing input:\n{0}", input);
             List<TestSuiteVo> suites = new TapParser()
                     .parse(input, currentMillis() - currentMillis);
             LOGGER.log(Level.FINE, "Parsed test suites: {0}", suites);
@@ -379,21 +412,6 @@ public final class Atoum {
                 LOGGER.log(Level.WARNING, null, throwable);
             }
             currentMillis = currentMillis();
-        }
-
-        @Override
-        public void reset() throws IOException {
-            // noop
-        }
-
-        @Override
-        public void close() throws IOException {
-            LOGGER.fine("Closing processor");
-            if (testSuite != null) {
-                LOGGER.log(Level.FINE, "Test suite {0} found, finishing", testSuiteName);
-                testSuite.finish(testSuiteTime);
-                testSuite = null;
-            }
         }
 
         private void process(List<TestSuiteVo> suites) {

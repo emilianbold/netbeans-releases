@@ -68,7 +68,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
  */
 public final class ForwardEnum extends EnumImpl {
 
-    private ForwardEnum(String name, String qName, boolean stronglyTyped, CsmFile file, int start, int end) {
+    private ForwardEnum(CharSequence name, CharSequence qName, boolean stronglyTyped, CsmFile file, int start, int end) {
         super(name, qName, stronglyTyped, file, start, end);
     }
 
@@ -76,7 +76,7 @@ public final class ForwardEnum extends EnumImpl {
         return cls instanceof ForwardEnum;
     }
 
-    public static ForwardEnum createIfNeeded(String name, CsmFile file, AST ast, int start, int end, CsmScope scope, boolean registerInProject) {
+    public static ForwardEnum createIfNeeded(CharSequence name, CsmFile file, AST ast, int start, int end, CsmScope scope, boolean registerInProject) {
         ForwardEnum fwd = new ForwardEnum(name, name, EnumImpl.isStronglyTypedEnum(ast), file, start, end);
         fwd.initQualifiedName(scope);
         fwd.setTemplateDescriptor(TemplateDescriptor.createIfNeeded(ast, file, scope, registerInProject));

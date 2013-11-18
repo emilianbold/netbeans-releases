@@ -63,13 +63,13 @@ CND_PACKAGE_DIR_MacOSX-x86=dist/MacOSX-x86/GNU-MacOSX/package
 CND_PACKAGE_NAME_MacOSX-x86=libBuildTrace.dylib.tar
 CND_PACKAGE_PATH_MacOSX-x86=dist/MacOSX-x86/GNU-MacOSX/package/libBuildTrace.dylib.tar
 # MacOSX-x86_64 configuration
-CND_PLATFORM_MacOSX-x86_64=GNU-MacOSX
-CND_ARTIFACT_DIR_MacOSX-x86_64=dist/MacOSX-x86_64/GNU-MacOSX
-CND_ARTIFACT_NAME_MacOSX-x86_64=libBuildTrace.dylib
-CND_ARTIFACT_PATH_MacOSX-x86_64=dist/MacOSX-x86_64/GNU-MacOSX/libBuildTrace.dylib
-CND_PACKAGE_DIR_MacOSX-x86_64=dist/MacOSX-x86_64/GNU-MacOSX/package
-CND_PACKAGE_NAME_MacOSX-x86_64=libBuildTrace.dylib.tar
-CND_PACKAGE_PATH_MacOSX-x86_64=dist/MacOSX-x86_64/GNU-MacOSX/package/libBuildTrace.dylib.tar
+CND_PLATFORM_MacOSX-x86_64=GNU-Solaris-x86
+CND_ARTIFACT_DIR_MacOSX-x86_64=dist/MacOSX-x86_64/GNU-Solaris-x86
+CND_ARTIFACT_NAME_MacOSX-x86_64=libBuildTrace.so
+CND_ARTIFACT_PATH_MacOSX-x86_64=dist/MacOSX-x86_64/GNU-Solaris-x86/libBuildTrace.so
+CND_PACKAGE_DIR_MacOSX-x86_64=dist/MacOSX-x86_64/GNU-Solaris-x86/package
+CND_PACKAGE_NAME_MacOSX-x86_64=libBuildTrace.so.tar
+CND_PACKAGE_PATH_MacOSX-x86_64=dist/MacOSX-x86_64/GNU-Solaris-x86/package/libBuildTrace.so.tar
 #
 # include compiler specific variables
 #

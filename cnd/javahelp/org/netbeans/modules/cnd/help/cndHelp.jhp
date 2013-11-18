@@ -107,6 +107,7 @@
 				<file title="TypeView.html"/>
 				<file title="UsagesWindow.html"/>
 				<file title="UsingAbbreviations.html"/>
+				<file title="UsingBreadcrumbs.html"/>
 				<file title="UsingCallGraph.html"/>
 				<file title="UsingClassView.html"/>
 				<file title="UsingCodeCompletion.html"/>
@@ -329,6 +330,7 @@
 				<file title="AddingUnitTests.html"/>
 				<file title="CandC++BuildingTasks.html"/>
 				<file title="CodeAssistance.html"/>
+				<file title="CodeAssistanceCache.html"/>
 				<file title="CodeAssistanceWizardP1.html"/>
 				<file title="CodeAssistanceWizardP2.html"/>
 				<file title="CodeAssistanceWizardP3.html"/>
@@ -353,6 +355,11 @@
 				<file title="NewBinaryWizardP2.html"/>
 				<file title="NewDynamicLibWizard.html"/>
 				<file title="NewMakeWizardP0.html"/>
+				<file title="NewMakeWizardP1.html"/>
+				<file title="NewMakeWizardP2.html"/>
+				<file title="NewMakeWizardP3.html"/>
+				<file title="NewMakeWizardP4.html"/>
+				<file title="NewMakeWizardP5.html"/>
 				<file title="NewRemoteDevelopmentHostWizardP1.html"/>
 				<file title="NewRemoteDevelopmentHostWizardP2.html"/>
 				<file title="NewRemoteDevelopmentHostWizardP3.html"/>
@@ -370,6 +377,7 @@
 				<file title="ProjectPropsRequired.html"/>
 				<file title="ProjectPropsRunning.html"/>
 				<file title="ProjectTasks.html"/>
+				<file title="PublicPrivateProperties.html"/>
 				<file title="RemoteDevelopment.html"/>
 				<file title="RemoteDevelopmentConfigureHost.html"/>
 				<file title="RemoteDevelopmentFileSharing.html"/>

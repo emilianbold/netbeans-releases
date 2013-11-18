@@ -152,7 +152,7 @@ public class HelperUtility {
                         if (channel == null) {
                             return null;
                         }
-                        Object activityID = RemoteStatistics.stratChannelActivity("UploadHelperUtility", channel, localFile.getAbsolutePath()); // NOI18N
+                        RemoteStatistics.ActivityID activityID = RemoteStatistics.startChannelActivity("UploadHelperUtility", localFile.getAbsolutePath()); // NOI18N
                         long remoteSize = -1;
                         try {
                             channel.connect();

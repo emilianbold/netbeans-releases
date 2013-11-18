@@ -76,12 +76,12 @@ public class SourcesNodeFactory implements NodeFactory {
     @Override
     public NodeList<?> createNodes(Project project) {
         NbMavenProjectImpl prj = project.getLookup().lookup(NbMavenProjectImpl.class);
-        return  new NList(prj);
+        return new NList(prj);
     }
     
     private static class NList extends AbstractMavenNodeList<SourceGroup> implements ChangeListener {
         private static final RequestProcessor RP = new RequestProcessor(SourcesNodeFactory.NList.class);
-        private NbMavenProjectImpl project;
+        private final NbMavenProjectImpl project;
         private NList(NbMavenProjectImpl prj) {
             project = prj;
         }

@@ -58,6 +58,7 @@ import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 
 /**
  * CsmEnumerator implementation
@@ -132,7 +133,7 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
     @Override
     public CharSequence getQualifiedName() {
         CsmEnum e = _getEnumeration();
-        return CharSequences.create(e.getQualifiedName() + "::" + getQualifiedNamePostfix()); // NOI18N
+        return CharSequences.create(CharSequenceUtils.concatenate(e.getQualifiedName(), "::", getQualifiedNamePostfix())); // NOI18N
     }
 
     private synchronized CsmEnum _getEnumeration() {

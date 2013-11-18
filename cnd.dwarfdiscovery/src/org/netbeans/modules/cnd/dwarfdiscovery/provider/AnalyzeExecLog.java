@@ -82,7 +82,6 @@ import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -95,6 +94,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
     private Map<String, ProviderProperty> myProperties = new LinkedHashMap<String, ProviderProperty>();
     public static final String EXEC_LOG_KEY = "exec-log-file"; // NOI18N
     public static final String EXEC_LOG_PROVIDER_ID = "exec-log"; // NOI18N
+    private static final String CYG_DRIVE = "/cygdrive/"; // NOI18N
 
     public AnalyzeExecLog() {
         clean();
@@ -640,28 +640,50 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
             addSource(compiler, language, iterator, compilePath, storage, null);
         }
         
+        private String convertCygwinPath(String path) {
+            if (Utilities.isWindows()) {
+                if (path.startsWith(CYG_DRIVE) && path.length() >= CYG_DRIVE.length()+2 && path.charAt(CYG_DRIVE.length()+1) == '/') {
+                    path = path.substring(CYG_DRIVE.length());
+                    path = "" + Character.toUpperCase(path.charAt(0)) + ':' + path.substring(1); // NOI18N
+                }
+            }
+            return path;
+        }
+        
         private void addSource(String compiler, ItemProperties.LanguageKind language, Iterator<String> iterator, String compilePath, CompileLineStorage storage, String cu) {
+            compilePath = convertCygwinPath(compilePath);
             List<String> args = new ArrayList<String>();
             while (iterator.hasNext()) {
                 String next = iterator.next();
-                if (next.startsWith("@")) {
+                if (next.startsWith("@")) {  //NOI18N
                     final String relPath = next.substring(1);
-                    File file;
+                    String filePath;
                     if (CndPathUtilities.isPathAbsolute(relPath)) {
-                        file = new File(relPath);
+                        filePath = relPath;
                     } else {
-                        file = new File(compilePath + "/" + relPath);
+                        filePath = compilePath + "/" + relPath;  //NOI18N
                     }
-                    FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+                    FileObject fo = fileSystem.findResource(filePath);
                     if (fo != null && fo.isValid()) {
                         List<String> lines;
                         try {
                             lines = fo.asLines();
                             if (lines != null && lines.size() > 0) {
                                 next = lines.get(0).trim();
+                                List<String> additional = DiscoveryUtils.scanCommandLine(next, DiscoveryUtils.LogOrigin.DwarfCompileLine);
+                                for(String option : additional) {
+                                    if (option.startsWith("'") && option.endsWith("'") || // NOI18N
+                                        option.startsWith("\"") && option.endsWith("\"")){ // NOI18N
+                                        if (option.length() >= 2) {
+                                            option = option.substring(1,option.length()-1);
+                                        }
+                                    }
+                                    args.add(option);
+                                }
                               }
                         } catch (IOException ex) {
                         }
+                        continue;
                     }
                 }
                 args.add(next);
@@ -694,6 +716,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                             }
                         }
                     }
+                    s = convertCygwinPath(s);
                     userIncludes.add(PathCache.getString(s));
                 }
                 Map<String, String> userMacros = new HashMap<String, String>(artifacts.userMacros.size());
@@ -714,6 +737,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                             }
                         }
                     }
+                    what = convertCygwinPath(what);
                     fullName = what;
                     sourceName = DiscoveryUtils.getRelativePath(compilePath, what);
                 } else {

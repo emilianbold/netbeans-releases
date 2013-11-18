@@ -22,6 +22,7 @@ AS=as
 
 # Macros
 CND_PLATFORM=OracleSolarisStudio-Solaris-Sparc
+CND_DLIB_EXT=so
 CND_CONF=SunOS-sparc
 CND_DISTDIR=dist
 CND_BUILDDIR=build
@@ -55,11 +56,11 @@ LDLIBSOPTIONS=
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libBuildTrace.so
+	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libBuildTrace.${CND_DLIB_EXT}
 
-${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libBuildTrace.so: ${OBJECTFILES}
+${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libBuildTrace.${CND_DLIB_EXT}: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
-	${LINK.c} -G -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libBuildTrace.so -s -KPIC -h libBuildTrace.so ${OBJECTFILES} ${LDLIBSOPTIONS} 
+	${LINK.c} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libBuildTrace.${CND_DLIB_EXT} ${OBJECTFILES} ${LDLIBSOPTIONS} -G -s -KPIC -h libBuildTrace.${CND_DLIB_EXT}
 
 ${OBJECTDIR}/execint.o: execint.c 
 	${MKDIR} -p ${OBJECTDIR}
@@ -71,7 +72,7 @@ ${OBJECTDIR}/execint.o: execint.c
 # Clean Targets
 .clean-conf: ${CLEAN_SUBPROJECTS}
 	${RM} -r ${CND_BUILDDIR}/${CND_CONF}
-	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libBuildTrace.so
+	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libBuildTrace.${CND_DLIB_EXT}
 
 # Subprojects
 .clean-subprojects:

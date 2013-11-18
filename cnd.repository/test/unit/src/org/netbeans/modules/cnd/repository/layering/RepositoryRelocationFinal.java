@@ -138,6 +138,7 @@ public class RepositoryRelocationFinal extends TraceModelTestBase {
             File dump1 = new File(projectSrcRoot1.getParentFile(), "dump.dat");
             File dump2 = new File(projectSrcRoot2.getParentFile(), "dump.dat");
 
+            removeDirectory(projectSrcRoot2.getParentFile());
             copyDirectory(projectSrcRoot1.getParentFile(), projectSrcRoot2.getParentFile());
 
             parseProject(projectSrcRoot2, dump2);

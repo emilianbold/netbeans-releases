@@ -78,6 +78,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
+import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
@@ -85,6 +86,7 @@ import org.netbeans.modules.cnd.api.toolchain.ToolKind;
 import org.netbeans.modules.cnd.toolchain.compilerset.APIAccessor;
 import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
+import org.netbeans.modules.cnd.toolchain.compilerset.CompilerFlavorImpl;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.remote.api.ui.FileChooserBuilder;
@@ -306,8 +308,14 @@ import org.openide.util.Utilities;
         btFortranBrowse.setVisible(!isUrl);
         btMakeBrowse.setVisible(!isUrl);
         btQMakeBrowse.setVisible(!isUrl);
-
-        lbFamilyValue.setText(cs.getCompilerFlavor().toString());
+        
+        lbFamilyValue.setText(cs.getDisplayName());
+        //final CompilerFlavor compilerFlavor = cs.getCompilerFlavor();
+        //if (compilerFlavor instanceof CompilerFlavorImpl) {
+        //    lbFamilyValue.setText(((CompilerFlavorImpl)compilerFlavor).getDisplayName());
+        //} else {
+        //    lbFamilyValue.setText(compilerFlavor.toString());
+        //}
     }
 
     void changeCompilerSet(CompilerSet cs) {

@@ -92,7 +92,11 @@ public final class NbProxySelector extends ProxySelector {
                 res = Collections.singletonList (Proxy.NO_PROXY);
                 break;
             case ProxySettings.AUTO_DETECT_PROXY:
-                if (!useSystemProxies ()) {                    
+                if (useSystemProxies ()) {
+                    if (original != null) {
+                        res = original.select(uri);                   
+                    }
+                } else {                    
                     String protocol = uri.getScheme ();
                     assert protocol != null : "Invalid scheme of uri " + uri + ". Scheme cannot be null!";
                     if (dontUseProxy (ProxySettings.getSystemNonProxyHosts(), uri.getHost ())) {
@@ -161,7 +165,11 @@ public final class NbProxySelector extends ProxySelector {
                 res.add (Proxy.NO_PROXY);
                 break;
             case ProxySettings.AUTO_DETECT_PAC:
-                if (!useSystemProxies ()) {
+                if (useSystemProxies ()) {
+                    if (original != null) {
+                        res = original.select(uri);                   
+                    }
+                } else {
                     ProxyAutoConfig pac = ProxyAutoConfig.get(getPacFile());
                     assert pac != null : "Instance of ProxyAutoConfig found for " + getPacFile();
                     if (pac == null) {

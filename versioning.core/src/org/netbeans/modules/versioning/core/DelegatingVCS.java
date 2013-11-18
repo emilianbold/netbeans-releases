@@ -330,7 +330,9 @@ public class DelegatingVCS extends VersioningSystem implements VCSSystemProvider
             }
             
             while(parent != null) {
-                final boolean metadataFolder = VCSFileProxy.createFileProxy(parent, folderName).exists();
+                // is the folder a special one where metadata should not be looked for?
+                boolean forbiddenFolder = org.netbeans.modules.versioning.core.util.Utils.isForbiddenFolder(parent);
+                final boolean metadataFolder = !forbiddenFolder && VCSFileProxy.createFileProxy(parent, folderName).exists();
                 if(metadataFolder) {
                     VersioningManager.LOG.log(
                             Level.FINER, 

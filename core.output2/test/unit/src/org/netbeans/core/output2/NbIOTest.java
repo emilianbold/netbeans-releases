@@ -45,9 +45,12 @@
 package org.netbeans.core.output2;
 
 import java.awt.Color;
+import java.awt.EventQueue;
 import java.io.IOException;
 import java.io.Reader;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Random;
+import java.util.concurrent.Semaphore;
 import static junit.framework.Assert.assertEquals;
 import junit.framework.TestCase;
 import org.openide.util.Exceptions;
@@ -316,5 +319,57 @@ public class NbIOTest extends TestCase {
         io.getOut().println("abcdef\t\t\b\b\b\b\th");
         io.dispose();
         io.closeInputOutput();
+    }
+
+    /**
+     * Test for bug 236128 - Dead lock after some clean in output log.
+     *
+     * This is not a good example of simulation of deadlock, but adding some
+     * synchronization points to the code could affect performance, which is
+     * something that should be prevented, if possible, in output window.
+     *
+     * @throws java.lang.InterruptedException
+     * @throws java.lang.reflect.InvocationTargetException
+     */
+    public void testBug236128() throws InterruptedException,
+            InvocationTargetException {
+
+        for (int i = 0; i < 10; i++) {
+            final NbIO io[] = new NbIO[1];
+
+            EventQueue.invokeAndWait(new Runnable() {
+                @Override
+                public void run() {
+                    io[0] = (NbIO) NbIOProvider.getDefault().getIO("Test", false);
+                    io[0].setInputVisible(true);
+                    io[0].getIn();
+                }
+            });
+            assertNotNull(io[0]);
+
+            Thread t = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    for (int i = 0; i < 1000; i++) {
+                        io[0].getOut().println("Test from thread t");
+                    }
+                }
+            });
+
+            final Semaphore s = new Semaphore(0);
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    io[0].getOut().println("Test from EDT");
+                    io[0].getIOContainer().open();
+                    io[0].reset();
+                    s.release();
+                }
+            });
+            t.start();
+            s.acquire();
+            t.join();
+            io[0].closeInputOutput();
+        }
     }
 }

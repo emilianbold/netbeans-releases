@@ -66,16 +66,11 @@ public abstract class AbstractKey implements Key, SelfPersistent, KeyDataPresent
     @Override
     public abstract int hashCode();
 
+    /**
+     * must be implemented in child
+     */
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null || (this.getClass() != obj.getClass())) {
-            return false;
-        }
-        return true;
-    }
+    public abstract boolean equals(Object obj);
 
     @Override
     public Key.Behavior getBehavior() {
@@ -86,7 +81,7 @@ public abstract class AbstractKey implements Key, SelfPersistent, KeyDataPresent
     public boolean hasCache() {
         return false;
     }
-    
+
     @Override
     public abstract int getSecondaryAt(int level);
 
@@ -106,20 +101,10 @@ public abstract class AbstractKey implements Key, SelfPersistent, KeyDataPresent
     public abstract int getDepth();
 
     @Override
-    public KeyDataPresentation getDataPresentation() {
-        return this;
-    }
-
-    @Override
     public int getFilePresentation() {
         return -1;
     }
     
-    @Override
-    public short getKindPresentation() {
-        return -1;
-    }
-
     @Override
     public CharSequence getNamePresentation() {
         return CharSequences.empty();

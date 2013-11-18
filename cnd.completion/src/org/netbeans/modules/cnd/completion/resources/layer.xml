@@ -66,6 +66,10 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="160"/>
                     </file>
 
+                    <file name="org-netbeans-modules-cnd-completion-overridemethod-CsmOverrideMethodCompletionProvider.instance">
+                        <attr name="position" intvalue="170"/>
+                    </file>
+
                     <file name="org-netbeans-lib-editor-codetemplates-CodeTemplateCompletionProvider.instance">
                         <attr name="position" intvalue="200"/>
                     </file>
@@ -122,8 +126,16 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="150"/>
                     </file>
 
-                    <file name="org-netbeans-modules-cnd-completion-preprocessor-CsmPreprocessorDirectiveCompletionProvider.instance">
+                    <file name="org-netbeans-modules-cnd-completion-implmethod-CsmImplementsMethodCompletionProvider.instance">
                         <attr name="position" intvalue="160"/>
+                    </file>
+
+                    <file name="org-netbeans-modules-cnd-completion-overridemethod-CsmOverrideMethodCompletionProvider.instance">
+                        <attr name="position" intvalue="170"/>
+                    </file>
+
+                    <file name="org-netbeans-modules-cnd-completion-preprocessor-CsmPreprocessorDirectiveCompletionProvider.instance">
+                        <attr name="position" intvalue="180"/>
                     </file>
 
                     <file name="org-netbeans-lib-editor-codetemplates-CodeTemplateCompletionProvider.instance">

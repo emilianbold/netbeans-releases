@@ -51,26 +51,35 @@ made subject to such option by the copyright holder.
         <system_include_paths flags="-x c++ -E -v" parser="GNU"/>
         <system_macros flags="-x c++ -E -dM" parser="GNU">
             <macro stringvalue="__STDC__=1"/>
-            <macro stringvalue="_OPENMP=200505" flags="-fopenmp"/>
+            
+            <macro stringvalue="_REENTRANT=1" flags="-fopenmp"/>
+            <macro stringvalue="_PTHREADS=1" flags="-fopenmp"/>
+            <macro stringvalue="_OPENMP=200805" flags="-fopenmp"/>
+            
             <macro stringvalue="__SSP__=1" flags="-fstack-protector"/>
             <macro stringvalue="__SSP_ALL__=2" flags="-fstack-protector-all"/>
-            <macro stringvalue="__NO_INLINE__" flags="-fno-inline"/>
             
             <macro stringvalue="__pic__=1" flags="-fpic"/>
             <macro stringvalue="__PIC__=1" flags="-fpic"/>
+            <macro stringvalue="__GCC_HAVE_DWARF2_CFI_ASM=1" flags="-fpic" hide="true"/>
             <macro stringvalue="__pic__=2" flags="-fPIC"/>
             <macro stringvalue="__PIC__=2" flags="-fPIC"/>
+            <macro stringvalue="__GCC_HAVE_DWARF2_CFI_ASM=1" flags="-fPIC" hide="true"/>
             
             <macro stringvalue="__pie__=1" flags="-fpie"/>
             <macro stringvalue="__PIE__=1" flags="-fpie"/>
             <macro stringvalue="__pic__=1" flags="-fpie"/>
             <macro stringvalue="__PIC__=1" flags="-fpie"/>
+            <macro stringvalue="__GCC_HAVE_DWARF2_CFI_ASM=1" flags="-fpie" hide="true"/>
             <macro stringvalue="__pie__=2" flags="-fPIE"/>
             <macro stringvalue="__PIE__=2" flags="-fPIE"/>
             <macro stringvalue="__pic__=2" flags="-fPIE"/>
             <macro stringvalue="__PIC__=2" flags="-fPIE"/>
+            <macro stringvalue="__GCC_HAVE_DWARF2_CFI_ASM=1" flags="-fPIE" hide="true"/>
             
             <macro stringvalue="__EXCEPTIONS" flags="-fno-exceptions" hide="true"/>
+            <macro stringvalue="__GCC_HAVE_DWARF2_CFI_ASM" flags="-fno-exceptions" hide="true"/>
+            
             <macro stringvalue="__GXX_RTTI" flags="-fno-rtti" hide="true"/>
             
             <macro stringvalue="__GXX_EXPERIMENTAL_CXX0X__" flags="-std=c++0x"/>
@@ -86,6 +95,12 @@ made subject to such option by the copyright holder.
             
             <macro stringvalue="__GXX_EXPERIMENTAL_CXX0X__" flags="-std=gnu++11"/>
             <macro stringvalue="__GXX_EXPERIMENTAL_CXX11__" flags="-std=gnu++11"/>
+            
+            <macro stringvalue="_OPTIMIZE__=1" flags="-O3"/>
+            <macro stringvalue="__NO_INLINE__" flags="-O3" hide="true"/>
+
+            <macro stringvalue="_REENTRANT=1" flags="-pthreads"/>
+            <macro stringvalue="_PTHREADS=1" flags="-pthreads"/>
         </system_macros>
         <user_include flags="-I"/>
         <user_macro flags="-D"/>
@@ -116,7 +131,7 @@ made subject to such option by the copyright holder.
             <cpp11 flags="-std=c++11"/>
         </cpp_standard>
         <output_object_file flags="-o " />
-        <dependency_generation flags="-MMD -MP -MF $@.d" />
-        <precompiled_header flags="-o $@" suffix=".gch" append="true" />
+        <dependency_generation flags="-MMD -MP -MF &quot;$@.d&quot;" />
+        <precompiled_header flags="-o &quot;$@&quot;" suffix=".gch" append="true" />
     </cpp>
 </toolchaindefinition>

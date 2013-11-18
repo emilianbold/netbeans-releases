@@ -52,7 +52,6 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.lexer.EmbeddedTokenList;
-import org.netbeans.lib.lexer.EmbeddingContainer;
 import org.netbeans.lib.lexer.TokenList;
 
 /**
@@ -98,7 +97,7 @@ implements TokenOrEmbedding<T> {
     
     AbstractToken(T id, int rawOffset) {
         this.id = id;
-        this.rawOffset = rawOffset;
+        setRawOffset(rawOffset);
     }
     
     /**
@@ -140,6 +139,9 @@ implements TokenOrEmbedding<T> {
      * @param rawOffset new raw offset.
      */
     public final void setRawOffset(int rawOffset) {
+//        if (rawOffset < -1) { // -1 is default value
+//            throw new IllegalArgumentException("Invalid rawOffset=" + rawOffset);
+//        }
         this.rawOffset = rawOffset;
     }
 
@@ -164,10 +166,15 @@ implements TokenOrEmbedding<T> {
 
     @Override
     public int offset(TokenHierarchy<?> tokenHierarchy) {
-        if (tokenList != null) {
-            if (tokenList.getClass() == EmbeddedTokenList.class) // Sync status first
-                ((EmbeddedTokenList)tokenList).embeddingContainer().updateStatus();
-            return tokenList.tokenOffset(this);
+        TokenList<T> tList = tokenList;
+        if (tList != null) {
+            TokenList<?> rootTokenList = tList.rootTokenList();
+            synchronized (rootTokenList) {
+                if (tList.getClass() == EmbeddedTokenList.class) { // Sync status first
+                    ((EmbeddedTokenList)tList).updateModCount();
+                }
+                return tList.tokenOffset(this);
+            }
         }
         return rawOffset; // Covers the case of flyweight token that will return -1
 //        if (tokenHierarchy != null) {
@@ -201,24 +208,41 @@ implements TokenOrEmbedding<T> {
     }
 
     // Implements TokenOrEmbedding
+    @Override
     public final AbstractToken<T> token() {
         return this;
     }
     
     // Implements TokenOrEmbedding
-    public final EmbeddingContainer<T> embedding() {
+    @Override
+    public final EmbeddedTokenList<T,?> embedding() {
         return null;
     }
 
     @Override
     public boolean isRemoved() {
-        if (tokenList != null) {
-            if (tokenList.getClass() == EmbeddedTokenList.class)
-                ((EmbeddedTokenList)tokenList).embeddingContainer().updateStatus();
-            return tokenList.isRemoved();
+        TokenList<T> tList = tokenList;
+        if (tList != null) { // Flyweight tokens classify as removed
+            return (tList.getClass() == EmbeddedTokenList.class) &&
+                    tList.isRemoved(); // ETL's impl should allow non-synced access
         }
         return !isFlyweight();
     }
+    
+    /**
+     * Check whether a default embedding creation was attempted but it was unsuccessful.
+     * @return true if a default embedding creation was attempted but it was unsuccessful.
+     */
+    public abstract boolean isNoDefaultEmbedding();
+    
+    /**
+     * Mark the token to not contain a default embedding.
+     *
+     * @return null if the marking finished successfully or a token instance
+     * that supports marking (caller must replace the original token in the token list
+     * with the returned token).
+     */
+    public abstract AbstractToken<T> markNoDefaultEmbedding();
 
     public String dumpInfo() {
         return dumpInfo(null, null, true, true, 0).toString();

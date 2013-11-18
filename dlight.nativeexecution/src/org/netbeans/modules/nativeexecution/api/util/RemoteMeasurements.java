@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.nativeexecution.api.util;
 
-import com.jcraft.jsch.Channel;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Collections;
@@ -53,7 +52,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-public final class RemoteMeasurements {
+/*package*/ final class RemoteMeasurements {
 
     private static final ConcurrentHashMap<Integer, String> stacks = new ConcurrentHashMap<Integer, String>();
     // [stackid-category-args]-to-statistics
@@ -62,13 +61,13 @@ public final class RemoteMeasurements {
     private final AtomicLong downTraffic = new AtomicLong();
     private final String name;
     private final long startWallTime;
-
+    
     RemoteMeasurements(String name) {
-        this.name = name;
+        this.name = "'" + name + "'"; // NOI18N
         startWallTime = System.currentTimeMillis();
     }
 
-    public Object stratChannelActivity(CharSequence category, Channel channel, CharSequence... args) {
+    public RemoteStatistics.ActivityID startChannelActivity(CharSequence category, CharSequence... args) {
         Stat stat = new Stat(category, args);
         int hashCode = stat.hashCode();
         Stat prevStat = stats.putIfAbsent(hashCode, stat);
@@ -81,10 +80,15 @@ public final class RemoteMeasurements {
     }
 
     public void stopChannelActivity(Object activityID) {
+        stopChannelActivity(activityID, 0);
+    }
+
+    public void stopChannelActivity(Object activityID, long supposedTraffic) {
         StatKey key = (StatKey) activityID;
         Stat stat = stats.get(key.statID);
         assert stat != null;
         stat.deltaTime.addAndGet(System.currentTimeMillis() - key.startTime);
+        stat.supposedTraffic.addAndGet(supposedTraffic);
     }
 
     void dump(PrintStream out) {
@@ -94,13 +98,13 @@ public final class RemoteMeasurements {
             dumpCategoriesArgsStatistics(out);
             dumpCategoriesStacksStatistics(out);
         } finally {
-            out.println("Total wall time '" + name + "' [ms]: " + (System.currentTimeMillis() - startWallTime)); // NOI18N
+            out.printf("Total wall time 20%s [ms]: %8d\n", name,  System.currentTimeMillis() - startWallTime); // NOI18N
         }
     }
 
     private void dumpTrafficStatistics(PrintStream out) {
-        out.println("Upload traffic '" + name + "' [bytes]: " + upTraffic.get()); // NOI18N
-        out.println("Download traffic '" + name + "' [bytes]: " + downTraffic.get()); // NOI18N
+        out.printf("Upload traffic   %20s [bytes]: %10d\n", name, upTraffic.get()); // NOI18N
+        out.printf("Download traffic %20s [bytes]: %10d\n", name, downTraffic.get()); // NOI18N
     }
 
     private void dumpCategoriesArgsStatistics(PrintStream out) {
@@ -114,12 +118,11 @@ public final class RemoteMeasurements {
                 data.put(id, counters);
             }
 
-            counters.cnt1.addAndGet(stat.count.get());
-            counters.cnt2.addAndGet(stat.deltaTime.get());
+            counters.add(stat);
         }
 
-        out.println("== Arguments statistics start =="); // NOI18N
-        out.println("Category|Count|Time|Args"); // NOI18N
+        out.printf("== Arguments statistics start ==\n"); // NOI18N
+        out.printf("%20s|%8s|%8s|%10s|%s\n", "Category", "Count", "Time", "~Traffic", "Args"); // NOI18N
 
         LinkedList<Map.Entry<String, Counters>> dataList = new LinkedList<Map.Entry<String, Counters>>(data.entrySet());
         Collections.sort(dataList, new CategoriesStatComparator());
@@ -128,10 +131,10 @@ public final class RemoteMeasurements {
             String cat = entry.getKey();
             int idx = cat.indexOf('%');
             Counters cnts = entry.getValue();
-            out.println(cat.substring(0, idx) + "|" + cnts.cnt1 + "|" + cnts.cnt2 + "|" + cat.substring(idx + 1)); // NOI18N
+            out.printf("%20s|%8d|%8d|%10d|%s\n",  cat.substring(0, idx), cnts.count.get(), cnts.time.get(), cnts.supposedTraffic.get(), cat.substring(idx + 1)); // NOI18N
         }
 
-        out.println("== Arguments statistics end =="); // NOI18N
+        out.printf("== Arguments statistics end ==\n"); // NOI18N
     }
 
     private void dumpCategoriesStacksStatistics(PrintStream out) {
@@ -145,12 +148,11 @@ public final class RemoteMeasurements {
                 data.put(id, counters);
             }
 
-            counters.cnt1.addAndGet(stat.count.get());
-            counters.cnt2.addAndGet(stat.deltaTime.get());
+            counters.add(stat);
         }
 
-        out.println("== Categories stacks statistics start =="); // NOI18N
-        out.println("Category|Count|Time|Stack"); // NOI18N
+        out.printf("== Categories stacks statistics start ==\n"); // NOI18N
+        out.printf("%20s|%8s|%8s|%10s|%s\n", "Category", "Count", "Time", "~Traffic", "Args"); // NOI18N
 
         LinkedList<Map.Entry<String, Counters>> dataList = new LinkedList<Map.Entry<String, Counters>>(data.entrySet());
         Collections.sort(dataList, new CategoriesStatComparator());
@@ -161,14 +163,15 @@ public final class RemoteMeasurements {
             Counters cnts = entry.getValue();
             Integer stackID = Integer.valueOf(cat.substring(0, idx));
             String category = cat.substring(idx + 1);
-            out.println(category + "|" + cnts.cnt1 + "|" + cnts.cnt2 + "|" + stacks.get(stackID)); // NOI18N
+            out.printf("%20s|%8d|%8d|%10d|%s\n", category, cnts.count.get(), cnts.time.get(), cnts.supposedTraffic.get(), stacks.get(stackID)); // NOI18N
         }
 
-        out.println("== Categories stacks statistics end =="); // NOI18N
+        out.printf("== Categories stacks statistics end ==\n"); // NOI18N
     }
 
     private void dumpCategoriesStatistics(PrintStream out) {
         long totalTime = 0;
+        long totalTraffic = 0;
         HashMap<String, Counters> map = new HashMap<String, Counters>();
         for (Stat stat : stats.values()) {
             Counters counters = map.get(stat.category);
@@ -176,21 +179,21 @@ public final class RemoteMeasurements {
                 counters = new Counters();
                 map.put(stat.category, counters);
             }
-            counters.cnt1.addAndGet(stat.count.get());
-            counters.cnt2.addAndGet(stat.deltaTime.get());
-            counters.cnt3.add(Arrays.deepHashCode(stat.args));
+            counters.add(stat);
         }
 
-        out.println("== Categories stat begin =="); // NOI18N
-        out.println("Category|Count|Time|Unique args"); // NOI18N
+        out.printf("== Categories stat begin ==\n"); // NOI18N
+        out.printf("%20s|%8s|%8s|%10s|%s\n", "Category", "Count", "Time", "~Traffic", "Args"); // NOI18N
         for (Map.Entry<String, Counters> entry : map.entrySet()) {
-            long dt = entry.getValue().cnt2.get();
-            out.println(entry.getKey() + "|" + entry.getValue().cnt1 + "|" + dt + "|" + entry.getValue().cnt3.size()); // NOI18N
+            long dt = entry.getValue().time.get();
+            long supposedTraffic = entry.getValue().supposedTraffic.get();
+            out.printf("%20s|%8d|%8d|%s\n", entry.getKey(), entry.getValue().count.get(), dt, supposedTraffic, entry.getValue().args.size()); // NOI18N
             totalTime += dt;
         }
-        out.println("== Categories stat end =="); // NOI18N
+        out.printf("== Categories stat end ==\n"); // NOI18N
 
-        out.println("Total time by all categories [ms]: " + totalTime); // NOI18N
+        out.printf("Total time by all categories [ms]:                %20d\n", totalTime); // NOI18N
+        out.printf("Total supposed traffic by all categories [bytes]: %20d\n", totalTraffic); // NOI18N
     }
 
     private static int getStackID() {
@@ -238,6 +241,7 @@ public final class RemoteMeasurements {
         private final int stackID;
         private final AtomicLong deltaTime = new AtomicLong(0);
         private final AtomicLong count = new AtomicLong(0);
+        private final AtomicLong supposedTraffic = new AtomicLong(0);
 
         public Stat(CharSequence category, CharSequence... args) {
             stackID = getStackID();
@@ -286,9 +290,17 @@ public final class RemoteMeasurements {
 
     private static final class Counters {
 
-        private final AtomicLong cnt1 = new AtomicLong();
-        private final AtomicLong cnt2 = new AtomicLong();
-        private final HashSet<Integer> cnt3 = new HashSet<Integer>();
+        private final AtomicLong count = new AtomicLong();
+        private final AtomicLong time = new AtomicLong();
+        private final AtomicLong supposedTraffic = new AtomicLong();
+        private final HashSet<Integer> args = new HashSet<Integer>();
+
+        private void add(Stat stat) {
+            count.addAndGet(stat.count.get());
+            time.addAndGet(stat.deltaTime.get());
+            args.add(Arrays.deepHashCode(stat.args));
+            supposedTraffic.addAndGet(stat.supposedTraffic.get());
+        }       
     }
 
     private static class CategoriesStatComparator implements Comparator<Map.Entry<String, Counters>> {
@@ -303,13 +315,13 @@ public final class RemoteMeasurements {
             if (cmp != 0) {
                 return cmp;
             }
-            long o1Val = o1.getValue().cnt2.get();
-            long o2Val = o2.getValue().cnt2.get();
+            long o1Val = o1.getValue().time.get();
+            long o2Val = o2.getValue().time.get();
             return (o1Val < o2Val ? 1 : (o1Val == o2Val ? 0 : -1));
         }
     }
 
-    private static final class StatKey {
+    private static final class StatKey extends RemoteStatistics.ActivityID {
 
         private final int statID;
         private final long startTime;

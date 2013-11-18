@@ -78,7 +78,6 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl.FunctionParameterListBuilder;
-import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl.NamespaceBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
@@ -96,6 +95,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.CharSequences;
 
 /**
@@ -140,7 +140,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         setFlags(FLAGS_STATIC, _static);
         _setScope(scope);
         setFlags(FLAGS_CONST, _const);
-        if (name.toString().startsWith(OPERATOR) &&
+        if (CharSequenceUtils.startsWith(name, OPERATOR) &&
                 (name.length() > OPERATOR.length()) &&
                 !Character.isJavaIdentifierPart(name.charAt(OPERATOR.length()))) { // NOI18N
             setFlags(FLAGS_OPERATOR, true);
@@ -207,7 +207,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         // for functions declared in bodies scope is CsmCompoundStatement - it is not Identifiable
         if ((scope instanceof CsmIdentifiable)) {
             this.scopeUID = UIDCsmConverter.scopeToUID(scope);
-            assert (scopeUID != null || scope == null);
+            assert scopeUID != null;
         } else {
             this.scopeRef = scope;
         }
@@ -257,7 +257,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
 
     @Override
     public CharSequence getDisplayName() {
-        return (templateDescriptor != null) ? CharSequences.create((getName().toString() + templateDescriptor.getTemplateSuffix())) : getName(); // NOI18N
+        return (templateDescriptor != null) ? CharSequences.create(CharSequenceUtils.concatenate(getName(), templateDescriptor.getTemplateSuffix())) : getName(); // NOI18N
     }
 
     @Override
@@ -350,7 +350,12 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         if( (scope instanceof CsmNamespace) || (scope instanceof CsmClass) || (scope instanceof CsmNamespaceDefinition) ) {
             CharSequence scopeQName = ((CsmQualifiedNamedElement) scope).getQualifiedName();
             if( scopeQName != null && scopeQName.length() > 0 ) {
-                return CharSequences.create(scopeQName.toString() + (!CsmKindUtilities.isSpecialization(scope) ? getScopeSuffix() : "") + "::" + getQualifiedNamePostfix()); // NOI18N
+                if (!CsmKindUtilities.isSpecialization(scope)) {
+                    return CharSequences.create(CharSequenceUtils.concatenate(scopeQName, getScopeSuffix(), "::", getQualifiedNamePostfix())); // NOI18N
+                } else {
+                    return CharSequences.create(CharSequenceUtils.concatenate(scopeQName, "::", getQualifiedNamePostfix())); // NOI18N
+                }
+                    
             }
         }
         return getName();
@@ -363,7 +368,8 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
 
     @Override
     public CharSequence getUniqueNameWithoutPrefix() {
-        return getQualifiedName().toString() + getSignature().toString().substring(getName().length());
+        final CharSequence sign = getSignature();
+        return CharSequenceUtils.concatenate(getQualifiedName(), sign.subSequence(getName().length(), sign.length()));
     }
 
     @Override
@@ -412,9 +418,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
         String uname;
         if(baseClass == null) {
-            uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_DEFINITION) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
+            uname = ""+Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_DEFINITION) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix(); //NOI18N
         } else {
-            uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_DEFINITION) +
+            uname = ""+Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_DEFINITION) + // NOI18N
                 OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR +
                 baseClass.getQualifiedName().toString() + "::" + getSignature(); // NOI18N
         }
@@ -438,9 +444,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
         if (def == null) {
             if(baseClass == null) {
-                uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
+                uname = ""+Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix(); //NOI18N
             } else {
-                uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION) +
+                uname = ""+Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION) + // NOI18N
                         OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR +
                         baseClass.getQualifiedName().toString() + "::" + getSignature(); // NOI18N
             }
@@ -477,7 +483,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
                 tparams.append('>'); // NOI18N                
                 StringBuilder params = new StringBuilder();
                 InstantiationProviderImpl.appendParametersSignature(getParameters(), params);
-                uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_DEFINITION) + UNIQUE_NAME_SEPARATOR + 
+                uname = ""+Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_DEFINITION) + UNIQUE_NAME_SEPARATOR + //NOI18N
                         getQualifiedName().toString() + tparams.toString() + params.toString();
                 def = findDefinition(prj, uname);
                 if (def == null) {

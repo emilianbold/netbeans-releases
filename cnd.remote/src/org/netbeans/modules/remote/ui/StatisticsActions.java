@@ -113,44 +113,4 @@ public class StatisticsActions {
             FileStatistics.getInstance(FileSystemProvider.getFileSystem(env)).report();
         }
     }
-    
-
-    @ActionID(id = "org.netbeans.modules.remote.ui.TrafficStatisticsAction", category = "NativeRemote")
-    @ActionRegistration(displayName = "TrafficStatisticsMenuItem")
-    @ActionReference(path = "Remote/Host/Actions", name = "TrafficStatisticsAction", position = 99998)
-    public static class TraficStatisticsAction extends SingleHostAction {
-
-        public TraficStatisticsAction() {
-        }
-
-        @Override
-        public String getName() {
-            return NbBundle.getMessage(HostListRootNode.class, "TrafficStatisticsMenuItem");
-        }
-
-        @Override
-        protected boolean enable(ExecutionEnvironment env) {
-            return env.isRemote();
-        }
-
-        @Override
-        public boolean isVisible(Node node) {
-            ExecutionEnvironment env = node.getLookup().lookup(ExecutionEnvironment.class);
-            return env != null && env.isRemote() && RemoteStatistics.COLLECT_STATISTICS;
-        }
-
-        @Override
-        protected void performAction(final ExecutionEnvironment env, Node node) {
-            final NotifyDescriptor notifyDescriptor = new NotifyDescriptor.InputLine("Log file:", "Turn Remote Statistics On"); // NOI18N
-            DialogDisplayer.getDefault().notify(notifyDescriptor);
-            if (notifyDescriptor.getValue() == NotifyDescriptor.OK_OPTION) {
-                RP.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        RemoteStatistics.startTest(notifyDescriptor.getValue().toString(), null, 0, 10000);
-                    }
-                });
-            }
-        }
-    }
 }

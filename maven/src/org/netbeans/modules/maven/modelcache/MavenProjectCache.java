@@ -82,26 +82,23 @@ public final class MavenProjectCache {
     private static final String CONTEXT_EXECUTION_RESULT = "NB_Execution_Result";
     private static final String CONTEXT_PARTICIPANTS = "NB_AbstractParticipant_Present";
     
-    //FileObject is referenced during lifetime of the Project.
-    private static final Map<FileObject, WeakReference<MavenProject>> file2Project = new WeakHashMap<FileObject, WeakReference<MavenProject>>();
-    private static final Map<FileObject, Mutex> file2Mutex = new WeakHashMap<FileObject, Mutex>();
+    //File is referenced during lifetime of the Project. FileObject cannot be used as with rename it changes value@!!!
+    private static final Map<File, WeakReference<MavenProject>> file2Project = new WeakHashMap<File, WeakReference<MavenProject>>();
+    private static final Map<File, Mutex> file2Mutex = new WeakHashMap<File, Mutex>();
     
     /**
      * returns a MavenProject instance for given folder, if folder contains a pom.xml always returns an instance, if not returns null
-     * @param projectDirectory
+     * @param pomFile
      * @param reload consult the cache and return the cached value if true, otherwise force a reload.
      * @return 
      */
-    public static MavenProject getMavenProject(final FileObject projectDirectory, final boolean reload) {
-        if (projectDirectory.getFileObject("pom.xml") == null) {
-            return null;
-        }
-        Mutex mutex = getMutex(projectDirectory);
+    public static MavenProject getMavenProject(final File pomFile, final boolean reload) {
+        Mutex mutex = getMutex(pomFile);
         MavenProject mp = mutex.writeAccess(new Action<MavenProject>() {
             @Override
             public MavenProject run() {
                 if (!reload) {
-                    WeakReference<MavenProject> ref = file2Project.get(projectDirectory);
+                    WeakReference<MavenProject> ref = file2Project.get(pomFile);
                     if (ref != null) {
                         MavenProject mp = ref.get();
                         if (mp != null) {
@@ -109,8 +106,8 @@ public final class MavenProjectCache {
                         }
                     }
                 }
-                MavenProject mp = loadOriginalMavenProject(projectDirectory);
-                file2Project.put(projectDirectory, new WeakReference<MavenProject>(mp));
+                MavenProject mp = loadOriginalMavenProject(pomFile);
+                file2Project.put(pomFile, new WeakReference<MavenProject>(mp));
                 return mp;
             }
         });
@@ -141,15 +138,18 @@ public final class MavenProjectCache {
             + "This is preventing the project model from loading properly. \n"
             + "Please file a bug report with details about your project and the IDE's log file.\n\n"
     })
-    private static @NonNull MavenProject loadOriginalMavenProject(FileObject projectDirectory) {
+    private static @NonNull MavenProject loadOriginalMavenProject(final File pomFile) {
         long startLoading = System.currentTimeMillis();
         MavenEmbedder projectEmbedder = EmbedderFactory.getProjectEmbedder();
         MavenProject newproject = null;
         //TODO have independent from M2AuxiliaryConfigImpl
-        AuxiliaryConfiguration aux = new M2AuxilaryConfigImpl(projectDirectory, false);
-        ActiveConfigurationProvider config = new ActiveConfigurationProvider(projectDirectory, aux);
+        FileObject projectDir = FileUtil.toFileObject(pomFile.getParentFile());
+        if (projectDir == null || !projectDir.isValid()) {
+            return getFallbackProject(pomFile);
+        }
+        AuxiliaryConfiguration aux = new M2AuxilaryConfigImpl(projectDir, false);
+        ActiveConfigurationProvider config = new ActiveConfigurationProvider(projectDir, aux);
         M2Configuration active = config.getActiveConfiguration();
-        final File pomFile = new File(FileUtil.toFile(projectDirectory), "pom.xml");
         MavenExecutionResult res = null;
         try {
             final MavenExecutionRequest req = projectEmbedder.createMavenExecutionRequest();
@@ -165,7 +165,8 @@ public final class MavenProjectCache {
             // #135070
             req.setRecursive(false);
             req.setOffline(true);
-            req.setUserProperties(createSystemPropsForProjectLoading(active.getProperties()));
+            req.setUserProperties(createUserPropsForProjectLoading(active.getProperties()));
+            req.setSystemProperties(createSystemPropsForProjectLoading());
             res = projectEmbedder.readProjectWithDependencies(req, true);
             newproject = res.getProject();
             
@@ -214,7 +215,7 @@ public final class MavenProjectCache {
         } catch (RuntimeException exc) {
             //guard against exceptions that are not processed by the embedder
             //#136184 NumberFormatException
-            LOG.log(Level.INFO, "Runtime exception thrown while loading maven project at " + projectDirectory, exc); //NOI18N
+            LOG.log(Level.INFO, "Runtime exception thrown while loading maven project at " + pomFile, exc); //NOI18N
             res = new DefaultMavenExecutionResult();
             res.addException(exc);
         } finally {
@@ -227,9 +228,9 @@ public final class MavenProjectCache {
             //TODO some exceptions in result contain various model caches as well..
             newproject.setContextValue(CONTEXT_EXECUTION_RESULT, res);
             long endLoading = System.currentTimeMillis();
-            LOG.log(Level.FINE, "Loaded project in {0} msec at {1}", new Object[] {endLoading - startLoading, projectDirectory.getPath()});
+            LOG.log(Level.FINE, "Loaded project in {0} msec at {1}", new Object[] {endLoading - startLoading, pomFile.getPath()});
             if (LOG.isLoggable(Level.FINE) && SwingUtilities.isEventDispatchThread()) {
-                LOG.log(Level.FINE, "Project " + projectDirectory.getPath() + " loaded in AWT event dispatching thread!", new RuntimeException());
+                LOG.log(Level.FINE, "Project " + pomFile.getPath() + " loaded in AWT event dispatching thread!", new RuntimeException());
             }
         }
         return newproject;
@@ -274,24 +275,29 @@ public final class MavenProjectCache {
     }
 
     //#158700
-    public static Properties createSystemPropsForProjectLoading(Map<String, String> activeConfiguration) {
+    public static Properties createSystemPropsForProjectLoading() {
         Properties props = cloneStaticProps();
-        if (activeConfiguration != null) {
-            props.putAll(activeConfiguration);
-        }
         //TODO the properties for java.home and maybe others shall be relevant to the project setup not ide setup.
         // we got a chicken-egg situation here, the jdk used in project can be defined in the pom.xml file.
         return props;
-    }  
+    }
     
-    private static Mutex getMutex(FileObject projectDirectory) {
+    public static Properties createUserPropsForProjectLoading(Map<String, String> activeConfiguration) {
+        Properties props = new Properties();
+        if (activeConfiguration != null) {
+            props.putAll(activeConfiguration);
+        }
+        return props;
+    }    
+    
+    private static Mutex getMutex(File pomFile) {
         synchronized (file2Mutex) {
-            Mutex mutex = file2Mutex.get(projectDirectory);
+            Mutex mutex = file2Mutex.get(pomFile);
             if (mutex != null) {
                 return mutex;
             }
             mutex = new Mutex();
-            file2Mutex.put(projectDirectory, mutex);
+            file2Mutex.put(pomFile, mutex);
             return mutex;
         }
     }

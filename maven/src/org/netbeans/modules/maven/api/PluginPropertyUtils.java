@@ -537,7 +537,8 @@ public class PluginPropertyUtils {
             eval =  new NBPluginParameterExpressionEvaluator(
                 mvnprj,
                 ss,
-                prj.createSystemPropsForPropertyExpressions());
+                prj.createSystemPropsForPropertyExpressions(),
+                prj.createUserPropsForPropertyExpressions());
             mvnprj.setContextValue(CONTEXT_EXPRESSION_EVALUATOR, eval);
         }
         return eval;
@@ -554,7 +555,8 @@ public class PluginPropertyUtils {
         if (eval != null) {
             return eval;
         }
-        Map<? extends String,? extends String> props = Collections.emptyMap();
+        Map<? extends String,? extends String> sysprops = Collections.emptyMap();
+        Map<? extends String,? extends String> userprops = Collections.emptyMap();
         File basedir = prj.getBasedir();
         if (basedir != null) {
         FileObject bsd = FileUtil.toFileObject(basedir);
@@ -563,7 +565,8 @@ public class PluginPropertyUtils {
             if (p != null) {
                 NbMavenProjectImpl project = p.getLookup().lookup(NbMavenProjectImpl.class);
                 if (project != null) {
-                    props = project.createSystemPropsForPropertyExpressions();
+                    sysprops = project.createSystemPropsForPropertyExpressions();
+                    userprops = project.createUserPropsForPropertyExpressions();
                 }
             }
         }
@@ -575,7 +578,8 @@ public class PluginPropertyUtils {
         eval = new NBPluginParameterExpressionEvaluator(
                 prj,
                 ss,
-                props);
+                sysprops,
+                userprops);
         prj.setContextValue(CONTEXT_EXPRESSION_EVALUATOR, eval);
         return eval;
     }

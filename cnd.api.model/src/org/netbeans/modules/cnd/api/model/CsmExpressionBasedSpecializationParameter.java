@@ -60,4 +60,13 @@ package org.netbeans.modules.cnd.api.model;
  * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public interface CsmExpressionBasedSpecializationParameter extends CsmSpecializationParameter {
+    
+    /**
+     * This method is used to distinguish expressions from body of class/struct/function 
+     * and expressions defined as default value inside template descriptor
+     * 
+     * @return true if it is defined inside class/struct template descriptor 
+     */
+    boolean isDefaultValue();
+    
 }

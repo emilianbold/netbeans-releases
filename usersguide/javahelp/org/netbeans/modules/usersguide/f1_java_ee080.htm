@@ -2,20 +2,18 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Add Server Instance Wizard: Domain Admin Login Info</title>
+<title>Add Server Instance Wizard: Server Location</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="AS_RegServ_EnterNameAndPassword" name="AS_RegServ_EnterNameAndPassword"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref662" name="sthref662"></a>
-<h1>Add Server Instance Wizard: Domain Admin Login Info</h1>
+<p><a id="AS_RegServ_EnterPlatformDir" name="AS_RegServ_EnterPlatformDir"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref666" name="sthref666"></a>
+<h1>Add Server Instance Wizard: Server Location</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>You see this page of the Add Server Instance wizard when you specify domain details to register an instance of the GlassFish Server v1, GlassFish Server v2.x or Sun Java System Application Server. Use this page of the wizard to specify the username and password to use to login as domain administrator.</p>
+<p>You see this page of the Add Server Instance wizard when you specify domain details to register an instance of the GlassFish Server v1 or GlassFish Server v2.x with the IDE. To register a server instance, you specify the properties of a local or remote domain.</p>
 <p>To register an instance of GlassFish Server v1 or v2.x you need to install the GlassFish Server v1, v2.x plugin from the Update Center.</p>
-<p>You are not required to supply a domain admin username and password when registering a server instance. If you do not supply a username and password when registering an instance, you are prompted to supply a username and password when needed.</p>
-<p><b>Note</b>: If you enter a user name and password, the values are stored in your user directory. This represents a security risk.</p>
-<p>In this page of the wizard you can supply the following information:</p>
+<p>Use this page to specify the following information about the location of the GlassFish Server and the type of domain you are registering.</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
@@ -29,24 +27,100 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t76" headers="r1c1-t76">
-<p>Admin Username</p>
+<p>Server Location</p>
 </td>
 <td align="left" headers="r2c1-t76 r1c2-t76">
-<p>Enter the user name of a domain administrator.</p>
+<p>Supply the path to the local installation of the GlassFish Server. Click Browse to navigate to the location.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t76" headers="r1c1-t76">
-<p>Admin Password</p>
+<p>Type of Domain</p>
 </td>
 <td align="left" headers="r3c1-t76 r1c2-t76">
-<p>Enter the password of a domain administrator.</p>
+<p>Select the type of domain to register.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t76" headers="r1c1-t76">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Register Local Default Domain</p>
+</td>
+<td align="left" headers="r4c1-t76 r1c2-t76">
+<p>Select this type to register a domain located in the default domain folder of the platform you specify.</p>
+<p>Choose a domain from the list of accessible domains found in the default domain folder.</p>
+<p><b>Note</b>: When you install the server, the default domain folder containing a default domain is created in the local installation folder.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t76" headers="r1c1-t76">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Register Local Domain</p>
+</td>
+<td align="left" headers="r5c1-t76 r1c2-t76">
+<p>Select this type to register a local domain located outside the default domain folder of the platform you specify. If you select this type, you need to specify the location of the local domain.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t76" headers="r1c1-t76">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Register Remote Domain</p>
+</td>
+<td align="left" headers="r6c1-t76 r1c2-t76">
+<p>Select this type to register a remote domain. If you select this type, you need to supply the host and communication port for the remote domain.You cannot stop or start a remote server from within the IDE.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t76" headers="r1c1-t76">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Create Personal Domain</p>
+</td>
+<td align="left" headers="r7c1-t76 r1c2-t76">
+<p>Select this type to create a new domain. This option is only available if you are registering an instance of the GlassFish Server. If you select this type, you need to specify where to create the new domain. Choosing this type enables you to specify port settings for the new domain. You can also choose a profile type from the drop-down list</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t76" headers="r1c1-t76">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Profile</p>
+</td>
+<td align="left" headers="r8c1-t76 r1c2-t76">
+<p>If you are registering an instance of the GlassFish Server v2.x, when you create a personal domain you can choose a Profile type from the drop-down list. If you are registering an earlier version of the application server, only the Default profile is available.</p>
+<p>You choose a profile type according to how you intend to use the application server software. The personal domain is created and configured based on the profile that you choose.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r9c1-t76" headers="r1c1-t76">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Default</p>
+</td>
+<td align="left" headers="r9c1-t76 r1c2-t76">
+<p>This domain is essentially the same as the Developer profile.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r10c1-t76" headers="r1c1-t76">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Developer</p>
+</td>
+<td align="left" headers="r10c1-t76 r1c2-t76">
+<p>This domain is configured to be run in a development environment. This configuration offers the advantage of faster server startup.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r11c1-t76" headers="r1c1-t76">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Cluster</p>
+</td>
+<td align="left" headers="r11c1-t76 r1c2-t76">
+<p>The domain is configured so that it can be used as part of a cluster of application server instances.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r12c1-t76" headers="r1c1-t76">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Enterprise</p>
+</td>
+<td align="left" headers="r12c1-t76 r1c2-t76">
+<p>The domain is configured to be used in a production environment for large-scale deployments. This profile offers greater security. This option requires that you have HADB installed.</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
+<p><b>Note</b>: When you register an existing domain, the IDE uses the port numbers and other properties specified in the domain configuration.</p>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">

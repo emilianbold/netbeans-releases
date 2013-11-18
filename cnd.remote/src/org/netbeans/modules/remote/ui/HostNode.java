@@ -109,11 +109,12 @@ public final class HostNode extends AbstractNode implements ConnectionListener, 
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(ServerList.PROP_DEFAULT_RECORD)) {
-            refresh();
+        if (evt.getPropertyName().equals(ServerList.PROP_DEFAULT_RECORD)
+                || evt.getPropertyName().equals(ServerRecord.DISPLAY_NAME_CHANGED)) {
+                refresh();
         }
         if (evt.getPropertyName().equals(ServerRecord.PROP_STATE_CHANGED)) {
-            fireIconChange();
+                fireIconChange();
         }
 //        if (evt.getPropertyName().equals(ServerList.PROP_RECORD_LIST)) {
 //            List<RemoteServerRecord> oldItems = (List<RemoteServerRecord>) evt.getOldValue();            
@@ -135,7 +136,7 @@ public final class HostNode extends AbstractNode implements ConnectionListener, 
 //        return false;
 //    }
 
-    /*package*/ void refresh() {
+    private void refresh() {
         fireDisplayNameChange("", getDisplayName()); // to make Node refresh
     }
 

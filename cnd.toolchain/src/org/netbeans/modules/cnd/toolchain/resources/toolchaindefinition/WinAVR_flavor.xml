@@ -45,7 +45,7 @@ made subject to such option by the copyright holder.
 -->
 
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
-    <toolchain name="WinAVR" display="GNU Compiler Collection from WinAVR" family="GNU" qmakespec="cygwin-g++"/>
+    <toolchain name="WinAVR" display="GNU WinAVR" family="GNU" qmakespec="cygwin-g++"/>
     <platforms stringvalue="windows"/>
     <drive_letter_prefix stringvalue=""/>
     <base_folders>

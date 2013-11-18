@@ -54,6 +54,7 @@ import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Future;
 import junit.framework.Test;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo;
@@ -215,6 +216,7 @@ public class ParallelSftpTest extends NativeExecutionBaseTestCase {
         return result.toArray(new File[result.size()]);
     }
     
+    @RandomlyFails
     @ForAllEnvironments(section = "remote.platforms")
     public void testParallelUpload() throws Exception {        
         final int threadCount = 10;

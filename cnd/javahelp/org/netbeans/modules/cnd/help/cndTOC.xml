@@ -3,16 +3,10 @@
                      "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 
 <toc version="2.0">
-<!--	<tocitem text="IDE Basics">
-		<tocitem text="Getting Started">
-			<tocitem text="C and C++ and Fortran Applications" target="WorkingWithCandC++Projects" />
-		</tocitem>
-	</tocitem>
-    -->
 	<tocitem text="C/C++/Fortran Development" expand="false">
 		<tocitem text="Getting Started">
 			<tocitem text="Workflow for C/C++/Fortran Projects" target="WorkingWithCandC++Projects1" />
-                        <tocitem text="IDE Tools for C/C++/Fortran Development" target="IDEToolsOverview" />
+			<tocitem text="IDE Tools for C/C++/Fortran Development" target="IDEToolsOverview" />
 			<tocitem text="About Projects and Makefiles" target="CandC++ProjectsMakefiles" />
 			<tocitem text="Creating a C/C++/Fortran Project" target="CreatingCorC++Project" />
 		</tocitem>
@@ -33,6 +27,7 @@
 			<tocitem text="Creating and Modifying C/C++/Fortran Projects">
 				<tocitem text="Creating a C/C++/Fortran Project" target="CreatingCorC++Project" />
 				<tocitem text="Configuring Code Assistance for Projects from Existing Sources" target="CodeAssistance" />
+				<tocitem text="Relocating the Code Assistance Cache for Version Controlled Projects" target="CodeAssistanceCache" />
 				<tocitem text="Setting the Main C/C++/Fortran Project" target="SettingMainCorC++Project." />
 				<tocitem text="Setting Project Properties for a Single Project" target="SettingProjectProperties" />
 				<tocitem text="Setting Folder Properties" target="SettingCandC++FolderProperties" />
@@ -42,9 +37,10 @@
 				<tocitem text="Adding Files and Folders to a C/C++/Fortran Project" target="AddingFilesandFolders" />
 				<tocitem text="Adding Unit Tests to a C/C++/Fortran Project" target="AddingUnitTests" />
 				<tocitem text="Running a C/C++/Fortran Project" target="RunningCorC++Project1" />
-				<tocitem text="Using C or C++ Project Launchers" target="UsingCandC++Launchers" />		
-                                <tocitem text="Moving, Copying, or Renaming a C/C++/Fortran Project" target="MovingCorC++Project" />
+				<tocitem text="Using C or C++ Project Launchers" target="UsingCandC++Launchers" />
+				<tocitem text="Moving, Copying, or Renaming a C/C++/Fortran Project" target="MovingCorC++Project" />
 				<tocitem text="Deleting a C/C++/Fortran Project" target="DeletingCorC++Project" />
+				<tocitem text="Using Properties Files for Verson Controlled Projects" target="PublicPrivateProperties" />
 			</tocitem>
 			<tocitem text="Building and Running C/C++/Fortran Projects">
 				<tocitem text="Building Tasks: Quick Reference" target="CandC++BuildingTasks" />
@@ -71,6 +67,7 @@
 			</tocitem>
 			<tocitem text="Navigating Source Files and Projects">
 				<tocitem text="Using Hyperlink Navigation" target="UsingHyperlinks" />
+				<tocitem text="Using Breadcrumb Navigation" target="UsingBreadcrumbs" />
 				<tocitem text="Switching Between Source and Header Files" target="SourceHeaderSwitch" />
 				<tocitem text="Going to an Included File" target="GoToInclude" />
 				<tocitem text="Going to a Symbol" target="GoToDeclaration" />

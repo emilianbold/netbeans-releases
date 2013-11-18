@@ -4,6 +4,7 @@
 
 package org.netbeans.modules.cnd.callgraph.impl;
 
+import org.netbeans.modules.cnd.callgraph.support.HorizontalHierarchicalLayout;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;

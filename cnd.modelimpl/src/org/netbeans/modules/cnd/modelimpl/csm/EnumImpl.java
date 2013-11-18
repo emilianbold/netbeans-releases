@@ -76,7 +76,7 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
         enumerators = new ArrayList<CsmUID<CsmEnumerator>>();
     }
 
-    protected EnumImpl(CharSequence name, String qName, boolean stronglyTyped, CsmFile file, int startOffset, int endOffset) {
+    protected EnumImpl(CharSequence name, CharSequence qName, boolean stronglyTyped, CsmFile file, int startOffset, int endOffset) {
         super(name, qName, file, startOffset, endOffset);
         this.stronglyTyped = stronglyTyped;
         enumerators = new ArrayList<CsmUID<CsmEnumerator>>();
@@ -310,7 +310,7 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
         public EnumImpl create(CsmParserProvider.ParserErrorDelegate delegate) {
             EnumImpl impl = getEnumDefinitionInstance();
             if(impl == null) {
-                impl = new EnumImpl(getName(), getName().toString(), stronglyTyped, getFile(), getStartOffset(), getEndOffset());
+                impl = new EnumImpl(getName(), getName(), stronglyTyped, getFile(), getStartOffset(), getEndOffset());
                 impl.setVisibility(visibility);
                 impl.initScope(getScope());
                 impl.register(getScope(), true);

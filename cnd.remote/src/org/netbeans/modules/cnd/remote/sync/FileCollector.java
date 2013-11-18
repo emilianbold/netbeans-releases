@@ -72,12 +72,15 @@ import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -355,10 +358,38 @@ import org.openide.util.Utilities;
         }
         return addedInfos;
     }
+    
+    private boolean isBsdBased() {
+        HostInfo.OSFamily os;
+        try {
+            os = HostInfoUtils.getHostInfo(execEnv).getOSFamily();
+        } catch (IOException ex) {
+            ex.printStackTrace(System.err);
+            return false;
+        } catch (ConnectionManager.CancellationException ex) {
+            return false;
+        }
+        if (os == HostInfo.OSFamily.MACOSX) {
+            return true;
+        } else if (os == HostInfo.OSFamily.UNKNOWN) {
+            ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "uname"); // NOI18N
+            if (res.isOK()) {
+                if (res.output.equals("FreeBSD")) { // NOI18N
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
     public boolean initNewFilesDiscovery() {
         String remoteSyncRoot = RemotePathMap.getRemoteSyncRoot(execEnv);
-        ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "mktemp", "-p", remoteSyncRoot); // NOI18N
+        ProcessUtils.ExitStatus res;
+        if (isBsdBased()) {
+            res = ProcessUtils.execute(execEnv, "mktemp", remoteSyncRoot + "/XXXXXXXX"); // NOI18N
+        } else {
+            res = ProcessUtils.execute(execEnv, "mktemp", "-p", remoteSyncRoot); // NOI18N
+        }
         if (res.isOK()) {
            timeStampFile = res.output.trim();
            return true;

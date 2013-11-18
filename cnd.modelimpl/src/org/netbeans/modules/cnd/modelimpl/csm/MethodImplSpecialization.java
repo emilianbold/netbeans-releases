@@ -68,8 +68,8 @@ import org.openide.util.CharSequences;
  */
 public class MethodImplSpecialization<T> extends MethodImpl<T> {
 
-    protected MethodImplSpecialization(CharSequence name, CharSequence rawName, CsmClass cls, CsmVisibility visibility,  boolean _virtual, boolean _explicit, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
-        super(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);
+    protected MethodImplSpecialization(CharSequence name, CharSequence rawName, CsmClass cls, CsmVisibility visibility, boolean _virtual, boolean _explicit, boolean _static, boolean _const, boolean _abstract, CsmFile file, int startOffset, int endOffset, boolean global) {
+        super(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, _abstract, file, startOffset, endOffset, global);
     }
 
     public static<T> MethodImplSpecialization<T> create(AST ast, final CsmFile file, FileContent fileContent, ClassImpl cls, CsmVisibility visibility, boolean global) throws AstRendererException {
@@ -89,6 +89,8 @@ public class MethodImplSpecialization<T> extends MethodImpl<T> {
         boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
         boolean _virtual = false;
         boolean _explicit = false;
+        boolean afterParen = false;
+        boolean _abstract = false;
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
             switch( token.getType() ) {
                 case CPPTokenTypes.LITERAL_static:
@@ -100,12 +102,20 @@ public class MethodImplSpecialization<T> extends MethodImpl<T> {
                 case CPPTokenTypes.LITERAL_explicit:
                     _explicit = true;
                     break;
+                case CPPTokenTypes.RPAREN:
+                    afterParen = true;
+                    break;
+                case CPPTokenTypes.ASSIGNEQUAL:
+                    if (afterParen) {
+                        _abstract = true;
+                    }
+                    break;
             }
         }
         
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, false);
 
-        MethodImplSpecialization<T> methodImpl = new MethodImplSpecialization<T>(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);
+        MethodImplSpecialization<T> methodImpl = new MethodImplSpecialization<T>(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, _abstract, file, startOffset, endOffset, global);
         temporaryRepositoryRegistration(global, methodImpl);
         
         StringBuilder clsTemplateSuffix = new StringBuilder();
@@ -122,18 +132,18 @@ public class MethodImplSpecialization<T> extends MethodImpl<T> {
         return methodImpl;
     }
 
-    private static String getFunctionName(AST ast) {
+    private static CharSequence getFunctionName(AST ast) {
         CharSequence funName = CharSequences.create(AstUtil.findId(ast, CPPTokenTypes.RCURLY, true));
-        return getFunctionNameFromFunctionSpecialicationName(funName.toString());
+        return getFunctionNameFromFunctionSpecialicationName(funName);
     }
 
-    private static String getFunctionNameFromFunctionSpecialicationName(CharSequence functionName) {
+    private static CharSequence getFunctionNameFromFunctionSpecialicationName(CharSequence functionName) {
         CharSequence[] nameParts = Utils.splitQualifiedName(functionName.toString());
         StringBuilder className = new StringBuilder("");
         if(nameParts.length > 0) {
             className.append(nameParts[nameParts.length - 1]);
         }
-        return className.toString();
+        return className;
     }
 
     
@@ -141,7 +151,7 @@ public class MethodImplSpecialization<T> extends MethodImpl<T> {
     
         @Override
         public MethodImplSpecialization create(CsmParserProvider.ParserErrorDelegate delegate) {
-            MethodImplSpecialization fun = new MethodImplSpecialization(getName(), getRawName(), (CsmClass)getScope(), getVisibility(), isVirtual(), isExplicit(),  isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), isGlobal());
+            MethodImplSpecialization fun = new MethodImplSpecialization(getName(), getRawName(), (CsmClass)getScope(), getVisibility(), isVirtual(), isExplicit(),  isStatic(), isConst(), false, getFile(), getStartOffset(), getEndOffset(), isGlobal());
             init(fun);
             return fun;
         }

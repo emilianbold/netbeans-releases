@@ -48,9 +48,12 @@ import java.util.*;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.groovy.editor.api.ASTUtils;
 import org.netbeans.modules.groovy.editor.api.elements.GroovyElement;
 
 /**
@@ -128,6 +131,16 @@ public abstract class ASTElement extends GroovyElement {
             return this.equals(handle);
         }
         return false;
+    }
+
+    @Override
+    public OffsetRange getOffsetRange(ParserResult result) {
+        BaseDocument doc = (BaseDocument) result.getSnapshot().getSource().getDocument(false);
+        int lineNumber = node.getLineNumber();
+        int columnNumber = node.getColumnNumber();
+        int start = ASTUtils.getOffset(doc, lineNumber, columnNumber);
+
+        return new OffsetRange(start, start);
     }
 
     public static ASTElement create(ASTNode node) {

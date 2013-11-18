@@ -87,7 +87,7 @@ public final class Unresolved implements Disposable {
     }
 
     public final class UnresolvedClass extends ClassEnumBase<CsmClass> implements CsmClass {
-        private UnresolvedClass(String name) {
+        private UnresolvedClass(CharSequence name) {
             super(NameHolder.createName(name), unresolvedFile, null);
             initScope(unresolvedNamespace);
         }
@@ -333,7 +333,7 @@ public final class Unresolved implements Disposable {
         Reference<UnresolvedClass> ref = dummiesForUnresolved.get(name);
         UnresolvedClass cls = ref == null ? null : ref.get();
         if( cls == null ) {
-            cls = new UnresolvedClass(name.toString());
+            cls = new UnresolvedClass(name);
             dummiesForUnresolved.put(name, new SoftReference<UnresolvedClass>(cls));
 	    cls.register();
         }
@@ -348,7 +348,7 @@ public final class Unresolved implements Disposable {
 	return unresolvedFile;
     }
 
-    private String getName(CharSequence[] nameTokens) {
+    private CharSequence getName(CharSequence[] nameTokens) {
         StringBuilder sb = new StringBuilder();
         for( int i = 0; i < nameTokens.length; i++ ) {
             if( i > 0 ) {
@@ -356,6 +356,6 @@ public final class Unresolved implements Disposable {
             }
             sb.append(nameTokens[i]);
         }
-        return sb.toString();
+        return sb;
     }
 }

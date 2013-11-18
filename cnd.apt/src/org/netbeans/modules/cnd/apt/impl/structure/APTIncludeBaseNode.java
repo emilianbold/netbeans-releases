@@ -250,7 +250,7 @@ public abstract class APTIncludeBaseNode extends APTTokenBasedNode
         @Override
         public String getText() {
             if (origTokens.size() > 0) {
-                return stringize(getTokenList(), null);
+                return stringize(getTokenList(), null).toString();
             } else {
                 return "{no include information}"; // NOI18N
             }
@@ -261,7 +261,7 @@ public abstract class APTIncludeBaseNode extends APTTokenBasedNode
         }
     };
 
-    private static String stringize(List<APTToken> tokens, APTMacroCallback callback) {
+    private static CharSequence stringize(List<APTToken> tokens, APTMacroCallback callback) {
         TokenStream expanded;
         if (callback != null) {
             expanded = new APTExpandedStream(new ListBasedTokenStream(tokens), callback);

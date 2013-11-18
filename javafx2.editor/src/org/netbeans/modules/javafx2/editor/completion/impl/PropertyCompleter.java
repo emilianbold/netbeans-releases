@@ -199,7 +199,7 @@ public class PropertyCompleter extends InstanceCompleter {
             addPropertiesFrom(getBeanInfo().getBuilder(), names, false);
         }
         if (ctx.getType() == CompletionContext.Type.PROPERTY) {
-            String ns = ctx.findNsPrefix(JavaFXEditorUtils.FXML_FX_NAMESPACE);
+            String ns = ctx.findFxmlNsPrefix();
             if (instance.getId() == null) {
                 if ("id".startsWith(namePrefix) || // NOI18N
                     (ns != null && (ns + ":id").startsWith(namePrefix))) {  // NOI18N

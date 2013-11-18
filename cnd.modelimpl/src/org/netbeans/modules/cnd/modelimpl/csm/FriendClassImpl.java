@@ -82,6 +82,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.CharSequences;
 
 /**
@@ -112,9 +113,9 @@ public final class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendCl
         AST templateParams = AstUtil.findSiblingOfType(ast, CPPTokenTypes.LITERAL_template);
         if (templateParams != null) {
             List<CsmTemplateParameter> params = TemplateUtils.getTemplateParameters(templateParams, file, parent, register);
-            final String classSpecializationSuffix = TemplateUtils.getClassSpecializationSuffix(templateParams, null);
-            String fullName = "<" + classSpecializationSuffix + ">"; // NOI18N
-            setTemplateDescriptor(params, fullName, !classSpecializationSuffix.isEmpty(), register);
+            final CharSequence classSpecializationSuffix = TemplateUtils.getClassSpecializationSuffix(templateParams, null);
+            CharSequence fullName = CharSequenceUtils.concatenate("<", classSpecializationSuffix, ">"); // NOI18N
+            setTemplateDescriptor(params, fullName, classSpecializationSuffix.length() > 0, register);
         }
         specializationDesctiptor = SpecializationDescriptor.createIfNeeded(ast, getContainingFile(), parent, register);
     }
@@ -164,7 +165,7 @@ public final class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendCl
         CsmClass cls = getContainingClass();
         CharSequence clsQName = cls.getQualifiedName();
 	if( clsQName != null && clsQName.length() > 0 ) {
-            return CharSequences.create(clsQName.toString() + "::" + getQualifiedNamePostfix()); // NOI18N
+            return CharSequences.create(CharSequenceUtils.concatenate(clsQName, "::", getQualifiedNamePostfix())); // NOI18N
 	}
         return getName();
     }
@@ -283,7 +284,7 @@ public final class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendCl
         this.cleanUID();
     }
 
-    private void setTemplateDescriptor(List<CsmTemplateParameter> params, String name, boolean specialization, boolean global) {
+    private void setTemplateDescriptor(List<CsmTemplateParameter> params, CharSequence name, boolean specialization, boolean global) {
         templateDescriptor = new TemplateDescriptor(params, name, specialization, global);
     }
 
@@ -309,7 +310,7 @@ public final class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendCl
 
     @Override
     public CharSequence getDisplayName() {
-        return (templateDescriptor != null) ? CharSequences.create((getName().toString() + templateDescriptor.getTemplateSuffix())) : getName();
+        return (templateDescriptor != null) ? CharSequences.create(CharSequenceUtils.concatenate(getName(), templateDescriptor.getTemplateSuffix())) : getName();
     }
 
     

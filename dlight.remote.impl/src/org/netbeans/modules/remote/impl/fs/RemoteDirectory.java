@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.remote.impl.fs;
 
+import org.netbeans.modules.remote.impl.fs.server.DirectoryReaderFS;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
@@ -79,6 +80,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -280,6 +282,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     
     @Override
     public RemoteFileObject getFileObject(String relativePath, Set<String> antiLoop) {
+        Parameters.notNull("path", relativePath);
         relativePath = PathUtilities.normalizeUnixPath(relativePath);
         if ("".equals(relativePath)) { // NOI18N
             return getOwnerFileObject();
@@ -289,7 +292,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             absPath = PathUtilities.normalizeUnixPath(absPath);
             return getFileSystem().findResource(absPath, antiLoop);
         }
-        if (relativePath != null && relativePath.length()  > 0 && relativePath.charAt(0) == '/') { //NOI18N
+        if (relativePath.length()  > 0 && relativePath.charAt(0) == '/') { //NOI18N
             relativePath = relativePath.substring(1);
         }
         if (relativePath.endsWith("/")) { // NOI18N
@@ -497,9 +500,25 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     private boolean isProhibited() {
-        return getPath().equals("/proc");//NOI18N
+        return getPath().equals("/proc") || getPath().equals("/dev");//NOI18N
     }
 
+    @Override
+    public void setAttribute(String attrName, Object value) throws IOException {
+        if (attrName.equals("warmup")) { // NOI18N
+            warmup();
+        } else {
+            super.setAttribute(attrName, value);
+        }
+    }
+    
+    private void warmup() {
+        DirectoryReaderFS fsReader = DirectoryReaderFS.getInstance(getExecutionEnvironment());
+        if (fsReader != null && fsReader.isValid()) {
+            fsReader.warmap(getPath());
+        }
+    }
+    
     private Map<String, DirEntry> readEntries(DirectoryStorage oldStorage, boolean forceRefresh, String childName) throws IOException, InterruptedException, ExecutionException, CancellationException {
         if (isProhibited()) {
             return Collections.<String, DirEntry>emptyMap();
@@ -507,9 +526,33 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         Map<String, DirEntry> newEntries = new HashMap<String, DirEntry>();            
         boolean canLs = canLs();
         if (canLs) {
-            DirectoryReader directoryReader = new DirectoryReaderSftp(getExecutionEnvironment(), getPath());
-            directoryReader.readDirectory();
-            for (DirEntry entry : directoryReader.getEntries()) {
+            List<DirEntry> entries = null;
+            DirectoryReaderFS fsReader = DirectoryReaderFS.getInstance(getExecutionEnvironment());
+            if (fsReader != null && fsReader.isValid()) {
+                try {
+                    entries = fsReader.readDirectory(getPath());
+                    // The agreement is as follows: if a fatal error occurs
+                    // (so we suppose fs_server can't work)
+                    // DirectoryReaderFS throws ExecutionException or IOException 
+                    // (InterruptedException and CancellationException don't mean server failed)
+                    // and DirectoryReaderFS.isValid()  is set to false.
+                    // In this case we need to fallback to the default (sftp) implementation
+                    // TODO: consider redesign?
+                } catch (ExecutionException ex) {
+                    if (fsReader.isValid()) {
+                        throw ex; // process as usual
+                    } // else fall back to sftp implementation
+                } catch (IOException ex) {
+                    if (fsReader.isValid()) {
+                        throw ex; // process as usual
+                    } // else fall back to sftp implementation
+                }
+            }
+            if (entries == null) {
+                DirectoryReader directoryReader = DirectoryReaderSftp.getInstance(getExecutionEnvironment());
+                entries = directoryReader.readDirectory(getPath());
+            }            
+            for (DirEntry entry : entries) {
                 newEntries.put(entry.getName(), entry);
             }
             
@@ -542,6 +585,19 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         return newEntries;
     }
     
+    private List<DirEntry> readEntries2() throws IOException, InterruptedException, CancellationException, ExecutionException {
+        DirectoryReader directoryReader = null;
+        DirectoryReaderFS fsReader = DirectoryReaderFS.getInstance(getExecutionEnvironment());
+        if (fsReader != null && fsReader.isValid()) {
+            directoryReader = fsReader;
+        }
+        if (directoryReader == null) {
+            directoryReader = DirectoryReaderSftp.getInstance(getExecutionEnvironment());
+        }
+        List<DirEntry> entries = directoryReader.readDirectory(getPath());
+        return entries;
+    }
+        
     private DirEntry getSpecialDirChildEntry(String absPath, String childName) throws InterruptedException, ExecutionException {
         StatInfo statInfo;
         try {
@@ -559,10 +615,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
     private boolean isAutoMount() {
         String path = getPath();
-        if (AUTO_MOUNTS.contains(path)) {
-            return true;
-        }
-        return false;
+        return AUTO_MOUNTS.contains(path);
     }
 
     private boolean canLs() {
@@ -871,7 +924,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             throw new ConnectException();
         }
 
-        DirectoryStorage storage = null;
+        DirectoryStorage storage;
 
         File storageFile = getStorageFile();
 

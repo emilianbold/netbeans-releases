@@ -50,6 +50,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.lexer.EmbeddedJoinInfo;
 import org.netbeans.lib.lexer.EmbeddedTokenList;
 import org.netbeans.lib.lexer.JoinLexerInputOperation;
+import org.netbeans.lib.lexer.JoinTokenList;
 import org.netbeans.lib.lexer.TokenOrEmbedding;
 import org.netbeans.lib.lexer.token.AbstractToken;
 import org.netbeans.lib.lexer.token.JoinToken;
@@ -60,10 +61,10 @@ import org.netbeans.lib.lexer.token.PartToken;
  *
  * @author Miloslav Metelka
  */
-final class JoinTokenListChange<T extends TokenId> extends TokenListChange<T> {
+public final class JoinTokenListChange<T extends TokenId> extends TokenListChange<T> {
     
     /** ETL where character modification occurred. */
-    EmbeddedTokenList<T> charModTokenList;
+    EmbeddedTokenList<?,T> charModTokenList;
     
     private TokenListListUpdate<T> tokenListListUpdate;
 
@@ -75,7 +76,7 @@ final class JoinTokenListChange<T extends TokenId> extends TokenListChange<T> {
     
     private JoinLexerInputOperation<T> joinLexerInputOperation;
 
-    public JoinTokenListChange(MutableJoinTokenList<T> tokenList) {
+    public JoinTokenListChange(JoinTokenList<T> tokenList) {
         super(tokenList);
     }
 
@@ -134,7 +135,7 @@ final class JoinTokenListChange<T extends TokenId> extends TokenListChange<T> {
             // The last ETL can not be empty (must contain the last non-empty token part)
             for (int i = 0; i < extraTokenListSpanCount; i++) {
                 lastRelexChange.joinTokenLastPartShift = extraTokenListSpanCount - i;
-                if (((EmbeddedTokenList<T>)lastRelexChange.tokenList()).textLength() > 0) {
+                if (((EmbeddedTokenList<?,T>)lastRelexChange.tokenList()).textLength() > 0) {
                     PartToken<T> partToken = joinedParts.get(joinedPartIndex++);
                     lastRelexChange.addToken(partToken, 0, null);
                 }
@@ -149,7 +150,7 @@ final class JoinTokenListChange<T extends TokenId> extends TokenListChange<T> {
     }
 
     private void addRelexChange() {
-        EmbeddedTokenList<T> etl = joinLexerInputOperation.tokenList(
+        EmbeddedTokenList<?,T> etl = joinLexerInputOperation.tokenList(
                 relexTokenListIndex + relexChanges.size());
         lastRelexChange = new RelexTokenListChange<T>(etl);
         int startOffset = etl.startOffset();
@@ -160,8 +161,8 @@ final class JoinTokenListChange<T extends TokenId> extends TokenListChange<T> {
 
     @Override
     public int increaseMatchIndex() {
-        MutableJoinTokenList<T> jtl = (MutableJoinTokenList<T>) tokenList();
-        AbstractToken<T> token = jtl.tokenOrEmbeddingUnsync(matchIndex).token();
+        JoinTokenList<T> jtl = (JoinTokenList<T>) tokenList();
+        AbstractToken<T> token = jtl.tokenOrEmbeddingDirect(matchIndex).token();
         // matchOffset needs to be set to end of token at matchIndex
         if (token.getClass() == JoinToken.class) {
             matchOffset = ((JoinToken<T>) token).endOffset();
@@ -169,7 +170,7 @@ final class JoinTokenListChange<T extends TokenId> extends TokenListChange<T> {
             if (matchIndex == jtl.activeStartJoinIndex()) { // First in ETL
                 // Cannot use previous value of matchOffset since it pointed to end of previous ETL
                 // Token is not join token so use its natural length()
-                EmbeddedTokenList<T> etl = jtl.activeTokenList();
+                EmbeddedTokenList<?,T> etl = jtl.activeTokenList();
                 // If an insertion was done right at the begining of a modified ETL
                 // then the matchOffset should only be increased because
                 // the computation would not include the inserted text.
@@ -209,12 +210,12 @@ final class JoinTokenListChange<T extends TokenId> extends TokenListChange<T> {
     }
     
     void replaceTokenLists() {
-        MutableJoinTokenList<T> jtl = (MutableJoinTokenList<T>) tokenList();
+        JoinTokenList<T> jtl = (JoinTokenList<T>) tokenList();
         // Move gap after last ETL that was relexed (obsolete ETLs still not removed)
         jtl.moveIndexGap(tokenListListUpdate.modTokenListIndex + tokenListListUpdate.removedTokenListCount);
         // Do physical ETLs replace
-        tokenListListUpdate.replaceTokenLists(jtl.tokenListStartIndex());
-        jtl.base().tokenListModNotify(tokenListListUpdate.tokenListCountDiff());
+        tokenListListUpdate.replaceTokenLists();
+        jtl.tokenListsModified(tokenListListUpdate.tokenListCountDiff());
     }
     
     public void replaceTokens(TokenHierarchyEventInfo eventInfo) {
@@ -231,9 +232,16 @@ final class JoinTokenListChange<T extends TokenId> extends TokenListChange<T> {
         // Determine matchTokenListIndex and localMatchIndex corresponding to matchIndex.
         // If matchIndex == jtl.tokenCount() the token list index will be jtl.tokenListCount()
         // and localMatchIndex will be 0.
-        MutableJoinTokenList<T> jtl = (MutableJoinTokenList<T>) tokenList();
-        int localMatchIndex = jtl.tokenStartLocalIndex(matchIndex);
-        int matchTokenListIndex = jtl.activeTokenListIndex();
+        JoinTokenList<T> jtl = (JoinTokenList<T>) tokenList();
+        int matchTokenListIndex;
+        int localMatchIndex;
+        if (matchIndex == jtl.tokenCount()) {
+            localMatchIndex = 0;
+            matchTokenListIndex = jtl.tokenListCount();
+        } else {
+            localMatchIndex = jtl.tokenStartLocalIndex(matchIndex); // Also fetch activeTokenListIndex
+            matchTokenListIndex = jtl.activeTokenListIndex();
+        }
         // Since relexChanges only contain the "new" ETLs (i.e. the removed ETLs are not contained)
         // the algorithm must handle that.
         // To simplify the algorithm first ensure that the matchTokenListIndex is >= possible last removed ETL.
@@ -283,8 +291,8 @@ final class JoinTokenListChange<T extends TokenId> extends TokenListChange<T> {
         // Remember join token count right before the first relexed ETL
         int joinTokenIndex;
         if (relexTokenListIndex > 0) {
-            EmbeddedTokenList<T> etl = jtl.tokenList(relexTokenListIndex - 1);
-            joinTokenIndex = etl.joinInfo.joinTokenIndex() + etl.joinTokenCount(); // Physical removal already performed
+            EmbeddedTokenList<?,T> etl = jtl.tokenList(relexTokenListIndex - 1);
+            joinTokenIndex = etl.joinInfo().joinTokenIndex() + etl.joinTokenCount(); // Physical removal already performed
         } else {
             joinTokenIndex = 0;
         }
@@ -296,17 +304,17 @@ final class JoinTokenListChange<T extends TokenId> extends TokenListChange<T> {
         for (i = 0; i < relexChanges.size(); i++) {
             RelexTokenListChange<T> change = relexChanges.get(i);
             //assert (change.laState().size() == change.addedTokenOrEmbeddingsCount());
-            EmbeddedTokenList<T> etl = (EmbeddedTokenList<T>) change.tokenList();
-            if (etl.joinInfo == null) {
-                etl.joinInfo = new EmbeddedJoinInfo(jtl.base(), joinTokenIndex, relexTokenListIndex + i);
+            EmbeddedTokenList<?,T> etl = (EmbeddedTokenList<?,T>) change.tokenList();
+            if (etl.joinInfo() == null) {
+                etl.setJoinInfo(new EmbeddedJoinInfo<T>(jtl, joinTokenIndex, relexTokenListIndex + i));
             } else {
-                etl.joinInfo.setRawJoinTokenIndex(joinTokenIndex);
+                etl.joinInfo().setRawJoinTokenIndex(joinTokenIndex);
             }
             // Set new joinTokenLastPartShift before calling etl.joinTokenCount()
             // Only set LPS for non-last change and in case the removal was till end
             // of ETL.
             if (i < relexChanges.size() - 1 || change.index() + change.removedTokenCount() == etl.tokenCountCurrent()) {
-                etl.joinInfo.setJoinTokenLastPartShift(change.joinTokenLastPartShift);
+                etl.joinInfo().setJoinTokenLastPartShift(change.joinTokenLastPartShift);
             }
             // Replace tokens in the individual ETL
             etl.replaceTokens(change, eventInfo, (etl == charModTokenList));
@@ -330,10 +338,10 @@ final class JoinTokenListChange<T extends TokenId> extends TokenListChange<T> {
         // Now fix the total join token count
         i += relexTokenListIndex;
         int origJoinTokenIndex = (i < jtl.tokenListCount())
-                ? jtl.tokenList(i).joinInfo.joinTokenIndex()
-                : jtl.base().joinTokenCount();
+                ? jtl.tokenList(i).joinInfo().joinTokenIndex()
+                : jtl.tokenCountCurrent();
         int joinTokenCountDiff = joinTokenIndex - origJoinTokenIndex;
-        jtl.base().updateJoinTokenCount(joinTokenCountDiff);
+        jtl.updateJoinTokenCount(joinTokenCountDiff);
         
         // Possibly mark this change as bound change
         if (relexChanges.size() == 1 && !tokenListListUpdate.isTokenListsMod()) { // Only change inside single ETL
@@ -395,7 +403,7 @@ final class JoinTokenListChange<T extends TokenId> extends TokenListChange<T> {
         
         int joinTokenLastPartShift; // New value for EmbeddedJoinInfo.joinTokenLastPartShift during relex
 
-        RelexTokenListChange(EmbeddedTokenList<T> tokenList) {
+        RelexTokenListChange(EmbeddedTokenList<?,T> tokenList) {
             super(tokenList);
         }
         
@@ -444,9 +452,9 @@ final class JoinTokenListChange<T extends TokenId> extends TokenListChange<T> {
       }
 
       void collectRemovedTokenLists() {
-            EmbeddedTokenList<T>[] removedTokenLists = tokenListListUpdate.removedTokenLists();
+            EmbeddedTokenList<?,T>[] removedTokenLists = tokenListListUpdate.removedTokenLists();
             for (int j = 0; j < removedTokenLists.length; j++) {
-                EmbeddedTokenList<T> removedEtl = removedTokenLists[j];
+                EmbeddedTokenList<?,T> removedEtl = removedTokenLists[j];
                 int tokenCountM1 = removedEtl.tokenCountCurrent() - 1;
                 if (tokenCountM1 >= 0) { // at least one token in removed ETL
                     TokenOrEmbedding<T> tokenOrE = removedEtl.tokenOrEmbedding(0);

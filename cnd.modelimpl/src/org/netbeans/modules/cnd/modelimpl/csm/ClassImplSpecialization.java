@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
 
@@ -179,21 +180,21 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
 //	return qName;
 //    }
     @Override
-    public String getQualifiedNamePostfix() {
-        return super.getQualifiedNamePostfix() + qualifiedNameSuffix.toString();
+    public CharSequence getQualifiedNamePostfix() {
+        return CharSequenceUtils.concatenate(super.getQualifiedNamePostfix(), qualifiedNameSuffix);
     }
 
-    protected String getQualifiedNameWithoutSuffix() {
+    protected CharSequence getQualifiedNameWithoutSuffix() {
         CsmScope scope = getScope();
-        String name = getName().toString();
+        CharSequence name = getName();
         if (CsmKindUtilities.isNamespace(scope)) {
             return Utils.getQualifiedName(name, (CsmNamespace) scope);
-        } else if (CsmKindUtilities.isClass(scope)) {            
-            String n = name;
-            if (name.contains("::")) { // NOI18N
-                name = name.substring(name.lastIndexOf("::") + 2); // NOI18N
+        } else if (CsmKindUtilities.isClass(scope)) {   
+            int last = CharSequenceUtils.lastIndexOf(name, "::"); // NOI18N
+            if (last >= 0) {
+                name = name.toString().substring(last + 2); // NOI18N
             }
-            return ((CsmClass) scope).getQualifiedName() + "::" + name; // NOI18N
+            return CharSequenceUtils.concatenate(((CsmClass) scope).getQualifiedName(), "::", name); // NOI18N
         } else {
              return name;
         }
@@ -269,7 +270,7 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
                     }
                     sb.append(">"); // NOI18N
                     
-                    cls.init2(getSpecializationDescriptor(), NameCache.getManager().getString(CharSequences.create(sb.toString())), s, getFile(), getFileContent(), isGlobal()); // NOI18N
+                    cls.init2(getSpecializationDescriptor(), NameCache.getManager().getString(CharSequences.create(sb)), s, getFile(), getFileContent(), isGlobal()); // NOI18N
                 } catch (AstRendererException ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -315,7 +316,7 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
     }
 
     @Override
-    public String getDisplayName() {
-        return getName() + qualifiedNameSuffix.toString();
+    public CharSequence getDisplayName() {
+        return CharSequenceUtils.concatenate(getName(), qualifiedNameSuffix);
     }
 }

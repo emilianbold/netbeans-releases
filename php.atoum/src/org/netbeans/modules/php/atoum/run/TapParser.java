@@ -43,6 +43,8 @@ package org.netbeans.modules.php.atoum.run;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.php.spi.testing.run.TestCase;
@@ -55,7 +57,10 @@ public final class TapParser {
         NOT_OK,
     }
 
-    private static final Pattern FILE_LINE_PATTERN = Pattern.compile("([^:]+):(\\d+)"); // NOI18N
+
+    static final Logger LOGGER = Logger.getLogger(TapParser.class.getName());
+
+    private static final Pattern FILE_LINE_PATTERN = Pattern.compile("(.+):(\\d+)"); // NOI18N
     private static final Pattern SUITE_TEST_PATTERN = Pattern.compile("([^:\\s]+)::([^\\(]+)\\(\\)"); // NOI18N
 
     private final List<TestSuiteVo> testSuites = new ArrayList<>();
@@ -70,8 +75,13 @@ public final class TapParser {
     public TapParser() {
     }
 
+    public static boolean isTestCaseStart(String line) {
+        return line.startsWith("ok ") // NOI18N
+                || line.startsWith("not ok "); // NOI18N
+    }
+
     public List<TestSuiteVo> parse(String input, long runtime) {
-        for (String line : input.split("\n|\r")) { // NOI18N
+        for (String line : input.split("\\r?\\n|\\r")) { // NOI18N
             parseLine(line.trim());
         }
         processNotOkLines();
@@ -229,12 +239,14 @@ public final class TapParser {
                     diffActual.append("\n"); // NOI18N
                 }
                 diffActual.append(line.substring(1));
-            } else {
-                assert line.startsWith("-") : line;
+            } else if (line.startsWith("-")) {
                 if (diffExpected.length() > 0) {
                     diffExpected.append("\n"); // NOI18N
                 }
                 diffExpected.append(line.substring(1));
+            } else {
+                // unknown line?
+                LOGGER.log(Level.INFO, "Unexpected DIFF line {0}", line);
             }
         }
         testCase.setDiff(new TestCase.Diff(diffExpected.toString(), diffActual.toString()));

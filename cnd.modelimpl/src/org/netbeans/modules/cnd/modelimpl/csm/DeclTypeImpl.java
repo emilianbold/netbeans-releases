@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -68,7 +69,7 @@ public class DeclTypeImpl extends TypeImpl {
     public static boolean isDeclType(AST node) {
         return node != null 
                && node.getFirstChild() != null
-               && node.getFirstChild().getText().toString().equals(DECLTYPE)
+               && CharSequences.comparator().compare(AstUtil.getText(node.getFirstChild()), DECLTYPE) == 0
                && AstUtil.findChildOfType(node, CPPTokenTypes.CSM_EXPRESSION) != null;
     }    
     

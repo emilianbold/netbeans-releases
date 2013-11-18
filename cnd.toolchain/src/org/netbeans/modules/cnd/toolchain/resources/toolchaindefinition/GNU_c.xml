@@ -51,10 +51,13 @@ made subject to such option by the copyright holder.
         <system_include_paths flags="-x c -E -v" parser="GNU"/>
         <system_macros flags="-x c -E -dM" parser="GNU">
             <macro stringvalue="__STDC__=1"/>
-            <macro stringvalue="_OPENMP=200505" flags="-fopenmp"/>
+
+            <macro stringvalue="_REENTRANT=1" flags="-fopenmp"/>
+            <macro stringvalue="_PTHREADS=1" flags="-fopenmp"/>
+            <macro stringvalue="_OPENMP=200805" flags="-fopenmp"/>
+
             <macro stringvalue="__SSP__=1" flags="-fstack-protector"/>
             <macro stringvalue="__SSP_ALL__=2" flags="-fstack-protector-all"/>
-            <macro stringvalue="__NO_INLINE__" flags="-fno-inline"/>
             
             <macro stringvalue="__pic__=1" flags="-fpic"/>
             <macro stringvalue="__PIC__=1" flags="-fpic"/>
@@ -69,6 +72,12 @@ made subject to such option by the copyright holder.
             <macro stringvalue="__PIE__=2" flags="-fPIE"/>
             <macro stringvalue="__pic__=2" flags="-fPIE"/>
             <macro stringvalue="__PIC__=2" flags="-fPIE"/>
+
+            <macro stringvalue="_OPTIMIZE__=1" flags="-O3"/>
+            <macro stringvalue="__NO_INLINE__" flags="-O3" hide="true"/>
+
+            <macro stringvalue="_REENTRANT=1" flags="-pthreads"/>
+            <macro stringvalue="_PTHREADS=1" flags="-pthreads"/>
         </system_macros>
         <user_include flags="-I"/>
         <user_macro flags="-D"/>
@@ -99,7 +108,7 @@ made subject to such option by the copyright holder.
             <c99 flags="-std=c99"/>
         </c_standard>
         <output_object_file flags="-o " />
-        <dependency_generation flags="-MMD -MP -MF $@.d" />
-        <precompiled_header flags="-o $@" suffix=".gch" append="true" />
+        <dependency_generation flags="-MMD -MP -MF &quot;$@.d&quot;" />
+        <precompiled_header flags="-o &quot;$@&quot;" suffix=".gch" append="true" />
     </c>
 </toolchaindefinition>

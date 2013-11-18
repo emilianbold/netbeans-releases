@@ -56,13 +56,18 @@ import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import org.netbeans.modules.cnd.remote.ui.setup.CreateHostWizardIterator;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.RemoteStatistics;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
+import org.openide.util.actions.NodeAction;
 
 /**
  * Root node for remote hosts list in Services tab
@@ -73,7 +78,7 @@ public final class HostListRootNode extends AbstractNode {
     public static final String NODE_NAME = "remote"; // NOI18N
     private static final String ICON_BASE = "org/netbeans/modules/remote/ui/servers.png"; // NOI18N
 
-    private final AddHostAction addHostAction;
+    private final Action[] actions;
 
     @ServicesTabNodeRegistration(name=NODE_NAME, displayName="#LBL_HostRootNode", iconResource=ICON_BASE, position=800)
     public static HostListRootNode getDefault() {
@@ -85,12 +90,16 @@ public final class HostListRootNode extends AbstractNode {
         setName(NODE_NAME);
         setDisplayName(NbBundle.getMessage(HostListRootNode.class, "LBL_HostRootNode"));
         setIconBaseWithExtension(ICON_BASE);
-        addHostAction = new AddHostAction();
+        if (RemoteStatistics.COLLECT_STATISTICS) {
+            actions = new Action[] { new AddHostAction(), new TraficStatisticsAction()};
+        } else {
+            actions = new Action[]{ new AddHostAction() };
+        }
     }
 
     @Override
     public Action[] getActions(boolean context) {
-        return new Action[] { addHostAction };
+        return actions;
     }
 
     private static class HostChildren extends ChildFactory<ExecutionEnvironment> implements PropertyChangeListener, Runnable {
@@ -126,6 +135,50 @@ public final class HostListRootNode extends AbstractNode {
         @Override
         public void run() {
             this.refresh(true);
+        }
+    }
+
+    //@ActionID(id = "org.netbeans.modules.remote.ui.TrafficStatisticsAction", category = "NativeRemote")
+    //@ActionRegistration(displayName = "TrafficStatisticsMenuItem")
+    //@ActionReference(path = "Remote/Host/Actions", name = "TrafficStatisticsAction", position = 99998)
+    private static class TraficStatisticsAction extends NodeAction {
+
+        public TraficStatisticsAction() {
+        }
+
+        @Override
+        public String getName() {
+            return NbBundle.getMessage(HostListRootNode.class, "TrafficStatisticsMenuItem");
+        }
+
+        @Override
+        protected boolean asynchronous() {
+            return false;
+        }        
+
+        @Override
+        protected boolean enable(Node[] activatedNodes) {
+            return true;
+        }
+        
+        @Override
+        public HelpCtx getHelpCtx() {
+            return HelpCtx.DEFAULT_HELP;
+        }
+
+        @Override
+        protected void performAction(Node[] activatedNodes) {
+            final NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine("Log file:", "Turn Remote Statistics On"); // NOI18N
+            DialogDisplayer.getDefault().notify(notifyDescriptor);
+            if (notifyDescriptor.getValue() == NotifyDescriptor.OK_OPTION) {    
+                final String inputText = notifyDescriptor.getInputText();
+                RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        RemoteStatistics.startTest(inputText, null, 0, 10000);
+                    }
+                });
+            }
         }
     }
 

@@ -47,7 +47,8 @@ package org.netbeans.modules.cnd.apt.impl.structure;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.io.Serializable;
-import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
@@ -156,7 +157,7 @@ public abstract class APTStreamBaseNode extends APTTokenBasedNode
     private void appendToken(APTToken token) {
         assert (validToken(token)) : "must append only valid tokens"; // NOI18N
         if (tokens == null) {
-            tokens = new ArrayList<APTToken>();
+            tokens = new LinkedList<APTToken>();
         }
         tokens.add(token);
     }
@@ -165,28 +166,30 @@ public abstract class APTStreamBaseNode extends APTTokenBasedNode
     
     /** token stream iterator */
     private static class TokenStreamIterator implements TokenStream {
-        private int index = -1;
         private final APTToken firstToken;
-        private final List<APTToken> tokens;
-        private final int size;
+        private final Iterator<APTToken> tokens;
+        private boolean first = true;
         public TokenStreamIterator(APTToken firstToken, List<APTToken> tokens) {
             this.firstToken = firstToken;
-            this.tokens = tokens;
-            this.size = tokens != null ? tokens.size() : 0;
+            if (tokens != null) {
+                this.tokens = tokens.iterator();
+            } else {
+                this.tokens = null;
+            }
         }
         
         @Override
         public APTToken nextToken() throws TokenStreamException {
-            APTToken token;
-            if (index == -1) {
-                token = firstToken;
-                index++;
-            } else if (tokens != null && index < size) {
-                token = tokens.get(index++);
-            } else {
-                token = APTUtils.EOF_TOKEN;
+            if (first) {
+                first =false;
+                return firstToken;
             }
-            return token;
+            if (tokens != null) {
+                if (tokens.hasNext()) {
+                    return tokens.next();
+                }
+            }
+            return APTUtils.EOF_TOKEN;
         }
     }
 }

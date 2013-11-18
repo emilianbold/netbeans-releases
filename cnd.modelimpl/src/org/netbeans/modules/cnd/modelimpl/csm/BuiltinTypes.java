@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.ObjectBasedUID;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.CharSequences;
 
 /**
@@ -92,7 +93,7 @@ public class BuiltinTypes {
 
         @Override
         public CharSequence getUniqueName() {
-            return CharSequences.create(Utils.getCsmDeclarationKindkey(getKind()) + OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR +  getQualifiedName());
+            return CharSequences.create(CharSequenceUtils.concatenate(Utils.getCsmDeclarationKindkey(getKind()), OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR,  getQualifiedName()));
         }
         
         @Override
@@ -158,7 +159,7 @@ public class BuiltinTypes {
             sb.append(AstUtil.getText(token));
         }
         assert sb.length() > 0 : "no name in " + AstUtil.toString(ast);
-        return getBuiltIn(sb.toString());
+        return getBuiltIn(sb);
     }
     
     public static CsmBuiltIn getBuiltIn(CharSequence text) {

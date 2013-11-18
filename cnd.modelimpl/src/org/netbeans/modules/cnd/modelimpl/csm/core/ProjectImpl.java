@@ -370,7 +370,7 @@ public final class ProjectImpl extends ProjectBase {
         // we don't need this since ProjectBase persists fqn
         //UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
         //aFactory.writeUID(getUID(), aStream);
-        LibraryManager.getInstance(this).writeProjectLibraries(getUID(), aStream);
+        getLibraryManager().writeProjectLibraries(getUID(), aStream);
     }
 
     public ProjectImpl(RepositoryDataInput input) throws IOException {
@@ -379,7 +379,7 @@ public final class ProjectImpl extends ProjectBase {
         //UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
         //CsmUID uid = aFactory.readUID(input);
         //LibraryManager.getInsatnce().read(uid, input);
-        LibraryManager.getInstance(this).readProjectLibraries(getUID(), input);
+        getLibraryManager().readProjectLibraries(getUID(), input);
     //nativeFiles = new NativeFileContainer();
     }
 
@@ -453,9 +453,7 @@ public final class ProjectImpl extends ProjectBase {
                 }
             }
             delay = TraceFlags.REPARSE_DELAY;
-            NamedOption.getAccessor().getBoolean(ReparseOnEditOption.NAME);
-            boolean doReparse = NamedOption.getAccessor().getBoolean(ReparseOnEditOption.NAME);
-            if (doReparse) {
+            if (TraceFlags.REPARSE_ON_DOCUMENT_CHANGED) {
                 if (file.getLastParseTime() / (delay+1) > 2) {
                     delay = Math.max(delay, file.getLastParseTime()+2000);
                 }
@@ -463,7 +461,10 @@ public final class ProjectImpl extends ProjectBase {
                 delay = Integer.MAX_VALUE;
             }
         }
-        task.schedule(delay);
+        // to prevent frequent re-post 
+        if (task.getDelay() < Math.max(100, delay - 100)) {
+            task.schedule(delay);
+        }
     }
 
     @Override
@@ -474,35 +475,6 @@ public final class ProjectImpl extends ProjectBase {
                 task.cancelTask();
             }
             editedFiles.clear();
-        }
-    }
-
-    @ServiceProvider(path=NamedOption.OTHER_CATEGORY, service=NamedOption.class, position=1200)
-    public static final class ReparseOnEditOption extends NamedOption {
-        private static final String NAME = "reparse-on-document-changed"; //NOI18N
-        @Override
-        public String getName() {
-            return NAME;
-        }
-
-        @Override
-        public String getDisplayName() {
-            return NbBundle.getMessage(ProjectImpl.class, "Show-reparse-on-document-changed"); //NOI18N
-        }
-
-        @Override
-        public String getDescription() {
-            return NbBundle.getMessage(ProjectImpl.class, "Show-reparse-on-document-changed-AD"); //NOI18N
-        }
-
-        @Override
-        public OptionKind getKind() {
-            return OptionKind.Boolean;
-        }
-
-        @Override
-        public Object getDefaultValue() {
-            return true;
         }
     }
 }

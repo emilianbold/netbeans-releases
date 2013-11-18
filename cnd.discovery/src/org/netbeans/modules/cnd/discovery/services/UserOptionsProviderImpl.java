@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PkgConfig;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.ResolvedPath;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -261,7 +262,7 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
                     ArrayList<CharSequence> res = new ArrayList<CharSequence>(1);
                     if (resolvedPath != null) {
                         for(ResolvedPath path : resolvedPath) {
-                            res.add(CharSequences.create(path.getIncludePath()+File.separator+fileName));
+                            res.add(CharSequences.create(CharSequenceUtils.concatenate(path.getIncludePath(),File.separator,fileName)));
                         }
                     }
                     return res;

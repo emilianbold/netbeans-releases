@@ -92,6 +92,7 @@ public abstract class ConfigurationDescriptorProvider {
     private boolean hasTried;
     private String relativeOffset;
     private boolean needReload = true;
+    private volatile Interrupter interrupter;
 
     protected ConfigurationDescriptorProvider(Project project, FileObject projectDirectory) {
         this.project = project;
@@ -105,7 +106,7 @@ public abstract class ConfigurationDescriptorProvider {
     }
     
     public MakeConfigurationDescriptor getConfigurationDescriptor() {
-        return getConfigurationDescriptor(null, false);
+        return getConfigurationDescriptor(false);
     }
 
     protected MakeConfigurationDescriptor getConfigurationDescriptorImpl() {
@@ -120,7 +121,7 @@ public abstract class ConfigurationDescriptorProvider {
         }
     }
 
-    private MakeConfigurationDescriptor getConfigurationDescriptor(Interrupter interrupter, boolean reload) {
+    private MakeConfigurationDescriptor getConfigurationDescriptor(boolean reload) {
         synchronized(isOpened) {
             if (!isOpened.get()) {
                 return null;
@@ -289,7 +290,7 @@ public abstract class ConfigurationDescriptorProvider {
         String[] families;
         if (compilerSet != null) {
             families = compilerSet.getCompilerFlavor().getToolchainDescriptor().getFamily();
-            flavor = compilerSet.getCompilerFlavor().toString();
+            flavor = compilerSet.getCompilerFlavor().getToolchainDescriptor().getName();
         } else {
             families = new String[0];
             if (makeConfiguration.getCompilerSet() != null) {
@@ -405,17 +406,18 @@ public abstract class ConfigurationDescriptorProvider {
         }
     }
 
-    protected void opening() {
+    protected void opening(Interrupter interrupter) {
         synchronized(isOpened) {
             isOpened.set(true);
             needReload = true;
             hasTried = false;
             projectDescriptor.setState(State.READING);
+            this.interrupter = interrupter;
         }
     }
     
-    public void opened(Interrupter interrupter) {
-        MakeConfigurationDescriptor descr = getConfigurationDescriptor(interrupter, false);
+    public void opened() {
+        MakeConfigurationDescriptor descr = getConfigurationDescriptor(false);
         if (descr != null) {
             descr.opened(interrupter);
         }
@@ -499,7 +501,7 @@ public abstract class ConfigurationDescriptorProvider {
 
                             @Override
                             public void run() {
-                                getConfigurationDescriptor(null, true);
+                                getConfigurationDescriptor(true);
                             }
                         });
                     }

@@ -45,12 +45,15 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.textcache.DefaultCache;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileObject;
@@ -67,19 +70,35 @@ public class SourceRootContainer {
         this.isFixedRoots = isFixedRoots;
     }
     
-    public boolean isMySource(String includePath){
-        if (projectRoots.containsKey(DefaultCache.getManager().getString(includePath))){
-            return true;
+    public boolean isMySource(CharSequence includePath){
+        if (projectRoots.size() < 10) {
+            boolean check = false;
+            for(Map.Entry<CharSequence,Integer> entry : projectRoots.entrySet()) {
+                if (CharSequenceUtils.startsWith(includePath, entry.getKey())) {
+                    if (includePath.length() == entry.getKey().length()) {
+                        return true;
+                    }
+                    check = true;
+                    break;
+                }
+            }
+            if (!check) {
+                return false;
+            }
+        } else {
+            if (projectRoots.containsKey(DefaultCache.getManager().getString(includePath))){
+                return true;
+            }
         }
         while (true){
-            int i = includePath.lastIndexOf('\\');
+            int i = CharSequenceUtils.lastIndexOf(includePath, '\\');
             if (i <= 0) {
-                i = includePath.lastIndexOf('/');
+                i = CharSequenceUtils.lastIndexOf(includePath, '/');
             }
             if (i <= 0) {
                 return false;
             }
-            includePath = includePath.substring(0,i);
+            includePath = includePath.subSequence(0,i);
             Integer val = projectRoots.get(DefaultCache.getManager().getString(includePath));
             if (val != null) {
                 if (isFixedRoots) {
@@ -95,7 +114,7 @@ public class SourceRootContainer {
         }
     }
     
-    public void fixFolder(String path){
+    public void fixFolder(CharSequence path){
         if (path != null) {
             projectRoots.put(FilePathCache.getManager().getString(path), Integer.MAX_VALUE / 2);
         }
@@ -123,7 +142,30 @@ public class SourceRootContainer {
         }
     }
     
-    private void addPath(final String path) {
+    private CharSequence findParent(CharSequence path) {
+        while (true){
+            Integer val = projectRoots.get(DefaultCache.getManager().getString(path));
+            if (val != null) {
+                if (val > Integer.MAX_VALUE/4) {
+                    return path;
+                }
+            }
+            int i = CharSequenceUtils.lastIndexOf(path, '\\');
+            if (i <= 0) {
+                i = CharSequenceUtils.lastIndexOf(path, '/');
+            }
+            if (i <= 0) {
+                return null;
+            }
+            path = path.subSequence(0,i);
+        }
+    }
+    
+    private void addPath(CharSequence path) {
+        CharSequence parent = findParent(path);
+        if (parent != null) {
+            path = parent;
+        }
         CharSequence added = FilePathCache.getManager().getString(path);
         Integer integer = projectRoots.get(added);
         if (integer == null) {

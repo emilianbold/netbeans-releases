@@ -65,10 +65,10 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 /*package*/ final class InstantiationKey extends OffsetableKey {
     
     InstantiationKey(CsmInstantiation inst) {
-        super(inst.getTemplateDeclaration(), Utils.getCsmInstantiationKindKey(), NameCache.getManager().getString(getName(inst))); // NOI18N
+        super(inst.getTemplateDeclaration(), NameCache.getManager().getString(getName(inst))); // NOI18N
     }
     
-    private static String getName(CsmInstantiation inst) {
+    private static CharSequence getName(CsmInstantiation inst) {
         StringBuilder sb = new StringBuilder(inst.getTemplateDeclaration().getName());
         sb.append("<"); // NOI18N
         Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = inst.getMapping();
@@ -85,7 +85,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
             }
         }
         sb.append(">"); // NOI18N
-        return sb.toString();
+        return sb;
     }
 
     /*package*/ InstantiationKey(RepositoryDataInput aStream) throws IOException {
@@ -99,6 +99,16 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
     @Override
     public PersistentFactory getPersistentFactory() {
         return CsmObjectFactory.instance();
+    }
+    
+    @Override
+    char getKind() {
+        return Utils.getCsmInstantiationKindKey();
+    }
+
+    @Override
+    public short getHandler() {
+        return KeyObjectFactory.KEY_INSTANTIATION_KEY;
     }
 
     @Override
@@ -117,7 +127,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
     @Override
     public int getSecondaryAt(int level) {
         if (level == 0) {
-            return KeyObjectFactory.KEY_INSTANTIATION_KEY;
+            return getHandler();
         } else {
             return super.getSecondaryAt(level - 1);
         }

@@ -62,7 +62,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 /*package*/ final class MacroKey extends OffsetableKey {
     
     MacroKey(CsmMacro obj) {
-	super(obj, Utils.getCsmDeclarationKindkey(Kind.MACRO), NameCache.getManager().getString(obj.getName())); // NOI18N
+	super(obj, NameCache.getManager().getString(obj.getName())); // NOI18N
     }
     
     /*package*/ MacroKey(RepositoryDataInput aStream) throws IOException {
@@ -72,7 +72,16 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
     MacroKey(KeyDataPresentation presentation) {
         super(presentation);
     }
-    
+
+    @Override
+    char getKind() {
+        return Utils.getCsmDeclarationKindkey(Kind.MACRO);
+    }
+
+    @Override
+    public short getHandler() {
+        return KeyObjectFactory.KEY_MACRO_KEY;
+    }
     
     @Override
     public PersistentFactory getPersistentFactory() {
@@ -95,7 +104,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
     @Override
     public int getSecondaryAt(int level) {
 	if (level == 0) {
-	    return KeyObjectFactory.KEY_MACRO_KEY;
+	    return getHandler();
 	}  else {
 	    return super.getSecondaryAt(level - 1);
 	}

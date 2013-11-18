@@ -85,8 +85,8 @@ public class PhpLanguagePropertiesTest extends PhpTestCase {
 
         assertFalse(listener.latch.await(500, TimeUnit.MILLISECONDS));
         assertTrue(listener.events.isEmpty());
-        assertEquals(PhpLanguageProperties.SHORT_TAGS_ENABLED, defaultProps.areShortTagsEnabled());
-        assertEquals(PhpLanguageProperties.ASP_TAGS_ENABLED, defaultProps.areAspTagsEnabled());
+        assertEquals(true, defaultProps.areShortTagsEnabled());
+        assertEquals(true, defaultProps.areAspTagsEnabled());
         assertEquals(PhpLanguageProperties.PhpVersion.getDefault(), defaultProps.getPhpVersion());
     }
 

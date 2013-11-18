@@ -126,8 +126,8 @@ public class APTConditionResolverTest {
         assertFalse("failed to evaluate " + testMacro + " for " + macroName + "=" + maxValue, walker.isStopped());
         APTMacro macroSIZEOF_INT = mmap.getMacro(APTUtils.createIDENT(CharSequences.create(testMacro)));
         assertNotNull(macroSIZEOF_INT);
-        String value = APTUtils.stringize(macroSIZEOF_INT.getBody(), false);
-        assertEquals(testMacro, Integer.toString(sizeof), value);
+        CharSequence value = APTUtils.stringize(macroSIZEOF_INT.getBody(), false);
+        assertEquals(testMacro, Integer.toString(sizeof), value.toString());
     }
 
     private static final String LONG_VS_UNIT_CHECK_CODE =   "#define BIG_UINT_VALUE (0XFFFFFFFF  )\n" +

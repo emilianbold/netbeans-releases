@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.CharSequences;
 
 /**
@@ -98,7 +99,7 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         this.name = NameCache.getManager().getString(name.getName());
     }
     
-    protected ClassEnumBase(CharSequence name, String qName, CsmFile file, int startOffset, int endOffset) {
+    protected ClassEnumBase(CharSequence name, CharSequence qName, CsmFile file, int startOffset, int endOffset) {
         super(file, startOffset, endOffset);
         enclosingElements = Collections.synchronizedList(new ArrayList<CsmUID<CsmOffsetableDeclaration>>(0));
         this.name = NameCache.getManager().getString(name);
@@ -157,11 +158,11 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
             String suffix = n.substring(n.lastIndexOf("::") + 2); // NOI18N
             if (CsmKindUtilities.isNamespace(scope)) {
                 CsmNamespace ns = (CsmNamespace) scope;
-                String qn;
+                CharSequence qn;
                 if (ns.isGlobal()) {
                     qn = prefix;
                 } else {
-                    qn = ns.getQualifiedName().toString() + "::" + prefix; // NOI18N
+                    qn = CharSequenceUtils.concatenate(ns.getQualifiedName(), "::", prefix); // NOI18N
                 }
                 Collection<CsmClassifier> defs = ns.getProject().findClassifiers(qn);
                 ClassImpl.MemberForwardDeclaration out = null;
@@ -209,11 +210,11 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         if (CsmKindUtilities.isNamespace(scope)) {
             qualifiedName = Utils.getQualifiedName(qualifiedNamePostfix.toString(), (CsmNamespace) scope);
         } else if (CsmKindUtilities.isClass(scope)) {
-            String n = qualifiedNamePostfix.toString();
-            if (n.contains("::")) { // NOI18N
-                qualifiedNamePostfix = n.substring(n.lastIndexOf("::") + 2); // NOI18N
+            int last = CharSequenceUtils.lastIndexOf(qualifiedNamePostfix, "::"); // NOI18N
+            if (last >= 0) { // NOI18N
+                qualifiedNamePostfix = qualifiedNamePostfix.toString().substring(last + 2); // NOI18N
             }
-            qualifiedName = ((CsmClass) scope).getQualifiedName() + "::" + qualifiedNamePostfix; // NOI18N
+            qualifiedName = CharSequenceUtils.concatenate(((CsmClass) scope).getQualifiedName(), "::", qualifiedNamePostfix); // NOI18N
         } else {
             qualifiedName = qualifiedNamePostfix;
         }

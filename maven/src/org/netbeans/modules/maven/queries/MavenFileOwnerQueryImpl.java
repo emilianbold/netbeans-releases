@@ -46,6 +46,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -81,6 +82,7 @@ import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
@@ -201,7 +203,10 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
             //TODO we should remove the project's mapping in this case and wait for it to reappear loadable again
             return false;
         }
-        registerCoordinates(model.getGroupId(), model.getArtifactId(), model.getVersion(), project.getProjectDirectory().toURL(), fire);
+        try {
+            registerCoordinates(model.getGroupId(), model.getArtifactId(), model.getVersion(), Utilities.toURI(project.getPOMFile().getParentFile()).toURL(), fire);
+        } catch (MalformedURLException ex) {
+        }
         return true;
     }
     
@@ -398,7 +403,9 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
                         // Might actually be a match due to use of e.g. string interpolation, so double-check with live project.
                         FileObject projectDir = URLMapper.findFileObject(new URI(ownerURI).toURL());
                         if (projectDir != null && projectDir.isFolder()) {
-                            MavenProject prj = MavenProjectCache.getMavenProject(projectDir, false);
+                            File pomFile = new File(FileUtil.toFile(projectDir), "pom.xml");
+                            //TODO the file instance will not be the same instance passed by project. how does weakhashmap behave in such a case?
+                            MavenProject prj = MavenProjectCache.getMavenProject(pomFile, false);
                             if (prj != null && prj.getGroupId().equals(groupId) && prj.getArtifactId().equals(artifactId) && prj.getVersion().equals(version)) {
                                 return pom;
                             }

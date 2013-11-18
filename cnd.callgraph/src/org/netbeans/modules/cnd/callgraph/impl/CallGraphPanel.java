@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.callgraph.impl;
 
+import org.netbeans.modules.cnd.callgraph.support.ExportAction;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -58,6 +59,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JCheckBoxMenuItem;
@@ -109,9 +111,10 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
     
     private CallGraphScene scene;
     private static double dividerLocation = 0.5;
-    private transient FocusTraversalPolicy newPolicy;
+    private final transient FocusTraversalPolicy newPolicy;
     private static final boolean isMacLaf = "Aqua".equals(UIManager.getLookAndFeel().getID()); // NOI18N
     private static final Color macBackground = UIManager.getColor("NbExplorerView.background"); // NOI18N
+    private AtomicBoolean isSetDividerLocation = new AtomicBoolean(false);
     
     /** Creates new form CallGraphPanel */
     public CallGraphPanel(boolean showGraph) {
@@ -148,7 +151,9 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
             addComponentListener(new ComponentListener() {
                 @Override
                 public void componentResized(ComponentEvent e) {
+                    isSetDividerLocation.set(true);
                     jSplitPane1.setDividerLocation(dividerLocation);
+                    isSetDividerLocation.set(false);
                 }
                 @Override
                 public void componentMoved(ComponentEvent e) {
@@ -165,15 +170,21 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (JSplitPane.DIVIDER_LOCATION_PROPERTY.equals(evt.getPropertyName())) {
+                        if (isSetDividerLocation.get()) {
+                            return;
+                        }
                         double width = jSplitPane1.getWidth();
                         double size = jSplitPane1.getDividerSize();
                         double location = jSplitPane1.getDividerLocation();
-                        if (width < size) {
+                        if (width <= size) {
                             return;
                         }
-                        double x = (location + size/2)/width;
-                        if (x < 0.0 || x > 1.0) {
-                            return;
+                        double x =  location/(width-size);
+                        if (x > 1.0) {
+                            x = 1.0;
+                        }
+                        if (x < 0.0) {
+                            x = 0.0;
                         }
                         dividerLocation = x;
                     }
@@ -547,7 +558,7 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     // End of variables declaration//GEN-END:variables
     
     private final class RefreshAction extends AbstractAction implements Presenter.Popup {
-        private JMenuItem menuItem;
+        private final JMenuItem menuItem;
         public RefreshAction() {
             putValue(Action.NAME, NbBundle.getMessage(CallGraphPanel.class, "RefreshAction"));  // NOI18N
             putValue(Action.SMALL_ICON, refresh.getIcon());
@@ -567,7 +578,7 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     }
 
     private final class WhoCallsAction extends AbstractAction implements Presenter.Popup {
-        private JRadioButtonMenuItem menuItem;
+        private final JRadioButtonMenuItem menuItem;
         public WhoCallsAction() {
             putValue(Action.NAME, NbBundle.getMessage(CallGraphPanel.class, "CallersAction"));  // NOI18N
             putValue(Action.SMALL_ICON, callers.getIcon());
@@ -588,7 +599,7 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     }
 
     private final class WhoIsCalledAction extends AbstractAction implements Presenter.Popup {
-        private JRadioButtonMenuItem menuItem;
+        private final JRadioButtonMenuItem menuItem;
         public WhoIsCalledAction() {
             putValue(Action.NAME, NbBundle.getMessage(CallGraphPanel.class, "CallsAction"));  // NOI18N
             putValue(Action.SMALL_ICON, calls.getIcon());
@@ -609,7 +620,7 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     }
 
     private final class ShowOverridingAction extends AbstractAction implements Presenter.Popup {
-        private JCheckBoxMenuItem menuItem;
+        private final JCheckBoxMenuItem menuItem;
         public ShowOverridingAction() {
             putValue(Action.NAME, NbBundle.getMessage(CallGraphPanel.class, "ShowOverridingAction"));  // NOI18N
             putValue(Action.SMALL_ICON, overriding.getIcon());
@@ -630,7 +641,7 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     }
 
     private final class ShowFunctionParameters extends AbstractAction implements Presenter.Popup {
-        private JCheckBoxMenuItem menuItem;
+        private final JCheckBoxMenuItem menuItem;
         public ShowFunctionParameters() {
             putValue(Action.NAME, NbBundle.getMessage(CallGraphPanel.class, "ShowFunctionSignature"));  // NOI18N
             menuItem = new JCheckBoxMenuItem(this);
@@ -650,7 +661,7 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     }
 
     private final class FocusOnAction extends AbstractAction implements Presenter.Popup {
-        private JMenuItem menuItem;
+        private final JMenuItem menuItem;
         public FocusOnAction() {
             putValue(Action.NAME, NbBundle.getMessage(CallGraphPanel.class, "FocusOnAction"));  // NOI18N
             putValue(Action.SMALL_ICON, focusOn.getIcon());
@@ -670,8 +681,8 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     }
 
     private static final class ContextPanel extends JPanel implements ExplorerManager.Provider {
-        private ExplorerManager managerCtx = new ExplorerManager();
-        private ListView listView = new ListView();
+        private final ExplorerManager managerCtx = new ExplorerManager();
+        private final ListView listView = new ListView();
         private ContextPanel(){
             listView.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "CGP_ListView_AM")); // NOI18N
             listView.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "CGP_ListView_AD")); // NOI18N
@@ -717,7 +728,7 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         }
 
         public static class CallContext extends AbstractNode {
-            private Call call;
+            private final Call call;
             public CallContext(Call element) {
                 super( Children.LEAF);
                 call = element;
@@ -752,8 +763,8 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     }
     
     public static class MyOwnFocusTraversalPolicy extends FocusTraversalPolicy {
-        private ArrayList<Component> order;
-        private Container panel;
+        private final ArrayList<Component> order;
+        private final Container panel;
         public MyOwnFocusTraversalPolicy(Container panel, List<Component> order) {
             this.order = new ArrayList<Component>(order.size());
             this.order.addAll(order);

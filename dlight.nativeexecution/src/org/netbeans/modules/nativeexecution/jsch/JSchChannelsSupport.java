@@ -243,7 +243,7 @@ public final class JSchChannelsSupport {
                         newSession.setConfig("compression_level", "9"); // NOI18N
                     }
 
-                    if (RemoteStatistics.COLLECT_STATISTICS) {
+                    if (RemoteStatistics.COLLECT_STATISTICS && RemoteStatistics.COLLECT_TRAFFIC) {
                         newSession.setSocketFactory(MeasurableSocketFactory.getInstance());
                     }
 

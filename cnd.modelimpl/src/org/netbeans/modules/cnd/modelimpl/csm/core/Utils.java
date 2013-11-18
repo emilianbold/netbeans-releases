@@ -74,6 +74,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.lookup.Lookups;
 
 
@@ -145,15 +146,11 @@ public class Utils {
         return new Offsetable(file, startOffset, endOffset);
     }
     
-    public static String getQualifiedName(String name, CsmNamespace parent) {
-        StringBuilder sb = new StringBuilder(name);
-        if (parent != null) {
-            if (!parent.isGlobal()) {
-                sb.insert(0, "::"); // NOI18N
-                sb.insert(0, parent.getQualifiedName());
-            }
+    public static CharSequence getQualifiedName(CharSequence name, CsmNamespace parent) {
+        if (parent != null && !parent.isGlobal()) {
+            return CharSequenceUtils.concatenate(parent.getQualifiedName(), "::", name); // NOI18N
         }
-        return sb.toString();
+        return name;
     }
       
     public static CharSequence[] splitQualifiedName(String qualified) {
@@ -188,22 +185,37 @@ public class Utils {
         }
     }
 
-    public static String getCsmIncludeKindKey() {
+    public static char getCsmIncludeKindKey() {
         // Returned string should be differed from getCsmDeclarationKindkey()
-        return "I"; // NOI18N
+        return 'I'; // NOI18N
     }
 
-    public static String getCsmInheritanceKindKey(CsmInheritance obj) {
+    public static char getCsmInheritanceKindKey(CsmInheritance obj) {
         switch (obj.getVisibility()) {
             case PRIVATE:
-                return "h"; // NOI18N
+                return 'h'; // NOI18N
             case PROTECTED:
-                return "y"; // NOI18N
+                return 'y'; // NOI18N
             case PUBLIC:
-                return "H"; // NOI18N
+                return 'H'; // NOI18N
             case NONE:
             default:
-                return "Y"; // NOI18N
+                return 'Y'; // NOI18N
+        }
+        // Returned string should be differed from getCsmDeclarationKindkey()
+    }
+
+    public static char getCsmInheritanceKindKey(CsmVisibility obj) {
+        switch (obj) {
+            case PRIVATE:
+                return 'h'; // NOI18N
+            case PROTECTED:
+                return 'y'; // NOI18N
+            case PUBLIC:
+                return 'H'; // NOI18N
+            case NONE:
+            default:
+                return 'Y'; // NOI18N
         }
         // Returned string should be differed from getCsmDeclarationKindkey()
     }
@@ -222,91 +234,91 @@ public class Utils {
         }
     }
 
-    public static String getCsmParamListKindKey() {
+    public static char getCsmParamListKindKey() {
         // Returned string should be differed from getCsmDeclarationKindkey()
-        return "P"; // NOI18N
+        return 'P'; // NOI18N
     }
 
-    public static String getCsmInstantiationKindKey() {
+    public static char getCsmInstantiationKindKey() {
         // Returned string should be differed from getCsmDeclarationKindkey() and getCsmParamListKindKey()
-        return "i"; // NOI18N
+        return 'i'; // NOI18N
     }
     
     public static CharSequence[] getAllClassifiersUniqueNames(CharSequence uniqueName) {
         CharSequence namePostfix = uniqueName.subSequence(1, uniqueName.length());
         CharSequence out[] = new CharSequence[]
                                 {
-                                getCsmDeclarationKindkey(CsmDeclaration.Kind.CLASS) + namePostfix,
-                                getCsmDeclarationKindkey(CsmDeclaration.Kind.STRUCT) + namePostfix,
-                                getCsmDeclarationKindkey(CsmDeclaration.Kind.UNION) + namePostfix,
-                                getCsmDeclarationKindkey(CsmDeclaration.Kind.ENUM) + namePostfix,
-                                getCsmDeclarationKindkey(CsmDeclaration.Kind.TYPEDEF) + namePostfix,
-                                getCsmDeclarationKindkey(CsmDeclaration.Kind.TYPEALIAS) + namePostfix,
-                                getCsmDeclarationKindkey(CsmDeclaration.Kind.CLASS_FORWARD_DECLARATION) + namePostfix,
-                                getCsmDeclarationKindkey(CsmDeclaration.Kind.ENUM_FORWARD_DECLARATION) + namePostfix
+                                CharSequenceUtils.concatenate(getCsmDeclarationKindkey(CsmDeclaration.Kind.CLASS), namePostfix),
+                                CharSequenceUtils.concatenate(getCsmDeclarationKindkey(CsmDeclaration.Kind.STRUCT), namePostfix),
+                                CharSequenceUtils.concatenate(getCsmDeclarationKindkey(CsmDeclaration.Kind.UNION), namePostfix),
+                                CharSequenceUtils.concatenate(getCsmDeclarationKindkey(CsmDeclaration.Kind.ENUM), namePostfix),
+                                CharSequenceUtils.concatenate(getCsmDeclarationKindkey(CsmDeclaration.Kind.TYPEDEF), namePostfix),
+                                CharSequenceUtils.concatenate(getCsmDeclarationKindkey(CsmDeclaration.Kind.TYPEALIAS), namePostfix),
+                                CharSequenceUtils.concatenate(getCsmDeclarationKindkey(CsmDeclaration.Kind.CLASS_FORWARD_DECLARATION), namePostfix),
+                                CharSequenceUtils.concatenate(getCsmDeclarationKindkey(CsmDeclaration.Kind.ENUM_FORWARD_DECLARATION), namePostfix)
                                 };
         return out;
     }
 
-    public static String getCsmDeclarationKindkey(CsmDeclaration.Kind kind) {
+    public static char getCsmDeclarationKindkey(CsmDeclaration.Kind kind) {
         // Returned string should be differed from getCsmIncludeKindkey()
         switch (kind) {
             case ASM:
-                return "A"; // NOI18N
+                return 'A'; // NOI18N
             case BUILT_IN:
-                return "B"; // NOI18N
+                return 'B'; // NOI18N
             case CLASS:
-                return "C"; // NOI18N
+                return 'C'; // NOI18N
             case ENUM:
-                return "E"; // NOI18N
+                return 'E'; // NOI18N
             case FUNCTION:
-                return "F"; // NOI18N
+                return 'F'; // NOI18N
             case MACRO:
-                return "M"; // NOI18N
+                return 'M'; // NOI18N
             case NAMESPACE_DEFINITION:
-                return "N"; // NOI18N
+                return 'N'; // NOI18N
             case STRUCT:
-                return "S"; // NOI18N
+                return 'S'; // NOI18N
             case TEMPLATE_DECLARATION:
-                return "T"; // NOI18N
+                return 'T'; // NOI18N
             case UNION:
-                return "U"; // NOI18N
+                return 'U'; // NOI18N
             case VARIABLE:
-                return "V"; // NOI18N
+                return 'V'; // NOI18N
             case NAMESPACE_ALIAS:
-                return "a"; // NOI18N
+                return 'a'; // NOI18N
             case ENUMERATOR:
-                return "e"; // NOI18N
+                return 'e'; // NOI18N
             case FUNCTION_DEFINITION:
-                return "f"; // NOI18N
+                return 'f'; // NOI18N
             case FUNCTION_LAMBDA:
-                return "l"; // NOI18N
+                return 'l'; // NOI18N
             case FUNCTION_INSTANTIATION:
-                return "j"; // NOI18N
+                return 'j'; // NOI18N
             case USING_DIRECTIVE:
-                return "g"; // NOI18N
+                return 'g'; // NOI18N
             case TEMPLATE_PARAMETER:
-                return "p"; // NOI18N
+                return 'p'; // NOI18N
             case CLASS_FRIEND_DECLARATION:
-                return "r"; // NOI18N
+                return 'r'; // NOI18N
             case TEMPLATE_SPECIALIZATION:
-                return "s"; // NOI18N
+                return 's'; // NOI18N
             case TYPEDEF:
-                return "t"; // NOI18N
+                return 't'; // NOI18N
             case TYPEALIAS:
-                return "x"; // NOI18N
+                return 'x'; // NOI18N
             case USING_DECLARATION:
-                return "u"; // NOI18N
+                return 'u'; // NOI18N
             case VARIABLE_DEFINITION:
-                return "v"; // NOI18N
+                return 'v'; // NOI18N
             case CLASS_FORWARD_DECLARATION:
-                return "w"; // NOI18N
+                return 'w'; // NOI18N
             case ENUM_FORWARD_DECLARATION:
-                return "W"; // NOI18N
+                return 'W'; // NOI18N
             case FUNCTION_FRIEND:
-                return "D"; // NOI18N
+                return 'D'; // NOI18N
             case FUNCTION_FRIEND_DEFINITION:
-                return "d"; // NOI18N
+                return 'd'; // NOI18N
             default:
                 throw new IllegalArgumentException("Unexpected value of CsmDeclaration.Kind:" + kind); //NOI18N
         }

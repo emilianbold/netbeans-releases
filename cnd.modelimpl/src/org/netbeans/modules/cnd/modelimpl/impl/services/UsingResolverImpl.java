@@ -68,6 +68,8 @@ import org.netbeans.modules.cnd.api.model.CsmUsingDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUsingDirective;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
+import org.openide.util.CharSequences;
 
 /**
  * implementation of using directives and using declarations resolver
@@ -105,6 +107,49 @@ public final class UsingResolverImpl extends CsmUsingResolver implements CsmProg
                             ns, CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.USING_DECLARATION));
                     while (it.hasNext()) {
                         res.add((CsmUsingDeclaration) it.next());
+                    }
+                }
+            }
+        }
+        return extractDeclarations(res);
+    }
+    
+    @Override
+    public Collection<CsmDeclaration> findUsedDeclarations(CsmNamespace namespace, CharSequence name) {
+        List<CsmUsingDeclaration> res = new ArrayList<CsmUsingDeclaration>();
+        Iterator<CsmOffsetableDeclaration> udecls = CsmSelect.getDeclarations(
+                    namespace, CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.USING_DECLARATION));
+        while (udecls.hasNext()) {
+            final CsmUsingDeclaration usindDecl = (CsmUsingDeclaration) udecls.next();
+            CharSequence n = usindDecl.getName();
+            int lastIndex = CharSequenceUtils.lastIndexOf(n, "::"); //NOI18N
+            if (lastIndex >= 0) {
+                if (CharSequences.comparator().compare(name, n.subSequence(lastIndex+2, n.length())) == 0) {
+                    res.add(usindDecl);
+                }
+            } else if (CharSequences.comparator().compare(name, n) == 0) {
+                res.add(usindDecl);
+            }
+        }
+        // Let's also look for similarly named namespace in libraries,
+        // like it's done in CsmProjectContentResolver.getNamespaceMembers()
+        if (!namespace.isGlobal()) {
+            for(CsmProject lib : namespace.getProject().getLibraries()){
+                CsmNamespace ns = lib.findNamespace(namespace.getQualifiedName());
+                if (ns != null) {
+                    Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDeclarations(
+                            ns, CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.USING_DECLARATION));
+                    while (it.hasNext()) {
+                        final CsmUsingDeclaration usindDecl = (CsmUsingDeclaration) it.next();
+                        CharSequence n = usindDecl.getName();
+                        int lastIndex = CharSequenceUtils.lastIndexOf(n, "::"); //NOI18N
+                        if (lastIndex >= 0) {
+                            if (CharSequences.comparator().compare(name, n.subSequence(lastIndex+2, n.length())) == 0) {
+                                res.add(usindDecl);
+                            }
+                        } else if (CharSequences.comparator().compare(name, n) == 0) {
+                            res.add(usindDecl);
+                        }
                     }
                 }
             }

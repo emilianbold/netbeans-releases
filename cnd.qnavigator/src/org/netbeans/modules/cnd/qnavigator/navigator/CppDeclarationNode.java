@@ -52,6 +52,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.MissingResourceException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -82,6 +83,7 @@ import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.openide.nodes.Children;
 import org.openide.util.CharSequences;
@@ -100,7 +102,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
     private CsmFile file;
     private boolean isFriend;
     private boolean isSpecialization;
-    private CsmFileModel model;
+    private final CsmFileModel model;
     private boolean needInitHTML = true;
     private CharSequence name;
     private CharSequence htmlDisplayName;
@@ -108,14 +110,14 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
     private byte weight;
     private final InstanceContent ic;
 
-    private static CppDeclarationNode createNamespaseContainer(CsmOffsetableDeclaration element, CsmFileModel model, List<IndexOffsetNode> lineNumberIndex) {
-        CppDeclarationNode res = new CppDeclarationNode(new NavigatorChildren(element, model, null, lineNumberIndex), new InstanceContent(), element, element.getContainingFile(), model);
+    private static CppDeclarationNode createNamespaseContainer(CsmOffsetableDeclaration element, CsmFileModel model, List<IndexOffsetNode> lineNumberIndex, AtomicBoolean canceled) {
+        CppDeclarationNode res = new CppDeclarationNode(new NavigatorChildren(element, model, null, lineNumberIndex, canceled), new InstanceContent(), element, element.getContainingFile(), model);
         res.icon = res.getIcon(0);
         return res;
     }
     
-    private static CppDeclarationNode createClassifierContainer(CsmOffsetableDeclaration element, CsmFileModel model, CsmCompoundClassifier classifier, List<IndexOffsetNode> lineNumberIndex) {
-        CppDeclarationNode res = new CppDeclarationNode(new NavigatorChildren(element, model, classifier, lineNumberIndex), new InstanceContent(), element, element.getContainingFile(), model);
+    private static CppDeclarationNode createClassifierContainer(CsmOffsetableDeclaration element, CsmFileModel model, CsmCompoundClassifier classifier, List<IndexOffsetNode> lineNumberIndex, AtomicBoolean canceled) {
+        CppDeclarationNode res = new CppDeclarationNode(new NavigatorChildren(element, model, classifier, lineNumberIndex, canceled), new InstanceContent(), element, element.getContainingFile(), model);
         res.icon = res.getIcon(0);
         return res;
     }
@@ -147,18 +149,19 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
         this.weight = getObjectWeight();
         ic.add(element);
         ic.add(model.getFileObject());
+        ic.add(model.getDataObject());
         this.ic = ic;
     }
 
     private CharSequence createFunctionSpecializationHtmlDisplayName() {
-        return CharSequences.create(CsmDisplayUtilities.htmlize(getDisplayName()) + FONT_COLORCONTROLSHADOW + scopeName); // NOI18N
+        return CharSequences.create(CharSequenceUtils.concatenate(CsmDisplayUtilities.htmlize(getDisplayName()), FONT_COLORCONTROLSHADOW, scopeName)); 
     }
     
     private CharSequence createMemberHtmlDisplayName() {
         String aName = CsmDisplayUtilities.htmlize(scopeName); 
         String displayName = CsmDisplayUtilities.htmlize(getDisplayName()); // NOI18N
         String in = NbBundle.getMessage(getClass(), "LBL_inClass", aName); //NOI18N
-        return CharSequences.create(displayName + FONT_COLORCONTROLSHADOW + in);
+        return CharSequences.create(CharSequenceUtils.concatenate(displayName, FONT_COLORCONTROLSHADOW, in));
     }
 
     private CharSequence getFunctionSpecializationName(CsmObject csmObject) throws MissingResourceException {
@@ -380,13 +383,13 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
             } else if (csmObject instanceof CsmFile) {
                 if (model.getUnopenedProject() != null) {
                     // unopened project
-                    return CharSequences.create("<font color='"+CsmDisplayUtilities.getHTMLColor(Color.red)+">"+ // NOI18N
-                            NbBundle.getMessage(CppDeclarationNode.class, "UnopenedProject",  // NOI18N
-                            ProjectUtils.getInformation(model.getUnopenedProject()).getDisplayName()));
+                    return CharSequences.create(new StringBuilder("<font color='").append(CsmDisplayUtilities.getHTMLColor(Color.red)).append(">") // NOI18N
+                            .append(NbBundle.getMessage(CppDeclarationNode.class, "UnopenedProject",  // NOI18N
+                            ProjectUtils.getInformation(model.getUnopenedProject()).getDisplayName())));
                 } else {
                     //Restricted code assistance
-                    return CharSequences.create("<font color='"+CsmDisplayUtilities.getHTMLColor(Color.red)+">"+ // NOI18N
-                            NbBundle.getMessage(CppDeclarationNode.class, "StandAloneFile")); // NOI18N
+                    return CharSequences.create(new StringBuilder("<font color='").append(CsmDisplayUtilities.getHTMLColor(Color.red)).append(">") // NOI18N
+                            .append(NbBundle.getMessage(CppDeclarationNode.class, "StandAloneFile"))); // NOI18N
                 }
             } else if (CsmKindUtilities.isFunction(csmObject) && CsmKindUtilities.isSpecialization(csmObject)) {
                 if (scopeName.length() > 0) {
@@ -478,7 +481,10 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
         return model.getActions();
     }
 
-    public static CppDeclarationNode nodeFactory(CsmObject element, CsmFileModel model, boolean isFriend, List<IndexOffsetNode> lineNumberIndex){
+    public static CppDeclarationNode nodeFactory(CsmObject element, CsmFileModel model, boolean isFriend, List<IndexOffsetNode> lineNumberIndex, AtomicBoolean canceled){
+        if (canceled.get()) {
+            return null;
+        }
         if (!(element instanceof CsmFile)) {
             if (!model.getFilter().isApplicable((CsmOffsetable)element)){
                 return null;
@@ -491,7 +497,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
                 CsmClassifier cls = def.getType().getClassifier();
                 if (cls != null && cls.getName().length()==0 &&
                    (cls instanceof CsmCompoundClassifier)) {
-                    node = createClassifierContainer((CsmOffsetableDeclaration)element, model, (CsmCompoundClassifier) cls, lineNumberIndex);
+                    node = createClassifierContainer((CsmOffsetableDeclaration)element, model, (CsmCompoundClassifier) cls, lineNumberIndex, canceled);
                     node.name = ((CsmDeclaration)element).getName();
                     return node;
                 }
@@ -516,13 +522,13 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
             if (CsmKindUtilities.isClassForwardDeclaration(element) || CsmKindUtilities.isEnumForwardDeclaration(element)) {
                 node = createObject((CsmOffsetableDeclaration)element, model);
             } else {
-                node = createNamespaseContainer((CsmOffsetableDeclaration)element, model,lineNumberIndex);
+                node = createNamespaseContainer((CsmOffsetableDeclaration)element, model,lineNumberIndex, canceled);
             }
             node.name = getClassifierName((CsmClassifier)element);
             model.addOffset(node, (CsmOffsetable)element, lineNumberIndex);
             return node;
         } else if(CsmKindUtilities.isNamespaceDefinition(element)){
-            node = createNamespaseContainer((CsmNamespaceDefinition)element, model, lineNumberIndex);
+            node = createNamespaseContainer((CsmNamespaceDefinition)element, model, lineNumberIndex, canceled);
             node.name = ((CsmNamespaceDefinition)element).getName();
             model.addOffset(node, (CsmOffsetable)element, lineNumberIndex);
             return node;

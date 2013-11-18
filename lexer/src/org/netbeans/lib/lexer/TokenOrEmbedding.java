@@ -68,6 +68,6 @@ public interface TokenOrEmbedding<T extends TokenId> {
      * 
      * @return non-null embedding or null if this is token.
      */
-    EmbeddingContainer<T> embedding();
+    EmbeddedTokenList<T,?> embedding();
 
 }

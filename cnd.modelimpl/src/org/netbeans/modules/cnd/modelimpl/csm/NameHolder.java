@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.CharSequences;
 
 
@@ -286,7 +287,7 @@ public class NameHolder {
         return ""; // NOI18N
     }
 
-    private String getFunctionName(AST ast) {
+    private CharSequence getFunctionName(AST ast) {
 	AST operator = AstUtil.findChildOfType(ast, CPPTokenTypes.LITERAL_OPERATOR);
 	if( operator == null ) {
             // error in AST
@@ -324,7 +325,7 @@ public class NameHolder {
 		    sb.append(AstUtil.getText(next));
 	    }
 	}
-	return sb.toString();
+	return sb;
     }
 
     private void addTypeText(AST ast, StringBuilder sb) {
@@ -391,19 +392,15 @@ public class NameHolder {
                     }
                 }
                 if( last.getType() == CPPTokenTypes.IDENT ) {
-                    String lastName = "";  // NOI18N
-                    
-                    if (tildeToken != null) {
-                        lastName += tildeToken.getText();
-                    }
-                    
                     isMacroExpanded = isMacroExpandedToken(last);
                     start = OffsetableBase.getStartOffset(last);
                     end = OffsetableBase.getEndOffset(last);
-                    
-                    lastName += AstUtil.getText(last);
-                    
-                    return lastName;
+
+                    if (tildeToken != null) {
+                        return CharSequenceUtils.concatenate(AstUtil.getText(tildeToken), AstUtil.getText(last));
+                    } else {
+                        return AstUtil.getText(last);
+                    }
                 } else {
                     if( operator != null ) {
                         start = OffsetableBase.getStartOffset(operator);
@@ -417,7 +414,7 @@ public class NameHolder {
                             end = OffsetableBase.getEndOffset(next);
                             first = false;
                         }
-                        return sb.toString();
+                        return sb;
                     } else {
                         AST first = token.getFirstChild();
                         if (first.getType() == CPPTokenTypes.IDENT) {
@@ -509,7 +506,7 @@ public class NameHolder {
                                 end = OffsetableBase.getEndOffset(next);
                                 sb.append(AstUtil.getText(next));
                             }
-                            return sb.toString();
+                            return sb;
                         } else if (first.getType() == CPPTokenTypes.IDENT){
                             start = OffsetableBase.getStartOffset(first);
                             end = OffsetableBase.getEndOffset(first);

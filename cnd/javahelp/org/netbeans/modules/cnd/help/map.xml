@@ -379,4 +379,12 @@
 	<mapID target="CodeCompletionOptions" url="WorkingWithCandC++Projects/CodeCompletionOptions.html"/>
 	<mapID target="SettingCandC++FolderProperties" url="WorkingWithCandC++Projects/SettingCandC++FolderProperties.html"/>
 	<mapID target="UsingCandC++Launchers" url="WorkingWithCandC++Projects/UsingCandC++Launchers.html"/>
+	<mapID target="CodeAssistanceCache" url="WorkingWithCandC++Projects/CodeAssistanceCache.html"/>
+	<mapID target="PublicPrivateProperties" url="WorkingWithCandC++Projects/PublicPrivateProperties.html"/>
+	<mapID target="NewMakeWizardP11" url="WorkingWithCandC++Projects/NewMakeWizardP1.html"/>
+	<mapID target="NewMakeWizardP21" url="WorkingWithCandC++Projects/NewMakeWizardP2.html"/>
+	<mapID target="NewMakeWizardP31" url="WorkingWithCandC++Projects/NewMakeWizardP3.html"/>
+	<mapID target="NewMakeWizardP41" url="WorkingWithCandC++Projects/NewMakeWizardP4.html"/>
+	<mapID target="NewMakeWizardP51" url="WorkingWithCandC++Projects/NewMakeWizardP5.html"/>
+	<mapID target="UsingBreadcrumbs" url="EditingSourceFiles/UsingBreadcrumbs.html"/>
 </map>

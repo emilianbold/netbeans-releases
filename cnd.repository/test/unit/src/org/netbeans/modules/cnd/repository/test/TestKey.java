@@ -45,8 +45,8 @@
 package org.netbeans.modules.cnd.repository.test;
 
 import java.io.IOException;
+import org.netbeans.modules.cnd.repository.impl.spi.UnitsConverter;
 import org.netbeans.modules.cnd.repository.spi.Key;
-import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
@@ -62,6 +62,7 @@ public class TestKey implements Key, SelfPersistent {
     
     private String key;
     private String unit;
+    private int unitId;
     private Behavior behavior;
     
     @Override
@@ -108,35 +109,51 @@ public class TestKey implements Key, SelfPersistent {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
+    public final boolean equals(int thisUnitID, Key object, int objectUnitID) {
+        if (object == null || (this.getClass() != object.getClass())) {
             return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final TestKey other = (TestKey) obj;
+        }        
+        final TestKey other = (TestKey) object;
         if (this.key != other.key && (this.key == null || !this.key.equals(other.key))) {
             return false;
         }
         if (this.unit != other.unit && (this.unit == null || !this.unit.equals(other.unit))) {
             return false;
         }
-        if (this.behavior != other.behavior) {
-            return false;
-        }
-        return true;
+        return this.behavior == other.behavior;
     }
 
     @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 59 * hash + (this.key != null ? this.key.hashCode() : 0);
-        hash = 59 * hash + (this.unit != null ? this.unit.hashCode() : 0);
-        hash = 59 * hash + (this.behavior != null ? this.behavior.hashCode() : 0);
-        return hash;
+    public final boolean equals(Object object) {
+        if (object == null || (this.getClass() != object.getClass())) {
+            return false;
+        } 
+        
+        final TestKey other = (TestKey) object;
+        if (unitId != other.unitId) {
+            return false;
+        }
+        if (this.key != other.key && (this.key == null || !this.key.equals(other.key))) {
+            return false;
+        }
+        if (this.unit != other.unit && (this.unit == null || !this.unit.equals(other.unit))) {
+            return false;
+        }
+        return this.behavior == other.behavior;        
     }
 
+    @Override
+    public final int hashCode(int unitID) {
+        int hash = this.key != null ? this.key.hashCode() : 0;
+        hash = 59 * hash + (this.unit != null ? this.unit.hashCode() : 0);
+        hash = 59 * hash + (this.behavior != null ? this.behavior.hashCode() : 0);
+        return hash + unitID;
+    }
+
+    @Override
+    public final int hashCode() {
+         return hashCode(unitId);
+    }
     
     @Override
     public String toString() {
@@ -150,7 +167,7 @@ public class TestKey implements Key, SelfPersistent {
 
     @Override
     public int getUnitId() {
-        return 0;
+        return unitId;
     }
 
     @Override
@@ -163,10 +180,5 @@ public class TestKey implements Key, SelfPersistent {
     @Override
     public boolean hasCache() {
         return false;
-    }
-
-    @Override
-    public KeyDataPresentation getDataPresentation() {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

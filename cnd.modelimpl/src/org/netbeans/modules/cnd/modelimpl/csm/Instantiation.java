@@ -74,6 +74,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
 import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.impl.services.MemberResolverImpl;
 import org.netbeans.modules.cnd.modelimpl.impl.services.SelectImpl;
+import org.netbeans.modules.cnd.modelimpl.util.MapHierarchy;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
@@ -82,7 +83,9 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.netbeans.modules.cnd.utils.CndCollectionUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 
 /**
  * Instantiations.
@@ -95,6 +98,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
 
     protected final T declaration;
     protected final Map<CsmTemplateParameter, CsmSpecializationParameter> mapping;
+    protected int hashCode = 0;
 
     private Instantiation(T declaration, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
         super(declaration.getContainingFile(), declaration.getStartOffset(), declaration.getEndOffset());
@@ -126,15 +130,14 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
             return false;
         }
         CsmInstantiation inst = (CsmInstantiation) csmobj;
-        Map<CsmTemplateParameter, CsmSpecializationParameter> mapping1 = this.getMapping();
-        Map<CsmTemplateParameter, CsmSpecializationParameter> mapping2 = inst.getMapping();
-        if(mapping1.size() != mapping2.size()) {
-            return false;
-        }
-        for (CsmTemplateParameter csmTemplateParameter : mapping1.keySet()) {
-            if(!this.getMapping().get(csmTemplateParameter).equals(mapping2.get(csmTemplateParameter))) {
+        if (inst instanceof Instantiation) {
+            if (this.hashCode != ((Instantiation)inst).hashCode && 
+                    (this.hashCode != 0 && ((Instantiation)inst).hashCode != 0)) {
                 return false;
             }
+        }
+        if (!CndCollectionUtils.equals(this.getMapping(), inst.getMapping())) {
+            return false;
         }
         return this.getTemplateDeclaration().equals(inst.getTemplateDeclaration());
 
@@ -148,10 +151,13 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
 
     @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 31 * hash + (this.declaration != null ? this.declaration.hashCode() : 0);
-        hash = 31 * hash + (this.mapping != null ? this.mapping.hashCode() : 0);
-        return hash;
+        if (hashCode == 0) {
+            int hash = 3;
+            hash = 31 * hash + (this.declaration != null ? this.declaration.hashCode() : 0);
+            hash = 31 * hash + (this.mapping != null ? CndCollectionUtils.hashCode(this.mapping) : 0);
+            hashCode = hash;
+        }
+        return hashCode;
     }
 
     @Override
@@ -1163,7 +1169,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
     public static CsmType resolveTemplateParameterType(CsmType type, CsmInstantiation instantiation) {
         if (CsmKindUtilities.isTemplateParameterType(type)) {
             LOG.log(Level.FINE, "Instantiation.resolveTemplateParameter {0}; mapping={1}\n", new Object[]{type.getText(), instantiation.getTemplateDeclaration().getName()});
-            Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = TemplateUtils.gatherMapping(instantiation);
+            MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> mapping = TemplateUtils.gatherMapping(instantiation);
             CsmType resolvedType = resolveTemplateParameter(((CsmTemplateParameterType) type).getParameter(), mapping);
             if (resolvedType != null) {
                 return resolvedType;
@@ -1173,6 +1179,10 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
     }
     
     public static CsmType resolveTemplateParameter(CsmTemplateParameter templateParameter, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
+        return resolveTemplateParameter(templateParameter, new MapHierarchy<>(mapping));
+    }
+    
+    public static CsmType resolveTemplateParameter(CsmTemplateParameter templateParameter, MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
         LOG.log(Level.FINE, "Instantiation.resolveTemplateParameter {0}; mapping={1}\n", new Object[]{templateParameter.getName(), mapping.size()});
         CsmSpecializationParameter instantiatedType = mapping.get(templateParameter);
         int iteration = MAX_INHERITANCE_DEPTH;
@@ -1281,7 +1291,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
 
         @Override
         public CharSequence getClassifierText() {
-            return instantiatedType.getClassifierText().toString() + TypeImpl.getInstantiationText(this);
+            return CharSequenceUtils.concatenate(instantiatedType.getClassifierText(), TypeImpl.getInstantiationText(this));
         }
 
         private CharSequence getInstantiatedText() {
@@ -1294,6 +1304,12 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         }
         
         private CharSequence getTextImpl(boolean instantiate) {
+            if (originalType instanceof org.netbeans.modules.cnd.modelimpl.csm.NestedType) {
+                return ((org.netbeans.modules.cnd.modelimpl.csm.NestedType)originalType).getOwnText();
+            } 
+            if (originalType instanceof NestedType) {
+                return ((NestedType)originalType).getOwnText();
+            }            
             if (originalType instanceof TypeImpl) {
                 // try to instantiate original classifier
                 CsmClassifier classifier = null;
@@ -1310,9 +1326,6 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
                     clsText = classifier.getName();
                 }
                 return ((TypeImpl)originalType).decorateText( clsText, this, false, null);
-            }
-            if (originalType instanceof NestedType) {
-                return ((NestedType)originalType).getOwnText();
             }
             return originalType.getText();
         }

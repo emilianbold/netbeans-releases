@@ -46,6 +46,7 @@ import com.jcraft.jsch.ChannelSftp.LsEntry;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
+import java.io.File;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.StringWriter;
@@ -101,7 +102,7 @@ class SftpSupport {
 
     /** for test purposes only */
     /*package-local*/ static int getUploadCount() {
-        return uploadCount.get();
+        return uploadCount.get();        
     }
 
     /*package*/ static SftpSupport getInstance(ExecutionEnvironment execEnv) {
@@ -342,6 +343,7 @@ class SftpSupport {
             ChannelSftp cftp = getChannel();
             if (LOG.isLoggable(Level.FINEST)) { LOG.log(Level.FINEST, "Getting channel for {0} took {1}", new Object[] {parameters.dstFileName, System.currentTimeMillis() - time}); }
             String dstFileName = parameters.dstFileName; // will change after rename
+            RemoteStatistics.ActivityID activityID = RemoteStatistics.startChannelActivity("upload", parameters.dstFileName); // NOI18N
             try {
                 if (checkDir) {
                     int slashPos = parameters.dstFileName.lastIndexOf('/'); //NOI18N
@@ -393,6 +395,7 @@ class SftpSupport {
                 throw decorateSftpException(e, dstFileName);
             } finally {
                 releaseChannel(cftp);
+                RemoteStatistics.stopChannelActivity(activityID, parameters.srcFile.length());
             }
             uploadCount.incrementAndGet();
         }
@@ -504,6 +507,7 @@ class SftpSupport {
                 LOG.log(Level.FINE, "{0} started", getTraceName());
             }
             ChannelSftp cftp = getChannel();
+            RemoteStatistics.ActivityID activityID = RemoteStatistics.startChannelActivity("download", srcFileName); // NOI18N
             try {
                 cftp.get(srcFileName, dstFileName);
             } catch (SftpException e) {
@@ -511,6 +515,7 @@ class SftpSupport {
                 throw decorateSftpException(e, srcFileName);
             } finally {
                 releaseChannel(cftp);
+                RemoteStatistics.stopChannelActivity(activityID, new File(dstFileName).length());
             }
         }
 
@@ -580,7 +585,7 @@ class SftpSupport {
             try {
                 for (; attempt <= LS_RETRY_COUNT; attempt++) {
                     ChannelSftp cftp = getChannel();
-                    Object activityID = RemoteStatistics.stratChannelActivity("statload", cftp, path); // NOI18N
+                    RemoteStatistics.ActivityID activityID = RemoteStatistics.startChannelActivity("statload", path); // NOI18N
                     try {
                         SftpATTRS attrs = cftp.lstat(path);
                         String dirName, baseName;
@@ -660,7 +665,7 @@ class SftpSupport {
             try {
                 for (; attempt <= LS_RETRY_COUNT; attempt++) {
                     ChannelSftp cftp = getChannel();
-                    Object lsLoadID = RemoteStatistics.stratChannelActivity("lsload", cftp, path); // NOI18N
+                    RemoteStatistics.ActivityID lsLoadID = RemoteStatistics.startChannelActivity("lsload", path); // NOI18N
                     try {
                         List<LsEntry> entries = (List<LsEntry>) cftp.ls(path);
                         result = new ArrayList<StatInfo>(Math.max(1, entries.size() - 2));
@@ -724,10 +729,15 @@ class SftpSupport {
         String linkTarget = null;
         if (attrs.isLink()) {
             String path = dirName + '/' + baseName;
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.log(Level.FINE, "performing readlink {0}", path);
+            RemoteStatistics.ActivityID activityID = RemoteStatistics.startChannelActivity("readlink", path); // NOI18N
+            try {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "performing readlink {0}", path);
+                }
+                linkTarget = cftp.readlink(path);
+            } finally {
+                RemoteStatistics.stopChannelActivity(activityID);
             }
-            linkTarget = cftp.readlink(path);
         }
         Date lastModified = new Date(attrs.getMTime() * 1000L);
         StatInfo result = new FileInfoProvider.StatInfo(baseName, attrs.getUId(), attrs.getGId(), attrs.getSize(),

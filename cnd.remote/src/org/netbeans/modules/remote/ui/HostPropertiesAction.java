@@ -69,9 +69,6 @@ public class HostPropertiesAction extends SingleHostAction {
     protected void performAction(final ExecutionEnvironment env, Node node) {
         RemoteServerRecord record = (RemoteServerRecord) ServerList.get(env);
         HostPropertiesDialog.invokeMe(record);
-        if (node instanceof HostNode) {
-            ((HostNode) node).refresh(); // TODO: introduce listeners for server records
-        }
     }
 
     @Override

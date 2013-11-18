@@ -80,6 +80,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.utils.cache.APTStringManager;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 
 /**
  * A class that 
@@ -153,7 +154,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     /** @return either class or namespace */
     protected CsmObject findOwner() {
 	CharSequence[] cnn = classOrNspNames;
-	if( cnn != null ) {
+	if( cnn != null && cnn.length > 0) {
             Resolver resolver = ResolverFactory.createResolver(this);
             try {
                 CsmObject obj = resolver.resolve(cnn, Resolver.CLASSIFIER | Resolver.NAMESPACE);
@@ -237,8 +238,8 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                         level++;
                         break;
                     case CPPTokenTypes.SCOPE:
-                        if (id != null && level == 0) {
-                            l.add(manager.getString(id.toString()));
+                        if (id != null && level == 0 && id.length()>0) {
+                            l.add(manager.getString(id));
                         }
                         break;
                     default:
@@ -257,12 +258,16 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         return qualifiedName;
     }
 
-    protected String findQualifiedName() {
+    protected CharSequence findQualifiedName() {
         CsmObject owner = findOwner();
         // check if owner is real or fake
         if(CsmKindUtilities.isQualified(owner)) {
             setFlags(FAKE_QUALIFIED_NAME, false);
-            return ((CsmQualifiedNamedElement) owner).getQualifiedName().toString() + (!CsmKindUtilities.isSpecialization(owner) ? getScopeSuffix() : "") + "::" + getQualifiedNamePostfix(); // NOI18N
+            if (!CsmKindUtilities.isSpecialization(owner)) {
+                return CharSequenceUtils.concatenate(((CsmQualifiedNamedElement) owner).getQualifiedName(), getScopeSuffix(), "::", getQualifiedNamePostfix()); // NOI18N
+            } else {
+                return CharSequenceUtils.concatenate(((CsmQualifiedNamedElement) owner).getQualifiedName(),  "::", getQualifiedNamePostfix()); // NOI18N
+            }
         }
         setFlags(FAKE_QUALIFIED_NAME, true);
         CharSequence[] cnn = classOrNspNames;
@@ -284,7 +289,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         }
         sb.append("::"); // NOI18N
         sb.append(getQualifiedNamePostfix());
-        return sb.toString();
+        return sb;
     }
 
     protected static <T> void postFunctionImpExCreateRegistration(FileContent fileContent, boolean global, FunctionImplEx<T> obj) {

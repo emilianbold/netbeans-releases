@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.maven.event;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.maven.eventspy.AbstractEventSpy;
 import org.apache.maven.execution.ExecutionEvent;
 import org.apache.maven.lifecycle.LifecycleExecutionException;
@@ -60,6 +61,11 @@ import org.json.simple.JSONObject;
 public class NbEventSpy extends AbstractEventSpy {
 
     private Logger logger;
+    //#236768 guard against the mojos executing new mvn build in-JVM
+    //needs to be static as the wrapped build will likely get a new instance
+    //it's unlikely that we would legally trigger multiple builds inside a single jvm sequentially
+    private static final AtomicBoolean insideSession = new AtomicBoolean(false);
+    private static final AtomicBoolean ignoreInnerSessionEvents = new AtomicBoolean(false);    
     
     @Override
     public void init(Context context) throws Exception {
@@ -86,6 +92,12 @@ public class NbEventSpy extends AbstractEventSpy {
         super.onEvent(event); 
         if (event instanceof ExecutionEvent) {
             ExecutionEvent ex = (ExecutionEvent) event;
+            if (ignoreInnerSessionEvents.get()) { //#236768 guard against the mojos executing new mvn build in-JVM
+                if (ExecutionEvent.Type.SessionEnded.equals(ex.getType())) {
+                    ignoreInnerSessionEvents.set(false);
+                }
+                return;
+            }            
             JSONObject root = new JSONObject();
             
             //use base64 for complex structures or unknown values?
@@ -113,7 +125,17 @@ public class NbEventSpy extends AbstractEventSpy {
                 if (ExecutionEvent.Type.SessionStarted.equals(ex.getType()) || ExecutionEvent.Type.SessionEnded.equals(ex.getType())) {
                     //only in session events
                     root.put("prjcount", ex.getSession().getProjects().size());
+                    if (ExecutionEvent.Type.SessionStarted.equals(ex.getType())) {
+                        if (!insideSession.compareAndSet(false, true)) { //#236768 guard against the mojos executing new mvn build in-JVM
+                            ignoreInnerSessionEvents.set(true);
+                            return;
+                        }
+                    }
+                    if (ExecutionEvent.Type.SessionEnded.equals(ex.getType())) {
+                        insideSession.compareAndSet(true, false);//#236768 guard against the mojos executing new mvn build in-JVM
+                    }
                 }
+                
                 if (ex.getMojoExecution() != null && 
                         (ExecutionEvent.Type.MojoStarted.equals(ex.getType()) ||
                          ExecutionEvent.Type.MojoFailed.equals(ex.getType()) ||

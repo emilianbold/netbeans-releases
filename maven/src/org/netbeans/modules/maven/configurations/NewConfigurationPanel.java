@@ -92,8 +92,12 @@ public class NewConfigurationPanel extends javax.swing.JPanel implements Documen
     }
 
     public List<String> getProfiles() {
-        String val = txtActivate.getText().trim();
-        String[] splitted = val.split(" ,"); //NOI18N
+        return split(txtActivate.getText().trim());
+    }
+    
+    static List<String> split(String profiles) {
+        String val = profiles;
+        String[] splitted = val.split("[ ,]"); //NOI18N
         List<String> toRet = new ArrayList<String>();
         for (String s : splitted) {
             if (s.trim().length() > 0) {

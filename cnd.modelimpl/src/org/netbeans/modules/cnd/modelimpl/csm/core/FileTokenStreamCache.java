@@ -165,7 +165,7 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
         @Override
         public String toString() {
-            return APTUtils.debugString(new IteratorBasedTS(debugTokens, debugStartIndex, endOffset, null));
+            return APTUtils.debugString(new IteratorBasedTS(debugTokens, debugStartIndex, endOffset, null)).toString();
         }
     }
 }

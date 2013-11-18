@@ -30,6 +30,8 @@
 #   Path to ant executable. By default "ant".
 # STABLE_ONLY (optional)
 #   if false then also run tests marked as "RandomlyFails"
+# UNSTABLE_ONLY (optional)
+#   if true then run only tests marked as "RandomlyFails"
 
 if [ -z "${WORKSPACE}" ]; then
     echo "WORKSPACE is not set!"
@@ -51,6 +53,7 @@ if [ -n "${GET}" ]; then
 fi
 
 STABLE_ONLY=${STABLE_ONLY:-true}
+UNSTABLE_ONLY=${UNSTABLE_ONLY:-false}
 DISABLE_WATCHER=${DISABLE_WATCHER:-false}
 
 cd "${WORKSPACE}/unit"
@@ -69,6 +72,7 @@ RUNSTR="${ANT:-ant} -f ${WORKSPACE}/all-tests.xml \
 -Djava.io.tmpdir=/var/tmp/hudson${EXECUTOR_NUMBER} \
 -Dcnd.remote.sync.root.postfix=hudson${EXECUTOR_NUMBER} \
 -Dignore.random.failures=${STABLE_ONLY} \
+-Drandom.failures.only=${UNSTABLE_ONLY} \
 $*\""
 
 if [ -z "${GENERATE_BAT}" ]; then

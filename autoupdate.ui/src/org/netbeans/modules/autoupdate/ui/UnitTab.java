@@ -2079,7 +2079,7 @@ public final class UnitTab extends javax.swing.JPanel {
             JLabel renderComponent = (JLabel)super.getTableCellRendererComponent (table, value, isSelected, hasFocus, row, column);
             
             if (value instanceof Image) {
-                Unit u = model.getUnitAtRow (row);
+                Unit u = model.getUnitAtRow(table.convertRowIndexToModel(row));
                 if (u instanceof Unit.Available) {
                     Unit.Available a = (Unit.Available)u;
                     renderComponent.setIcon(ImageUtilities.image2Icon(a.getSourceIcon()));

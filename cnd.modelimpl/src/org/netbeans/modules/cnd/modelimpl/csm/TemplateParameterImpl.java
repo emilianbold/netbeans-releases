@@ -59,9 +59,13 @@ import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.TypeBasedSpecializationParameterImpl.TypeBasedSpecializationParameterBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -69,6 +73,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.CharSequences;
 
 /**
@@ -85,7 +90,16 @@ public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T>
         
     public TemplateParameterImpl(AST ast, CharSequence name, CsmFile file, CsmScope scope, boolean variadic, boolean global) {
         super(file, getStartOffset(ast), getEndOffset(ast));
-        // TODO what about explicite type in ast?
+        
+        CsmSpecializationParameter value = null;
+        if (checkExplicitType(ast)) {
+            AST expressionAst = AstUtil.findSiblingOfType(ast.getFirstChild(), CPPTokenTypes.CSM_EXPRESSION);
+            if (expressionAst != null) {
+                CsmExpression expr = ExpressionBase.create(expressionAst, file, scope);
+                value = ExpressionBasedSpecializationParameterImpl.create(expr.getText(), file, expr.getStartOffset(), expr.getEndOffset(), true);
+            }
+        }
+        
         this.name = NameCache.getManager().getString(name);
         templateDescriptor = TemplateDescriptor.createIfNeeded(ast, file, scope, global);
         if ((scope instanceof CsmIdentifiable)) {
@@ -93,7 +107,7 @@ public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T>
         } else {
             this.scope = null;
         }
-        this.defaultValue = variadic ? VARIADIC : null;
+        this.defaultValue = variadic ? VARIADIC : value;
     }
 
     public TemplateParameterImpl(AST ast, CharSequence name, CsmFile file, CsmScope scope, boolean global, AST defaultValue) {
@@ -128,14 +142,18 @@ public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T>
 
     @Override
     public int hashCode() {
-        if (true) return name.hashCode();
-        int hash = 5;
-        hash = 19 * hash + Objects.hashCode(this.name);
-        hash = 19 * hash + Objects.hashCode(this.scope);
-        hash = 19 * hash + Objects.hashCode(this.defaultValue);
-        hash = 19 * hash + Objects.hashCode(this.templateDescriptor);
-        hash = 19 * hash + Objects.hashCode(super.hashCode());
-        return hash;
+        // use cheap hashCode
+        if (true) {
+            return name.hashCode();
+        } else {
+            int hash = 5;
+            hash = 19 * hash + Objects.hashCode(this.name);
+            hash = 19 * hash + Objects.hashCode(this.scope);
+            hash = 19 * hash + Objects.hashCode(this.defaultValue);
+            hash = 19 * hash + Objects.hashCode(this.templateDescriptor);
+            hash = 19 * hash + Objects.hashCode(super.hashCode());
+            return hash;
+        }
     }
 
     @Override
@@ -196,7 +214,7 @@ public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T>
 
     @Override
     public CharSequence getDisplayName() {
-        return (templateDescriptor != null) ? CharSequences.create((getName().toString() + templateDescriptor.getTemplateSuffix())) : getName();
+        return (templateDescriptor != null) ? CharSequences.create(CharSequenceUtils.concatenate(getName(), templateDescriptor.getTemplateSuffix())) : getName();
     }
     
     
@@ -273,9 +291,9 @@ public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T>
     public CharSequence getQualifiedName() {
         CsmScope s = getScope();
         if (CsmKindUtilities.isFunction(s)) {
-            return CharSequences.create(((CsmFunction)s).getQualifiedName()+"::"+name); // NOI18N
+            return CharSequences.create(CharSequenceUtils.concatenate(((CsmFunction)s).getQualifiedName(),"::",name)); // NOI18N
         } else if (CsmKindUtilities.isClass(s)) {
-            return CharSequences.create(((CsmClass)s).getQualifiedName()+"::"+name); // NOI18N
+            return CharSequences.create(CharSequenceUtils.concatenate(((CsmClass)s).getQualifiedName(),"::",name)); // NOI18N
         }
         return name;
     }
@@ -284,7 +302,17 @@ public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T>
     public String toString() {
         return getQualifiedName().toString() + getPositionString();
     }
-    
+
+    private boolean checkExplicitType(AST ast) {
+        if (ast != null) {
+            if (!"class".equals(ast.getText()) &&     // NOI18N
+                !"typename".equals(ast.getText())) {  // NOI18N
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static final CsmSpecializationParameter VARIADIC = new CsmSpecializationParameter() {
         @Override
         public CsmFile getContainingFile() {

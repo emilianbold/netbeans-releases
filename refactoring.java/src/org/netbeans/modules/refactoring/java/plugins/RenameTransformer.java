@@ -417,9 +417,11 @@ public class RenameTransformer extends RefactoringVisitor {
                     return super.visitText(node, p);
                 }
             }
-            String body = node.getBody().replaceAll(getOldSimpleName(p), newName);
-            TextTree newText = make.Text(body);
-            rewrite(currentDocPath.getTreePath().getLeaf(), node, newText);
+            if(node.getBody().contains(getOldSimpleName(p))) {
+                String body = node.getBody().replaceAll(getOldSimpleName(p), newName);
+                TextTree newText = make.Text(body);
+                rewrite(currentDocPath.getTreePath().getLeaf(), node, newText);
+            }
         }
         return super.visitText(node, p);
     }

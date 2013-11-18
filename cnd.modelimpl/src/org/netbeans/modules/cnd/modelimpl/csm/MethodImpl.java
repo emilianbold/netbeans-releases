@@ -77,11 +77,12 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
     private static final byte VIRTUAL = 1 << (FunctionImpl.LAST_USED_FLAG_INDEX+2);
     private static final byte EXPLICIT = (byte)(1 << (FunctionImpl.LAST_USED_FLAG_INDEX+3));
 
-    protected MethodImpl(CharSequence name, CharSequence rawName, CsmClass cls, CsmVisibility visibility,  boolean _virtual, boolean _explicit, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
+    protected MethodImpl(CharSequence name, CharSequence rawName, CsmClass cls, CsmVisibility visibility, boolean _virtual, boolean _explicit, boolean _static, boolean _const, boolean _abstract, CsmFile file, int startOffset, int endOffset, boolean global) {
         super(name, rawName, cls, _static, _const, file, startOffset, endOffset, global);
         this.visibility = visibility;
         setVirtual(_virtual);
         setExplicit(_explicit);
+        setAbstract(_abstract);
     }
 
     public static <T> MethodImpl<T> create(AST ast, final CsmFile file, FileContent fileContent, ClassImpl cls, CsmVisibility visibility, boolean global) throws AstRendererException {
@@ -101,6 +102,8 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
         boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
         boolean _virtual = false;
         boolean _explicit = false;
+        boolean afterParen = false;
+        boolean _abstract = false;
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
             switch( token.getType() ) {
                 case CPPTokenTypes.LITERAL_static:
@@ -112,12 +115,20 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
                 case CPPTokenTypes.LITERAL_explicit:
                     _explicit = true;
                     break;
+                case CPPTokenTypes.RPAREN:
+                    afterParen = true;
+                    break;
+                case CPPTokenTypes.ASSIGNEQUAL:
+                    if (afterParen) {
+                        _abstract = true;
+                    }
+                    break;
             }
         }
         
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, false);
 
-        MethodImpl<T> methodImpl = new MethodImpl<T>(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);
+        MethodImpl<T> methodImpl = new MethodImpl<T>(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, _abstract, file, startOffset, endOffset, global);
         temporaryRepositoryRegistration(global, methodImpl);
         
         StringBuilder clsTemplateSuffix = new StringBuilder();
@@ -149,7 +160,7 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
         return hasFlags(ABSTRACT);
     }
 
-    public void setAbstract(boolean _abstract) {
+    private void setAbstract(boolean _abstract) {
         setFlags(ABSTRACT, _abstract);
     }
 
@@ -217,7 +228,7 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
             }
             CsmClass cls = (CsmClass) getScope();
 
-            MethodImpl method = new MethodImpl(getName(), getRawName(), cls, getVisibility(), isVirtual(), isExplicit(), isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), true);
+            MethodImpl method = new MethodImpl(getName(), getRawName(), cls, getVisibility(), isVirtual(), isExplicit(), isStatic(), isConst(), false, getFile(), getStartOffset(), getEndOffset(), true);
             temporaryRepositoryRegistration(true, method);
 
             StringBuilder clsTemplateSuffix = new StringBuilder();

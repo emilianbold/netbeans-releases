@@ -220,8 +220,10 @@ public class FileStatistics {
     public static class Reporter implements Runnable {
         @Override
         public void run() {
-            for (FileStatistics fileStatistics : instances.values()) {
-                fileStatistics.report();
+            if (!extensionsToInclude.isEmpty()) {
+                for (FileStatistics fileStatistics : instances.values()) {
+                    fileStatistics.report();
+                }
             }
         }        
     }

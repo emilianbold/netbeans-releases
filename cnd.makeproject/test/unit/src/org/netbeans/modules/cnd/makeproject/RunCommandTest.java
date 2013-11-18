@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -87,7 +88,7 @@ public class RunCommandTest extends CndBaseTestCase{
     public static void testExpandingMacroses() {
         File folderBase = getBaseFolder();
         final FileObject folderBaseFO = CndFileUtils.toFileObject(folderBase);
-        MakeConfiguration conf = MakeConfiguration.createConfiguration(FSPath.toFSPath(folderBaseFO), "Default", MakeConfiguration.TYPE_APPLICATION, null, null);  // NOI18N
+        MakeConfiguration conf = MakeConfiguration.createConfiguration(FSPath.toFSPath(folderBaseFO), "Default", MakeConfiguration.TYPE_APPLICATION, null, HostInfoUtils.LOCALHOST);  // NOI18N
         String result = ProjectActionEvent.getRunCommandAsString(
                 "\"${OUTPUT_PATH}\" \"arg 1\" \"${OUTPUT_PATH}\" \"arg 2\"", 
                 conf, 

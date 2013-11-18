@@ -80,7 +80,7 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 public abstract class DebuggerSettingsBridge implements PropertyChangeListener {
 
     protected NativeDebugger debugger;
-
+    
     // A tentative setting is the one communicated to us directly
     // via the gui through a DebuggerInfo
     private DebuggerSettings tentativeSettings;
@@ -322,6 +322,8 @@ public abstract class DebuggerSettingsBridge implements PropertyChangeListener {
 	ignoreSettingsChange = true;
 	currentRunProfile().setArgs(argv);
 	ignoreSettingsChange = false;
+        
+        informListener(RunProfile.PROP_RUNARGS_CHANGED, currentRunProfile().getArgsFlat());
     }
 
     public void noteRedir(String infile, String outfile, boolean append) {
@@ -348,6 +350,8 @@ public abstract class DebuggerSettingsBridge implements PropertyChangeListener {
 	// OLD ignoreSettingsChange = true;
 	currentRunProfile().setRunDirectory(dir);
 	// OLD ignoreSettingsChange = false;
+        
+        informListener(RunProfile.PROP_RUNDIR_CHANGED, dir);
     } 
 
     public void noteEnvVar(String name, String new_value) {
@@ -362,6 +366,8 @@ public abstract class DebuggerSettingsBridge implements PropertyChangeListener {
 	ignoreSettingsChange = true;
 	currentRunProfile().setEnvironment(env);
 	ignoreSettingsChange = false;
+        
+        informListener(RunProfile.PROP_ENVVARS_CHANGED, env.getenvAsMap());
     }
 
 
@@ -464,6 +470,8 @@ public abstract class DebuggerSettingsBridge implements PropertyChangeListener {
 	    dirty |= DIRTY_WATCHES;
 	    initialApply(dirty);
 	}
+        
+        informListener(RunProfile.PROP_RUNCOMMAND_CHANGED, progname);
     }
 
     public void noteProgUnloaded() {
@@ -704,5 +712,17 @@ public abstract class DebuggerSettingsBridge implements PropertyChangeListener {
     
     public final DebuggerSettings cloneMainSettings() {
         return (mainSettings == null) ? null : mainSettings.clone(info.getConfiguration());
+    }
+    
+    protected PropertyChangeListener changeListener;
+
+    public void assignChangeListener(PropertyChangeListener changeListener) {
+        this.changeListener = changeListener;
+    }
+    
+    private void informListener(String propName, Object value) {
+        if (changeListener != null) {
+            changeListener.propertyChange(new PropertyChangeEvent(debugger.session(), propName, null, value));
+        }
     }
 }

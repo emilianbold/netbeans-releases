@@ -300,7 +300,7 @@ public final class NavigatorScanner {
             return null;
         }
 
-        protected void appendInterfeas(Collection<? extends InterfaceScope> interfaes, HtmlFormatter formatter) {
+        protected void appendInterfaces(Collection<? extends InterfaceScope> interfaes, HtmlFormatter formatter) {
             boolean first = true;
             for (InterfaceScope interfaceScope : interfaes) {
                 if (interfaceScope != null) {
@@ -510,6 +510,7 @@ public final class NavigatorScanner {
     }
 
     private class PHPUseStructureItem extends PHPStructureItem {
+
         public PHPUseStructureItem(UseScope elementHandle) {
             super(elementHandle, null, "aaaa_use"); //NOI18N
         }
@@ -539,15 +540,22 @@ public final class NavigatorScanner {
         public ElementKind getKind() {
             return ElementKind.RULE;
         }
+
     }
 
     private class PHPClassStructureItem extends PHPStructureItem {
+        private final String superClassName;
+        private final Collection<? extends InterfaceScope> interfaces;
+        private final Collection<? extends TraitScope> usedTraits;
 
         public PHPClassStructureItem(ClassScope elementHandle, List<? extends StructureItem> children) {
             super(elementHandle, children, "cl"); //NOI18N
+            superClassName = ModelUtils.getFirst(getClassScope().getSuperClassNames());
+            interfaces = getClassScope().getSuperInterfaceScopes();
+            usedTraits = getClassScope().getTraits();
         }
 
-        public ClassScope getClassScope() {
+        private ClassScope getClassScope() {
             return (ClassScope) getModelElement();
         }
 
@@ -555,19 +563,16 @@ public final class NavigatorScanner {
         public String getHtml(HtmlFormatter formatter) {
             formatter.reset();
             appendName(getClassScope(), formatter);
-            String superCalssName = ModelUtils.getFirst(getClassScope().getSuperClassNames());
-            if (superCalssName != null) {
+            if (superClassName != null) {
                 formatter.appendHtml(FONT_GRAY_COLOR + "::"); //NOI18N
-                formatter.appendText(superCalssName);
+                formatter.appendText(superClassName);
                 formatter.appendHtml(CLOSE_FONT);
             }
-            Collection<? extends InterfaceScope> interfaes = getClassScope().getSuperInterfaceScopes();
-            if (interfaes != null && interfaes.size() > 0) {
+            if (interfaces != null && interfaces.size() > 0) {
                 formatter.appendHtml(FONT_GRAY_COLOR + ":"); //NOI18N
-                appendInterfeas(interfaes, formatter);
+                appendInterfaces(interfaces, formatter);
                 formatter.appendHtml(CLOSE_FONT);
             }
-            Collection<? extends TraitScope> usedTraits = getClassScope().getTraits();
             if (usedTraits != null && usedTraits.size() > 0) {
                 formatter.appendHtml(FONT_GRAY_COLOR + "#"); //NOI18N
                 appendUsedTraits(usedTraits, formatter);
@@ -579,6 +584,7 @@ public final class NavigatorScanner {
     }
 
     private class PHPConstantStructureItem extends PHPStructureItem {
+
         public PHPConstantStructureItem(ConstantElement elementHandle, String prefix) {
             super(elementHandle, null, prefix);
         }
@@ -646,15 +652,15 @@ public final class NavigatorScanner {
             return formatter.getText();
         }
 
-
     }
 
     private class PHPInterfaceStructureItem extends PHPStructureItem {
-
         private static final String PHP_INTERFACE_ICON = "org/netbeans/modules/php/editor/resources/interface.png"; //NOI18N
+        private final Collection<? extends InterfaceScope> interfaces;
 
         public PHPInterfaceStructureItem(InterfaceScope elementHandle, List<? extends StructureItem> children) {
             super(elementHandle, children, "cl"); //NOI18N
+            interfaces = getInterfaceScope().getSuperInterfaceScopes();
         }
 
         @Override
@@ -665,7 +671,7 @@ public final class NavigatorScanner {
             return interfaceIcon;
         }
 
-        public InterfaceScope getInterfaceScope() {
+        private InterfaceScope getInterfaceScope() {
             return (InterfaceScope) getModelElement();
         }
 
@@ -673,21 +679,23 @@ public final class NavigatorScanner {
         public String getHtml(HtmlFormatter formatter) {
             formatter.reset();
             appendName(getInterfaceScope(), formatter);
-            Collection<? extends InterfaceScope> interfaes = getInterfaceScope().getSuperInterfaceScopes();
-            if (interfaes != null && interfaes.size() > 0) {
+            if (interfaces != null && interfaces.size() > 0) {
                 formatter.appendHtml(FONT_GRAY_COLOR + "::"); //NOI18N
-                appendInterfeas(interfaes, formatter);
+                appendInterfaces(interfaces, formatter);
                 formatter.appendHtml(CLOSE_FONT);
             }
             return formatter.getText();
         }
+
     }
 
     private class PHPTraitStructureItem extends PHPStructureItem {
         private static final String PHP_TRAIT_ICON = "org/netbeans/modules/php/editor/resources/trait.png"; //NOI18N
+        private final Collection<? extends TraitScope> usedTraits;
 
         public PHPTraitStructureItem(ModelElement elementHandle, List<? extends StructureItem> children) {
             super(elementHandle, children, "cl"); //NOI18N
+            usedTraits = getTraitScope().getTraits();
         }
 
         @Override
@@ -698,7 +706,7 @@ public final class NavigatorScanner {
             return traitIcon;
         }
 
-        public TraitScope getTraitScope() {
+        private TraitScope getTraitScope() {
             return (TraitScope) getModelElement();
         }
 
@@ -706,7 +714,6 @@ public final class NavigatorScanner {
         public String getHtml(HtmlFormatter formatter) {
             formatter.reset();
             appendName(getTraitScope(), formatter);
-            Collection<? extends TraitScope> usedTraits = getTraitScope().getTraits();
             if (usedTraits != null && usedTraits.size() > 0) {
                 formatter.appendHtml(FONT_GRAY_COLOR + "#"); //NOI18N
                 appendUsedTraits(usedTraits, formatter);

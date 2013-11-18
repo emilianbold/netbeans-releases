@@ -208,6 +208,11 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
         performTest("bug235399.cpp", 24, 28, "bug235399.cpp", 7, 7);
     }    
     
+    public void testBug235829() throws Exception {
+        // Bug 235829 - Regression on Loki: unresolved identifier in specialization. 
+        performTest("bug235829.cpp", 11, 7, "bug235829.cpp", 7, 5);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

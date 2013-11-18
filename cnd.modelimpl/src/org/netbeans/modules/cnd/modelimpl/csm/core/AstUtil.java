@@ -109,7 +109,7 @@ public class AstUtil {
                     break;
             }
         }
-        return NameCache.getManager().getString(CharSequences.create(l.toString()));
+        return NameCache.getManager().getString(CharSequences.create(l));
     }
 
     private static AST findIdToken(AST ast) {
@@ -182,7 +182,7 @@ public class AstUtil {
                             if( next != null ) {
                                 sb.append(AstUtil.getText(next));
                             }
-                            return sb.toString();
+                            return sb;
                         } else if (first.getType() == CPPTokenTypes.IDENT){
                             return AstUtil.getText(first);
                         }

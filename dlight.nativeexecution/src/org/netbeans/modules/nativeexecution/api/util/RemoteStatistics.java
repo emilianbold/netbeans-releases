@@ -44,6 +44,7 @@ package org.netbeans.modules.nativeexecution.api.util;
 import com.jcraft.jsch.Channel;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -64,6 +65,7 @@ import org.openide.util.RequestProcessor.Task;
 public final class RemoteStatistics implements Callable<Boolean> {
 
     public static final boolean COLLECT_STATISTICS = Boolean.parseBoolean(System.getProperty("jsch.statistics", "false")); // NOI18N
+    public static final boolean COLLECT_TRAFFIC = Boolean.parseBoolean(System.getProperty("jsch.statistics.traffic", "true")); // NOI18N
     public static final boolean COLLECT_STACKS = COLLECT_STATISTICS && Boolean.parseBoolean(System.getProperty("jsch.statistics.stacks", "false")); // NOI18N
     private static final String BREAK_UPLOADS_FLAG_FILE = System.getProperty("break.uploads"); // NOI18N
     private static final TrafficCounters trafficCounters = new TrafficCounters();
@@ -74,10 +76,15 @@ public final class RemoteStatistics implements Callable<Boolean> {
     private static final AtomicBoolean trafficDetected = new AtomicBoolean();
 
     static {
-        if (COLLECT_STATISTICS) {
+        if (COLLECT_STATISTICS && COLLECT_TRAFFIC) {
             MeasurableSocketFactory.getInstance().addIOListener(listener);
         }
     }
+    
+    public static abstract class ActivityID {
+        /*package*/ ActivityID() {}
+    }
+
 
     public RemoteStatistics() {
     }
@@ -146,7 +153,9 @@ public final class RemoteStatistics implements Callable<Boolean> {
         while (true) {
             synchronized (trafficDetected) {
                 try {
-                    trafficDetected.wait(quietPrePeriodMillis);
+                    if (quietPrePeriodMillis > 0) {
+                        trafficDetected.wait(quietPrePeriodMillis);
+                    }
                     if (!trafficDetected.getAndSet(false)) {
                         break;
                     }
@@ -173,18 +182,25 @@ public final class RemoteStatistics implements Callable<Boolean> {
         return unnamed.equals(stopped);
     }
 
-    public static Object stratChannelActivity(CharSequence category, Channel channel, CharSequence... args) {
+    public static ActivityID startChannelActivity(CharSequence category, CharSequence... args) {
         if (!COLLECT_STATISTICS) {
             return null;
         }
-        return currentStatRef.get().stat.stratChannelActivity(category, channel, args);
+        return currentStatRef.get().stat.startChannelActivity(category, args);
     }
 
-    public static void stopChannelActivity(Object activityID) {
+    public static void stopChannelActivity(RemoteStatistics.ActivityID activityID) {
+        stopChannelActivity(activityID, 0);
+    }
+
+    public static void stopChannelActivity(RemoteStatistics.ActivityID activityID, long supposedTraffic) {
         if (!COLLECT_STATISTICS) {
             return;
         }
-        currentStatRef.get().stat.stopChannelActivity(activityID);
+        if (activityID == null) {
+            return;
+        }
+        currentStatRef.get().stat.stopChannelActivity(activityID, supposedTraffic);
     }
 
     private static RemoteMeasurementsRef reschedule() {
@@ -200,17 +216,18 @@ public final class RemoteStatistics implements Callable<Boolean> {
         if (OUTPUT == null) {
             return System.out;
         }
-        File dir = new File(OUTPUT);
-        if (!dir.isDirectory()) {
-            throw new IllegalArgumentException(OUTPUT + " is not a directory!"); // NOI18N
-        }
-        if (!dir.canWrite()) {
-            throw new IllegalArgumentException(OUTPUT + " is not writable!"); // NOI18N
-        }
         try {
+            File dir = new File(OUTPUT);
+            if (!dir.isDirectory()) {
+                throw new IOException(OUTPUT + " is not a directory!"); // NOI18N
+            }
+            if (!dir.canWrite()) {
+                throw new IOException(OUTPUT + " is not writable!"); // NOI18N
+            }
             return new PrintStream(new File(dir, name));
-        } catch (FileNotFoundException ex) {
-            throw new IllegalArgumentException();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return System.out;
         }
     }
 

@@ -82,6 +82,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.FileReferencesKey;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -182,11 +183,11 @@ public final class FileContent implements MutableDeclarationsContainer {
                 (emptyContent ? false : other.hasBrokenIncludes()),
                 new FileComponentInstantiations(other.getFileInstantiations(), emptyContent),
                 new FileComponentReferences(other.getFileReferences(), emptyContent),
-                createFakeIncludes(emptyContent ? Collections.<FakeIncludePair>emptyList() : other.fakeIncludeRegistrations),
-                createFakeFunctions(emptyContent ? Collections.<CsmUID<FunctionImplEx<?>>>emptyList() : other.fakeFunctionRegistrations),
-                createErrors(emptyContent ? Collections.<ErrorDirectiveImpl>emptySet() : other.errors), 
+                createFakeIncludes(emptyContent || other.fakeIncludeRegistrations.isEmpty()? Collections.<FakeIncludePair>emptyList() : other.fakeIncludeRegistrations),
+                createFakeFunctions(emptyContent || other.fakeFunctionRegistrations.isEmpty()? Collections.<CsmUID<FunctionImplEx<?>>>emptyList() : other.fakeFunctionRegistrations),
+                createErrors(emptyContent || other.errors.isEmpty()? Collections.<ErrorDirectiveImpl>emptySet() : other.errors), 
                 emptyContent ? 0 : other.parserErrorsCount,
-                createParserErrors(emptyContent ? Collections.<CsmParserProvider.ParserError>emptyList() : other.parserErrors));
+                createParserErrors(emptyContent || other.parserErrors.isEmpty() ? Collections.<CsmParserProvider.ParserError>emptyList() : other.parserErrors));
     }
     
     /**
@@ -465,6 +466,16 @@ public final class FileContent implements MutableDeclarationsContainer {
             return ref.second().getContainer();
         }
     }
+
+    private <T extends FileComponent> Key getFileComponentKey(Union2<T, WeakContainer<T>> ref) {
+        if (ref.hasFirst()) {
+            assert !persistent : "non persistent must have hard reference";
+            return ref.first().getKey();
+        } else {
+            assert persistent : "persistent must have weak reference";
+            return ref.second().getKey();
+        }
+    }
     
     /* collection to keep fake ASTs during parse phase */
     private final Map<CsmUID<FunctionImplEx<?>>, AST> fileASTs = new HashMap<CsmUID<FunctionImplEx<?>>, AST>();
@@ -480,20 +491,21 @@ public final class FileContent implements MutableDeclarationsContainer {
     public void write(RepositoryDataOutput output) throws IOException {
         checkValid();
         assert persistent : "only persistent content can be put into repository";
-        FileDeclarationsKey fileDeclarationsKey = (FileDeclarationsKey) getFileComponent(fileComponentDeclarations).getKey();
+        FileDeclarationsKey fileDeclarationsKey = (FileDeclarationsKey) getFileComponentKey(fileComponentDeclarations);
         assert fileDeclarationsKey != null : "file declaratios key can not be null";
         fileDeclarationsKey.write(output);
-        FileIncludesKey fileIncludesKey = (FileIncludesKey) getFileComponent(fileComponentIncludes).getKey();
+        FileIncludesKey fileIncludesKey = (FileIncludesKey) getFileComponentKey(fileComponentIncludes);
         assert fileIncludesKey != null : "file includes key can not be null";
         fileIncludesKey.write(output);
         output.writeBoolean(hasBrokenIncludes.get());
-        FileMacrosKey fileMacrosKey = (FileMacrosKey) getFileComponent(fileComponentMacros).getKey();
+        FileMacrosKey fileMacrosKey = (FileMacrosKey) getFileComponentKey(fileComponentMacros);
         assert fileMacrosKey != null : "file macros key can not be null";
         fileMacrosKey.write(output);
-        FileReferencesKey fileReferencesKey = (FileReferencesKey) getFileComponent(fileComponentReferences).getKey();
+        fileComponentReferences.second().getKey();
+        FileReferencesKey fileReferencesKey = (FileReferencesKey) getFileComponentKey(fileComponentReferences);
         assert fileReferencesKey != null : "file referebces key can not be null";
         fileReferencesKey.write(output);
-        FileInstantiationsKey fileInstantiationsKey = (FileInstantiationsKey) getFileComponent(fileComponentInstantiations).getKey();
+        FileInstantiationsKey fileInstantiationsKey = (FileInstantiationsKey) getFileComponentKey(fileComponentInstantiations);
         assert fileInstantiationsKey != null : "file instantiation references key can not be null";
         fileInstantiationsKey.write(output);
         

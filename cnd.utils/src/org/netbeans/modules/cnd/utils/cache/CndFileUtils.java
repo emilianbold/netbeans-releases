@@ -57,6 +57,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.spi.utils.CndFileExistSensitiveCache;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
@@ -180,7 +181,23 @@ public final class CndFileUtils {
         return CndFileSystemProvider.toFileObject(file);
     }
 
+    private static final ConcurrentHashMap<FileSystem,ConcurrentHashMap<CharSequence,FileObject>> foCache = new ConcurrentHashMap<FileSystem, ConcurrentHashMap<CharSequence, FileObject>>();
+    
     public static FileObject toFileObject(FileSystem fs, CharSequence absolutePath) {
+        ConcurrentHashMap<CharSequence, FileObject> map = foCache.get(fs);
+        if (map == null) {
+            map = new ConcurrentHashMap<CharSequence, FileObject>();
+            foCache.putIfAbsent(fs, map);
+        }
+        FileObject res = map.get(absolutePath);
+        if (res == null || !res.isValid()) {
+            res = toFileObjectImpl(fs, absolutePath);
+            map.putIfAbsent(absolutePath, res);
+        }
+        return res;
+    }
+    
+    private static FileObject toFileObjectImpl(FileSystem fs, CharSequence absolutePath) {
         if (isLocalFileSystem(fs)) {
 //            FileObject fo = FileUtil.toFileObject(new File(absolutePath.toString()));
 //            if (fo == null) {
@@ -274,7 +291,7 @@ public final class CndFileUtils {
     }
 
     public static File createLocalFile(URI uri) {
-        File file = new File(uri);
+        File file = Utilities.toFile(uri);
         CndUtils.assertAbsoluteFileInConsole(file); //NOI18N
         return file;
     }
@@ -348,6 +365,10 @@ public final class CndFileUtils {
         return CndFileSystemProvider.urlToFileObject(url);
     }
 
+    public static FileSystem urlToFileSystem(CharSequence url) {
+        return CndFileSystemProvider.urlToFileSystem(url);
+    }
+    
     public static CharSequence fileObjectToUrl(FileObject fileObject) {
         return CndFileSystemProvider.fileObjectToUrl(fileObject);
     }
@@ -504,11 +525,13 @@ public final class CndFileUtils {
 
     private static ConcurrentMap<String, Flags> getFilesMap(FileSystem fs) {
         ConcurrentMap<String, Flags> map;
-        L1Cache aCache = l1Cache;
-        if (aCache != null) {
-            map = aCache.get(fs);
-            if (map != null) {
-                return map;
+        if (CndTraceFlags.L1_CACHE_FILE_UTILS) {
+            L1Cache aCache = l1Cache;
+            if (aCache != null) {
+                map = aCache.get(fs);
+                if (map != null) {
+                    return map;
+                }
             }
         }
         try {
@@ -518,7 +541,9 @@ public final class CndFileUtils {
                 map = new ConcurrentHashMap<String, Flags>();
                 mapRef = new SoftReference<ConcurrentMap<String, Flags>>(map);
                 maps.put(fs, mapRef);
-                l1Cache = new L1Cache(fs, mapRef);
+                if (CndTraceFlags.L1_CACHE_FILE_UTILS) {
+                    l1Cache = new L1Cache(fs, mapRef);
+                }
             }
         } finally {
             maRefLock.unlock();

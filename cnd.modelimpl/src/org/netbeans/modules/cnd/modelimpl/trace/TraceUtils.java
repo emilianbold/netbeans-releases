@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.modelimpl.trace;
 import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.util.Collection;
+import java.util.Map;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.StartEntry;
@@ -99,6 +100,24 @@ public class TraceUtils {
             return String.format("start file=%s, start-prj=%s", startEntry.getStartFile(), startEntry.getStartFileProject()); // NOI18N
         }
     }
+    
+    public static String traceMap(Map<?, ?> mapping, int indent) {
+        StringBuilder out = new StringBuilder();
+        if (mapping != null && !mapping.isEmpty()) {
+            for (Map.Entry<?, ?> entry : mapping.entrySet()) {
+                repeat(out, indent, ' ').append("[").append(entry.getKey()).append("]=>{"); // NOI18N
+                out.append(entry.getValue()).append("}\n"); // NOI18N
+            }
+        }
+        return out.toString();
+    }
+    
+    public static StringBuilder repeat(StringBuilder b, int level, char character) {
+        for (int i = 0; i < level; i++) {
+            b.append(character);
+        }
+        return b;
+    }        
     
     public static void updateTraceFlag(String flag, boolean value) {
         TraceFlags.validate(flag, value);
