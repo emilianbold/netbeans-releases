@@ -43,88 +43,31 @@
  */
 package org.netbeans.modules.cnd.highlight.semantic;
 
+import java.util.Collection;
+import java.util.Collections;
 import javax.swing.text.Document;
-import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingOptions;
-import org.netbeans.modules.cnd.model.tasks.CaretAwareCsmFileTaskFactory;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.api.editor.mimelookup.MimeRegistrations;
+import org.netbeans.modules.cnd.highlight.semantic.debug.InterrupterImpl;
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.SchedulerTask;
+import org.netbeans.modules.parsing.spi.TaskFactory;
 
 /**
  *
  * @author Sergey Grinev
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory.class, position=10)
-public class MarkOccurrencesHighlighterFactory extends CaretAwareCsmFileTaskFactory {
-
-    @Override
-    protected PhaseRunner createTask(final FileObject fo) {
-        MarkOccurrencesHighlighter ph = null;
-        if (enabled()) {
-            try {
-                DataObject dobj = DataObject.find(fo);
-                EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
-                Document doc = ec.getDocument();
-                if (doc != null) {
-                    String mimeType = DocumentUtilities.getMimeType(doc);
-                    if (mimeType != null) {
-                        if (MIMENames.isHeaderOrCppOrC(mimeType)) {
-                            ph = new MarkOccurrencesHighlighter(doc);
-                        }
-                    }
-                }
-            } catch (DataObjectNotFoundException ex) {
-                // file object or data object can be already invalid
-                // Exceptions.printStackTrace(ex);
-            }
-        }
-        return ph != null ? ph : new PhaseRunner() {
-
-            private boolean valid = true;
-
-            @Override
-            public void run(Phase phase) {
-                valid = !enabled();
-                // rest
-            }
-
-            @Override
-            public boolean isValid() {
-                return valid;
-            }
-            
-            @Override
-            public void cancel() {
-                valid = !enabled();
-            }
-
-            @Override
-            public boolean isHighPriority() {
-                return false;
-            }
-
-            @Override
-            public String toString() {
-                return "MarkOccurrencesHighlighterFactory runner"; //NOI18N
-            }
-        };
-    }
+@MimeRegistrations({
+    @MimeRegistration(mimeType = MIMENames.C_MIME_TYPE, service = TaskFactory.class),
+    @MimeRegistration(mimeType = MIMENames.CPLUSPLUS_MIME_TYPE, service = TaskFactory.class),
+    @MimeRegistration(mimeType = MIMENames.HEADER_MIME_TYPE, service = TaskFactory.class)
+})
+public class MarkOccurrencesHighlighterFactory extends TaskFactory {
     
-    private static boolean enabled() {
-        return SemanticHighlightingOptions.instance().getEnableMarkOccurrences()
-                &&!HighlighterBase.MINIMAL;
-    }
-
     @Override
-    protected int taskDelay() {
-        return ModelUtils.OCCURRENCES_DELAY;
-    }
-
-    @Override
-    protected int rescheduleDelay() {
-        return ModelUtils.RESCHEDULE_OCCURRENCES_DELAY;
+    public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
+        Document doc = snapshot.getSource().getDocument(false);
+        return Collections.singletonList(new MarkOccurrencesHighlighter(doc, new InterrupterImpl()));
     }
 }

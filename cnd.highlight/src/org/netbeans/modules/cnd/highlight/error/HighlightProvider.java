@@ -55,9 +55,9 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
-import org.netbeans.modules.cnd.support.Interrupter;
-import org.netbeans.modules.cnd.highlight.error.HighlightProviderTaskFactory.CancellableInterruptor;
+import org.netbeans.modules.cnd.highlight.semantic.debug.InterrupterImpl;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatus;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
@@ -98,7 +98,7 @@ public class HighlightProvider  {
     private HighlightProvider() {
     }
     
-    /* package */ void update(CsmFile file, Document doc, DataObject dao, CancellableInterruptor interrupter) {
+    /* package */ void update(CsmFile file, Document doc, DataObject dao, InterrupterImpl interrupter) {
         assert doc!=null || file==null;
         if (doc instanceof BaseDocument){
             addAnnotations((BaseDocument)doc, file, dao, interrupter);
@@ -121,7 +121,7 @@ public class HighlightProvider  {
         }
     }
     
-    private void addAnnotations(final BaseDocument doc, final CsmFile file, final DataObject dao, final CancellableInterruptor interrupter) {
+    private void addAnnotations(final BaseDocument doc, final CsmFile file, final DataObject dao, final InterrupterImpl interrupter) {
 
         CppUpToDateStatusProvider.get(doc).setUpToDate(UpToDateStatus.UP_TO_DATE_PROCESSING);
         final List<ErrorDescription> descriptions = new ArrayList<ErrorDescription>();

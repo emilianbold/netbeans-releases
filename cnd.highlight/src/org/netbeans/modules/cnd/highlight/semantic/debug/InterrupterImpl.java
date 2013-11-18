@@ -62,4 +62,8 @@ public class InterrupterImpl implements Interrupter, Cancellable {
         canceled = true;
         return true;
     }
+    
+    public void resume() {
+        canceled = false;
+    }
 }

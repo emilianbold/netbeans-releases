@@ -71,19 +71,20 @@ import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
-import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.highlight.semantic.debug.InterrupterImpl;
 import org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingOptions;
 import org.netbeans.modules.cnd.model.tasks.CaretAwareCsmFileTaskFactory;
+import org.netbeans.modules.cnd.model.tasks.CndParserResult;
 import org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.modelutil.FontColorProvider;
 import org.netbeans.modules.editor.errorstripe.privatespi.Mark;
+import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.PositionsBag;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -95,6 +96,8 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
     private static final String POSITION_BAG = "CndMarkOccurrencesHighlighter"; // NOI18N
 
     private static final ConcurrentHashMap<String,AttributeSet> defaultColors = new ConcurrentHashMap<String, AttributeSet>();
+    
+    private InterrupterImpl interrupter;
 
     public static PositionsBag getHighlightsBag(Document doc) {
         if (doc == null) {
@@ -138,148 +141,144 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
         }
     }
 
-    public MarkOccurrencesHighlighter(Document doc) {
+    public MarkOccurrencesHighlighter(Document doc, InterrupterImpl interrupter) {
         super(doc);
         init(doc);
+        this.interrupter = interrupter;
     }
     public static final Color ES_COLOR = new Color(175, 172, 102);
-    private boolean valid = true;
-    // PhaseRunner
 
     @Override
-    public void run(Phase phase) {
-        InterrupterImpl interrupter = new InterrupterImpl();
+    public void run(CndParserResult result, SchedulerEvent event) {
         try {
             addCancelListener(interrupter);
-            runImpl(phase, interrupter);
+            runImpl((BaseDocument)result.getSnapshot().getSource().getDocument(false), interrupter);
         } finally {
             removeCancelListener(interrupter);
         }
     }
 
-    private void runImpl(Phase phase, final Interrupter interrupter) {
+    @Override
+    public int getPriority() {
+        return 100;
+    }
+
+    @Override
+    public Class<? extends Scheduler> getSchedulerClass() {
+        return Scheduler.CURSOR_SENSITIVE_TASK_SCHEDULER;
+    }
+
+    private void runImpl(final BaseDocument doc, final InterrupterImpl interrupter) {
         if (!SemanticHighlightingOptions.instance().getEnableMarkOccurrences()) {
             clean();
-            valid = false;
             return;
         }
 
-        if (phase == Phase.CLEANUP) {
+        if (doc == null) {
             clean();
-        } else {
-            final BaseDocument doc = getDocument();
+            return;
+        }
+        DocumentListener listener = null;
+        listener = new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                interrupter.cancel();
+            }
 
-            if (doc == null) {
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                interrupter.cancel();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+            }
+        };
+        doc.addDocumentListener(listener);
+        try {
+            final CsmFile file = CsmUtilities.getCsmFile(doc, false, false);
+            final FileObject fo = CsmUtilities.getFileObject(doc);
+
+            if (file == null || fo == null) {
+                // this can happen if MO was triggered right before closing project
                 clean();
                 return;
             }
-            DocumentListener listener = null;
-            if (interrupter instanceof Cancellable) {
-                listener = new DocumentListener() {
+            final String mimeType = DocumentUtilities.getMimeType(doc);
+            int lastPosition = CaretAwareCsmFileTaskFactory.getLastPosition(fo);
 
-                    @Override
-                    public void insertUpdate(DocumentEvent e) {
-                        ((Cancellable) interrupter).cancel();
+            // Check existance of related document
+            // And if it exist and check should we use its caret position or not
+            Document doc2 = (Document) doc.getProperty(Document.class);
+            if (doc2 != null) {
+                boolean useOwnCarretPosition = true;
+                Object obj = doc.getProperty(CsmFileTaskFactory.USE_OWN_CARET_POSITION);
+                if (obj != null) {
+                    useOwnCarretPosition = (Boolean) obj;
+                }
+                if (!useOwnCarretPosition) {
+                    FileObject fo2 = CsmUtilities.getFileObject(doc2);
+                    if (fo2 != null) {
+                        lastPosition = getDocumentOffset(doc, getFileOffset(doc2, CaretAwareCsmFileTaskFactory.getLastPosition(fo2)));
                     }
-
-                    @Override
-                    public void removeUpdate(DocumentEvent e) {
-                        ((Cancellable) interrupter).cancel();
-                    }
-
-                    @Override
-                    public void changedUpdate(DocumentEvent e) {
-                    }
-                };
-                doc.addDocumentListener(listener);
+                }
             }
-            try {
-                final CsmFile file = CsmUtilities.getCsmFile(doc, false, false);
-                final FileObject fo = CsmUtilities.getFileObject(doc);
 
-                if (file == null || fo == null) {
-                    // this can happen if MO was triggered right before closing project
+            if (doc.getProperty(CsmMacroExpansion.MACRO_EXPANSION_VIEW_DOCUMENT) == null) {
+                HighlightsSequence hs = getHighlightsBag(doc).getHighlights(0, doc.getLength() - 1);
+                while (hs.moveNext()) {
+                    if (lastPosition >= hs.getStartOffset() && lastPosition <= hs.getEndOffset()) {
+                        // cursor is still in the marked area, so previous result is valid
+                        return;
+                    }
+                }
+            }
+
+            final Collection<CsmReference> out = getOccurrences(doc, file, lastPosition, interrupter);
+            if (out.isEmpty() || interrupter.cancelled()) {
+                if (!SemanticHighlightingOptions.instance().getKeepMarks()) {
                     clean();
+                }
+            } else {
+                final PositionsBag obag = new PositionsBag(doc);
+                obag.clear();
+                final AttributeSet attrs = defaultColors.get(mimeType);
+                if (attrs == null) {
+                    assert false : "Color attributes set is not found for MIME " + mimeType + ". Document " + doc;
                     return;
                 }
-                final String mimeType = DocumentUtilities.getMimeType(doc);
-                int lastPosition = CaretAwareCsmFileTaskFactory.getLastPosition(fo);
-
-                // Check existance of related document
-                // And if it exist and check should we use its caret position or not
-                Document doc2 = (Document)doc.getProperty(Document.class);
-                if(doc2 != null) {
-                    boolean useOwnCarretPosition = true;
-                    Object obj = doc.getProperty(CsmFileTaskFactory.USE_OWN_CARET_POSITION);
-                    if (obj != null) {
-                        useOwnCarretPosition = (Boolean) obj;
-                    }
-                    if (!useOwnCarretPosition) {
-                        FileObject fo2 = CsmUtilities.getFileObject(doc2);
-                        if(fo2 != null) {
-                            lastPosition = getDocumentOffset(doc, getFileOffset(doc2, CaretAwareCsmFileTaskFactory.getLastPosition(fo2)));
-                        }
-                    }
-                }
-
-                if (doc.getProperty(CsmMacroExpansion.MACRO_EXPANSION_VIEW_DOCUMENT) == null) {
-                    HighlightsSequence hs = getHighlightsBag(doc).getHighlights(0, doc.getLength() - 1);
-                    while (hs.moveNext()) {
-                        if (lastPosition >= hs.getStartOffset() && lastPosition <= hs.getEndOffset()) {
-                            // cursor is still in the marked area, so previous result is valid
-                            return;
-                        }
-                    }
-                }
-
-                final Collection<CsmReference> out = getOccurrences(doc, file, lastPosition, interrupter);
-                if (out.isEmpty() || interrupter.cancelled()) {
-                    if (!SemanticHighlightingOptions.instance().getKeepMarks()) {
-                        clean();
-                    }
-                } else {
-                    final PositionsBag obag = new PositionsBag(doc);
-                    obag.clear();
-                    final AttributeSet attrs = defaultColors.get(mimeType);
-                    if (attrs == null) {
-                        assert false : "Color attributes set is not found for MIME "+mimeType+". Document "+doc;
-                        return;
-                    }
-                    for (final CsmReference csmReference : out) {
-                        if (interrupter.cancelled()) {
-                            break;
-                        }
-                        Runnable runnable = new Runnable() {
-
-                            @Override
-                            public void run() {
-                                try {
-                                    addHighlight(doc, obag, csmReference, attrs);
-                                } catch (BadLocationException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                }
-                            }
-
-                        };
-                        doc.render(runnable);
-                    }
+                for (final CsmReference csmReference : out) {
                     if (interrupter.cancelled()) {
-                        // no need to mark dirty occurrences, they will be recalculated on the next run
-                        return;
+                        break;
                     }
-                    getHighlightsBag(doc).setHighlights(obag);
-                    OccurrencesMarkProvider.get(doc).setOccurrences(
-                            OccurrencesMarkProvider.createMarks(doc, out, ES_COLOR, NbBundle.getMessage(MarkOccurrencesHighlighter.class, "LBL_ES_TOOLTIP")));
+                    Runnable runnable = new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                addHighlight(doc, obag, csmReference, attrs);
+                            } catch (BadLocationException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    };
+                    doc.render(runnable);
                 }
-            } finally {
-                if (listener != null) {
-                    doc.removeDocumentListener(listener);
+                if (interrupter.cancelled()) {
+                    // no need to mark dirty occurrences, they will be recalculated on the next run
+                    return;
                 }
-            }            
+                getHighlightsBag(doc).setHighlights(obag);
+                OccurrencesMarkProvider.get(doc).setOccurrences(
+                        OccurrencesMarkProvider.createMarks(doc, out, ES_COLOR, NbBundle.getMessage(MarkOccurrencesHighlighter.class, "LBL_ES_TOOLTIP")));
+            }
+        } finally {
+            if (listener != null) {
+                doc.removeDocumentListener(listener);
+            }
         }
     }
     
-    private void addHighlight(BaseDocument doc, PositionsBag obag, CsmReference csmReference, AttributeSet attrs) throws BadLocationException {
+    private void addHighlight(Document doc, PositionsBag obag, CsmReference csmReference, AttributeSet attrs) throws BadLocationException {
         int usages[][] = CsmMacroExpansion.getUsages(doc, csmReference.getStartOffset());
         if (usages != null) {
             for (int i = 0; i < usages.length; i++) {
@@ -301,17 +300,7 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
         }
     }
 
-    @Override
-    public boolean isValid() {
-        return valid;
-    }
-
-    @Override
-    public boolean isHighPriority() {
-        return true;
-    }
-
-    /* package-local */ static Collection<CsmReference> getOccurrences(AbstractDocument doc, CsmFile file, int position, Interrupter interrupter) {
+    /* package-local */ static Collection<CsmReference> getOccurrences(BaseDocument doc, CsmFile file, int position, InterrupterImpl interrupter) {
         position = getFileOffset(doc, position);
         Collection<CsmReference> out = Collections.<CsmReference>emptyList();
         // check if offset is in preprocessor conditional block
@@ -345,7 +334,7 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
         defaultColors.put(provider.getMimeType(), provider.getColor(FontColorProvider.Entity.MARK_OCCURENCES));
     }
 
-    private static boolean isPreprocessorConditionalBlock(AbstractDocument doc, int offset) {
+    private static boolean isPreprocessorConditionalBlock(BaseDocument doc, int offset) {
         if (doc == null) {
             return false;
         }
@@ -471,7 +460,7 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
         }
     }
 
-    private static Collection<CsmReference> getPreprocReferences(AbstractDocument doc, CsmFile file, int searchOffset, Interrupter interrupter) {
+    private static Collection<CsmReference> getPreprocReferences(AbstractDocument doc, CsmFile file, int searchOffset, InterrupterImpl interrupter) {
         doc.readLock();
         try {
             TokenSequence<?> origPreprocTS = cppTokenSequence(doc, searchOffset, false);
@@ -543,7 +532,7 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
         return out;
     }
 
-    private static Collection<CsmReference> getStringReferences(AbstractDocument doc, Token<TokenId> stringToken, Interrupter interrupter) {
+    private static Collection<CsmReference> getStringReferences(AbstractDocument doc, Token<TokenId> stringToken, InterrupterImpl interrupter) {
         if (stringToken == null) {
             return Collections.<CsmReference>emptyList();
         }
