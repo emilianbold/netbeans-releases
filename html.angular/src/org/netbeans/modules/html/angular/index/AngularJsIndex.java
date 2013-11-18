@@ -42,12 +42,14 @@
 package org.netbeans.modules.html.angular.index;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
@@ -59,34 +61,34 @@ import org.openide.util.Exceptions;
  * @author Petr Pisl
  */
 public class AngularJsIndex {
-    
+
     private static final Logger LOGGER = Logger.getLogger(AngularJsIndex.class.getSimpleName());
-    
+
     private static final Map<Project, AngularJsIndex> INDEXES = new WeakHashMap<>();
     private final QuerySupport querySupport;
-    
+
     public static AngularJsIndex get(Project project) throws IOException {
-        if(project == null) {
+        if (project == null) {
             return null;
         }
         synchronized (INDEXES) {
             AngularJsIndex index = INDEXES.get(project);
-            if(index == null) {
+            if (index == null) {
                 index = new AngularJsIndex(project);
                 INDEXES.put(project, index);
-            } 
+            }
             return index;
         }
     }
-    
+
     private AngularJsIndex(Project project) throws IOException {
-        Collection<FileObject>sourceRoots = QuerySupport.findRoots(project,
+        Collection<FileObject> sourceRoots = QuerySupport.findRoots(project,
                 null /* all source roots */,
                 Collections.<String>emptyList(),
                 Collections.<String>emptyList());
-        this.querySupport = QuerySupport.forRoots(AngularJsIndexer.Factory.NAME, AngularJsIndexer.Factory.VERSION, sourceRoots.toArray(new FileObject[]{}));        
+        this.querySupport = QuerySupport.forRoots(AngularJsIndexer.Factory.NAME, AngularJsIndexer.Factory.VERSION, sourceRoots.toArray(new FileObject[]{}));
     }
-    
+
     public Collection<AngularJsController> getControllers(final String name, final boolean exact) {
         Collection<? extends IndexResult> result = null;
         try {
@@ -98,7 +100,7 @@ public class AngularJsIndex {
             Collection<AngularJsController> controllers = new ArrayList<>();
             for (IndexResult indexResult : result) {
                 Collection<AngularJsController> possibleControllers = createControllers(indexResult);
-                for(AngularJsController controller: possibleControllers) {
+                for (AngularJsController controller : possibleControllers) {
                     if (exact && (controller.getName().equals(name)) || (!exact && controller.getName().startsWith(name))) {
                         controllers.add(controller);
                     }
@@ -108,7 +110,33 @@ public class AngularJsIndex {
         }
         return Collections.emptyList();
     }
-    
+
+    public Collection<String> getControllersForTemplate(@NonNull final URI uri) {
+        Collection<? extends IndexResult> result = null;
+
+        try {
+            result = querySupport.query(AngularJsIndexer.FIELD_TEMPLATE_CONTROLLER, "", QuerySupport.Kind.PREFIX, AngularJsIndexer.FIELD_TEMPLATE_CONTROLLER);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        if (result != null && !result.isEmpty()) {
+            String path = uri.toString();
+            Collection<String> controllers = new ArrayList();
+            for (IndexResult indexResult : result) {
+                String[] values = indexResult.getValues(AngularJsIndexer.FIELD_TEMPLATE_CONTROLLER);
+                for (String value : values) {
+                    int index = value.indexOf(':');
+                    String fileNamePart = value.substring(0, index);
+                    if (path.endsWith(fileNamePart)) {
+                        controllers.add(value.substring(index + 1));
+                    }
+                }
+            }
+            return controllers;
+        }
+        return Collections.EMPTY_LIST;
+    }
+
     private Collection<AngularJsController> createControllers(final IndexResult indexResult) {
         String[] values = indexResult.getValues(AngularJsIndexer.FIELD_CONTROLLER);
         Collection<AngularJsController> result = new ArrayList<>(values.length);

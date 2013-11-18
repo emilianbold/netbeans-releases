@@ -74,7 +74,6 @@ public class AngularJsDeclarationFinder implements DeclarationFinder {
 
     @Override
     public DeclarationLocation findDeclaration(ParserResult info, int caretOffset) {
-        System.out.println("findDeclaration");
         int embeddedOffset = info.getSnapshot().getEmbeddedOffset(caretOffset);
         
         TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(info.getSnapshot(), embeddedOffset);
@@ -140,7 +139,6 @@ public class AngularJsDeclarationFinder implements DeclarationFinder {
 
     @Override
     public OffsetRange getReferenceSpan(Document doc, int caretOffset) {
-        System.out.println("getReferenceSpan");
 //        int embeddedOffset = info.getSnapshot().getEmbeddedOffset(caretOffset);
         TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, caretOffset);
         

@@ -58,7 +58,6 @@ import org.netbeans.modules.html.angular.model.AngularModel;
 import org.netbeans.modules.html.angular.model.Directive;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.spi.embedding.JsEmbeddingProviderPlugin;
-import org.netbeans.modules.javascript2.editor.index.JsIndex;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.LexerUtils;
@@ -90,6 +89,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
     private TokenSequence<HTMLTokenId> tokenSequence;
     private Snapshot snapshot;
     private List<Embedding> embeddings;
+    private int processedTemplate;
   
     private Directive interestedAttr;
     /** keeps mapping from simple property name to the object fqn 
@@ -110,6 +110,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
         this.tokenSequence = tokenSequence;
         this.embeddings = embeddings;
         this.stack.clear();
+        this.processedTemplate = -1;
         AngularModel model = AngularModel.getModel(parserResult);
         if(!model.isAngularPage()) {
             return false;
@@ -122,6 +123,18 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
         
         return true;
     }
+
+    @Override
+    public void endProcessing() {
+        super.endProcessing(); //To change body of generated methods, choose Tools | Templates.
+        if (processedTemplate > 0) {
+            for (int i = 0; i < processedTemplate; i++) {
+                embeddings.add(snapshot.create("}\n});\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+            }
+        }
+    }
+    
+    
 
     @Override
     public boolean processToken() {
@@ -194,7 +207,8 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                         int parenIndex = name.indexOf('('); //NOI18N
                         if (parenIndex > -1) {
                             name = name.substring(0, parenIndex);
-                        } 
+                        }
+                        processTemplate();
                         if (propertyToFqn.containsKey(name)) {
                             embeddings.add(snapshot.create(propertyToFqn.get(name) + ".$scope.", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
                             embeddings.add(snapshot.create(tokenSequence.offset(), value.length(), Constants.JAVASCRIPT_MIMETYPE));
@@ -238,6 +252,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
     }
     
     private boolean processController(String controllerName) {
+        processTemplate();
         StringBuilder sb = new StringBuilder();
         
         sb.append("(function () {\n$scope = "); //NOI18N
@@ -271,8 +286,9 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
         return true;
     }
     
-    private boolean processModel(String value) {     
-         if (value.isEmpty()) {
+    private boolean processModel(String value) { 
+        processTemplate();
+        if (value.isEmpty()) {
             embeddings.add(snapshot.create("( function () {", Constants.JAVASCRIPT_MIMETYPE));
             embeddings.add(snapshot.create(tokenSequence.offset() + 1, 0, Constants.JAVASCRIPT_MIMETYPE));
             embeddings.add(snapshot.create(";})();\n", Constants.JAVASCRIPT_MIMETYPE));
@@ -328,6 +344,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
     }
     
     private boolean processRepeat(String expression) {
+        processTemplate();
         boolean processed = false;
         // split the expression with |
         // we expect that the first part is the for cycle and the rest are conditions
@@ -432,6 +449,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
     }
     
     private boolean processExpression(String value) {
+        processTemplate();
         boolean processed = false;
         if (value.isEmpty()) {
             embeddings.add(snapshot.create("( function () {", Constants.JAVASCRIPT_MIMETYPE));
@@ -472,5 +490,46 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
             }
         }
         return processed;
+    }
+    
+    private void processTemplate() {
+        if (processedTemplate > -1) {
+            // was already processed
+            return;
+        }
+        processedTemplate = 0;
+        FileObject fo = snapshot.getSource().getFileObject();
+        Project project = FileOwnerQuery.getOwner(fo);
+        AngularJsIndex index = null;
+        try {
+             index = AngularJsIndex.get(project);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        if (index != null) {
+            Collection<String> controllersForTemplate = index.getControllersForTemplate(fo.toURI());
+            for (String controllerName : controllersForTemplate) {
+                Collection<AngularJsController> controllers = index.getControllers(controllerName, true);
+                String fqn;
+                for (AngularJsController controller : controllers) {
+                    if (controller.getName().equals(controllerName)) {
+                        fqn = controller.getFqn();
+                        processedTemplate++;
+                        StringBuilder sb = new StringBuilder();
+                        sb.append("(function () {\n$scope = "); //NOI18N
+                        if (!fqn.isEmpty()) {
+                            sb.append(fqn);
+                            sb.append(".");
+                        } else {
+                            fqn = controllerName;
+                        }
+                        sb.append("$scope;\n");   //NOI18N
+                        sb.append("\nwith ($scope) { \n"); //NOI18N
+                        embeddings.add(snapshot.create(sb.toString(), Constants.JAVASCRIPT_MIMETYPE));
+                        break;
+                    }
+                }
+            }
+        }
     }
 }
