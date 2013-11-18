@@ -629,11 +629,10 @@ public class DashboardUtils {
                 notScheduled.setSelected(true);
                 return;
             }
-            boolean findPrevious = true;
             for (JMenuItem item : menuItems) {
                 if (item != null && item.getAction() instanceof ScheduleItemAction) {
                     IssueScheduleInfo assignedSchedule = ((ScheduleItemAction) item.getAction()).getAssignedSchedule();
-                    if (findPrevious && assignedSchedule.equals(previousSchedule)) {
+                    if (assignedSchedule != null && assignedSchedule.equals(previousSchedule)) {
                         item.setSelected(true);
                         return;
                     }
