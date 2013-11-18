@@ -140,7 +140,7 @@ public class ThrowableNotThrown {
             return null;
         }
         TypeMirror b = el.asType();
-        if (tm.getKind() == TypeKind.ERROR || !ctx.getInfo().getTypes().isAssignable(tm, b)) {
+        if (tm == null || tm.getKind() == TypeKind.ERROR || !ctx.getInfo().getTypes().isAssignable(tm, b)) {
             // does not return Throwable
             return null;
         }

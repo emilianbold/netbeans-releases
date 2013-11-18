@@ -77,7 +77,8 @@ import org.openide.util.NbBundle;
     "ComposerOptionsPanel.keywords.dependency=dependency",
     "ComposerOptionsPanel.keywords.dependencies=dependencies",
     "ComposerOptionsPanel.keywords.package=package",
-    "ComposerOptionsPanel.keywords.packages=packages"
+    "ComposerOptionsPanel.keywords.packages=packages",
+    "ComposerOptionsPanel.keywords.TabTitle=Frameworks & Tools"
 })
 @OptionsPanelController.Keywords(keywords={
     "php", "composer", "dependency", "dependencies", "package", "packages",
@@ -85,7 +86,7 @@ import org.openide.util.NbBundle;
     "#ComposerOptionsPanel.keywords.dependencies",
     "#ComposerOptionsPanel.keywords.package",
     "#ComposerOptionsPanel.keywords.packages"
-}, location=UiUtils.OPTIONS_PATH, tabTitle= "#Options.name")
+}, location=UiUtils.OPTIONS_PATH, tabTitle= "#ComposerOptionsPanel.keywords.TabTitle")
 public class ComposerOptionsPanel extends JPanel {
 
     private static final long serialVersionUID = 871513576876878676L;

@@ -5734,28 +5734,30 @@ public class JavaCompletionProvider implements CompletionProvider {
                     return null;
                 }
                 controller.toPhase(Utilities.inAnonymousOrLocalClass(path)? Phase.RESOLVED : Phase.ELEMENTS_RESOLVED);
+                Scope scope = controller.getTrees().getScope(path);
                 final int initPos = (int)sourcePositions.getStartPosition(root, tree);
                 String initText = controller.getText().substring(initPos, upToOffset ? offset : (int)sourcePositions.getEndPosition(root, tree));
-                final SourcePositions[] sp = new SourcePositions[1];
-                final ExpressionTree init = tu.parseVariableInitializer(initText, sp);
-                final ExpressionStatementTree fake = new ExpressionStatementTree() {
-                    public Object accept(TreeVisitor v, Object p) {
-                        return v.visitExpressionStatement(this, p);
+                if (initText.length() > 0) {
+                    final SourcePositions[] sp = new SourcePositions[1];
+                    final ExpressionTree init = tu.parseVariableInitializer(initText, sp);
+                    final ExpressionStatementTree fake = new ExpressionStatementTree() {
+                        public Object accept(TreeVisitor v, Object p) {
+                            return v.visitExpressionStatement(this, p);
+                        }
+                        public ExpressionTree getExpression() {
+                            return init;
+                        }
+                        public Kind getKind() {
+                            return Tree.Kind.EXPRESSION_STATEMENT;
+                        }
+                    };
+                    sourcePositions = new SourcePositionsImpl(fake, sourcePositions, sp[0], initPos, upToOffset ? offset : -1);
+                    path = tu.pathFor(new TreePath(pPath, fake), offset, sourcePositions);
+                    if (upToOffset && sp[0].getEndPosition(root, init) + initPos > offset) {
+                        scope = tu.reattributeTreeTo(init, scope, path.getLeaf());
+                    } else {
+                        tu.reattributeTree(init, scope);
                     }
-                    public ExpressionTree getExpression() {
-                        return init;
-                    }
-                    public Kind getKind() {
-                        return Tree.Kind.EXPRESSION_STATEMENT;
-                    }
-                };
-                sourcePositions = new SourcePositionsImpl(fake, sourcePositions, sp[0], initPos, upToOffset ? offset : -1);
-                Scope scope = controller.getTrees().getScope(path);
-                path = tu.pathFor(new TreePath(pPath, fake), offset, sourcePositions);
-                if (upToOffset && sp[0].getEndPosition(root, init) + initPos > offset) {
-                    scope = tu.reattributeTreeTo(init, scope, path.getLeaf());
-                } else {
-                    tu.reattributeTree(init, scope);
                 }
                 return new Env(offset, prefix, controller, path, sourcePositions, scope);
             } else if (parent != null && TreeUtilities.CLASS_TREE_KINDS.contains(parent.getKind()) && tree.getKind() == Tree.Kind.VARIABLE &&
@@ -5764,25 +5766,27 @@ public class JavaCompletionProvider implements CompletionProvider {
                     sourcePositions.getStartPosition(root, ((VariableTree)tree).getInitializer()) <= offset) {
                 controller.toPhase(Utilities.inAnonymousOrLocalClass(path)? Phase.RESOLVED : Phase.ELEMENTS_RESOLVED);
                 tree = ((VariableTree)tree).getInitializer();
+                Scope scope = controller.getTrees().getScope(new TreePath(path, tree));
                 final int initPos = (int)sourcePositions.getStartPosition(root, tree);
                 String initText = controller.getText().substring(initPos, offset);
-                final SourcePositions[] sp = new SourcePositions[1];
-                final ExpressionTree init = tu.parseVariableInitializer(initText, sp);
-                Scope scope = controller.getTrees().getScope(new TreePath(path, tree));
-                final ExpressionStatementTree fake = new ExpressionStatementTree() {
-                    public Object accept(TreeVisitor v, Object p) {
-                        return v.visitExpressionStatement(this, p);
-                    }
-                    public ExpressionTree getExpression() {
-                        return init;
-                    }
-                    public Kind getKind() {
-                        return Tree.Kind.EXPRESSION_STATEMENT;
-                    }
-                };
-                sourcePositions = new SourcePositionsImpl(fake, sourcePositions, sp[0], initPos, offset);
-                path = tu.pathFor(new TreePath(path, fake), offset, sourcePositions);
-                tu.reattributeTree(init, scope);
+                if (initText.length() > 0) {
+                    final SourcePositions[] sp = new SourcePositions[1];
+                    final ExpressionTree init = tu.parseVariableInitializer(initText, sp);
+                    final ExpressionStatementTree fake = new ExpressionStatementTree() {
+                        public Object accept(TreeVisitor v, Object p) {
+                            return v.visitExpressionStatement(this, p);
+                        }
+                        public ExpressionTree getExpression() {
+                            return init;
+                        }
+                        public Kind getKind() {
+                            return Tree.Kind.EXPRESSION_STATEMENT;
+                        }
+                    };
+                    sourcePositions = new SourcePositionsImpl(fake, sourcePositions, sp[0], initPos, offset);
+                    path = tu.pathFor(new TreePath(path, fake), offset, sourcePositions);
+                    tu.reattributeTree(init, scope);
+                }
                 return new Env(offset, prefix, controller, path, sourcePositions, scope);
             }
             return null;

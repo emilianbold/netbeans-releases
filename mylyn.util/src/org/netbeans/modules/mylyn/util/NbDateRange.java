@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.mylyn.util;
 
-import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import org.eclipse.mylyn.internal.tasks.core.DateRange;
@@ -112,7 +111,7 @@ public final class NbDateRange implements Comparable<NbDateRange> {
         Calendar startDate = Calendar.getInstance();
         Calendar endDate = Calendar.getInstance();
         startDate.setTime(info.getDate());
-        endDate.setTime(new Date(info.getDate().getTime() + (info.getInterval() - 1) * 24 * 3600 * 1000));
+        endDate.setTime(new Date(info.getDate().getTime() + (info.getInterval() * 24 * 3600 - 1) * 1000));
         return new DateRange(startDate, endDate);
     }
 }

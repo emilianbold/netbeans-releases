@@ -145,8 +145,8 @@ public class JavaHlClientAdapterFactory extends SvnClientAdapterFactory {
         boolean retval = false;
         if (version != null) {
             version = version.toLowerCase();
-            if (version.startsWith("1.7") ||                                                        // NOI18N
-                version.contains("version 1.7"))                                                    // NOI18N
+            if (version.startsWith("1.8") ||                                                        // NOI18N
+                version.contains("version 1.8"))                                                    // NOI18N
             {
                 retval = true;
             }

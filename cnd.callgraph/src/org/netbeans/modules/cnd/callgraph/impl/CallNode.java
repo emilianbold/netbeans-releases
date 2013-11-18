@@ -46,6 +46,7 @@ import org.netbeans.modules.cnd.callgraph.api.*;
 import java.awt.Image;
 import java.util.ArrayList;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import org.openide.nodes.AbstractNode;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -108,15 +109,19 @@ public class CallNode extends AbstractNode {
 
                 @Override
                 public void run() {
-                    Image icon;
-                    if (isCalls) {
-                        icon = object.getCallee().getIcon();
+                    if (SwingUtilities.isEventDispatchThread()) {
+                        fireIconChange();
+                        fireOpenedIconChange();
                     } else {
-                        icon = object.getCaller().getIcon();
+                        Image icon;
+                        if (isCalls) {
+                            icon = object.getCallee().getIcon();
+                        } else {
+                            icon = object.getCaller().getIcon();
+                        }
+                        image = mergeBadge(icon);
+                        SwingUtilities.invokeLater(this);
                     }
-                    image = mergeBadge(icon);
-                    fireIconChange();
-                    fireOpenedIconChange();
                 }
             });
         } else {

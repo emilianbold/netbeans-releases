@@ -79,7 +79,8 @@ public class TestCreationTestSuite extends JellyTestCase {
                         "testCreateWOsetUp",
                         "testCreateWOtearDown",
                         "testCreateTestAndSuiteByPopup",
-                        "testCreateTestAndSuiteByPopup2")
+                        "testCreateTestAndSuiteByPopup2",
+                        "testCreateIntegrationTestAndSuiteByPopup")
                 .enableModules(".*").clusters(".*"));
     } 
 }

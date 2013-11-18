@@ -53,20 +53,22 @@ import org.netbeans.modules.cnd.model.tasks.CndParserResult;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
-import org.netbeans.modules.parsing.spi.ParserResultTask;
+import org.netbeans.modules.parsing.spi.IndexingAwareParserResultTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
+import org.netbeans.modules.parsing.spi.TaskIndexingMode;
 
 /**
  *
  * @author Alexander Simon
  */
-public class NavigatorSourceFactoryTask extends ParserResultTask<CndParserResult> {
+public class NavigatorSourceFactoryTask extends IndexingAwareParserResultTask<CndParserResult> {
     private AtomicBoolean canceled = new AtomicBoolean(false);
     
     public NavigatorSourceFactoryTask() {
+        super(TaskIndexingMode.ALLOWED_DURING_SCAN);
     }
 
     @Override

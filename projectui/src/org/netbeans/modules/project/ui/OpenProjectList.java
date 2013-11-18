@@ -1101,9 +1101,11 @@ public final class OpenProjectList {
         // Using folder is preferred option
         try {     
             FileObject fo = FileUtil.getConfigFile( "Templates/Other/Folder" ); //NOI18N
-            DataObject dobj = DataObject.find( fo );
-            templates.add(dobj);
-            pLRU.remove(fo);
+            if ( fo != null ) {
+                DataObject dobj = DataObject.find( fo );
+                templates.add(dobj);
+                pLRU.remove(fo);
+            }
         } catch (DataObjectNotFoundException ex) {
             Exceptions.printStackTrace(ex);
         }

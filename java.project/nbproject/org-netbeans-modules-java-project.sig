@@ -1,9 +1,10 @@
 #Signature file v4.1
-#Version 1.50.1
+#Version 1.56.1
 
 CLSS public abstract interface !annotation java.lang.Deprecated
  anno 0 java.lang.annotation.Documented()
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[CONSTRUCTOR, FIELD, LOCAL_VARIABLE, METHOD, PACKAGE, PARAMETER, TYPE])
 intf java.lang.annotation.Annotation
 
 CLSS public java.lang.Object
@@ -141,6 +142,10 @@ meth public static org.netbeans.spi.java.queries.SourceForBinaryQueryImplementat
 supr java.lang.Object
 
 CLSS public org.netbeans.spi.java.project.support.JavadocAndSourceRootDetection
+meth public static java.util.Set<? extends org.openide.filesystems.FileObject> findJavadocRoots(org.openide.filesystems.FileObject,java.util.concurrent.atomic.AtomicBoolean)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NullAllowed()
 meth public static java.util.Set<? extends org.openide.filesystems.FileObject> findSourceRoots(org.openide.filesystems.FileObject,java.util.concurrent.atomic.AtomicBoolean)
  anno 1 org.netbeans.api.annotations.common.NonNull()
  anno 2 org.netbeans.api.annotations.common.NullAllowed()
@@ -172,15 +177,24 @@ CLSS public org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport
 innr public abstract interface static LibraryDefiner
 innr public abstract interface static PlatformUpdatedCallBack
 meth public !varargs static org.netbeans.spi.project.ui.ProjectProblemsProvider createPlatformVersionProblemProvider(org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.project.support.ant.PropertyEvaluator,org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport$PlatformUpdatedCallBack,java.lang.String,java.lang.String,java.lang.String[])
+ anno 0 org.netbeans.api.annotations.common.NonNull()
  anno 1 org.netbeans.api.annotations.common.NonNull()
  anno 2 org.netbeans.api.annotations.common.NonNull()
  anno 3 org.netbeans.api.annotations.common.NullAllowed()
  anno 4 org.netbeans.api.annotations.common.NonNull()
  anno 5 org.netbeans.api.annotations.common.NonNull()
  anno 6 org.netbeans.api.annotations.common.NonNull()
+meth public !varargs static org.netbeans.spi.project.ui.ProjectProblemsProvider createProfileProblemProvider(org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.project.support.ant.ReferenceHelper,org.netbeans.spi.project.support.ant.PropertyEvaluator,java.lang.String,java.lang.String[])
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NonNull()
+ anno 4 org.netbeans.api.annotations.common.NonNull()
+ anno 5 org.netbeans.api.annotations.common.NonNull()
 meth public static boolean isBroken(org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.project.support.ant.ReferenceHelper,java.lang.String[],java.lang.String[])
  anno 0 java.lang.Deprecated()
 meth public static org.netbeans.spi.project.ui.ProjectProblemsProvider createReferenceProblemsProvider(org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.project.support.ant.ReferenceHelper,org.netbeans.spi.project.support.ant.PropertyEvaluator,java.lang.String[],java.lang.String[])
+ anno 0 org.netbeans.api.annotations.common.NonNull()
  anno 1 org.netbeans.api.annotations.common.NonNull()
  anno 2 org.netbeans.api.annotations.common.NonNull()
  anno 3 org.netbeans.api.annotations.common.NonNull()
@@ -263,7 +277,7 @@ meth public static java.lang.String browseForLibraryLocation(java.lang.String,ja
 meth public static void setLastProjectSharable(boolean)
 supr java.lang.Object
 hfds PROP_ACTIONS,PROP_HELPER,PROP_JAR_REFS,PROP_LAST_SHARABLE,PROP_LIBRARIES,PROP_LOCATION,PROP_REFERENCE_HELPER
-hcls CopyIterator,CopyJars,CopyLibraryJars,KeepJarAtLocation,KeepLibraryAtLocation
+hcls CopyIterator,CopyJars,CopyLibraryJars,ErrorProvider,KeepJarAtLocation,KeepLibraryAtLocation
 
 CLSS public org.netbeans.spi.java.project.support.ui.templates.JavaTemplates
 fld public final static java.lang.String JAVA_ICON = "org/netbeans/spi/java/project/support/ui/templates/class.png"

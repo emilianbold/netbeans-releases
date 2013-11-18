@@ -62,8 +62,15 @@ import org.netbeans.performance.j2se.actions.OpenFilesNoCloneableEditorWithOpene
 import org.netbeans.performance.j2se.actions.OpenFilesTest;
 import org.netbeans.performance.j2se.actions.OpenFilesWithOpenedEditorTest;
 import org.netbeans.performance.j2se.actions.PageUpPageDownInEditorTest;
+import org.netbeans.performance.j2se.actions.PasteInEditorTest;
+import org.netbeans.performance.j2se.actions.RefactorFindUsagesTest;
 import org.netbeans.performance.j2se.actions.SaveModifiedFileTest;
+import org.netbeans.performance.j2se.actions.SearchTest;
 import org.netbeans.performance.j2se.actions.SelectCategoriesInNewFileTest;
+import org.netbeans.performance.j2se.actions.ShiftCodeInEditorTest;
+import org.netbeans.performance.j2se.actions.ShowClassMembersInNavigatorTest;
+import org.netbeans.performance.j2se.actions.SwitchToFileTest;
+import org.netbeans.performance.j2se.actions.SwitchViewTest;
 import org.netbeans.performance.j2se.actions.TypingInEditorTest;
 import org.netbeans.performance.j2se.setup.J2SESetup;
 
@@ -84,8 +91,6 @@ public class MeasureJ2SEActionsTest {
         suite.addTest(JellyTestCase.emptyConfiguration().reuseUserDir(true)
                 .addTest(J2SESetup.class)
                 .addTest(ExpandNodesInComponentInspectorTest.class)
-                // TODO move to scenarios        .addTest(SearchTest.class)
-                .addTest(TypingInEditorTest.class)
                 .addTest(CloseAllEditorsTest.class)
                 .addTest(CloseEditorTest.class)
                 .addTest(CloseEditorModifiedTest.class)
@@ -101,14 +106,16 @@ public class MeasureJ2SEActionsTest {
                 .addTest(OpenFilesNoCloneableEditorWithOpenedEditorTest.class)
                 .addTest(OpenFilesWithOpenedEditorTest.class)
                 .addTest(PageUpPageDownInEditorTest.class)
-                // to fix        .addTest(PasteInEditorTest.class)
+                .addTest(PasteInEditorTest.class)
+                .addTest(RefactorFindUsagesTest.class)
                 .addTest(SaveModifiedFileTest.class)
+                .addTest(SearchTest.class)
                 .addTest(SelectCategoriesInNewFileTest.class)
-                // to fix        .addTest(ShiftCodeInEditorTest.class)
-                // to fix        .addTest(SwitchToFileTest.class)
-                // to fix        .addTest(SwitchViewTest.class)
-                // to fix        .addTest(ShowClassMembersInNavigatorTest.class)
-                // TODO move to scenarios  .addTest(RefactorFindUsagesTest.class)
+                .addTest(ShiftCodeInEditorTest.class)
+                .addTest(ShowClassMembersInNavigatorTest.class)
+                .addTest(SwitchToFileTest.class)
+                .addTest(SwitchViewTest.class)
+                .addTest(TypingInEditorTest.class)
                 .suite());
         return suite;
     }

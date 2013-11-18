@@ -53,6 +53,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.java.api.common.SourceRoots;
@@ -66,6 +67,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.util.Parameters;
+import org.openide.util.Union2;
 
 /**
  * Defines the various class paths for a J2SE project.
@@ -90,7 +92,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     private final String[] runClasspath;
     private final String[] runTestClasspath;
     private final String[] endorsedClasspath;
-    private final String platformType;
+    private final Union2<String,String[]> platform;
     /**
      * ClassPaths cache
      * Index -> CP mapping
@@ -195,8 +197,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             runClasspath,
             runTestClasspath,
             endorsedClasspath,
-            Builder.DEFAULT_PLATFORM_TYPE
-            );
+            Union2.<String,String[]>createFirst(Builder.DEFAULT_PLATFORM_TYPE));
     }
 
     private ClassPathProviderImpl(
@@ -213,7 +214,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         @NonNull final String[] runClasspath,
         @NonNull final String[] runTestClasspath,
         @NonNull final String[] endorsedClasspath,
-        @NonNull final String platformType) {
+        @NonNull final Union2<String,String[]> platform) {
         Parameters.notNull("helper", helper);   //NOI18N
         Parameters.notNull("evaluator", evaluator); //NOI18N
         Parameters.notNull("sourceRoots", sourceRoots); //NOI18N
@@ -227,7 +228,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         Parameters.notNull("runClasspath", runClasspath);   //NOI18N
         Parameters.notNull("runTestClasspath", runTestClasspath);   //NOI18N
         Parameters.notNull("endorsedClasspath", endorsedClasspath); //NOI18N
-        Parameters.notNull("platformType", platformType);   //NOI18N
+        Parameters.notNull("platform", platform); //NOI18N
         this.helper = helper;
         this.projectDirectory = FileUtil.toFile(helper.getProjectDirectory());
         assert this.projectDirectory != null;
@@ -243,8 +244,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         this.runClasspath = runClasspath;
         this.runTestClasspath = runTestClasspath;
         this.endorsedClasspath = endorsedClasspath;
-        this.platformType = platformType;
-
+        this.platform = platform;
     }
 
     /**
@@ -279,6 +279,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         private String[] runClasspath = DEFAULT_RUN_CLASS_PATH;
         private String[] runTestClasspath = DEFAULT_RUN_TEST_CLASS_PATH;
         private String[] endorsedClasspath = DEFAULT_ENDORSED_CLASSPATH;
+        private String[] bootClasspathProperties;
 
         private Builder(
             @NonNull final AntProjectHelper helper,
@@ -415,6 +416,23 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             return this;
         }
 
+        /**
+         * Sets boot classpath properties.
+         * Some project types do not use {@link JavaPlatform#getBootstrapLibraries()} as boot classpath but
+         * have a project property specifying the boot classpath. Setting the boot classpath properties
+         * causes that the {@link Project}'s boot classpath is not taken from {@link Project}'s {@link JavaPlatform}
+         * but from these properties.
+         * @param bootClasspathProperties  the names of properties containing the boot classpath
+         * @return {@link Builder}
+         * @since 1.67
+         */
+        @NonNull
+        public Builder setBootClasspathProperties(@NonNull final String... bootClasspathProperties) {
+            Parameters.notNull("bootClasspathProperties", bootClasspathProperties); //NOI18N
+            this.bootClasspathProperties = Arrays.copyOf(bootClasspathProperties, bootClasspathProperties.length);
+            return this;
+        }
+
 
         /**
          * Creates a configured {@link ClassPathProviderImpl}.
@@ -422,6 +440,10 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
          */
         @NonNull
         public ClassPathProviderImpl build() {
+            final Union2<String,String[]> platform =
+                bootClasspathProperties == null ?
+                    Union2.<String,String[]>createFirst(platformType) :
+                    Union2.<String,String[]>createSecond(bootClasspathProperties);
             return new ClassPathProviderImpl (
                 helper,
                 evaluator,
@@ -436,7 +458,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                 runClasspath,
                 runTestClasspath,
                 endorsedClasspath,
-                platformType);
+                platform);
         }
 
         @NonNull
@@ -690,8 +712,23 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     
     private synchronized ClassPath getBootClassPath() {
         ClassPath cp = cache[7];
-        if ( cp== null ) {
-            cp = ClassPathFactory.createClassPath(ClassPathSupportFactory.createBootClassPathImplementation(evaluator, getEndorsedClasspath(), platformType));
+        if ( cp == null ) {
+            if (platform.hasFirst()) {
+                cp = ClassPathFactory.createClassPath(
+                    ClassPathSupportFactory.createBootClassPathImplementation(
+                        evaluator,
+                        getEndorsedClasspath(),
+                        platform.first()));
+            } else {
+                assert platform.hasSecond();
+                cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createProxyClassPath(
+                    getEndorsedClasspath(),
+                    ClassPathFactory.createClassPath(
+                        ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                            projectDirectory,
+                            evaluator,
+                            platform.second())));
+            }
             cache[7] = cp;
         }
         return cp;

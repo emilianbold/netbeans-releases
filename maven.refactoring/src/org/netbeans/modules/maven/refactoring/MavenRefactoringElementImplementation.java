@@ -57,6 +57,7 @@ import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
+import static org.netbeans.modules.maven.indexer.api.RepositoryUtil.createArtifact;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
 import org.openide.filesystems.FileObject;
@@ -107,7 +108,11 @@ class MavenRefactoringElementImplementation implements RefactoringElementImpleme
     @Override public synchronized FileObject getParentFile() {
         if (file == null) {
             try {
-                File jar = RepositoryUtil.downloadArtifact(ref.artifact); // probably a no-op, since local hits must have been indexed
+                Artifact a = createArtifact(ref.artifact);
+                File jar = a.getFile();
+                if (!jar.exists()) { //#236842 try to minimize the cases when we need to let maven resolve and download artifacts
+                    jar = RepositoryUtil.downloadArtifact(ref.artifact); // probably a no-op, since local hits must have been indexed
+                }
                 URL jarURL = FileUtil.urlForArchiveOrDir(jar);
                 if (jarURL != null) {
                     SourceForBinaryQuery.Result2 result = SourceForBinaryQuery.findSourceRoots2(jarURL);

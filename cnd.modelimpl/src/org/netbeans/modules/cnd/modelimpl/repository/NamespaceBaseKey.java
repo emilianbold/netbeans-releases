@@ -43,12 +43,10 @@
 package org.netbeans.modules.cnd.modelimpl.repository;
 
 import java.io.IOException;
-import java.util.Objects;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
-import org.netbeans.modules.cnd.repository.impl.spi.UnitsConverter;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
@@ -80,31 +78,22 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
     }
 
     @Override
-    public int hashCode(UnitsConverter unitsConverter) {
-        return 17*fqn.hashCode() + super.hashCode(unitsConverter);
+    public int hashCode(int unitID) {
+        return 17*fqn.hashCode() + super.hashCode(unitID);
     }
 
     @Override
     public int hashCode() {
         if (hashCode == 0) {
-            hashCode = 17*fqn.hashCode() + super.hashCode();
+            hashCode = hashCode(getUnitId());
         }
         return hashCode;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (!super.equals(obj)) {
-            return false;
-        }        
-        final NamespaceBaseKey other = (NamespaceBaseKey) obj;
-        return this.fqn.equals(other.fqn);
-        
-    }
 
     @Override
-    public boolean equals(UnitsConverter unitsConverter, Key object) {
-        if (!super.equals(unitsConverter, object)) {
+    public boolean equals(int thisUnitID, Key object, int objectUnitID) {
+        if (!super.equals(thisUnitID, object, objectUnitID)) {
             return false;
         }
         NamespaceBaseKey other = (NamespaceBaseKey) object;

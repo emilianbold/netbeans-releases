@@ -205,6 +205,7 @@ public class FormattingOptionsOperator extends NbDialogOperator {
     private JavaTabsAndIndentsOperator javaTabsAndIndentsOperator;
     private AlignmentOperator alignmentOperator;
     private BracesOperator bracesOperator;
+    private WrappingOperator wrappingOperator;
 
     public AllLanguageTabsAndIndentsOperator getAllLanguageTabsAndIndentsOperator() {
         if (allLanguageTabsAndIndentsOperator == null) {
@@ -232,6 +233,13 @@ public class FormattingOptionsOperator extends NbDialogOperator {
             bracesOperator = new BracesOperator(this);
         }
         return bracesOperator;
+    }
+    
+        public WrappingOperator getWrappingOperator() {
+        if (wrappingOperator == null) {
+            wrappingOperator = new WrappingOperator(this);
+        }
+        return wrappingOperator;
 
     }
 
@@ -242,6 +250,7 @@ public class FormattingOptionsOperator extends NbDialogOperator {
             formattingOperator.getJavaTabsAndIndentsOperator().restoreDefaultsValues();
             formattingOperator.getAlignmentOperator().restoreDefaultsValues();
             formattingOperator.getBracesOperator().restoreDefaultsValues();
+            formattingOperator.getWrappingOperator().restoreDefaultsValues();
         } finally {
             formattingOperator.ok();
         }

@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.localtasks;
 
-import java.beans.PropertyChangeListener;
-import java.util.Collection;
 import org.netbeans.modules.localtasks.task.LocalTask;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
@@ -90,23 +88,13 @@ public class QueryProviderImpl implements QueryProvider<LocalQuery, LocalTask> {
     }
     
     @Override
-    public Collection<LocalTask> getIssues (LocalQuery q) {
-        return q.getIssues();
-    }
-
-    @Override
     public void refresh (LocalQuery query) {
         query.refresh();
     }
 
     @Override
-    public void addPropertyChangeListener (LocalQuery q, PropertyChangeListener listener) {
-        q.addPropertyChangeListener(listener);
-    }
-
-    @Override
-    public void removePropertyChangeListener (LocalQuery q, PropertyChangeListener listener) {
-        q.removePropertyChangeListener(listener);
+    public void setIssueContainer(LocalQuery query, IssueContainer<LocalTask> c) {
+        query.setIssueContainer(c);
     }
 
 }

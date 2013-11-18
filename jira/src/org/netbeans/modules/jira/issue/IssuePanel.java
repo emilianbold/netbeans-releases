@@ -68,6 +68,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -104,11 +105,8 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ListModel;
-import javax.swing.Scrollable;
-import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.border.Border;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
@@ -122,22 +120,23 @@ import javax.swing.text.JTextComponent;
 import org.eclipse.mylyn.tasks.core.data.TaskOperation;
 import javax.swing.GroupLayout;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
 import javax.swing.LayoutStyle;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.text.DateFormatter;
+import javax.swing.text.NumberFormatter;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.issuetable.TableSorter;
-import org.netbeans.modules.bugtracking.team.spi.RepositoryUser;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
+import org.netbeans.modules.team.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
-import org.netbeans.modules.bugtracking.util.LinkButton;
-import org.netbeans.modules.bugtracking.team.spi.RepositoryUserRenderer;
-import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.netbeans.modules.bugtracking.commons.LinkButton;
+import org.netbeans.modules.team.spi.RepositoryUserRenderer;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
+import org.netbeans.modules.bugtracking.spi.SchedulingPicker;
 import org.netbeans.modules.jira.Jira;
+import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.issue.NbJiraIssue.IssueField;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
@@ -149,9 +148,12 @@ import org.netbeans.modules.jira.util.ResolutionRenderer;
 import org.netbeans.modules.jira.util.StatusRenderer;
 import org.netbeans.modules.jira.util.TypeRenderer;
 import org.netbeans.modules.mylyn.util.AbstractNbTaskWrapper;
+import org.netbeans.modules.mylyn.util.NbDateRange;
 import org.netbeans.modules.spellchecker.api.Spellchecker;
+import org.netbeans.modules.team.ide.spi.IDEServices;
+import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.openide.awt.HtmlBrowser;
-import org.openide.util.HelpCtx;
+import org.openide.util.ChangeSupport;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -159,12 +161,13 @@ import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
+import org.openide.util.HelpCtx;
 
 /**
  *
  * @author Jan Stola
  */
-public class IssuePanel extends javax.swing.JPanel implements Scrollable {
+public class IssuePanel extends javax.swing.JPanel {
     private static final RequestProcessor RP = new RequestProcessor("JIRA Issue Panel", 5, false); // NOI18N
     private static final Color ORIGINAL_ESTIMATE_COLOR = new Color(137, 175, 215);
     private static final Color REMAINING_ESTIMATE_COLOR = new Color(236, 142, 0);
@@ -199,16 +202,42 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private static final ImageIcon ICON_CONFLICT = ImageUtilities.loadImageIcon("org/netbeans/modules/jira/resources/conflict.png", true); //NOI18N
     private static final URL ICON_UNSUBMITTED_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/jira/resources/unsubmitted.png"); //NOI18N
     private static final ImageIcon ICON_UNSUBMITTED = ImageUtilities.loadImageIcon("org/netbeans/modules/jira/resources/unsubmitted.png", true); //NOI18N
-    
-    private static final DateFormatter dueDateFormatter = new javax.swing.text.DateFormatter() {
+    private static final String SECTION_ATTRIBUTES = ".attributes"; //NOI18N
+    private static final String SECTION_ATTACHMENTS = ".attachments"; //NOI18N
+    private static final String SECTION_COMMENTS = ".comments"; //NOI18N
+    private static final String SECTION_SUBTASKS = ".subtasks"; //NOI18N
+    private static final String SECTION_PRIVATE = ".private"; //NOI18N
+    private static final String ATTRIBUTE_PRIVATE_NOTES = "nb.private.notes"; //NOI18N
+    private static final String ATTRIBUTE_ESTIMATE = "nb.estimate"; //NOI18N
+    private static final String ATTRIBUTE_DUE_DATE = "nb.due.date"; //NOI18N
+    private static final String ATTRIBUTE_SCHEDULE_DATE = "nb.schedule.date"; //NOI18N
+    private final IDEServices.DatePickerComponent privateDueDatePicker;
+    private final IDEServices.DatePickerComponent dueDatePicker;
+    private final SchedulingPicker scheduleDatePicker;
+    private static final NumberFormatter estimateFormatter = new NumberFormatter(new java.text.DecimalFormat("#0")) {
+
         @Override
-        public Object stringToValue(String text) throws java.text.ParseException {
-            if (text == null || text.trim().isEmpty()) {
-                return null;
+        public Object stringToValue (String text) throws ParseException {
+            Number value = (Number) super.stringToValue(text);
+            if (value == null) {
+                value = 0;
             }
-            return super.stringToValue(text);
+            if (value.intValue() < 0) {
+                return 0;
+            } else {
+                return value.intValue();
+            }
         }
+
     };
+    private static final DateFormat DUE_DATE_FORMAT = DateFormat.getDateInstance(DateFormat.MEDIUM);
+    
+    private Action[] attributesSectionActions;
+    private Action[] commentsSectionActions;
+    private Action[] attachmentsSectionActions;
+    private Action[] privateSectionActions;
+    private Action[] subtasksSectionActions;
+    private Action[] moreActions;
 
     public IssuePanel() {
         initComponents();
@@ -235,10 +264,35 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         initIssueLinksPanel();
         initSpellChecker();
         initDefaultButton();
+        
+        dueDatePicker = UIUtils.createDatePickerComponent();
+        ((GroupLayout) attributesSectionPanel.getLayout()).replace(dummyDueField, dueDatePicker.getComponent());
         attachFieldStatusListeners();
         attachHideStatusListener();
-        if( "Metal".equals( UIManager.getLookAndFeel().getID() ) || "Nimbus".equals( UIManager.getLookAndFeel().getID() ) )
-            actionPanel.setBackground( UIUtils.getSectionPanelBackground() );
+        
+        Font font = UIManager.getFont("Label.font"); //NOI18N
+        if (font != null) {
+            int size = (int)(font.getSize()*1.5);
+            mainScrollPane.getHorizontalScrollBar().setUnitIncrement(size);
+            mainScrollPane.getVerticalScrollBar().setUnitIncrement(size);
+        }
+        UIUtils.keepFocusedComponentVisible(mainPanel);
+        
+        GroupLayout layout = (GroupLayout) privateSectionPanel.getLayout();
+        privateDueDatePicker = UIUtils.createDatePickerComponent();
+        scheduleDatePicker = new SchedulingPicker();
+        layout.replace(privateDummyDueDateField, privateDueDatePicker.getComponent());
+        privateDueDateLabel.setLabelFor(privateDueDatePicker.getComponent());
+        layout.replace(dummyScheduleDateField, scheduleDatePicker.getComponent());
+        scheduleDateLabel.setLabelFor(scheduleDatePicker.getComponent());
+        privateNotesField.addCaretListener(new CaretListener() {
+            @Override
+            public void caretUpdate (CaretEvent e) {
+                makeCaretVisible(privateNotesField);
+            }
+        });
+        // A11Y - Issues 163597 and 163598
+        UIUtils.fixFocusTraversalKeys(privateNotesField);
     }
 
     private void initDefaultButton() {
@@ -281,15 +335,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     unsavedFields.clear();
                 }
                 if (enableMap.isEmpty()) {
-                    cancelButton.setEnabled(isModified);
+                    cancelButton.setEnabled(isModified || isDirty);
                 } else {
-                    enableMap.put(cancelButton, isModified);
-                }
-                
-                if (isDirty) {
-                    issue.fireUnsaved();
-                } else {
-                    issue.fireSaved();
+                    enableMap.put(cancelButton, isModified || isDirty);
                 }
             }
         });
@@ -318,16 +366,15 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
     private void initIssueLinksPanel() {
         issueLinksPanel = new IssueLinksPanel();
-        GroupLayout layout = (GroupLayout)getLayout();
+        GroupLayout layout = (GroupLayout) attributesSectionPanel.getLayout();
         layout.replace(dummyIssueLinksPanel, issueLinksPanel);
         issueLinksLabel.setLabelFor(issueLinksPanel);
     }
 
     private void initAttachmentsPanel() {
         attachmentsPanel = new AttachmentsPanel(this);
-        GroupLayout layout = (GroupLayout)getLayout();
+        GroupLayout layout = (GroupLayout) attachmentsSectionPanel.getLayout();
         layout.replace(dummyAttachmentPanel, attachmentsPanel);
-        attachmentLabel.setLabelFor(attachmentsPanel);
     }
 
     private void initRenderers() {
@@ -404,7 +451,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                                 assignee = ""; //NOI18N
                             }
                             assigneeCombo.setModel(assignedModel);
-                            GroupLayout layout = (GroupLayout)getLayout();
+                            GroupLayout layout = (GroupLayout) attributesSectionPanel.getLayout();
                             if ((assigneeCombo.getParent()==null) != users.isEmpty()) {
                                 layout.replace(users.isEmpty() ? assigneeCombo : assigneeField, users.isEmpty() ? assigneeField : assigneeCombo);
                                 assigneeLabel.setLabelFor(users.isEmpty() ? assigneeField : assigneeCombo);
@@ -438,13 +485,14 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 scrollRectToVisible(addCommentScrollPane.getBounds());
             }
         });
-        GroupLayout layout = (GroupLayout)getLayout();
+        GroupLayout layout = (GroupLayout) commentsSectionPanel.getLayout();
         layout.replace(dummyCommentPanel, commentsPanel);
     }
 
     private void initSpellChecker () {
         Spellchecker.register(summaryField);
         Spellchecker.register(addCommentArea);
+        Spellchecker.register(privateNotesField);
     }
 
     private Map<String,JLabel> customFieldLabels = new HashMap<>();
@@ -522,7 +570,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         statusCombo.addActionListener(new CancelHighlightListener(resolutionLabel));
         priorityCombo.addActionListener(new CancelHighlightListener(priorityLabel));
         assigneeCombo.addActionListener(new CancelHighlightListener(assigneeLabel));
-        dueField.getDocument().addDocumentListener(new CancelHighlightListener(dueLabel));
+        dueDatePicker.addChangeListener(new CancelHighlightListener(dueLabel));
         assigneeField.getDocument().addDocumentListener(new CancelHighlightListener(assigneeLabel));
         summaryField.getDocument().addDocumentListener(new CancelHighlightListener(summaryLabel));
         environmentArea.getDocument().addDocumentListener(new CancelHighlightListener(environmentLabel));
@@ -572,10 +620,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         createdField.setVisible(!isNew);
         updatedLabel.setVisible(!isNew);
         updatedField.setVisible(!isNew);
-        separator.setVisible(!isNew);
-        commentsPanel.setVisible(!isNew);
-        attachmentLabel.setVisible(!isNew);
-        attachmentsPanel.setVisible(!isNew);
+        commentsSection.setVisible(!isNew);
+        attachmentsSection.setVisible(!isNew);
         issueLinksLabel.setVisible(!isNew);
         issueLinksPanel.setVisible(!isNew);
         resolutionCombo.setVisible(!isNew);
@@ -593,13 +639,12 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         originalEstimateFieldNew.setVisible(isNew);
         originalEstimateHint.setVisible(isNew);
         logWorkButton2.setVisible(!isNew);
-        subtaskLabel.setVisible(!isNew);
         btnDeleteTask.setVisible(isNew);
+        separatorLabelDismiss.setVisible(isNew);
 
-        createSubtaskButton.setVisible(false);
-        convertToSubtaskButton.setVisible(false);
-        dummySubtaskPanel.setVisible(false);
-        cancelButton.setEnabled(issue.hasLocalEdits());
+        subtasksSection.setVisible(false);
+        cancelButton.setEnabled(issue.hasLocalEdits() || !unsavedFields.isEmpty());
+        btnMoreActions.setVisible(!isNew);
 
         if (force) {
             initCustomFields();
@@ -625,29 +670,32 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 reopenIssueAvailable = true;
             }
         }
-        startProgressButton.setVisible(startProgressAvailable);
-        stopProgressButton.setVisible(stopProgressAvailable);
-        resolveIssueButton.setVisible(resolveIssueAvailable);
-        closeIssueButton.setVisible(closeIssueAvailable);
-        reopenIssueButton.setVisible(reopenIssueAvailable);
+        startProgressAction.setEnabled(startProgressAvailable);
+        stopProgressAction.setEnabled(stopProgressAvailable);
+        resolveIssueAction.setEnabled(resolveIssueAvailable);
+        closeIssueAction.setEnabled(closeIssueAvailable);
+        reopenIssueAction.setEnabled(reopenIssueAvailable);
 
-        org.openide.awt.Mnemonics.setLocalizedText(addCommentLabel, NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.description" : "IssuePanel.addCommentLabel.text")); // NOI18N
+        newCommentSection.setLabel(NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.description" : "IssuePanel.newCommentsSection.label")); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(submitButton, NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.submitButton.text.new" : "IssuePanel.submitButton.text")); // NOI18N
         boolean showProjectCombo = isNew && !issue.isSubtask();
+        GroupLayout layout = (GroupLayout) attributesSectionPanel.getLayout();
         if (showProjectCombo != (projectCombo.getParent() != null)) {
-            GroupLayout layout = (GroupLayout)getLayout();
             layout.replace(showProjectCombo ? projectField : projectCombo, showProjectCombo ? projectCombo : projectField);
         }
         if (isNew != (statusField.getParent() != null)) {
-            GroupLayout layout = (GroupLayout)getLayout();
             layout.replace(isNew ? statusCombo : statusField, isNew ? statusField : statusCombo);
         }
-        if (isNew != (actionPanel.getParent() == null)) {
-            GroupLayout layout = (GroupLayout)getLayout();
-            layout.replace(isNew ? actionPanel : dummyActionPanel, isNew ? dummyActionPanel : actionPanel);
-        }
         cancelButton.setVisible(!isNew);
+        separatorLabelCancel.setVisible(!isNew);
 
+        privateNotesField.setText(issue.getPrivateNotes());
+        privateDueDatePicker.setDate(issue.getDueDate());
+        NbDateRange scheduleDate = issue.getScheduleDate();
+        scheduleDatePicker.setScheduleDate(scheduleDate == null ? null : scheduleDate.toSchedulingInfo());
+        privateEstimateField.setValue(issue.getEstimate());
+        privateDueDatePicker.getComponent().setEnabled(false); // due date part of jira
+                
         reloadCustomFields();
 
         final String parentKey = issue.getParentKey();
@@ -720,16 +768,16 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         reloadField(environmentArea, issue.getFieldValue(NbJiraIssue.IssueField.ENVIRONMENT), NbJiraIssue.IssueField.ENVIRONMENT);
         reloadField(updatedField, JiraUtils.dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.MODIFICATION), true), NbJiraIssue.IssueField.MODIFICATION);
         fixPrefSize(updatedField);
-        reloadField(dueField, JiraUtils.dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.DUE)), NbJiraIssue.IssueField.DUE);
+        reloadField(dueDatePicker, JiraUtils.dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.DUE)), NbJiraIssue.IssueField.DUE);
         String assignee = issue.getFieldValue(NbJiraIssue.IssueField.ASSIGNEE);
         String selectedAssignee = (assigneeField.getParent() == null) ? assigneeCombo.getSelectedItem().toString() : assigneeField.getText();
         boolean isKenaiRepository = (issue.getRepository() instanceof KenaiRepository);
         if (isKenaiRepository && (assignee.trim().length() > 0) && (force || !selectedAssignee.equals(assignee))) {
             String host = ((KenaiRepository) issue.getRepository()).getHost();
-            JLabel label = TeamUtil.createUserWidget(issue.getRepository().getUrl(), assignee, host, TeamUtil.getChatLink(issue.getKey()));
+            JLabel label = TeamAccessorUtils.createUserWidget(issue.getRepository().getUrl(), assignee, host, TeamAccessorUtils.getChatLink(issue.getKey()));
             if (label != null) {
                 label.setText(null);
-                ((GroupLayout)getLayout()).replace(assigneeStatusLabel, label);
+                ((GroupLayout) attributesSectionPanel.getLayout()).replace(assigneeStatusLabel, label);
                 assigneeStatusLabel = label;
             }
         }
@@ -776,10 +824,10 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             fixPrefSize(createdField);
             if ((reporterStatusLabel.getIcon() == null) && isKenaiRepository) {
                 String host = ((KenaiRepository) issue.getRepository()).getHost();
-                JLabel label = TeamUtil.createUserWidget(issue.getRepository().getUrl(), reporter, host, TeamUtil.getChatLink(issue.getKey()));
+                JLabel label = TeamAccessorUtils.createUserWidget(issue.getRepository().getUrl(), reporter, host, TeamAccessorUtils.getChatLink(issue.getKey()));
                 if (label != null) {
                     label.setText(null);
-                    ((GroupLayout)getLayout()).replace(reporterStatusLabel, label);
+                    ((GroupLayout) attributesSectionPanel.getLayout()).replace(reporterStatusLabel, label);
                     reporterStatusLabel = label;
                 }
             }
@@ -808,13 +856,16 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             setupWorkLogPanel(remainingEstimatePanel, Color.lightGray, REMAINING_ESTIMATE_COLOR, bgColor, timeSpent, remainintEstimate, scale-timeSpent-remainintEstimate);
             setupWorkLogPanel(timeSpentPanel, TIME_SPENT_COLOR, Color.lightGray, bgColor, timeSpent, remainintEstimate, scale-timeSpent-remainintEstimate);
 
+            NbJiraIssue.Attachment[] attachments = issue.getAttachments();
             // Comments
             commentsPanel.setIssue(issue);
+            commentsSection.setLabel(NbBundle.getMessage(IssuePanel.class, "IssuePanel.commentsSection.label", issue.getComments().length + 1)); //NOI18N
             UIUtils.keepFocusedComponentVisible(commentsPanel, this);
             reloadField(addCommentArea, issue.getFieldValue(IssueField.COMMENT), IssueField.COMMENT);
 
             // Attachments
-            attachmentsPanel.setIssue(issue);
+            attachmentsPanel.setIssue(issue, attachments);
+            attachmentsSection.setLabel(NbBundle.getMessage(IssuePanel.class, "IssuePanel.attachmentsLabel.text", attachments.length)); //NOI18N
             UIUtils.keepFocusedComponentVisible(attachmentsPanel, this);
 
             // NbJiraIssue-links
@@ -825,10 +876,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
             // Sub-tasks
             boolean hasSubtasks = issue.hasSubtasks();
-            subtaskLabel.setVisible(hasSubtasks);
-            if (subTaskScrollPane != null) {
-                subTaskScrollPane.setVisible(hasSubtasks);
-            }
+            subtasksSection.setVisible(hasSubtasks);
+            subtasksSection.setLabel(NbBundle.getMessage(IssuePanel.class, "IssuePanel.subtasksSection.label", 0)); //NOI18N
             if (hasSubtasks) {
                 if (subTaskTable == null) {
                     subTaskTable = new JTable();
@@ -864,6 +913,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                         EventQueue.invokeLater(new Runnable() {
                             @Override
                             public void run() {
+                                subtasksSection.setLabel(NbBundle.getMessage(IssuePanel.class, "IssuePanel.subtasksSection.label", tableModel.getRowCount())); //NOI18N
                                 TableSorter sorter = new TableSorter(tableModel);
                                 subTaskTable.setModel(sorter);
                                 sorter.setTableHeader(subTaskTable.getTableHeader());
@@ -879,7 +929,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                                 ));
 
                                 if (subTaskScrollPane.getParent() == null) {
-                                    ((GroupLayout)getLayout()).replace(dummySubtaskPanel, subTaskScrollPane);
+                                    ((GroupLayout) subtasksSectionpanel.getLayout()).replace(dummySubtaskPanel, subTaskScrollPane);
                                 }
                                 revalidate();
                             }
@@ -891,7 +941,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         updateFieldStatuses();
         reloading = false;
     }
-    private JComponent dummyActionPanel = new JLabel();
     private JTable subTaskTable;
     private JScrollPane subTaskScrollPane;
 
@@ -913,11 +962,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 || "com.atlassian.jira.plugin.system.customfieldtypes:textfield".equals(field.getType()); //NOI18N
     }
     
-    private void reloadField (JComponent fieldComponent, Object fieldValue, IssueField field) {
+    private void reloadField (Object fieldComponent, Object fieldValue, IssueField field) {
         reloadField(fieldComponent, fieldValue, field, false);
     }
     
-    private void reloadField (JComponent fieldComponent, Object fieldValue, IssueField field, boolean force) {
+    private void reloadField (Object fieldComponent, Object fieldValue, IssueField field, boolean force) {
         boolean fieldDirty = unsavedFields.contains(field.getKey());
         if (!fieldDirty || force) {
             if (fieldComponent instanceof JComboBox) {
@@ -937,22 +986,25 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                         }
                     }
                 }
+            } else if (fieldComponent instanceof IDEServices.DatePickerComponent) {
+                IDEServices.DatePickerComponent picker = (IDEServices.DatePickerComponent) fieldComponent;
+                picker.setDate((Date) fieldValue);
             }
         }
     }
     
-    private void updateFieldDecorations (JComponent component, IssueField field, JLabel warningLabel, JComponent fieldLabel) {
+    private void updateFieldDecorations (Object component, IssueField field, JLabel warningLabel, JComponent fieldLabel) {
         updateFieldDecorations(warningLabel, fieldLabel, fieldName(fieldLabel), Pair.of(field, component));
     }
     
     private void updateFieldDecorations (JLabel warningLabel, JComponent fieldLabel, String fieldName,
-            Pair<IssueField, ? extends JComponent>... fields) {
+            Pair<IssueField, ? extends Object>... fields) {
         String newValue = "", lastSeenValue = "", repositoryValue = ""; //NOI18N
         boolean fieldDirty = false;
         boolean valueModifiedByUser = false;
         boolean valueModifiedByServer = false;
-        for (Pair<IssueField, ? extends JComponent> p : fields) {
-            JComponent component = p.second();
+        for (Pair<IssueField, ? extends Object> p : fields) {
+            Object component = p.second();
             IssueField field = p.first();
             if (component instanceof JList) {
                 newValue += " " + JiraUtils.mergeValues(toReadable(issue.getFieldValues(field), field));
@@ -1068,6 +1120,17 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             }
             if (change && !reloading) {
 //                updateMessagePanel();
+            }
+        }
+    }
+    
+    private void updateFieldDecorations (String key, JComponent fieldLabel) {
+        boolean fieldDirty = unsavedFields.contains(key);
+        if (fieldLabel != null) {
+            if (fieldDirty) {
+                fieldLabel.setFont(fieldLabel.getFont().deriveFont(fieldLabel.getFont().getStyle() | Font.BOLD));
+            } else {
+                fieldLabel.setFont(fieldLabel.getFont().deriveFont(fieldLabel.getFont().getStyle() & ~Font.BOLD));
             }
         }
     }
@@ -1261,7 +1324,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         updateFieldStatus(NbJiraIssue.IssueField.PRIORITY, priorityLabel);
         updateFieldDecorations(priorityCombo, IssueField.PRIORITY, priorityWarning, priorityLabel);
         updateFieldStatus(NbJiraIssue.IssueField.DUE, dueLabel);
-        updateFieldDecorations(dueField, IssueField.DUE, dueWarning, dueLabel);
+        updateFieldDecorations(dueDatePicker, IssueField.DUE, dueWarning, dueLabel);
         updateFieldStatus(NbJiraIssue.IssueField.ASSIGNEE, assigneeLabel);
         if (assigneeField.getParent() == null) {
             updateFieldDecorations(assigneeCombo, IssueField.ASSIGNEE, assigneeWarning, assigneeLabel);
@@ -1285,11 +1348,17 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         updateFieldStatus(NbJiraIssue.IssueField.ENVIRONMENT, environmentLabel);
         updateFieldDecorations(environmentArea, IssueField.ENVIRONMENT, environmentWarning, environmentLabel);
         
-        updateFieldDecorations(addCommentArea, IssueField.COMMENT, addCommentWarning, addCommentLabel);
+        updateFieldDecorations(addCommentArea, IssueField.COMMENT, addCommentWarning, newCommentSection.getLabelComponent());
         
         updateCustomFieldStatuses();
         updateWorkLogStatus();
         updateAttachmentsStatus();
+        
+        updateFieldDecorations(ATTRIBUTE_PRIVATE_NOTES, privateNotesLabel);
+        updateFieldDecorations(ATTRIBUTE_DUE_DATE, privateDueDateLabel);
+        updateFieldDecorations(ATTRIBUTE_SCHEDULE_DATE, scheduleDateLabel);
+        updateFieldDecorations(ATTRIBUTE_ESTIMATE, privateEstimateLabel);
+        
         repaint();
     }
     
@@ -1407,11 +1476,10 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         projectField = new javax.swing.JTextField();
         statusField = new javax.swing.JTextField();
         assigneeCombo = new javax.swing.JComboBox();
+        attributesSectionPanel = new javax.swing.JPanel();
         dummyIssueLinksPanel = new javax.swing.JPanel();
-        parentHeaderPanel = new javax.swing.JPanel();
         customFieldPanelLeft = new javax.swing.JPanel();
         customFieldPanelRight = new javax.swing.JPanel();
-        headerLabel = new javax.swing.JLabel();
         projectLabel = new javax.swing.JLabel();
         projectCombo = new javax.swing.JComboBox();
         issueTypeLabel = new javax.swing.JLabel();
@@ -1427,7 +1495,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         updatedLabel = new javax.swing.JLabel();
         updatedField = new javax.swing.JTextField();
         dueLabel = new javax.swing.JLabel();
-        dueField = new javax.swing.JFormattedTextField();
+        dummyDueField = new javax.swing.JFormattedTextField();
         assigneeLabel = new javax.swing.JLabel();
         assigneeField = new javax.swing.JTextField();
         componentLabel = new javax.swing.JLabel();
@@ -1445,14 +1513,46 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         remainingEstimateField = new javax.swing.JTextField();
         timeSpentLabel = new javax.swing.JLabel();
         timeSpentField = new javax.swing.JTextField();
-        attachmentLabel = new javax.swing.JLabel();
-        subtaskLabel = new javax.swing.JLabel();
         summaryLabel = new javax.swing.JLabel();
         summaryField = new javax.swing.JTextField();
         environmentLabel = new javax.swing.JLabel();
         environmentScrollPane = new javax.swing.JScrollPane();
         environmentArea = new javax.swing.JTextArea();
-        addCommentLabel = new javax.swing.JLabel();
+        environmentScrollPane1 = new javax.swing.JScrollPane();
+        environmentArea1 = new javax.swing.JTextArea();
+        originalEstimatePanel = new javax.swing.JPanel();
+        remainingEstimatePanel = new javax.swing.JPanel();
+        timeSpentPanel = new javax.swing.JPanel();
+        originalEstimateFieldNew = new javax.swing.JTextField();
+        originalEstimateLabelNew = new javax.swing.JLabel();
+        originalEstimateHint = new javax.swing.JLabel();
+        logWorkButton2 = new org.netbeans.modules.bugtracking.commons.LinkButton();
+        reporterStatusLabel = new javax.swing.JLabel();
+        assigneeStatusLabel = new javax.swing.JLabel();
+        issueLinksLabel = new javax.swing.JLabel();
+        projectWarning = new javax.swing.JLabel();
+        issueTypeWarning = new javax.swing.JLabel();
+        componentWarning = new javax.swing.JLabel();
+        affectsVersionWarning = new javax.swing.JLabel();
+        fixVersionWarning = new javax.swing.JLabel();
+        statusWarning = new javax.swing.JLabel();
+        resolutionWarning = new javax.swing.JLabel();
+        priorityWarning = new javax.swing.JLabel();
+        dueWarning = new javax.swing.JLabel();
+        assigneeWarning = new javax.swing.JLabel();
+        originalEstimateWarning = new javax.swing.JLabel();
+        remainingEstimateWarning = new javax.swing.JLabel();
+        timeSpentWarning = new javax.swing.JLabel();
+        summaryWarning = new javax.swing.JLabel();
+        environmentWarning = new javax.swing.JLabel();
+        originalEstimateNewWarning = new javax.swing.JLabel();
+        workLogWarning = new javax.swing.JLabel();
+        attachmentsSectionPanel = new javax.swing.JPanel();
+        attachmentsWarning = new javax.swing.JLabel();
+        dummyAttachmentPanel = new javax.swing.JPanel();
+        subtasksSectionpanel = new javax.swing.JPanel();
+        dummySubtaskPanel = new javax.swing.JPanel();
+        newCommentSectionPanel = new javax.swing.JPanel();
         addCommentScrollPane = new javax.swing.JScrollPane();
         addCommentArea = new javax.swing.JTextArea() {
             @Override
@@ -1470,54 +1570,63 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 return dim;
             }
         };
-        separator = new javax.swing.JSeparator();
-        submitButton = new javax.swing.JButton();
-        cancelButton = new javax.swing.JButton();
-        dummyCommentPanel = new javax.swing.JPanel();
-        dummySubtaskPanel = new javax.swing.JPanel();
-        dummyAttachmentPanel = new javax.swing.JPanel();
-        actionPanel = new javax.swing.JPanel();
-        actionLabel = new javax.swing.JLabel();
-        startProgressButton = new org.netbeans.modules.bugtracking.util.LinkButton();
-        stopProgressButton = new org.netbeans.modules.bugtracking.util.LinkButton();
-        resolveIssueButton = new org.netbeans.modules.bugtracking.util.LinkButton();
-        closeIssueButton = new org.netbeans.modules.bugtracking.util.LinkButton();
-        createSubtaskButton = new org.netbeans.modules.bugtracking.util.LinkButton();
-        convertToSubtaskButton = new org.netbeans.modules.bugtracking.util.LinkButton();
-        refreshButton = new org.netbeans.modules.bugtracking.util.LinkButton();
-        reopenIssueButton = new org.netbeans.modules.bugtracking.util.LinkButton();
-        addToCategoryButton = new org.netbeans.modules.bugtracking.util.LinkButton();
-        showInBrowserButton = new org.netbeans.modules.bugtracking.util.LinkButton();
-        originalEstimatePanel = new javax.swing.JPanel();
-        remainingEstimatePanel = new javax.swing.JPanel();
-        timeSpentPanel = new javax.swing.JPanel();
-        originalEstimateFieldNew = new javax.swing.JTextField();
-        originalEstimateLabelNew = new javax.swing.JLabel();
-        originalEstimateHint = new javax.swing.JLabel();
-        logWorkButton2 = new org.netbeans.modules.bugtracking.util.LinkButton();
-        reporterStatusLabel = new javax.swing.JLabel();
-        assigneeStatusLabel = new javax.swing.JLabel();
-        issueLinksLabel = new javax.swing.JLabel();
-        btnDeleteTask = new javax.swing.JButton();
-        projectWarning = new javax.swing.JLabel();
-        issueTypeWarning = new javax.swing.JLabel();
-        componentWarning = new javax.swing.JLabel();
-        affectsVersionWarning = new javax.swing.JLabel();
-        fixVersionWarning = new javax.swing.JLabel();
-        statusWarning = new javax.swing.JLabel();
-        resolutionWarning = new javax.swing.JLabel();
-        priorityWarning = new javax.swing.JLabel();
-        dueWarning = new javax.swing.JLabel();
-        assigneeWarning = new javax.swing.JLabel();
-        originalEstimateWarning = new javax.swing.JLabel();
-        remainingEstimateWarning = new javax.swing.JLabel();
-        timeSpentWarning = new javax.swing.JLabel();
-        summaryWarning = new javax.swing.JLabel();
-        environmentWarning = new javax.swing.JLabel();
         addCommentWarning = new javax.swing.JLabel();
-        originalEstimateNewWarning = new javax.swing.JLabel();
-        workLogWarning = new javax.swing.JLabel();
-        attachmentsWarning = new javax.swing.JLabel();
+        privateSectionPanel = new javax.swing.JPanel();
+        privateDueDateLabel = new javax.swing.JLabel();
+        privateDummyDueDateField = new javax.swing.JTextField();
+        scheduleDateLabel = new javax.swing.JLabel();
+        dummyScheduleDateField = new javax.swing.JTextField();
+        privateEstimateLabel = new javax.swing.JLabel();
+        privateEstimateField = new javax.swing.JFormattedTextField();
+        privateNotesLabel = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        privateNotesField = new javax.swing.JTextArea() {
+            @Override
+            public Dimension getPreferredScrollableViewportSize() {
+                Dimension dim = super.getPreferredScrollableViewportSize();
+                JScrollPane scrollPane = (JScrollPane)SwingUtilities.getAncestorOfClass(JScrollPane.class, this);
+                int delta = 0;
+                if (scrollPane != null) {
+                    Component comp = scrollPane.getHorizontalScrollBar();
+                    delta = comp.isVisible() ? comp.getHeight() : 0;
+                }
+                Insets insets = getInsets();
+                int prefHeight = 5 * getRowHeight() + insets.top + insets.bottom;
+                dim = new Dimension(0, delta + ((dim.height < prefHeight) ? prefHeight : dim.height));
+                return dim;
+            }
+        };
+        commentsSectionPanel = new javax.swing.JPanel();
+        dummyCommentPanel = new javax.swing.JPanel();
+        headerPanel = new javax.swing.JPanel();
+        parentHeaderPanel = new javax.swing.JPanel();
+        headerLabel = new javax.swing.JLabel();
+        buttonsPanel = new javax.swing.JPanel();
+        refreshButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
+        separatorLabelRefresh = new javax.swing.JLabel();
+        showInBrowserButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
+        separatorLabelShowInBrowser = new javax.swing.JLabel();
+        submitButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
+        separatorLabelSubmit = new javax.swing.JLabel();
+        cancelButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
+        separatorLabelCancel = new javax.swing.JLabel();
+        btnDeleteTask = new org.netbeans.modules.bugtracking.commons.LinkButton();
+        separatorLabelDismiss = new javax.swing.JLabel();
+        btnMoreActions = new org.netbeans.modules.bugtracking.commons.LinkButton();
+        mainScrollPane = new javax.swing.JScrollPane();
+        mainPanel = new javax.swing.JPanel() {
+
+            @Override
+            public Dimension getPreferredSize () {
+                return super.getMinimumSize();
+            }
+        };
+        attributesSection = new org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel();
+        attachmentsSection = new org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel();
+        subtasksSection = new org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel();
+        commentsSection = new org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel();
+        privateSection = new org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel();
+        newCommentSection = new org.netbeans.modules.bugtracking.commons.SectionPanel();
 
         resolutionField.setEditable(false);
         resolutionField.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -1535,7 +1644,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             }
         });
 
-        setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
+        attributesSectionPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
 
         projectLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.projectLabel.text")); // NOI18N
 
@@ -1570,8 +1679,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         updatedField.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
         dueLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.dueLabel.text")); // NOI18N
-
-        dueField.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(dueDateFormatter));
 
         assigneeLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.assigneeLabel.text")); // NOI18N
 
@@ -1619,10 +1726,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         timeSpentField.setEditable(false);
         timeSpentField.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
-        attachmentLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.attachmentLabel.text")); // NOI18N
-
-        subtaskLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.subtaskLabel.text")); // NOI18N
-
         summaryLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.summaryLabel.text")); // NOI18N
 
         environmentLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.environmentLabel.text")); // NOI18N
@@ -1631,148 +1734,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         environmentArea.setRows(5);
         environmentScrollPane.setViewportView(environmentArea);
 
-        addCommentLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.addCommentLabel.text")); // NOI18N
-
-        addCommentScrollPane.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
-
-        addCommentArea.setLineWrap(true);
-        addCommentScrollPane.setViewportView(addCommentArea);
-
-        submitButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.submitButton.text")); // NOI18N
-        submitButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                submitButtonActionPerformed(evt);
-            }
-        });
-
-        cancelButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.cancelButton.text")); // NOI18N
-        cancelButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cancelButtonActionPerformed(evt);
-            }
-        });
-
-        dummySubtaskPanel.setOpaque(false);
-
-        dummyAttachmentPanel.setOpaque(false);
-
-        actionPanel.setBackground(new java.awt.Color(233, 236, 245));
-
-        actionLabel.setFont(actionLabel.getFont().deriveFont(actionLabel.getFont().getStyle() | java.awt.Font.BOLD));
-        actionLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.actionLabel.text")); // NOI18N
-
-        startProgressButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.startProgressButton.text")); // NOI18N
-        startProgressButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                startProgressButtonActionPerformed(evt);
-            }
-        });
-
-        stopProgressButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.stopProgressButton.text")); // NOI18N
-        stopProgressButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                stopProgressButtonActionPerformed(evt);
-            }
-        });
-
-        resolveIssueButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.resolveIssueButton.text")); // NOI18N
-        resolveIssueButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                resolveIssueButtonActionPerformed(evt);
-            }
-        });
-
-        closeIssueButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.closeIssueButton.text")); // NOI18N
-        closeIssueButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                closeIssueButtonActionPerformed(evt);
-            }
-        });
-
-        createSubtaskButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.createSubtaskButton.text")); // NOI18N
-        createSubtaskButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                createSubtaskButtonActionPerformed(evt);
-            }
-        });
-
-        convertToSubtaskButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.convertToSubtaskButton.text")); // NOI18N
-
-        refreshButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.refreshButton.text")); // NOI18N
-        refreshButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                refreshButtonActionPerformed(evt);
-            }
-        });
-
-        reopenIssueButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.reopenIssueButton.text")); // NOI18N
-        reopenIssueButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                reopenIssueButtonActionPerformed(evt);
-            }
-        });
-
-        addToCategoryButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.tasklistButton.add")); // NOI18N
-        addToCategoryButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addToCategoryButtonActionPerformed(evt);
-            }
-        });
-
-        showInBrowserButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.showInBrowserButton.text")); // NOI18N
-        showInBrowserButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                showInBrowserButtonActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout actionPanelLayout = new javax.swing.GroupLayout(actionPanel);
-        actionPanel.setLayout(actionPanelLayout);
-        actionPanelLayout.setHorizontalGroup(
-            actionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(actionPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(actionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(actionLabel)
-                    .addComponent(startProgressButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(resolveIssueButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(createSubtaskButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(convertToSubtaskButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(refreshButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(stopProgressButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(closeIssueButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(reopenIssueButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(addToCategoryButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(showInBrowserButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(13, Short.MAX_VALUE))
-        );
-        actionPanelLayout.setVerticalGroup(
-            actionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(actionPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(actionLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(startProgressButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(stopProgressButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(reopenIssueButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(resolveIssueButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(closeIssueButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(createSubtaskButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(convertToSubtaskButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(addToCategoryButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(showInBrowserButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(refreshButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-        );
+        environmentArea1.setLineWrap(true);
+        environmentArea1.setRows(5);
+        environmentScrollPane1.setViewportView(environmentArea1);
 
         originalEstimatePanel.setOpaque(false);
 
@@ -1796,6 +1760,444 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
         issueLinksLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.issueLinksLabel.text")); // NOI18N
 
+        javax.swing.GroupLayout attributesSectionPanelLayout = new javax.swing.GroupLayout(attributesSectionPanel);
+        attributesSectionPanel.setLayout(attributesSectionPanelLayout);
+        attributesSectionPanelLayout.setHorizontalGroup(
+            attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(attributesSectionPanelLayout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addGroup(attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, attributesSectionPanelLayout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(workLogWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(5, 5, 5)
+                        .addComponent(logWorkButton2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(attributesSectionPanelLayout.createSequentialGroup()
+                        .addGroup(attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(remainingEstimateWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(timeSpentWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(originalEstimateWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(5, 5, 5)
+                        .addGroup(attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(timeSpentLabel)
+                            .addComponent(remainingEstimateLabel)
+                            .addComponent(originalEstimateLabel))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(attributesSectionPanelLayout.createSequentialGroup()
+                                .addComponent(timeSpentField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(timeSpentPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addGroup(attributesSectionPanelLayout.createSequentialGroup()
+                                .addComponent(remainingEstimateField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(remainingEstimatePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addGroup(attributesSectionPanelLayout.createSequentialGroup()
+                                .addComponent(originalEstimateField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(originalEstimatePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                    .addGroup(attributesSectionPanelLayout.createSequentialGroup()
+                        .addGroup(attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(attributesSectionPanelLayout.createSequentialGroup()
+                                .addGroup(attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(summaryWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(environmentWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(originalEstimateNewWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(5, 5, 5)
+                                .addGroup(attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(originalEstimateLabelNew, javax.swing.GroupLayout.DEFAULT_SIZE, 120, Short.MAX_VALUE)
+                                    .addComponent(environmentLabel)
+                                    .addComponent(summaryLabel)
+                                    .addComponent(issueLinksLabel))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
+                            .addGroup(attributesSectionPanelLayout.createSequentialGroup()
+                                .addComponent(customFieldPanelLeft, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGap(79, 79, 79)))
+                        .addGroup(attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(environmentScrollPane)
+                            .addComponent(summaryField)
+                            .addComponent(originalEstimateHint)
+                            .addComponent(dummyIssueLinksPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(attributesSectionPanelLayout.createSequentialGroup()
+                                .addComponent(originalEstimateFieldNew, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addComponent(customFieldPanelRight, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addGroup(attributesSectionPanelLayout.createSequentialGroup()
+                        .addGroup(attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(projectWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(issueTypeWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(statusWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(resolutionWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(priorityWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(5, 5, 5)
+                        .addGroup(attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(priorityLabel)
+                            .addComponent(resolutionLabel)
+                            .addComponent(statusLabel)
+                            .addComponent(issueTypeLabel)
+                            .addComponent(projectLabel))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(statusCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(issueTypeCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(projectCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(resolutionCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(priorityCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(assigneeWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(dueWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(assigneeLabel)
+                            .addComponent(dueLabel)
+                            .addComponent(updatedLabel)
+                            .addComponent(createdLabel))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(assigneeField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(updatedField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(createdField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(dummyDueField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(assigneeStatusLabel)
+                            .addComponent(reporterStatusLabel))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(attributesSectionPanelLayout.createSequentialGroup()
+                        .addComponent(componentWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(5, 5, 5)
+                        .addGroup(attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(componentScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(componentLabel))
+                        .addGap(18, 18, 18)
+                        .addComponent(affectsVersionWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(5, 5, 5)
+                        .addGroup(attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(affectsVersionScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(affectsVersionLabel))
+                        .addGap(18, 18, 18)
+                        .addComponent(fixVersionWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(5, 5, 5)
+                        .addGroup(attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(fixVersionScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(fixVersionLabel))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 339, Short.MAX_VALUE)))
+                .addGap(0, 0, 0))
+        );
+
+        attributesSectionPanelLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {issueTypeCombo, priorityCombo, projectCombo, resolutionCombo, statusCombo});
+
+        attributesSectionPanelLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {affectsVersionScrollPane, componentScrollPane, fixVersionScrollPane});
+
+        attributesSectionPanelLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {originalEstimateField, remainingEstimateField, timeSpentField});
+
+        attributesSectionPanelLayout.setVerticalGroup(
+            attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(attributesSectionPanelLayout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addGroup(attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(attributesSectionPanelLayout.createSequentialGroup()
+                        .addGroup(attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(projectLabel)
+                            .addComponent(projectCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(createdLabel)
+                            .addComponent(createdField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(reporterStatusLabel)
+                            .addComponent(projectWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                            .addComponent(issueTypeLabel)
+                            .addComponent(issueTypeCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(updatedLabel)
+                            .addComponent(issueTypeWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(updatedField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                            .addComponent(statusWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(statusLabel)
+                            .addComponent(statusCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(dueLabel)
+                            .addComponent(dueWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(dummyDueField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                            .addComponent(resolutionWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(resolutionLabel)
+                            .addComponent(resolutionCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(assigneeWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(assigneeLabel)
+                            .addComponent(assigneeField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                            .addComponent(priorityWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(priorityLabel)
+                            .addComponent(priorityCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
+                        .addGroup(attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                            .addComponent(componentLabel)
+                            .addComponent(componentWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(affectsVersionWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(affectsVersionLabel)
+                            .addComponent(fixVersionWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(fixVersionLabel))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(componentScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(affectsVersionScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(fixVersionScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(assigneeStatusLabel))
+                .addGap(18, 18, 18)
+                .addGroup(attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                    .addComponent(originalEstimateWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(originalEstimateLabel)
+                    .addComponent(originalEstimatePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(originalEstimateField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                    .addComponent(remainingEstimateWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(remainingEstimateLabel)
+                    .addComponent(remainingEstimatePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(remainingEstimateField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                    .addComponent(timeSpentWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(timeSpentLabel)
+                    .addComponent(timeSpentPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(timeSpentField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                    .addComponent(workLogWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(logWorkButton2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(dummyIssueLinksPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(issueLinksLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                    .addComponent(summaryWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(summaryLabel)
+                    .addComponent(summaryField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(environmentLabel)
+                    .addComponent(environmentScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(environmentWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(customFieldPanelLeft, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(customFieldPanelRight, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(attributesSectionPanelLayout.createSequentialGroup()
+                        .addGroup(attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(originalEstimateFieldNew, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(originalEstimateLabelNew))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(originalEstimateHint, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(originalEstimateNewWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(0, 0, 0))
+        );
+
+        attributesSectionPanelLayout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {originalEstimateField, originalEstimatePanel});
+
+        attributesSectionPanelLayout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {timeSpentField, timeSpentPanel});
+
+        attributesSectionPanelLayout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {remainingEstimateField, remainingEstimatePanel});
+
+        attachmentsSectionPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
+
+        dummyAttachmentPanel.setOpaque(false);
+
+        javax.swing.GroupLayout attachmentsSectionPanelLayout = new javax.swing.GroupLayout(attachmentsSectionPanel);
+        attachmentsSectionPanel.setLayout(attachmentsSectionPanelLayout);
+        attachmentsSectionPanelLayout.setHorizontalGroup(
+            attachmentsSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(attachmentsSectionPanelLayout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addComponent(attachmentsWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(5, 5, 5)
+                .addComponent(dummyAttachmentPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(0, 0, 0))
+        );
+        attachmentsSectionPanelLayout.setVerticalGroup(
+            attachmentsSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(attachmentsSectionPanelLayout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addGroup(attachmentsSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(attachmentsWarning, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(dummyAttachmentPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(0, 0, 0))
+        );
+
+        subtasksSectionpanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
+
+        dummySubtaskPanel.setOpaque(false);
+
+        javax.swing.GroupLayout subtasksSectionpanelLayout = new javax.swing.GroupLayout(subtasksSectionpanel);
+        subtasksSectionpanel.setLayout(subtasksSectionpanelLayout);
+        subtasksSectionpanelLayout.setHorizontalGroup(
+            subtasksSectionpanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(subtasksSectionpanelLayout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addComponent(dummySubtaskPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 696, Short.MAX_VALUE)
+                .addGap(0, 0, 0))
+        );
+        subtasksSectionpanelLayout.setVerticalGroup(
+            subtasksSectionpanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(subtasksSectionpanelLayout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addComponent(dummySubtaskPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, 0))
+        );
+
+        newCommentSectionPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
+
+        addCommentScrollPane.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+
+        addCommentArea.setLineWrap(true);
+        addCommentScrollPane.setViewportView(addCommentArea);
+
+        javax.swing.GroupLayout newCommentSectionPanelLayout = new javax.swing.GroupLayout(newCommentSectionPanel);
+        newCommentSectionPanel.setLayout(newCommentSectionPanelLayout);
+        newCommentSectionPanelLayout.setHorizontalGroup(
+            newCommentSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(newCommentSectionPanelLayout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addComponent(addCommentWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(5, 5, 5)
+                .addComponent(addCommentScrollPane)
+                .addGap(0, 0, 0))
+        );
+        newCommentSectionPanelLayout.setVerticalGroup(
+            newCommentSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(newCommentSectionPanelLayout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addGroup(newCommentSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(addCommentScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(addCommentWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(0, 0, 0))
+        );
+
+        privateSectionPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
+
+        privateDueDateLabel.setLabelFor(privateDummyDueDateField);
+        privateDueDateLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.privateDueDateLabel.text")); // NOI18N
+        privateDueDateLabel.setToolTipText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.privateDueDateLabel.TTtext")); // NOI18N
+
+        scheduleDateLabel.setLabelFor(dummyScheduleDateField);
+        scheduleDateLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.scheduleDateLabel.text")); // NOI18N
+        scheduleDateLabel.setToolTipText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.scheduleDateLabel.TTtext")); // NOI18N
+
+        privateEstimateLabel.setLabelFor(privateEstimateField);
+        privateEstimateLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.privateEstimateLabel.text")); // NOI18N
+        privateEstimateLabel.setToolTipText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.privateEstimateLabel.TTtext")); // NOI18N
+
+        privateEstimateField.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(estimateFormatter));
+        privateEstimateField.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.privateEstimateField.text")); // NOI18N
+
+        privateNotesLabel.setLabelFor(privateNotesField);
+        privateNotesLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.privateNotesLabel.text")); // NOI18N
+        privateNotesLabel.setToolTipText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.privateNotesLabel.TTtext")); // NOI18N
+
+        privateNotesField.setColumns(20);
+        privateNotesField.setLineWrap(true);
+        privateNotesField.setWrapStyleWord(true);
+        jScrollPane1.setViewportView(privateNotesField);
+
+        javax.swing.GroupLayout privateSectionPanelLayout = new javax.swing.GroupLayout(privateSectionPanel);
+        privateSectionPanel.setLayout(privateSectionPanelLayout);
+        privateSectionPanelLayout.setHorizontalGroup(
+            privateSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(privateSectionPanelLayout.createSequentialGroup()
+                .addComponent(privateNotesLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1))
+            .addGroup(privateSectionPanelLayout.createSequentialGroup()
+                .addComponent(privateDueDateLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(privateDummyDueDateField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(scheduleDateLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(dummyScheduleDateField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(privateEstimateLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(privateEstimateField, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
+        privateSectionPanelLayout.setVerticalGroup(
+            privateSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(privateSectionPanelLayout.createSequentialGroup()
+                .addGroup(privateSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(privateDueDateLabel)
+                    .addComponent(privateDummyDueDateField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(scheduleDateLabel)
+                    .addComponent(dummyScheduleDateField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(privateEstimateLabel)
+                    .addComponent(privateEstimateField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(privateSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(privateNotesLabel)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(0, 0, Short.MAX_VALUE))
+        );
+
+        commentsSectionPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
+
+        javax.swing.GroupLayout commentsSectionPanelLayout = new javax.swing.GroupLayout(commentsSectionPanel);
+        commentsSectionPanel.setLayout(commentsSectionPanelLayout);
+        commentsSectionPanelLayout.setHorizontalGroup(
+            commentsSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(dummyCommentPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 696, Short.MAX_VALUE)
+        );
+        commentsSectionPanelLayout.setVerticalGroup(
+            commentsSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(dummyCommentPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+        );
+
+        setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
+
+        headerPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
+
+        buttonsPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
+
+        refreshButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.refreshButton.text")); // NOI18N
+        refreshButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                refreshButtonActionPerformed(evt);
+            }
+        });
+
+        separatorLabelRefresh.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
+        showInBrowserButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.showInBrowserButton.text")); // NOI18N
+        showInBrowserButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                showInBrowserButtonActionPerformed(evt);
+            }
+        });
+
+        separatorLabelShowInBrowser.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
+        submitButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.submitButton.text")); // NOI18N
+        submitButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                submitButtonActionPerformed(evt);
+            }
+        });
+
+        separatorLabelSubmit.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
+        cancelButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.cancelButton.text")); // NOI18N
+        cancelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cancelButtonActionPerformed(evt);
+            }
+        });
+
+        separatorLabelCancel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
         btnDeleteTask.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.btnDeleteTask.text")); // NOI18N
         btnDeleteTask.setToolTipText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.btnDeleteTask.TTtext")); // NOI18N
         btnDeleteTask.addActionListener(new java.awt.event.ActionListener() {
@@ -1804,315 +2206,173 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             }
         });
 
+        separatorLabelDismiss.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
+        btnMoreActions.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.btnMoreActions.text")); // NOI18N
+        btnMoreActions.setToolTipText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.btnMoreActions.toolTipText")); // NOI18N
+        btnMoreActions.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnMoreActionsActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout buttonsPanelLayout = new javax.swing.GroupLayout(buttonsPanel);
+        buttonsPanel.setLayout(buttonsPanelLayout);
+        buttonsPanelLayout.setHorizontalGroup(
+            buttonsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(buttonsPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(refreshButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(separatorLabelRefresh)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(showInBrowserButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(separatorLabelShowInBrowser)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(submitButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(separatorLabelSubmit)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cancelButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(separatorLabelCancel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnDeleteTask, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(separatorLabelDismiss)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnMoreActions, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+        buttonsPanelLayout.setVerticalGroup(
+            buttonsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(buttonsPanelLayout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addGroup(buttonsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                    .addComponent(refreshButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(separatorLabelRefresh, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(showInBrowserButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(separatorLabelShowInBrowser, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(submitButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(separatorLabelSubmit, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(cancelButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(separatorLabelCancel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnDeleteTask, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(separatorLabelDismiss, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnMoreActions, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+        );
+
+        javax.swing.GroupLayout headerPanelLayout = new javax.swing.GroupLayout(headerPanel);
+        headerPanel.setLayout(headerPanelLayout);
+        headerPanelLayout.setHorizontalGroup(
+            headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(headerPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(parentHeaderPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(headerLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(buttonsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18))
+        );
+        headerPanelLayout.setVerticalGroup(
+            headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(headerPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(parentHeaderPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, 0)
+                .addGroup(headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                    .addComponent(headerLabel)
+                    .addComponent(buttonsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
+        );
+
+        mainScrollPane.setBorder(null);
+
+        mainPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
+
+        attributesSection.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
+        attributesSection.setContent(attributesSectionPanel);
+        attributesSection.setLabel(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.attributesSection.label")); // NOI18N
+
+        attachmentsSection.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
+        attachmentsSection.setActions(getAttachmentsSectionActions());
+        attachmentsSection.setContent(attachmentsSectionPanel);
+        attachmentsSection.setExpanded(false);
+        attachmentsSection.setLabel(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.attachmentsLabel.text", 0)); // NOI18N
+
+        subtasksSection.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
+        subtasksSection.setActions(getSubtasksSectionActions());
+        subtasksSection.setContent(subtasksSectionpanel);
+        subtasksSection.setExpanded(false);
+        subtasksSection.setLabel(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.subtasksSection.label", 0)); // NOI18N
+
+        commentsSection.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
+        commentsSection.setActions(getCommentsSectionActions());
+        commentsSection.setContent(commentsSectionPanel);
+        commentsSection.setLabel(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.commentsSection.label", 0)); // NOI18N
+
+        privateSection.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
+        privateSection.setActions(getPrivateSectionActions());
+        privateSection.setContent(privateSectionPanel);
+        privateSection.setExpanded(false);
+        privateSection.setLabel(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.privateSection.label")); // NOI18N
+
+        newCommentSection.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
+        newCommentSection.setContent(newCommentSectionPanel);
+        newCommentSection.setLabel(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.newCommentsSection.label")); // NOI18N
+
+        javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
+        mainPanel.setLayout(mainPanelLayout);
+        mainPanelLayout.setHorizontalGroup(
+            mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(mainPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(attributesSection, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(attachmentsSection, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(subtasksSection, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(commentsSection, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(privateSection, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(newCommentSection, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        mainPanelLayout.setVerticalGroup(
+            mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(mainPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(attributesSection, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(attachmentsSection, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(subtasksSection, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(privateSection, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(newCommentSection, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(commentsSection, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+
+        mainScrollPane.setViewportView(mainPanel);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(separator)
-            .addComponent(dummyCommentPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(workLogWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(5, 5, 5)
-                        .addComponent(logWorkButton2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(remainingEstimateWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(timeSpentWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(originalEstimateWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(5, 5, 5)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(timeSpentLabel)
-                            .addComponent(remainingEstimateLabel)
-                            .addComponent(originalEstimateLabel))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(timeSpentField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(timeSpentPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(remainingEstimateField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(remainingEstimatePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(originalEstimateField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(originalEstimatePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(headerLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(parentHeaderPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(projectWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(issueTypeWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(statusWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(resolutionWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(priorityWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                        .addGap(5, 5, 5)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(priorityLabel)
-                                            .addComponent(resolutionLabel)
-                                            .addComponent(statusLabel)
-                                            .addComponent(issueTypeLabel)
-                                            .addComponent(projectLabel))
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(priorityCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addGroup(layout.createSequentialGroup()
-                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                    .addComponent(projectCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                    .addComponent(issueTypeCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                    .addComponent(statusCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                    .addComponent(resolutionCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                                .addGap(18, 18, 18)
-                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                    .addComponent(dueWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                    .addComponent(assigneeWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                                .addGap(5, 5, 5)
-                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                    .addComponent(createdLabel)
-                                                    .addComponent(updatedLabel)
-                                                    .addComponent(dueLabel)
-                                                    .addComponent(assigneeLabel))
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                    .addGroup(layout.createSequentialGroup()
-                                                        .addComponent(assigneeField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                        .addComponent(assigneeStatusLabel))
-                                                    .addComponent(updatedField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                    .addGroup(layout.createSequentialGroup()
-                                                        .addComponent(createdField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                        .addComponent(reporterStatusLabel))
-                                                    .addComponent(dueField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(componentWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(5, 5, 5)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(componentScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(componentLabel))
-                                        .addGap(18, 18, 18)
-                                        .addComponent(affectsVersionWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(5, 5, 5)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(affectsVersionScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(affectsVersionLabel))
-                                        .addGap(18, 18, 18)
-                                        .addComponent(fixVersionWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(5, 5, 5)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(fixVersionScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(fixVersionLabel))))
-                                .addGap(0, 0, Short.MAX_VALUE)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(actionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(summaryWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(environmentWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(addCommentWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(originalEstimateNewWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(attachmentsWarning, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(5, 5, 5)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(originalEstimateLabelNew, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(addCommentLabel)
-                                    .addComponent(environmentLabel)
-                                    .addComponent(summaryLabel)
-                                    .addComponent(subtaskLabel)
-                                    .addComponent(attachmentLabel)
-                                    .addComponent(issueLinksLabel))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(customFieldPanelLeft, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addGap(79, 79, 79)))
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(environmentScrollPane)
-                            .addComponent(summaryField)
-                            .addComponent(addCommentScrollPane)
-                            .addComponent(dummyAttachmentPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(dummySubtaskPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(originalEstimateHint, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                            .addComponent(dummyIssueLinksPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(originalEstimateFieldNew, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(submitButton)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(cancelButton)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(btnDeleteTask)))
-                                .addGap(0, 0, Short.MAX_VALUE))
-                            .addComponent(customFieldPanelRight, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
-                .addContainerGap())
+            .addComponent(headerPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(mainScrollPane)
         );
-
-        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {issueTypeCombo, priorityCombo, projectCombo, resolutionCombo, statusCombo});
-
-        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {affectsVersionScrollPane, componentScrollPane, fixVersionScrollPane});
-
-        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {cancelButton, submitButton});
-
-        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {originalEstimateField, remainingEstimateField, timeSpentField});
-
-        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {assigneeField, dueField});
-
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(parentHeaderPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, 0)
-                        .addComponent(headerLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(projectLabel)
-                            .addComponent(projectCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(createdLabel)
-                            .addComponent(createdField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(reporterStatusLabel)
-                            .addComponent(projectWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                            .addComponent(issueTypeWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(issueTypeLabel)
-                            .addComponent(issueTypeCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(updatedLabel)
-                            .addComponent(updatedField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                            .addComponent(statusWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(statusLabel)
-                            .addComponent(statusCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(dueWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(dueLabel)
-                            .addComponent(dueField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                            .addComponent(resolutionWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(resolutionLabel)
-                            .addComponent(resolutionCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(assigneeWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(assigneeLabel)
-                            .addComponent(assigneeField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                            .addComponent(priorityWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(priorityLabel)
-                            .addComponent(priorityCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(18, 18, 18)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                            .addComponent(componentLabel)
-                            .addComponent(componentWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(affectsVersionWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(affectsVersionLabel)
-                            .addComponent(fixVersionWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(fixVersionLabel))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(componentScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(affectsVersionScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(fixVersionScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addComponent(actionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(103, 103, 103)
-                        .addComponent(assigneeStatusLabel)))
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                    .addComponent(originalEstimateWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(originalEstimateLabel)
-                    .addComponent(originalEstimatePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(originalEstimateField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                    .addComponent(remainingEstimateWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(remainingEstimateLabel)
-                    .addComponent(remainingEstimatePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(remainingEstimateField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                    .addComponent(timeSpentWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(timeSpentLabel)
-                    .addComponent(timeSpentPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(timeSpentField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                    .addComponent(workLogWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(logWorkButton2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(dummyIssueLinksPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(issueLinksLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(attachmentLabel)
-                    .addComponent(dummyAttachmentPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(attachmentsWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(subtaskLabel)
-                    .addComponent(dummySubtaskPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                    .addComponent(summaryWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(summaryLabel)
-                    .addComponent(summaryField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(environmentLabel)
-                    .addComponent(environmentScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(environmentWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(customFieldPanelLeft, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(addCommentScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(addCommentLabel)
-                            .addComponent(addCommentWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(originalEstimateFieldNew, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(originalEstimateLabelNew))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(originalEstimateHint, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(submitButton)
-                                    .addComponent(cancelButton)
-                                    .addComponent(btnDeleteTask)))
-                            .addComponent(originalEstimateNewWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(separator, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(dummyCommentPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(customFieldPanelRight, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))))
+                .addComponent(headerPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, 0)
+                .addComponent(mainScrollPane)
+                .addGap(0, 0, 0))
         );
-
-        layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {originalEstimateField, originalEstimatePanel});
-
-        layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {timeSpentField, timeSpentPanel});
-
-        layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {remainingEstimateField, remainingEstimatePanel});
-
     }// </editor-fold>//GEN-END:initComponents
 
     private void projectComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_projectComboActionPerformed
@@ -2165,7 +2425,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                         issueTypeCombo.setModel(new DefaultComboBoxModel(types.toArray(new IssueType[types.size()])));
                         reloadField(issueTypeCombo, config.getIssueTypeById(issue.getFieldValue(NbJiraIssue.IssueField.TYPE)), NbJiraIssue.IssueField.TYPE, true);
                         storeFieldValue(IssueField.TYPE, issueTypeCombo);
-                        createSubtaskButton.setVisible(!subtask && anySubtaskType);
+                        subtasksSection.setVisible(!subtask && anySubtaskType);
 
                         // Reload components
                         DefaultListModel componentModel = new DefaultListModel();
@@ -2333,7 +2593,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         boolean nowWithResolution = STATUS_CLOSED.equals(selectedStatus) || STATUS_RESOLVED.equals(selectedStatus);
         boolean showCombo = !initiallyWithResolution && nowWithResolution;
         boolean showField = initiallyWithResolution && nowWithResolution;
-        GroupLayout layout = (GroupLayout)getLayout();
+        GroupLayout layout = (GroupLayout) attributesSectionPanel.getLayout();
         if (showCombo && (resolutionCombo.getParent() == null)) {
             layout.replace(resolutionField, resolutionCombo);
         }
@@ -2345,89 +2605,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         revalidate();
     }//GEN-LAST:event_statusComboActionPerformed
 
-    private void startProgressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startProgressButtonActionPerformed
-        String pattern = NbBundle.getMessage(IssuePanel.class, "IssuePanel.startProgressMessage"); // NOI18N
-        String message = MessageFormat.format(pattern, issue.getKey());
-        submitChange(new Runnable() {
-            @Override
-            public void run() {
-                issue.startProgress();
-                issue.submitAndRefresh();
-            }
-        }, message);
-    }//GEN-LAST:event_startProgressButtonActionPerformed
-
-    private void stopProgressButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stopProgressButtonActionPerformed
-        String pattern = NbBundle.getMessage(IssuePanel.class, "IssuePanel.stopProgressMessage"); // NOI18N
-        String message = MessageFormat.format(pattern, issue.getKey());
-        submitChange(new Runnable() {
-            @Override
-            public void run() {
-                issue.stopProgress();
-                issue.submitAndRefresh();
-            }
-        }, message);
-    }//GEN-LAST:event_stopProgressButtonActionPerformed
-
-    private void resolveIssueButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resolveIssueButtonActionPerformed
-        ResolveIssuePanel panel = new ResolveIssuePanel(issue);
-        String title = NbBundle.getMessage(IssuePanel.class, "IssuePanel.resolveIssueButton.text"); // NOI18N
-        if (JiraUtils.show(panel, title, title, new HelpCtx(panel.getClass()))) {
-            String pattern = NbBundle.getMessage(IssuePanel.class, "IssuePanel.resolveIssueMessage"); // NOI18N
-            String message = MessageFormat.format(pattern, issue.getKey());
-            final Resolution resolution = panel.getSelectedResolution();
-            final String comment = panel.getComment();
-            submitChange(new Runnable() {
-                @Override
-                public void run() {
-                    issue.resolve(resolution, comment);
-                    issue.submitAndRefresh();
-                }
-            }, message);
-        }
-    }//GEN-LAST:event_resolveIssueButtonActionPerformed
-
-    private void closeIssueButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeIssueButtonActionPerformed
-        ResolveIssuePanel panel = new ResolveIssuePanel(issue);
-        String resolution = issue.getFieldValue(NbJiraIssue.IssueField.RESOLUTION);
-        final Resolution newResolution;
-        if ((resolution == null) || resolution.trim().equals("")) { // NOI18N
-            String title = NbBundle.getMessage(IssuePanel.class, "IssuePanel.closeIssueButton.text"); // NOI18N
-            if (JiraUtils.show(panel, title, title, new HelpCtx(panel.getClass()))) {
-                newResolution = panel.getSelectedResolution();
-            } else {
-                newResolution = null;
-            }
-        } else {
-            newResolution = issue.getRepository().getConfiguration().getResolutionById(resolution);
-        }
-        if (newResolution != null) {
-            String pattern = NbBundle.getMessage(IssuePanel.class, "IssuePanel.closeIssueMessage"); // NOI18N
-            String message = MessageFormat.format(pattern, issue.getKey());
-            final String comment = panel.getComment();
-            submitChange(new Runnable() {
-                @Override
-                public void run() {
-                    issue.close(newResolution, comment);
-                    issue.submitAndRefresh();
-                }
-            }, message);
-        }
-
-    }//GEN-LAST:event_closeIssueButtonActionPerformed
-
-    private void reopenIssueButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reopenIssueButtonActionPerformed
-        String pattern = NbBundle.getMessage(IssuePanel.class, "IssuePanel.reopenIssueMessage"); // NOI18N
-        String message = MessageFormat.format(pattern, issue.getKey());
-        submitChange(new Runnable() {
-            @Override
-            public void run() {
-                issue.reopen(null);
-                issue.submitAndRefresh();
-            }
-        }, message);
-    }//GEN-LAST:event_reopenIssueButtonActionPerformed
-
     private void logWorkButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logWorkButtonActionPerformed
         WorkLogPanel panel = new WorkLogPanel(issue);
         NbJiraIssue.NewWorkLog log = panel.showDialog();
@@ -2438,14 +2615,10 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         }
     }//GEN-LAST:event_logWorkButtonActionPerformed
 
-    private void addToCategoryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addToCategoryButtonActionPerformed
-        Jira.getInstance().getBugtrackingFactory().addToCategory(issue.getRepository(), issue); 
-    }//GEN-LAST:event_addToCategoryButtonActionPerformed
-
     @NbBundle.Messages({
         "# {0} - parent task description", "MSG_IssuePanel.creatingSubtask=Creating subtask of {0}"
     })
-    private void createSubtaskButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createSubtaskButtonActionPerformed
+    private void createSubtaskButtonActionPerformed(java.awt.event.ActionEvent evt) {                                                    
         final ProgressHandle handle = ProgressHandleFactory.createHandle(
                 Bundle.MSG_IssuePanel_creatingSubtask(issue.getDisplayName()));
         handle.start();
@@ -2463,7 +2636,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 }
             }
         });
-    }//GEN-LAST:event_createSubtaskButtonActionPerformed
+    }                                                   
 
     private void assigneeComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_assigneeComboActionPerformed
         if (!reloading) {
@@ -2507,14 +2680,23 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         });
     }//GEN-LAST:event_btnDeleteTaskActionPerformed
 
+    private void btnMoreActionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnMoreActionsActionPerformed
+        JPopupMenu popup = new JPopupMenu();
+        for (Action a : getMoreActions()) {
+            if (a.isEnabled()) {
+                popup.add(a);
+            }
+        }
+        Point loc = new Point(
+                btnMoreActions.getLocation().x,
+                btnMoreActions.getLocation().y + btnMoreActions.getSize().height + 1);
+        popup.show(buttonsPanel, loc.x, loc.y);
+    }//GEN-LAST:event_btnMoreActionsActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel actionLabel;
-    private javax.swing.JPanel actionPanel;
     private javax.swing.JTextArea addCommentArea;
-    private javax.swing.JLabel addCommentLabel;
     private javax.swing.JScrollPane addCommentScrollPane;
     private javax.swing.JLabel addCommentWarning;
-    private org.netbeans.modules.bugtracking.util.LinkButton addToCategoryButton;
     private javax.swing.JLabel affectsVersionLabel;
     private javax.swing.JList affectsVersionList;
     private javax.swing.JScrollPane affectsVersionScrollPane;
@@ -2524,42 +2706,55 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private javax.swing.JLabel assigneeLabel;
     private javax.swing.JLabel assigneeStatusLabel;
     private javax.swing.JLabel assigneeWarning;
-    private javax.swing.JLabel attachmentLabel;
+    private org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel attachmentsSection;
+    private javax.swing.JPanel attachmentsSectionPanel;
     private javax.swing.JLabel attachmentsWarning;
-    private javax.swing.JButton btnDeleteTask;
-    private javax.swing.JButton cancelButton;
-    private org.netbeans.modules.bugtracking.util.LinkButton closeIssueButton;
+    private org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel attributesSection;
+    private javax.swing.JPanel attributesSectionPanel;
+    private org.netbeans.modules.bugtracking.commons.LinkButton btnDeleteTask;
+    private org.netbeans.modules.bugtracking.commons.LinkButton btnMoreActions;
+    private javax.swing.JPanel buttonsPanel;
+    private org.netbeans.modules.bugtracking.commons.LinkButton cancelButton;
+    private org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel commentsSection;
+    private javax.swing.JPanel commentsSectionPanel;
     private javax.swing.JLabel componentLabel;
     private javax.swing.JList componentList;
     private javax.swing.JScrollPane componentScrollPane;
     private javax.swing.JLabel componentWarning;
-    private org.netbeans.modules.bugtracking.util.LinkButton convertToSubtaskButton;
-    private org.netbeans.modules.bugtracking.util.LinkButton createSubtaskButton;
     private javax.swing.JTextField createdField;
     private javax.swing.JLabel createdLabel;
     private javax.swing.JPanel customFieldPanelLeft;
     private javax.swing.JPanel customFieldPanelRight;
-    private javax.swing.JFormattedTextField dueField;
     private javax.swing.JLabel dueLabel;
     private javax.swing.JLabel dueWarning;
     private javax.swing.JPanel dummyAttachmentPanel;
     private javax.swing.JPanel dummyCommentPanel;
+    private javax.swing.JFormattedTextField dummyDueField;
     private javax.swing.JPanel dummyIssueLinksPanel;
+    private javax.swing.JTextField dummyScheduleDateField;
     private javax.swing.JPanel dummySubtaskPanel;
     private javax.swing.JTextArea environmentArea;
+    private javax.swing.JTextArea environmentArea1;
     private javax.swing.JLabel environmentLabel;
     private javax.swing.JScrollPane environmentScrollPane;
+    private javax.swing.JScrollPane environmentScrollPane1;
     private javax.swing.JLabel environmentWarning;
     private javax.swing.JLabel fixVersionLabel;
     private javax.swing.JList fixVersionList;
     private javax.swing.JScrollPane fixVersionScrollPane;
     private javax.swing.JLabel fixVersionWarning;
     private javax.swing.JLabel headerLabel;
+    private javax.swing.JPanel headerPanel;
     private javax.swing.JLabel issueLinksLabel;
     private javax.swing.JComboBox issueTypeCombo;
     private javax.swing.JLabel issueTypeLabel;
     private javax.swing.JLabel issueTypeWarning;
-    private org.netbeans.modules.bugtracking.util.LinkButton logWorkButton2;
+    private javax.swing.JScrollPane jScrollPane1;
+    private org.netbeans.modules.bugtracking.commons.LinkButton logWorkButton2;
+    private javax.swing.JPanel mainPanel;
+    private javax.swing.JScrollPane mainScrollPane;
+    private org.netbeans.modules.bugtracking.commons.SectionPanel newCommentSection;
+    private javax.swing.JPanel newCommentSectionPanel;
     private javax.swing.JTextField originalEstimateField;
     private javax.swing.JTextField originalEstimateFieldNew;
     private javax.swing.JLabel originalEstimateHint;
@@ -2572,32 +2767,42 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private javax.swing.JComboBox priorityCombo;
     private javax.swing.JLabel priorityLabel;
     private javax.swing.JLabel priorityWarning;
+    private javax.swing.JLabel privateDueDateLabel;
+    private javax.swing.JTextField privateDummyDueDateField;
+    private javax.swing.JFormattedTextField privateEstimateField;
+    private javax.swing.JLabel privateEstimateLabel;
+    private javax.swing.JTextArea privateNotesField;
+    private javax.swing.JLabel privateNotesLabel;
+    private org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel privateSection;
+    private javax.swing.JPanel privateSectionPanel;
     private javax.swing.JComboBox projectCombo;
     private javax.swing.JTextField projectField;
     private javax.swing.JLabel projectLabel;
     private javax.swing.JLabel projectWarning;
-    private org.netbeans.modules.bugtracking.util.LinkButton refreshButton;
+    private org.netbeans.modules.bugtracking.commons.LinkButton refreshButton;
     private javax.swing.JTextField remainingEstimateField;
     private javax.swing.JLabel remainingEstimateLabel;
     private javax.swing.JPanel remainingEstimatePanel;
     private javax.swing.JLabel remainingEstimateWarning;
-    private org.netbeans.modules.bugtracking.util.LinkButton reopenIssueButton;
     private javax.swing.JLabel reporterStatusLabel;
     private javax.swing.JComboBox resolutionCombo;
     private javax.swing.JTextField resolutionField;
     private javax.swing.JLabel resolutionLabel;
     private javax.swing.JLabel resolutionWarning;
-    private org.netbeans.modules.bugtracking.util.LinkButton resolveIssueButton;
-    private javax.swing.JSeparator separator;
-    private org.netbeans.modules.bugtracking.util.LinkButton showInBrowserButton;
-    private org.netbeans.modules.bugtracking.util.LinkButton startProgressButton;
+    private javax.swing.JLabel scheduleDateLabel;
+    private javax.swing.JLabel separatorLabelCancel;
+    private javax.swing.JLabel separatorLabelDismiss;
+    private javax.swing.JLabel separatorLabelRefresh;
+    private javax.swing.JLabel separatorLabelShowInBrowser;
+    private javax.swing.JLabel separatorLabelSubmit;
+    private org.netbeans.modules.bugtracking.commons.LinkButton showInBrowserButton;
     private javax.swing.JComboBox statusCombo;
     private javax.swing.JTextField statusField;
     private javax.swing.JLabel statusLabel;
     private javax.swing.JLabel statusWarning;
-    private org.netbeans.modules.bugtracking.util.LinkButton stopProgressButton;
-    private javax.swing.JButton submitButton;
-    private javax.swing.JLabel subtaskLabel;
+    private org.netbeans.modules.bugtracking.commons.LinkButton submitButton;
+    private org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel subtasksSection;
+    private javax.swing.JPanel subtasksSectionpanel;
     private javax.swing.JTextField summaryField;
     private javax.swing.JLabel summaryLabel;
     private javax.swing.JLabel summaryWarning;
@@ -2609,67 +2814,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private javax.swing.JLabel updatedLabel;
     private javax.swing.JLabel workLogWarning;
     // End of variables declaration//GEN-END:variables
-
-    @Override
-    public Dimension getPreferredSize() {
-        return getMinimumSize(); // NbJiraIssue 176085
-    }
-
-    @Override
-    public Dimension getPreferredScrollableViewportSize() {
-        return getPreferredSize();
-    }
-
-    @Override
-    public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
-        return getUnitIncrement();
-    }
-
-    @Override
-    public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
-        return (orientation==SwingConstants.VERTICAL) ? visibleRect.height : visibleRect.width;
-    }
-
-    @Override
-    public boolean getScrollableTracksViewportWidth() {
-        JScrollPane scrollPane = (JScrollPane)SwingUtilities.getAncestorOfClass(JScrollPane.class, this);
-        if (scrollPane!=null) {
-             // NbJiraIssue 176085
-            int minWidth = getMinimumSize().width;
-            int width = scrollPane.getSize().width;
-            Insets insets = scrollPane.getInsets();
-            width -= insets.left+insets.right;
-            Border border = scrollPane.getViewportBorder();
-            if (border != null) {
-                insets = border.getBorderInsets(scrollPane);
-                width -= insets.left+insets.right;
-            }
-            JComponent vsb = scrollPane.getVerticalScrollBar();
-            if (vsb!=null && vsb.isVisible()) {
-                width -= vsb.getSize().width;
-            }
-            if (minWidth>width) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    @Override
-    public boolean getScrollableTracksViewportHeight() {
-        return false;
-    }
-
-    private int unitIncrement;
-    private int getUnitIncrement() {
-        if (unitIncrement == 0) {
-            Font font = UIManager.getFont("Label.font"); // NOI18N
-            if (font != null) {
-                unitIncrement = (int)(font.getSize()*1.5);
-            }
-        }
-        return unitIncrement;
-    }
 
     void makeCaretVisible(JTextArea textArea) {
         int pos = textArea.getCaretPosition();
@@ -2686,6 +2830,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
     void opened() {
         open = true;
+        restoreSections();
         enableComponents(false);
         issue.opened();
     }
@@ -2694,7 +2839,34 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         open = false;
         if(issue != null) {
             commentsPanel.storeSettings();
+            persistSections();
             issue.closed();
+        }
+    }
+    
+    private void persistSections () {
+        if (!issue.isNew()) {
+            JiraConfig config = JiraConfig.getInstance();
+            String repositoryId = issue.getRepository().getID();
+            String taskId = issue.getID();
+            config.setEditorSectionCollapsed(repositoryId, taskId, SECTION_ATTRIBUTES, !attributesSection.isExpanded());
+            config.setEditorSectionCollapsed(repositoryId, taskId, SECTION_ATTACHMENTS, !attachmentsSection.isExpanded());
+            config.setEditorSectionCollapsed(repositoryId, taskId, SECTION_SUBTASKS, !subtasksSection.isExpanded());
+            config.setEditorSectionCollapsed(repositoryId, taskId, SECTION_COMMENTS, !commentsSection.isExpanded());
+            config.setEditorSectionCollapsed(repositoryId, taskId, SECTION_PRIVATE, !privateSection.isExpanded());
+        }
+    }
+
+    private void restoreSections () {
+        if (!issue.isNew()) {
+            JiraConfig config = JiraConfig.getInstance();
+            String repositoryId = issue.getRepository().getID();
+            String taskId = issue.getID();
+            attributesSection.setExpanded(!config.isEditorSectionCollapsed(repositoryId, taskId, SECTION_ATTRIBUTES, false));
+            attachmentsSection.setExpanded(!config.isEditorSectionCollapsed(repositoryId, taskId, SECTION_ATTACHMENTS, true));
+            subtasksSection.setExpanded(!config.isEditorSectionCollapsed(repositoryId, taskId, SECTION_SUBTASKS, true));
+            commentsSection.setExpanded(!config.isEditorSectionCollapsed(repositoryId, taskId, SECTION_COMMENTS, false));
+            privateSection.setExpanded(!config.isEditorSectionCollapsed(repositoryId, taskId, SECTION_PRIVATE, true));
         }
     }
     
@@ -2715,6 +2887,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                             unsavedFields.clear();
                             enableComponents(true);
                             updateFieldStatuses();
+                            cancelButton.setEnabled(issue.hasLocalEdits());
                             skipReload = false;
                         }
                     });
@@ -2767,7 +2940,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             });
         }
         addCommentArea.getDocument().addDocumentListener(new FieldChangeListener(
-                addCommentArea, IssueField.COMMENT, addCommentWarning, addCommentLabel));
+                addCommentArea, IssueField.COMMENT, addCommentWarning, newCommentSection.getLabelComponent()));
         environmentArea.getDocument().addDocumentListener(new FieldChangeListener(
                 environmentArea, IssueField.ENVIRONMENT, environmentWarning, environmentLabel));
         summaryField.getDocument().addDocumentListener(new FieldChangeListener(summaryField, IssueField.SUMMARY, summaryWarning, summaryLabel));
@@ -2833,7 +3006,23 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         });
         resolutionCombo.addActionListener(new FieldChangeListener(resolutionCombo, IssueField.RESOLUTION, resolutionWarning, resolutionLabel));
         issueTypeCombo.addActionListener(new FieldChangeListener(issueTypeCombo, IssueField.TYPE, issueTypeWarning, issueTypeLabel));
-        dueField.getDocument().addDocumentListener(new FieldChangeListener(dueField, IssueField.DUE, dueWarning, dueLabel));
+        dueDatePicker.addChangeListener(new FieldChangeListener(dueDatePicker.getComponent(), IssueField.DUE, dueWarning, dueLabel,
+                Pair.of(IssueField.DUE, dueDatePicker)) {
+
+            @Override
+            void fieldModified () {
+                if (!reloading && isEnabled()) {
+                    Date date = dueDatePicker.getDate();
+                    String value = date == null ? "" : String.valueOf(date.getTime());
+                    if (!issue.getFieldValue(IssueField.DUE).equals(value)) {
+                        unsavedFields.add(IssueField.DUE.getKey());
+                        issue.setFieldValue(IssueField.DUE, value);
+                        updateDecorations();
+                    }
+                }
+            }
+
+        });
         assigneeField.getDocument().addDocumentListener(new FieldChangeListener(assigneeField, IssueField.ASSIGNEE, assigneeWarning, assigneeLabel));
         assigneeCombo.addActionListener(new FieldChangeListener(assigneeCombo, IssueField.ASSIGNEE, assigneeWarning, assigneeLabel));
         
@@ -2848,6 +3037,48 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     }
                 }
             }
+        });
+        privateNotesField.getDocument().addDocumentListener(new TaskAttributeListener(privateNotesField,
+                ATTRIBUTE_PRIVATE_NOTES, privateNotesLabel) {
+
+            @Override
+            protected boolean storeValue () {
+                issue.setTaskPrivateNotes(privateNotesField.getText());
+                return true;
+            }
+        });
+        privateDueDatePicker.addChangeListener(new DatePickerListener(privateDueDatePicker.getComponent(),
+                ATTRIBUTE_DUE_DATE, privateDueDateLabel) {
+
+            @Override
+            protected boolean storeValue () {
+                issue.setTaskDueDate(privateDueDatePicker.getDate(), false);
+                return true;
+            }
+        });
+        scheduleDatePicker.addChangeListener(new DatePickerListener(scheduleDatePicker.getComponent(),
+                ATTRIBUTE_SCHEDULE_DATE, scheduleDateLabel) {
+
+            @Override
+            protected boolean storeValue () {
+                issue.setTaskScheduleDate(scheduleDatePicker.getScheduleDate(), false);
+                return true;
+            }
+        });
+        privateEstimateField.getDocument().addDocumentListener(new TaskAttributeListener(privateEstimateField,
+                ATTRIBUTE_ESTIMATE, privateEstimateLabel) {
+
+            @Override
+            protected boolean storeValue () {
+                int value = ((Number) privateEstimateField.getValue()).intValue();
+                if (value != issue.getEstimate()) {
+                    issue.setTaskEstimate(value, false);
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+            
         });
     }
     
@@ -2916,9 +3147,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             case DUE:
                 Date date = JiraUtils.dateByMillis(value);
                 if (date != null) {
-                    try {
-                        value = dueDateFormatter.valueToString(date);
-                    } catch (ParseException ex) { }
+                    value = DUE_DATE_FORMAT.format(date);
                 }
                 break;
             default:
@@ -2995,6 +3224,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         if (!issue.isNew()) {
             boolean valueModifiedByUser = !issue.getUnsubmittedAttachments().isEmpty();
             removeTooltips(attachmentsWarning, NEW_ATTACHMENTS);
+            AbstractButton attachmentLabel = attachmentsSection.getLabelComponent();
             if (attachmentLabel.getFont().isBold()) {
                 attachmentLabel.setFont(attachmentLabel.getFont().deriveFont(attachmentLabel.getFont().getStyle() & ~Font.BOLD));
             }
@@ -3015,7 +3245,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 //            updateMessagePanel();
         }
     }
-
+    
     private static class TooltipsMap extends HashMap<JLabel, Map<String, String>> {
 
         private void removeTooltip (JLabel label, String fieldKey) {
@@ -3039,13 +3269,14 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         
     }
     
-    private class FieldChangeListener implements DocumentListener, ActionListener, ListSelectionListener {
+    private class FieldChangeListener implements DocumentListener, ActionListener,
+            ListSelectionListener, ChangeListener {
         private final IssueField field;
         private final JComponent component;
         private final JLabel warningLabel;
         private final JComponent fieldLabel;
         private final String fieldName;
-        private Pair<IssueField, ? extends JComponent>[] decoratedFields;
+        private Pair<IssueField, ? extends Object>[] decoratedFields;
 
         public FieldChangeListener (JComponent component, IssueField field) {
             this(component, field, null, null);
@@ -3057,7 +3288,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         }
         
         public FieldChangeListener (JComponent component, IssueField field, JLabel warningLabel,
-                JComponent fieldLabel, Pair<IssueField, ? extends JComponent>... multiField) {
+                JComponent fieldLabel, Pair<IssueField, ? extends Object>... multiField) {
             this.component = component;
             this.field = field;
             this.warningLabel = warningLabel;
@@ -3094,6 +3325,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 fieldModified();
             }
         }
+
+        @Override
+        public void stateChanged (ChangeEvent e) {
+            fieldModified();
+        }
         
         void fieldModified () {
             if (!reloading && isEnabled()) {
@@ -3120,6 +3356,87 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         protected final void updateDecorations () {
             updateFieldDecorations(warningLabel, fieldLabel, fieldName, decoratedFields);
         }
+    }
+    
+    private abstract class TaskAttributeListener implements DocumentListener {
+
+        private final String attributeName;
+        private final JComponent component;
+        private final JComponent fieldLabel;
+
+        public TaskAttributeListener (JComponent component, String attributeName, JComponent fieldLabel) {
+            this.component = component;
+            this.attributeName = attributeName;
+            this.fieldLabel = fieldLabel;
+        }
+
+        @Override
+        public final void insertUpdate (DocumentEvent e) {
+            fieldModified();
+        }
+
+        @Override
+        public final void removeUpdate (DocumentEvent e) {
+            fieldModified();
+        }
+
+        @Override
+        public final void changedUpdate (DocumentEvent e) {
+            fieldModified();
+        }
+
+        void fieldModified () {
+            if (!reloading && isEnabled() && storeValue()) {
+                unsavedFields.add(attributeName);
+                updateDecorations();
+            }
+        }
+
+        public boolean isEnabled () {
+            return component.isVisible() && component.isEnabled();
+        }
+
+        protected final void updateDecorations () {
+            updateFieldDecorations(attributeName, fieldLabel);
+        }
+
+        protected abstract boolean storeValue ();
+    }
+
+    private abstract class DatePickerListener implements ChangeListener {
+
+        private final String attributeName;
+        private final JComponent component;
+        private final JComponent fieldLabel;
+
+        public DatePickerListener (JComponent component,
+                String attributeName, JComponent fieldLabel) {
+            this.component = component;
+            this.attributeName = attributeName;
+            this.fieldLabel = fieldLabel;
+        }
+
+        void fieldModified () {
+            if (!reloading && isEnabled() && storeValue()) {
+                unsavedFields.add(attributeName);
+                updateDecorations();
+            }
+        }
+
+        @Override
+        public void stateChanged (ChangeEvent e) {
+            fieldModified();
+        }
+        
+        public boolean isEnabled () {
+            return component.isVisible() && component.isEnabled();
+        }
+
+        protected final void updateDecorations () {
+            updateFieldDecorations(attributeName, fieldLabel);
+        }
+
+        protected abstract boolean storeValue ();
     }
     
     private Map<Component, Boolean> enableMap = new HashMap<>();
@@ -3149,13 +3466,13 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }
     
     private String fieldName(JComponent fieldLabel) {
-        assert fieldLabel instanceof JLabel || fieldLabel instanceof JButton;
+        assert fieldLabel instanceof JLabel || fieldLabel instanceof AbstractButton;
         String txt;
         if(fieldLabel instanceof JLabel) {
             txt = ((JLabel) fieldLabel).getText().trim();
             
-        } else if(fieldLabel instanceof JButton) {
-            txt = ((JButton) fieldLabel).getText().trim();
+        } else if (fieldLabel instanceof AbstractButton) {
+            txt = ((AbstractButton) fieldLabel).getText().trim();
         } else {
             return null;
         }
@@ -3164,8 +3481,238 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         }
         return txt;
     }
+    
+    @NbBundle.Messages("IssuePanel.reloadButton.text=Reload Attributes")
+    private Action[] getAttributesSectionActions () {
+        if (attributesSectionActions == null) {
+            attributesSectionActions = new Action[] {
+//                new AbstractAction(Bundle.IssuePanel_reloadButton_text()) {
+//                
+//                    @Override
+//                    public void actionPerformed (ActionEvent e) {
+//                        reloadButtonActionPerformed(e);
+//                    }
+//                }
+            };
+        }
+        return attributesSectionActions;
+    }
+    
+    @NbBundle.Messages({
+        "IssuePanel.commentsSectionAction.collapse.text=Collapse All",
+        "IssuePanel.commentsSectionAction.expand.text=Expand All"
+    })
+    private Action[] getCommentsSectionActions () {
+        if (commentsSectionActions == null) {
+            commentsSectionActions = new Action[] {
+                new AbstractAction(Bundle.IssuePanel_commentsSectionAction_collapse_text()) {
+                
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        commentsPanel.collapseAll();
+                        commentsSection.setExpanded(false);
+                    }
+                },
+                new AbstractAction(Bundle.IssuePanel_commentsSectionAction_expand_text()) {
+                
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        commentsPanel.expandAll();
+                        commentsSection.setExpanded(true);
+                    }
+                }
+            };
+        }
+        return commentsSectionActions;
+    }
+    
+    @NbBundle.Messages({
+        "CTL_Attachment.action.create=Add Attachment",
+        "CTL_Attachment.action.attachLog=Attach Log"
+    })
+    private Action[] getAttachmentsSectionActions () {
+        if (attachmentsSectionActions == null) {
+            attachmentsSectionActions = new Action[] {
+                new AbstractAction(Bundle.CTL_Attachment_action_create()) {
 
-    class CancelHighlightListener implements DocumentListener, ActionListener, ListSelectionListener {
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        attachmentsSection.setExpanded(true);
+                        EventQueue.invokeLater(new Runnable() {
+
+                            @Override
+                            public void run () {
+                                attachmentsPanel.createAttachment();
+                            }
+                        });
+                    }
+                }
+            };
+        }
+        return attachmentsSectionActions;
+    }
+    
+    @NbBundle.Messages("IssuePanel.addToCategory.text=Add to Category")
+    private Action[] getPrivateSectionActions () {
+        if (privateSectionActions == null) {
+            privateSectionActions = new Action[] {
+                new AbstractAction(Bundle.IssuePanel_addToCategory_text()) {
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        Jira.getInstance().getBugtrackingFactory().addToCategory(issue.getRepository(), issue);
+                    }
+                }
+            };
+        }
+        return privateSectionActions;
+    }
+    
+    @NbBundle.Messages("IssuePanel.createSubtaskButton.text=Create Sub-task")
+    private Action[] getSubtasksSectionActions () {
+        if (subtasksSectionActions == null) {
+            subtasksSectionActions = new Action[] {
+                new AbstractAction(Bundle.IssuePanel_createSubtaskButton_text()) {
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        createSubtaskButtonActionPerformed(e);
+                    }
+                }
+            };
+        }
+        return subtasksSectionActions;
+    }
+
+    @NbBundle.Messages({
+        "IssuePanel.action.startProgress.name=Start Progress",
+        "# {0} - task id", "IssuePanel.startProgressMessage=Task {0} - Starting Progress"
+    })
+    private final Action startProgressAction = new AbstractAction(Bundle.IssuePanel_action_startProgress_name()) {
+        
+        @Override
+        public void actionPerformed (ActionEvent e) {
+            String message = Bundle.IssuePanel_startProgressMessage(issue.getKey());
+            submitChange(new Runnable() {
+                @Override
+                public void run() {
+                    issue.startProgress();
+                    issue.submitAndRefresh();
+                }
+            }, message);
+        }
+    };
+
+    @NbBundle.Messages({
+        "IssuePanel.action.stopProgress.name=Stop Progress",
+        "# {0} - task id", "IssuePanel.stopProgressMessage=Task {0} - Stopping Progress"
+    })
+    private final Action stopProgressAction = new AbstractAction(Bundle.IssuePanel_action_stopProgress_name()) {
+        
+        @Override
+        public void actionPerformed (ActionEvent e) {
+            String message = Bundle.IssuePanel_stopProgressMessage(issue.getKey());
+            submitChange(new Runnable() {
+                @Override
+                public void run() {
+                    issue.stopProgress();
+                    issue.submitAndRefresh();
+                }
+            }, message);
+        }
+    };
+
+    @NbBundle.Messages({
+        "IssuePanel.action.reopenIssue.name=Reopen Task",
+        "# {0} - task id", "IssuePanel.reopenIssueMessage=Reopening task {0}"
+    })
+    private final Action reopenIssueAction = new AbstractAction(Bundle.IssuePanel_action_reopenIssue_name()) {
+        
+        @Override
+        public void actionPerformed (ActionEvent e) {
+            String message = Bundle.IssuePanel_reopenIssueMessage(issue.getKey());
+            submitChange(new Runnable() {
+                @Override
+                public void run() {
+                    issue.reopen(null);
+                    issue.submitAndRefresh();
+                }
+            }, message);
+        }
+    };
+
+    @NbBundle.Messages({
+        "IssuePanel.action.closeIssue.name=Close Task", 
+        "# {0} - task id", "IssuePanel.closeIssueMessage=Closing task {0}"
+    })
+    private final Action closeIssueAction = new AbstractAction(Bundle.IssuePanel_action_closeIssue_name()) {
+        
+        @Override
+        public void actionPerformed (ActionEvent e) {
+            ResolveIssuePanel panel = new ResolveIssuePanel(issue);
+            String resolution = issue.getFieldValue(NbJiraIssue.IssueField.RESOLUTION);
+            final Resolution newResolution;
+            if ((resolution == null) || resolution.trim().equals("")) { // NOI18N
+                String title = Bundle.IssuePanel_action_closeIssue_name();
+                if (JiraUtils.show(panel, title, title, new HelpCtx(panel.getClass()))) {
+                    newResolution = panel.getSelectedResolution();
+                } else {
+                    newResolution = null;
+                }
+            } else {
+                newResolution = issue.getRepository().getConfiguration().getResolutionById(resolution);
+            }
+            if (newResolution != null) {
+                String message = Bundle.IssuePanel_closeIssueMessage(issue.getKey());
+                final String comment = panel.getComment();
+                submitChange(new Runnable() {
+                    @Override
+                    public void run() {
+                        issue.close(newResolution, comment);
+                        issue.submitAndRefresh();
+                    }
+                }, message);
+            }
+        }
+    };
+
+    @NbBundle.Messages({
+        "IssuePanel.action.resolveIssue.name=Resolve Task",
+        "# {0} - task id", "IssuePanel.resolveIssueMessage=Resolving task {0}"
+    })
+    private final Action resolveIssueAction = new AbstractAction(Bundle.IssuePanel_action_resolveIssue_name()) {
+        
+        @Override
+        public void actionPerformed (ActionEvent e) {
+            ResolveIssuePanel panel = new ResolveIssuePanel(issue);
+            String title = Bundle.IssuePanel_action_resolveIssue_name();
+            if (JiraUtils.show(panel, title, title, new HelpCtx(panel.getClass()))) {
+                String message = Bundle.IssuePanel_resolveIssueMessage(issue.getKey());
+                final Resolution resolution = panel.getSelectedResolution();
+                final String comment = panel.getComment();
+                submitChange(new Runnable() {
+                    @Override
+                    public void run() {
+                        issue.resolve(resolution, comment);
+                        issue.submitAndRefresh();
+                    }
+                }, message);
+            }
+        }
+    };
+    
+    private Action[] getMoreActions () {
+        if (moreActions == null) {
+            moreActions = new Action[] {
+                startProgressAction,
+                stopProgressAction,
+                reopenIssueAction,
+                resolveIssueAction,
+                closeIssueAction
+            };
+        }
+        return moreActions;
+    }
+
+    class CancelHighlightListener implements DocumentListener, ActionListener, ListSelectionListener, ChangeListener {
         private JLabel label;
 
         CancelHighlightListener(JLabel label) {
@@ -3197,6 +3744,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             if (e.getValueIsAdjusting()) {
                 return;
             }
+            cancelHighlight(label);
+        }
+
+        @Override
+        public void stateChanged (ChangeEvent e) {
             cancelHighlight(label);
         }
     }
@@ -3235,7 +3787,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         public boolean add (String value) {
             boolean added = super.add(value);
             if (added) {
-                issue.fireUnsaved();
+                issue.fireChanged();
             }
             return added;
         }
@@ -3244,7 +3796,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         public boolean remove (Object o) {
             boolean removed = super.remove(o);
             if (removed && isEmpty()) {
-                issue.fireSaved();
+                issue.fireChanged();
             }
             return removed;
         }
@@ -3254,7 +3806,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             boolean fire = !isEmpty();
             super.clear();
             if (fire) {
-                issue.fireSaved();
+                issue.fireChanged();
             }
         }
         

@@ -207,7 +207,7 @@ public class RepositoryNode extends AsynchronousNode<Collection<QueryImpl>> impl
                 QueryNode queryNode = queryNodesMap.get(query.getDisplayName());
                 keys.remove(query.getDisplayName());
                 if (queryNode == null) {
-                    queryNode = new QueryNode(query, this, true);
+                    queryNode = new QueryNode(query, this);
                     queryNodesMap.put(query.getDisplayName(), queryNode);
                 }
                 queryNode.updateContent();

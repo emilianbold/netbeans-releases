@@ -321,7 +321,7 @@ public class CommonTestUtil {
      * Note: The map may not contain all the necessary settings,
      *       i.g. name of a test class is missing.
      *
-     * @param  multipleFiles  if {@code true}, the map should contain
+     * @param  multipleFiles  if {@literal true}, the map should contain
      *                        also settings need for creation of multiple
      *                        tests
      * @return  map of settings to be used by a

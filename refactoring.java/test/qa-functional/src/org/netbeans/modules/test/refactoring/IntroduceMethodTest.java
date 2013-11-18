@@ -140,31 +140,31 @@ public class IntroduceMethodTest extends ModifyingRefactoring {
 		performIntroduvceMethod(currentTest.testReturn_A);
 	}
         
-        public void testReturn_B(){
+	public void testReturn_B(){
 		performIntroduvceMethod(currentTest.testReturn_B);
 	}
         
-        public void testEndingWithBreak(){
+	public void testEndingWithBreak(){
 		performIntroduvceMethod(currentTest.testEndingWithBreak);
 	}
         
-        public void testEndingWithReturn(){
+	public void testEndingWithReturn(){
 		performIntroduvceMethod(currentTest.testEndingWithReturn);
 	}
                 
-        public void testEndingWithContinue(){
+	public void testEndingWithContinue(){
 		performIntroduvceMethod(currentTest.testEndingWithContinue);
 	}
         
-        public void testIllegal_A(){
+	public void testIllegal_A(){
 		performIntroduvceMethod(currentTest.testIllegal_A);
 	}
         
-        public void testIllegal_B(){
+	public void testIllegal_B(){
 		performIntroduvceMethod(currentTest.testIllegal_B);
 	}
         
-        public void testIllegal_C(){
+	public void testIllegal_C(){
 		performIntroduvceMethod(currentTest.testIllegal_C);
 	}
         
@@ -172,19 +172,19 @@ public class IntroduceMethodTest extends ModifyingRefactoring {
 //		performIntroduvceMethod(currentTest.testIllegal_D);
 //	}
         
-        public void testIllegal_E(){
+	public void testIllegal_E(){
 		performIntroduvceMethod(currentTest.testIllegal_E);
 	}
                 
-        public void testIllegal_F(){
+	public void testIllegal_F(){
 		performIntroduvceMethod(currentTest.testIllegal_F);
 	}
         
-        public void testGlobalvar(){
+	public void testGlobalVar(){
 		performIntroduvceMethod(currentTest.testGlobalVar);
 	}
         
-        public void testStaticMethod(){
+	public void testStaticMethod(){
 		performIntroduvceMethod(currentTest.testStaticMethod);
 	}
         

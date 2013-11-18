@@ -97,7 +97,7 @@ public class GlassFishCredentials extends CommonPasswordPanel {
         String userName = panel.getUserName();
         String password = panel.getPassword();
         instance.setAdminUser(userName);
-        instance.setPassword(password);
+        instance.setAdminPassword(password);
         try {
             GlassfishInstance.writeInstanceToFile(instance);
         } catch (IOException ex) {

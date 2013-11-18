@@ -49,11 +49,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -506,9 +509,12 @@ public final class FoldOperationImpl {
 
     private class Refresher implements Comparator<FoldInfo> {
         private Collection<FoldInfo>    foldInfos;
+        // toRemove will be interated in the reverse order, cannot be represented together with removeFolds as LinkedHashSet.
+        // removedFolds will be checked often, so HashSet saves some lookup time compared to List
         private List<Fold>              toRemove = new ArrayList<Fold>();
+        private Set<Fold>               removedFolds = new HashSet<Fold>();
         private Collection<FoldInfo>    toAdd = new ArrayList<FoldInfo>();
-        private Map<FoldInfo, Fold>     currentFolds = new HashMap<FoldInfo, Fold>();
+        private Map<FoldInfo, Fold>     currentFolds = new LinkedHashMap<FoldInfo, Fold>();
 
         /**
          * Transaction which covers the update
@@ -565,14 +571,17 @@ public final class FoldOperationImpl {
                 if (nextInfo != null) {
                     f = nextInfo;
                     nextInfo = null;
-                    return f;
-                } else if (infoIt.hasNext()) {
+                    if (isValidFold(f)) {
+                        return f;
+                    }
+                } 
+                if (infoIt.hasNext()) {
                     f = infoIt.next();
                 } else {
                     return null;
                 }
                 // ignore folds with invalid boundaries
-            } while (f.getStart() >= f.getEnd());
+            } while (!isValidFold(f));
             return f;
         }
         
@@ -619,6 +628,33 @@ public final class FoldOperationImpl {
             return containsOneAnother(i, f);
         }
         
+        private Fold markRemoveFold(Fold f) {
+            toRemove.add(f);
+            removedFolds.add(f);
+            f = foldIt.hasNext() ? foldIt.next() : null;
+            if (LOG.isLoggable(Level.FINEST)) {
+                LOG.finest("Advanced fold, next = " + f);
+            }
+            return f;
+        }
+        
+        /**
+         * Validates the FoldInfo. Because of issue #237964, #237576 and similar, it is better 
+         * to check that the FoldInfo does not contain invalid data centrally. The original idea was
+         * to inform the fold manager early, but the issue seems hardly fixable at source
+         * @param fi fold info to check
+         * @return true, if the info is valid and should proceed to fold creation / update
+         */
+        private boolean isValidFold(FoldInfo fi) {
+            // disallow zero-length folds and reversed folds.
+            if (fi.getStart() >= fi.getEnd()) {
+                return false;
+            }
+            int glen = fi.getTemplate().getGuardedEnd() + fi.getTemplate().getGuardedStart();
+            // disallow folds, whiose length is less than the length of start/end guarded areas.
+            return (fi.getStart() + glen <= fi.getEnd());
+        }
+        
         public void run() throws BadLocationException {
             // first order the supplied folds:
             List ll = new ArrayList<FoldInfo>(foldInfos);
@@ -628,7 +664,7 @@ public final class FoldOperationImpl {
             infoIt = ll.iterator();
             
             Fold f = foldIt.hasNext() ? foldIt.next() : null;
-            FoldInfo i = infoIt.hasNext() ? infoIt.next() : null;
+            FoldInfo i = ni();
             
             tran = openTransaction();
             Document d = getDocument();
@@ -640,7 +676,7 @@ public final class FoldOperationImpl {
                     }
                     int action = compare(i, f);
                     boolean nextSameRange = nextSameRange(i, f);
-                    if (action < 0 && !nextSameRange) {
+                    if (f == null || (action < 0 && !nextSameRange)) {
                         // create a new fold from the FoldInfo
                         toAdd.add(i);
                         i = ni();
@@ -648,15 +684,33 @@ public final class FoldOperationImpl {
                             LOG.finest("Advanced info, next = " + i);
                         }
                         continue;
-                    } else if (action > 0 && !nextSameRange) {
-                        toRemove.add(f);
-                        f = foldIt.hasNext() ? foldIt.next() : null;
-                        if (LOG.isLoggable(Level.FINEST)) {
-                            LOG.finest("Advanced fold, next = " + f);
-                        }
+                    } else if (i == null || (action > 0 && !nextSameRange)) {
+                        f = markRemoveFold(f);
                         continue;
                     }
+                    
+                    // the new fold's bounds must conform to its parent, possibly overriden in the currentFolds (parent
+                    // should have been processed earlier)
+                    Fold p = f.getParent();
+                    if (p != null) {
+                        boolean removeAnyway = false;
 
+// existing folds should be nested correctly, if parent ceases to exist, they will be first moved up the hierarchy bottom-up,
+// and only then updated top-down.                       
+//                        if (toRemove.contains(p)) {
+//                            removeAnyway = true;
+//                        } else {
+                            int s = i.getStart();
+                            int e = i.getEnd();
+                            int ps = p.getStartOffset();
+                            int pe = p.getEndOffset();
+                            removeAnyway = s < ps || e > pe;
+//                        }
+                        if (removeAnyway) {
+                            f = markRemoveFold(f);
+                            continue;
+                        }
+                    }
                     currentFolds.put(i, f);
                     i = ni();
                     f = foldIt.hasNext() ? foldIt.next() : null;
@@ -665,9 +719,9 @@ public final class FoldOperationImpl {
                     }
                 }
                 // remove folds in reverse order. If a fold ceases to exist with all its children, the children are
-                // removed first instead of propagating up to the hierarchy.
+                // removed first (if they should be removed) instead of propagating up to the hierarchy.
                 // other folds currently in the hierarchy should have their positions updated by document, so even
-                for (int ri = 0; ri < toRemove.size(); ri++) { /*toRemove.size() - 1; ri >= 0; ri--) {*/
+                for (int ri = toRemove.size() - 1; ri >= 0; ri--) {
                     Fold fold = toRemove.get(ri);
                     if (LOG.isLoggable(Level.FINEST)) {
                         LOG.finest("Removing: " + f);
@@ -687,6 +741,8 @@ public final class FoldOperationImpl {
                             // invalid fold info; possibly document has changed from the time FoldInfo was created.
                             continue;
                         }
+                        /*
+                        FoldInfos which do not satisfy this condition are filtered out in isValidFold()
                         if ((info.getEnd() - info.getStart()) < (info.getTemplate().getGuardedStart() + info.getTemplate().getGuardedEnd())) {
                             Element rootEl = DocumentUtilities.getParagraphRootElement(d);
                             int startLine = rootEl.getElementIndex(info.getStart());
@@ -710,6 +766,7 @@ public final class FoldOperationImpl {
                                         text.substring(end)
                                     });
                         }
+                        */
                         currentFolds.put(info, getOperation().addToHierarchy(
                                 info.getType(), 
                                 info.getStart(), info.getEnd(),
@@ -739,7 +796,7 @@ public final class FoldOperationImpl {
             if (info.getStart() > len || info.getEnd() > len) {
                 // no update done, new values are not valid
                 return f;
-            }
+            } 
             if (info.getStart() != soffs) {
                 acc.foldSetStartOffset(f, getDocument(), info.getStart());
                 FoldStateChange state = getFSCH(f);

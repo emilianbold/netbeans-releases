@@ -316,6 +316,11 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
     @Override
     public File getDDFile(final String path) {
         URI webappDir = mavenproject().getWebAppDirectory();
+
+        // #237478
+        if (webappDir.getAuthority() != null) {
+            return null;
+        }
         File file = new File(new File(webappDir), path);
         
         return FileUtil.normalizeFile(file);

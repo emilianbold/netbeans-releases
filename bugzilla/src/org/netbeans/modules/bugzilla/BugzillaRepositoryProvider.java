@@ -40,20 +40,20 @@ package org.netbeans.modules.bugzilla;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
-import org.netbeans.modules.bugtracking.team.spi.TeamProject;
-import org.netbeans.modules.bugtracking.team.spi.TeamRepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
-import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
+import org.netbeans.modules.team.spi.NBRepositoryProvider;
+import org.netbeans.modules.team.spi.OwnerInfo;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class BugzillaRepositoryProvider extends TeamRepositoryProvider<BugzillaRepository, BugzillaQuery, BugzillaIssue> {
+public class BugzillaRepositoryProvider implements RepositoryProvider<BugzillaRepository, BugzillaQuery, BugzillaIssue>, NBRepositoryProvider<BugzillaQuery, BugzillaIssue> {
 
     @Override
     public Image getIcon(BugzillaRepository r) {
@@ -115,31 +115,22 @@ public class BugzillaRepositoryProvider extends TeamRepositoryProvider<BugzillaR
         r.addPropertyChangeListener(listener);
     }
 
-    /********************************************************************************
-     * Kenai
-     ********************************************************************************/
-    
-    @Override
-    public BugzillaQuery getAllIssuesQuery(BugzillaRepository repository) {
-        assert repository instanceof KenaiRepository;
-        return ((KenaiRepository)repository).getAllIssuesQuery();
-    }
-
-    @Override
-    public BugzillaQuery getMyIssuesQuery(BugzillaRepository repository) {
-        assert repository instanceof KenaiRepository;
-        return ((KenaiRepository)repository).getMyIssuesQuery();
-    }
-
-    @Override
-    public TeamProject getTeamProject(BugzillaRepository repository) {
-        return repository instanceof KenaiRepository ? 
-                ((KenaiRepository)repository).getKenaiProject() :
-                null;
-    }
-
     @Override
     public BugzillaIssue createIssue(BugzillaRepository r, String summary, String description) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    /************************************************************************************
+     * NB Bugzilla
+     ************************************************************************************/
+    
+    @Override
+    public void setIssueOwnerInfo(BugzillaIssue i, OwnerInfo info) {
+        i.setOwnerInfo(info);
+    }
+
+    @Override
+    public void setQueryOwnerInfo(BugzillaQuery q, OwnerInfo info) {
+        q.setOwnerInfo(info);
     }
 }

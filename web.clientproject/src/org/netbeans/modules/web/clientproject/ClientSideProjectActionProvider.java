@@ -41,10 +41,10 @@
  */
 package org.netbeans.modules.web.clientproject;
 
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.ui.ProjectProblems;
-import org.netbeans.modules.javascript.jstestdriver.api.RunTests;
+import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
+import org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
 import org.netbeans.spi.project.ActionProvider;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_TEST;
@@ -52,7 +52,6 @@ import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -60,7 +59,7 @@ import org.openide.util.RequestProcessor;
 public class ClientSideProjectActionProvider implements ActionProvider {
 
     private final ClientSideProject project;
-    private RequestProcessor RP = new RequestProcessor("ClientSideProjectActionProvider"); //NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("ClientSideProjectActionProvider"); //NOI18N
     private static final Logger LOGGER = Logger.getLogger(ClientSideProjectActionProvider.class.getName());
 
     public ClientSideProjectActionProvider(ClientSideProject project) {
@@ -129,7 +128,12 @@ public class ClientSideProjectActionProvider implements ActionProvider {
             return;
         }
         if (COMMAND_TEST.equals(command)) {
-            runTests(null);
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    runTests();
+                }
+            });
             return;
         }
 
@@ -149,9 +153,8 @@ public class ClientSideProjectActionProvider implements ActionProvider {
             return ap.isActionEnabled(command, context);
         }
         if (COMMAND_TEST.equals(command)) {
-            return (project.getConfigFolder() != null &&
-                    project.getConfigFolder().getFileObject("jsTestDriver.conf") != null && //NOI18N
-                    project.getTestsFolder() != null);
+            // provider itself will handle if anything is incorrect
+            return true;
         }
         // not sure how to force js-test-driver to run single test; I tried everything according
         // to their documentation and it always runs all tests
@@ -212,30 +215,15 @@ public class ClientSideProjectActionProvider implements ActionProvider {
         return true;
     }
 
-    private void runTests(final String testName) {
-        if (!(project.getConfigFolder() != null &&
-                    project.getConfigFolder().getFileObject("jsTestDriver.conf") != null && //NOI18N
-                    project.getTestsFolder() != null)) {
-            return;
+    void runTests() {
+        JsTestingProvider testingProvider = project.getJsTestingProvider(true);
+        if (testingProvider != null) {
+            TestRunInfo testRunInfo = new TestRunInfo.Builder()
+                    .setSessionType(TestRunInfo.SessionType.TEST)
+                    .setCoverageEnabled(false)
+                    .build();
+            testingProvider.runTests(project, testRunInfo);
         }
-
-        final FileObject configFile = project.getConfigFolder().getFileObject("jsTestDriver.conf"); //NOI18N
-        RP.post(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    if (testName == null) {
-                        RunTests.runAllTests(project, project.getProjectDirectory(), configFile);
-                    } else {
-                        // not implemented yet as I do not know how:
-                        //RunTests.runTests(project, project.getProjectDirectory(), configFile, testName);
-                    }
-                } catch (Throwable t) {
-                    LOGGER.log(Level.SEVERE, "cannot execute tests", t); //NOI18N
-                }
-            }
-        });
     }
-
 
 }

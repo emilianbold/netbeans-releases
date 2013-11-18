@@ -88,6 +88,9 @@ public class CsmCompletionProvider implements CompletionProvider {
         if (sup == null) {
             return 0;
         }
+        if (!CompletionSupport.needShowCompletionOnTextLite(component, typedText)) {
+            return 0;
+        }
         final int dot = component.getCaret().getDot();
         if (CsmCompletionQuery.checkCondition(component.getDocument(), dot, false)) {
             try {

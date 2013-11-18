@@ -358,7 +358,7 @@ public class JiraUtils {
         return Jira.getInstance().getBugtrackingFactory().createRepository(
                 jiraRepository,
                 Jira.getInstance().getStatusProvider(),
-                null, 
+                Jira.getInstance().getSchedulingProvider(), 
                 Jira.getInstance().getPriorityProvider(jiraRepository),
                 JiraIssueFinder.getInstance());
     }

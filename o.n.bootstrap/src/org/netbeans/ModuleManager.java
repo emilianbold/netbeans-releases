@@ -1195,6 +1195,17 @@ public final class ModuleManager extends Modules {
             netigso.startFramework();
             break;
         }
+        // register bytecode manipulation agents
+        for (Module m : toEnable) {
+            try {
+                final String agentClass = m.dataWithCheck().getAgentClass();
+                if (agentClass != null) {
+                    m.assignInstrumentation(NbInstrumentation.registerAgent(m.getClassLoader(), agentClass));
+                }
+            } catch (InvalidException ex) {
+                Util.err.log(Level.FINE, null, ex);
+            }
+        }
         {
             // Take care of notifying various changes.
             Util.err.fine("enable: firing changes");
@@ -1243,6 +1254,7 @@ public final class ModuleManager extends Modules {
             for (Module m : toDisable) {
                 installer.dispose(m);
                 m.setEnabled(false);
+                m.unregisterInstrumentation();
                 m.classLoaderDown();
             }
             System.gc(); // hope OneModuleClassLoader.finalize() is called...

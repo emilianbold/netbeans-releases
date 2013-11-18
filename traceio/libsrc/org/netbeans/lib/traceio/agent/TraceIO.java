@@ -396,6 +396,16 @@ public class TraceIO {
         return false;
     }
 
+    private static boolean isTTCFont(String path) {
+        if (path == null) {
+            return false;
+        }
+        if (path.endsWith(".ttc") || path.endsWith(".TTC")) {   // NOI18N
+            return true;
+        }
+        return false;
+    }
+
     private static boolean checkTread() {
         if (checkAWT) {
             return EventQueue.isDispatchThread();
@@ -406,6 +416,7 @@ public class TraceIO {
     private static boolean checkFileName(String name) {
         if (userdir.isUserdir(name)) return false;
         if (isTTFont(name)) return false;
+        if (isTTCFont(name)) return false;
         return true;
     }
 

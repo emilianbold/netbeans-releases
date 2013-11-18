@@ -66,8 +66,8 @@ import org.netbeans.modules.localtasks.LocalRepository;
 import org.netbeans.modules.localtasks.util.FileUtils;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
-import org.netbeans.modules.bugtracking.util.AttachmentsPanel;
-import org.netbeans.modules.bugtracking.util.AttachmentsPanel.AttachmentInfo;
+import org.netbeans.modules.bugtracking.commons.AttachmentsPanel;
+import org.netbeans.modules.bugtracking.commons.AttachmentsPanel.AttachmentInfo;
 import org.netbeans.modules.mylyn.util.NbTask;
 import org.netbeans.modules.mylyn.util.NbTaskDataModel;
 import org.netbeans.modules.mylyn.util.localtasks.AbstractLocalTask;
@@ -278,7 +278,7 @@ public final class LocalTask extends AbstractLocalTask {
     }
 
     public void delete () {
-        fireSaved();
+        fireChanged();
         if (controller != null) {
             controller.taskDeleted();
         }
@@ -362,14 +362,10 @@ public final class LocalTask extends AbstractLocalTask {
         support.firePropertyChange(IssueProvider.EVENT_ISSUE_DATA_CHANGED, null, null);
     }
 
-    protected void fireUnsaved() {
-        support.firePropertyChange(IssueController.PROPERTY_ISSUE_CHANGED, null, null);
+    protected void fireChanged() {
+        support.firePropertyChange(IssueController.PROP_CHANGED, null, null);
     }
  
-    protected void fireSaved() {
-        support.firePropertyChange(IssueController.PROPERTY_ISSUE_SAVED, null, null);
-    }
-
     private boolean hasUnsavedAttributes () {
         return unsavedAttachments != null || hasUnsavedPrivateTaskAttributes();
     }

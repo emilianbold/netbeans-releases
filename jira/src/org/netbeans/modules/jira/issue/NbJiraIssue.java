@@ -55,7 +55,6 @@ import com.atlassian.connector.eclipse.internal.jira.core.model.Resolution;
 import com.atlassian.connector.eclipse.internal.jira.core.model.User;
 import com.atlassian.connector.eclipse.internal.jira.core.model.Version;
 import java.awt.EventQueue;
-import java.awt.Font;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
@@ -76,10 +75,9 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import javax.swing.JComponent;
-import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
+import javax.swing.event.ChangeListener;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.tasks.core.data.FileTaskAttachmentSource;
 import org.eclipse.mylyn.tasks.core.IRepositoryPerson;
@@ -97,9 +95,10 @@ import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
-import org.netbeans.modules.bugtracking.util.AttachmentsPanel.AttachmentInfo;
-import org.netbeans.modules.bugtracking.util.TextUtils;
-import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.netbeans.modules.bugtracking.commons.AttachmentsPanel.AttachmentInfo;
+import org.netbeans.modules.bugtracking.commons.TextUtils;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
+import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
@@ -107,7 +106,6 @@ import org.netbeans.modules.jira.util.JiraUtils;
 import org.netbeans.modules.mylyn.util.AbstractNbTaskWrapper;
 import org.netbeans.modules.mylyn.util.BugtrackingCommand;
 import org.netbeans.modules.mylyn.util.MylynSupport;
-import org.netbeans.modules.mylyn.util.NbDateRange;
 import org.netbeans.modules.mylyn.util.NbTask;
 import org.netbeans.modules.mylyn.util.NbTask.SynchronizationState;
 import org.netbeans.modules.mylyn.util.NbTaskDataModel;
@@ -117,6 +115,7 @@ import org.netbeans.modules.mylyn.util.commands.SubmitTaskCommand;
 import org.netbeans.modules.mylyn.util.commands.SynchronizeTasksCommand;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -219,16 +218,18 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
         Jira.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
-                if (node != null) {
-                    node.fireDataChanged();
-                }
-                if (updateTooltip()) {
-                    fireDataChanged();
-                }
-                fireDataChanged();
-                refreshViewData(false);
+                dataChanged();
             }
         });
+    }
+
+    private void dataChanged () {
+        if (node != null) {
+            node.fireDataChanged();
+        }
+        updateTooltip();
+        fireDataChanged();
+        refreshViewData(false);
     }
 
     @Override
@@ -286,6 +287,58 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
 
     void delete () {
         deleteTask();
+    }
+    
+    void setTaskPrivateNotes (String notes) {
+        super.setPrivateNotes(notes);
+        if (controller != null) {
+            controller.modelStateChanged(true, hasLocalEdits());
+        }
+    }
+    
+    public void setTaskDueDate (final Date date, final boolean persistChange) {
+        runWithModelLoaded(new Runnable() {
+
+            @Override
+            public void run () {
+                setDueDateAndSubmit(date);
+            }
+        });
+    }
+    
+    public void setTaskScheduleDate (IssueScheduleInfo date, boolean persistChange) {
+        super.setScheduleDate(date, persistChange);
+        if (controller != null) {
+            controller.modelStateChanged(hasUnsavedChanges(), hasLocalEdits());
+        }
+        if (persistChange) {
+            dataChanged();
+        }
+    }
+
+    public void setTaskEstimate (int estimate, boolean persistChange) {
+        super.setEstimate(estimate, persistChange);
+        if (controller != null) {
+            controller.modelStateChanged(hasUnsavedChanges(), hasLocalEdits());
+        }
+        if (persistChange) {
+            dataChanged();
+        }
+    }
+    
+    private void setDueDateAndSubmit (final Date date) {
+        refresh();
+        runWithModelLoaded(new Runnable() {
+            @Override
+            public void run () {
+                if (date == null) {
+                    setFieldValue(IssueField.DUE, ""); //NOI18N
+                } else {
+                    setFieldValue(IssueField.DUE, String.valueOf(date.getTime()));
+                }
+                submitAndRefresh();
+            }
+        });
     }
     
     public boolean discardLocalEdits () {
@@ -444,15 +497,11 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
     private void fireStatusChanged() {
         support.firePropertyChange(IssueStatusProvider.EVENT_STATUS_CHANGED, null, null);
     }
-
-    protected void fireUnsaved() {
-        support.firePropertyChange(IssueController.PROPERTY_ISSUE_CHANGED, null, null);
+    
+    protected void fireChanged() {
+        support.firePropertyChange(IssueController.PROP_CHANGED, null, null);
     }
  
-    protected void fireSaved() {
-        support.firePropertyChange(IssueController.PROPERTY_ISSUE_SAVED, null, null);
-    }
-    
     void opened() {
         if(Jira.LOG.isLoggable(Level.FINE)) Jira.LOG.log(Level.FINE, "issue {0} open start", new Object[] {getKey()});
         open = true;
@@ -1246,32 +1295,6 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
         return iconPath;
     }
 
-    private String getDueDisplayString() {
-        Calendar dueDate = Calendar.getInstance();
-        Date date = getNbTask().getDueDate();
-        if (date == null) {
-            return "";
-        }
-        dueDate.setTime(date);
-        return formatDate(dueDate);
-    }
-
-    private String getScheduleDisplayString() {
-        NbDateRange scheduleDate = getNbTask().getScheduleDate();
-        if (scheduleDate == null) {
-            return "";
-        }
-        return formateDate(scheduleDate.getStartDate(), scheduleDate.getEndDate());
-    }
-
-    private String getEstimateDisplayString() {
-        int estimate = getNbTask().getEstimate();
-        if (estimate == 0) {
-            return "";
-        }
-        return "" + estimate;
-    }
-
     private String formatDate(Calendar date) {
         Calendar now = Calendar.getInstance();
         if (now.get(Calendar.YEAR) == date.get(Calendar.YEAR)) {
@@ -1279,25 +1302,6 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
             return DateFormat.getDateInstance(DateFormat.SHORT).format(date.getTime());
         } else {
             return DateFormat.getDateInstance(DateFormat.DEFAULT).format(date.getTime());
-
-        }
-    }
-
-    private String formateDate(Calendar start, Calendar end) {
-        Calendar now = Calendar.getInstance();
-        // one day range
-        if (start.get(Calendar.YEAR) == end.get(Calendar.YEAR)
-                && start.get(Calendar.MONTH) == end.get(Calendar.MONTH)
-                && start.get(Calendar.DAY_OF_MONTH) == end.get(Calendar.DAY_OF_MONTH)) {
-            return formatDate(start);
-        }
-
-        if (now.get(Calendar.YEAR) == start.get(Calendar.YEAR) && now.get(Calendar.YEAR) == end.get(Calendar.YEAR)) {
-            DateFormat format = DateFormat.getDateInstance(DateFormat.SHORT);
-            return format.format(start.getTime()) + " - " + format.format(end.getTime()); //NOI18N
-        } else {
-            DateFormat format = DateFormat.getDateInstance(DateFormat.DEFAULT);
-            return format.format(start.getTime()) + " - " + format.format(end.getTime()); //NOI18N
 
         }
     }
@@ -1977,29 +1981,17 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
     }
 
     private class Controller implements IssueController {
-        private JComponent component;
         private IssuePanel issuePanel;
 
         public Controller() {
             IssuePanel panel = new IssuePanel();
             panel.setIssue(NbJiraIssue.this);
-            JScrollPane scrollPane = new JScrollPane(panel);
-            scrollPane.getViewport().setBackground(panel.getBackground());
-            scrollPane.setBorder(null);
-            Font font = UIManager.getFont("Label.font"); // NOI18N
-            if (font != null) {
-                int size = (int)(font.getSize()*1.5);
-                scrollPane.getHorizontalScrollBar().setUnitIncrement(size);
-                scrollPane.getVerticalScrollBar().setUnitIncrement(size);
-            }
             issuePanel = panel;
-            UIUtils.keepFocusedComponentVisible(issuePanel);
-            component = scrollPane;
         }
 
         @Override
         public JComponent getComponent() {
-            return component;
+            return issuePanel;
         }
 
         @Override
@@ -2036,6 +2028,7 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
 
         private void modelStateChanged (boolean modelDirty, boolean modelHasLocalChanges) {
             issuePanel.modelStateChanged(modelDirty, modelHasLocalChanges);
+            NbJiraIssue.this.fireChanged();
         }
 
         @Override
@@ -2057,6 +2050,12 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
         public void removePropertyChangeListener(PropertyChangeListener l) {
             NbJiraIssue.this.removePropertyChangeListener(l);
         }
+
+        @Override
+        public boolean isChanged() {
+            return NbJiraIssue.this.hasUnsavedChanges();
+        }
+        
     }
 
     public static final class Comment {

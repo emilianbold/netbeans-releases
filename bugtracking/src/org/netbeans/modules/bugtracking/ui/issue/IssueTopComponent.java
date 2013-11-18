@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.bugtracking.ui.issue;
 
-import org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils;
+import org.netbeans.modules.bugtracking.commons.NBBugzillaUtils;
 import org.netbeans.modules.bugtracking.ui.repository.RepositoryComboRenderer;
 import org.netbeans.modules.bugtracking.ui.repository.RepositoryComboSupport;
 import java.awt.BorderLayout;
@@ -59,6 +59,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.MissingResourceException;
@@ -69,6 +70,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -82,12 +84,14 @@ import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.IssueImpl;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
-import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
+import org.netbeans.modules.bugtracking.commons.HyperlinkSupport;
+import org.netbeans.modules.bugtracking.commons.HyperlinkSupport.IssueRefProvider;
+import org.netbeans.modules.bugtracking.spi.IssueFinder;
+import org.netbeans.modules.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.util.*;
+import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.netbeans.spi.actions.AbstractSavable;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -219,6 +223,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     void setIssue(IssueImpl issue) {
         assert (this.issue == null);
         this.issue = issue;
+        instanceContent.add(issue.getIssue());
         preparingLabel.setVisible(false);
         issuePanel.add(issue.getController().getComponent(), BorderLayout.CENTER);
         
@@ -236,7 +241,13 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
             BugtrackingManager.getInstance().addRecentIssue(issue.getRepositoryImpl(), issue);
         }
         
+        registerForIssue();
+    }
+
+    private void registerForIssue() {
         undoRedoListener.register(this, true);
+        HyperlinkSupport.getInstance().register(this);
+        issueLinksListener.register(this);
     }
 
     /** This method is called from within the constructor to
@@ -252,7 +263,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         findIssuesLabel = new javax.swing.JLabel();
         repoLabel = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
-        newButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+        newButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
         jSeparator1 = new javax.swing.JSeparator();
         issuePanel = new javax.swing.JPanel();
         preparingLabel = new javax.swing.JLabel();
@@ -381,16 +392,19 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                             controller.closed();
                         }
                         unregisterListeners();
+                        instanceContent.remove(issue.getIssue());
                     }
                     issue = repo.createNewIssue();
                     if (issue == null) {
                         return;
                     }
-                    undoRedoListener.register(IssueTopComponent.this, true);
+                    instanceContent.add(issue.getIssue());
+                    
+                    registerForIssue();
                     ((DelegatingUndoRedoManager)getUndoRedo()).init();
                     
                     if(context != null && NBBugzillaUtils.isNbRepository(repo.getUrl())) {
-                        OwnerInfo ownerInfo = TeamUtil.getOwnerInfo(context);
+                        OwnerInfo ownerInfo = TeamAccessorUtils.getOwnerInfo(context);
                         if(ownerInfo != null) {
                             issue.setContext(ownerInfo);
                         }
@@ -456,7 +470,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     private javax.swing.JPanel issuePanel;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JSeparator jSeparator1;
-    private org.netbeans.modules.bugtracking.util.LinkButton newButton;
+    private org.netbeans.modules.bugtracking.commons.LinkButton newButton;
     private javax.swing.JLabel preparingLabel;
     private javax.swing.JLabel repoLabel;
     private javax.swing.JPanel repoPanel;
@@ -473,7 +487,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         openIssues.add(this);
         if(issue != null) {
             getController().opened();
-            undoRedoListener.register(this, true);
+            registerForIssue();
         }
         BugtrackingManager.LOG.log(Level.FINE, "IssueTopComponent Opened {0}", (issue != null ? issue.getID() : "null")); // NOI18N
     }
@@ -513,12 +527,14 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                         NotifyDescriptor.INFORMATION_MESSAGE, 
                         new Object[] {save, discard, NotifyDescriptor.CANCEL_OPTION}, null);
                 Object ret = DialogDisplayer.getDefault().notify(nd);
+                boolean canClose = false;
                 if(ret == save) {
-                    return issue.getController().saveChanges();
+                    canClose = issue.getController().saveChanges();
                 } else if(ret == discard) {
-                    return issue.getController().discardUnsavedChanges();
-                } else {
-                    return false;
+                    canClose = issue.getController().discardUnsavedChanges();
+                } 
+                if(canClose) {
+                    savable.destroy();
                 }
             }
         }
@@ -613,20 +629,29 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                     }
                 }
             });
-        } else if(evt.getPropertyName().equals(IssueController.PROPERTY_ISSUE_CHANGED)) {
-            if (getLookup().lookup(IssueSavable.class) == null) {
-                instanceContent.add(new IssueSavable(IssueTopComponent.this));
-                setNameAndTooltip();
+        } else if(evt.getPropertyName().equals(IssueController.PROP_CHANGED)) {
+            Object o = evt.getNewValue();
+            boolean changed;
+            if(o instanceof Boolean) {
+                changed = (Boolean) o;
+            } else {
+                changed = getController().isChanged();
             }
-        } else if(evt.getPropertyName().equals(IssueController.PROPERTY_ISSUE_SAVED)) {
-            IssueSavable savable = getSavable();
-            if(savable != null) {
-                savable.destroy();
-                setNameAndTooltip();
+            if(changed) {
+                if (getLookup().lookup(IssueSavable.class) == null) {
+                    instanceContent.add(new IssueSavable(IssueTopComponent.this));
+                    setNameAndTooltip();
+                }            
+            } else {
+                IssueSavable savable = getSavable();
+                if(savable != null) {
+                    savable.destroy();
+                    setNameAndTooltip();
+                }
             }
-        }
+        } 
     }
-
+    
     private IssueSavable getSavable() {
         return getLookup().lookup(IssueSavable.class);
     }
@@ -757,7 +782,36 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                 }
             }
         }
+    }
+    
+    private IssueLinksListener issueLinksListener = new IssueLinksListener();
+    private class IssueLinksListener implements ContainerListener {
         
+        @Override
+        public void componentAdded(ContainerEvent e) {
+            register((Container)e.getComponent());
+        }
+
+        @Override
+        public void componentRemoved(ContainerEvent e) { }
+        
+        void register(Component c) {
+            if(c instanceof JTextPane) {
+                JTextPane tp = (JTextPane) c;
+                if(!tp.isEditable()) {
+                    HyperlinkSupport.getInstance().registerForIssueLinks(tp, issueLink, issueRefProvider);
+                }
+            }
+            if(c instanceof Container) {
+                Container container = (Container) c;
+                container.removeContainerListener(this);
+                container.addContainerListener(this);
+                Component[] components = container.getComponents();
+                for (Component cmp : components) {
+                    register(cmp);
+                }
+            }
+        }
     }
     
     private static class IssueSavable extends AbstractSavable {
@@ -770,7 +824,10 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
 
         @Override
         protected String findDisplayName() {
-            return tc.getDisplayName();
+            if(tc.issue != null) {
+                return tc.issue.getDisplayName();
+            }
+            return tc.getName();
         }
 
         @Override
@@ -800,4 +857,42 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
 
     }
     
+    private IssueRefProvider issueRefProvider = issueRefProvider = new HyperlinkSupport.IssueRefProvider() {
+        @Override
+        public int[] getIssueRefSpans(CharSequence text) {
+            if(issue == null) {
+                return new int[0];
+            }
+            final RepositoryImpl repo = issue.getRepositoryImpl();
+            IssueFinder ifn = repo.getIssueFinder();
+            if(ifn == null) {
+                return new int[0];
+            }
+            return ifn.getIssueSpans(text);
+        }
+    };
+    
+    HyperlinkSupport.Link issueLink = new HyperlinkSupport.Link() {
+            @Override
+            public void onClick(String linkText) {
+                if(issue == null) {
+                    return;
+                }
+                final RepositoryImpl repo = issue.getRepositoryImpl();
+                IssueFinder ifn = repo.getIssueFinder();
+                if(ifn == null) {
+                    return;
+                }
+                final String issueKey = ifn.getIssueId(linkText);
+                rp.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Collection<IssueImpl> issues = repo.getIssueImpls(issueKey);
+                        if (issues != null && !issues.isEmpty()) {
+                            issues.iterator().next().open();
+                        }
+                    }
+                });
+            }
+        };
 }

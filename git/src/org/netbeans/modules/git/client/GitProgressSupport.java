@@ -78,8 +78,10 @@ public abstract class GitProgressSupport implements Runnable, Cancellable {
     private GitClient gitClient;
     private OutputLogger logger;
     private final ProgressMonitorImpl progressMonitor = new ProgressMonitorImpl();
+    private boolean error;
 
     public RequestProcessor.Task start (RequestProcessor rp, File repositoryRoot, String displayName) {
+        this.error = false;
         this.originalDisplayName = displayName;
         setDisplayName(displayName);
         this.repositoryRoot = repositoryRoot;
@@ -138,8 +140,24 @@ public abstract class GitProgressSupport implements Runnable, Cancellable {
         return task;
     }
     
+    public final boolean isFinished () {
+        return task != null && task.isFinished();
+    }
+    
+    public final boolean isFinishedSuccessfully () {
+        return isFinished() && !isCanceled() && !error;
+    }
+
+    public final boolean isError () {
+        return error;
+    }
+    
     protected String getDisplayName () {
         return displayName;
+    }
+    
+    protected final void setError (boolean error) {
+        this.error = error;
     }
     
     protected void setDisplayName (String displayName) {

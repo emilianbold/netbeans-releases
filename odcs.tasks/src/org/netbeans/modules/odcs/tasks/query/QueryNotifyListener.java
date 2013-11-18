@@ -59,7 +59,13 @@ public interface QueryNotifyListener {
      *
      * @param issue
      */
-    public void notifyData(ODCSIssue issue);
+    public void notifyDataAdded(ODCSIssue issue);
+    
+    /**
+     *
+     * @param issue
+     */
+    public void notifyDataRemoved(ODCSIssue issue);
 
     /**
      * Query execution was finished
