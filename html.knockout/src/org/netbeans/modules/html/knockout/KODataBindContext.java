@@ -60,6 +60,8 @@ public class KODataBindContext {
 
     private boolean inForEach;
 
+    private String alias;
+
     public KODataBindContext() {
         this.original = null;
         this.parents = new ArrayList<>();
@@ -70,10 +72,13 @@ public class KODataBindContext {
         this.parents = new ArrayList<>(context.parents);
         this.data = context.data;
         this.inForEach = context.inForEach;
+        this.alias = context.alias;
     }
 
-    public void push(String newData, boolean foreach) {
+    public void push(String newData, boolean foreach, String alias) {
         assert !foreach || newData != null;
+        assert alias == null || foreach;
+
         String replacement = (data == null || data.equals("$root")) ? "ko.$bindings" : data; // NOI18N
         String toAdd = newData.replaceAll("$data", replacement); // NOI18N
 
@@ -81,21 +86,23 @@ public class KODataBindContext {
             toAdd = "(" + toAdd + ")[0]"; // NOI18N
         }
         if (data == null || "$root".equals(data)) { // NOI18N
-            parents.add(new ParentContext("ko.$bindings", false)); // NOI18N
+            parents.add(new ParentContext("ko.$bindings", false, null)); // NOI18N
         } else {
-            parents.add(new ParentContext(data, foreach));
+            parents.add(new ParentContext(data, foreach, alias));
         }
-        data = toAdd;
-        inForEach = foreach;
+        this.data = toAdd;
+        this.inForEach = foreach;
+        this.alias = alias;
     }
 
     public void pop() {
-        inForEach = false;
         if (parents.isEmpty()) {
             throw new IllegalStateException();
         }
         ParentContext context = parents.remove(parents.size() - 1);
         data = context.getValue();
+        inForEach = context.isInForEach();
+        alias = context.getAlias();
     }
 
     public KODataBindContext getOriginal() {
@@ -105,6 +112,7 @@ public class KODataBindContext {
     public void clear() {
         inForEach = false;
         data = null;
+        alias = null;
         parents.clear();
     }
 
@@ -122,6 +130,10 @@ public class KODataBindContext {
 
     public boolean isInForEach() {
         return inForEach;
+    }
+
+    public String getAlias() {
+        return alias;
     }
 
     @Override
@@ -165,19 +177,26 @@ public class KODataBindContext {
 
         private final String value;
 
-        private final boolean index;
+        private final boolean inForEach;
 
-        public ParentContext(String value, boolean index) {
+        private final String alias;
+
+        public ParentContext(String value, boolean inForEach, String alias) {
             this.value = value;
-            this.index = index;
+            this.inForEach = inForEach;
+            this.alias = alias;
         }
 
         public String getValue() {
             return value;
         }
 
-        public boolean hasIndex() {
-            return index;
+        public boolean isInForEach() {
+            return inForEach;
+        }
+
+        public String getAlias() {
+            return alias;
         }
     }
 }

@@ -205,7 +205,7 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
                             KOTemplateContext.TemplateDescriptor desc = KOTemplateContext.getTemplateDescriptor(
                                     snapshot, embedded.embedded(JsTokenId.javascriptLanguage()));
                             if (desc != null) {
-                                templateBindContext.push(desc.getData(), desc.isIsForEach());
+                                templateBindContext.push(desc.getData(), desc.isIsForEach(), desc.getAlias());
                                 String templateName = desc.getName();
                                 KODataBindContext current = templateUsages.get(templateName);
                                 if (current == null) {
@@ -263,7 +263,8 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
                     }
                     if (setData) {
                         if (dataValue != null) {
-                            dataBindContext.push(dataValue.text().toString().trim(), foreach);
+                            // XXX forach alias
+                            dataBindContext.push(dataValue.text().toString().trim(), foreach, null);
                         }
                     }
                     if (templateId != null) {
@@ -308,7 +309,7 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
 
         sb.append("var $context = ");
         List<ParentContext> current = new ArrayList<>(context.getParents());
-        current.add(new ParentContext(currentData, context.isInForEach()));
+        current.add(new ParentContext(currentData, context.isInForEach(), context.getAlias()));
         generateContext(sb, current);
         sb.append(";\n");
         generateParentAndContextData("$context.", sb, context.getParents());
@@ -363,7 +364,7 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
             ParentContext parent = parents.get(parents.size() - 1);
             sb.append(",\n");
             sb.append("$root : ko.$bindings,\n");
-            if (parent.hasIndex()) {
+            if (parent.isInForEach()) {
                 sb.append("$index : 0,\n");
             }
             sb.append("}");

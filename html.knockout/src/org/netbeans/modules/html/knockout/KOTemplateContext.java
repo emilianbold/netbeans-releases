@@ -119,7 +119,7 @@ public class KOTemplateContext {
                 }
             }
             if (name != null && data != null) {
-                return new TemplateDescriptor(name, data, forEach, alias);
+                return new TemplateDescriptor(name, data, forEach, forEach ? alias : null);
             }
         }
 
