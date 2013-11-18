@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,34 +37,36 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.clientproject;
+package org.netbeans.modules.javascript.jstestdriver.preferences;
+
+import java.util.prefs.Preferences;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 
 /**
- *
+ * Project specific js-test-driver preferences.
  */
-public class ClientSideProjectConstants {
+public final class JsTestDriverPreferences {
 
-    // misc persistent project properties:
-    public static final String PROJECT_ENCODING = "files.encoding"; //NOI18N
-    public static final String PROJECT_SITE_ROOT_FOLDER = "site.root.folder"; //NOI18N
-    public static final String PROJECT_TEST_FOLDER = "test.folder"; //NOI18N
-    public static final String PROJECT_CONFIG_FOLDER = "config.folder"; //NOI18N
-    public static final String PROJECT_SERVER = "server"; //NOI18N
-    public static final String PROJECT_START_FILE = "start.file"; //NOI18N
-    public static final String PROJECT_WEB_ROOT = "web.context.root"; //NOI18N
-    public static final String PROJECT_PROJECT_URL = "external.project.url"; //NOI18N
-    public static final String PROJECT_AUTO_REFRESH = "browser.autorefresh"; //NOI18N
-    public static final String PROJECT_HIGHLIGHT_SELECTION = "browser.highlightselection"; //NOI18N
-    public static final String PROJECT_SELECTED_BROWSER = "browser"; //NOI18N
+    private static final String ENABLED = "enabled"; // NOI18N
 
-    // default paths:
-    public static final String DEFAULT_SITE_ROOT_FOLDER = "public_html"; //NOI18N
-    public static final String DEFAULT_TEST_FOLDER = "test"; //NOI18N
-    public static final String DEFAULT_CONFIG_FOLDER = "config"; //NOI18N
-    
-    // template's descriptor file
-    public static final String TEMPLATE_DESCRIPTOR = "netbeans-project.properties"; //NOI18N
+
+    private JsTestDriverPreferences() {
+    }
+
+    public static boolean isEnabled(Project project) {
+        return getPreferences(project).getBoolean(ENABLED, false);
+    }
+
+    public static void setEnabled(Project project, boolean enabled) {
+        getPreferences(project).putBoolean(ENABLED, enabled);
+    }
+
+    private static Preferences getPreferences(Project project) {
+        return ProjectUtils.getPreferences(project, JsTestDriverPreferences.class, false);
+    }
+
 }

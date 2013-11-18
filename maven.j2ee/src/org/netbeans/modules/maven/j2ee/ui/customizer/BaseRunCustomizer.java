@@ -54,7 +54,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.javaee.project.api.JavaEEProjectSettings;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.customizer.ModelHandle2;
-import org.netbeans.modules.maven.j2ee.ExecutionChecker;
+import org.netbeans.modules.maven.j2ee.execution.ExecutionChecker;
 import org.netbeans.modules.maven.j2ee.utils.Server;
 import static org.netbeans.modules.maven.j2ee.ui.customizer.Bundle.*;
 import org.netbeans.modules.maven.j2ee.ui.util.WarningPanel;

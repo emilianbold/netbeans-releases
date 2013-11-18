@@ -60,7 +60,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
-import static org.netbeans.modules.maven.j2ee.ExecutionChecker.DEV_NULL;
+import static org.netbeans.modules.maven.j2ee.execution.ExecutionChecker.DEV_NULL;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.modules.maven.j2ee.OneTimeDeployment;
 import org.netbeans.modules.maven.j2ee.ui.customizer.impl.CustomizerRunWeb;
