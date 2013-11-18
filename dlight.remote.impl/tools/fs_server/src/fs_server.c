@@ -41,7 +41,7 @@ static bool statistics = false;
 static int refresh_sleep = 1;
 
 #define FS_SERVER_MAJOR_VERSION 1
-#define FS_SERVER_MINOR_VERSION 7
+#define FS_SERVER_MINOR_VERSION 8
 
 typedef struct fs_entry {
     int /*short?*/ name_len;
@@ -826,6 +826,9 @@ static void *rp_loop(void *data) {
 }
 
 static void lock_or_unlock(bool lock) {
+    if (!persistence) {
+        return;
+    }
     const char* lock_file_name = "lock";
     static int lock_fd = -1;
     if (lock) {
@@ -1006,6 +1009,11 @@ static void startup() {
     if (chdir(basedir)) {
         report_error("cannot change current directory to %s: %s\n", basedir, strerror(errno));
         exit(FAILED_CHDIR);
+    }
+    if (persistence) {
+        trace(TRACE_INFO, "cache location: %s\n", dirtab_get_basedir());
+    } else {
+        trace(TRACE_INFO, "peristence is OFF\n");
     }
     lock_or_unlock(true);
     state_init();

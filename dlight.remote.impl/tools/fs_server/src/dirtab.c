@@ -60,10 +60,6 @@ void dirtab_set_persistence_dir(const char* dir) {
         report_error("persistence dir should be set BEFORE initialization!\n");
         exit(DIRTAB_SET_PERSIST_DIR_AFTER_INITIALIZATION);
     }
-    if (!dir_exists(dir)) {
-        report_error("directory does not exist: %s\n", dir);
-        exit(DIRTAB_SET_PERSIST_INEXISTENT);
-    }
     persistence_dir = strdup(dir);
 }
 
@@ -267,7 +263,7 @@ const char* dirtab_get_basedir() {
 
 static void mkdir_or_die(const char *path, int exit_code_fail_create, int exit_code_fail_access) {
     struct stat stat_buf;
-    if (lstat(path, &stat_buf) == -1) {
+    if (stat(path, &stat_buf) == -1) {
         if (errno == ENOENT) {
             if (mkdir(path, 0700) != 0) {
                 report_error("error creating directory '%s': %s\n", path, strerror(errno));
@@ -277,38 +273,69 @@ static void mkdir_or_die(const char *path, int exit_code_fail_create, int exit_c
             report_error("error accessing directory '%s': %s\n", path, strerror(errno));
             exit(exit_code_fail_access);
         }
-    }    
+    } else if(!S_ISDIR(stat_buf.st_mode)) {
+        report_error("error accessing directory '%s': not a directory\n", path, strerror(errno));
+        exit(exit_code_fail_access);        
+    }
+}
+
+/** recursive mkdir_or_die */
+static void mkdir_or_die_recursive(const char *path, int exit_code_fail_create, int exit_code_fail_access) {
+    char* buf = malloc(PATH_MAX+1);
+    strncpy(buf, path, PATH_MAX);
+    char* slash = strchr(buf+1, '/');
+    while (slash) {
+        *slash = 0;
+        mkdir_or_die(buf, exit_code_fail_create, exit_code_fail_access);
+        *slash = '/';
+        slash = strchr(slash+1, '/');
+    }
+    mkdir_or_die(path, exit_code_fail_create, exit_code_fail_access);
+    free(buf);
+}
+
+static void fill_default_root() {
+    const char* home = get_home_dir();
+    if (!home) {
+        report_error("can't determine home directory\n");
+        exit(FAILURE_GETTING_HOME_DIR);
+    }
+    strncpy(root, home, PATH_MAX);
+    strcat(root, "/.netbeans");
+    strcat(root, "/remotefs");
 }
 
 void dirtab_init() {
 
-    root = malloc(PATH_MAX);
-    temp_path = malloc(PATH_MAX);
-    cache_path = malloc(PATH_MAX);
-    dirtab_file_path = malloc(PATH_MAX);
+    root = malloc(PATH_MAX + 1);
+    temp_path = malloc(PATH_MAX + 1);
+    cache_path = malloc(PATH_MAX + 1);
+    dirtab_file_path = malloc(PATH_MAX + 1);
 
-    if (persistence_dir) {
-        int len = strlen(persistence_dir);
-        if (len > PATH_MAX) {
-            report_error("too long persistence path\n");
-            exit(WRONG_ARGUMENT);
-        }
-        strcpy(root, persistence_dir);
-        free(persistence_dir);
-    } else {
-        const char* home = get_home_dir();
-        if (!home) {
-            report_error("can't determine home directory\n");
-            exit(FAILURE_GETTING_HOME_DIR);
-        }
-        strncpy(root, home, PATH_MAX);
-
-        strcat(root, "/.netbeans");
-        mkdir_or_die(root, FAILURE_CREATING_STORAGE_SUPER_DIR, FAILURE_ACCESSING_STORAGE_SUPER_DIR);
-
-        strcat(root, "/remotefs");
-        mkdir_or_die(root, FAILURE_CREATING_STORAGE_DIR, FAILURE_ACCESSING_STORAGE_DIR);
+    char* pdir = persistence_dir ? persistence_dir : "0";
+    
+    int len = strlen(pdir);
+    if (*pdir != '/') {
+        fill_default_root();
+        len += strlen(root) + 1; // +1 is for '/'
     }
+    if (len > PATH_MAX) {
+        report_error("too long persistence path\n");
+        exit(WRONG_ARGUMENT);
+    }
+    if (*pdir == '/') {
+        strcpy(root, pdir);
+    } else {
+        fill_default_root();
+        strcat(root, "/");
+        strcat(root, pdir);
+    }
+    if (persistence_dir) {
+        free(persistence_dir);
+        persistence_dir = NULL; //just in case
+    }
+
+    mkdir_or_die_recursive(root, FAILURE_CREATING_STORAGE_DIR, FAILURE_ACCESSING_STORAGE_DIR);
     
     strcpy(cache_path, root);
     strcat(cache_path, "/");
