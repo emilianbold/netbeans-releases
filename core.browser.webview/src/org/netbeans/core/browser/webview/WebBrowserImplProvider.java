@@ -63,15 +63,6 @@ import org.openide.util.Lookup;
  */
 public class WebBrowserImplProvider {
     
-    public interface JFXRuntimePathProvider {
-        
-        /** Returns the installation path of the JavaFX runtime; must contain file lib/jfxrt.jar.
-         */
-        public String getJFXRuntimePath();
-        
-    }
-
-    private static URLClassLoader browserCL;
     private static final Logger log = Logger.getLogger(WebBrowserImplProvider.class.getName());
     
     static WebBrowser createBrowser() {
@@ -79,7 +70,9 @@ public class WebBrowserImplProvider {
     }
 
     static WebBrowser createBrowser( File runtimePath ) {
-        ClassLoader cl = getBrowserClassLoader( runtimePath );
+        ClassLoader cl = Lookup.getDefault().lookup(ClassLoader.class);
+        if( null == cl )
+            cl = WebBrowserImplProvider.class.getClassLoader();
         try {
             if (cl != null) {
                 // test that JavaFX has latest required APIs:
@@ -104,71 +97,6 @@ public class WebBrowserImplProvider {
             log.log(Level.INFO, ex.getMessage(), ex);
             return new NoWebBrowserImpl(ex.getMessage());
         }
-        return new NoWebBrowserImpl(new RuntimePathPanel());
-    }
-
-    static void reset() {
-        synchronized( WebBrowserImplProvider.class ) {
-            browserCL = null;
-        }
-    }
-    
-    private static String[] getFXClassPath() {
-        Collection<? extends JFXRuntimePathProvider> pathProviders = Lookup.getDefault().lookupAll( JFXRuntimePathProvider.class );
-        
-        for( JFXRuntimePathProvider rtPathProvider : pathProviders ) {
-            String rtPath = rtPathProvider.getJFXRuntimePath();
-            if (rtPath == null) {
-                continue;
-            }
-            return new String[] {
-                rtPath + File.separatorChar + "lib" + File.separatorChar + "jfxrt.jar" //NOI18N
-            };
-        }
-        return null;
-    }
-    
-    private static ClassLoader getBrowserClassLoader(File runtimePath) {
-        synchronized (WebBrowserImplProvider.class) {
-            if( null != runtimePath )
-                return createBrowserClassLoader( runtimePath );
-            
-            if (browserCL != null)
-                return browserCL;
-            browserCL = createBrowserClassLoader( null );
-            if (browserCL == null) {
-                return WebBrowserImplProvider.class.getClassLoader();
-            }
-            return browserCL;
-        }
-    }
-        
-    private static URLClassLoader createBrowserClassLoader(File runtimePath) {
-        synchronized (WebBrowserImplProvider.class) {
-            File extjar = InstalledFileLocator.getDefault().locate("modules/ext/core.browser.webview-ext.jar", "org.netbeans.core.browser.webview", false); // NOI18N
-            if (extjar == null) {
-                log.log(Level.INFO, "core.browser.webview-ext.jar not found"); // NOI18N
-                return null;
-            }
-            String[] fxpath = null;
-            if( null == runtimePath ) {
-                fxpath = getFXClassPath();
-            } else {
-                fxpath = new String[] { new File(new File(runtimePath, "lib"), "jfxrt.jar").getAbsolutePath() }; //NOI18N
-            }
-            if (fxpath == null) return null;
-            List<URL> urls = new ArrayList<URL>();
-            try {
-                urls.add(extjar.toURI().toURL());
-                for (String fx : fxpath) {
-                    urls.add(new File(fx).toURI().toURL());
-                }
-                return new URLClassLoader(urls.toArray(new URL[] {}),
-                        WebBrowserImplProvider.class.getClassLoader());
-            } catch (MalformedURLException m) {
-                log.log(Level.INFO, m.getMessage(), m);
-                return null;
-            }
-        }
+        return new NoWebBrowserImpl(new OldRuntimePanel());
     }
 }
