@@ -515,7 +515,6 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                 }
             }
             History.LOG.fine(sb.toString());
-            System.out.println(sb.toString());
         }
     }
 
