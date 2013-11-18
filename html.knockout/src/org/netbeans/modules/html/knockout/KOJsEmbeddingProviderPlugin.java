@@ -363,7 +363,7 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
             ParentContext parent = parents.get(parents.size() - 1);
             sb.append(",\n");
             sb.append("$root : ko.$bindings,\n");
-                        if (parent.hasIndex()) {
+            if (parent.hasIndex()) {
                 sb.append("$index : 0,\n");
             }
             sb.append("}");
