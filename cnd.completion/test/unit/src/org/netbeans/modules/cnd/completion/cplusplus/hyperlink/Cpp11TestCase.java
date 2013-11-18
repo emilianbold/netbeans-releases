@@ -254,4 +254,13 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         performTest("bug235120.cpp", 119, 59, "bug235120.cpp", 96, 9);        
         performTest("bug235120.cpp", 120, 27, "bug235120.cpp", 96, 9);
     }
+    
+    public void bug238413() throws Exception {
+        // Bug 238413 - C++11 inline namespaces are not supported
+        performTest("bug238413.cpp", 12, 24, "bug238413.cpp", 6, 15);
+        performTest("bug238413.cpp", 13, 18, "bug238413.cpp", 6, 15);
+        performTest("bug238413.cpp", 14, 13, "bug238413.cpp", 6, 15);
+        
+        performTest("bug238413.cpp", 29, 23, "bug238413.cpp", 21, 15);
+    }
 }

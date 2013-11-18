@@ -524,8 +524,11 @@ public final class CsmProjectContentResolver {
                         out.put(fun.getSignature(), fun);
                     }
                 }
-            } else if (needDeclFromUnnamedNS && CsmKindUtilities.isNamespaceDefinition(decl)) {
-                if (((CsmNamespaceDefinition) decl).getName().length() == 0) {
+            } else if (CsmKindUtilities.isNamespaceDefinition(decl)) {
+                CsmNamespaceDefinition nsd = (CsmNamespaceDefinition) decl;
+                boolean fillFromNamespace = (needDeclFromUnnamedNS && (nsd.getName().length() == 0)) 
+                                            || nsd.getNamespace().isInline();
+                if (fillFromNamespace) {
                     // add all declarations from unnamed namespace as well
                     fillFileLocalFunctions(strPrefix, match, (CsmNamespaceDefinition) decl, needDeclFromUnnamedNS, true, out);
                 }
@@ -566,8 +569,11 @@ public final class CsmProjectContentResolver {
                         out.put(fun.getSignature(), fun);
                     }
                 }
-            } else if (needDeclFromUnnamedNS && CsmKindUtilities.isNamespaceDefinition(decl)) {
-                if (((CsmNamespaceDefinition) decl).getName().length() == 0) {
+            } else if (CsmKindUtilities.isNamespaceDefinition(decl)) {
+                CsmNamespaceDefinition nsd = (CsmNamespaceDefinition) decl;
+                boolean fillFromNamespace = (needDeclFromUnnamedNS && (nsd.getName().length() == 0)) 
+                                            || nsd.getNamespace().isInline();
+                if (fillFromNamespace) {
                     // add all declarations from unnamed namespace as well
                     fillFileLocalFunctions(strPrefix, match, (CsmNamespaceDefinition) decl, needDeclFromUnnamedNS, true, out);
                 }
@@ -649,8 +655,11 @@ public final class CsmProjectContentResolver {
                         }
                     }
                 }
-            } else if (needDeclFromUnnamedNS && CsmKindUtilities.isNamespaceDefinition(decl)) {
-                if (((CsmNamespaceDefinition) decl).getName().length() == 0) {
+            } else if (CsmKindUtilities.isNamespaceDefinition(decl)) {
+                CsmNamespaceDefinition nsd = (CsmNamespaceDefinition) decl;
+                boolean fillFromNamespace = (needDeclFromUnnamedNS && (nsd.getName().length() == 0)) 
+                                            || nsd.getNamespace().isInline();
+                if (fillFromNamespace) {
                     // add all declarations from unnamed namespace as well
                     fillNamespaceVariables(strPrefix, match, (CsmNamespaceDefinition) decl, needDeclFromUnnamedNS, true, out);
                 }
@@ -759,7 +768,7 @@ public final class CsmProjectContentResolver {
                 } else if (CharSequenceUtilities.startsWith(ns.getQualifiedName(), nsd.getQualifiedName())) {
                     getFileLocalIncludeNamespaceMembersFromNested(ns.getQualifiedName(), nsd, out, needDeclFromUnnamedNS);
                 }
-                if(needDeclFromUnnamedNS && CharSequenceUtilities.startsWith(ns.getQualifiedName(), nsd.getQualifiedName())) {
+                if (needDeclFromUnnamedNS && CharSequenceUtilities.startsWith(ns.getQualifiedName(), nsd.getQualifiedName())) {
                     getFileLocalIncludeNamespaceMembersFromNested("<unnamed>", nsd, out, needDeclFromUnnamedNS); // NOI18N
                 }
             }
@@ -776,10 +785,10 @@ public final class CsmProjectContentResolver {
                 } else if (nsName.toString().startsWith(nsd.getQualifiedName().toString())) {
                     getFileLocalIncludeNamespaceMembersFromNested(nsName, nsd, out, needDeclFromUnnamedNS);
                 }
-                if(needDeclFromUnnamedNS && nsName.toString().startsWith(nsd.getQualifiedName().toString())) {
+                if (needDeclFromUnnamedNS && nsName.toString().startsWith(nsd.getQualifiedName().toString())) {
                     getFileLocalIncludeNamespaceMembersFromNested("<unnamed>", nsd, out, needDeclFromUnnamedNS); // NOI18N
                 }
-                if (needDeclFromUnnamedNS && nsd.getName().length() == 0) {
+                if ((needDeclFromUnnamedNS && nsd.getName().length() == 0) || nsd.isInline()) {
                     out.addAll(nsd.getScopeElements());
                     getFileLocalIncludeNamespaceMembersFromNested(nsName, nsd, out, needDeclFromUnnamedNS);
                 }
@@ -934,8 +943,13 @@ public final class CsmProjectContentResolver {
                 for (Iterator it = ns.getNestedNamespaces().iterator(); it.hasNext();) {
                     CsmNamespace nestedNs = (CsmNamespace) it.next();
                     // TODO: consider when we add nested namespaces
-                    if (nestedNs.getName().length() != 0 && matchName(nestedNs.getName(), strPrefix, match)) {
+                    if ((nestedNs.getName().length() != 0) && matchName(nestedNs.getName(), strPrefix, match)) {
                         res.put(nestedNs.getQualifiedName(), nestedNs);
+                        
+                        // TODO: Think if we really need nested namespaces here
+                        if (nestedNs.isInline()) {
+                            res.putAll(getNestedNamespaces(nestedNs, strPrefix, match, handledNS));
+                        }
                     }
                 }
             }
@@ -1420,24 +1434,25 @@ public final class CsmProjectContentResolver {
                 }
             }
         }
-        // handle all nested namespaces
-        if (searchNestedUnnamedNamespaces) {
-            for (it = ns.getNestedNamespaces().iterator(); it.hasNext();) {
-                CsmNamespace nestedNs = (CsmNamespace) it.next();
-                
-                // we need nested namespaces only if they do not modify qualified path (they names are empty)
-                if (nestedNs.getName().length() == 0) {
-                // TODO: consider when we add nested namespaces
-//            if (nestedNs.getName().length() != 0) {
-//                if (need namespaces &&
-//                        matchName(nestedNs.getName(), strPrefix, match)) {
-//                    res.add(nestedNs);
-//                }
+        // handle all nested and inlined namespaces
+        for (it = ns.getNestedNamespaces().iterator(); it.hasNext();) {
+            CsmNamespace nestedNs = (CsmNamespace) it.next();
+            
+            boolean goDeeper = (searchNestedUnnamedNamespaces && nestedNs.getName().length() == 0) || nestedNs.isInline();
+            
+            // we need nested namespaces only if they do not modify qualified path (they names are empty) or they are inlined
+            if (goDeeper) {
+            // TODO: consider when we add nested namespaces
+//        if (nestedNs.getName().length() != 0) {
+//            if (need namespaces &&
+//                    matchName(nestedNs.getName(), strPrefix, match)) {
+//                res.add(nestedNs);
 //            }
-                    res.addAll(getNamespaceMembers(nestedNs, kinds, strPrefix, match, handledNS, true, returnUnnamedInNestedNs));
-                }
+//        }
+                res.addAll(getNamespaceMembers(nestedNs, kinds, strPrefix, match, handledNS, true, returnUnnamedInNestedNs));
             }
         }
+        
         // handle all parent namespaces
         CsmNamespace parentNS = ns.getParent();
         while(parentNS != null && !handledNS.contains(parentNS) && !ns.isGlobal()) {
