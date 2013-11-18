@@ -88,6 +88,7 @@ import org.netbeans.modules.bugtracking.commons.LinkButton;
 import org.netbeans.modules.bugtracking.commons.NBBugzillaUtils;
 import org.netbeans.modules.bugtracking.commons.NoContentPanel;
 import org.netbeans.modules.bugtracking.commons.SaveQueryPanel;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.bugtracking.team.TeamRepositories;
 import org.netbeans.modules.bugtracking.ui.repository.RepositoryComboSupport;
 import org.netbeans.modules.team.spi.TeamAccessorUtils;
@@ -430,7 +431,7 @@ public final class QueryTopComponent extends TopComponent
                 // well, looks like there should be only one repository available
                 return;
             }
-            runInAWT(new Runnable() {
+            UIUtils.runInAWT(new Runnable() {
                 @Override
                 public void run() {
                     if(rs != null) {
@@ -563,7 +564,7 @@ public final class QueryTopComponent extends TopComponent
         if(c instanceof JComponent) {
             Point p = SwingUtilities.convertPoint(c.getParent(), c.getLocation(), repoPanel);
             final Rectangle r = new Rectangle(p, c.getSize());
-            runInAWT(new Runnable() {
+            UIUtils.runInAWT(new Runnable() {
                 @Override
                 public void run() {
                     repoPanel.scrollRectToVisible(r);
@@ -578,7 +579,7 @@ public final class QueryTopComponent extends TopComponent
     }
 
     private void closeInAwt() {
-        runInAWT(new Runnable() {
+        UIUtils.runInAWT(new Runnable() {
             @Override
             public void run() {
                 close();
@@ -658,7 +659,7 @@ public final class QueryTopComponent extends TopComponent
                     registerListeners();
 
                     final QueryController addController = getController(query);
-                    runInAWT(new Runnable() {
+                    UIUtils.runInAWT(new Runnable() {
                         @Override
                         public void run() {
                             addQueryComponent(addController);
@@ -700,7 +701,7 @@ public final class QueryTopComponent extends TopComponent
     }
 
     private void setNameAndTooltip() throws MissingResourceException {
-        runInAWT(new Runnable() {
+        UIUtils.runInAWT(new Runnable() {
             @Override
             public void run() {
                 if(query != null && query.getDisplayName() != null) {
@@ -729,7 +730,7 @@ public final class QueryTopComponent extends TopComponent
     }
 
     private void setSaved() {
-        runInAWT(new Runnable() {
+        UIUtils.runInAWT(new Runnable() {
             @Override
             public void run() {
                 headerPanel.setVisible(false);
@@ -838,14 +839,6 @@ public final class QueryTopComponent extends TopComponent
     private javax.swing.JPanel queryPanel;
     private javax.swing.JLabel title;
     // End of variables declaration//GEN-END:variables
-
-    private static void runInAWT(Runnable r) {
-        if(SwingUtilities.isEventDispatchThread()) {
-            r.run();
-        } else {
-            SwingUtilities.invokeLater(r);
-        }
-    }
 
     private static class QuerySavable extends AbstractSavable {
         private final QueryTopComponent tc;

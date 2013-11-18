@@ -88,6 +88,7 @@ import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.commons.HyperlinkSupport;
 import org.netbeans.modules.bugtracking.commons.HyperlinkSupport.IssueRefProvider;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.util.*;
@@ -559,7 +560,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
             if(tcRepo.getId().equals(repo.getId()) && 
                tcRepo.getConnectorId().equals(repo.getConnectorId()) ) 
             {
-                itc.close();
+                itc.closeInAwt();
             }
         }
     }
@@ -676,7 +677,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     }
     
     private void closeInAwt() {
-        runInAWT(new Runnable() {
+        UIUtils.runInAWT(new Runnable() {
             @Override
             public void run() {
                 close();
@@ -684,14 +685,6 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         });
     }
         
-    private static void runInAWT(Runnable r) {
-        if(SwingUtilities.isEventDispatchThread()) {
-            r.run();
-        } else {
-            SwingUtilities.invokeLater(r);
-        }
-    }
-
     private IssueSavable getSavable() {
         return getLookup().lookup(IssueSavable.class);
     }

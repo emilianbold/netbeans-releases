@@ -84,6 +84,7 @@ import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
 import org.netbeans.modules.bugtracking.commons.SaveQueryPanel.QueryNameValidator;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
@@ -1041,7 +1042,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
 
     @Override
     public void stateChanged(ChangeEvent e) {
-        BugzillaUtil.runInAWT(new Runnable() {
+        UIUtils.runInAWT(new Runnable() {
             @Override
             public void run() {
                 if (!ignoreChanges && isChanged()) {

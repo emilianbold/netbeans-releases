@@ -83,6 +83,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.commons.SaveQueryPanel.QueryNameValidator;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
@@ -395,7 +396,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
                 }
             }
         };
-        ODCSUtil.runInAwt(r);
+        UIUtils.runInAWT(r);
     }
 
     protected void selectFirstProduct() {
@@ -639,7 +640,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
                     setIssueCount(issueCount);
                 }
             };
-            ODCSUtil.runInAwt(r);
+            UIUtils.runInAWT(r);
         }
         issueTable.setFilter(filter);
     }
