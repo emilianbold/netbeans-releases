@@ -298,8 +298,10 @@ public class SimpleTestCaseWizardIterator
             }
         }
         WizardDescriptor.Panel<WizardDescriptor> chooserPanel = getClassChooserPanel();
-        if(chooserPanel instanceof  SimpleTestStepLocation) {
-            ((SimpleTestStepLocation) chooserPanel).selectLocation(targetFolder.getPrimaryFile());
+        if(chooserPanel instanceof SimpleTestStepLocation) {
+            if(targetFolder != null) {// No test folders yet. IOExceptions already loggged.
+                ((SimpleTestStepLocation) chooserPanel).selectLocation(targetFolder.getPrimaryFile());
+            }
         }
     }
 
