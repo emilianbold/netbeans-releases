@@ -51,7 +51,8 @@ import org.openide.util.NbPreferences;
  */
 public final class WarningPanelSupport {
 
-    private static final String JAVA_EE_VERSION_CHANGE = "showJavaEEVersionChangeWarning"; //NOI18N
+    private static final String JAVA_EE_VERSION_CHANGE = "showJavaEEVersionChangeWarning"; // NOI18N
+    private static final String AUTOMATIC_BUILD = "automaticBuildWarning";                 // NOI18N
 
     private WarningPanelSupport() {
     }
@@ -66,5 +67,13 @@ public final class WarningPanelSupport {
 
     public static void dontShowJavaEEChangeWarning() {
         getPreferences().putBoolean(JAVA_EE_VERSION_CHANGE, false);
+    }
+
+    public static boolean isAutomaticBuildWarningActivated() {
+        return getPreferences().getBoolean(AUTOMATIC_BUILD, true);
+    }
+
+    public static void dontShowAutomaticBuildWarning() {
+        getPreferences().putBoolean(AUTOMATIC_BUILD, false);
     }
 }

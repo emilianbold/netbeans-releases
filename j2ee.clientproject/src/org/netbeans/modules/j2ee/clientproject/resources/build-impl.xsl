@@ -2368,7 +2368,7 @@ exists or setup the property manually. For example like this:
             <target name="-do-test-run">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-test,-pre-test-run</xsl:attribute>
-                <carproject:test testincludes="**/*Test.java"/>
+                <carproject:test testincludes="**/*Test.java" includes="${{includes}}"/>
             </target>
             
             <target name="-post-test-run">

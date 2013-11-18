@@ -57,31 +57,36 @@ import org.openide.util.HelpCtx;
  * </p>
  * 
  * @author Tomas Stupka
+ * @since 1.85
  */
 public interface RepositoryController {
 
     /**
-     * Returns a visual component representing the repository this controller is meant for
+     * Returns a visual component representing the repository this controller is meant for.
      * 
      * @return a visual component representing a repository
+     * @since 1.85
      */
     public JComponent getComponent();
 
     /**
-     * Returns the help context associated with this controllers visual component
-     * @return
+     * Returns the help context associated with this controllers visual component.
+     * @return a help context
+     * @since 1.85
      */
     public HelpCtx getHelpCtx();
 
     /**
-     * Return true if data in this controllers visual component are valid
-     * @return
+     * Determines whether the data in this controllers visual component are valid or not.
+     * @return <code>true</code> in case the the data are valid, otherwise <code>false</code>
+     * @since 1.85
      */
     public boolean isValid();
 
     /**
      * Called when the Repository UI is about to be opened. 
      * Populate the controllers component.
+     * @since 1.85
      */
     public void populate();
     
@@ -90,6 +95,7 @@ public interface RepositoryController {
      * shown in Repository dialog.
      * 
      * @return error message
+     * @since 1.85
      */
     public String getErrorMessage();
     
@@ -100,6 +106,7 @@ public interface RepositoryController {
     
     /**
      * Is called when the "Cancel" button was pressed.
+     * @since 1.85
      */
     public void cancelChanges(); 
 
@@ -107,6 +114,7 @@ public interface RepositoryController {
      * Registers a ChangeListener.
      * 
      * @param l a ChangeListener
+     * @since 1.85
      */
     public void addChangeListener(ChangeListener l);
 
@@ -114,8 +122,8 @@ public interface RepositoryController {
      * Unregisters a ChangeListener.
      * 
      * @param l a ChangeListener
+     * @since 1.85
      */
     public void removeChangeListener(ChangeListener l);
     
-
 }

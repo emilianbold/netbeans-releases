@@ -56,9 +56,8 @@ import org.openide.util.Lookup;
 /**
  * @author Tomas Mysik
  */
-@OptionsPanelController.SubRegistration(
-    location=UiUtils.OPTIONS_PATH,
-    id=SymfonyScript.OPTIONS_SUB_PATH,
+@UiUtils.PhpOptionsPanelRegistration(
+    id=SymfonyScript.OPTIONS_ID,
     displayName="#LBL_PHPSymfonyOptionsName",
 //    toolTip="#LBL_OptionsTooltip"
     position=200

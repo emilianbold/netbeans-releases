@@ -844,7 +844,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
             } else if(e.getSource() == getToolbar().refreshButton) {
                 masterView.refresh();
             } else if(e.getSource() == getToolbar().settingsButton) {
-                OptionsDisplayer.getDefault().open(OptionsDisplayer.ADVANCED + "/Versioning/" + HistoryOptions.OPTIONS_SUBPATH); // NOI18N
+                OptionsDisplayer.getDefault().open("Team/Versioning/" + HistoryOptions.OPTIONS_SUBPATH); // NOI18N
             }
         }
         
@@ -1038,7 +1038,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
             HistoryEntry e = getEntry(value);
             if(e != null) {
                 String msg = e.getMessage();
-                return msg.toLowerCase().contains(byMsg.toLowerCase());
+                return msg != null && msg.toLowerCase().contains(byMsg.toLowerCase());
             }
             return true;
         }

@@ -134,16 +134,15 @@ class SiteDocsNode extends FilterNode {
     @Messages({"BTN_Generate_Site=Generate Site", "BTN_Deploy_Site=Deploy Site"})
     public javax.swing.Action[] getActions(boolean param) {
         if (isTopLevelNode) {
-            ActionProviderImpl impl = project.getLookup().lookup(ActionProviderImpl.class);
             Action[] toReturn = new Action[4];
             toReturn[0] = CommonProjectActions.newFileAction();
             toReturn[1] = null;
             NetbeansActionMapping mapp = new NetbeansActionMapping();
             mapp.addGoal("site"); //NOI18N
-            toReturn[2] = impl.createCustomMavenAction(BTN_Generate_Site(), mapp, true, Lookup.EMPTY);
+            toReturn[2] = ActionProviderImpl.createCustomMavenAction(BTN_Generate_Site(), mapp, true, Lookup.EMPTY, project);
             mapp = new NetbeansActionMapping();
             mapp.addGoal("site:deploy"); //NOI18N
-            toReturn[3] = impl.createCustomMavenAction(BTN_Deploy_Site(), mapp, false, Lookup.EMPTY);
+            toReturn[3] = ActionProviderImpl.createCustomMavenAction(BTN_Deploy_Site(), mapp, false, Lookup.EMPTY, project);
             return toReturn;
         } else {
             return super.getActions(param);

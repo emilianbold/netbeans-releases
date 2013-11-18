@@ -62,4 +62,9 @@ public final class EnableCNDTest extends EnablementSpeedBase {
     protected String featureName() {
         return "cnd";
     }
+
+    @Override
+    protected long threshold() {
+        return 12000;
+    }
 }

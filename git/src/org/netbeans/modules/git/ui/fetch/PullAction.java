@@ -68,6 +68,8 @@ import org.netbeans.libs.git.GitTransportUpdate;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.ui.actions.ActionProgress;
+import org.netbeans.modules.git.ui.actions.ActionProgress.DefaultActionProgress;
 import org.netbeans.modules.git.ui.actions.GitAction;
 import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
 import org.netbeans.modules.git.ui.merge.MergeRevisionAction;
@@ -82,7 +84,6 @@ import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor.Task;
 
 /**
  *
@@ -150,9 +151,10 @@ public class PullAction extends SingleRepositoryAction {
         "MSG_PullAction.merging=Merging remote changes",
         "MSG_PullAction.rebasing=Rebasing onto fetched head"
     })
-    public Task pull (File repository, final String target, final List<String> fetchRefSpecs, final String branchToMerge, final String remoteNameToUpdate) {
+    public ActionProgress pull (File repository, final String target, final List<String> fetchRefSpecs, final String branchToMerge, final String remoteNameToUpdate) {
         GitProgressSupport supp = new GitProgressSupportImpl(fetchRefSpecs, branchToMerge, target, remoteNameToUpdate);
-        return supp.start(Git.getInstance().getRequestProcessor(repository), repository, Bundle.LBL_PullAction_progressName(repository.getName()));
+        supp.start(Git.getInstance().getRequestProcessor(repository), repository, Bundle.LBL_PullAction_progressName(repository.getName()));
+        return new DefaultActionProgress(supp);
     }
 
     private class GitProgressSupportImpl extends GitProgressSupport {
@@ -206,19 +208,31 @@ public class PullAction extends SingleRepositoryAction {
                             getLogger().outputLine(Bundle.MSG_PullAction_branchDeleted(branch));
                         }
                         setProgress(Bundle.MSG_PullAction_fetching());
-                        Map<String, GitTransportUpdate> fetchResult = client.fetch(target, fetchRefSpecs, getProgressMonitor());
+                        Map<String, GitTransportUpdate> fetchResult = FetchAction.fetchRepeatedly(
+                                client, getProgressMonitor(), target, fetchRefSpecs);
+                        if (isCanceled()) {
+                            return null;
+                        }
                         FetchUtils.log(repository, fetchResult, getLogger());
                         if (isCanceled() || branchToMerge == null) {
                             return null;
                         }
-                        Callable<Void> nextAction = getNextAction();
-                        if (nextAction != null) {
-                            nextAction.call();
+                        Callable<ActionProgress> nextAction = getNextAction();
+                        if (nextAction == null) {
+                            cancel();
+                        } else {
+                            ActionProgress p = nextAction.call();
+                            if (p.isCanceled()) {
+                                cancel();
+                            } else if (p.isError()) {
+                                setError(true);
+                            }
                         }
                         return null;
                     }
                 }, repository);
             } catch (GitException ex) {
+                setError(true);
                 GitClientExceptionHandler.notifyException(ex, true);
             } finally {
                 setDisplayName(NbBundle.getMessage(GitAction.class, "LBL_Progress.RefreshingStatuses")); //NOI18N
@@ -227,8 +241,8 @@ public class PullAction extends SingleRepositoryAction {
             }
         }
         
-        private Callable<Void> getNextAction () {
-            Callable<Void> nextAction = null;
+        private Callable<ActionProgress> getNextAction () {
+            Callable<ActionProgress> nextAction = null;
             try {
                 GitClient client = getClient();
                 String currentHeadId = null;
@@ -270,7 +284,7 @@ public class PullAction extends SingleRepositoryAction {
             "CTL_PullAction_rebaseButton_text=&Rebase",
             "CTL_PullAction_rebaseButton_TTtext=Rebase current branch on top of the fetched branch"
         })
-        private Callable<Void> askForNextAction () {
+        private Callable<ActionProgress> askForNextAction () {
             JButton btnMerge = new JButton();
             Mnemonics.setLocalizedText(btnMerge, Bundle.CTL_PullAction_mergeButton_text());
             btnMerge.setToolTipText(Bundle.CTL_PullAction_mergeButton_TTtext());
@@ -292,10 +306,10 @@ public class PullAction extends SingleRepositoryAction {
             return null;
         }
         
-        private class Merge implements Callable<Void> {
+        private class Merge implements Callable<ActionProgress> {
 
             @Override
-            public Void call () throws GitException {
+            public ActionProgress call () throws GitException {
                 boolean cont;
                 GitClient client = getClient();
                 File repository = getRepositoryRoot();
@@ -305,7 +319,11 @@ public class PullAction extends SingleRepositoryAction {
                     cont = false;
                     try {
                         GitMergeResult result = client.merge(branchToMerge, getProgressMonitor());
-                        mrp.processResult(result);
+                        if (result.getMergeStatus() == GitMergeResult.MergeStatus.ALREADY_UP_TO_DATE
+                                || result.getMergeStatus() == GitMergeResult.MergeStatus.FAST_FORWARD
+                                || result.getMergeStatus() == GitMergeResult.MergeStatus.MERGED) {
+                            return new ActionProgress.ActionResult(false, false);
+                        }
                     } catch (GitException.CheckoutConflictException ex) {
                         if (LOG.isLoggable(Level.FINE)) {
                             LOG.log(Level.FINE, "Local modifications in WT during merge: {0} - {1}", new Object[] { repository, Arrays.asList(ex.getConflicts()) }); //NOI18N
@@ -313,15 +331,15 @@ public class PullAction extends SingleRepositoryAction {
                         cont = mrp.resolveLocalChanges(ex.getConflicts());
                     }
                 } while (cont && !isCanceled());
-                return null;
+                return new ActionProgress.ActionResult(isCanceled(), true);
             }
 
         }
 
-        private class Rebase implements Callable<Void> {
+        private class Rebase implements Callable<ActionProgress> {
 
             @Override
-            public Void call () throws GitException  {
+            public ActionProgress call () throws GitException  {
                 setProgress(Bundle.MSG_PullAction_rebasing());
                 RebaseOperationType op = RebaseOperationType.BEGIN;
                 GitClient client = getClient();
@@ -333,8 +351,15 @@ public class PullAction extends SingleRepositoryAction {
                     GitRebaseResult result = client.rebase(op, branchToMerge, getProgressMonitor());
                     rrp.processResult(result);
                     op = rrp.getNextAction();
+                    if (op == null && (result.getRebaseStatus() == GitRebaseResult.RebaseStatus.FAST_FORWARD
+                            || result.getRebaseStatus() == GitRebaseResult.RebaseStatus.NOTHING_TO_COMMIT
+                            || result.getRebaseStatus() == GitRebaseResult.RebaseStatus.NOTHING_TO_COMMIT
+                            || result.getRebaseStatus() == GitRebaseResult.RebaseStatus.OK
+                            || result.getRebaseStatus() == GitRebaseResult.RebaseStatus.UP_TO_DATE)) {
+                        return new ActionProgress.ActionResult(false, false);
+                    }
                 }
-                return null;
+                return new ActionProgress.ActionResult(isCanceled(), true);
             }
         }
 

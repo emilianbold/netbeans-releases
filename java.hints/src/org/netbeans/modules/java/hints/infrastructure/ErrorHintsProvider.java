@@ -82,6 +82,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.java.Utilities;
+import org.netbeans.modules.java.hints.errors.OverrideErrorMessage;
 import org.netbeans.modules.java.hints.jdk.ConvertToDiamondBulkHint;
 import org.netbeans.modules.java.hints.jdk.ConvertToLambda;
 import org.netbeans.modules.java.hints.legacy.spi.RulesManager;
@@ -182,10 +183,26 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
             }
             
             LazyFixList ehm;
+            String desc = d.getMessage(null);
 
             if (rules != null) {
                 int pos = (int)getPrefferedPosition(info, d);
-                
+                TreePath path = info.getTreeUtilities().pathFor(pos + 1);
+                Data ruleData  = new Data();
+                for (ErrorRule r : rules) {
+                    if (!(r instanceof OverrideErrorMessage)) {
+                        continue;
+                    }
+                    OverrideErrorMessage rcm = (OverrideErrorMessage)r;
+                    String msg = rcm.createMessage(info, d.getCode(), pos, path, ruleData);
+                    if (msg != null) {
+                        desc = msg;
+                        if (ruleData.getData() != null) {
+                            data.put(rcm.getClass(), ruleData);
+                        }
+                        break;
+                    }
+                }
                 ehm = new CreatorBasedLazyFixList(info.getFileObject(), d.getCode(), pos, rules, data);
             } else {
                 ehm = ErrorDescriptionFactory.lazyListForFixes(Collections.<Fix>emptyList());
@@ -194,7 +211,6 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
             if (ERR.isLoggable(ErrorManager.INFORMATIONAL))
                 ERR.log(ErrorManager.INFORMATIONAL, "ehm=" + ehm);
             
-            final String desc = d.getMessage(null);
             final Position[] range = getLine(info, d, doc, (int)d.getStartPosition(), (int)d.getEndPosition());
 
             if (isCanceled())

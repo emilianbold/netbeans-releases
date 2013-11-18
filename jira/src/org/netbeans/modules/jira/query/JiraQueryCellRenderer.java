@@ -154,7 +154,7 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
     private TableCellStyle getStyle(JTable table, IssueProperty p, boolean isSelected, int row) {
         TableCellStyle style = null;
         if (jiraQuery.isSaved()) {
-            style = QueryTableCellRenderer.getCellStyle(table, getQuery(), issueTable, p, isSelected, row);
+            style = QueryTableCellRenderer.getCellStyle(table, issueTable, p, isSelected, row);
         } else {
             style = QueryTableCellRenderer.getDefaultCellStyle(table, issueTable, p, isSelected, row);
         }

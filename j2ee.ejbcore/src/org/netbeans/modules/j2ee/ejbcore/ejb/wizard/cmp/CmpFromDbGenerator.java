@@ -164,7 +164,7 @@ public class CmpFromDbGenerator {
             FinderMethodGenerator finderGenerator = FinderMethodGenerator.create(ejbClassName, ejbClassFileObject);
             //            if (helper.isGenerateFinderMethods()) { // is it possible to have CMP with finder method in impl class?
             progressNotifier.progress(NbBundle.getMessage(CmpFromDbGenerator.class, "TXT_GeneratingFinderMethods", wizardTargetName));
-            addFinderMethods(finderGenerator, entity, entityClass.getPackageFileObject(), entityClass, helper.isCmpFieldsInInterface());
+            addFinderMethods(finderGenerator, entity, entityClass.getPackageFileObject(), entityClass, helper.isGenerateMappedSuperclasses());
             //            }
             
             addCmpFields(ejbClassName, entityClass);

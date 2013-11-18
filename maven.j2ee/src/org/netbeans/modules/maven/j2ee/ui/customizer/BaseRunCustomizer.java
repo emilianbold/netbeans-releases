@@ -57,8 +57,12 @@ import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
 import org.netbeans.modules.maven.j2ee.utils.Server;
 import static org.netbeans.modules.maven.j2ee.ui.customizer.Bundle.*;
+import org.netbeans.modules.maven.j2ee.ui.util.WarningPanel;
+import org.netbeans.modules.maven.j2ee.ui.util.WarningPanelSupport;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.modules.maven.j2ee.utils.ServerUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle.Messages;
 
@@ -79,15 +83,46 @@ public abstract class BaseRunCustomizer extends JPanel implements ApplyChangesCu
         this.project = project;
     }
 
+    @Messages({
+        "WARNING_ChangingAutomaticBuild=<html>You are trying to turn deploy on save feature off. <b>Please be aware about "
+            + "possible consequences</b>. Your files won't be redeployed immediately after the save which means you "
+            + "will be responsible for redeployment of the application content every time when you want to see actual "
+            + "state of sources on server. <br><br> Because of that it is highly recommended to turn option called \"Always "
+            + "perform build\" on, so you will need only to Run application and NetBeans will take care about automatic rebuild "
+            + "of sources before deployment.</html>."
+    })
     protected void initDeployOnSave(final JCheckBox dosCheckBox, final JLabel dosDescription) {
         boolean isDoS = MavenProjectSupport.isDeployOnSave(project);
-        deployOnSaveUpdater = CheckBoxUpdater.create(dosCheckBox, isDoS, new CheckBoxUpdater.Store() {
+
+        CheckBoxUpdater.Store store = new CheckBoxUpdater.Store() {
 
             @Override
             public void storeValue(boolean value) {
                 MavenProjectSupport.setDeployOnSave(project, value);
             }
-        });
+        };
+
+        CheckBoxUpdater.Verify verifier = new CheckBoxUpdater.Verify() {
+
+            @Override
+            public boolean verifyValue(boolean value) {
+                if (!value && WarningPanelSupport.isAutomaticBuildWarningActivated()) {
+                    WarningPanel panel = new WarningPanel(WARNING_ChangingAutomaticBuild());
+                    NotifyDescriptor dd = new NotifyDescriptor.Confirmation(panel, NotifyDescriptor.OK_CANCEL_OPTION);
+                    DialogDisplayer.getDefault().notify(dd);
+
+                    if (dd.getValue() == NotifyDescriptor.CANCEL_OPTION) {
+                        return false;
+                    }
+                    if (panel.disabledWarning()) {
+                        WarningPanelSupport.dontShowAutomaticBuildWarning();
+                    }
+                }
+                return true;
+            }
+        };
+
+        deployOnSaveUpdater = CheckBoxUpdater.create(dosCheckBox, isDoS, store, verifier);
 
         addAncestorListener(new AncestorListener() {
 

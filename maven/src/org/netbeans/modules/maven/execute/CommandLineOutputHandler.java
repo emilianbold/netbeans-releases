@@ -94,7 +94,7 @@ import org.openide.windows.OutputWriter;
 public class CommandLineOutputHandler extends AbstractOutputHandler {
 
     //32 means 16 paralel builds, one for input, one for output. #229904
-    private static final RequestProcessor PROCESSOR = new RequestProcessor("Maven ComandLine Output Redirection", 32); //NOI18N
+    private static final RequestProcessor PROCESSOR = new RequestProcessor("Maven ComandLine Output Redirection", Integer.getInteger("maven.concurrent.builds", 16) * 2); //NOI18N
     private static final Logger LOG = Logger.getLogger(CommandLineOutputHandler.class.getName());
     private InputOutput inputOutput;
     private static final Pattern linePattern = Pattern.compile("\\[(DEBUG|INFO|WARNING|ERROR|FATAL)\\] (.*)"); // NOI18N
@@ -346,6 +346,9 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
                             firstFailure = match.group(1);
                         }
                     }
+                    //these two are a bit shaky and depend on output details that might not be available in the future.
+                    //however there's no other way to have the proper line marked as beginning of a section (as the event comes first)
+                    //without this, the last line of previous output would be marked as beginning of the fold.
                     if (addMojoFold && line.startsWith("[INFO] ---")) {     //NOI18N
                         currentTreeNode.startFold(inputOutput);
                         addMojoFold = false;

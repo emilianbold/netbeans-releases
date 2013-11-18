@@ -48,9 +48,12 @@ import java.util.Date;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.JTextComponent;
 
 /**
- *
+ * Provides access to various IDE services so that the expected consumers (bugtracking and team modules) 
+ * are able to independently access different IDE infrastructures (like e.g. NetBeans or JDev). 
+ * 
  * @author Tomas Stupka
  */
 public interface IDEServices {
@@ -108,7 +111,16 @@ public interface IDEServices {
      * @return plugin or null if not available
      */
     public Plugin getPluginUpdates(String cnb, String pluginName);
-
+    
+    /**
+     * Determines whether the plugin with the given code name base is already 
+     * installed or not.
+     * 
+     * @param cnb - the code name base
+     * @return <code>true<code> in case the plugin is already installed, otherwise <code>false</code>
+     */
+    public boolean isPluginInstalled(String cnb);
+    
     /**
      * Determines whether patch relevant functionality is available.
      * 
@@ -200,16 +212,6 @@ public interface IDEServices {
      */
     public DatePickerComponent createDatePicker ();
 
-     /**
-     * Creates a date picker menu that can be used in task editor UI.
-     * May return null.
-     *
-     * @param previousSchedule specify value if the relevant item is already scheduled
-     * @return <code>DatePickerMenu</code> implementation of a date picker menu, or
-     *         <code>null</code> if no specific implementation is available
-     */
-    public DatePickerDialog createDatePickerDialog (Date previousSchedule);
-
     /**
      * Provides access to a downloadable plugin - e.g. from the NetBeans UC
      */
@@ -274,20 +276,34 @@ public interface IDEServices {
          */
         public void removeChangeListener (ChangeListener listener);
         
-    }
-
-    public interface DatePickerDialog {
-
         /**
-         * Returns the component that can be added into a component hierarchy
-         * @return UI component
+         * Specifies if it is allowed to call {@link #openDaySelector()} and the
+         * implementation allows selecting a date from a tool able traversing
+         * months and selecting dates from a table. Some implementations may not
+         * allow that (such as dummy implementations built on top of a
+         * {@link JTextComponent}s.
+         *
+         * @return <code>true</code> if the implementation allows selecting date
+         * from a popup, <code>false</code> otherwise.
          */
-        public JComponent getComponent ();
-
+        public boolean allowsOpeningDaySelector ();
+        
         /**
-         * Returns date selected by this component
-         * @return selected date
+         * Opens a dialog, window or popup and lets user select a date in a
+         * smarter way than enter the date manually by keyboard. The date may be
+         * preselected with a preceding call to
+         * {@link #setDate(java.util.Date)}. Call {@link #getDate()} to get the
+         * date user selected.
+         *
+         *
+         * An implementation could open a month view and let user traverse
+         * months and select a day from a table.
+         *
+         * @return <code>true</code> if user selected the date or
+         * <code>false</code> if the process was interrupted (user may have
+         * canceled it).
          */
-        public Date getDate ();
+        public boolean openDaySelector ();
+        
     }
 }

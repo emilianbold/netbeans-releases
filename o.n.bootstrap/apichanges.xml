@@ -53,6 +53,22 @@ made subject to such option by the copyright holder.
   </apidefs>
 
   <changes>
+     <change id="patch.classes">
+        <api name="launcher"/>
+        <summary>Ability to patch classes</summary>
+        <version major="2" minor="66"/>
+        <date day="14" month="11" year="2013"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" semantic="compatible" />
+        <description>
+        <p>
+            Define your <a href="@TOP@architecture-summary.html#usecase-patch">
+                Agent-Class
+            </a> to participate in patching other classes.
+        </p>
+        </description>
+        <issue number="237919"/>
+    </change>
      <change id="disable.cli.server">
         <api name="launcher"/>
         <summary>Property to disable CLI server</summary>

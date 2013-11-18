@@ -191,5 +191,15 @@ public class JavaCommonSettingsProvider extends CommonSettingsProvider {
     public void setGenerateClassTearDown(boolean newVal) {
         CommonSettings.getDefault().setGenerateClassTearDown(newVal);
     }
+
+    @Override
+    public boolean isGenerateIntegrationTests() {
+        return CommonSettings.getDefault().isGenerateIntegrationTests();
+    }
+
+    @Override
+    public void setGenerateIntegrationTests(boolean newVal) {
+        CommonSettings.getDefault().setGenerateIntegrationTests(newVal);
+    }
     
 }

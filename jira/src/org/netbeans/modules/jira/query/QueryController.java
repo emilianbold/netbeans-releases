@@ -98,8 +98,9 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
-import org.netbeans.modules.bugtracking.util.SaveQueryPanel;
-import org.netbeans.modules.bugtracking.util.SaveQueryPanel.QueryNameValidator;
+import org.netbeans.modules.bugtracking.commons.SaveQueryPanel;
+import org.netbeans.modules.bugtracking.commons.SaveQueryPanel.QueryNameValidator;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
@@ -149,6 +150,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
     private final Object REFRESH_LOCK = new Object();
     private final Semaphore querySemaphore = new Semaphore(1);
     private boolean populated = false;
+    private QueryProvider.IssueContainer<NbJiraIssue> delegatingIssueContainer;
     
     public QueryController(JiraRepository repository, JiraQuery query, FilterDefinition fd) {
         this(repository, query, fd, true);
@@ -160,7 +162,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         this.modifiable = modifiable;
         this.jiraFilter = jiraFilter;
 
-        issueTable = new IssueTable(JiraUtils.getRepository(repository), query, query.getColumnDescriptors(), query.isSaved());
+        issueTable = new IssueTable(repository.getID(), query.getDisplayName(), this, query.getColumnDescriptors(), query.isSaved());
         setupRenderer(issueTable);
         panel = new QueryPanel(issueTable.getComponent(), this, isNamedFilter(jiraFilter));
         panel.projectList.addListSelectionListener(this);
@@ -1253,7 +1255,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
     }
 
     @Override
-    public boolean saveChanges() {
+    public boolean saveChanges(String name) {
         return true;
     }
 
@@ -1263,8 +1265,14 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
     }
 
     public void fireSaved() {
-        support.firePropertyChange(PROPERTY_QUERY_SAVED, null, null);
+        support.firePropertyChange(PROP_CHANGED, null, null);
     }
+
+    @Override
+    public boolean isChanged() {
+        return false;
+    }
+    
     
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
     @Override
@@ -1275,6 +1283,10 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
     @Override
     public void removePropertyChangeListener(PropertyChangeListener l) {
         support.removePropertyChangeListener(l);
+    }
+
+    public void setIssueContainer(QueryProvider.IssueContainer<NbJiraIssue> c) {
+        delegatingIssueContainer = c;
     }
 
     private class QueryTask implements Runnable, Cancellable, QueryNotifyListener {
@@ -1303,10 +1315,16 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
                     QueryController.this.renderer.resetDefaultRowHeight();
                 }
             });
+            if(delegatingIssueContainer != null) {
+                delegatingIssueContainer.refreshingStarted();
+            }
         }
 
         private void finnishQuery() {
             task = null;
+            if(delegatingIssueContainer != null) {
+                delegatingIssueContainer.refreshingFinished();
+            }
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
@@ -1407,7 +1425,10 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         }
 
         @Override
-        public void notifyData(final NbJiraIssue issue) {
+        public void notifyDataAdded(final NbJiraIssue issue) {
+            if(delegatingIssueContainer != null) {
+                delegatingIssueContainer.add(issue);
+            }
             issueTable.addNode(issue.getNode());
             setIssueCount(++counter);
             if(counter == 1) {
@@ -1420,6 +1441,13 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
             }
         }
 
+        @Override
+        public void notifyDataRemoved(NbJiraIssue issue) {
+            if(delegatingIssueContainer != null) {
+                delegatingIssueContainer.remove(issue);
+            }
+        }
+        
         @Override
         public void started() {
             issueTable.started();

@@ -158,7 +158,7 @@ public class RunCustomMavenAction extends AbstractAction implements ContextAware
     }
     
     public static void createActionDeclaration(String action, String displayName, String iconPath) throws IOException {
-        action = action.replace("/", ""); //#236336 slash is evil
+        String fsAction = action.replace("/", ""); //#236336 slash is evil
         FileObject root = FileUtil.getConfigRoot();
         FileObject actions = root.getFileObject("Actions");
         if (actions == null) {
@@ -171,44 +171,46 @@ public class RunCustomMavenAction extends AbstractAction implements ContextAware
         }
         assert mavenCategory != null;
         //is that enough?
-        String name = action + ".instance"; //action.replaceAll("[^a-z0-9_]+", "_");
+        String name = fsAction + ".instance"; //action.replaceAll("[^a-z0-9_]+", "_");
         FileObject instance = mavenCategory.getFileObject(name);
         if (instance != null) {
             return; //what to do if we already have the action?
         }
         FileObject template = root.getFileObject("Maven/actionTemplate.instance");
         assert template != null;
-        instance = template.copy(mavenCategory, action, "instance");
+        instance = template.copy(mavenCategory, fsAction, "instance");
         instance.setAttribute(MAVEN_ATTR, action);
         assert iconPath != null;
         instance.setAttribute("imagePath", iconPath);
         FileObject tb = root.getFileObject("Toolbars/Build");
         if (tb != null) {
-            FileObject shadow = tb.createData("maven_" + action + ".shadow");
+            FileObject shadow = tb.createData("maven_" + fsAction + ".shadow");
             shadow.setAttribute("originalFile", "Actions/Maven/" + name);
             shadow.setAttribute("position", 3002);
         }
     }
     
     public static void deleteDeclaration(String action) throws IOException {
+        String fsAction = action.replace("/", ""); //#236336 slash is evil
         FileObject root = FileUtil.getConfigRoot();
-        FileObject fo = root.getFileObject("Toolbars/Build/maven_" + action + ".shadow");
+        FileObject fo = root.getFileObject("Toolbars/Build/maven_" + fsAction + ".shadow");
         if (fo != null) {
             fo.delete();
         }
-        fo = root.getFileObject("Actions/Maven/" + action + ".instance");
+        fo = root.getFileObject("Actions/Maven/" + fsAction + ".instance");
         if (fo != null) {
             fo.delete();
         }
     }
     
     public static boolean actionDeclarationExists(String action) {
+        String fsAction = action.replace("/", ""); //#236336 slash is evil
         FileObject root = FileUtil.getConfigRoot();
         FileObject actions = root.getFileObject("Actions");
         if (actions != null) {
             FileObject mavenCategory = actions.getFileObject("Maven");
             if (mavenCategory != null) {
-                String name = action + ".instance"; //action.replaceAll("[^a-z0-9_]+", "_");
+                String name = fsAction + ".instance"; //action.replaceAll("[^a-z0-9_]+", "_");
                 FileObject instance = mavenCategory.getFileObject(name);
                 if (instance != null && action.equals(instance.getAttribute(MAVEN_ATTR))) {
                     return true;
@@ -220,12 +222,13 @@ public class RunCustomMavenAction extends AbstractAction implements ContextAware
     }
     
     public static String actionDeclarationIconPath(String action) {
+        String fsAction = action.replace("/", ""); //#236336 slash is evil
         FileObject root = FileUtil.getConfigRoot();
         FileObject actions = root.getFileObject("Actions");
         if (actions != null) {
             FileObject mavenCategory = actions.getFileObject("Maven");
             if (mavenCategory != null) {
-                String name = action + ".instance"; //action.replaceAll("[^a-z0-9_]+", "_");
+                String name = fsAction + ".instance"; //action.replaceAll("[^a-z0-9_]+", "_");
                 FileObject instance = mavenCategory.getFileObject(name);
                 if (instance != null && action.equals(instance.getAttribute(MAVEN_ATTR))) {
                     String path = (String) instance.getAttribute("imagePath");

@@ -198,10 +198,12 @@ public class ResetWindowsAction implements ActionListener {
         ArrayList<TopComponent> editors = new ArrayList<TopComponent>(TopComponent.getRegistry().getOpened().size());
         //collect from the main editor mode first
         ModeImpl editorMode = ( ModeImpl ) WindowManagerImpl.getInstance().findMode( "editor" );
-        for( TopComponent tc : editorMode.getOpenedTopComponents() ) {
-            if( tcTracker.isViewTopComponent( tc ) )
-                continue;
-            editors.add( tc );
+        if( null != editorMode ) {
+            for( TopComponent tc : editorMode.getOpenedTopComponents() ) {
+                if( tcTracker.isViewTopComponent( tc ) )
+                    continue;
+                editors.add( tc );
+            }
         }
         for( ModeImpl m : WindowManagerImpl.getInstance().getModes() ) {
             if( "editor".equals( m.getName() ) )

@@ -57,7 +57,6 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
-import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.util.Utils;
@@ -67,7 +66,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
-@OptionsPanelController.Keywords(keywords={"#GeneralOptionsPanel.kw1", "#GeneralOptionsPanel.kw3", "#GeneralOptionsPanel.kw3"}, location=OptionsDisplayer.ADVANCED, tabTitle="#CTL_OptionsPanel.tabName")
+@OptionsPanelController.Keywords(keywords={"#GeneralOptionsPanel.kw1", "#GeneralOptionsPanel.kw3", "#GeneralOptionsPanel.kw3"}, location="Team", tabTitle="#CTL_OptionsPanel.tabName")
 @NbBundle.Messages({
     "CTL_OptionsPanel.tabName=Versioning",
     "GeneralOptionsPanel.kw1=general",

@@ -52,6 +52,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.instrument.IllegalClassFormatException;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.Method;
@@ -280,7 +281,11 @@ public class JarClassLoader extends ProxyClassLoader {
                     LOGGER.log(Level.FINE, null, x);
                 }
             }
-
+            try {
+                data = NbInstrumentation.patchByteCode(this, name, src.getProtectionDomain(), data);
+            } catch (IllegalClassFormatException ex) {
+                LOGGER.log(Level.WARNING, "Problems patching" + name, ex);
+            }
             return defineClass (name, data, 0, data.length, src.getProtectionDomain());
         } 
         return null;

@@ -62,8 +62,8 @@ public class UnsubmittedCategoryNode extends CategoryNode implements Submitable 
     private final PropertyChangeListener unsubmittedListener;
     private static final ImageIcon UNSUBMITTED_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/category_unsubmitted.png", true);
 
-    public UnsubmittedCategoryNode(Category category, RepositoryImpl repository, boolean refresh) {
-        super(category, refresh);
+    public UnsubmittedCategoryNode(Category category, RepositoryImpl repository) {
+        super(category, false);
         this.repository = repository;
         this.unsubmittedListener = new UnsubmittedCategoryListener();
         repository.addPropertyChangeListener(WeakListeners.propertyChange(unsubmittedListener, repository));

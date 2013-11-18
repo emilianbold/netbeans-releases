@@ -57,31 +57,29 @@ import org.openide.util.HelpCtx;
  * 
  * <p>
  * When viewing, creating or editing a new Issue, the UI is presented in an 
- * TopComponent in the editor area. Fire <code>PROPERTY_ISSUE_CHANGED</code> and 
- * <code>PROPERTY_ISSUE_SAVED</code> to notify the Issue TopComponent about the 
- * UI state, so that it's state can be accordingly rendered and the IDE-s general SaveAction enabled. 
- * On save or TopComponent close are then the <code>saveChanges()</code> and <code>discardUnsavedChanges()</code> 
+ * TopComponent in the editor area. Fire <code>PROP_CHANGED</code> to notify the Issue 
+ * TopComponent that the UI state changed, {@link #isChanged()} will be called 
+ * accordingly to determine if the IDE-s general SaveAction should be enabled. 
+ * On save or TopComponent close are then the <code>saveChanges()</code> 
+ * and <code>discardUnsavedChanges()</code> 
  * methods called accordingly.
  * </p>
  * 
  * @author Tomas Stupka
+ * @since 1.85
  */
 public interface IssueController {
 
     /**
      * Fired when the data presented in the Issue UI were changed by the user.
      */
-    public static String PROPERTY_ISSUE_CHANGED = "bugtracking.issue.changed";
-    
-    /**
-     *  Fired when the data presented in the Issue UI aren't changed anymore - e.g. by saving or submit.
-     */
-    public static String PROPERTY_ISSUE_SAVED = "bugtracking.issue.saved";
+    public static String PROP_CHANGED = "bugtracking.changed";
     
     /**
      * Returns a visual Issue component.
      * 
      * @return a visual component representing an Issue
+     * @since 1.85
      */
     public JComponent getComponent();
 
@@ -89,16 +87,21 @@ public interface IssueController {
      * Returns the help context associated with this controllers visual component.
      * 
      * @return a HelpCtx
+     * @since 1.85
      */
     public HelpCtx getHelpCtx();
 
     /**
      * Called when the component returned by this controller was opened.
+     * 
+     * @since 1.85
      */
     public void opened();
 
     /**
      * Called when the component returned by this controller was closed.
+     * 
+     * @since 1.85
      */
     public void closed();
 
@@ -107,6 +110,8 @@ public interface IssueController {
      * Save was chosen on close of an Issue TopComponent.
      * 
      * @return <code>true</code> in case the save worked, otherwise <code>false</code>
+     * 
+     * @since 1.85
      */
     public boolean saveChanges();
 
@@ -114,13 +119,22 @@ public interface IssueController {
      * This method is called when Discard was chosen on close of an Issue TopComponent.
      * 
      * @return <code>true</code> in case the discard worked, otherwise <code>false</code>
+     * @since 1.85
      */
     public boolean discardUnsavedChanges();
 
     /**
+     * Determines whether the state of the UI has changed and is supposed to be saved.
+     * 
+     * @return <code>true</code> in case there are changes to be saved, otherwise <code>false</code>
+     */
+    public boolean isChanged();
+    
+    /**
      * Registers a PropertyChangeListener.
      * 
      * @param l a PropertyChangeListener
+     * @since 1.85
      */
     public void addPropertyChangeListener(PropertyChangeListener l);
 
@@ -128,6 +142,7 @@ public interface IssueController {
      * Unregisters a PropertyChangeListener.
      * 
      * @param l a PropertyChangeListener
+     * @since 1.85
      */
     public void removePropertyChangeListener(PropertyChangeListener l);    
 }

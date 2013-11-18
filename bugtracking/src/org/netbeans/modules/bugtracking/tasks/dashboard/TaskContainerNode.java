@@ -75,8 +75,8 @@ import org.openide.util.RequestProcessor;
  */
 public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>> implements Refreshable{
 
-    private List<TaskNode> taskNodes = Collections.emptyList();
-    private List<TaskNode> filteredTaskNodes = Collections.emptyList();
+    private List<TaskNode> taskNodes = new ArrayList<TaskNode>();
+    private List<TaskNode> filteredTaskNodes = new ArrayList<TaskNode>();
     private TaskListener taskListener;
     private boolean refresh;
     private final Object LOCK = new Object();

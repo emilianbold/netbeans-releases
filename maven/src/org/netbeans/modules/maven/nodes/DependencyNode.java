@@ -670,7 +670,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
 //    }
 
     //extract the model out of the node class
-    static class Data {
+    public static class Data {
 
         private Artifact art;
         private Project project;

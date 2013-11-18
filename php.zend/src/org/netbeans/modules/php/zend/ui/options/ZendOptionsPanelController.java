@@ -56,9 +56,8 @@ import org.openide.util.Lookup;
 /**
  * @author Tomas Mysik
  */
-@OptionsPanelController.SubRegistration(
-    location=UiUtils.OPTIONS_PATH,
-    id=ZendScript.OPTIONS_SUB_PATH,
+@UiUtils.PhpOptionsPanelRegistration(
+    id=ZendScript.OPTIONS_ID,
     displayName="#LBL_PHPZendOptionsName",
 //    toolTip="#LBL_OptionsTooltip"
     position=300

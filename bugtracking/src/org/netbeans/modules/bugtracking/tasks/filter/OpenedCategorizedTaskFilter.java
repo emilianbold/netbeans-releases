@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.bugtracking.tasks.filter;
 
+import org.netbeans.modules.bugtracking.tasks.dashboard.CategoryNode;
 import org.netbeans.modules.bugtracking.tasks.dashboard.TaskNode;
 
 /**
@@ -51,7 +52,7 @@ public class OpenedCategorizedTaskFilter implements DashboardFilter<TaskNode> {
 
     @Override
     public boolean isInFilter(TaskNode task) {
-        return !task.getTask().isFinished() || !task.isCategorized();
+        return !task.getTask().isFinished() || !(task.getParent() instanceof CategoryNode);
     }
 
     @Override

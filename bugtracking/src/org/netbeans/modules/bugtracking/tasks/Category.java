@@ -104,6 +104,14 @@ public class Category {
         return true;
     }
 
+   /**
+     * Return int value user for sorting category nodes. Default value is 100. Sorting is ascending.
+     *
+     */
+    public int sortIndex() {
+        return 100;
+    }
+
     @Override
     public String toString() {
         return name;

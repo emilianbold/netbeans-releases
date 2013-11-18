@@ -49,6 +49,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.security.ProtectionDomain;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -784,5 +785,9 @@ implements Cloneable, Stamps.Updater {
             }
         }
         return pkgs;
+    }
+
+    public final byte[] patchBC(ClassLoader l, String className, ProtectionDomain pd, byte[] arr) {
+        return patchByteCode(l, className, pd, arr);
     }
 }

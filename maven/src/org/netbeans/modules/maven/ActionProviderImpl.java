@@ -335,7 +335,7 @@ public class ActionProviderImpl implements ActionProvider {
         "# {0} - artifactId", "TXT_Test=Test ({0})",
         "# {0} - artifactId", "TXT_Build=Build ({0})"
     })
-    private void setupTaskName(String action, RunConfig config, Lookup lkp) {
+    private static void setupTaskName(String action, RunConfig config, Lookup lkp) {
         assert config instanceof BeanRunConfig;
         BeanRunConfig bc = (BeanRunConfig) config;
         String title;
@@ -344,7 +344,7 @@ public class ActionProviderImpl implements ActionProvider {
         //#118926 prevent NPE, how come the dobj is null?
         String dobjName = dobj != null ? dobj.getName() : ""; //NOI18N
         String prjLabel = MavenSettings.OutputTabName.PROJECT_NAME.equals(MavenSettings.getDefault().getOutputTabName()) 
-                ? ProjectUtils.getInformation(proj).getDisplayName()
+                ? ProjectUtils.getInformation(bc.getProject()).getDisplayName()
                 : prj.getMavenProject().getArtifactId();
         if (MavenSettings.getDefault().isOutputTabShowConfig()) {
             prjLabel = prjLabel + ", " + bc.getProject().getLookup().lookup(M2ConfigProvider.class).getActiveConfiguration().getDisplayName();
@@ -398,21 +398,23 @@ public class ActionProviderImpl implements ActionProvider {
         return ActionToGoalUtils.isActionEnable(convertedAction, proj.getLookup().lookup(NbMavenProjectImpl.class), lookup);
     }
 
-    public Action createCustomMavenAction(String name, NetbeansActionMapping mapping, boolean showUI, Lookup context) {
-        return new CustomAction(name, mapping, showUI, context);
+    public static Action createCustomMavenAction(String name, NetbeansActionMapping mapping, boolean showUI, Lookup context, Project project) {
+        return new CustomAction(name, mapping, showUI, context, project);
     }
 
-    private final class CustomAction extends AbstractAction {
+    private final static class CustomAction extends AbstractAction {
 
         private final NetbeansActionMapping mapping;
         private final boolean showUI;
         private final Lookup context;
+        private final Project proj;
 
-        private CustomAction(String name, NetbeansActionMapping mapp, boolean showUI, Lookup context) {
+        private CustomAction(String name, NetbeansActionMapping mapp, boolean showUI, Lookup context, Project project) {
             mapping = mapp;
             putValue(Action.NAME, name);
             this.showUI = showUI;
             this.context = context;
+            this.proj = project;
         }
 
         @Messages("TIT_Run_Maven=Run Maven")
@@ -608,19 +610,21 @@ public class ActionProviderImpl implements ActionProvider {
                     } else {
                       maps = ActionToGoalUtils.getActiveCustomMappings(proj.getLookup().lookup(NbMavenProjectImpl.class));
                     }
+                    final List<Action> acts = new ArrayList<Action>();
                     for (NetbeansActionMapping mapp : maps) {
-                        Action act = createCustomMavenAction(mapp.getActionName(), mapp, false, lookup);
-                        JMenuItem item = new JMenuItem(act);
-                        item.setText(mapp.getDisplayName() == null ? mapp.getActionName() : mapp.getDisplayName());
-                        menu.add(item);
+                        Action act = createCustomMavenAction(mapp.getActionName(), mapp, false, lookup, proj);
+                        act.putValue(NAME, mapp.getDisplayName() == null ? mapp.getActionName() : mapp.getDisplayName());
+                        acts.add(act);
                     }
-                    menu.add(new JMenuItem(createCustomMavenAction(LBL_Custom_run_goals(), new NetbeansActionMapping(), true, lookup)));
+                    acts.add(createCustomMavenAction(LBL_Custom_run_goals(), new NetbeansActionMapping(), true, lookup, proj));
                     SwingUtilities.invokeLater(new Runnable() {
-
                         @Override
                         public void run() {
                             boolean selected = menu.isSelected();
                             menu.remove(loading);
+                            for (Action a : acts) {
+                                menu.add(new JMenuItem(a));
+                            }
                             menu.getPopupMenu().pack();
                             menu.repaint();
                             menu.updateUI();

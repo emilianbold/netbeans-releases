@@ -1677,7 +1677,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     /** Handles the actual reload of document.
     * @param doReload false if we should first ask the user
     */
-    private void checkReload(boolean doReload) {
+    private void checkReload(JEditorPane[] openedPanes, boolean doReload) {
         StyledDocument d;
 
         synchronized (getLock()) {
@@ -1705,7 +1705,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             }
         }
         
-        openClose.reload();
+        openClose.reload(openedPanes);
 
         // Call just for compatibility but this has no effect since the code will not wait
         // for the returned task anyway
@@ -2232,6 +2232,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                     SwingUtilities.invokeLater(
                         new Runnable() {
                             private boolean inRunAtomic;
+                            
+                            private JEditorPane[] openedPanes;
 
                             public void run() {
                                 if (!inRunAtomic) {
@@ -2241,6 +2243,13 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                     if (sd == null) {
                                         return;
                                     }
+                                    
+                                    // Grab opened panes outside of write-lock
+                                    // since getOpenedPanes() may wait for pane initialization
+                                    // to be finished but various stages of a possible pane init require read lock
+                                    // which would not be acquired without EDT first releasing its write-lock
+                                    // so it would wait forewer in getOpenedPanes().
+                                    openedPanes = getOpenedPanes();
 
                                     // #57104 - avoid notifyModified() which takes file lock
                                     preventModification = true;
@@ -2255,7 +2264,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
                                 boolean noAsk = time == null || !isModified();
                                 ERR.fine(documentID() + ": checkReload noAsk: " + noAsk);
-                                checkReload(noAsk);
+                                checkReload(openedPanes, noAsk);
                             }
                         }
                     );

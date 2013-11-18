@@ -46,6 +46,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.Collection;
 import org.eclipse.core.runtime.CoreException;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.localtasks.task.LocalTask;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -58,6 +59,7 @@ public final class LocalQuery {
     
     private static LocalQuery instance;
     private final PropertyChangeSupport support;
+    private QueryProvider.IssueContainer<LocalTask> delegatingIssueContainer;
     
     static LocalQuery getInstance () {
         if (instance == null) {
@@ -90,16 +92,15 @@ public final class LocalQuery {
 
     void refresh () {
         try {
-            if (LocalRepository.getInstance().refreshTasks()) {
-                fireTasksChanged();
+            if(delegatingIssueContainer != null) {
+                delegatingIssueContainer.refreshingStarted();
+                for(LocalTask t : getIssues()) {
+                    delegatingIssueContainer.add(t);
+                }
             }
-        } catch (CoreException ex) {
-            Exceptions.printStackTrace(ex);
+        } finally {
+            fireFinished();
         }
-    }
-
-    void fireTasksChanged () {
-        support.firePropertyChange(QueryProviderImpl.EVENT_QUERY_REFRESHED, null, null);
     }
 
     void addPropertyChangeListener (PropertyChangeListener listener) {
@@ -108,6 +109,30 @@ public final class LocalQuery {
 
     void removePropertyChangeListener (PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
+    }
+
+    void setIssueContainer(QueryProvider.IssueContainer<LocalTask> c) {
+        delegatingIssueContainer = c;
+    }
+
+    void addTask(LocalTask lt) {
+        if(delegatingIssueContainer != null) {
+            delegatingIssueContainer.add(lt);
+        }
+        fireFinished();
+    }
+
+    void removeTask(LocalTask lt) {
+        if(delegatingIssueContainer != null) {
+            delegatingIssueContainer.remove(lt);
+        }
+        fireFinished();
+    }
+    
+    void fireFinished() {
+        if(delegatingIssueContainer != null) {
+            delegatingIssueContainer.refreshingFinished();
+        }        
     }
     
 }

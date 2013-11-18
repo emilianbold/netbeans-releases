@@ -1,14 +1,16 @@
 #Signature file v4.1
-#Version 7.28.1
+#Version 7.32.1
 
 CLSS public abstract interface java.io.Serializable
 
 CLSS public abstract interface !annotation java.lang.Deprecated
  anno 0 java.lang.annotation.Documented()
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[CONSTRUCTOR, FIELD, LOCAL_VARIABLE, METHOD, PACKAGE, PARAMETER, TYPE])
 intf java.lang.annotation.Annotation
 
 CLSS public java.lang.Exception
+cons protected init(java.lang.String,java.lang.Throwable,boolean,boolean)
 cons public init()
 cons public init(java.lang.String)
 cons public init(java.lang.String,java.lang.Throwable)
@@ -31,11 +33,14 @@ meth public int hashCode()
 meth public java.lang.String toString()
 
 CLSS public java.lang.Throwable
+cons protected init(java.lang.String,java.lang.Throwable,boolean,boolean)
 cons public init()
 cons public init(java.lang.String)
 cons public init(java.lang.String,java.lang.Throwable)
 cons public init(java.lang.Throwable)
 intf java.io.Serializable
+meth public final java.lang.Throwable[] getSuppressed()
+meth public final void addSuppressed(java.lang.Throwable)
 meth public java.lang.StackTraceElement[] getStackTrace()
 meth public java.lang.String getLocalizedMessage()
 meth public java.lang.String getMessage()
@@ -48,7 +53,8 @@ meth public void printStackTrace(java.io.PrintStream)
 meth public void printStackTrace(java.io.PrintWriter)
 meth public void setStackTrace(java.lang.StackTraceElement[])
 supr java.lang.Object
-hfds backtrace,cause,detailMessage,serialVersionUID,stackTrace
+hfds CAUSE_CAPTION,EMPTY_THROWABLE_ARRAY,NULL_CAUSE_MESSAGE,SELF_SUPPRESSION_MESSAGE,SUPPRESSED_CAPTION,SUPPRESSED_SENTINEL,UNASSIGNED_STACK,backtrace,cause,detailMessage,serialVersionUID,stackTrace,suppressedExceptions
+hcls PrintStreamOrWriter,SentinelHolder,WrappedPrintStream,WrappedPrintWriter
 
 CLSS public abstract interface java.lang.annotation.Annotation
 meth public abstract boolean equals(java.lang.Object)
@@ -341,6 +347,7 @@ fld public final static java.lang.String PROP_WARNING_MESSAGE = "WizardPanel_war
 innr public abstract interface static AsynchronousInstantiatingIterator
 innr public abstract interface static AsynchronousValidatingPanel
 innr public abstract interface static BackgroundInstantiatingIterator
+innr public abstract interface static ExtendedAsynchronousValidatingPanel
 innr public abstract interface static FinishPanel
 innr public abstract interface static FinishablePanel
 innr public abstract interface static InstantiatingIterator
@@ -408,6 +415,13 @@ CLSS public abstract interface static org.openide.WizardDescriptor$BackgroundIns
  outer org.openide.WizardDescriptor
 intf org.openide.WizardDescriptor$AsynchronousInstantiatingIterator<{org.openide.WizardDescriptor$BackgroundInstantiatingIterator%0}>
 meth public abstract java.util.Set instantiate() throws java.io.IOException
+
+CLSS public abstract interface static org.openide.WizardDescriptor$ExtendedAsynchronousValidatingPanel<%0 extends java.lang.Object>
+ outer org.openide.WizardDescriptor
+intf org.openide.WizardDescriptor$AsynchronousValidatingPanel<{org.openide.WizardDescriptor$ExtendedAsynchronousValidatingPanel%0}>
+meth public abstract void finishValidation()
+meth public abstract void prepareValidation()
+meth public abstract void validate() throws org.openide.WizardValidationException
 
 CLSS public abstract interface static org.openide.WizardDescriptor$FinishPanel<%0 extends java.lang.Object>
  outer org.openide.WizardDescriptor

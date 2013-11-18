@@ -44,7 +44,6 @@
 
 package org.netbeans.lib.lexer.inc;
 
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -54,7 +53,6 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.lib.lexer.LanguageManager;
-import org.netbeans.lib.lexer.LexerApiPackageAccessor;
 import org.netbeans.spi.lexer.*;
 
 /**
@@ -150,12 +148,12 @@ extends MutableTextInput<D> implements DocumentListener {
 
     private void textModified(int offset, int length, CharSequence removedText,
     int insertedLength) {
-        try {
+//        try {
             tokenHierarchyControl().textModified(offset, length, removedText, insertedLength);
-        } catch (RuntimeException e) {
-            // Log the exception and attempt to recover by recreating the token hierarchy
-            LexerApiPackageAccessor.get().tokenHierarchyOperation(tokenHierarchyControl().tokenHierarchy()).recreateAfterError(e);
-        }
+//        } catch (RuntimeException e) {
+//            // Log the exception and attempt to recover by recreating the token hierarchy
+//            LexerApiPackageAccessor.get().tokenHierarchyOperation(tokenHierarchyControl().tokenHierarchy()).recreateAfterError(e);
+//        }
     }
 
 }

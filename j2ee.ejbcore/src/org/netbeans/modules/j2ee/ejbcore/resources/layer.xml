@@ -311,16 +311,6 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
 
-            <file name="RelatedCMP">
-                <attr name="position" intvalue="300"/>
-                <attr name="template" boolvalue="true"/>
-                <attr name="templateCategory" stringvalue="j2ee-14-types"/>
-                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.persistence.wizard.fromdb.RelatedCMPWizard.createForCMP"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.cmp.Bundle"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbcore/resources/CMPDatabase.html"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
-            </file>
-
             <file name="ServiceLocator.java" url="ServiceLocator.template">
                 <attr name="position" intvalue="500"/>
                 <attr name="template" boolvalue="true"/>

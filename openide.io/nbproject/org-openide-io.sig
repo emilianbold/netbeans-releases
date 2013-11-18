@@ -1,7 +1,8 @@
 #Signature file v4.1
-#Version 1.35.1
+#Version 1.42.1
 
 CLSS public abstract interface java.io.Closeable
+intf java.lang.AutoCloseable
 meth public abstract void close() throws java.io.IOException
 
 CLSS public abstract interface java.io.Flushable
@@ -83,6 +84,9 @@ meth public abstract java.lang.Appendable append(char) throws java.io.IOExceptio
 meth public abstract java.lang.Appendable append(java.lang.CharSequence) throws java.io.IOException
 meth public abstract java.lang.Appendable append(java.lang.CharSequence,int,int) throws java.io.IOException
 
+CLSS public abstract interface java.lang.AutoCloseable
+meth public abstract void close() throws java.lang.Exception
+
 CLSS public abstract interface java.lang.Comparable<%0 extends java.lang.Object>
 meth public abstract int compareTo({java.lang.Comparable%0})
 
@@ -128,6 +132,21 @@ meth public java.lang.String toString()
 supr java.lang.Object
 hfds serialVersionUID
 
+CLSS public final org.openide.windows.FoldHandle
+meth public boolean isFinished()
+meth public org.openide.windows.FoldHandle getCurrentNestedFold()
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+meth public org.openide.windows.FoldHandle getLastNestedFold()
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+meth public org.openide.windows.FoldHandle silentStartFold(boolean)
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+meth public org.openide.windows.FoldHandle startFold(boolean)
+meth public void finish()
+meth public void setExpanded(boolean)
+meth public void silentFinish()
+supr java.lang.Object
+hfds LOG,currentChild,definition,finished
+
 CLSS public abstract org.openide.windows.IOColorLines
 cons public init()
 meth protected abstract void println(java.lang.CharSequence,org.openide.windows.OutputListener,boolean,java.awt.Color) throws java.io.IOException
@@ -159,6 +178,11 @@ CLSS public final static !enum org.openide.windows.IOColors$OutputType
 fld public final static org.openide.windows.IOColors$OutputType ERROR
 fld public final static org.openide.windows.IOColors$OutputType HYPERLINK
 fld public final static org.openide.windows.IOColors$OutputType HYPERLINK_IMPORTANT
+fld public final static org.openide.windows.IOColors$OutputType INPUT
+fld public final static org.openide.windows.IOColors$OutputType LOG_DEBUG
+fld public final static org.openide.windows.IOColors$OutputType LOG_FAILURE
+fld public final static org.openide.windows.IOColors$OutputType LOG_SUCCESS
+fld public final static org.openide.windows.IOColors$OutputType LOG_WARNING
 fld public final static org.openide.windows.IOColors$OutputType OUTPUT
 meth public static org.openide.windows.IOColors$OutputType valueOf(java.lang.String)
 meth public static org.openide.windows.IOColors$OutputType[] values()
@@ -208,6 +232,27 @@ meth public abstract void setIcon(javax.swing.JComponent,javax.swing.Icon)
 meth public abstract void setTitle(javax.swing.JComponent,java.lang.String)
 meth public abstract void setToolTipText(javax.swing.JComponent,java.lang.String)
 meth public abstract void setToolbarActions(javax.swing.JComponent,javax.swing.Action[])
+
+CLSS public abstract org.openide.windows.IOFolding
+cons public init()
+innr protected abstract static FoldHandleDefinition
+meth protected abstract org.openide.windows.IOFolding$FoldHandleDefinition startFold(boolean)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public static boolean isSupported(org.openide.windows.InputOutput)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public static org.openide.windows.FoldHandle startFold(org.openide.windows.InputOutput,boolean)
+ anno 0 org.netbeans.api.annotations.common.CheckReturnValue()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+supr java.lang.Object
+
+CLSS protected abstract static org.openide.windows.IOFolding$FoldHandleDefinition
+ outer org.openide.windows.IOFolding
+cons protected init()
+meth public abstract org.openide.windows.IOFolding$FoldHandleDefinition startFold(boolean)
+meth public abstract void finish()
+meth public abstract void setExpanded(boolean)
+supr java.lang.Object
 
 CLSS public abstract org.openide.windows.IOPosition
 cons public init()

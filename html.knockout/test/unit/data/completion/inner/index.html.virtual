@@ -53,7 +53,7 @@ $context.$parentContext.$data = ko.$bindings;
 $parentContext.$data = ko.$bindings;
 var $parents = [$parentContext.$data];
 with (ko.$bindings) {
-var $data = lidickove[0];
+var $data = (lidickove)[0];
 }
 with ($data) {
 (jmeno);}
@@ -79,15 +79,15 @@ $root : ko.$bindings,
 $root : ko.$bindings,
 };
 with (ko.$bindings) {
-var $parent = lidickove[0];
-$context.$parentContext.$data = lidickove[0];
-$parentContext.$data = lidickove[0];
+var $parent = (lidickove)[0];
+$context.$parentContext.$data = (lidickove)[0];
+$parentContext.$data = (lidickove)[0];
 }
 $context.$parentContext.$parentContext.$data = ko.$bindings;
 $parentContext.$parentContext.$data = ko.$bindings;
 var $parents = [$parentContext.$parentContext.$data,$parentContext.$data];
 with (ko.$bindings) {
-with (lidickove[0]) {
+with ((lidickove)[0]) {
 var $data = jmeno;
 }
 }
