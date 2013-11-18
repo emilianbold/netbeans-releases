@@ -47,7 +47,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.maven.api.customizer.ModelHandle2;
-import org.netbeans.modules.maven.j2ee.ExecutionChecker;
+import org.netbeans.modules.maven.j2ee.execution.ExecutionChecker;
 import org.netbeans.modules.maven.j2ee.ear.EarImpl;
 import org.netbeans.modules.maven.j2ee.ear.EarModuleProviderImpl;
 import org.netbeans.modules.maven.j2ee.ui.customizer.BaseRunCustomizer;
