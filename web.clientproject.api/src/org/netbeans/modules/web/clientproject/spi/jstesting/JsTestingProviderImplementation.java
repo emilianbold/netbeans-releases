@@ -74,6 +74,14 @@ public interface JsTestingProviderImplementation {
     String getDisplayName();
 
     /**
+     * Checks whether this JS testing provider is enabled in the given project.
+     * @param project project to be checked
+     * @return {@code true} if this JS testing provider is enabled in the given project, {@code false} otherwise
+     * @since 1.51
+     */
+    boolean isEnabled(@NonNull Project project);
+
+    /**
      * Run tests for the given {@link TestRunInfo info}.
      * <p>
      * This method is always called in a background thread.

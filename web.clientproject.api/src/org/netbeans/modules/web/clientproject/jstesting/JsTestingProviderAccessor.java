@@ -84,6 +84,8 @@ public abstract class JsTestingProviderAccessor {
 
     public abstract String getDisplayName(JsTestingProvider jsTestingProvider);
 
+    public abstract boolean isEnabled(JsTestingProvider jsTestingProvider, Project project);
+
     public abstract void runTests(JsTestingProvider jsTestingProvider, Project project, TestRunInfo runInfo);
 
     public abstract FileObject fromServer(JsTestingProvider jsTestingProvider, Project project, URL serverUrl);
