@@ -71,10 +71,12 @@ import org.openide.util.Parameters;
 public class AngularJsIndexer extends EmbeddingIndexer{
     
     public static final String FIELD_CONTROLLER = "cont"; //NOI18N
+    public static final String FIELD_TEMPLATE_CONTROLLER = "tc"; //NOI18N
     
     private static final Logger LOG = Logger.getLogger(AngularJsIndexer.class.getName());
     
     private static final ThreadLocal<Map<URI, Collection<AngularJsController>>> controllers = new ThreadLocal<>();
+    private static final ThreadLocal<Map<URI, Map<String, String>>>templateControllers = new ThreadLocal<>();
     
     public static void addController(@NonNull final URI uri, @NonNull final AngularJsController controller) {
         final Map<URI, Collection<AngularJsController>> map = controllers.get();
@@ -84,7 +86,7 @@ public class AngularJsIndexer extends EmbeddingIndexer{
         }
         Collection<AngularJsController> cons = map.get(uri);
         if (cons == null) {
-            cons = new ArrayList<AngularJsController>();
+            cons = new ArrayList<>();
             cons.add(controller);
             map.put(uri, cons);
         } else {
@@ -92,8 +94,25 @@ public class AngularJsIndexer extends EmbeddingIndexer{
         }
         
     }
+    
+    public static void addTemplateController(@NonNull final URI uri, @NonNull final String template, @NonNull final String controller) {
+        final Map<URI, Map<String, String>> map = templateControllers.get();
+        
+        if (map == null) {
+            throw new IllegalStateException("AngularJsIndexer.addTemplateControllers can be called only from scanner thread.");  //NOI18N
+        }
+        
+        Map<String, String> templates = map.get(uri);
+        if(templates == null) {
+            templates = new HashMap<>();
+            templates.put(template, controller);
+            map.put(uri, templates);
+        } else {
+            templates.put(template, controller);
+        }
+    }
 
-    public static void removeControllers(@NonNull final URI uri) {
+    private static void removeControllers(@NonNull final URI uri) {
         final Map<URI, Collection<AngularJsController>> map = controllers.get();
         
         if (map == null) {
@@ -102,8 +121,25 @@ public class AngularJsIndexer extends EmbeddingIndexer{
         map.remove(uri);
     }
     
-    public static Collection<AngularJsController> getControllers(@NonNull final URI uri) {
+    private static void removeTemplateControllers(@NonNull final URI uri) {
+        final Map<URI, Map<String, String>> map = templateControllers.get();
+        
+        if (map == null) {
+            throw new IllegalStateException("AngularJsIndexer.addControllers can be called only from scanner thread.");  //NOI18N
+        }
+        map.remove(uri);
+    }
+    
+    private static Collection<AngularJsController> getControllers(@NonNull final URI uri) {
         final Map<URI, Collection<AngularJsController>> map = controllers.get();
+        if (map == null) {
+            throw new IllegalStateException("AngularJsIndexer.getControllers can be called only from scanner thread.");  //NOI18N
+        }
+        return map.get(uri);
+    }
+    
+    private static Map<String, String> getTemplateControllers(@NonNull final URI uri) {
+        final Map<URI, Map<String, String>> map = templateControllers.get();
         if (map == null) {
             throw new IllegalStateException("AngularJsIndexer.getControllers can be called only from scanner thread.");  //NOI18N
         }
@@ -117,6 +153,7 @@ public class AngularJsIndexer extends EmbeddingIndexer{
     @Override
     protected void index(Indexable indexable, Parser.Result parserResult, Context context) {
         Collection<AngularJsController> cons = null;
+        Map<String, String>templates = null;
         URI uri = null;
         try {
             URL url = indexable.getURL();
@@ -128,7 +165,8 @@ public class AngularJsIndexer extends EmbeddingIndexer{
         }
         if (uri != null) {
             cons = getControllers(uri);
-            if (cons != null) {
+            templates = getTemplateControllers(uri);
+            if (cons != null || templates != null) {
                 IndexingSupport support;
                 try {
                     support = IndexingSupport.getInstance(context);
@@ -137,23 +175,34 @@ public class AngularJsIndexer extends EmbeddingIndexer{
                     return;
                 }
                 IndexDocument elementDocument = support.createDocument(indexable);
-                for (AngularJsController controller : cons) {
-                    StringBuilder sb = new StringBuilder();
-                    sb.append(controller.getName()).append(":");
-                    sb.append(controller.getFqn()).append(":");
-                    sb.append(controller.getOffset());
-                    elementDocument.addPair(FIELD_CONTROLLER, sb.toString() , true, true);
+                if (cons != null) {
+                    for (AngularJsController controller : cons) {
+                        StringBuilder sb = new StringBuilder();
+                        sb.append(controller.getName()).append(":");
+                        sb.append(controller.getFqn()).append(":");
+                        sb.append(controller.getOffset());
+                        elementDocument.addPair(FIELD_CONTROLLER, sb.toString() , true, true);
+                    }
+                }
+                if (templates != null) {
+                    for(String template : templates.keySet()) {
+                        String controller = templates.get(template);
+                        StringBuilder sb = new StringBuilder();
+                        sb.append(template).append(":").append(controller);
+                        elementDocument.addPair(FIELD_TEMPLATE_CONTROLLER, sb.toString(), true, true);
+                    }
                 }
                 support.addDocument(elementDocument);
-                // remove the cache
+                // remove the caches
                 removeControllers(uri);
+                removeTemplateControllers(uri);
             }
         }
     }
     
     public static final class Factory extends EmbeddingIndexerFactory {
         public static final String NAME = "angular"; // NOI18N
-        public static final int VERSION = 2;
+        public static final int VERSION = 3;
         
         private static final ThreadLocal<Collection<Runnable>> postScanTasks = new ThreadLocal<Collection<Runnable>>();
         
@@ -201,6 +250,7 @@ public class AngularJsIndexer extends EmbeddingIndexer{
         public boolean scanStarted(Context context) {
             postScanTasks.set(new LinkedList<Runnable>());
             controllers.set(new HashMap<URI, Collection<AngularJsController>>());
+            templateControllers.set(new HashMap<URI, Map<String, String>>());
             return super.scanStarted(context);
         }
         
