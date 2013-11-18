@@ -52,11 +52,13 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.clientproject.jstesting.CompositeCategoryProviderImpl;
 import org.netbeans.modules.web.clientproject.jstesting.JsTestingProviderAccessor;
 import org.netbeans.modules.web.clientproject.jstesting.SelectProviderPanel;
 import org.netbeans.modules.web.clientproject.spi.jstesting.JsTestingProviderImplementation;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
@@ -141,6 +143,15 @@ public final class JsTestingProviders {
             }
         }
         return null;
+    }
+
+    /**
+     * Create project customizer for JS testing providers.
+     * @return project customizer for JS testing providers
+     * @since 1.51
+     */
+    public ProjectCustomizer.CompositeCategoryProvider createCustomizer() {
+        return new CompositeCategoryProviderImpl();
     }
 
     /**
