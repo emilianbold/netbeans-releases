@@ -80,6 +80,7 @@ import org.netbeans.modules.remote.impl.fs.RefreshManager;
 import org.netbeans.modules.remote.impl.fs.RemoteFileObject;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemManager;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.modules.Places;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
@@ -517,6 +518,8 @@ import org.openide.util.RequestProcessor;
             args.add("-t"); // NOI18N
             args.add("4"); // NOI18N
             args.add("-p"); // NOI18N
+            args.add("-d"); // NOI18N
+            args.add(getSubdir());
             if (REFRESH_INTERVAL > 0) {
                 args.add("-r"); // NOI18N
                 args.add("" + REFRESH_INTERVAL);
@@ -532,6 +535,12 @@ import org.openide.util.RequestProcessor;
             process = processBuilder.call();
             writer = new PrintWriter(process.getOutputStream());
             reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        }
+        
+        private String getSubdir() {
+            assert HostInfoUtils.isHostInfoAvailable(env);
+            String tmp = env.toString() + '/' + Places.getUserDirectory().getAbsolutePath(); // NOI18N
+            return "" + tmp.hashCode();
         }
 
         public PrintWriter getWriter() {
