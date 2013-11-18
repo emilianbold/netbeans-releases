@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.bugtracking.spi;
 
-import java.beans.PropertyChangeListener;
+import org.netbeans.modules.bugtracking.IssueContainerImpl;
 
 /**
  * Provides access to a bugtracking query.
@@ -140,35 +140,48 @@ public interface QueryProvider<Q, I> {
      * @param <I> the implementation specific issue type
      * @since 1.85
      */
-    public interface IssueContainer<I> {
+    public static final class IssueContainer<I> {
+        private final IssueContainerImpl<I> delegate;
+
+        IssueContainer(IssueContainerImpl<I> delegate) {
+            this.delegate = delegate;
+        }
         
         /**
          * The Query refreshing started.
          * @since 1.85
          */
-        void refreshingStarted();
+        public void refreshingStarted() {
+            delegate.refreshingStarted();
+        }
         
         /**
          * The Query refreshing finished.
          * 
          * @since 1.85
          */
-        void refreshingFinished();
+        public void refreshingFinished() {
+            delegate.refreshingFinished();
+        }
         
         /**
          * Add Issues.
          * 
-         * @param issue a particular issue instance
+         * @param issues a particular issue instances
          * @since 1.85
          */
-        void add(I... issue);
+        public void add(I... issues) {
+            delegate.add(issues);
+        }
         
         /**
          * Remove Issues.
          * 
-         * @param issue a particular issue instance
+         * @param issues a particular issue instances
          * @since 1.85
          */
-        void remove(I... issue);
+        public void remove(I... issues) {
+            delegate.remove(issues);
+        }
     }
 }

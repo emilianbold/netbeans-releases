@@ -65,16 +65,16 @@ public final class QueryImpl<Q, I>  {
     private final IssueProvider<I> issueProvider;
     private Query query;
     private final Q data;
-    private final IssueContainer issueContainer;
+    private final IssueContainerIntern issueContainer;
     private boolean wasRefreshed = false;
     QueryImpl(RepositoryImpl repository, QueryProvider<Q, I> queryProvider, IssueProvider<I> issueProvider, Q data) {
         this.queryProvider = queryProvider;
         this.issueProvider = issueProvider;
         this.data = data;
         this.repository = repository;
-        this.issueContainer = new IssueContainer();
+        this.issueContainer = new IssueContainerIntern();
         
-        queryProvider.setIssueContainer(data, issueContainer);
+        queryProvider.setIssueContainer(data, SPIAccessor.IMPL.createIssueContainer(issueContainer));
     }
     
     public synchronized Query getQuery() {
@@ -166,7 +166,7 @@ public final class QueryImpl<Q, I>  {
 
     public static final String EVENT_QUERY_STARTED = "bugtracking.query.started";
     public static final String EVENT_QUERY_FINISHED = "bugtracking.query.finished";
-    private class IssueContainer implements QueryProvider.IssueContainer<I> {
+    private class IssueContainerIntern implements IssueContainerImpl<I> {
         private final Set<IssueImpl> issueImpls = new HashSet<IssueImpl>();
         @Override
         public void refreshingStarted() {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,35 +37,18 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.bugtracking;
 
-import java.util.prefs.Preferences;
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
-import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
+package org.netbeans.modules.bugtracking;
 
 /**
  *
- * @author Tomas Stupka
+ * @author tomas
  */
-public abstract class SPIAccessor {
-    
-    public static SPIAccessor IMPL;
-    
-    static {
-        // invokes static initializer of RepositoryInfo.class
-        // that will assign value to the IMPL field above
-        Class c = RepositoryInfo.class;
-        try {
-            Class.forName(c.getName(), true, c.getClassLoader());
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-    }  
-    
-    
-    public abstract RepositoryInfo read(Preferences preferences, String key);
-    public abstract void store(Preferences preferences, RepositoryInfo info, String key);
-    public abstract <I> QueryProvider.IssueContainer<I> createIssueContainer(IssueContainerImpl<I> impl);
+public interface IssueContainerImpl<I> {
+    public void refreshingStarted();
+    public void refreshingFinished();
+    public void add(I... issue);
+    public void remove(I... issue);
 }
