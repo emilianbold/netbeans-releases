@@ -96,20 +96,20 @@ public class NotificationManager {
     }
 
     private void createScheduleNotification() {
+        if (scheduleNotification != null) {
+            scheduleNotification.clear();
+        }
         removeListener();
         IssueImpl[] scheduledTasks = schedulingManager.getScheduledTasks(todayInfo, dashboardViewer.getRepositories(true).toArray(new RepositoryImpl[0]));
         addListener();
         List<IssueImpl> tasks = Arrays.asList(scheduledTasks);
-        if (!scheduleChanged(oldTasks, tasks) && isNotFirstToday()) {
+        if (!scheduleChanged(oldTasks, tasks) && isNotFirstToday() || tasks.isEmpty()) {
             return;
         }
 
         NotificationDisplayer.Priority priority = NotificationDisplayer.Priority.NORMAL;
-        if (scheduleNotification != null) {
-            scheduleNotification.clear();
-            if (isNotFirstToday()) {
-                priority = NotificationDisplayer.Priority.SILENT;
-            }
+        if (isNotFirstToday()) {
+            priority = NotificationDisplayer.Priority.SILENT;
         }
         oldTasks = tasks;
         lastNotification = Calendar.getInstance();
