@@ -46,20 +46,18 @@ import java.util.Collections;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.editor.indent.project.api.Customizers;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectType;
 import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibraries;
 import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel;
-import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
+import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.spi.project.support.ant.ui.CustomizerUtilities;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Pair;
 
 /**
  *
@@ -69,11 +67,9 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
 
     public static final String SOURCES = "SOURCES"; // NOI18N
     public static final String RUN = "RUN"; // NOI18N
-    private static final String TESTING = "Testing"; // NOI18N
     private static final String LICENSE = "License"; // NOI18N
 
     private final String name;
-    private volatile Pair<Category, ProjectCustomizer.CompositeCategoryProvider> jsTestingInfo;
 
     public CompositePanelProviderImpl(String name) {
         this.name = name;
@@ -81,7 +77,6 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
 
     @NbBundle.Messages({
         "CompositePanelProviderImpl.sources.title=Sources",
-        "CompositePanelProviderImpl.testing.title=Testing",
         "CompositePanelProviderImpl.license.title=License Headers",
         "CompositePanelProviderImpl.run.title=Run"
     })
@@ -100,19 +95,6 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
                     RUN,
                     Bundle.CompositePanelProviderImpl_run_title(),
                     null);
-        } else if (TESTING.equals(name)) {
-            initJsTestingInfo(context, project);
-            if (jsTestingInfo == null) {
-                // no category at all
-                return null;
-            }
-            ProjectCustomizer.CompositeCategoryProvider categoryProvider = jsTestingInfo.second();
-            assert categoryProvider != null : jsTestingInfo;
-            category = ProjectCustomizer.Category.create(
-                    TESTING,
-                    Bundle.CompositePanelProviderImpl_testing_title(),
-                    null,
-                    new Category[] {jsTestingInfo.first()});
         } else if (LICENSE.equals(name)) {
             category = ProjectCustomizer.Category.create(
                     LICENSE,
@@ -133,16 +115,8 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
             return new SourcesPanel(category, uiProperties);
         } else if (RUN.equals(categoryName)) {
             return new RunPanel(category, uiProperties);
-        } else if (TESTING.equals(categoryName)) {
-            return new JPanel();
         } else if (LICENSE.equals(categoryName)) {
             return CustomizerUtilities.createLicenseHeaderCustomizerPanel(category, uiProperties.getLicenseSupport());
-        }
-        // js testing panel?
-        if (jsTestingInfo != null) {
-            if (category.equals(jsTestingInfo.first())) {
-                return jsTestingInfo.second().createComponent(category, context);
-            }
         }
         assert false : "No component found for " + category.getDisplayName(); //NOI18N
         return new JPanel();
@@ -172,8 +146,8 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
             projectType = ClientSideProjectType.TYPE,
             position = 400)
-    public static ProjectCustomizer.CompositeCategoryProvider createKarma() {
-        return new CompositePanelProviderImpl(TESTING);
+    public static ProjectCustomizer.CompositeCategoryProvider createJsTesting() {
+        return JsTestingProviders.getDefault().createCustomizer();
     }
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
@@ -219,20 +193,6 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
     public static ProjectCustomizer.CompositeCategoryProvider createFormatting() {
         return Customizers.createFormattingCategoryProvider(Collections.singletonMap(
                 "allowedMimeTypes", "text/html,text/css,text/javascript,text/x-json")); // NOI18N
-    }
-
-    @CheckForNull
-    private void initJsTestingInfo(Lookup context, ClientSideProject project) {
-        jsTestingInfo = null;
-        JsTestingProvider testingProvider = project.getJsTestingProvider(false);
-        if (testingProvider == null) {
-            return;
-        }
-        ProjectCustomizer.CompositeCategoryProvider categoryProvider = testingProvider.createCustomizer(project);
-        if (categoryProvider == null) {
-            return;
-        }
-        jsTestingInfo = Pair.of(categoryProvider.createCategory(context), categoryProvider);
     }
 
 }

@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.maven.j2ee;
 
+import org.netbeans.modules.maven.j2ee.execution.ExecutionChecker;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;

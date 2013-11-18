@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.j2ee;
+package org.netbeans.modules.maven.j2ee.execution;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -51,13 +51,14 @@ import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.ExecutionResultChecker;
 import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
+import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
+import org.netbeans.modules.maven.j2ee.OneTimeDeployment;
 import org.netbeans.modules.maven.j2ee.ui.SelectAppServerPanel;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
-import static org.netbeans.modules.maven.j2ee.Bundle.*;
-import org.netbeans.modules.maven.j2ee.execution.DeploymentHelper;
+import static org.netbeans.modules.maven.j2ee.execution.Bundle.*;
 import org.openide.util.Exceptions;
 
 

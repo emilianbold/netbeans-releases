@@ -44,12 +44,13 @@
 
 package org.netbeans.modules.web.clientproject.grunt;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Callable;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -57,10 +58,8 @@ import org.openide.execution.ExecutionEngine;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
 /** 
@@ -68,127 +67,75 @@ import org.openide.windows.InputOutput;
  */
 public final class GruntfileExecutor implements Runnable {
 
-    private static final RequestProcessor RP = new RequestProcessor(GruntfileExecutor.class.getName(), Integer.MAX_VALUE);
-
-    private InputOutput io;
-    private OutputStream outputStream;
-    private boolean ok = false;
     private final List<String> targetNames;
-    /** used for the tab etc. */
-    private String displayName;
-    private String suggestedDisplayName;
+    private final String displayName;
     private final FileObject gruntFile;
 
     /** targets may be null to indicate default target */
+    
+    @NbBundle.Messages({
+        "# {0} - Project Name", 
+        "# {1} - Task Name",    
+        "TXT_GruntTabTitle={0} ({1})"
+    })
     public GruntfileExecutor (FileObject gruntFile, String[] targets) {
         targetNames = ((targets == null) ? null : Arrays.asList(targets));
         this.gruntFile = gruntFile;
-    }
-  
 
-    void setDisplayName(String n) {
-        suggestedDisplayName = n;
+        Project owner = FileOwnerQuery.getOwner(gruntFile);
+        if (owner!=null) {
+            displayName = Bundle.TXT_GruntTabTitle(ProjectUtils.getInformation(owner).getDisplayName(), targets[0]);
+        } else {
+            displayName = gruntFile.getName();
+        }
     }
     
-    private static String getProcessDisplayName(List<String> targetNames) {
-        return "project name";
-    }
-    
-
     /**
      * Actually start the process.
      */
     public ExecutorTask execute () throws IOException {
-        String dn = suggestedDisplayName != null ? suggestedDisplayName : getProcessDisplayName(targetNames);
         final ExecutorTask task;
         synchronized (this) {
             task = ExecutionEngine.getDefault().execute(displayName, this, InputOutput.NULL);
         }
-        WrapperExecutorTask wrapper = new WrapperExecutorTask(task, io);
-        RP.post(wrapper);
-        return wrapper;
+        return task;
     }
     
-    public ExecutorTask execute(OutputStream outputStream) throws IOException {
-        this.outputStream = outputStream;
-        ExecutorTask task = ExecutionEngine.getDefault().execute(null, this, InputOutput.NULL);
-        return new WrapperExecutorTask(task, null);
-    }
-    
-    private class WrapperExecutorTask extends ExecutorTask {
-        private final ExecutorTask task;
-        private final InputOutput io;
-        public WrapperExecutorTask(ExecutorTask task, InputOutput io) {
-            super(new WrapperRunnable(task));
-            this.task = task;
-            this.io = io;
-        }
-        @Override
-        public void stop () {
-                task.stop();
-        }
-        @Override
-        public int result () {
-            return task.result () + (ok ? 0 : 1);
-        }
-        @Override
-        public InputOutput getInputOutput () {
-            return io;
-        }
-    }
-    private static class WrapperRunnable implements Runnable {
-        private final ExecutorTask task;
-        public WrapperRunnable(ExecutorTask task) {
-            this.task = task;
-        }
-        @Override
-        public void run () {
-            task.waitFinished ();
-        }
-    }
   
     /** Call execute(), not this method directly!
      */
     synchronized public @Override void run () {
-        ProcessBuilder pb;
-        if (Utilities.isWindows()) {
-            pb = new ProcessBuilder("cmd","/C grunt --no-color " + targetNames.get(0));
-        } else if (Utilities.isMac()) {
-            pb = new ProcessBuilder("bash","-lc", "grunt --no-color " + targetNames.get(0));
-        } else {
-            pb = new ProcessBuilder("grunt","--no-color", targetNames.get(0));
-        }
-        pb.directory(FileUtil.toFile(gruntFile.getParent()));
-        Project owner = FileOwnerQuery.getOwner(gruntFile);
-        String tab;
-        if (owner!=null) {
-            tab = ProjectUtils.getInformation(owner).getDisplayName() + " (Grunt)";
-        } else {
-            tab = gruntFile.getName();
-        }
-        InputOutput io1 = IOProvider.getDefault().getIO(tab, false);
-        io1.select();
-        try {
-            io1.getOut().reset();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        try {
-            Process start = pb.start();
-            start.waitFor();
-            char[] c = new char[1];
-            InputStreamReader errorStream = new InputStreamReader(new BufferedInputStream(start.getErrorStream()));
-            while (errorStream.ready()) {
-                errorStream.read(c);
-                io1.getErr().write(c);
+        
+        Callable<Process> creator = new Callable<Process>() {
+
+            @Override
+            public Process call() throws Exception {
+                ExternalProcessBuilder pb;
+                if (Utilities.isWindows()) {
+                    pb = new ExternalProcessBuilder("cmd");
+                    pb= pb.addArgument("/C grunt --no-color " + targetNames.get(0));
+                } else if (Utilities.isMac()) {
+                    pb = new ExternalProcessBuilder("/bin/bash");
+                    pb = pb.addArgument("-lc");
+                    pb = pb.addArgument("grunt --no-color" + targetNames.get(0));
+                } else {
+                    pb = new ExternalProcessBuilder("grunt");
+                    pb = pb.addArgument("--no-color");
+                    pb = pb.addArgument(targetNames.get(0));
+                }
+
+                pb = pb.workingDirectory(FileUtil.toFile(gruntFile.getParent()));
+                pb = pb.redirectErrorStream(true);
+                return pb.call();
             }
-            InputStreamReader inStream = new InputStreamReader(new BufferedInputStream(start.getInputStream()));
-            while (inStream.ready()) {
-                inStream.read(c);
-                io1.getOut().write(c);
-            }
-        } catch (IOException | InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+
+        };
+        
+        ExecutionDescriptor desc = new ExecutionDescriptor();
+        desc = desc.showProgress(true);
+        desc = desc.frontWindow(true);
+        desc = desc.controllable(true);
+        ExecutionService execution = ExecutionService.newService(creator, desc, displayName);
+        execution.run();
     }
 }

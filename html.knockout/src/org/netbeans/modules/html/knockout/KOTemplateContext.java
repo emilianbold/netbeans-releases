@@ -58,6 +58,14 @@ import org.openide.util.Pair;
  */
 public class KOTemplateContext {
 
+    private static final String NAME_PROPERTY = "name"; // NOI18N
+
+    private static final String DATA_PROPERTY = "data"; // NOI18N
+
+    private static final String FOREACH_PROPERTY = "foreach"; // NOI18N
+
+    private static final String AS_PROPERTY = "as"; // NOI18N
+
     private final LinkedList<StackItem> scripts = new LinkedList<>();
 
     private boolean isScriptStart;
@@ -72,24 +80,29 @@ public class KOTemplateContext {
         ts.moveStart();
         ts.moveNext();
         String name = null;
+        String alias = null;
         String data = null;
         boolean forEach = false;
         Token<? extends JsTokenId> token = LexUtilities.findNextNonWsNonComment(ts);
         if (token.id() == JsTokenId.BRACKET_LEFT_CURLY) {
             while ((token = findNext(ts, JsTokenId.IDENTIFIER, false)) != null) {
                 String text = token.text().toString();
-                if ("name".equals(text) && ts.moveNext()) { // NOI18N
+                if ((NAME_PROPERTY.equals(text) || AS_PROPERTY.equals(text)) && ts.moveNext()) { // NOI18N
                     token = LexUtilities.findNextNonWsNonComment(ts);
                     if (token.id() == JsTokenId.OPERATOR_COLON && ts.moveNext()) {
                         token = LexUtilities.findNextNonWsNonComment(ts);
                         if (token.id() == JsTokenId.STRING_BEGIN && ts.moveNext()) {
                             token = LexUtilities.findNextNonWsNonComment(ts);
                             if (token.id() == JsTokenId.STRING) {
-                                name = token.text().toString();
+                                if (NAME_PROPERTY.equals(text)) { // NOI18N
+                                    name = token.text().toString();
+                                } else {
+                                    alias = token.text().toString();
+                                }
                             }
                         }
                     }
-                } else if (("data".equals(text) || "foreach".equals(text)) && ts.moveNext()) { // NOI18N
+                } else if ((DATA_PROPERTY.equals(text) || FOREACH_PROPERTY.equals(text)) && ts.moveNext()) { // NOI18N
                     token = LexUtilities.findNextNonWsNonComment(ts);
                     if (token.id() == JsTokenId.OPERATOR_COLON && ts.moveNext()) {
                         LexUtilities.findNextNonWsNonComment(ts);
@@ -97,7 +110,7 @@ public class KOTemplateContext {
                         token = findNext(ts, JsTokenId.OPERATOR_COMMA, true);
                         if (token != null) {
                             data = snapshot.getText().subSequence(start, ts.offset()).toString().trim();
-                            forEach = "foreach".equals(text);
+                            forEach = FOREACH_PROPERTY.equals(text);
                         }
                     }
                 }
@@ -106,7 +119,7 @@ public class KOTemplateContext {
                 }
             }
             if (name != null && data != null) {
-                return new TemplateDescriptor(name, data, forEach);
+                return new TemplateDescriptor(name, data, forEach, alias);
             }
         }
 
@@ -224,10 +237,13 @@ public class KOTemplateContext {
 
         private final boolean isForEach;
 
-        public TemplateDescriptor(String name, String data, boolean isForEach) {
+        private final String alias;
+
+        public TemplateDescriptor(String name, String data, boolean isForEach, String alias) {
             this.name = name;
             this.data = data;
             this.isForEach = isForEach;
+            this.alias = alias;
         }
 
         public String getName() {
@@ -240,6 +256,10 @@ public class KOTemplateContext {
 
         public boolean isIsForEach() {
             return isForEach;
+        }
+
+        public String getAlias() {
+            return alias;
         }
     }
 

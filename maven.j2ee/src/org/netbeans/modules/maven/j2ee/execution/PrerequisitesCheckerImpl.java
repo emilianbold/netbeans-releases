@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.j2ee;
+package org.netbeans.modules.maven.j2ee.execution;
 
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment.DeploymentException;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
@@ -68,7 +68,7 @@ import org.openide.util.Exceptions;
     "org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT,
     "org-netbeans-modules-maven/" + NbMavenProject.TYPE_OSGI
 })
-public class J2EEPrerequisitesChecker implements PrerequisitesChecker, LateBoundPrerequisitesChecker {
+public class PrerequisitesCheckerImpl implements PrerequisitesChecker, LateBoundPrerequisitesChecker {
 
     private List<String> SINGLE_ACTIONS = Arrays.asList(new String[] {
         ActionProvider.COMMAND_RUN_SINGLE + ".deploy",

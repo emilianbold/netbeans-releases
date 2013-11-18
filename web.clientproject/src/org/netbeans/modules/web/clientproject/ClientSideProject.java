@@ -117,7 +117,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
-import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -366,32 +365,7 @@ public class ClientSideProject implements Project {
 
     @CheckForNull
     public JsTestingProvider getJsTestingProvider(boolean showSelectionPanel) {
-        String provider = eval.getProperty(ClientSideProjectConstants.PROJECT_TEST_PROVIDER);
-        if (provider != null) {
-            for (JsTestingProvider jsTestingProvider : JsTestingProviders.getDefault().getJsTestingProviders()) {
-                if (jsTestingProvider.getIdentifier().equals(provider)) {
-                    return jsTestingProvider;
-                }
-            }
-        }
-        // provider not set or found
-        if (showSelectionPanel) {
-            final JsTestingProvider jsTestingProvider = JsTestingProviders.getDefault().selectJsTestingProvider();
-            if (jsTestingProvider != null) {
-                jsTestingProvider.notifyEnabled(this, true);
-                RequestProcessor.getDefault().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        new ClientSideProjectProperties(ClientSideProject.this)
-                                .save(
-                                        Collections.singletonMap(ClientSideProjectConstants.PROJECT_TEST_PROVIDER, jsTestingProvider.getIdentifier()),
-                                        Collections.<String, String>emptyMap());
-                    }
-                });
-                return jsTestingProvider;
-            }
-        }
-        return null;
+        return JsTestingProviders.getDefault().getJsTestingProvider(this, showSelectionPanel);
     }
 
     public String getName() {
