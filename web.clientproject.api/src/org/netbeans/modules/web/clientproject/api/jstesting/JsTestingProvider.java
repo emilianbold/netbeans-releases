@@ -81,6 +81,11 @@ public final class JsTestingProvider {
             }
 
             @Override
+            public boolean isEnabled(JsTestingProvider jsTestingProvider, Project project) {
+                return jsTestingProvider.isEnabled(project);
+            }
+
+            @Override
             public void runTests(JsTestingProvider jsTestingProvider, Project project, TestRunInfo runInfo) {
                 jsTestingProvider.runTests(project, runInfo);
             }
@@ -198,17 +203,6 @@ public final class JsTestingProvider {
     }
 
     /**
-     * Notify provider that it has been enabled/disabled in the given project (so
-     * the provider can, if necessary, adjust UI etc.).
-     * @param project the project, never {@code null}
-     * @param enabled {@code true} if enabled, {@code false} otherwise
-     */
-    public void notifyEnabled(@NonNull Project project, boolean enabled) {
-        Parameters.notNull("project", project); // NOI18N
-        delegate.notifyEnabled(project, enabled);
-    }
-
-    /**
      * Notify JS testing provider that the given project is being opened.
      * @param project project being opened
      */
@@ -227,8 +221,19 @@ public final class JsTestingProvider {
     }
 
     @CheckForNull
-    NodeList<Node> createNodeList(Project project) {
+    NodeList<Node> createNodeList(@NonNull Project project) {
+        Parameters.notNull("project", project); // NOI18N
         return delegate.createNodeList(project);
+    }
+
+    boolean isEnabled(@NonNull Project project) {
+        Parameters.notNull("project", project); // NOI18N
+        return delegate.isEnabled(project);
+    }
+
+    void notifyEnabled(@NonNull Project project, boolean enabled) {
+        Parameters.notNull("project", project); // NOI18N
+        delegate.notifyEnabled(project, enabled);
     }
 
 }
