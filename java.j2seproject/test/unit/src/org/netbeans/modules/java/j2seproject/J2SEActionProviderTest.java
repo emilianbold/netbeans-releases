@@ -273,8 +273,8 @@ public class J2SEActionProviderTest extends NbTestCase {
         p = new Properties();
         context = Lookups.fixed(someSource1,someSource2);
         targets = actionProvider.getTargetNames(ActionProvider.COMMAND_TEST_SINGLE, context, p);
-        assertEquals("correct targets for COMMAND_TEST_SINGLE", "[test-single]", Arrays.toString(targets));
-        assertEquals("correct target parameters", "{ignore.failing.tests=true, javac.includes=foo/BarTest.java,foo/MainTest.java, test.includes=foo/BarTest.java,foo/MainTest.java}", new TreeMap<Object,Object>(p).toString());
+        assertEquals("correct targets for COMMAND_TEST_SINGLE on multiple files selection", "[test]", Arrays.toString(targets));
+        assertEquals("correct target parameters", "{ignore.failing.tests=true, includes=foo/BarTest.java,foo/MainTest.java}", new TreeMap<Object,Object>(p).toString());
 
         // test COMMAND_DEBUG_TEST_SINGLE
 
@@ -701,7 +701,7 @@ public class J2SEActionProviderTest extends NbTestCase {
 
         context = Lookups.fixed(someTest1, someTest2);
         enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_TEST_SINGLE, context);
-        assertFalse("COMMAND_TEST_SINGLE must be disabled on multiple tests", enabled);
+        assertTrue("COMMAND_TEST_SINGLE must be enabled on multiple tests", enabled);
 
         context = Lookups.fixed(someSource3);
         enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_TEST_SINGLE, context);
@@ -713,15 +713,15 @@ public class J2SEActionProviderTest extends NbTestCase {
 
         context = Lookups.fixed(someSource1, someSource2);
         enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_TEST_SINGLE, context);
-        assertFalse("COMMAND_TEST_SINGLE must be enabled on source files which has associated tests", enabled);
+        assertTrue("COMMAND_TEST_SINGLE must be enabled on source files which has associated tests", enabled);
 
         context = Lookups.fixed(someSource1, someSource3);
         enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_TEST_SINGLE, context);
-        assertFalse("COMMAND_TEST_SINGLE must be disabled on mixture of source files when some files do not have tests", enabled);
+        assertTrue("COMMAND_TEST_SINGLE must be enabled on mixture of source files when some files do not have tests", enabled);
 
         context = Lookups.fixed(someSource1, someTest1);
         enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_TEST_SINGLE, context);
-        assertFalse("COMMAND_TEST_SINGLE must be disabled on mixture of source files and test files", enabled);
+        assertTrue("COMMAND_TEST_SINGLE must be enabled on mixture of source files and test files", enabled);
 
         // test COMMAND_DEBUG_TEST_SINGLE
 

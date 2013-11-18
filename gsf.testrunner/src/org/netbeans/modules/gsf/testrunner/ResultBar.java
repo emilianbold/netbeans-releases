@@ -43,6 +43,7 @@ package org.netbeans.modules.gsf.testrunner;
 
 import java.awt.AlphaComposite;
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -344,8 +345,9 @@ public final class ResultBar extends JComponent implements ActionListener{
         Dimension size;
         Insets border = getInsets();
         FontMetrics fontSizer = getFontMetrics(getFont());
-
-        size = new Dimension(146, 12);
+        Container parent = getParent(); // JToolBar registered in ResultPanelTree
+        Insets insets = parent.getInsets();
+        size = new Dimension(parent.getWidth() - insets.left - insets.right, parent.getHeight()- insets.top - insets.bottom);
         String string = getString();
         int stringWidth = fontSizer.stringWidth(string);
         if (stringWidth > size.width) {

@@ -38,15 +38,21 @@
 package org.netbeans.modules.bugtracking;
 
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Semaphore;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -54,19 +60,21 @@ import org.netbeans.modules.bugtracking.ui.query.QueryAction;
  */
 public final class QueryImpl<Q, I>  {
     
-    public final static String EVENT_QUERY_REFRESHED = QueryProvider.EVENT_QUERY_REFRESHED;
-    
     private final RepositoryImpl<?, Q, I> repository;
     private final QueryProvider<Q, I> queryProvider;
     private final IssueProvider<I> issueProvider;
     private Query query;
     private final Q data;
-            
+    private final IssueContainer issueContainer;
+    private boolean wasRefreshed = false;
     QueryImpl(RepositoryImpl repository, QueryProvider<Q, I> queryProvider, IssueProvider<I> issueProvider, Q data) {
         this.queryProvider = queryProvider;
         this.issueProvider = issueProvider;
         this.data = data;
         this.repository = repository;
+        this.issueContainer = new IssueContainer();
+        
+        queryProvider.setIssueContainer(data, issueContainer);
     }
     
     public synchronized Query getQuery() {
@@ -81,13 +89,7 @@ public final class QueryImpl<Q, I>  {
     }
     
     public Collection<IssueImpl> getIssues() {
-        Collection<I> issues = queryProvider.getIssues(data);
-        List<IssueImpl> ret = new ArrayList<IssueImpl>(issues.size());
-        for (I i : issues) {
-            IssueImpl issue = repository.getIssue(i);
-            ret.add(issue); // XXX API cache
-        }
-        return ret;
+        return issueContainer.getIssues();
     }
 
     /**
@@ -125,6 +127,10 @@ public final class QueryImpl<Q, I>  {
         queryProvider.refresh(data);
     }
     
+    public boolean wasRefreshed() {
+        return wasRefreshed;
+    }
+    
     public String getDisplayName() {
         return queryProvider.getDisplayName(data);
     }
@@ -134,11 +140,11 @@ public final class QueryImpl<Q, I>  {
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
-        queryProvider.addPropertyChangeListener(data, listener);
+        issueContainer.addPropertyChangeListener(listener);
     }
 
     public void removePropertyChangeListener(PropertyChangeListener listener) {
-        queryProvider.removePropertyChangeListener(data, listener);                   
+        issueContainer.removePropertyChangeListener(listener);
     }
 
     public void setContext(OwnerInfo info) {
@@ -158,4 +164,50 @@ public final class QueryImpl<Q, I>  {
         return data;
     }
 
+    public static final String EVENT_QUERY_STARTED = "bugtracking.query.started";
+    public static final String EVENT_QUERY_FINISHED = "bugtracking.query.finished";
+    private class IssueContainer implements QueryProvider.IssueContainer<I> {
+        private final Set<IssueImpl> issues = new HashSet<IssueImpl>();
+        @Override
+        public void refreshingStarted() {
+            wasRefreshed = true;
+            support.firePropertyChange(EVENT_QUERY_STARTED, null, null);
+        }
+
+        @Override
+        public void refreshingFinished() {
+            support.firePropertyChange(EVENT_QUERY_FINISHED, null, null);
+        }
+
+        @Override
+        public void add(I i) {
+            IssueImpl issue = repository.getIssue(i);
+            if(issue != null) {
+                issues.add(issue);
+            }
+        }
+
+        @Override
+        public void remove(I i) {
+            IssueImpl issue = repository.getIssue(i);
+            if(issue != null) {
+                issues.remove(issue);
+            }            
+        }
+        
+        Collection<IssueImpl> getIssues() {
+            return Collections.unmodifiableCollection(issues);
+        }
+        
+        private final PropertyChangeSupport support = new PropertyChangeSupport(data);
+        
+        void addPropertyChangeListener(PropertyChangeListener listener) {
+            support.addPropertyChangeListener(listener);
+        }
+
+        void removePropertyChangeListener(PropertyChangeListener listener) {
+            support.removePropertyChangeListener(listener);                   
+        }
+    
+    }
 }

@@ -83,13 +83,14 @@ import org.openide.util.NbBundle;
  */
 @NbBundle.Messages({
     "SmartyOptionsPanel.keywords.template=template",
-    "SmartyOptionsPanel.keywords.framework=framework"
+    "SmartyOptionsPanel.keywords.framework=framework",
+    "SmartyOptionsPanel.keywords.TabTitle=Frameworks & Tools"
 })
 @OptionsPanelController.Keywords(
         keywords = {"php", "smarty", "framework", "template", "tpl",
             "#SmartyOptionsPanel.keywords.template", "#SmartyOptionsPanel.keywords.framework"},
         location = UiUtils.OPTIONS_PATH,
-        tabTitle = "#LBL_PHPSmartyOptionsName")
+        tabTitle = "#SmartyOptionsPanel.keywords.TabTitle")
 public class SmartyOptionsPanel extends JPanel {
     private static final long serialVersionUID = -1384644114740L;
 
