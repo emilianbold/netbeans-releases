@@ -68,7 +68,13 @@ import org.openide.util.NbBundle;
 @NbBundle.Messages({
     "ERR_Title=Error",
     "LBL_CheckingDevice=Connecting to android device...",
-    "ERR_WebDebug=Cannot connect to Chrome.\nPlease check if USB Web Debugging is enabled in Chrome on your mobile device.",    
+    
+    "ERR_WebDebug=Cannot connect to Chrome.\nMake sure, that:\n"
+        + "\u2022 Device is attached\n"
+        + "\u2022 USB Debugging is enabled on your device\n"
+        + "\u2022 USB Web Debugging is enabled in Mobile Chrome (Settings > Advanced > Developer Tools)\n"
+        + "\u2022 Your computer and Android device are connected to the same WiFi network",        
+    
     "ERR_NO_Cordova=NetBeans cannot find cordova or git on your PATH. Please install cordova and git.\n" +
             "NetBeans might require restart for changes to take effect.\n"
 })
@@ -182,9 +188,12 @@ public class AndroidActionProvider implements ActionProvider {
     }
 
     @NbBundle.Messages({
-            "ERR_ConnectAndroidDevice=Please connect Android device and enable USB debugging.",
-            "ERR_RunAndroidEmulator=Please run Android Emulator.",
-            "ERR_Unknown=Unknown Error."})
+        "ERR_ConnectAndroidDevice=Please connect Android device and make sure that:\n"
+        + "\u2022 USB Debugging is enabled on your device\n"
+        + "\u2022 USB Web Debugging is enabled in Mobile Chrome (Settings > Advanced > Developer Tools)\n"
+        + "\u2022 Your computer and Android device are connected to the same WiFi network",
+        "ERR_RunAndroidEmulator=Please run Android Emulator.",
+        "ERR_Unknown=Unknown Error."})
     static String checkDevices(Project p) {
         ProjectBrowserProvider provider = p.getLookup().lookup(ProjectBrowserProvider.class);
         WebBrowser activeConfiguration = provider.getActiveBrowser();
