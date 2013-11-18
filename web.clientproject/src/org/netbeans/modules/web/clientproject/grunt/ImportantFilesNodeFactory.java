@@ -75,7 +75,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 
-@NodeFactory.Registration(projectType = "org-netbeans-modules-web-clientproject", position = 1500)
+@NodeFactory.Registration(projectType = "org-netbeans-modules-web-clientproject", position = 520)
 public class ImportantFilesNodeFactory implements NodeFactory {
 
     private static final String IMPORTANT_FILES_NAME = "important.files"; // NOI18N

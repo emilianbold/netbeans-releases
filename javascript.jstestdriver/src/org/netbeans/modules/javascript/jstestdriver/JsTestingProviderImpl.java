@@ -53,6 +53,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.javascript.jstestdriver.api.JsTestDriver;
 import org.netbeans.modules.javascript.jstestdriver.api.RunTests;
+import org.netbeans.modules.javascript.jstestdriver.preferences.JsTestDriverPreferences;
 import org.netbeans.modules.web.clientproject.api.ProjectDirectoriesProvider;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo;
@@ -83,6 +84,11 @@ public class JsTestingProviderImpl implements JsTestingProviderImplementation {
     @Override
     public String getDisplayName() {
         return Bundle.JsTestingProviderImpl_displayName();
+    }
+
+    @Override
+    public boolean isEnabled(Project project) {
+        return JsTestDriverPreferences.isEnabled(project);
     }
 
     @NbBundle.Messages("JsTestingProviderImpl.error.config=Cannot run tests, no jsTestDriver.conf found.")
@@ -151,7 +157,7 @@ public class JsTestingProviderImpl implements JsTestingProviderImplementation {
 
     @Override
     public void notifyEnabled(Project project, boolean enabled) {
-        // noop
+        JsTestDriverPreferences.setEnabled(project, enabled);
     }
 
     @Override

@@ -73,6 +73,11 @@ public class JsTestingProviderImpl implements JsTestingProviderImplementation {
     }
 
     @Override
+    public boolean isEnabled(Project project) {
+        return KarmaPreferences.isEnabled(project);
+    }
+
+    @Override
     public void runTests(Project project, TestRunInfo runInfo) {
         KarmaServers.getInstance().runTests(project);
     }

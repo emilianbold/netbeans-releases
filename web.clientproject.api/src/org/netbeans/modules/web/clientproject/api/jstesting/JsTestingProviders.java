@@ -50,17 +50,21 @@ import java.util.concurrent.atomic.AtomicLong;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.clientproject.jstesting.CompositeCategoryProviderImpl;
 import org.netbeans.modules.web.clientproject.jstesting.JsTestingProviderAccessor;
 import org.netbeans.modules.web.clientproject.jstesting.SelectProviderPanel;
 import org.netbeans.modules.web.clientproject.spi.jstesting.JsTestingProviderImplementation;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.Parameters;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -114,13 +118,40 @@ public final class JsTestingProviders {
     }
 
     /**
-     * Show dialog for JS testing provider selection.
-     * @return selected JS testing provider or {@code null} if none selected
-     * @see JsTestingProvider#notifyEnabled(Project, boolean)
+     * Get selected JS testing provider for the given project. Returns {@code null} if none is selected (yet);
+     * can display dialog for JS testing provider selection if {@code showSelectionPanel} is set to {@code true}.
+     * @param project project to be checked
+     * @param showSelectionPanel {@code true} for displaying dialog for JS testing provider selection, {@code false} otherwise
+     * @return selected JS testing provider for the given project, can be {@code null} if none selected (yet)
+     * @since 1.51
      */
     @CheckForNull
-    public JsTestingProvider selectJsTestingProvider() {
-        return SelectProviderPanel.open();
+    public JsTestingProvider getJsTestingProvider(@NonNull Project project, boolean showSelectionPanel) {
+        Parameters.notNull("project", project); // NOI18N
+        for (JsTestingProvider jsTestingProvider : jsTestingProviders) {
+            if (jsTestingProvider.isEnabled(project)) {
+                // simply returns the first one
+                return jsTestingProvider;
+            }
+        }
+        // provider not set or found
+        if (showSelectionPanel) {
+            final JsTestingProvider jsTestingProvider = SelectProviderPanel.open();
+            if (jsTestingProvider != null) {
+                jsTestingProvider.notifyEnabled(project, true);
+                return jsTestingProvider;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Create project customizer for JS testing providers.
+     * @return project customizer for JS testing providers
+     * @since 1.51
+     */
+    public ProjectCustomizer.CompositeCategoryProvider createCustomizer() {
+        return new CompositeCategoryProviderImpl();
     }
 
     /**

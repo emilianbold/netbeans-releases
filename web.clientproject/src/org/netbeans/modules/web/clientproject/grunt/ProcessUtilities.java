@@ -44,11 +44,13 @@ package org.netbeans.modules.web.clientproject.grunt;
 
 
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.ProcessBuilder;
 import org.openide.util.RequestProcessor;
 
@@ -63,10 +65,11 @@ public final class ProcessUtilities {
     private static final RequestProcessor KILLER = new RequestProcessor(ProcessUtilities.class);
 
     public static String callProcess(final String executable, String workDir, boolean wait, int timeout, String... parameters) throws IOException {
-        ProcessBuilder pb = ProcessBuilder.getLocal();
-        pb.setExecutable(executable);
-        pb.setWorkingDirectory(workDir);
-        pb.setArguments(Arrays.asList(parameters));
+        ExternalProcessBuilder pb = new ExternalProcessBuilder(executable);
+        pb = pb.workingDirectory(new File(workDir));
+        for (String arg: parameters) {
+            pb = pb.addArgument(arg);
+        }
         final Process call = pb.call();
         if (timeout > 0) {
             KILLER.post(new Runnable() {
