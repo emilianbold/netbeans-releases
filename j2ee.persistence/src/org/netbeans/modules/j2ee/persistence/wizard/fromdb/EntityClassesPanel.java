@@ -131,6 +131,18 @@ public class EntityClassesPanel extends javax.swing.JPanel {
 
         classNamesTable.getParent().setBackground(classNamesTable.getBackground());
         classNamesTable.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE); // NOI18N
+        
+        mappedSuperclassCheckBox.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                if (mappedSuperclassCheckBox.isSelected()) {
+                    generateFinderMethodsCheckBox.setEnabled(false);
+                    generateFinderMethodsCheckBox.setSelected(false);
+                } else {
+                    generateFinderMethodsCheckBox.setEnabled(true);
+                }
+            }
+        });
 
         packageComboBoxEditor = ((JTextComponent)packageComboBox.getEditor().getEditorComponent());
         Document packageComboBoxDocument = packageComboBoxEditor.getDocument();
