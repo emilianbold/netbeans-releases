@@ -53,7 +53,7 @@ $context.$parentContext.$data = ko.$bindings;
 $parentContext.$data = ko.$bindings;
 var $parents = [$parentContext.$data];
 with (ko.$bindings) {
-var $data = lidickove[0];
+var $data = (lidickove)[0];
 }
 with ($data) {
 (jmeno);}
@@ -79,7 +79,7 @@ $context.$parentContext.$data = ko.$bindings;
 $parentContext.$data = ko.$bindings;
 var $parents = [$parentContext.$data];
 with (ko.$bindings) {
-var $data = lidickove[0];
+var $data = (lidickove)[0];
 }
 with ($data) {
 (jmeno == 'pepa' ? 'jouda' :
