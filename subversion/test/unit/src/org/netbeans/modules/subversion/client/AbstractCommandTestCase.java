@@ -559,8 +559,9 @@ public abstract class AbstractCommandTestCase extends AbstractSvnTestCase {
             version.indexOf("version 1.4") == -1 &&
             version.indexOf("version 1.5") == -1 &&
             version.indexOf("version 1.6") == -1 &&
-            version.indexOf("version 1.7") == -1) {
-            fail("svn cli client seems to be > 1.7. Some tests might pass now...");
+            version.indexOf("version 1.7") == -1 &&
+            version.indexOf("version 1.8") == -1) {
+            fail("svn cli client seems to be > 1.8. Some tests might pass now...");
         }
     }
 

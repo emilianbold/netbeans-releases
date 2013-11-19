@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.classview.model;
 
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.openide.nodes.*;
@@ -66,6 +67,7 @@ public class MemberNode extends ObjectNode {
     
     private void init(final CsmMember mem){
         boolean isTemplate = false;
+        final CharSequence old = name;
         name = mem.getName();
         if( mem.getKind() == CsmDeclaration.Kind.CLASS ) {
             isTemplate = CsmKindUtilities.isTemplate(mem);
@@ -77,15 +79,32 @@ public class MemberNode extends ObjectNode {
         if (isTemplate){
             name += "<>"; // NOI18N
         }
-        RP.post(new Runnable() {
-
+        final Runnable runnable = new Runnable() {
+            
             @Override
             public void run() {
-                image = CsmImageLoader.getImage(mem);
-                fireIconChange();
-                fireOpenedIconChange();
+                if (SwingUtilities.isEventDispatchThread()) {
+                    if ((old == null) || !old.equals(name)) {
+                        fireNameChange(old == null ? null : old.toString(),
+                                name == null ? null : name.toString());
+                        fireDisplayNameChange(old == null ? null : old.toString(),
+                                name == null ? null : name.toString());
+                        fireShortDescriptionChange(old == null ? null : old.toString(),
+                                name == null ? null : name.toString());
+                    }
+                    fireIconChange();
+                    fireOpenedIconChange();
+                } else {
+                    resetIcon(CsmImageLoader.getImage(mem));
+                    SwingUtilities.invokeLater(this);
+                }
             }
-        });
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            RP.post(runnable);
+        } else {
+            runnable.run();
+        }
     }
     
     @Override
@@ -110,8 +129,6 @@ public class MemberNode extends ObjectNode {
             CsmMember cls = (CsmMember)o;
             setObject(cls);
             init(cls);
-            fireIconChange();
-            fireOpenedIconChange();
         } else if (o != null) {
             System.err.println("Expected CsmMember. Actually event contains "+o.toString());
         }

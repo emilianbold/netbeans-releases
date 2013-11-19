@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.odcs.tasks.query;
 
+import org.netbeans.modules.bugtracking.commons.LogUtils;
 import com.tasktop.c2c.server.common.service.domain.criteria.Criteria;
 import com.tasktop.c2c.server.common.service.domain.criteria.CriteriaBuilder;
 import com.tasktop.c2c.server.common.service.domain.criteria.CriteriaParser;
@@ -49,7 +50,7 @@ import com.tasktop.c2c.server.tasks.domain.Iteration;
 import com.tasktop.c2c.server.tasks.domain.Milestone;
 import com.tasktop.c2c.server.tasks.domain.Product;
 import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
-import org.netbeans.modules.bugtracking.util.SaveQueryPanel;
+import org.netbeans.modules.bugtracking.commons.SaveQueryPanel;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -81,14 +82,15 @@ import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.api.Util;
+import org.netbeans.modules.bugtracking.commons.SaveQueryPanel.QueryNameValidator;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
-import org.netbeans.modules.bugtracking.team.spi.TeamProject;
+import org.netbeans.modules.team.spi.TeamProject;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryController.QueryMode;
-import org.netbeans.modules.bugtracking.util.*;
-import org.netbeans.modules.bugtracking.util.SaveQueryPanel.QueryNameValidator;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.odcs.tasks.ODCS;
 import org.netbeans.modules.odcs.tasks.ODCSConfig;
 import org.netbeans.modules.odcs.tasks.ODCSConnector;
@@ -126,12 +128,13 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
     private final Object CRITERIA_LOCK = new Object();
     private final Semaphore querySemaphore = new Semaphore(1);
     
-    private final IssueTable<ODCSQuery> issueTable;
+    private final IssueTable issueTable;
     private boolean modifiable;
     private Criteria criteria;
     private Criteria originalCriteria;
     private final QueryParameters parameters;
     private boolean populated = false;
+    private QueryProvider.IssueContainer<ODCSIssue> delegatingIssueContainer;
         
     ODCSQueryController(ODCSRepository repository, ODCSQuery query, Criteria criteria, boolean modifiable) {
         this.repository = repository;
@@ -139,7 +142,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
         this.modifiable = modifiable;
         this.criteria = criteria;
         
-        issueTable = new IssueTable<>(ODCSUtil.getRepository(repository), query, query.getColumnDescriptors(), query.isSaved());
+        issueTable = new IssueTable(repository.getID(), query.getDisplayName(), this, query.getColumnDescriptors(), query.isSaved());
         setupRenderer(issueTable);
         panel = new QueryPanel(issueTable.getComponent());
 
@@ -393,7 +396,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
                 }
             }
         };
-        ODCSUtil.runInAwt(r);
+        UIUtils.runInAWT(r);
     }
 
     protected void selectFirstProduct() {
@@ -637,7 +640,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
                     setIssueCount(issueCount);
                 }
             };
-            ODCSUtil.runInAwt(r);
+            UIUtils.runInAWT(r);
         }
         issueTable.setFilter(filter);
     }
@@ -696,7 +699,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
     }
 
     private void onWeb() {
-        TeamProject kp = repository.getLookup().lookup(TeamProject.class);
+        TeamProject kp = repository.getTeamProject();
         assert kp != null; // all odcs repositories should come from team support
         if (kp == null) {
             return;
@@ -963,7 +966,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
     }
 
     @Override
-    public boolean saveChanges() {
+    public boolean saveChanges(String name) {
         return true;
     }
 
@@ -973,7 +976,12 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
     }
 
     private void fireSaved() {
-        support.firePropertyChange(PROPERTY_QUERY_SAVED, null, null);
+        support.firePropertyChange(PROP_CHANGED, null, null);
+    }
+
+    @Override
+    public boolean isChanged() {
+        return false;
     }
     
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
@@ -985,6 +993,10 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
     @Override
     public void removePropertyChangeListener(PropertyChangeListener l) {
         support.removePropertyChangeListener(l);
+    }
+
+    public void setIssueContainer(QueryProvider.IssueContainer<ODCSIssue> c) {
+        delegatingIssueContainer = c;
     }
 
     private class QueryTask implements Runnable, Cancellable, QueryNotifyListener {
@@ -1006,7 +1018,9 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
 ////            if(lastChageFrom != null && !lastChageFrom.equals("")) {    // NOI18N
 ////                ODCSConfig.getInstance().setLastChangeFrom(lastChageFrom);
 ////            }
-            
+            if(delegatingIssueContainer != null) {
+                delegatingIssueContainer.refreshingStarted();
+            }
             setQueryRunning(true);
             handle = ProgressHandleFactory.createHandle(
                     NbBundle.getMessage(
@@ -1028,6 +1042,9 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
         } 
 
         private void finnishQuery() {
+            if(delegatingIssueContainer != null) {
+                delegatingIssueContainer.refreshingFinished();
+            }
             setQueryRunning(false); // XXX do we need this? its called in finishQuery anyway
             synchronized(REFRESH_LOCK) {
                 task = null;
@@ -1119,7 +1136,10 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
         }
 
         @Override
-        public void notifyData(final ODCSIssue issue) {
+        public void notifyDataAdded(final ODCSIssue issue) {
+            if(delegatingIssueContainer != null) {
+                delegatingIssueContainer.add(issue);
+            }
             issueTable.addNode(issue.getNode());
             setIssueCount(++counter);
             if(counter == 1) {
@@ -1132,6 +1152,13 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
             }
         }
 
+        @Override
+        public void notifyDataRemoved(ODCSIssue issue) {
+            if(delegatingIssueContainer != null) {
+                delegatingIssueContainer.remove(issue);
+            }
+        }
+        
         @Override
         public void started() {
             issueTable.started();

@@ -1,9 +1,10 @@
 #Signature file v4.1
-#Version 1.31.1
+#Version 1.34.2
 
 CLSS public abstract interface !annotation java.lang.Deprecated
  anno 0 java.lang.annotation.Documented()
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[CONSTRUCTOR, FIELD, LOCAL_VARIABLE, METHOD, PACKAGE, PARAMETER, TYPE])
 intf java.lang.annotation.Annotation
 
 CLSS public java.lang.Object
@@ -296,6 +297,7 @@ fld public final static java.lang.String PROP_WARNING_MESSAGE = "WizardPanel_war
 innr public abstract interface static AsynchronousInstantiatingIterator
 innr public abstract interface static AsynchronousValidatingPanel
 innr public abstract interface static BackgroundInstantiatingIterator
+innr public abstract interface static ExtendedAsynchronousValidatingPanel
 innr public abstract interface static FinishPanel
 innr public abstract interface static FinishablePanel
 innr public abstract interface static InstantiatingIterator

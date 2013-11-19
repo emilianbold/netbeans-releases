@@ -43,20 +43,15 @@
 package org.netbeans.modules.maven.problems;
 
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
@@ -66,33 +61,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
-import org.apache.maven.artifact.resolver.ArtifactResolutionException;
-import org.apache.maven.execution.MavenExecutionResult;
-import org.apache.maven.model.Plugin;
-import org.apache.maven.model.building.ModelBuildingException;
-import org.apache.maven.model.building.ModelProblem;
-import org.apache.maven.model.resolution.UnresolvableModelException;
 import org.apache.maven.plugin.PluginArtifactsCache;
-import org.apache.maven.plugin.PluginResolutionException;
-import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.ProjectBuildingException;
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import org.netbeans.modules.autoupdate.ui.api.PluginManager;
-import org.netbeans.modules.maven.NbArtifactFixer;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
-import org.netbeans.modules.maven.actions.OpenPOMAction;
-import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
 import org.netbeans.modules.maven.api.problem.ProblemReporter;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
-import org.netbeans.modules.maven.embedder.MavenEmbedder;
-import org.netbeans.modules.maven.modelcache.MavenProjectCache;
 import static org.netbeans.modules.maven.problems.Bundle.*;
 import org.netbeans.spi.project.ui.ProjectProblemResolver;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
@@ -107,12 +83,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.modules.ModuleInfo;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
-import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -127,9 +100,6 @@ import org.openide.util.lookup.Lookups;
 })
 @SuppressWarnings("deprecation")
 public final class ProblemReporterImpl implements ProblemReporter, Comparator<ProblemReport>, ProjectProblemsProvider {
-    private static final String MISSING_DEPENDENCY = "MISSING_DEPENDENCY";//NOI18N
-    private static final String BUILD_PARTICIPANT = "BUILD_PARTICIPANT";//NOI18N
-    private static final String MISSING_PARENT = "MISSING_PARENT";//NOI18N
     
     private static final Logger LOG = Logger.getLogger(ProblemReporterImpl.class.getName());
     public static final RequestProcessor RP = new RequestProcessor(ProblemReporterImpl.class);
@@ -241,7 +211,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
      * and some problems encapsulate several missing artifacts.
      * @param a an artifact (scope permitted but ignored)
      */
-    private void addMissingArtifact(Artifact a) {
+    void addMissingArtifact(Artifact a) {
         synchronized (reports) {
             a = EmbedderFactory.getProjectEmbedder().getLocalRepository().find(a);
             //a.getFile should be already normalized but the find() method can pull tricks on us.
@@ -309,164 +279,6 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
             return ret;
         }
         return o1.hashCode() - o2.hashCode();
-        
-    }
-
-    @Messages({
-        "ERR_SystemScope=A 'system' scope dependency was not found. Code completion is affected.",
-        "MSG_SystemScope=There is a 'system' scoped dependency in the project but the path to the binary is not valid.\n"
-            + "Please check that the path is absolute and points to an existing binary.",
-        "ERR_NonLocal=Some dependency artifacts are not in the local repository.",
-        "# {0} - list of artifacts", "MSG_NonLocal=Your project has dependencies that are not resolved locally. "
-            + "Code completion in the IDE will not include classes from these dependencies or their transitive dependencies (unless they are among the open projects).\n"
-            + "Please download the dependencies, or install them manually, if not available remotely.\n\n"
-            + "The artifacts are:\n {0}",
-        "ERR_Participant=Custom build participant(s) found",
-        "MSG_Participant=The IDE will not execute any 3rd party extension code during Maven project loading.\nThese can have significant influence on performance of the Maven model (re)loading or interfere with IDE''s own codebase. "
-            + "On the other hand the model loaded can be incomplete without their participation. In this project "
-            + "we have discovered the following external build participants:\n{0}"
-    })
-    public void doArtifactChecks(@NonNull MavenProject project) {
-        
-        if (MavenProjectCache.unknownBuildParticipantObserved(project)) {
-            StringBuilder sb = new StringBuilder();
-            for (String s : MavenProjectCache.getUnknownBuildParticipantsClassNames(project)) {
-                sb.append(s).append("\n");
-            }
-            ProblemReport report = new ProblemReport(
-                    ProblemReport.SEVERITY_MEDIUM,
-                    ERR_Participant(),
-                    MSG_Participant(sb.toString()),
-                    null
-                    /**new EnableParticipantsBuildAction(nbproject)**/);
-            report.setId(BUILD_PARTICIPANT);
-            addReport(report);
-        }
-        checkParents(project);
-        
-        boolean missingNonSibling = false;
-        List<Artifact> missingJars = new ArrayList<Artifact>();
-        for (Artifact art : project.getArtifacts()) {
-            File file = art.getFile();
-            if (file == null || !file.exists()) {                
-                if(Artifact.SCOPE_SYSTEM.equals(art.getScope())){
-                    //TODO create a correction action for this.
-                    ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_MEDIUM,
-                            ERR_SystemScope(),
-                            MSG_SystemScope(),
-                            OpenPOMAction.instance().createContextAwareInstance(Lookups.fixed(nbproject)));
-                    addReport(report);
-                } else {
-                    addMissingArtifact(art);
-                    if (file == null) {
-                        missingNonSibling = true;
-                    } else {
-                        final URL archiveUrl = FileUtil.urlForArchiveOrDir(file);
-                        if (archiveUrl != null) { //#236050 null check
-                            //a.getFile should be already normalized
-                            SourceForBinaryQuery.Result2 result = SourceForBinaryQuery.findSourceRoots2(archiveUrl);
-                            if (!result.preferSources() || /* SourceForBinaryQuery.EMPTY_RESULT2.preferSources() so: */ result.getRoots().length == 0) {
-                                missingNonSibling = true;
-                            } // else #189442: typically a snapshot dep on another project
-                        }
-                    }
-                    missingJars.add(art);
-                }
-            } else if (NbArtifactFixer.isFallbackFile(file)) {
-                addMissingArtifact(art);
-                missingJars.add(art);
-                missingNonSibling = true;
-            }
-        }
-        if (!missingJars.isEmpty()) {
-            StringBuilder mess = new StringBuilder();
-            for (Artifact art : missingJars) {
-                mess.append(art.getId()).append('\n');
-            }
-            ProblemReport report = new ProblemReport(
-                    missingNonSibling ? ProblemReport.SEVERITY_MEDIUM : ProblemReport.SEVERITY_LOW,
-                    ERR_NonLocal(),
-                    MSG_NonLocal(mess),
-                    new SanityBuildAction(nbproject));
-            report.setId(MISSING_DEPENDENCY);
-            addReport(report);
-        }
-    }
-
-    @Messages({
-        "ERR_NoParent=Parent POM file is not accessible. Project might be improperly setup.",
-        "# {0} - Maven coordinates", "MSG_NoParent=The parent POM with id {0} was not found in sources or local repository. "
-            + "Please check that <relativePath> tag is present and correct, the version of parent POM in sources matches the version defined. \n"
-            + "If parent is only available through a remote repository, please check that the repository hosting it is defined in the current POM."
-    })
-    private void checkParents(@NonNull MavenProject project) {
-        List<MavenEmbedder.ModelDescription> mdls = MavenEmbedder.getModelDescriptors(project);
-        boolean first = true;
-        if (mdls == null) { //null means just about broken project..
-            return;
-        }
-        for (MavenEmbedder.ModelDescription m : mdls) {
-            if (first) {
-                first = false;
-                continue;
-            }
-            if (NbArtifactFixer.FALLBACK_NAME.equals(m.getName())) {
-                ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
-                        ERR_NoParent(),
-                        MSG_NoParent(m.getId()),
-                        new SanityBuildAction(nbproject));
-                report.setId(MISSING_PARENT);
-                addReport(report);
-                addMissingArtifact(EmbedderFactory.getProjectEmbedder().createArtifact(m.getGroupId(), m.getArtifactId(), m.getVersion(), "pom"));
-            }
-        }
-    }
-
-    
-    @Messages({
-        "TXT_Artifact_Resolution_problem=Artifact Resolution problem",
-        "TXT_Artifact_Not_Found=Artifact Not Found",
-        "TXT_Cannot_Load_Project=Unable to properly load project"
-    })
-    public void reportExceptions(MavenExecutionResult res) throws MissingResourceException {
-        for (Throwable e : res.getExceptions()) {
-            LOG.log(Level.FINE, "Error on loading project " + projectPOMFile, e);
-            String msg = e.getMessage();
-            if (e instanceof ArtifactResolutionException) { // XXX when does this occur?
-                ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
-                        TXT_Artifact_Resolution_problem(), msg, null);
-                addReport(report);
-                addMissingArtifact(((ArtifactResolutionException) e).getArtifact());
-            } else if (e instanceof ArtifactNotFoundException) { // XXX when does this occur?
-                ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
-                        TXT_Artifact_Not_Found(), msg, null);
-                addReport(report);
-                addMissingArtifact(((ArtifactNotFoundException) e).getArtifact());
-            } else if (e instanceof ProjectBuildingException) {
-                addReport(new ProblemReport(ProblemReport.SEVERITY_HIGH,
-                        TXT_Cannot_Load_Project(), msg, new SanityBuildAction(nbproject)));
-                if (e.getCause() instanceof ModelBuildingException) {
-                    ModelBuildingException mbe = (ModelBuildingException) e.getCause();
-                    for (ModelProblem mp : mbe.getProblems()) {
-                        LOG.log(Level.FINE, mp.toString(), mp.getException());
-                        if (mp.getException() instanceof UnresolvableModelException) {
-                            // Probably obsoleted by ProblemReporterImpl.checkParent, but just in case:
-                            UnresolvableModelException ume = (UnresolvableModelException) mp.getException();
-                            addMissingArtifact(EmbedderFactory.getProjectEmbedder().createProjectArtifact(ume.getGroupId(), ume.getArtifactId(), ume.getVersion()));
-                        } else if (mp.getException() instanceof PluginResolutionException) {
-                            Plugin plugin = ((PluginResolutionException) mp.getException()).getPlugin();
-                            // XXX this is not actually accurate; should rather pick out the ArtifactResolutionException & ArtifactNotFoundException inside
-                            addMissingArtifact(EmbedderFactory.getProjectEmbedder().createArtifact(plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion(), "jar"));
-                        }
-                    }
-                }
-            } else {
-                LOG.log(Level.INFO, "Exception thrown while loading maven project at " + projectPOMFile, e); //NOI18N
-                ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
-                        "Error reading project model", msg, null);
-                addReport(report);
-            }
-        }
     }
     
     public static Action createOpenFileAction(FileObject fo) {
@@ -475,9 +287,9 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
     
     private static class OpenActions extends AbstractAction {
 
-        private FileObject fo;
+        private final FileObject fo;
 
-        @Messages({"TXT_OPEN_FILE=Open File",
+        @NbBundle.Messages({"TXT_OPEN_FILE=Open File",
             "ACT_OPEN_FILE_START=Affected file was opened."
         })
         OpenActions(FileObject file) {
@@ -500,9 +312,6 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
             }
         }
     }
-    
-
-    
     //---------------------------------------
     //projectproblem provider related methods
 

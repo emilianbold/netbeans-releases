@@ -92,7 +92,17 @@ public final class LanguageRegistry implements Iterable<Language> {
      */
     public Language getLanguageByMimeType(@NonNull String mimeType) {
         final Map<String, Language> map = getLanguages();
-        return map.get(mimeType);
+        MimePath mp = MimePath.get(mimeType);
+        Language lng = map.get(mimeType);
+        if (lng != null) {
+            return lng;
+        }
+        String s = mp.getInheritedType();
+        if (s != null && !s.isEmpty()) {
+            return map.get(s);
+        } else {
+            return null;
+        }
     }
 
 // XXX: parsingapi

@@ -43,6 +43,7 @@ package org.netbeans.modules.php.analysis.options;
 
 import java.util.List;
 import org.netbeans.modules.php.analysis.commands.CodeSniffer;
+import org.netbeans.modules.php.analysis.commands.CodingStandardsFixer;
 import org.netbeans.modules.php.analysis.commands.MessDetector;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.validation.ValidationResult;
@@ -62,6 +63,11 @@ public final class AnalysisOptionsValidator {
     public AnalysisOptionsValidator validateMessDetector(String messDetectorPath, List<String> messDetectorRuleSets) {
         validateMessDetectorPath(messDetectorPath);
         validateMessDetectorRuleSets(messDetectorRuleSets);
+        return this;
+    }
+
+    public AnalysisOptionsValidator validateCodingStandardsFixer(String codingStandardsFixerPath) {
+        validateCodingStandardsFixerPath(codingStandardsFixerPath);
         return this;
     }
 
@@ -97,6 +103,14 @@ public final class AnalysisOptionsValidator {
     public AnalysisOptionsValidator validateMessDetectorRuleSets(List<String> messDetectorRuleSets) {
         if (messDetectorRuleSets.isEmpty()) {
             result.addWarning(new ValidationResult.Message("messDetector.ruleSets", Bundle.AnalysisOptionsValidator_messDetector_ruleSets_empty())); // NOI18N
+        }
+        return this;
+    }
+
+    private AnalysisOptionsValidator validateCodingStandardsFixerPath(String codingStandardsFixerPath) {
+        String warning = CodingStandardsFixer.validate(codingStandardsFixerPath);
+        if (warning != null) {
+            result.addWarning(new ValidationResult.Message("codingStandardsFixer.path", warning)); // NOI18N
         }
         return this;
     }

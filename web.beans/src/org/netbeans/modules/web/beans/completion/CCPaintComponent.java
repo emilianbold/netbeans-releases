@@ -321,7 +321,7 @@ public class CCPaintComponent extends JPanel {
     }
     
     
-    public static final class PersistenceUnitElementPaintComponent extends NbStringPaintComponent {
+    public static final class BeansElementPaintComponent extends NbStringPaintComponent {
         
         private String puName;
         

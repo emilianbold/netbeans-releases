@@ -199,6 +199,7 @@
                 <friend>org.netbeans.modules.hudson.ui</friend>
                 <friend>org.netbeans.modules.java.testrunner</friend>
                 <friend>org.netbeans.modules.javascript.jstestdriver</friend>
+                <friend>org.netbeans.modules.javascript.karma</friend>
                 <friend>org.netbeans.modules.junit</friend>
                 <friend>org.netbeans.modules.maven.junit</friend>
                 <friend>org.netbeans.modules.mobility.j2meunit</friend>
@@ -207,6 +208,7 @@
                 <friend>org.netbeans.modules.python.testrunner</friend>
                 <friend>org.netbeans.modules.ruby.testrunner</friend>
                 <friend>org.netbeans.modules.testng</friend>
+                <friend>org.netbeans.modules.web.clientproject.api</friend>
                 <package>org.netbeans.modules.gsf.testrunner.api</package>
                 <package>org.netbeans.modules.gsf.testrunner.plugin</package>
             </friend-packages>

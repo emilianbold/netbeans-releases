@@ -101,6 +101,9 @@ public class TestOutputListenerProviderTest extends TestCase {
         visitor.resetVisitor();
         provider.processLine("Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.057 sec \r\r\t\n\r\n<<< FAILURE!        ", visitor);
         assertNotNull(visitor.getOutputListener());
+        visitor.resetVisitor();
+        provider.processLine("Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.057 sec <<< FAILURE! - in org.milos.FooTest", visitor);
+        assertNotNull(visitor.getOutputListener());
         
         //behaviour on windows...
         visitor.resetVisitor();

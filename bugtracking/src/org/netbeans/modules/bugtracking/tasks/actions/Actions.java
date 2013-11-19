@@ -43,7 +43,6 @@ package org.netbeans.modules.bugtracking.tasks.actions;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +56,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.QueryImpl;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.spi.QueryController;
@@ -74,6 +74,8 @@ import org.netbeans.modules.bugtracking.tasks.dashboard.Refreshable;
 import org.netbeans.modules.bugtracking.tasks.dashboard.TaskContainerNode;
 import org.netbeans.modules.bugtracking.tasks.dashboard.Submitable;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
+import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
+import org.netbeans.modules.bugtracking.ui.query.QueryTopComponent;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.team.commons.treelist.TreeListNode;
 import org.openide.DialogDisplayer;
@@ -474,7 +476,7 @@ public class Actions {
         if (taskNodes.length == 1) {
             schedule = taskNodes[0].getTask().getSchedule();
         }
-        final BugtrackingUtil.SchedulingMenu scheduleMenu = BugtrackingUtil.createScheduleMenu(schedule);
+        final DashboardUtils.SchedulingMenu scheduleMenu = DashboardUtils.createScheduleMenu(schedule);
 
         //TODO weak listener??
         final ChangeListener listener = new ChangeListener() {
@@ -566,7 +568,7 @@ public class Actions {
         @Override
         public void actionPerformed(ActionEvent e) {
             for (TaskNode taskNode : getTaskNodes()) {
-                IssueAction.openIssue(taskNode.getTask().getRepositoryImpl(), taskNode.getTask().getID());
+                taskNode.getTask().open();
             }
         }
     }
@@ -751,6 +753,10 @@ public class Actions {
         public void actionPerformed(ActionEvent e) {
             for (RepositoryNode repositoryNode : getRepositoryNodes()) {
                 DashboardViewer.getInstance().setRepositoryOpened(repositoryNode, false);
+                
+                RepositoryImpl repo = repositoryNode.getRepository();
+                IssueTopComponent.closeFor(repo);
+                QueryTopComponent.closeFor(repo);
             }
         }
     }

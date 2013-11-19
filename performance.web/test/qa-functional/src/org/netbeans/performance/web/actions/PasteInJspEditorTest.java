@@ -41,101 +41,111 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.web.actions;
 
 import java.awt.event.KeyEvent;
-
+import javax.swing.KeyStroke;
+import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.EditorWindowOperator;
+import static org.netbeans.jellytools.JellyTestCase.emptyConfiguration;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.CopyAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.OpenAction;
-import org.netbeans.jellytools.actions.Action.Shortcut;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.jemmy.operators.ComponentOperator;
-
+import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.web.setup.WebSetup;
 
 /**
  * Test of Paste text to opened source editor.
  *
- * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
+ * @author anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
 public class PasteInJspEditorTest extends PerformanceTestCase {
+
     private String file;
     private EditorOperator editorOperator1, editorOperator2;
-    
-    
-    /** Creates a new instance of PasteInEditor */
+
+    /**
+     * Creates a new instance of PasteInEditor
+     *
+     * @param testName test name
+     */
     public PasteInJspEditorTest(String testName) {
         super(testName);
         init();
     }
-    
-    /** Creates a new instance of PasteInEditor */
+
+    /**
+     * Creates a new instance of PasteInEditor
+     *
+     * @param testName test name
+     * @param performanceDataName data name
+     */
     public PasteInJspEditorTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         init();
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(WebSetup.class)
-             .addTest(PasteInJspEditorTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(WebSetup.class)
+                .addTest(PasteInJspEditorTest.class)
+                .suite();
     }
 
-    protected void init() {
-        expectedTime = UI_RESPONSE;
-        WAIT_AFTER_PREPARE = 1000;
-        WAIT_AFTER_OPEN = 200;
+    private void init() {
+        expectedTime = 1300;
+        WAIT_AFTER_OPEN = 2000;
     }
-    
+
     public void testPasteInJspEditor() {
-        file="Test.jsp";
-        doMeasurement();
-    }    
-    
-    public void testPasteInJspEditorWithLargeFile() {
-        file="BigJSP.jsp";
+        file = "Test.jsp";
         doMeasurement();
     }
 
+    public void testPasteInJspEditorWithLargeFile() {
+        file = "BigJSP.jsp";
+        doMeasurement();
+    }
+
+    @Override
     protected void initialize() {
-        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
+        repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);
         EditorOperator.closeDiscardAll();
 
-        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("TestWebProject"),"Web Pages|Test.jsp"));
-        editorOperator1 = new EditorWindowOperator().getEditor("Test.jsp");
-        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("TestWebProject"),"Web Pages|"+file));
-        editorOperator2 = new EditorWindowOperator().getEditor(file);
+        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("TestWebProject"), "Web Pages|Test.jsp"));
+        editorOperator1 = new EditorOperator("Test.jsp");
+        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("TestWebProject"), "Web Pages|" + file));
+        editorOperator2 = new EditorOperator(file);
         editorOperator1.makeComponentVisible();
-        editorOperator1.select(12,18);
+        editorOperator1.select(12, 18);
         new CopyAction().perform();
         editorOperator2.makeComponentVisible();
         editorOperator2.setCaretPositionToLine(1);
-        new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_END, KeyEvent.CTRL_MASK)).perform(editorOperator2);
+        new ActionNoBlock(null, null, KeyStroke.getKeyStroke(KeyEvent.VK_END, KeyEvent.CTRL_MASK)).perform(editorOperator2);
     }
-    
+
+    @Override
     public void prepare() {
     }
-    
-    public ComponentOperator open(){
-        new Action(null, null, new Shortcut(KeyEvent.VK_V, KeyEvent.CTRL_MASK)).perform(editorOperator2);
+
+    @Override
+    public ComponentOperator open() {
+        new Action(null, null, KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_MASK)).perform(editorOperator2);
         return null;
     }
-    
+
+    @Override
     public void close() {
-        
+
     }
-    
+
+    @Override
     protected void shutdown() {
         super.shutdown();
         repaintManager().resetRegionFilters();

@@ -114,6 +114,7 @@ public class DarkMetalTheme extends MetalTheme {
         UIManager.put( "nb.bugtracking.new.color", new Color(0, 224, 0) ); //NOI18N
         UIManager.put( "nb.bugtracking.modified.color", new Color(81, 182, 255) ); //NOI18N
         UIManager.put( "nb.bugtracking.obsolete.color", new Color(130, 130, 130) ); //NOI18N
+        UIManager.put( "nb.bugtracking.conflict.color", new Color(255, 51, 51)); //NOI18N
 
         UIManager.put( "nb.html.link.foreground", new Color(164,164,255) ); //NOI18N
         UIManager.put( "nb.html.link.foreground.hover", new Color(255,216,0) ); //NOI18N
@@ -223,6 +224,10 @@ public class DarkMetalTheme extends MetalTheme {
         //browser picker
         UIManager.put( "Nb.browser.picker.background.light", new Color(41, 41, 45));
         UIManager.put( "Nb.browser.picker.foreground.light", new Color(172,172,172));
+
+        //search in projects
+        UIManager.put("nb.search.sandbox.highlight", new Color(104, 93, 156));
+        UIManager.put("nb.search.sandbox.regexp.wrong", new Color(255, 71, 71));
     }
 
     @Override

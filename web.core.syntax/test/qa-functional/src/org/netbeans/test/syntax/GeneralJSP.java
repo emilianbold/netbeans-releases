@@ -43,7 +43,9 @@ package org.netbeans.test.syntax;
 
 import java.awt.event.KeyEvent;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static junit.framework.Assert.fail;
@@ -68,6 +70,7 @@ public class GeneralJSP extends J2eeTestCase {
 
     protected EventTool evt;
     public static String current_project = "";
+    public static String original_content;
 
     public GeneralJSP(String arg0) {
         super(arg0);
@@ -107,6 +110,13 @@ public class GeneralJSP extends J2eeTestCase {
         int iLimit = code.length();
         for (int i = 0; i < iLimit; i++) {
             edit.typeKey(code.charAt(i));
+        }
+        evt.waitNoEvent(100);
+    }
+
+    public void pressKey(EditorOperator file, int key, int numberOfTimes) {
+        for (int i = 0; i < numberOfTimes; i++) {
+            file.pressKey(key);
         }
         evt.waitNoEvent(100);
     }
@@ -162,6 +172,41 @@ public class GeneralJSP extends J2eeTestCase {
         return anns;
     }
 
+    protected void checkCompletionItemsJsp(CompletionJListOperator jlist, String[] asIdeal) throws Exception {
+        checkCompletionItemsJsp(jlist, asIdeal, 20);
+    }
+
+    protected void checkCompletionItemsJsp(CompletionJListOperator jlist, String[] asIdeal, int maxItems) throws Exception {
+        Set<String> actual = new HashSet<String>();
+        List list = jlist.getCompletionItems();
+        StringBuilder suggestions = new StringBuilder();
+        String _t;
+        for (int i = 0; i < list.size() && i < maxItems; i++) {
+            if (list.get(i) instanceof org.netbeans.modules.web.core.syntax.completion.api.JspCompletionItem) {
+                _t = ((org.netbeans.modules.web.core.syntax.completion.api.JspCompletionItem) list.get(i)).getItemText();
+                actual.add(_t);
+                suggestions.append(_t).append(",");
+            } else if (list.get(i) instanceof org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem) {
+                _t = ((org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem) list.get(i)).getItemText();
+                actual.add(_t);
+                suggestions.append(_t).append(",");
+            } else {
+                actual.add(list.get(i).toString());
+                suggestions.append(list.get(i).toString()).append(",");
+            }
+        }
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < asIdeal.length; i++) {
+            if (!actual.contains(asIdeal[i])) {
+                sb.append(asIdeal[i]).append(",");
+            }
+
+        }
+        String result = sb.toString();
+        assertTrue("Completion does not contain items: " + result + " in list " + suggestions, result.length() == 0);
+    }
+
     protected void checkCompletionItems(CompletionJListOperator jlist, String[] asIdeal) {
         String completionList = "";
         StringBuilder sb = new StringBuilder(":");
@@ -196,6 +241,21 @@ public class GeneralJSP extends J2eeTestCase {
         }
     }
 
+    protected void checkCompletionMatchesPrefix(List list, String prefix) {
+        StringBuilder sb = new StringBuilder();
+        String item;
+        for (int i = 0; i < list.size(); i++) {
+            item = list.get(i).toString();
+            if(!item.toLowerCase().startsWith(prefix) && !item.equalsIgnoreCase("$color_chooser")){
+                sb.append(item).append("\n");
+            }
+        }
+
+        if (sb.toString().length() > 1) {
+            fail("Completion contains nonmatching items for prefix " + prefix + ". Completion list is " + sb.toString());
+        }
+    }
+    
     protected void checkCompletionItems(
             CompletionInfo jlist,
             String[] asIdeal) {
@@ -229,8 +289,8 @@ public class GeneralJSP extends J2eeTestCase {
             CompletionJListOperator.hideAll();
         }
     }
-    
-     protected void clearLine(EditorOperator eo) {
+
+    protected void clearLine(EditorOperator eo) {
         eo.deleteLine(eo.getLineNumber());
         eo.pressKey(KeyEvent.VK_ENTER);
     }

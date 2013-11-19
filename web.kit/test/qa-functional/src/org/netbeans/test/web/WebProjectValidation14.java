@@ -41,6 +41,12 @@ package org.netbeans.test.web;
 
 import java.io.File;
 import junit.framework.Test;
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
 
 /**
  * Test web project J2EE 1.4.
@@ -74,5 +80,16 @@ public class WebProjectValidation14 extends WebProjectValidation {
     public void testOpenWebProject() throws Exception {
         File projectDir = new File(getDataDir(), PROJECT_NAME);
         openProjects(projectDir.getAbsolutePath());
+        waitScanFinished();
+        // not display browser on run
+        new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME).properties();
+        NbDialogOperator propertiesDialogOper = new NbDialogOperator(
+                Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_Customizer_Title"));
+        new Node(new JTreeOperator(propertiesDialogOper),
+                Bundle.getString("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_Config_Run")).select();
+        new JCheckBoxOperator(propertiesDialogOper,
+                Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.customizer.Bundle",
+                        "LBL_CustomizeRun_DisplayBrowser_JCheckBox")).setSelected(false);
+        propertiesDialogOper.ok();
     }
 }

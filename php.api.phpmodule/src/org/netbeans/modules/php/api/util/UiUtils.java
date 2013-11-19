@@ -43,6 +43,10 @@
 package org.netbeans.modules.php.api.util;
 
 import java.awt.Image;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import javax.swing.Icon;
@@ -66,6 +70,8 @@ public final class UiUtils {
      * SFS path where all the PHP options can be found.
      */
     public static final String OPTIONS_PATH = "org-netbeans-modules-php-project-ui-options-PHPOptionsCategory"; // NOI18N
+    public static final String FRAMEWORKS_AND_TOOLS_SUB_PATH = "FrameworksAndTools"; // NOI18N
+    public static final String FRAMEWORKS_AND_TOOLS_OPTIONS_PATH = OPTIONS_PATH+"/"+FRAMEWORKS_AND_TOOLS_SUB_PATH; // NOI18N
     /**
      * SFS path where all the PHP customizer panels can be found.
      */
@@ -233,5 +239,31 @@ public final class UiUtils {
              */
             String getNoItemsFound();
         }
+    }
+
+    /**
+     * Registers a subpanel inside PHP's Framework and Tools panel.
+     * Should be placed on a {@link OptionsPanelController} instance.
+     * @see AdvancedOption
+     * @since 2.35
+     */
+    @Target({ElementType.TYPE, ElementType.METHOD})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface PhpOptionsPanelRegistration {
+        String id();
+        /** Label shown on the tab. You may use {@code #key} syntax. */
+        String displayName();
+        /**
+         * Optional keywords (separated by commas) for use with Quick Search (must also specify {@link #keywordsCategory}).
+         * You may use {@code #key} syntax.
+         */
+        String keywords() default "";
+        /** Keyword category for use with Quick Search (must also specify {@link #keywords}). */
+        String keywordsCategory() default "";
+        /**
+         * Position relative to sibling subpanels.
+         * Accepted only for non-default {@link #location} (Miscellaneous panel is sorted alphabetically).
+         */
+        int position() default Integer.MAX_VALUE;
     }
 }

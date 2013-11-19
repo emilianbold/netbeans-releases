@@ -45,6 +45,7 @@ import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Stack;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
@@ -709,16 +710,13 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
                 return false;
             }
             final HintVariable other = (HintVariable) obj;
-            if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
-                return false;
-            }
-            return true;
+            return Objects.equals(this.name, other.name);
         }
 
         @Override
         public int hashCode() {
             int hash = 7;
-            hash = 19 * hash + (this.name != null ? this.name.hashCode() : 0);
+            hash = 37 * hash + Objects.hashCode(this.name);
             return hash;
         }
 

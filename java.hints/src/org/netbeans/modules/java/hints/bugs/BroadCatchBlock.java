@@ -57,6 +57,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.UnionType;
@@ -269,6 +270,18 @@ public class BroadCatchBlock {
                 // 
                 if (excludeCommons && !genericQNames.contains(fqn)) {
                    return null;
+                }
+            } else {
+                // 1 exception is masked, the caught exception is among the umbrellas. In the case that fqn is a 
+                // RuntimeException subclass (not the RTE itself), do not report - see issue #230548 for an example.
+                Element e = info.getElements().getTypeElement("java.lang.RuntimeException"); // NOI18N
+                if (e == null) {
+                    // bad JDK ?
+                    return null;
+                }
+                TypeMirror rtt = e.asType();
+                if (info.getTypes().isSubtype(excElement.asType(), rtt) && !info.getTypes().isSameType(excElement.asType(), rtt)) {
+                    return null;
                 }
             }
             

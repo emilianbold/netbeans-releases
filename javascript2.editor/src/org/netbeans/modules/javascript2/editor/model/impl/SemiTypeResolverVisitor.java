@@ -116,7 +116,8 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
     }
 
     private void add(List<String> exp, int offset, boolean resolved) {
-        if (/*visitedIndexNode ||*/ exp.isEmpty() || (exp.size() == 1 && exp.get(0).startsWith(ST_START_DELIMITER)
+        if (/*visitedIndexNode ||*/ exp.isEmpty() 
+                || (exp.size() == 1 && exp.get(0).startsWith(ST_START_DELIMITER) && !exp.get(0).startsWith(ST_ANONYM)
                 && !ST_THIS.equals(exp.get(0)))) {
             return;
         }
@@ -263,7 +264,12 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
 
     @Override
     public Node enter(ObjectNode objectNode) {
-        add(new TypeUsageImpl(ST_ANONYM + objectNode.getStart(), objectNode.getStart(), false));
+        int size = getPath().size();
+        if (size > 0 && getPath().get(size - 1) instanceof AccessNode) {
+            exp.add(ST_ANONYM + objectNode.getStart());
+        } else {
+            add(new TypeUsageImpl(ST_ANONYM + objectNode.getStart(), objectNode.getStart(), false));
+        }
         return null;
     }
 

@@ -54,16 +54,16 @@ import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
-@OptionsPanelController.SubRegistration(
-        location=UiUtils.OPTIONS_PATH,
-	id=ComposerOptionsPanelController.OPTIONS_SUBPATH,
+@UiUtils.PhpOptionsPanelRegistration(
+	id=ComposerOptionsPanelController.ID,
         displayName="#Options.name",
         // toolTip="#LBL_OptionsTooltip"
         position=180
 )
 public class ComposerOptionsPanelController extends OptionsPanelController implements ChangeListener {
 
-    public static final String OPTIONS_SUBPATH = "Composer"; // NOI18N
+    static final String ID = "Composer"; // NOI18N
+    public static final String OPTIONS_SUBPATH = UiUtils.FRAMEWORKS_AND_TOOLS_SUB_PATH+"/"+ID; // NOI18N
 
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 

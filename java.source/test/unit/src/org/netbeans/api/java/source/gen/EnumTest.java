@@ -1595,6 +1595,207 @@ public class EnumTest extends GeneratorTestBase {
         System.err.println(res);
         assertEquals(golden, res);
     }
+    
+    /**
+     * Adds only a method to the enum
+     */
+    public void test237816CreateMethods() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "public enum Test {\n"+
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "public enum Test {\n"+
+            "\n" +
+            "    ;\n" +
+            "\n" +
+            "    public void run() {\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                final TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                List<Tree> constants = new LinkedList<Tree>();
+
+                MethodTree mt = make.Method(
+                    make.Modifiers(EnumSet.of(Modifier.PUBLIC)), 
+                    "run", make.Type("void"), Collections.<TypeParameterTree>emptyList(), 
+                    Collections.<VariableTree>emptyList(), Collections.<ExpressionTree>emptyList(), 
+                    make.Block(Collections.<StatementTree>emptyList(), false), null);
+
+                constants.add(mt);
+
+                int mods =  1<<14 | 1 << 0;
+                ModifiersTree modifiers = make.Modifiers(mods, Collections.<AnnotationTree>emptyList());
+                ClassTree nueClazz = make.Class(modifiers, "Test", Collections.<TypeParameterTree>emptyList(), null, Collections.<Tree>emptyList(), constants);
+
+                workingCopy.rewrite(clazz, nueClazz);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void test237816CreateConstAndMethod() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "public enum Test {\n"+
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "public enum Test {\n"+
+            "    A;\n" +
+            "\n" +
+            "    public void run() {\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                final TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                List<Tree> constants = new LinkedList<Tree>();
+
+                int mods =  1<<14;
+                ModifiersTree modifiers = make.Modifiers(mods, Collections.<AnnotationTree>emptyList());
+                constants.add(make.Variable(modifiers, "A", make.Identifier("Tests"), null)); // NOI18N
+                
+                MethodTree mt = make.Method(
+                    make.Modifiers(EnumSet.of(Modifier.PUBLIC)), 
+                    "run", make.Type("void"), Collections.<TypeParameterTree>emptyList(), 
+                    Collections.<VariableTree>emptyList(), Collections.<ExpressionTree>emptyList(), 
+                    make.Block(Collections.<StatementTree>emptyList(), false), null);
+
+                constants.add(mt);
+
+                modifiers = make.Modifiers(mods | 1, Collections.<AnnotationTree>emptyList());
+                ClassTree nueClazz = make.Class(modifiers, "Test", Collections.<TypeParameterTree>emptyList(), null, Collections.<Tree>emptyList(), constants);
+
+                workingCopy.rewrite(clazz, nueClazz);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void test237816AddConstToMethods() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "public enum Test {\n"+
+            "\n" +
+            "    ;\n" +
+            "\n" +
+            "    public void run() {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "public enum Test {\n"+
+            "    A;\n" +
+            "    public void run() {\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                final TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                List<Tree> constants = new LinkedList<Tree>();
+
+                int mods =  1<<14;
+                ModifiersTree modifiers = make.Modifiers(mods, Collections.<AnnotationTree>emptyList());
+                constants.add(make.Variable(modifiers, "A", make.Identifier("Tests"), null)); // NOI18N
+                
+                Tree mt = clazz.getMembers().get(1);
+
+                constants.add(mt);
+
+                modifiers = make.Modifiers(mods | 1, Collections.<AnnotationTree>emptyList());
+                ClassTree nueClazz = make.Class(modifiers, "Test", Collections.<TypeParameterTree>emptyList(), null, Collections.<Tree>emptyList(), constants);
+
+                workingCopy.rewrite(clazz, nueClazz);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void test237816RemoveLastConst() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "public enum Test {\n"+
+            "    A;\n" +
+            "    public void run() {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "public enum Test {\n"+
+            "\n" +
+            "    ;\n" +
+            "\n" +
+            "    public void run() {\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                final TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                List<Tree> constants = new LinkedList<Tree>();
+
+                Tree mt = clazz.getMembers().get(2);
+
+                constants.add(mt);
+
+                ModifiersTree modifiers = make.Modifiers(1 << 14 | 1, Collections.<AnnotationTree>emptyList());
+                ClassTree nueClazz = make.Class(modifiers, "Test", Collections.<TypeParameterTree>emptyList(), null, Collections.<Tree>emptyList(), constants);
+
+                workingCopy.rewrite(clazz, nueClazz);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
 
     String getGoldenPckg() {
         return "";

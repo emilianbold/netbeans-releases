@@ -49,10 +49,12 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.text.DateFormat;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -75,14 +77,12 @@ import javax.swing.plaf.basic.BasicTextPaneUI;
 import javax.swing.plaf.basic.BasicTreeUI;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
-import org.netbeans.modules.bugtracking.util.IssueSettingsStorage;
-import org.netbeans.modules.bugtracking.util.HyperlinkSupport;
-import org.netbeans.modules.bugtracking.util.LinkButton;
-import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.netbeans.modules.bugtracking.commons.IssueSettingsStorage;
+import org.netbeans.modules.bugtracking.commons.LinkButton;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
-import org.netbeans.modules.jira.util.JiraUtils;
+import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -95,10 +95,10 @@ public class CommentsPanel extends JPanel {
     private final static String REPLY_TO_PROPERTY = "replyTo"; // NOI18N
     private final static String QUOTE_PREFIX = "> "; // NOI18N
     private NbJiraIssue issue;
-    private HyperlinkSupport.Link issueLink;
     private NewCommentHandler newCommentHandler;
 
     private Set<Long> collapsedComments = Collections.synchronizedSet(new HashSet<Long>());
+    private List<ExpandLabel> sections;
 
     private static Color blueBackground = null;
     private static Color greyForeground = null;
@@ -114,21 +114,6 @@ public class CommentsPanel extends JPanel {
 
     public CommentsPanel() {
         setOpaque( false );
-        issueLink = new HyperlinkSupport.Link() {
-            @Override
-            public void onClick(String linkText) {
-                final String issueKey = JiraIssueFinder.getInstance().getIssueId(linkText);
-                RP.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        NbJiraIssue is = issue.getRepository().getIssue(issueKey);
-                        if (is != null) {
-                            JiraUtils.openIssue(is);
-                        }
-                    }
-                });
-            }
-        };
     }
 
     public void setIssue(NbJiraIssue issue) {
@@ -154,7 +139,9 @@ public class CommentsPanel extends JPanel {
         }
         String description = issue.getFieldValue(NbJiraIssue.IssueField.DESCRIPTION);
         String reporter = issue.getRepository().getConfiguration().getUser(issue.getFieldValue(NbJiraIssue.IssueField.REPORTER)).getFullName();
-        addSection(
+        NbJiraIssue.Comment[] comments = issue.getComments();
+        this.sections = new ArrayList<>(comments.length);
+        sections.add(addSection(
                 layout, 
                 new Long(0),    
                 description, 
@@ -162,18 +149,18 @@ public class CommentsPanel extends JPanel {
                 creationTxt, 
                 horizontalGroup, 
                 verticalGroup, 
-                true);
-        for (NbJiraIssue.Comment comment : issue.getComments()) {
+                true));
+        for (NbJiraIssue.Comment comment : comments) {
             Date date = comment.getWhen();
             String when = (date == null) ? "" : format.format(date); // NOI18N
-            addSection(
+            sections.add(addSection(
                     layout, 
                     comment.getNumber(),
                     comment.getText(), 
                     comment.getWho(), 
                     when, 
                     horizontalGroup, 
-                    verticalGroup, false);
+                    verticalGroup, false));
         }
         verticalGroup.addContainerGap();
         setLayout(layout);
@@ -183,7 +170,7 @@ public class CommentsPanel extends JPanel {
         newCommentHandler = handler;
     }
 
-    private void addSection(GroupLayout layout, Long number, String text, String author, String dateTimeString,
+    private ExpandLabel addSection(GroupLayout layout, Long number, String text, String author, String dateTimeString,
             GroupLayout.ParallelGroup horizontalGroup, GroupLayout.SequentialGroup verticalGroup, boolean description) {
         
         JTextPane textPane = new JTextPane();
@@ -233,7 +220,7 @@ public class CommentsPanel extends JPanel {
         JLabel stateLabel = null;
         if (issue.getRepository() instanceof KenaiRepository) {
             String host = ((KenaiRepository) issue.getRepository()).getHost();
-            stateLabel = TeamUtil.createUserWidget(issue.getRepository().getUrl(), author, host, TeamUtil.getChatLink(issue.getKey()));
+            stateLabel = TeamAccessorUtils.createUserWidget(issue.getRepository().getUrl(), author, host, TeamAccessorUtils.getChatLink(issue.getKey()));
             if (stateLabel != null) {
                 stateLabel.setText(null);
             }
@@ -269,6 +256,7 @@ public class CommentsPanel extends JPanel {
             .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
                 .addComponent(placeholder)
                 .addComponent(textPane, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE));
+        return iconLabel;
     }
 
     private JPanel createTextPanelPlaceholder() {
@@ -290,12 +278,7 @@ public class CommentsPanel extends JPanel {
             ((DefaultCaret)caret).setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
         }
 
-        // Stack-traces
         textPane.setText(comment);
-        HyperlinkSupport.getInstance().registerForTypes(textPane);
-        HyperlinkSupport.getInstance().registerForStacktraces(textPane);
-        HyperlinkSupport.getInstance().registerForURLs(textPane);
-        HyperlinkSupport.getInstance().registerForIssueLinks(textPane, issueLink, JiraIssueFinder.getInstance());
         
         textPane.setBackground(blueBackground);
         textPane.setBorder(BorderFactory.createEmptyBorder(3,3,3,3));
@@ -360,6 +343,18 @@ public class CommentsPanel extends JPanel {
             };
         }
         return replyListener;
+    }
+
+    void collapseAll () {
+        for (ExpandLabel lbl : sections) {
+            lbl.setState(true);
+        }
+    }
+
+    void expandAll () {
+        for (ExpandLabel lbl : sections) {
+            lbl.setState(false);
+        }
     }
 
     public interface NewCommentHandler {

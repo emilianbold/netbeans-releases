@@ -243,6 +243,9 @@ public class Flow {
             for (Map.Entry<Tree, Iterable<? extends TreePath>> e : assignmentsForUse.entrySet()) {
                 Tree k = e.getKey();
                 for (TreePath p : e.getValue()) {
+                    if (p == null) {
+                        continue;
+                    }
                     Tree l = p.getLeaf();
                     Collection<Tree> users = res.get(l);
                     if (users == null) {
@@ -334,7 +337,7 @@ public class Flow {
             }
 
             State s = v.variable2State.get(var);
-            if (!s.assignments.contains(null)) {
+            if (s != null && !s.assignments.contains(null)) {
                 return reassignAllowed || !s.reassigned;
             }
         }
@@ -541,6 +544,8 @@ public class Flow {
             Element e = info.getTrees().getElement(getCurrentPath());
             
             if (e != null && SUPPORTED_VARIABLES.contains(e.getKind())) {
+                // note: if the variable does not have an initializer and is not a parameter (inParameters = true),
+                // the State will receive null as an assignment to indicate an uninitializer
                 variable2State.put((Element) e, State.create(node.getInitializer() != null ? new TreePath(getCurrentPath(), node.getInitializer()) : inParameters ? getCurrentPath() : null, variable2State.get(e)));
                 currentMethodVariables.add((Element) e);
             }
@@ -1002,6 +1007,21 @@ public class Flow {
             
             return null;
         }
+        
+        /**
+         * Removes definitions of variables, as a result of e.g. return, throw or System.exit.
+         */
+        private void removeAllDefinitions() {
+            variable2State = new HashMap< Element, State>(variable2State);
+            for (Iterator< Element> it = variable2State.keySet().iterator(); it.hasNext();) {
+                 Element k = it.next();
+                
+                if (!k.getKind().isField() &&
+                    !isUndefinedVariable(k)) {
+                    it.remove();
+                }
+            }
+        }
 
         public Boolean visitReturn(ReturnTree node, ConstructorData p) {
             super.visitReturn(node, p);
@@ -1015,17 +1035,8 @@ public class Flow {
             }
             
             resumeAfter(nearestMethod, variable2State);
-            
-            variable2State = new HashMap< Element, State>(variable2State);
-            for (Iterator< Element> it = variable2State.keySet().iterator(); it.hasNext();) {
-                 Element k = it.next();
-                
-                if (!k.getKind().isField() &&
-                    !isUndefinedVariable(k)) {
-                    it.remove();
-                }
-            }
-            
+
+            removeAllDefinitions();
             return null;
         }
 
@@ -1159,15 +1170,19 @@ public class Flow {
             return null;
         }
 
+        @Override
         public Boolean visitMethodInvocation(MethodInvocationTree node, ConstructorData p) {
             super.visitMethodInvocation(node, p);
 
             Element invoked = info.getTrees().getElement(getCurrentPath());
-
             if (invoked != null && invoked.getKind() == ElementKind.METHOD) {
-                recordResumeOnExceptionHandler((ExecutableElement) invoked);
+                // Special handling for System.exit: no defined value will escape this code path.
+                if (Utilities.isSystemExit(info, invoked)) {
+                    removeAllDefinitions();
+                    return null;
+                }
+                recordResumeOnExceptionHandler((ExecutableElement) invoked);    
             }
-
             return null;
         }
 

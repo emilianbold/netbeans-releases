@@ -41,6 +41,7 @@ import java.awt.Image;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.*;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.commons.NBBugzillaUtils;
 import org.netbeans.modules.bugtracking.tasks.DashboardTopComponent;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 
@@ -53,6 +54,7 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
  * @param <R> the implementation specific repository type
  * @param <Q> the implementation specific query type
  * @param <I> the implementation specific issue type
+ * @since 1.85
  */
 public final class BugtrackingSupport<R, Q, I> {
     private final RepositoryProvider<R, Q, I> repositoryProvider;
@@ -68,6 +70,7 @@ public final class BugtrackingSupport<R, Q, I> {
      *                      Is mandatory and cannot be null.
      * @param issueProvider an {@link IssueProvider} to access issues from the given repository.<br/>
      *                      Is mandatory and cannot be null.
+     * @since 1.85
      */
     public BugtrackingSupport(RepositoryProvider<R, Q, I> repositoryProvider, QueryProvider<Q, I> queryProvider, IssueProvider<I> issueProvider) {
         this.repositoryProvider = repositoryProvider;
@@ -81,6 +84,7 @@ public final class BugtrackingSupport<R, Q, I> {
      * @param r a implementation specific repository instance
      * 
      * @return a {@link Repository} instance
+     * @since 1.85
      */
     public Repository createRepository(R r) 
     {
@@ -99,7 +103,7 @@ public final class BugtrackingSupport<R, Q, I> {
      * @param issueStatusProvider an {@link IssueStatusProvider} to provide status information 
      *                            of an implementation specific issue.<br/> 
      *                            Might be null.
-     * @param issueSchedulingProvider an {@link IssueSchedulingProvider} to provide scheduling information 
+     * @param issueSchedulingProvider an {@link IssueScheduleProvider} to provide scheduling information 
      *                                of an implementation specific issue.<br/> 
      *                                Might be null.
      * @param issuePriorityProvider an {@link IssuePriorityProvider} to provide priority information 
@@ -109,10 +113,11 @@ public final class BugtrackingSupport<R, Q, I> {
      *                    Might be null.
      * 
      * @return a {@link Repository} instance
+     * @since 1.85
      */
     public Repository createRepository(R r,
             IssueStatusProvider<R, I> issueStatusProvider,
-            IssueSchedulingProvider<I> issueSchedulingProvider,
+            IssueScheduleProvider<I> issueSchedulingProvider,
             IssuePriorityProvider<I> issuePriorityProvider,
             IssueFinder issueFinder)
     {
@@ -121,6 +126,16 @@ public final class BugtrackingSupport<R, Q, I> {
             return repo;
         }
         RepositoryImpl<R, Q, I> impl = new RepositoryImpl<R, Q, I>(r, repositoryProvider, queryProvider, issueProvider, issueStatusProvider, issueSchedulingProvider, issuePriorityProvider, issueFinder);
+        RepositoryInfo info = impl.getInfo();
+        if(info != null && NBBugzillaUtils.isNbRepository(info.getUrl())) { 
+            // might be we just automatically generated a nb repository,
+            // in such a case it also has to be added to the registry 
+            // as otherwise it happens only on manul repositoy creation
+            RepositoryRegistry registry = RepositoryRegistry.getInstance();
+            if(registry.getRepository(impl.getConnectorId(), impl.getId()) == null) {
+                registry.addRepository(impl);
+            }
+        }
         return impl.getRepository();
     }
     
@@ -131,6 +146,7 @@ public final class BugtrackingSupport<R, Q, I> {
      * @param q a implementation specific Query instance
      * 
      * @see QueryController
+     * @since 1.85
      */
     public void editQuery(R r, Q q) {
         QueryImpl query = getQueryImpl(r, q);
@@ -144,6 +160,7 @@ public final class BugtrackingSupport<R, Q, I> {
      * 
      * @param r a implementation specific Repository instance
      * @param i a implementation specific Issue instance
+     * @since 1.85
      */
     public void openIssue(R r, I i) {
         IssueImpl issue = getIssueImpl(r, i);
@@ -157,6 +174,7 @@ public final class BugtrackingSupport<R, Q, I> {
      * 
      * @param r a implementation specific Repository instance
      * @param i a implementation specific Issue instance
+     * @since 1.85
      */
     public void addToCategory(final R r, final I i) {
         SwingUtilities.invokeLater(new Runnable() {
@@ -176,6 +194,7 @@ public final class BugtrackingSupport<R, Q, I> {
      * @param r a implementation specific Repository instance
      * @param errorMessage an message to be show in the repository edit dialog
      * @return <code>true</code> in case the repository was changed, otherwise <code>false</code>.
+     * @since 1.85
      */
     public boolean editRepository(R r, String errorMessage) {
         RepositoryImpl impl = getRepositoryImpl(r);
@@ -187,9 +206,10 @@ public final class BugtrackingSupport<R, Q, I> {
      * <br/>
      * Use them in case you want your bugtracking plugin implementation to use 
      * the same icons as are used by default in the Tasks Dashboard, or provide a 
-     * {@link IssuePriorityProvider} implementation via {@link #createRepository(java.lang.Object, IssueStatusProvider, IssueSchedulingProvider, IssuePriorityProvider, IssueFinder)}
+     * {@link IssuePriorityProvider} implementation via {@link #createRepository(java.lang.Object, org.netbeans.modules.bugtracking.spi.IssueStatusProvider, org.netbeans.modules.bugtracking.spi.IssueScheduleProvider, org.netbeans.modules.bugtracking.spi.IssuePriorityProvider, org.netbeans.modules.bugtracking.spi.IssueFinder) }
      * 
-     * @return 
+     * @return  priority icons
+     * @since 1.85
      */
     public Image[] getPriorityIcons() {
         return IssuePrioritySupport.getIcons();
@@ -212,7 +232,7 @@ public final class BugtrackingSupport<R, Q, I> {
     
     private RepositoryImpl getRepositoryImpl(R r) {
        RepositoryInfo info = repositoryProvider.getInfo(r);
-       return info != null ? getRepositoryImpl(info.getConnectorId(), info.getId()) : null;
+       return info != null ? getRepositoryImpl(info.getConnectorId(), info.getID()) : null;
     }
     
     private RepositoryImpl getRepositoryImpl(String connectorId, String repositoryId) {
@@ -222,7 +242,7 @@ public final class BugtrackingSupport<R, Q, I> {
     private Repository getRepository(R r) {
         RepositoryInfo info = repositoryProvider.getInfo(r);
         if (info != null) {
-            String repositoryId = info.getId();
+            String repositoryId = info.getID();
             String connectorId = repositoryProvider.getInfo(r).getConnectorId();
             Repository repo = getRepository(connectorId, repositoryId);
             return repo;

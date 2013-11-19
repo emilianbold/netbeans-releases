@@ -43,6 +43,7 @@
 package org.netbeans.modules.maven.grammar;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.StaticResource;
@@ -131,6 +132,8 @@ public class POMDataObject extends MultiDataObject {
 
     private class POMDataEditor extends DataEditorSupport implements EditorCookie.Observable, OpenCookie, EditCookie, PrintCookie, CloseCookie {
 
+        private String cachedTitleSuffix = null;
+        private final Object TITLE_LOCK = new Object();
         private final SaveCookie save = new SaveCookie() {
             public @Override void save() throws IOException {
                 saveDocument();
@@ -142,6 +145,9 @@ public class POMDataObject extends MultiDataObject {
 
         private final FileChangeListener listener = new FileChangeAdapter() {
             public @Override void fileChanged(FileEvent fe) {
+                synchronized (TITLE_LOCK) {
+                    cachedTitleSuffix = null;
+                }
                 updateTitles();
             }
         };
@@ -175,12 +181,25 @@ public class POMDataObject extends MultiDataObject {
         }
 
         protected @Override String messageName() {
-            return annotateWithProjectName(super.messageName(), getPrimaryFile());
+            String titleSuffix = null;
+            synchronized (TITLE_LOCK) {
+                if (cachedTitleSuffix == null) {
+                    cachedTitleSuffix = annotateWithProjectName(getPrimaryFile());
+                }
+                titleSuffix = cachedTitleSuffix;
+            }
+            return super.messageName() + titleSuffix;
         }
 
         protected @Override String messageHtmlName() {
-            String name = super.messageHtmlName();
-            return name != null ? annotateWithProjectName(name, getPrimaryFile()) : null;
+            String titleSuffix = null;
+            synchronized (TITLE_LOCK) {
+                if (cachedTitleSuffix == null) {
+                    cachedTitleSuffix = annotateWithProjectName(getPrimaryFile());
+                }
+                titleSuffix = cachedTitleSuffix;
+            }
+            return super.messageHtmlName() + titleSuffix;
         }
 
 
@@ -192,14 +211,15 @@ public class POMDataObject extends MultiDataObject {
 
     }
     
-        static String annotateWithProjectName(String name, FileObject primaryFile) { // #154508
+        static String annotateWithProjectName(FileObject primaryFile) { // #154508
             if (primaryFile.getNameExt().equals("pom.xml")) { // NOI18N
                 try {
+                    //TODO faster and less memory intensive to have just FileObject().asText()-> regexp?
                     Element artifactId = XMLUtil.findElement(XMLUtil.parse(new InputSource(primaryFile.toURL().toString()), false, false, XMLUtil.defaultErrorHandler(), null).getDocumentElement(), "artifactId", null); // NOI18N
                     if (artifactId != null) {
                         String text = XMLUtil.findText(artifactId);
                         if (text != null) {
-                            return name + " [" + text + "]"; // NOI18N
+                            return " [" + text + "]"; // NOI18N
                         }
                     }
                 } catch (IOException x) {
@@ -210,7 +230,7 @@ public class POMDataObject extends MultiDataObject {
                     LOG.log(Level.FINE, null, x);
                 }
             }
-            return name;
+            return "";
         }
     
 
