@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,23 +34,20 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.javascript.debugger.breakpoints.ui;
+package org.netbeans.modules.javascript2.debug.breakpoints.ui;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.beans.Customizer;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import org.netbeans.modules.web.javascript.debugger.breakpoints.AbstractBreakpoint;
-import org.netbeans.modules.web.javascript.debugger.breakpoints.DOMBreakpoint;
-import org.netbeans.modules.web.javascript.debugger.breakpoints.EventsBreakpoint;
-import org.netbeans.modules.web.javascript.debugger.breakpoints.XHRBreakpoint;
+import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
 import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.util.NbBundle;
 
@@ -58,24 +55,24 @@ import org.openide.util.NbBundle;
  *
  * @author Martin
  */
-public class AbstractBreakpointCustomizer extends JPanel implements Customizer, Controller {
+public class JSLineBreakpointCustomizer extends JPanel implements Customizer, Controller {
 
-    private AbstractBreakpoint b;
-    private JComponent c;
+    private JSLineBreakpoint b;
+    private JSLineBreakpointCustomizerPanel c;
     
-    public AbstractBreakpointCustomizer() {
+    public JSLineBreakpointCustomizer() {
     }
 
     @Override
     public void setObject(Object bean) {
-        if (!(bean instanceof AbstractBreakpoint)) {
+        if (!(bean instanceof JSLineBreakpoint)) {
             throw new IllegalArgumentException(bean.toString());
         }
-        this.b = (AbstractBreakpoint) bean;
+        this.b = (JSLineBreakpoint) bean;
         init(b);
     }
     
-    private void init(AbstractBreakpoint b) {
+    private void init(JSLineBreakpoint b) {
         c = getCustomizerComponent(b);
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -86,17 +83,9 @@ public class AbstractBreakpointCustomizer extends JPanel implements Customizer, 
     }
 
     @NbBundle.Messages("ACSD_Breakpoint_Customizer_Dialog=Customize this breakpoint's properties")
-    public static JComponent getCustomizerComponent(AbstractBreakpoint ab) {
-        JComponent c;
-        if (ab instanceof DOMBreakpoint) {
-            c = new DOMBreakpointCustomizer((DOMBreakpoint) ab);
-        } else if (ab instanceof EventsBreakpoint) {
-            c = new EventsBreakpointCustomizer((EventsBreakpoint) ab);
-        } else if (ab instanceof XHRBreakpoint) {
-            c = new XHRBreakpointCustomizer((XHRBreakpoint) ab);
-        } else {
-            throw new IllegalArgumentException("Unknown breakpoint " + ab);
-        }
+    public static JSLineBreakpointCustomizerPanel getCustomizerComponent(JSLineBreakpoint lb) {
+        JSLineBreakpointCustomizerPanel c;
+        c = new JSLineBreakpointCustomizerPanel(lb);
         c.getAccessibleContext().setAccessibleDescription(Bundle.ACSD_Breakpoint_Customizer_Dialog());
         return c;
     }
@@ -104,22 +93,14 @@ public class AbstractBreakpointCustomizer extends JPanel implements Customizer, 
     @Override
     public boolean ok() {
         Controller cc;
-        if (c instanceof ControllerProvider) {
-            cc = ((ControllerProvider) c).getController();
-        } else {
-            cc = (Controller) c;
-        }
+        cc = c.getController();
         return cc.ok();
     }
 
     @Override
     public boolean cancel() {
         Controller cc;
-        if (c instanceof ControllerProvider) {
-            cc = ((ControllerProvider) c).getController();
-        } else {
-            cc = (Controller) c;
-        }
+        cc = c.getController();
         return cc.cancel();
     }
 

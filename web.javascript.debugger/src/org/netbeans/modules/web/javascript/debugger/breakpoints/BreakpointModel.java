@@ -63,26 +63,12 @@ public class BreakpointModel extends ViewModelSupport
 
     public static final String BREAKPOINT =
         "org/netbeans/modules/debugger/resources/breakpointsView/NonLineBreakpoint";            // NOI18N
-    public static final String LINE_BREAKPOINT =
-        "org/netbeans/modules/debugger/resources/breakpointsView/Breakpoint";                   // NOI18N
     public static final String CURRENT_BREAKPOINT =
         "org/netbeans/modules/debugger/resources/breakpointsView/NonLineBreakpointHit";         // NOI18N
-    public static final String CURRENT_LINE_BREAKPOINT =
-        "org/netbeans/modules/debugger/resources/breakpointsView/BreakpointHit";                // NOI18N
     public static final String DISABLED_BREAKPOINT =
         "org/netbeans/modules/debugger/resources/breakpointsView/DisabledNonLineBreakpoint";    // NOI18N
-    public static final String DISABLED_LINE_BREAKPOINT =
-        "org/netbeans/modules/debugger/resources/breakpointsView/DisabledBreakpoint";           // NOI18N
     public static final String DISABLED_CURRENT_BREAKPOINT =
         "org/netbeans/modules/debugger/resources/breakpointsView/DisabledNonLineBreakpointHit"; // NOI18N
-    public static final String DISABLED_CURRENT_LINE_BREAKPOINT =
-        "org/netbeans/modules/debugger/resources/breakpointsView/DisabledBreakpointHit";        // NOI18N
-    public static final String LINE_CONDITIONAL_BREAKPOINT =
-        "org/netbeans/modules/debugger/resources/breakpointsView/ConditionalBreakpoint";        // NOI18N
-    public static final String CURRENT_LINE_CONDITIONAL_BREAKPOINT =
-        "org/netbeans/modules/debugger/resources/breakpointsView/ConditionalBreakpointHit";     // NOI18N
-    public static final String DISABLED_LINE_CONDITIONAL_BREAKPOINT =
-        "org/netbeans/modules/debugger/resources/breakpointsView/DisabledConditionalBreakpoint";// NOI18N
 
     public BreakpointModel() {
     }
@@ -91,8 +77,6 @@ public class BreakpointModel extends ViewModelSupport
      * @see org.netbeans.spi.viewmodel.NodeModel#getDisplayName(java.lang.Object)
      */
     @NbBundle.Messages({
-        "# {0} - The file name and line number",
-        "LBL_LineBreakpoint_on=Line {0}",
         "# {0} - The name of the DOM node",
         "# {1} - The type of modification, one more of the three listed below (comma separated)",
         "LBL_DOMBreakpoint_on=DOM \"{0}\" on modifications of: {1}",
@@ -106,13 +90,6 @@ public class BreakpointModel extends ViewModelSupport
     })
     @Override
     public String getDisplayName(Object node) throws UnknownTypeException {
-        if (node instanceof LineBreakpoint) {
-            LineBreakpoint breakpoint = (LineBreakpoint)node;
-            FileObject fileObject = breakpoint.getLine().getLookup().
-                lookup(FileObject.class);
-            return Bundle.LBL_LineBreakpoint_on(fileObject.getNameExt() + ":" + 
-                (breakpoint.getLine().getLineNumber() + 1));
-        }
         if (node instanceof DOMBreakpoint) {
             DOMBreakpoint breakpoint = (DOMBreakpoint) node;
             String nodeName = breakpoint.getNode().getNodeName();
@@ -167,20 +144,7 @@ public class BreakpointModel extends ViewModelSupport
         boolean disabled = !b.isEnabled();
         boolean invalid = b.getValidity() == Breakpoint.VALIDITY.INVALID;
         String iconBase;
-        if (node instanceof LineBreakpoint) {
-            LineBreakpoint breakpoint = (LineBreakpoint)node;
-            if (disabled) {
-                iconBase = DISABLED_LINE_BREAKPOINT;
-            } else {
-                iconBase = LINE_BREAKPOINT;
-            }
-            /*Line line = Utils.getCurrentLine();
-            if(line != null && 
-                    line.getLineNumber() == breakpoint.getLine().getLineNumber()) 
-            {
-                return CURRENT_LINE_BREAKPOINT;
-            }*/
-        } else if (node instanceof AbstractBreakpoint) {
+        if (node instanceof AbstractBreakpoint) {
             AbstractBreakpoint breakpoint = (AbstractBreakpoint) node;
             if (disabled) {
                 iconBase = DISABLED_BREAKPOINT;
@@ -229,9 +193,7 @@ public class BreakpointModel extends ViewModelSupport
             }
         }
         String description;
-        if (node instanceof LineBreakpoint) {
-            description = ((LineBreakpoint)node).getLine().getDisplayName();
-        } else {
+        if (true /*TODO: describe breakpoints*/) {
             return null;
         }
         if (appendMsg != null) {

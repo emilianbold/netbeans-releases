@@ -42,12 +42,11 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.web.javascript.debugger.annotation;
+package org.netbeans.modules.javascript2.debug.annotation;
 
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.Breakpoint.VALIDITY;
-import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
-import org.netbeans.modules.web.javascript.debugger.breakpoints.LineBreakpoint;
+import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
 import org.netbeans.spi.debugger.ui.BreakpointAnnotation;
 import org.openide.ErrorManager;
 import org.openide.text.Annotatable;
@@ -58,10 +57,17 @@ import org.openide.util.NbBundle;
  */
 public final class LineBreakpointAnnotation extends BreakpointAnnotation {
         
+    public static final String BREAKPOINT_ANNOTATION_TYPE = "Breakpoint"; //NOI18N
+    public static final String DISABLED_BREAKPOINT_ANNOTATION_TYPE =  "DisabledBreakpoint"; //NOI18N
+    public static final String CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE =  "CondBreakpoint"; //NOI18N
+    public static final String DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE =  "DisabledCondBreakpoint"; //NOI18N
+    public static final String DEACTIVATED_BREAKPOINT_SUFFIX = "_stroke"; //NOI18N
+    public static final String BROKEN_BREAKPOINT_SUFFIX = "_broken"; //NOI18N
+    
     private final String type;
     private final Breakpoint breakpoint;
     
-    public LineBreakpointAnnotation(final Annotatable annotatable, final LineBreakpoint b, boolean active) {
+    public LineBreakpointAnnotation(final Annotatable annotatable, final JSLineBreakpoint b, boolean active) {
         this.breakpoint = b;
         type = getAnnotationType(b, active);
         attach(annotatable);
@@ -90,16 +96,16 @@ public final class LineBreakpointAnnotation extends BreakpointAnnotation {
             }
             return Bundle.TOOLTIP_BREAKPOINT_BROKEN();
         }
-        if (type == MiscEditorUtil.BREAKPOINT_ANNOTATION_TYPE) {
+        if (type == BREAKPOINT_ANNOTATION_TYPE) {
             return Bundle.TOOLTIP_BREAKPOINT();
         }
-        if (type == MiscEditorUtil.DISABLED_BREAKPOINT_ANNOTATION_TYPE) {
+        if (type == DISABLED_BREAKPOINT_ANNOTATION_TYPE) {
             return Bundle.TOOLTIP_DISABLED_BREAKPOINT();
         }
-        if (type == MiscEditorUtil.CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE) {
+        if (type == CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE) {
             return Bundle.TOOLTIP_CONDITIONAL_BREAKPOINT();
         }
-        if (type == MiscEditorUtil.DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE) {
+        if (type == DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE) {
             return Bundle.TOOLTIP_DISABLED_CONDITIONAL_BREAKPOINT();
         }
         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException("Unknown breakpoint type '"+type+"'."));
@@ -112,23 +118,19 @@ public final class LineBreakpointAnnotation extends BreakpointAnnotation {
         return breakpoint;
     }
     
-    private static String getAnnotationType(LineBreakpoint b, boolean active) {
+    private static String getAnnotationType(JSLineBreakpoint b, boolean active) {
         boolean isInvalid = b.getValidity() == VALIDITY.INVALID;
         String annotationType;
-        if (b instanceof LineBreakpoint) {
-            boolean conditional = b.isConditional();
-            annotationType = b.isEnabled() ?
-                (conditional ? MiscEditorUtil.CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE :
-                    MiscEditorUtil.BREAKPOINT_ANNOTATION_TYPE) :
-                (conditional ? MiscEditorUtil.DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE :
-                    MiscEditorUtil.DISABLED_BREAKPOINT_ANNOTATION_TYPE);
-        } else {
-            throw new IllegalStateException(b.toString());
-        }
+        boolean conditional = b.isConditional();
+        annotationType = b.isEnabled() ?
+            (conditional ? CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE :
+                BREAKPOINT_ANNOTATION_TYPE) :
+            (conditional ? DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE :
+                DISABLED_BREAKPOINT_ANNOTATION_TYPE);
         if (!active) {
-            annotationType = annotationType + MiscEditorUtil.DEACTIVATED_BREAKPOINT_SUFFIX;
+            annotationType = annotationType + DEACTIVATED_BREAKPOINT_SUFFIX;
         } else if (isInvalid && b.isEnabled()) {
-            annotationType += MiscEditorUtil.BROKEN_BREAKPOINT_SUFFIX;
+            annotationType += BROKEN_BREAKPOINT_SUFFIX;
         }
         return annotationType;
     }

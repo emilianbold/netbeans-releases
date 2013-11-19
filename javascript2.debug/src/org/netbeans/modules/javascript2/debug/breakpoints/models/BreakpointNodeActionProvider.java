@@ -41,15 +41,16 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.javascript.debugger.breakpoints;
+package org.netbeans.modules.javascript2.debug.breakpoints.models;
 
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.Action;
 import javax.swing.JComponent;
-import org.netbeans.modules.web.javascript.debugger.breakpoints.ui.AbstractBreakpointCustomizer;
-import org.netbeans.modules.web.javascript.debugger.breakpoints.ui.ControllerProvider;
+import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
+import org.netbeans.modules.javascript2.debug.breakpoints.ui.ControllerProvider;
+import org.netbeans.modules.javascript2.debug.breakpoints.ui.JSLineBreakpointCustomizer;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.ui.Controller;
 
@@ -69,7 +70,7 @@ import org.openide.util.NbBundle;
  *
  */
 @DebuggerServiceRegistration(path="BreakpointsView", types=NodeActionsProviderFilter.class)
-public class BrkptsViewActionProvider implements NodeActionsProviderFilter {
+public class BreakpointNodeActionProvider implements NodeActionsProviderFilter {
 
 
     @Override
@@ -77,9 +78,11 @@ public class BrkptsViewActionProvider implements NodeActionsProviderFilter {
             throws UnknownTypeException 
     {
         Action[] actions = original.getActions(node);
-        if (node instanceof AbstractBreakpoint) {
-            Action[] newActions = new Action [actions.length + 2];
-            System.arraycopy (actions, 0, newActions, 0, actions.length);
+        if (node instanceof JSLineBreakpoint) {
+            Action[] newActions = new Action [actions.length + 4];
+            newActions [0] = GO_TO_SOURCE_ACTION;
+            newActions [1] = null;
+            System.arraycopy (actions, 0, newActions, 2, actions.length);
             newActions [newActions.length - 2] = null;
             newActions [newActions.length - 1] = CUSTOMIZE_ACTION;
             actions = newActions;
@@ -92,12 +95,23 @@ public class BrkptsViewActionProvider implements NodeActionsProviderFilter {
     public void performDefaultAction(NodeActionsProvider original, Object node) 
         throws UnknownTypeException 
     {
-        original.performDefaultAction(node);
+        if (node instanceof JSLineBreakpoint) {
+            goToSource((JSLineBreakpoint) node);
+        } else {
+            original.performDefaultAction(node);
+        }
     }
 
+    private static void goToSource(JSLineBreakpoint breakpoint ) {
+        Line line = breakpoint.getLine();
+        if (line != null) {
+            line.show(Line.ShowOpenType.REUSE, Line.ShowVisibilityType.FOCUS);
+        }
+    }
+    
     @NbBundle.Messages("CTL_Breakpoint_Customizer_Title=Breakpoint Properties")
-    private static void customize(AbstractBreakpoint ab) {
-        JComponent c = AbstractBreakpointCustomizer.getCustomizerComponent(ab);
+    private static void customize(JSLineBreakpoint lb) {
+        JComponent c = JSLineBreakpointCustomizer.getCustomizerComponent(lb);
         HelpCtx helpCtx = HelpCtx.findHelp (c);
         if (helpCtx == null) {
             helpCtx = new HelpCtx ("debug.add.breakpoint");  // NOI18N
@@ -143,6 +157,33 @@ public class BrkptsViewActionProvider implements NodeActionsProviderFilter {
         d.setVisible (true);
     }
 
+    @NbBundle.Messages("CTL_Breakpoint_GoToSource_Label=Go to Source")
+    private static final Action GO_TO_SOURCE_ACTION = Models.createAction(
+            Bundle.CTL_Breakpoint_GoToSource_Label(), 
+            new GoToSourcePerformer(),
+            Models.MULTISELECTION_TYPE_EXACTLY_ONE
+        );
+
+    private static class GoToSourcePerformer implements Models.ActionPerformer {
+
+        /* (non-Javadoc)
+         * @see org.netbeans.spi.viewmodel.Models.ActionPerformer#isEnabled(java.lang.Object)
+         */
+        @Override
+        public boolean isEnabled( Object arg ) {
+            return true;
+        }
+
+        /* (non-Javadoc)
+         * @see org.netbeans.spi.viewmodel.Models.ActionPerformer#perform(java.lang.Object[])
+         */
+        @Override
+        public void perform( Object[] nodes ) {
+            goToSource((JSLineBreakpoint) nodes [0]);            
+        }
+        
+    }
+    
     @NbBundle.Messages("CTL_Breakpoint_Customize_Label=Properties")
     private static final Action CUSTOMIZE_ACTION = Models.createAction (
         Bundle.CTL_Breakpoint_Customize_Label(),
@@ -159,7 +200,7 @@ public class BrkptsViewActionProvider implements NodeActionsProviderFilter {
         
         @Override
         public void perform (Object[] nodes) {
-            customize ((AbstractBreakpoint) nodes [0]);
+            customize ((JSLineBreakpoint) nodes [0]);
         }
     }
         

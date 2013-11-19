@@ -39,44 +39,47 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.javascript.debugger.breakpoints.ui;
+package org.netbeans.modules.javascript2.debug.breakpoints.ui;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
-import org.netbeans.modules.web.javascript.debugger.breakpoints.BreakpointRuntimeSetter;
-import org.netbeans.modules.web.javascript.debugger.breakpoints.LineBreakpoint;
+import org.netbeans.modules.javascript2.debug.JSUtils;
+import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
 import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.text.Line;
 import org.openide.util.HelpCtx;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author david
  */
-public class LineBreakpointCustomizer extends javax.swing.JPanel implements ControllerProvider, HelpCtx.Provider {
+public class JSLineBreakpointCustomizerPanel extends javax.swing.JPanel 
+                                             implements ControllerProvider, HelpCtx.Provider {
 
-    private final CustomizerController controller;
-    private final LineBreakpoint lb;
+    private static final RequestProcessor RP = new RequestProcessor(JSLineBreakpointCustomizerPanel.class);
+    
+    private final Controller controller;
+    private final JSLineBreakpoint lb;
     private boolean createBreakpoint;
     
-    private static LineBreakpoint createBreakpoint() {
-        Line line = MiscEditorUtil.getCurrentLine();
+    private static JSLineBreakpoint createBreakpoint() {
+        Line line = JSUtils.getCurrentLine();
         if (line == null) {
             return null;
         }
-        return new LineBreakpoint(line);
+        return new JSLineBreakpoint(line);
     }
     
     /**
      * Creates new form LineBreakpointCustomizer
      */
-    public LineBreakpointCustomizer() {
+    public JSLineBreakpointCustomizerPanel() {
         this(createBreakpoint());
         createBreakpoint = true;
     }
@@ -84,10 +87,10 @@ public class LineBreakpointCustomizer extends javax.swing.JPanel implements Cont
     /**
      * Creates new form LineBreakpointCustomizer
      */
-    public LineBreakpointCustomizer(LineBreakpoint lb) {
+    public JSLineBreakpointCustomizerPanel(JSLineBreakpoint lb) {
         this.lb = lb;
         initComponents();
-        controller = new CustomizerController();
+        controller = createController();
         if (lb != null) {
             Line line = lb.getLine();
             FileObject fo = line.getLookup().lookup(FileObject.class);
@@ -103,9 +106,16 @@ public class LineBreakpointCustomizer extends javax.swing.JPanel implements Cont
         }
     }
     
-    @Override
+    protected Controller createController() {
+        return new CustomizerController();
+    }
+    
     public Controller getController() {
         return controller;
+    }
+    
+    protected RequestProcessor getUpdateRP() {
+        return RP;
     }
 
     /**
@@ -122,13 +132,9 @@ public class LineBreakpointCustomizer extends javax.swing.JPanel implements Cont
         lineLabel = new javax.swing.JLabel();
         lineTextField = new javax.swing.JTextField();
 
-        fileLabel.setText(org.openide.util.NbBundle.getMessage(LineBreakpointCustomizer.class, "LineBreakpointCustomizer.fileLabel.text")); // NOI18N
+        fileLabel.setText(org.openide.util.NbBundle.getMessage(JSLineBreakpointCustomizerPanel.class, "JSLineBreakpointCustomizerPanel.fileLabel.text")); // NOI18N
 
-        fileTextField.setText(org.openide.util.NbBundle.getMessage(LineBreakpointCustomizer.class, "LineBreakpointCustomizer.fileTextField.text")); // NOI18N
-
-        lineLabel.setText(org.openide.util.NbBundle.getMessage(LineBreakpointCustomizer.class, "LineBreakpointCustomizer.lineLabel.text")); // NOI18N
-
-        lineTextField.setText(org.openide.util.NbBundle.getMessage(LineBreakpointCustomizer.class, "LineBreakpointCustomizer.lineTextField.text")); // NOI18N
+        lineLabel.setText(org.openide.util.NbBundle.getMessage(JSLineBreakpointCustomizerPanel.class, "JSLineBreakpointCustomizerPanel.lineLabel.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -192,7 +198,7 @@ public class LineBreakpointCustomizer extends javax.swing.JPanel implements Cont
 
         @Override
         public boolean ok() {
-            LineBreakpoint lb = LineBreakpointCustomizer.this.lb;
+            JSLineBreakpoint lb = JSLineBreakpointCustomizerPanel.this.lb;
             String fileStr = toURL(fileTextField.getText());
             int lineNumber;
             try {
@@ -201,14 +207,14 @@ public class LineBreakpointCustomizer extends javax.swing.JPanel implements Cont
                 return false;
             }
             lineNumber--;
-            Line line = MiscEditorUtil.getLine(fileStr, lineNumber);
+            Line line = JSUtils.getLine(fileStr, lineNumber);
             if (line == null) {
                 return false;
             }
             if (lb != null) {
                 updateBreakpoint(line);
             } else {
-                lb = new LineBreakpoint(line);
+                lb = new JSLineBreakpoint(line);
             }
             if (createBreakpoint) {
                 DebuggerManager.getDebuggerManager().addBreakpoint(lb);
@@ -217,7 +223,7 @@ public class LineBreakpointCustomizer extends javax.swing.JPanel implements Cont
         }
         
         private void updateBreakpoint(final Line line) {
-            BreakpointRuntimeSetter.RP.post(new Runnable() {
+            getUpdateRP().post(new Runnable() {
                 @Override
                 public void run() {
                     lb.setLine(line);

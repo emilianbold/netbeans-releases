@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,20 +34,21 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.javascript.debugger.breakpoints;
+package org.netbeans.modules.javascript2.debug.breakpoints;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.List;
+import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.common.api.RemoteFileCache;
-import org.netbeans.modules.web.common.api.ServerURLMapping;
-import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
+import org.netbeans.modules.javascript2.debug.JSUtils;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -63,9 +58,13 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.text.Line;
 import org.openide.util.WeakListeners;
 
-
-public class LineBreakpoint extends AbstractBreakpoint {
+/**
+ *
+ * @author Martin
+ */
+public class JSLineBreakpoint extends Breakpoint {
     
+    public static final String PROP_URL = "url";
     /**
      * This property is fired when a new Line object is set to this breakpoint.
      */
@@ -80,15 +79,18 @@ public class LineBreakpoint extends AbstractBreakpoint {
      * Please note that the Line object may stay the same when the file is renamed.
      */
     public static final String PROP_FILE = "fileChanged";           // NOI18N
-
-    private Line myLine;
+    public static final String PROP_CONDITION = "condition";
+    
+    private Line line;
+    private boolean isEnabled = true;
+    private String condition;
     private final FileRemoveListener myListener = new FileRemoveListener();
     private FileChangeListener myWeakListener;
     private final LineChangesListener lineChangeslistener = new LineChangesListener();
     private PropertyChangeListener lineChangesWeak;
-
-    public LineBreakpoint(Line line) {
-        myLine = line;
+    
+    public JSLineBreakpoint(Line line) {
+        this.line = line;
         lineChangesWeak = WeakListeners.propertyChange(lineChangeslistener, line);
         line.addPropertyChangeListener(lineChangesWeak);
         FileObject fileObject = line.getLookup().lookup(FileObject.class);
@@ -98,28 +100,15 @@ public class LineBreakpoint extends AbstractBreakpoint {
             fileObject.addFileChangeListener( myWeakListener );
         }
     }
-
-    public final void setValid(String message) {
-        setValidity(VALIDITY.VALID, message);
-    }
-
-    public final void setInvalid(String message) {
-        setValidity(VALIDITY.INVALID, message);
-    }
     
-    final void resetValidity() {
-        setValidity(VALIDITY.UNKNOWN, null);
-    }
-
-
     public Line getLine() {
-        return myLine;
+        return line;
     }
     
     public void setLine(Line line) {
-        removed();
-        Line oldLine = myLine;
-        myLine = line;
+        dispose();
+        Line oldLine = this.line;
+        this.line = line;
         lineChangesWeak = WeakListeners.propertyChange(lineChangeslistener, line);
         line.addPropertyChangeListener(lineChangesWeak);
         FileObject fileObject = line.getLookup().lookup(FileObject.class);
@@ -131,11 +120,11 @@ public class LineBreakpoint extends AbstractBreakpoint {
         firePropertyChange(PROP_LINE, oldLine, line);
     }
     
-    void setLine(int lineNumber) {
-        if (myLine.getLineNumber() == lineNumber) {
+    public void setLine(int lineNumber) {
+        if (line.getLineNumber() == lineNumber) {
             return ;
         }
-        LineCookie lineCookie = myLine.getLookup().lookup(LineCookie.class);
+        LineCookie lineCookie = line.getLookup().lookup(LineCookie.class);
         Line.Set lineSet = lineCookie.getLineSet();
         List<? extends Line> lines = lineSet.getLines();
         if (lines.size() > 0) {
@@ -148,30 +137,50 @@ public class LineBreakpoint extends AbstractBreakpoint {
                 lineNumber = 0;
             }
         }
-        Line line = lineSet.getCurrent(lineNumber);
-        setLine(line);
+        Line cline = lineSet.getCurrent(lineNumber);
+        setLine(cline);
     }
     
-//    @Override
-//    public int isTemp() {
-//        return 0;
-//    }
-//    
-//    @Override
-//    public boolean isSessionRelated( DebugSession session ){
-//        SessionId id = session != null ? session.getSessionId() : null;
-//        if ( id == null ){
-//            return false;
-//        }
-//        Project project = id.getProject();
-//        if ( project == null ){
-//            return false;
-//        }
-//        return true;
-//    }
+    public int getLineNumber() {
+        return line.getLineNumber() + 1;
+    }
+    
+    public FileObject getFileObject() {
+        return line.getLookup().lookup(FileObject.class);
+    }
+    
+    public URL getURL() {
+        return getFileObject().toURL();
+    }
     
     @Override
-    public void removed() {
+    public void disable() {
+        if(!isEnabled) {
+            return;
+        }
+
+        isEnabled = false;
+        firePropertyChange(PROP_ENABLED, Boolean.TRUE, Boolean.FALSE);
+    }
+
+    @Override
+    public void enable() {
+        if(isEnabled) {
+            return;
+        }
+
+        isEnabled = true;
+        firePropertyChange(PROP_ENABLED, Boolean.FALSE, Boolean.TRUE);
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return isEnabled;
+    }
+    
+    @Override
+    protected void dispose() {
+        super.dispose();
         Line line = getLine();
         line.removePropertyChangeListener(lineChangesWeak);
         lineChangesWeak = null;
@@ -182,63 +191,28 @@ public class LineBreakpoint extends AbstractBreakpoint {
         }
     }
 
-    /**
-     * Difference from getURLString method is that project's local file URL 
-     * (eg file://myproject/src/foo.html) is not converted into project's
-     * deployment URL (ie http://localhost/smth/foo.html). When persisting 
-     * breakpoints they should always be persisted in form of project's local
-     * file URL.
-     */
-    String getURLStringToPersist() {
-        return getURLStringImpl(null, null, false);
+    public final String getCondition() {
+        return condition;
+    }
+
+    public final void setCondition(String condition) {
+        this.condition = condition;
     }
     
-    /**
-     * See also getURLStringToPersist().
-     */
-    String getURLString(Project p, URL urlConnectionBeingDebugged) {
-        return getURLStringImpl(p, urlConnectionBeingDebugged, true);
+    public final boolean isConditional() {
+        return condition != null && !condition.isEmpty();
     }
     
-    private String getURLStringImpl(Project p, URL urlConnectionBeingDebugged, boolean applyInternalServerMapping) {
-        FileObject fo = getLine().getLookup().lookup(FileObject.class);
-        String url;
-        URL remoteURL = RemoteFileCache.isRemoteFile(fo);
-        if (remoteURL == null) {
-            // should "file://foo.bar" be translated into "http://localhost/smth/foo.bar"?
-            if (applyInternalServerMapping && p != null) {
-                assert urlConnectionBeingDebugged != null;
-                URL internalServerURL = ServerURLMapping.toServer(p, ServerURLMapping.CONTEXT_PROJECT_SOURCES, fo);
-                boolean useTestingContext = false;
-                if (internalServerURL == null) {
-                    useTestingContext = true;
-                } else {
-                    if (!internalServerURL.getHost().equals(urlConnectionBeingDebugged.getHost()) ||
-                            internalServerURL.getPort() != urlConnectionBeingDebugged.getPort()) {
-                        // if FileObject was resolved to a server which is different from current
-                        // debugging connection then try to resolve the FileObject 
-                        // in ServerURLMapping.CONTEXT_PROJECT_TESTS context
-                        useTestingContext = true;
-                    }
-                }
-                if (useTestingContext && p != null) {
-                    URL internalServerURL2 = ServerURLMapping.toServer(p, ServerURLMapping.CONTEXT_PROJECT_TESTS, fo);
-                    if (internalServerURL2 != null && 
-                            (internalServerURL2.getHost().equals(urlConnectionBeingDebugged.getHost()) ||
-                            internalServerURL2.getPort() == urlConnectionBeingDebugged.getPort())) {
-                        // use it:
-                        internalServerURL = internalServerURL2;
-                    }
-                }
-                if (internalServerURL != null) {
-                    return internalServerURL.toExternalForm();
-                }
-            }
-            url = fo.toURL().toExternalForm();
-        } else {
-            url = remoteURL.toExternalForm();
-        }
-        return url;
+    final void setValid(String message) {
+        setValidity(VALIDITY.VALID, message);
+    }
+
+    final void setInvalid(String message) {
+        setValidity(VALIDITY.INVALID, message);
+    }
+    
+    final void resetValidity() {
+        setValidity(VALIDITY.UNKNOWN, null);
     }
 
     private class FileRemoveListener extends FileChangeAdapter {
@@ -248,14 +222,13 @@ public class LineBreakpoint extends AbstractBreakpoint {
          */
         @Override
         public void fileDeleted( FileEvent arg0 ) {
-            DebuggerManager.getDebuggerManager().removeBreakpoint( 
-                    LineBreakpoint.this);
+            DebuggerManager.getDebuggerManager().removeBreakpoint(JSLineBreakpoint.this);
         }
 
         @Override
         public void fileRenamed(FileRenameEvent fe) {
             FileObject renamedFo = fe.getFile();
-            Line newLine = MiscEditorUtil.getLine(renamedFo, getLine().getLineNumber() + 1);
+            Line newLine = JSUtils.getLine(renamedFo, getLine().getLineNumber() + 1);
             if (!newLine.equals(getLine())) {
                 setLine(newLine);
             } else {
@@ -275,4 +248,5 @@ public class LineBreakpoint extends AbstractBreakpoint {
         }
         
     }
+    
 }

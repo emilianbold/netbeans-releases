@@ -82,8 +82,6 @@ public class BreakpointModelActiveSessionFilter extends ViewModelSupport
     
     private static final String DEACTIVATED_LINE_BREAKPOINT =
         "org/netbeans/modules/debugger/resources/editor/Breakpoint_stroke.png";                 // NOI18N
-    private static final String DEACTIVATED_DISABLED_LINE_BREAKPOINT =
-        "org/netbeans/modules/debugger/resources/editor/DisabledBreakpoint_stroke.png";         // NOI18N
     private static final String DEACTIVATED_NONLINE_BREAKPOINT =
         "org/netbeans/modules/debugger/resources/editor/Breakpoint_nonline_stroke.png";         // NOI18N
     private static final String DEACTIVATED_DISABLED_NONLINE_BREAKPOINT =
@@ -113,14 +111,7 @@ public class BreakpointModelActiveSessionFilter extends ViewModelSupport
         if (debugger.areBreakpointsActive()) {
             return original.getIconBaseWithExtension(node);
         } else {
-            if (node instanceof LineBreakpoint) {
-                LineBreakpoint breakpoint = (LineBreakpoint)node;
-                if (!breakpoint.isEnabled()) {
-                    return DEACTIVATED_DISABLED_LINE_BREAKPOINT;
-                } else {
-                    return DEACTIVATED_LINE_BREAKPOINT;
-                }
-            } else if ( node instanceof AbstractBreakpoint ){
+            if ( node instanceof AbstractBreakpoint ){
                 AbstractBreakpoint breakpoint = (AbstractBreakpoint) node;
                 if (!breakpoint.isEnabled()) {
                     return DEACTIVATED_DISABLED_NONLINE_BREAKPOINT;

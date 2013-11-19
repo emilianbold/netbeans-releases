@@ -41,25 +41,24 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.javascript.debugger.breakpoints;
+package org.netbeans.modules.javascript2.debug.breakpoints;
 
 import javax.swing.JComponent;
-import org.netbeans.modules.web.javascript.debugger.breakpoints.ui.LineBreakpointCustomizer;
-import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
+import org.netbeans.modules.javascript2.debug.JSUtils;
+import org.netbeans.modules.javascript2.debug.breakpoints.ui.JSLineBreakpointCustomizerPanel;
 import org.netbeans.spi.debugger.ui.BreakpointType;
 import org.netbeans.spi.debugger.ui.Controller;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 
 @NbBundle.Messages({"JavaScriptBreakpointTypeCategory=JavaScript",
     "LineBreakpointTypeName=Line"})
 @BreakpointType.Registration(displayName="#LineBreakpointTypeName")
-public class LineBreakpointType extends BreakpointType {
+public class JSLineBreakpointType extends BreakpointType {
     
-    private LineBreakpointCustomizer cust;
+    private JSLineBreakpointCustomizerPanel cust;
     
     /* (non-Javadoc)
      * @see org.netbeans.spi.debugger.ui.BreakpointType#getCategoryDisplayName()
@@ -75,7 +74,7 @@ public class LineBreakpointType extends BreakpointType {
     @Override
     public JComponent getCustomizer() {
         if (cust == null) {
-            cust = new LineBreakpointCustomizer();
+            cust = new JSLineBreakpointCustomizerPanel();
         }
         return cust;
     }
@@ -99,16 +98,12 @@ public class LineBreakpointType extends BreakpointType {
      */
     @Override
     public boolean isDefault() {
-        Node node = Utilities.actionsGlobalContext().lookup(Node.class);
-        if (node != null) {
-            return false;
-        }
         FileObject mostRecentFile = EditorContextDispatcher.getDefault().getMostRecentFile();
         if (mostRecentFile == null) {
             return false;
         }
         String mimeType = mostRecentFile.getMIMEType();
-        return "text/javascript".equals(mimeType) || "text/html".equals(mimeType);  // NOI18N
+        return JSUtils.JS_MIME_TYPE.equals(mimeType);
     }
 
 }
