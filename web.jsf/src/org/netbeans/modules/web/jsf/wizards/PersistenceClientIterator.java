@@ -589,15 +589,17 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             params.put("bundle", bundleVar); // NOI18N
             params.put("jsfFolder", jsfFolder); // NOI18N
             params.put("nsLocation", JSFUtils.getNamespaceDomain(WebModule.getWebModule(project.getProjectDirectory()))); //NOI18N
-            FileObject frameworkTpl = FileUtil.getConfigRoot().getFileObject(JsfTemplateUtils.BASE_TPL_PATH + "/" + templateStyle + "/"+ WizardProperties.BASE_TEMPLATE);
+            FileObject frameworkTpl = FileUtil.getConfigRoot().getFileObject(JsfTemplateUtils.BASE_TPL_PATH + "/" + templateStyle + "/"+ JSFClientGenerator.TEMPLATE_JSF_FL_PAGE);
             FileObject appTemplate;
             if (frameworkTpl != null && frameworkTpl.isValid()) {
                 appTemplate = FileUtil.createData(webRoot, JSFClientGenerator.TEMPLATE_JSF_FL_PAGE);
                 JSFPaletteUtilities.expandJSFTemplate(frameworkTpl, params, appTemplate);
-                progressMsg = NbBundle.getMessage(PersistenceClientIterator.class, "MSG_Progress_Jsf_Now_Generating", appTemplate.getNameExt()); //NOI18N
-                progressContributor.progress(progressMsg, progressIndex++);
-                progressPanel.setText(progressMsg);
+            } else {
+                appTemplate = TemplateIterator.createTemplate(project, webRoot, false);
             }
+            progressMsg = NbBundle.getMessage(PersistenceClientIterator.class, "MSG_Progress_Jsf_Now_Generating", appTemplate.getNameExt()); //NOI18N
+            progressContributor.progress(progressMsg, progressIndex++);
+            progressPanel.setText(progressMsg);
         }
 
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
