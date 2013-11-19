@@ -163,17 +163,18 @@ public final class LayoutSupportManager implements LayoutSupportContext {
 
             if (delegate == null) { // initialization from LayoutManager instance
                 Container contDel = getPrimaryContainerDelegate();
-                if (contDel.getComponentCount() == 0) {
-                    // we can still handle only empty containers ...
-                    lmInstance = contDel.getLayout();
-                    delegate = lmInstance != null ?
-                        layoutRegistry.createSupportForLayout(lmInstance.getClass()) :
-                        new NullLayoutSupport();
-                }
-                else {
-                    RuntimeException ex = new IllegalArgumentException(
-                            AbstractLayoutSupport.getBundle().getString("MSG_ERR_NonEmptyContainer")); // NOI18N
-                    throw ex;
+                if (!(contDel instanceof InvalidComponent)) {
+                    if (contDel.getComponentCount() == 0) {
+                        // we can still handle only empty containers ...
+                        lmInstance = contDel.getLayout();
+                        delegate = lmInstance != null ?
+                            layoutRegistry.createSupportForLayout(lmInstance.getClass()) :
+                            new NullLayoutSupport();
+                    } else {
+                        RuntimeException ex = new IllegalArgumentException(
+                                AbstractLayoutSupport.getBundle().getString("MSG_ERR_NonEmptyContainer")); // NOI18N
+                        throw ex;
+                    }
                 }
             }
         }

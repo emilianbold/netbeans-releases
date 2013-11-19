@@ -273,7 +273,27 @@ public final class BookmarksNodeTree {
                 foNode = new AbstractNode(Children.LEAF);
                 foNode.setDisplayName(fo.getNameExt());
             }
-            return new Node[]{ new FilterNode(foNode, new FileBookmarksChildren(fileBookmarks))};
+            return new Node[]{ new FilterNode(foNode, new FileBookmarksChildren(fileBookmarks)){
+                @Override
+                public boolean canCopy() {
+                    return false;
+                }
+
+                @Override
+                public boolean canCut() {
+                    return false;
+                }
+
+                @Override
+                public boolean canDestroy() {
+                    return false;
+                }
+
+                @Override
+                public boolean canRename() {
+                    return false;
+                }
+            }};
         }
 
     }

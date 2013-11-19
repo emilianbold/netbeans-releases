@@ -264,6 +264,16 @@ public final class DocumentViewOp
     
     boolean asTextField;
     
+    private boolean guideLinesEnable;
+    
+    private int indentLevelSize;
+    
+    private int tabSize;
+    
+    private Color guideLinesColor;
+    
+    private int[] guideLinesCache = { -1, -1, -1};
+    
     public DocumentViewOp(DocumentView docView) {
         this.docView = docView;
         textLayoutCache = new TextLayoutCache();
@@ -826,12 +836,20 @@ public final class DocumentViewOp
         boolean releaseChildren = nonInitialUpdate && 
                 ((nonPrintableCharactersVisible != nonPrintableCharactersVisibleOrig) ||
                  (rowHeightCorrection != lineHeightCorrectionOrig)); 
+        indentLevelSize = prefs.getInt(SimpleValueNames.SPACES_PER_TAB, EditorPreferencesDefaults.defaultSpacesPerTab);
+        tabSize = prefs.getInt(SimpleValueNames.TAB_SIZE, EditorPreferencesDefaults.defaultTabSize);
         if (updateMetrics) {
             updateCharMetrics();
         }
         if (releaseChildren) {
             releaseChildren(false);
         }
+        boolean currentGuideLinesEnable = Boolean.TRUE.equals(prefs.getBoolean("enable.guide.lines", true)); // NOI18N
+        if (nonInitialUpdate && guideLinesEnable != currentGuideLinesEnable) {
+            docView.op.notifyRepaint(visibleRect.getMinX(), visibleRect.getMinY(), visibleRect.getMaxX(), visibleRect.getMaxY());    
+        }
+        guideLinesEnable = currentGuideLinesEnable;
+        
     }
 
     /* private */ void updateFontColorSettings(Lookup.Result<FontColorSettings> result, boolean nonInitialUpdate) {
@@ -841,6 +859,9 @@ public final class DocumentViewOp
         }
         AttributeSet defaultColoringOrig = defaultColoring;
         FontColorSettings fcs = result.allInstances().iterator().next();
+        AttributeSet attribs = fcs.getFontColors(FontColorNames.INDENT_GUIDE_LINES);
+        guideLinesColor = attribs != null ? (Color) attribs.getAttribute(StyleConstants.Foreground) : Color.LIGHT_GRAY;
+        
         AttributeSet newDefaultColoring = fcs.getFontColors(FontColorNames.DEFAULT_COLORING);
         // Attempt to always hold non-null content of "defaultColoring" variable once it became non-null
         if (newDefaultColoring != null) {
@@ -1021,6 +1042,30 @@ public final class DocumentViewOp
         JTextComponent textComponent = docView.getTextComponent();
         return textComponent != null && fontRenderContext != null && fontInfos.size() > 0 &&
                 (lengthyAtomicEdit <= 0) && !isAnyStatusBit(INCOMING_MODIFICATION);
+    }
+    
+    public boolean isGuideLinesEnable() {
+        return guideLinesEnable;
+    }
+
+    public int getIndentLevelSize() {
+        return indentLevelSize;
+    }
+    
+    public int getTabSize() {
+        return tabSize;
+    }
+    
+    public Color getGuideLinesColor() {
+        return guideLinesColor;
+    }
+    
+    public void setGuideLinesCache(int cacheAtOffset, int foundAtOffset, int length) {
+        guideLinesCache = new int[] {cacheAtOffset, foundAtOffset, length};
+    }
+    
+    public int[] getGuideLinesCache() {
+        return guideLinesCache;
     }
 
     /**
