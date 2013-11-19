@@ -45,15 +45,24 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.Set;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.html.angular.index.AngularJsController;
@@ -99,6 +108,10 @@ public class AngularJsDeclarationFinder implements DeclarationFinder {
                     if (range != null) {
                         return findControllerLocation(fo, tokenText);
                     }
+                    range = isValueOfProperty(AngulerWhenInterceptor.TEMPLATE_URL_PROP, ts, caretOffset);
+                    if (range != null) {
+                        return findFileLocation(fo, tokenText);
+                    }
                 }
             }
             
@@ -121,11 +134,69 @@ public class AngularJsDeclarationFinder implements DeclarationFinder {
             if (range != null) {
                 return range;
             }
-            
+            range = isValueOfProperty(AngulerWhenInterceptor.TEMPLATE_URL_PROP, ts, caretOffset);
+            if (range != null) {
+                return range;
+            }
         }
         return OffsetRange.NONE;
     }
 
+    private DeclarationLocation findFileLocation(FileObject fo, String endPartName) {
+        Project project = FileOwnerQuery.getOwner(fo);
+        if (project == null) {
+            return DeclarationLocation.NONE;
+        }
+        Sources sources = project.getLookup().lookup(Sources.class);
+        SourceGroup[] sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
+        
+        String[] endPath = endPartName.split("/");
+        Collection<FileObject> files = new ArrayList<>();
+        for (SourceGroup sourceGroup : sourceGroups) {
+            findFilesWithEndPath(endPath, sourceGroup.getRootFolder(), files);
+        }
+        
+        if (!files.isEmpty()) {
+            DeclarationLocation dl = null;
+            for (FileObject fileObject : files) {
+                DeclarationLocation dloc = new DeclarationLocation(fileObject, 0);
+                if (dl == null) {
+                    dl = dloc;
+                }
+                AlternativeLocation aloc = new AlternativeLocationImpl(fileObject.getName(), dloc, new AngularFileHandle(fileObject));
+                dl.addAlternative(aloc);
+            }
+            if (dl != null && dl.getAlternativeLocations().size() == 1) {
+                dl.getAlternativeLocations().clear();
+            }
+
+            if (dl != null) {
+                return dl;
+            }
+        }
+        return DeclarationLocation.NONE;
+    }
+    
+    private void findFilesWithEndPath(String[] endPath, FileObject folder, Collection<FileObject> collected) {
+        FileObject root = folder;
+        boolean wasFound = true;
+        for (int i = 0; i < endPath.length; i++) {
+            root = root.getFileObject(endPath[i]);
+            if (root == null) {
+                wasFound = false;
+                break;
+            }
+        }
+        if (wasFound) {
+            collected.add(root);
+        }
+        Enumeration<? extends FileObject> folders = folder.getFolders(false);
+        while (folders.hasMoreElements()) {
+            FileObject subFolder = folders.nextElement();
+            findFilesWithEndPath(endPath, subFolder, collected);
+        }
+    }
+    
     private DeclarationLocation findControllerLocation(FileObject fo, String controllerName) {
         Project project = FileOwnerQuery.getOwner(fo);
         if (project == null) {
@@ -153,7 +224,7 @@ public class AngularJsDeclarationFinder implements DeclarationFinder {
                             //locations simply must be "main"!!!
                             dl = dloc;
                         }
-                        AlternativeLocation aloc = new AlternativeLocationImpl(controller.getName(), dloc);
+                        AlternativeLocation aloc = new AlternativeLocationImpl(controller.getName(), dloc, new AngularFileHandle(dfo));
                         dl.addAlternative(aloc);
                     }
                 }
@@ -173,9 +244,9 @@ public class AngularJsDeclarationFinder implements DeclarationFinder {
     }
     
     private OffsetRange isValueOfProperty(String propertyName, TokenSequence<? extends JsTokenId> ts, int caretOffset) {
-        JsTokenId id = ts.token().id();
         ts.move(caretOffset);
         if (ts.moveNext()) {
+            JsTokenId id = ts.token().id();
             if (id == JsTokenId.STRING) {
                 OffsetRange result = new OffsetRange(ts.offset(), ts.offset() + ts.token().length());
                 ts.movePrevious();
@@ -192,19 +263,71 @@ public class AngularJsDeclarationFinder implements DeclarationFinder {
         return null;
     }
 
+
+    private static class AngularFileHandle implements ElementHandle {
+
+        private final FileObject fileObject;
+
+        public AngularFileHandle(FileObject fileObject) {
+            this.fileObject = fileObject;
+        }
+        
+        @Override
+        public FileObject getFileObject() {
+            return fileObject;
+        }
+
+        @Override
+        public String getMimeType() {
+            return null;
+        }
+
+        @Override
+        public String getName() {
+            return fileObject.getNameExt();
+        }
+
+        @Override
+        public String getIn() {
+            return null;
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.FILE;
+        }
+
+        @Override
+        public Set<Modifier> getModifiers() {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public boolean signatureEquals(ElementHandle handle) {
+            return false;
+        }
+
+        @Override
+        public OffsetRange getOffsetRange(ParserResult result) {
+            return OffsetRange.NONE;
+        }
+    }
+    
     private static class AlternativeLocationImpl implements AlternativeLocation {
 
         private final DeclarationLocation location;
+        private final ElementHandle element;
         private String name;
 
-        public AlternativeLocationImpl(String name, DeclarationLocation location) {
+        public AlternativeLocationImpl(String name, DeclarationLocation location, ElementHandle element) {
             this.location = location;
             this.name = name;
+            this.element = element;
         }
 
         @Override
         public ElementHandle getElement() {
-            return null;
+            return element;
         }
 
         @Override
