@@ -58,6 +58,7 @@ import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.web.clientproject.grunt.TargetLister.Target;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -162,12 +163,6 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
                 return new Actions.MenuItem(this, false);
             }
         }
-
-        @Override
-        public void setEnabled(boolean b) {
-            assert false : "No modifications to enablement status permitted";
-        }
-        
     }
 
     /**
@@ -177,90 +172,121 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
         return new LazyMenu(gruntFile);
     }
     
-    private static final class LazyMenu extends JMenu {
+    static final class LazyMenu extends JMenu {
         
         private final FileObject gruntFile;
-        private boolean initialized = false;
         
+        @NbBundle.Messages({
+            "LBL_LoadingTasks=Loading Tasks..."
+        })
         public LazyMenu(FileObject gruntFile) {
-            super(SystemAction.get(RunTargetsAction.class).getName());
+            //super(SystemAction.get(RunTargetsAction.class).getName());
+            super(Bundle.LBL_LoadingTasks());
             this.gruntFile = gruntFile;
+            try {
+                boolean enabled = TargetLister.getTargets(LazyMenu.this, gruntFile) !=null; 
+                if (enabled) {
+                    setText(SystemAction.get(RunTargetsAction.class).getName());
+                }
+                setEnabled(enabled); 
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         
         @Override
         public JPopupMenu getPopupMenu() {
-            if (!initialized) {
-                initialized = true;
-                Collection<TargetLister.Target> allTargets;
-                try {
-                    allTargets = TargetLister.getTargets(gruntFile);
-                } catch (IOException e) {
-                    // XXX how to notify properly?
-                    Exceptions.printStackTrace(e);
-                    allTargets = Collections.emptySet();
-                }
-                String defaultTarget = null;
-                SortedSet<String> describedTargets = new TreeSet<>(Collator.getInstance());
-                SortedSet<String> otherTargets = new TreeSet<>(Collator.getInstance());
-                for (TargetLister.Target t : allTargets) {
-                    if (t.isOverridden()) {
-                        // Cannot be called.
-                        continue;
-                    }
-                    if (t.isInternal()) {
-                        // Don't present in GUI.
-                        continue;
-                    }
-                    String name = t.getName();
-                    if (t.isDefault()) {
-                        defaultTarget = name;
-                    } else if (t.isDescribed()) {
-                        describedTargets.add(name);
-                    } else {
-                        otherTargets.add(name);
-                    }
-                }
-                boolean needsep = false;
-                if (defaultTarget != null) {
-                    needsep = true;
-                    JMenuItem menuitem = new JMenuItem(defaultTarget);
-                    menuitem.addActionListener(new TargetMenuItemHandler(gruntFile, defaultTarget));
-                    add(menuitem);
-                }
-                if (needsep) {
-                    needsep = false;
-                    addSeparator();
-                }
-                if (!describedTargets.isEmpty()) {
-                    needsep = true;
-                    for (String target : describedTargets) {
-                        JMenuItem menuitem = new JMenuItem(target);
-                        menuitem.addActionListener(new TargetMenuItemHandler(gruntFile, target));
-                        add(menuitem);
-                    }
-                }
-                if (needsep) {
-                    needsep = false;
-                    addSeparator();
-                }
-                if (!otherTargets.isEmpty()) {
-                    needsep = true;
-                    JMenu submenu = new JMenu(NbBundle.getMessage(RunTargetsAction.class, "LBL_run_other_targets"));
-                    for (String target : otherTargets) {
-                        JMenuItem menuitem = new JMenuItem(target);
-                        menuitem.addActionListener(new TargetMenuItemHandler(gruntFile, target));
-                        submenu.add(menuitem);
-                    }
-                    add(submenu);
-                }
-                if (needsep) {
-                    needsep = false;
-                    addSeparator();
-                }
-            }
+            rebuild();
             return super.getPopupMenu();
         }
-        
+
+        void rebuild() {
+            Runnable rebuildTaks = new Runnable() {
+
+                @Override
+                public void run() {
+                    LazyMenu.this.removeAll();
+                    Collection<TargetLister.Target> allTargets = null;
+                    try {
+                        allTargets = TargetLister.getTargets(LazyMenu.this, gruntFile);
+                    } catch (IOException e) {
+                        // XXX how to notify properly?
+                        Exceptions.printStackTrace(e);
+                    }
+                    if (allTargets==null) {
+                        return;
+                    }
+                    String defaultTarget = null;
+                    SortedSet<String> describedTargets = new TreeSet<>(Collator.getInstance());
+                    SortedSet<String> otherTargets = new TreeSet<>(Collator.getInstance());
+                    for (TargetLister.Target t : allTargets) {
+                        if (t.isOverridden()) {
+                            // Cannot be called.
+                            continue;
+                        }
+                        if (t.isInternal()) {
+                            // Don't present in GUI.
+                            continue;
+                        }
+                        String name = t.getName();
+                        if (t.isDefault()) {
+                            defaultTarget = name;
+                        } else if (t.isDescribed()) {
+                            describedTargets.add(name);
+                        } else {
+                            otherTargets.add(name);
+                        }
+                    }
+                    boolean needsep = false;
+                    if (defaultTarget != null) {
+                        needsep = true;
+                        JMenuItem menuitem = new JMenuItem(defaultTarget);
+                        menuitem.addActionListener(new TargetMenuItemHandler(gruntFile, defaultTarget));
+                        add(menuitem);
+                    }
+                    if (needsep) {
+                        needsep = false;
+                        addSeparator();
+                    }
+                    if (!describedTargets.isEmpty()) {
+                        needsep = true;
+                        for (String target : describedTargets) {
+                            JMenuItem menuitem = new JMenuItem(target);
+                            menuitem.addActionListener(new TargetMenuItemHandler(gruntFile, target));
+                            add(menuitem);
+                        }
+                    }
+                    if (needsep) {
+                        needsep = false;
+                        addSeparator();
+                    }
+                    if (!otherTargets.isEmpty()) {
+                        needsep = true;
+                        JMenu submenu = new JMenu(NbBundle.getMessage(RunTargetsAction.class, "LBL_run_other_targets"));
+                        for (String target : otherTargets) {
+                            JMenuItem menuitem = new JMenuItem(target);
+                            menuitem.addActionListener(new TargetMenuItemHandler(gruntFile, target));
+                            submenu.add(menuitem);
+                        }
+                        add(submenu);
+                    }
+                    if (needsep) {
+                        needsep = false;
+                        addSeparator();
+                    }
+                    setEnabled(true);
+                    setText(SystemAction.get(RunTargetsAction.class).getName());
+                    validate();
+                }
+                
+            };
+            
+            if (SwingUtilities.isEventDispatchThread()) {
+                rebuildTaks.run();
+            } else {
+                SwingUtilities.invokeLater(rebuildTaks);
+            }
+        }
     }
 
     /**
@@ -293,3 +319,4 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
         }
     }
 }
+    

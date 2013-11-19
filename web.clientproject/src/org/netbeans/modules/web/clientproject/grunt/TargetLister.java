@@ -49,8 +49,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -60,26 +61,25 @@ public class TargetLister {
     private static final Map<String, Pair<Long, Collection<Target>>> cache = new HashMap<>();
     private static final RequestProcessor RP = new RequestProcessor(TargetLister.class);
     
-    public static Collection<Target> getTargets(FileObject pr) throws IOException { 
+    public static Collection<Target> getTargets(RunTargetsAction.LazyMenu menu, FileObject pr) throws IOException { 
         Pair<Long, Collection<Target>> targetPair = cache.get(pr.getPath());
         if (targetPair != null) {
             if (targetPair.first().equals(pr.lastModified().getTime())) {
                 return targetPair.second();
-            } 
-        } else {
-            cache.put(pr.getPath(), Pair.of(-1L, (Collection<Target>)null));
-            read(pr);
+            }
         }
-        Collection<Target> loading = new ArrayList<>();
-        loading.add(new Target("default", pr));//NOI18N
-        return loading; 
+        cache.put(pr.getPath(), Pair.of(-1L, (Collection<Target>) null));
+        read(pr, menu);
+        return null; 
     }
     
-    public static void read(final FileObject gruntFile) {
+    public static void read(final FileObject gruntFile, final RunTargetsAction.LazyMenu m) {
         RequestProcessor.Task post = RP.post(new Runnable() {
             
             @Override
             public void run() {
+                ProgressHandle handle = ProgressHandleFactory.createSystemHandle(Bundle.LBL_LoadingTasks());
+                handle.start();
                 try {
                     String data = null;
 
@@ -94,8 +94,12 @@ public class TargetLister {
 
                     parse(data, gruntFile);
                 } catch (IOException ex) {
-                    //Exceptions.printStackTrace(ex);
-                    cache.remove(gruntFile.getPath());
+                    Collection<Target> col = new ArrayList<>();
+                    col.add(new Target("default", gruntFile)); //NOI18n
+                    cache.put(gruntFile.getPath(), Pair.of(gruntFile.lastModified().getTime(), col));
+                } finally {
+                    handle.finish();
+                    m.rebuild();
                 }
             }
 
@@ -125,7 +129,8 @@ public class TargetLister {
                 break;
             }
             if (line.trim().equals("(no tasks found)")) {//NOI18N
-                return;
+                col.add(new Target("default", gruntFile));//NI18N
+                break;
             }
 
             String l = line.trim();
