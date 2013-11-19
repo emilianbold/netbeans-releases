@@ -43,7 +43,6 @@
 package org.netbeans.modules.web.clientproject.jstesting;
 
 import javax.swing.JComponent;
-import javax.swing.JPanel;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
@@ -66,24 +65,28 @@ public final class CompositeCategoryProviderImpl implements ProjectCustomizer.Co
             throw new IllegalStateException("Project must be found in context: " + context);
         }
         initJsTestingInfo(context, project);
+        ProjectCustomizer.Category[] subCategories;
         if (jsTestingInfo == null) {
             // no category at all
-            return null;
+            subCategories = null;
+        } else {
+            assert jsTestingInfo.first() != null : jsTestingInfo;
+            assert jsTestingInfo.second() != null : jsTestingInfo;
+            subCategories = new ProjectCustomizer.Category[] {jsTestingInfo.first()};
         }
-        ProjectCustomizer.CompositeCategoryProvider categoryProvider = jsTestingInfo.second();
-        assert categoryProvider != null : jsTestingInfo;
         return ProjectCustomizer.Category.create(
                 JsTestingProviders.CUSTOMIZER_IDENT,
                 Bundle.CompositeCategoryProviderImpl_testing_title(),
                 null,
-                new ProjectCustomizer.Category[] {jsTestingInfo.first()});
+                subCategories);
     }
 
     @Override
     public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
         if (JsTestingProviders.CUSTOMIZER_IDENT.equals(category.getName())) {
-            // XXX
-            return new JPanel();
+            Project project = context.lookup(Project.class);
+            assert project != null : "Cannot find project in lookup: " + context;
+            return new CustomizerJsTesting(category, project);
         }
         // js testing panel?
         if (jsTestingInfo != null) {
