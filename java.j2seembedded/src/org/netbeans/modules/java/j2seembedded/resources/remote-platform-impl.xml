@@ -41,7 +41,10 @@
            var address = attributes.get("address");
            project.setProperty(attributes.get("property"), address.split(":")[1]);
          ]]>
-      </scriptdef>
+      </scriptdef>      
+    </target>
+    
+    <target name="-copy-to-remote-platform">
       <macrodef name="runwithpasswd" uri="http://www.netbeans.org/ns/j2se-project/remote-platform/1">
             <attribute name="additionaljvmargs" default=""/>
             <sequential>
@@ -67,7 +70,7 @@
         </macrodef>
     </target>
 
-    <target name="-check-vm-debug" depends="init, -init-remote-platform-properties">
+    <target name="-check-vm-debug" depends="init, -init-remote-platform-properties, -copy-to-remote-platform">
         <j2seproject1:property name="remote.platform.jvm.debug" value="platforms.${platform.runtime}.platform.jvm.debug"/>
         <condition property="remote.platform.jvm.debug.available" value="true">
             <or>
@@ -90,11 +93,11 @@
         </input>
     </target>
 
-    <target name="-run-remote-passwd" depends="init, jar, -init-remote-platform-properties, -ask-password" if="remote.platform.auth.passwd">
+    <target name="-run-remote-passwd" depends="init, jar, -init-remote-platform-properties, -copy-to-remote-platform, -ask-password" if="remote.platform.auth.passwd">
         <remote:runwithpasswd/>
     </target>
 
-    <target name="-debug-remote-passwd" depends="init, jar, -init-remote-platform-properties, -ask-password, -debug-start-debugger" if="remote.platform.auth.passwd">
+    <target name="-debug-remote-passwd" depends="init, jar, -init-remote-platform-properties, -copy-to-remote-platform, -ask-password, -debug-start-debugger" if="remote.platform.auth.passwd">
         <addressport address="${jpda.address}" property="jpda.port"/>
         <sshsession host="${remote.platform.host}" port="${remote.platform.port}" username="${remote.platform.user}" password="${remote.platform.password}" trust="true">
             <remotetunnel lport="${jpda.port}" lhost="localhost" rport="${jpda.port}"/>
@@ -104,11 +107,11 @@
         </sshsession>
     </target>
 
-    <target name="-run-remote-key" depends="init, jar, -init-remote-platform-properties, -ask-passphrase" if="remote.platform.auth.key">
+    <target name="-run-remote-key" depends="init, jar, -init-remote-platform-properties, -copy-to-remote-platform, -ask-passphrase" if="remote.platform.auth.key">
         <remote:runwithkey/>
     </target>
 
-    <target name="-debug-remote-key" depends="init, jar, -init-remote-platform-properties, -ask-passphrase, -debug-start-debugger" if="remote.platform.auth.key">
+    <target name="-debug-remote-key" depends="init, jar, -init-remote-platform-properties, -copy-to-remote-platform, -ask-passphrase, -debug-start-debugger" if="remote.platform.auth.key">
         <addressport address="${jpda.address}" property="jpda.port"/>
         <sshsession host="${remote.platform.host}" port="${remote.platform.port}" username="${remote.platform.user}" keyfile="${remote.platform.keyfile}" passphrase="${remote.platform.passphrase}" trust="true">
             <remotetunnel lport="${jpda.port}" lhost="localhost" rport="${jpda.port}"/>
@@ -117,7 +120,41 @@
             </sequential>
         </sshsession>
     </target>
+    
+    <target name="profile-clean-rp" if="profiling.started">
+        <delete dir="${dist.dir}/remotepack"/>
+    </target>
+    
+    <target name="profile-rp-unzip" if="profiling.started" depends="profile-rp-create">        
+        <unzip src="${java.io.tmpdir}/profiler-server-${remote.platform.rp.filename}.zip" dest="${dist.dir}/remotepack"/>
+        <chmod perm="a+x">
+            <fileset dir="${dist.dir}/remotepack">
+                <include name="**/*.so"/>
+                <include name="**/*.dll"/>
+                <include name="**/*.sh"/>
+                <include name="**/*.jnilib"/>
+                <exclude name="**/*.jar"/>
+            </fileset>
+        </chmod>
+        
+    </target>
+    
+    <target name="profile-rp-create" if="profiling.started">
+        <property name="profile.cluster" value="${netbeans.home}/../profiler"/>
+        <ant dir="${profile.cluster}/remote-pack-defs" target="profiler-server-${remote.platform.rp.target}" inheritall="false">
+           <property name="cluster" location="${profile.cluster}"/>
+           <property name="dest.dir" location="${java.io.tmpdir}"/>
+       </ant>
+    </target>
+        
+    <target name="profile-toggle">
+        <property name="profiling.started" value="true"/>
+    </target>
 
-    <target name="run-remote" depends="init, jar, -init-remote-platform-properties, -run-remote-passwd, -run-remote-key"/>
-    <target name="debug-remote" depends="init, jar, -init-remote-platform-properties, -check-vm-debug, -debug-remote-passwd, -debug-remote-key"/>
+    <target name="run-remote" depends="init, jar, -init-remote-platform-properties, -copy-to-remote-platform, -run-remote-passwd, -run-remote-key"/>
+    <target name="debug-remote" depends="init, jar, -init-remote-platform-properties, -copy-to-remote-platform, -check-vm-debug, -debug-remote-passwd, -debug-remote-key"/>
+    <target name="profile-remote" depends="init, jar, profile-toggle, -init-remote-platform-properties, profile-rp-unzip, -copy-to-remote-platform, -profile-check" if="profiler.configured">
+        <startprofiler/>
+        <antcall target="run-remote"/>
+    </target>
 </project>
