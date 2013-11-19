@@ -62,6 +62,7 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.netbeans.modules.remote.impl.RemoteLogger;
+import org.netbeans.modules.remote.impl.fs.server.DirectoryReaderFS;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -76,6 +77,7 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
         System.setProperty("remote.throw.assertions", "true");
         System.setProperty("remote.user.password.keep_in_memory", "true");
         TestLogHandler.attach(RemoteLogger.getInstance());
+        new DirectoryReaderFS.Starter().run();
     }
     
     protected RemoteFileSystem fs;
@@ -100,6 +102,7 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        System.err.printf("\n###> setUp    %s\n", getClass().getName() + '.' + getName());
         super.setUp();
         setLoggers(true);
         if (execEnv == null) {
@@ -126,6 +129,7 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
     protected void tearDown() throws Exception {
         super.tearDown();
         setLoggers(false);
+        System.err.printf("\n###< tearDown %s\n", getClass().getName() + '.' + getName());
     }
    
     @org.netbeans.api.annotations.common.SuppressWarnings("LG")

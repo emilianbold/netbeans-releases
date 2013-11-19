@@ -70,6 +70,9 @@ public class RefreshManager {
     private final ExecutionEnvironment env;
     private final RemoteFileObjectFactory factory;
     private final RequestProcessor.Task updateTask;
+
+    /** one the task was scheduled, this should be true */
+    private volatile boolean updateTaskScheduled = false;
     
     private final LinkedList<RemoteFileObjectBase> queue = new LinkedList<RemoteFileObjectBase>();
     private final Set<RemoteFileObjectBase> set = new HashSet<RemoteFileObjectBase>();
@@ -87,40 +90,40 @@ public class RefreshManager {
         public void run() {
             long time = System.currentTimeMillis();
             int cnt = 0;
-            while (true) {
-                RemoteFileObjectBase fo;
-                synchronized (queueLock) {
-                   fo = queue.poll();
-                   if (fo == null) {
-                       break;
-                   }
-                   cnt++;
-                   set.remove(fo);
-                }
-                try {
-                    fo.refreshImpl(false, null, expected, RemoteFileObjectBase.RefreshMode.DEFAULT);
-                } catch (ConnectException ex) {
-                    clear();
-                    break;
-                } catch (InterruptedException ex) {
-                    RemoteLogger.finest(ex, fo);
-                    break;
-                } catch (CancellationException ex) {
-                    RemoteLogger.finest(ex, fo);
-                    break;
-                } catch (IOException ex) {
-                    ex.printStackTrace(System.err);
-                } catch (ExecutionException ex) {
-                    if (!permissionDenied(ex)) {
-                        System.err.println("Exception on file "+fo.getPath());
-                        ex.printStackTrace(System.err);
+                while (true) {
+                    RemoteFileObjectBase fo;
+                    synchronized (queueLock) {
+                        fo = queue.poll();
+                        if (fo == null) {
+                            break;
+                        }
+                        cnt++;
+                        set.remove(fo);
                     }
-                }
+                    try {
+                        fo.refreshImpl(false, null, expected, RemoteFileObjectBase.RefreshMode.DEFAULT);
+                    } catch (ConnectException ex) {
+                        clear();
+                        break;
+                    } catch (InterruptedException ex) {
+                        RemoteLogger.finest(ex, fo);
+                        break;
+                    } catch (CancellationException ex) {
+                        RemoteLogger.finest(ex, fo);
+                        break;
+                    } catch (IOException ex) {
+                        ex.printStackTrace(System.err);
+                    } catch (ExecutionException ex) {
+                        if (!permissionDenied(ex)) {
+                        System.err.println("Exception on file "+fo.getPath());
+                            ex.printStackTrace(System.err);
+                        }
+                    }
+                }                
+                time = System.currentTimeMillis() - time;
+                RemoteLogger.getInstance().log(Level.FINE, "RefreshManager: refreshing {0} directories took {1} ms on {2}", new Object[] {cnt, time, env});
             }
-            time = System.currentTimeMillis() - time;
-            RemoteLogger.getInstance().log(Level.FINE, "RefreshManager: refreshing {0} directories took {1} ms on {2}", new Object[] {cnt, time, env});
         }
-    }
     
     private boolean permissionDenied(ExecutionException e) {
         Throwable ex = e;
@@ -239,6 +242,7 @@ public class RefreshManager {
             }
         }
         updateTask.schedule(0);
+        updateTaskScheduled = true;
     }
     
     private static boolean getBoolean(String name, boolean result) {
@@ -250,6 +254,8 @@ public class RefreshManager {
     }
     
     /*package*/ void testWaitLastRefreshFinished() {
-        updateTask.waitFinished();
+        if (updateTaskScheduled) {
+            updateTask.waitFinished();
+        }
     }
 }
