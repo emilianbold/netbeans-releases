@@ -760,7 +760,7 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el) {
     }
 
     if (differs) {
-        trace(TRACE_FINE, "refresh manager: sending notification for %s\n", path);
+        trace(TRACE_INFO, "refresh manager: sending notification for %s\n", path);
         // trailing '\n' already there, added by form_entry_response
         fprintf(stdout, "%c 0 %li %s\n", FS_RSP_CHANGE, (long) strlen(path), path);
         fflush(stdout);
