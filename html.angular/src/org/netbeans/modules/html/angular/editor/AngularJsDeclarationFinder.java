@@ -45,9 +45,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
+import java.util.Arrays;
 import java.util.Collection;
 import javax.swing.text.Document;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -57,9 +58,9 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.html.angular.index.AngularJsController;
 import org.netbeans.modules.html.angular.index.AngularJsIndex;
+import org.netbeans.modules.html.angular.model.AngulerWhenInterceptor;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
-import org.netbeans.modules.javascript2.editor.index.JsIndex;
 import org.netbeans.modules.javascript2.editor.spi.DeclarationFinder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -69,70 +70,38 @@ import org.openide.util.Exceptions;
  *
  * @author Petr Pisl
  */
-@DeclarationFinder.Registration(priority=13)
+@DeclarationFinder.Registration(priority = 13)
 public class AngularJsDeclarationFinder implements DeclarationFinder {
 
     @Override
     public DeclarationLocation findDeclaration(ParserResult info, int caretOffset) {
         int embeddedOffset = info.getSnapshot().getEmbeddedOffset(caretOffset);
-        
+
         TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(info.getSnapshot(), embeddedOffset);
         if (ts == null) {
             return DeclarationLocation.NONE;
         }
-        
+
         FileObject fo = info.getSnapshot().getSource().getFileObject();
         if (fo == null) {
             return DeclarationLocation.NONE;
         }
-        
+
         ts.move(embeddedOffset);
         if (ts.moveNext()) {
             JsTokenId id = ts.token().id();
+            String tokenText = ts.token().text().toString();
             if (id == JsTokenId.IDENTIFIER) {
-                Project project = FileOwnerQuery.getOwner(fo);
-                if (project == null) {
-                    return DeclarationLocation.NONE;
-                }
-                try {
-                    Collection<AngularJsController> controllers = AngularJsIndex.get(project).getControllers(ts.token().text().toString(), true);
-                    if (!controllers.isEmpty()) {
-                        DeclarationLocation dl = null;
-                        for (AngularJsController controller : controllers) {
-                            URI uri = null;
-                            try {
-                                uri = controller.getDeclarationFile().toURI();
-                            } catch (URISyntaxException ex) {
-                                // nothing
-                            }
-                            if (uri != null) {
-                                File file = new File(uri);
-                                FileObject dfo = FileUtil.toFileObject(file);
-                                DeclarationLocation dloc = new DeclarationLocation(dfo, controller.getOffset());
-                                //grrr, the main declarationlocation must be also added to the alternatives
-                                //if there are more than one
-                                if (dl == null) {
-                                    //ugly DeclarationLocation alternatives handling workaround - one of the
-                                    //locations simply must be "main"!!!
-                                    dl = dloc;
-                                }
-                                AlternativeLocation aloc = new AlternativeLocationImpl(controller.getName(), dloc);
-                                dl.addAlternative(aloc);
-                            }
-                        }
-                        //and finally if there was just one entry, remove the "alternative"
-                        if (dl != null && dl.getAlternativeLocations().size() == 1) {
-                            dl.getAlternativeLocations().clear();
-                        }
-
-                        if (dl != null) {
-                            return dl;
-                        }
+                return findControllerLocation(fo, tokenText);
+            } else {
+                if (id == JsTokenId.STRING) {
+                    OffsetRange range = isValueOfProperty(AngulerWhenInterceptor.CONTROLLER_PROP, ts, caretOffset);
+                    if (range != null) {
+                        return findControllerLocation(fo, tokenText);
                     }
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
                 }
             }
+            
         }
         return DeclarationLocation.NONE;
     }
@@ -141,27 +110,98 @@ public class AngularJsDeclarationFinder implements DeclarationFinder {
     public OffsetRange getReferenceSpan(Document doc, int caretOffset) {
 //        int embeddedOffset = info.getSnapshot().getEmbeddedOffset(caretOffset);
         TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, caretOffset);
-        
+
         ts.move(caretOffset);
         if (ts.moveNext()) {
             JsTokenId id = ts.token().id();
             if (id == JsTokenId.IDENTIFIER) {
                 return new OffsetRange(ts.offset(), ts.offset() + ts.token().length());
             }
+            OffsetRange range = isValueOfProperty(AngulerWhenInterceptor.CONTROLLER_PROP, ts, caretOffset);
+            if (range != null) {
+                return range;
+            }
+            
         }
         return OffsetRange.NONE;
     }
+
+    private DeclarationLocation findControllerLocation(FileObject fo, String controllerName) {
+        Project project = FileOwnerQuery.getOwner(fo);
+        if (project == null) {
+            return DeclarationLocation.NONE;
+        }
+        try {
+            Collection<AngularJsController> controllers = AngularJsIndex.get(project).getControllers(controllerName, true);
+            if (!controllers.isEmpty()) {
+                DeclarationLocation dl = null;
+                for (AngularJsController controller : controllers) {
+                    URI uri = null;
+                    try {
+                        uri = controller.getDeclarationFile().toURI();
+                    } catch (URISyntaxException ex) {
+                        // nothing
+                    }
+                    if (uri != null) {
+                        File file = new File(uri);
+                        FileObject dfo = FileUtil.toFileObject(file);
+                        DeclarationLocation dloc = new DeclarationLocation(dfo, controller.getOffset());
+                        //grrr, the main declarationlocation must be also added to the alternatives
+                        //if there are more than one
+                        if (dl == null) {
+                            //ugly DeclarationLocation alternatives handling workaround - one of the
+                            //locations simply must be "main"!!!
+                            dl = dloc;
+                        }
+                        AlternativeLocation aloc = new AlternativeLocationImpl(controller.getName(), dloc);
+                        dl.addAlternative(aloc);
+                    }
+                }
+                //and finally if there was just one entry, remove the "alternative"
+                if (dl != null && dl.getAlternativeLocations().size() == 1) {
+                    dl.getAlternativeLocations().clear();
+                }
+
+                if (dl != null) {
+                    return dl;
+                }
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return DeclarationLocation.NONE;
+    }
     
+    private OffsetRange isValueOfProperty(String propertyName, TokenSequence<? extends JsTokenId> ts, int caretOffset) {
+        JsTokenId id = ts.token().id();
+        ts.move(caretOffset);
+        if (ts.moveNext()) {
+            if (id == JsTokenId.STRING) {
+                OffsetRange result = new OffsetRange(ts.offset(), ts.offset() + ts.token().length());
+                ts.movePrevious();
+                Token<? extends JsTokenId> previous = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT, JsTokenId.STRING_BEGIN));
+                if (previous != null && previous.id() == JsTokenId.OPERATOR_COLON && ts.movePrevious()) {
+                    previous = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT));
+                    if (previous != null && previous.id() == JsTokenId.IDENTIFIER
+                            && propertyName.equals(previous.text().toString())) {
+                        return result;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
     private static class AlternativeLocationImpl implements AlternativeLocation {
-        
+
         private final DeclarationLocation location;
         private String name;
-        
+
         public AlternativeLocationImpl(String name, DeclarationLocation location) {
             this.location = location;
             this.name = name;
         }
-        
+
         @Override
         public ElementHandle getElement() {
             return null;
@@ -180,7 +220,6 @@ public class AngularJsDeclarationFinder implements DeclarationFinder {
         public DeclarationLocation getLocation() {
             return location;
         }
-        
 
         @Override
         public int compareTo(AlternativeLocation o) {
@@ -197,6 +236,6 @@ public class AngularJsDeclarationFinder implements DeclarationFinder {
             }
             return sb.toString();
         }
-        
+
     }
 }
