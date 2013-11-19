@@ -55,12 +55,10 @@ import org.openide.util.Pair;
 
 public final class CompositeCategoryProviderImpl implements ProjectCustomizer.CompositeCategoryProvider {
 
-    private static final String TESTING = "Testing"; // NOI18N
-
     private volatile Pair<ProjectCustomizer.Category, ProjectCustomizer.CompositeCategoryProvider> jsTestingInfo;
 
 
-    @NbBundle.Messages("CompositeCategoryProviderImpl.testing.title=Testing")
+    @NbBundle.Messages("CompositeCategoryProviderImpl.testing.title=JavaScript Testing")
     @Override
     public ProjectCustomizer.Category createCategory(Lookup context) {
         Project project = context.lookup(Project.class);
@@ -75,7 +73,7 @@ public final class CompositeCategoryProviderImpl implements ProjectCustomizer.Co
         ProjectCustomizer.CompositeCategoryProvider categoryProvider = jsTestingInfo.second();
         assert categoryProvider != null : jsTestingInfo;
         return ProjectCustomizer.Category.create(
-                TESTING,
+                JsTestingProviders.CUSTOMIZER_IDENT,
                 Bundle.CompositeCategoryProviderImpl_testing_title(),
                 null,
                 new ProjectCustomizer.Category[] {jsTestingInfo.first()});
@@ -83,14 +81,16 @@ public final class CompositeCategoryProviderImpl implements ProjectCustomizer.Co
 
     @Override
     public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
-        if (TESTING.equals(category.getName())) {
+        if (JsTestingProviders.CUSTOMIZER_IDENT.equals(category.getName())) {
             // XXX
             return new JPanel();
         }
         // js testing panel?
         if (jsTestingInfo != null) {
             if (category.equals(jsTestingInfo.first())) {
-                return jsTestingInfo.second().createComponent(category, context);
+                ProjectCustomizer.CompositeCategoryProvider categoryProvider = jsTestingInfo.second();
+                jsTestingInfo = null;
+                return categoryProvider.createComponent(category, context);
             }
         }
         return null;

@@ -80,6 +80,12 @@ public final class JsTestingProviders {
      * Path on SFS for JS testing providers registrations.
      */
     public static final String JS_TESTING_PATH = "JS/Testing"; // NOI18N
+    /**
+     * Category name in Project Customizer.
+     * @see #createCustomizer()
+     * @since 1.52
+     */
+    public static final String CUSTOMIZER_IDENT = "JS_TESTING"; // NOI18N
 
     private static final Lookup.Result<JsTestingProviderImplementation> JS_TESTING_PROVIDERS = Lookups.forPath(JS_TESTING_PATH)
             .lookupResult(JsTestingProviderImplementation.class);
