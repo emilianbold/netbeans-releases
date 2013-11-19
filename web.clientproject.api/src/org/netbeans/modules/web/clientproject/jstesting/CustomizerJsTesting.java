@@ -43,93 +43,79 @@
 package org.netbeans.modules.web.clientproject.jstesting;
 
 import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.util.Objects;
 import javax.swing.GroupLayout;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle;
-import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotificationLineSupport;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.awt.Mnemonics;
-import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
-public final class SelectProviderPanel extends JPanel {
+class CustomizerJsTesting extends JPanel {
 
-    // @GuardedBy("EDT")
-    private DialogDescriptor dialogDescriptor;
-    // @GuardedBy("EDT")
-    private NotificationLineSupport notificationLineSupport;
+    private final ProjectCustomizer.Category category;
+    private final Project project;
+    private final JsTestingProvider originalProvider;
+
+    volatile JsTestingProvider selectedProvider;
 
 
-    private SelectProviderPanel() {
+    CustomizerJsTesting(ProjectCustomizer.Category category, Project project) {
         assert EventQueue.isDispatchThread();
+        assert category != null;
+        assert project != null;
+
+        this.category = category;
+        this.project = project;
+        originalProvider = JsTestingProviders.getDefault().getJsTestingProvider(project, false);
+
         initComponents();
         init();
     }
 
-    @CheckForNull
-    public static JsTestingProvider open() {
-        return Mutex.EVENT.readAccess(new Mutex.Action<JsTestingProvider>() {
+    private void init() {
+        providerComboBox.addItem(null);
+        for (JsTestingProvider provider : JsTestingProviders.getDefault().getJsTestingProviders()) {
+            providerComboBox.addItem(provider);
+        }
+        providerComboBox.setSelectedItem(originalProvider);
+        providerComboBox.setRenderer(new JsTestingProviderRenderer());
+        // listeners
+        providerComboBox.addItemListener(new ProviderItemListener());
+        category.setStoreListener(new ActionListener() {
             @Override
-            public JsTestingProvider run() {
-                return openInternal();
+            public void actionPerformed(ActionEvent e) {
+                storeData();
             }
         });
     }
 
-    @NbBundle.Messages("SelectProviderPanel.title=Select Testing Provider")
-    static JsTestingProvider openInternal() {
-        assert EventQueue.isDispatchThread();
-        final SelectProviderPanel panel = new SelectProviderPanel();
-        panel.dialogDescriptor = new DialogDescriptor(
-                panel,
-                Bundle.SelectProviderPanel_title(),
-                true,
-                DialogDescriptor.OK_CANCEL_OPTION,
-                DialogDescriptor.OK_OPTION,
-                null);
-        panel.notificationLineSupport = panel.dialogDescriptor.createNotificationLineSupport();
-        panel.validateSelection();
-        if (DialogDisplayer.getDefault().notify(panel.dialogDescriptor) == DialogDescriptor.OK_OPTION) {
-            return panel.getSelectedProvider();
-        }
-        return null;
-    }
-
-    private void init() {
-        for (JsTestingProvider provider : JsTestingProviders.getDefault().getJsTestingProviders()) {
-            providerComboBox.addItem(provider);
-        }
-        providerComboBox.setRenderer(new JsTestingProviderRenderer());
-    }
-
-    private JsTestingProvider getSelectedProvider() {
-        assert EventQueue.isDispatchThread();
-        return (JsTestingProvider) providerComboBox.getSelectedItem();
-    }
-
-    @NbBundle.Messages("SelectProviderPanel.noneSelected=No provider selected.")
-    void validateSelection() {
-        assert EventQueue.isDispatchThread();
-        assert dialogDescriptor != null;
-        assert notificationLineSupport != null;
-
-        if (getSelectedProvider() == null) {
-            notificationLineSupport.setErrorMessage(Bundle.SelectProviderPanel_noneSelected());
-            dialogDescriptor.setValid(false);
+    void storeData() {
+        assert !EventQueue.isDispatchThread();
+        if (Objects.equals(originalProvider, selectedProvider)) {
+            // no change
             return;
         }
-        notificationLineSupport.clearMessages();
-        dialogDescriptor.setValid(true);
+        if (originalProvider != null) {
+            JsTestingProviderAccessor.getDefault().notifyEnabled(originalProvider, project, false);
+        }
+        if (selectedProvider != null) {
+            JsTestingProviderAccessor.getDefault().notifyEnabled(selectedProvider, project, true);
+        }
     }
 
     /**
-     * This method is called from within the constructor to initialize the form. WARNING: Do NOT modify this code. The content of this method is always regenerated by the Form Editor.
+     * This method is called from within the constructor to initialize the form. WARNING: Do NOT modify this code. The content of this method is always regenerated by the Form
+     * Editor.
      */
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -137,36 +123,53 @@ public final class SelectProviderPanel extends JPanel {
 
         providerLabel = new JLabel();
         providerComboBox = new JComboBox<JsTestingProvider>();
+        infoLabel = new JLabel();
 
         providerLabel.setLabelFor(providerComboBox);
-        Mnemonics.setLocalizedText(providerLabel, NbBundle.getMessage(SelectProviderPanel.class, "SelectProviderPanel.providerLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(providerLabel, NbBundle.getMessage(CustomizerJsTesting.class, "CustomizerJsTesting.providerLabel.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(infoLabel, NbBundle.getMessage(CustomizerJsTesting.class, "CustomizerJsTesting.infoLabel.text")); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
                 .addComponent(providerLabel)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(providerComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addComponent(infoLabel)
+                    .addComponent(providerComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(providerLabel)
                     .addComponent(providerComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(infoLabel))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private JLabel infoLabel;
     private JComboBox<JsTestingProvider> providerComboBox;
     private JLabel providerLabel;
     // End of variables declaration//GEN-END:variables
+
+    //~ Inner classes
+
+    private final class ProviderItemListener implements ItemListener {
+
+        @Override
+        public void itemStateChanged(ItemEvent e) {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                selectedProvider = (JsTestingProvider) providerComboBox.getSelectedItem();
+            }
+        }
+
+    }
 
 }

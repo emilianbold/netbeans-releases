@@ -201,8 +201,7 @@ public final class CodingStandardsFixer {
             // ! Class AppController in /path/to/NetBeansProjects/sample/Bar/Controller/AppController.php should have at least a vendor namespace according to PSR-0 rules
             // <?xml version="1.0" encoding="UTF-8"?>
             // ...
-            try {
-                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(XML_LOG), "UTF-8"));
+            try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(XML_LOG), "UTF-8"))) { // NOI18N
                 StringBuilder sb = new StringBuilder();
                 String line;
                 boolean first = true;
