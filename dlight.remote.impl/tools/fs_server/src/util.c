@@ -300,3 +300,63 @@ char* signal_name(int signal) {
         default:        return "SIG???";
     }
 }
+
+static bool clean_dir_impl(const char* path, char* child_path_buf) {
+    struct dirent *entry;
+    union {
+        struct dirent d;
+        char b[MAXNAMLEN];
+    } entry_buf;
+    entry_buf.d.d_reclen = MAXNAMLEN + sizeof (struct dirent);
+    DIR *d = NULL;
+    d = opendir(path);
+    if (d) {
+        int base_len = strlen(path);
+        strcpy(child_path_buf, path);
+        child_path_buf[base_len] = '/';       
+        while (true) {
+            if (readdir_r(d, &entry_buf.d, &entry)) {
+                report_error("error reading directory %s: %s\n", path, strerror(errno));
+                return false;
+            }
+            if (!entry) {
+                break;
+            }
+            if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
+                continue;
+            }
+            strcpy(child_path_buf + base_len + 1, entry->d_name);
+            struct stat stat_buf;
+            if (lstat(child_path_buf, &stat_buf) == 0) {
+                if (S_ISDIR(stat_buf.st_mode)) {
+                    if (clean_dir(child_path_buf)) {
+                        if (rmdir(child_path_buf)) {
+                            report_error("error deleting '%s': %s\n", child_path_buf, strerror(errno));
+                            return false;
+                        }
+                    } else {
+                        return false;
+                    }
+                } else {
+                    if (unlink(child_path_buf)) {
+                        report_error("error deleting '%s': %s\n", child_path_buf, strerror(errno));
+                        return false;
+                    }
+                }
+            } else {
+                report_error("error getting stat for '%s': %s\n", child_path_buf, strerror(errno));
+                return false;
+            }
+        }
+    } else {
+        report_error("error opening directory '%s': %s\n", path, strerror(errno));
+    }
+        return true;    
+}
+
+bool clean_dir(const char* path) {
+    char* child_abspath = malloc(PATH_MAX);
+    bool res = clean_dir_impl(path, child_abspath);
+    free(child_abspath);
+    return res;
+}

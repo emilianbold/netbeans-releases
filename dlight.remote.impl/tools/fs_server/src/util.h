@@ -65,6 +65,8 @@ char* signal_name(int signal);
 
 long long get_mtime(struct stat *stat_buf);
 
+bool clean_dir(const char* path);
+
 #ifdef	__cplusplus
 }
 #endif

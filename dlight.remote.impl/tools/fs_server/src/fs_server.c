@@ -34,6 +34,7 @@ static pthread_t refresh_thread;
 
 static blocking_queue req_queue;
 
+static bool clear_persistence = false;
 static bool log_flag = false;
 static bool persistence = false;
 static bool refresh = false;
@@ -912,6 +913,7 @@ static void usage(char* argv[]) {
             "   -l log all requests into log file\n"
             "   -s statistics: print some statistics output to stderr\n"
             "   -d persistence directory: where to log responses (valid only if -p is set)\n"
+            "   -c cleanup persistence upon startup\n"
             , prog_name ? prog_name : argv[0], DEFAULT_THREAD_COUNT);
 }
 
@@ -919,12 +921,15 @@ void process_options(int argc, char* argv[]) {
     int opt;
     int new_thread_count, new_refresh_sleep, new_trace_level;
     TraceLevel default_trace_leve = TRACE_INFO;    
-    while ((opt = getopt(argc, argv, "r:pv:t:lsd:")) != -1) {
+    while ((opt = getopt(argc, argv, "r:pv:t:lsd:c")) != -1) {
         switch (opt) {
             case 'd':
                 if (optarg) {
                     dirtab_set_persistence_dir(optarg);
                 }
+                break;
+            case 'c':
+                clear_persistence = true;
                 break;
             case 's':
                 statistics = true;
@@ -1004,7 +1009,7 @@ static void signal_handler(int signal) {
 }
 
 static void startup() {
-    dirtab_init();
+    dirtab_init(clear_persistence);
     const char* basedir = dirtab_get_basedir();
     if (chdir(basedir)) {
         report_error("cannot change current directory to %s: %s\n", basedir, strerror(errno));

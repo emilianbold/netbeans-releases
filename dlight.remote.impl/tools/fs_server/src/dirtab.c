@@ -305,7 +305,7 @@ static void fill_default_root() {
     strcat(root, "/remotefs");
 }
 
-void dirtab_init() {
+void dirtab_init(bool clear_persistence) {
 
     root = malloc(PATH_MAX + 1);
     temp_path = malloc(PATH_MAX + 1);
@@ -336,6 +336,11 @@ void dirtab_init() {
     }
 
     mkdir_or_die_recursive(root, FAILURE_CREATING_STORAGE_DIR, FAILURE_ACCESSING_STORAGE_DIR);
+    
+    if (clear_persistence) {
+        trace(TRACE_INFO, "Cleaning up persistence (%s)\n", root);
+        clean_dir(root);
+    }
     
     strcpy(cache_path, root);
     strcat(cache_path, "/");

@@ -29,7 +29,7 @@ typedef struct dirtab_element dirtab_element;
 void dirtab_set_persistence_dir(const char* dir);
 
 /** initializes dirtab;must be called before any other dirtab_* function */    
-void dirtab_init();
+void dirtab_init(bool clear_persistence);
 
 /** stores dirtab to file */
 bool dirtab_flush();
