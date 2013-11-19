@@ -61,8 +61,8 @@ import org.openide.util.Exceptions;
 public class AngulerWhenInterceptor implements FunctionInterceptor {
 
     private final static Pattern PATTERN = Pattern.compile("(.)*\\.when");  //NOI18N
-    private final static String TEMPLATE_URL_PROP = "templateUrl";  //NOI18N
-    private final static String CONTROLLER_PROP = "controller";     //NOI18N
+    public final static String TEMPLATE_URL_PROP = "templateUrl";  //NOI18N
+    public final static String CONTROLLER_PROP = "controller";     //NOI18N
 
     @Override
     public Pattern getNamePattern() {

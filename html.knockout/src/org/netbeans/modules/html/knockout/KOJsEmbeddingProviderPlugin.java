@@ -328,6 +328,9 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
             dataValue = "undefined";
         }
         sb.append("var $data = ").append(dataValue).append(";\n");
+        if (context.getAlias() != null) {
+            sb.append("var ").append(context.getAlias()).append(" = ").append(dataValue).append(";\n");
+        }
         generateWithHierarchyEnd(sb, context.getParents());
 
         sb.append("with ($data) {\n");

@@ -42,16 +42,12 @@
 
 package org.netbeans.modules.web.clientproject.jstesting;
 
-import java.awt.Component;
 import java.awt.EventQueue;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.GroupLayout;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle;
-import javax.swing.ListCellRenderer;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
@@ -172,21 +168,5 @@ public final class SelectProviderPanel extends JPanel {
     private JComboBox<JsTestingProvider> providerComboBox;
     private JLabel providerLabel;
     // End of variables declaration//GEN-END:variables
-
-    //~ Inner classes
-
-    private static final class JsTestingProviderRenderer implements ListCellRenderer<JsTestingProvider> {
-
-        // @GuardedBy("EDT")
-        private final ListCellRenderer<Object> defaultRenderer = new DefaultListCellRenderer();
-
-        @Override
-        public Component getListCellRendererComponent(JList<? extends JsTestingProvider> list, JsTestingProvider provider, int index,
-                boolean isSelected, boolean cellHasFocus) {
-            assert EventQueue.isDispatchThread();
-            return defaultRenderer.getListCellRendererComponent(list, provider.getDisplayName(), index, isSelected, cellHasFocus);
-        }
-
-    }
 
 }

@@ -43,7 +43,6 @@
 package org.netbeans.modules.web.clientproject.jstesting;
 
 import javax.swing.JComponent;
-import javax.swing.JPanel;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
@@ -55,12 +54,10 @@ import org.openide.util.Pair;
 
 public final class CompositeCategoryProviderImpl implements ProjectCustomizer.CompositeCategoryProvider {
 
-    private static final String TESTING = "Testing"; // NOI18N
-
     private volatile Pair<ProjectCustomizer.Category, ProjectCustomizer.CompositeCategoryProvider> jsTestingInfo;
 
 
-    @NbBundle.Messages("CompositeCategoryProviderImpl.testing.title=Testing")
+    @NbBundle.Messages("CompositeCategoryProviderImpl.testing.title=JavaScript Testing")
     @Override
     public ProjectCustomizer.Category createCategory(Lookup context) {
         Project project = context.lookup(Project.class);
@@ -68,29 +65,35 @@ public final class CompositeCategoryProviderImpl implements ProjectCustomizer.Co
             throw new IllegalStateException("Project must be found in context: " + context);
         }
         initJsTestingInfo(context, project);
+        ProjectCustomizer.Category[] subCategories;
         if (jsTestingInfo == null) {
             // no category at all
-            return null;
+            subCategories = null;
+        } else {
+            assert jsTestingInfo.first() != null : jsTestingInfo;
+            assert jsTestingInfo.second() != null : jsTestingInfo;
+            subCategories = new ProjectCustomizer.Category[] {jsTestingInfo.first()};
         }
-        ProjectCustomizer.CompositeCategoryProvider categoryProvider = jsTestingInfo.second();
-        assert categoryProvider != null : jsTestingInfo;
         return ProjectCustomizer.Category.create(
-                TESTING,
+                JsTestingProviders.CUSTOMIZER_IDENT,
                 Bundle.CompositeCategoryProviderImpl_testing_title(),
                 null,
-                new ProjectCustomizer.Category[] {jsTestingInfo.first()});
+                subCategories);
     }
 
     @Override
     public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
-        if (TESTING.equals(category.getName())) {
-            // XXX
-            return new JPanel();
+        if (JsTestingProviders.CUSTOMIZER_IDENT.equals(category.getName())) {
+            Project project = context.lookup(Project.class);
+            assert project != null : "Cannot find project in lookup: " + context;
+            return new CustomizerJsTesting(category, project);
         }
         // js testing panel?
         if (jsTestingInfo != null) {
             if (category.equals(jsTestingInfo.first())) {
-                return jsTestingInfo.second().createComponent(category, context);
+                ProjectCustomizer.CompositeCategoryProvider categoryProvider = jsTestingInfo.second();
+                jsTestingInfo = null;
+                return categoryProvider.createComponent(category, context);
             }
         }
         return null;

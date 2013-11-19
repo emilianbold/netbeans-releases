@@ -42,26 +42,35 @@
 
 package org.netbeans.modules.php.analysis.ui.analyzer;
 
+import java.awt.EventQueue;
 import java.util.prefs.Preferences;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.GroupLayout;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.LayoutStyle;
 import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.modules.php.analysis.commands.CodingStandardsFixer;
 import org.netbeans.modules.php.analysis.options.AnalysisOptions;
+import org.openide.awt.Mnemonics;
+import org.openide.util.NbBundle;
 
 public class CodingStandardsFixerCustomizerPanel extends JPanel {
 
     private static final long serialVersionUID = -575231773758741767L;
+
     public static final String LEVEL = "codingStandardsFixer.level"; // NOI18N
     public static final String CONFIG = "codingStandardsFixer.config"; // NOI18N
     public static final String OPTIONS = "codingStandardsFixer.options"; // NOI18N
+
     final Analyzer.CustomizerContext<Void, CodingStandardsFixerCustomizerPanel> context;
     final Preferences settings;
 
-    /**
-     * Creates new form CodingStandardsFixerCustomizerPanel
-     */
+
     public CodingStandardsFixerCustomizerPanel(Analyzer.CustomizerContext<Void, CodingStandardsFixerCustomizerPanel> context) {
+        assert EventQueue.isDispatchThread();
         assert context != null;
 
         this.context = context;
@@ -78,6 +87,7 @@ public class CodingStandardsFixerCustomizerPanel extends JPanel {
     }
 
     private void setLevelComboBox() {
+        assert EventQueue.isDispatchThread();
         DefaultComboBoxModel<String> levelComboBoxModel = new DefaultComboBoxModel<>();
         for (String level : CodingStandardsFixer.ALL_LEVEL) {
             levelComboBoxModel.addElement(level);
@@ -87,6 +97,7 @@ public class CodingStandardsFixerCustomizerPanel extends JPanel {
     }
 
     private void setConfigComboBox() {
+        assert EventQueue.isDispatchThread();
         DefaultComboBoxModel<String> configComboBoxModel = new DefaultComboBoxModel<>();
         for (String config : CodingStandardsFixer.ALL_CONFIG) {
             configComboBoxModel.addElement(config);
@@ -96,6 +107,7 @@ public class CodingStandardsFixerCustomizerPanel extends JPanel {
     }
 
     private void setOptionsTextField() {
+        assert EventQueue.isDispatchThread();
         optionsTextField.setText(settings.get(OPTIONS, AnalysisOptions.getInstance().getCodingStandardsFixerOptions()));
     }
 
@@ -108,60 +120,58 @@ public class CodingStandardsFixerCustomizerPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        levelLabel = new javax.swing.JLabel();
-        levelComboBox = new javax.swing.JComboBox();
-        configLabel = new javax.swing.JLabel();
-        configComboBox = new javax.swing.JComboBox();
-        optionsLabel = new javax.swing.JLabel();
-        optionsTextField = new javax.swing.JTextField();
+        levelLabel = new JLabel();
+        levelComboBox = new JComboBox();
+        configLabel = new JLabel();
+        configComboBox = new JComboBox();
+        optionsLabel = new JLabel();
+        optionsTextField = new JTextField();
 
-        org.openide.awt.Mnemonics.setLocalizedText(levelLabel, org.openide.util.NbBundle.getMessage(CodingStandardsFixerCustomizerPanel.class, "CodingStandardsFixerCustomizerPanel.levelLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(levelLabel, NbBundle.getMessage(CodingStandardsFixerCustomizerPanel.class, "CodingStandardsFixerCustomizerPanel.levelLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(configLabel, org.openide.util.NbBundle.getMessage(CodingStandardsFixerCustomizerPanel.class, "CodingStandardsFixerCustomizerPanel.configLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(configLabel, NbBundle.getMessage(CodingStandardsFixerCustomizerPanel.class, "CodingStandardsFixerCustomizerPanel.configLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(optionsLabel, org.openide.util.NbBundle.getMessage(CodingStandardsFixerCustomizerPanel.class, "CodingStandardsFixerCustomizerPanel.optionsLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(optionsLabel, NbBundle.getMessage(CodingStandardsFixerCustomizerPanel.class, "CodingStandardsFixerCustomizerPanel.optionsLabel.text")); // NOI18N
 
-        optionsTextField.setText(org.openide.util.NbBundle.getMessage(CodingStandardsFixerCustomizerPanel.class, "CodingStandardsFixerCustomizerPanel.optionsTextField.text")); // NOI18N
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addComponent(levelLabel)
                     .addComponent(configLabel)
                     .addComponent(optionsLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(configComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(levelComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addComponent(configComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(levelComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(optionsTextField)))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(levelLabel)
-                    .addComponent(levelComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(configComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(levelComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(configComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(configLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(optionsLabel)
-                    .addComponent(optionsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(optionsTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JComboBox configComboBox;
-    private javax.swing.JLabel configLabel;
-    private javax.swing.JComboBox levelComboBox;
-    private javax.swing.JLabel levelLabel;
-    private javax.swing.JLabel optionsLabel;
-    private javax.swing.JTextField optionsTextField;
+    private JComboBox configComboBox;
+    private JLabel configLabel;
+    private JComboBox levelComboBox;
+    private JLabel levelLabel;
+    private JLabel optionsLabel;
+    private JTextField optionsTextField;
     // End of variables declaration//GEN-END:variables
 }
