@@ -155,6 +155,7 @@ public final class TokenSequence<T extends TokenId> {
     TokenSequence(TokenList<T> tokenList) {
         this.tokenList = tokenList;
         this.rootTokenList = tokenList.rootTokenList();
+        assert (rootTokenList != null) : "Invalid null rootTokenList"; // NOI18N
         if (tokenList instanceof EmbeddedTokenList) {
             embeddedTokenList = (EmbeddedTokenList<?,T>) tokenList;
             embeddedTokenList.updateModCount(rootTokenList.modCount());
