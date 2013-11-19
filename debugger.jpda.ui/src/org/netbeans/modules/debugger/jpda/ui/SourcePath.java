@@ -46,6 +46,7 @@ package org.netbeans.modules.debugger.jpda.ui;
 import com.sun.jdi.AbsentInformationException;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -58,8 +59,10 @@ import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.Field;
+import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
@@ -150,7 +153,7 @@ public class SourcePath {
      * @param global true if global path should be used
      * @return url
      */
-    public String getURL (String relativePath, boolean global) {
+    private String getURL (String relativePath, boolean global) {
         String url = getContext ().getURL (relativePath, global);
         if (url != null) {
             try {
@@ -256,6 +259,15 @@ public class SourcePath {
         boolean global
     ) {
         try {
+            CallStackFrame[] callStacks = t.getCallStack(0, 1);
+            if (callStacks.length > 0) {
+                String url = getClassURL(((CallStackFrameImpl) callStacks[0]).getClassType(), stratumn);
+                if (url != null) {
+                    return true;
+                }
+            }
+        } catch (AbsentInformationException e) {}
+        try {
             return sourceAvailable (
                 convertSlash (t.getSourcePath (stratumn)), global
             );
@@ -269,6 +281,13 @@ public class SourcePath {
     public boolean sourceAvailable (
         Field f
     ) {
+        JPDAClassType declaringClass = f.getDeclaringClass();
+        if (declaringClass != null) {
+            String url = getClassURL(declaringClass, null);
+            if (url != null) {
+                return true;
+            }
+        }
         String className = f.getClassName ();
         return sourceAvailable (className, true);
     }
@@ -277,6 +296,10 @@ public class SourcePath {
         CallStackFrame csf,
         String stratumn
     ) {
+        String url = getClassURL(((CallStackFrameImpl) csf).getClassType(), stratumn);
+        if (url != null) {
+            return true;
+        }
         try {
             return sourceAvailable (
                 convertSlash (csf.getSourcePath (stratumn)), true
@@ -292,13 +315,92 @@ public class SourcePath {
         CallStackFrame csf,
         String stratumn
     ) {
-        try {
-            return getURL (convertSlash (csf.getSourcePath (stratumn)), true);
-        } catch (AbsentInformationException e) {
-            return getURL (
-                convertClassNameToRelativePath (csf.getClassName ()), true
-            );
+        return getURL(csf, stratumn, null);
+    }
+    
+    public String getURL (
+        CallStackFrame csf,
+        String stratumn,
+        String[] sourcePathPtr
+    ) {
+        JPDAClassType classType = ((CallStackFrameImpl) csf).getClassType();
+        String url = null;
+        if (classType != null) {
+            url = getClassURL(classType, stratumn);
         }
+        if (url == null) {
+            String sourcePath;
+            try {
+                sourcePath = convertSlash (csf.getSourcePath (stratumn));
+                url = getURL(sourcePath, true);
+                if (url == null) {
+                    String ds = csf.getDefaultStratum();
+                    sourcePath = convertSlash (csf.getSourcePath (ds));
+                    url = getURL(sourcePath, true);
+                }
+            } catch (AbsentInformationException e) {
+                sourcePath = convertClassNameToRelativePath (csf.getClassName ());
+                url = getURL(sourcePath, true);
+            }
+            
+            if (sourcePathPtr != null) {
+                sourcePathPtr[0] = sourcePath;
+            }
+        }
+        return url;
+    }
+    
+    public String getURL(JPDAThread t, String stratum) {
+        return getURL(t, stratum, null);
+    }
+    
+    private String getURL(JPDAThread t, String stratum, String[] sourcePathPtr) {
+        String url;
+        try {
+            CallStackFrame[] callStacks = t.getCallStack(0, 1);
+            if (callStacks.length > 0) {
+                url = getURL(callStacks[0], stratum, sourcePathPtr);
+            } else {
+                String sourcePath = convertSlash (t.getSourcePath (stratum));
+                url = getURL (sourcePath, true);
+                if (sourcePathPtr != null) {
+                    sourcePathPtr[0] = sourcePath;
+                }
+            }
+        } catch (AbsentInformationException e) {
+            String sourcePath = convertClassNameToRelativePath (t.getClassName ());
+            url = getURL (sourcePath, true);
+            if (sourcePathPtr != null) {
+                sourcePathPtr[0] = sourcePath;
+            }
+        }
+        return url;
+        
+    }
+    
+    private String getClassURL(JPDAClassType clazz, String stratum) {
+        SourcePathProvider context = getContext();
+        try {
+            String url = (String) context.getClass().
+                    getMethod("getURL", JPDAClassType.class, String.class).
+                    invoke(context, clazz, stratum);
+            if (url != null) {
+                try {
+                    new java.net.URL(url);
+                } catch (java.net.MalformedURLException muex) {
+                    Logger.getLogger(SourcePath.class.getName()).log(Level.WARNING,
+                            "Malformed URL '"+url+"' produced by "+getContext (), muex);
+                    return null;
+                }
+                return url;
+            }
+        } catch (NoSuchMethodException ex) {
+        } catch (SecurityException ex) {
+        } catch (IllegalAccessException ex) {
+        } catch (IllegalArgumentException ex) {
+        } catch (InvocationTargetException ex) {
+        }
+        return null;
     }
 
     /** Do not call in AWT */
@@ -308,15 +410,10 @@ public class SourcePath {
     ) {
         int lineNumber = t.getLineNumber (stratumn);
         if (lineNumber < 1) lineNumber = 1;
-        String sourcePath;
-        try {
-            sourcePath = convertSlash (t.getSourcePath (stratumn));
-        } catch (AbsentInformationException e) {
-            sourcePath = convertClassNameToRelativePath (t.getClassName ());
-        }
-        String url = getURL (sourcePath, true);
+        String[] sourcePathPtr = new String[1];
+        String url = getURL(t, stratumn, sourcePathPtr);
         if (url == null) {
-            String message = NbBundle.getMessage(SourcePath.class, "No_URL_Warning", sourcePath);
+            String message = NbBundle.getMessage(SourcePath.class, "No_URL_Warning", sourcePathPtr[0]);
             ErrorManager.getDefault().log(ErrorManager.WARNING, message);
             StatusDisplayer.getDefault().setStatusText(message);
             return ;
@@ -336,43 +433,47 @@ public class SourcePath {
 
     /** Do not call in AWT */
     public void showSource (CallStackFrame csf, String stratumn) {
-        String url;
+        String url = null;
         int lineNumber;
-        try {
-            url = getURL (
-                convertSlash (csf.getSourcePath (stratumn)), true
-            );
-            if (url == null) {
-                stratumn = csf.getDefaultStratum ();
+        JPDAClassType classType = ((CallStackFrameImpl) csf).getClassType();
+        if (classType != null) {
+            url = getClassURL(classType, stratumn);
+        }
+        if (url == null) {
+            try {
                 url = getURL (
                     convertSlash (csf.getSourcePath (stratumn)), true
                 );
+                if (url == null) {
+                    stratumn = csf.getDefaultStratum ();
+                    url = getURL (
+                        convertSlash (csf.getSourcePath (stratumn)), true
+                    );
+                }
+                if (url == null) {
+                    String message = NbBundle.getMessage(SourcePath.class,
+                                                         "No_URL_Warning",
+                                                         csf.getSourcePath (stratumn));
+                    ErrorManager.getDefault().log(ErrorManager.WARNING, message);
+                    StatusDisplayer.getDefault().setStatusText(message);
+                    return ;
+                }
+            } catch (AbsentInformationException e) {
+                url = getURL (
+                    convertClassNameToRelativePath (csf.getClassName ()), true
+                );
+                if (url == null) {
+                    String message = NbBundle.getMessage(SourcePath.class,
+                                                         "No_URL_Warning",
+                                                         csf.getClassName());
+                    ErrorManager.getDefault().log(ErrorManager.WARNING, message);
+                    StatusDisplayer.getDefault().setStatusText(message);
+                    return ;
+                }
             }
-            if (url == null) {
-                String message = NbBundle.getMessage(SourcePath.class,
-                                                     "No_URL_Warning",
-                                                     csf.getSourcePath (stratumn));
-                ErrorManager.getDefault().log(ErrorManager.WARNING, message);
-                StatusDisplayer.getDefault().setStatusText(message);
-                return ;
-            }
-            lineNumber = csf.getLineNumber (stratumn);
-            if (lineNumber < 1) lineNumber = 1;
-        } catch (AbsentInformationException e) {
-            url = getURL (
-                convertClassNameToRelativePath (csf.getClassName ()), true
-            );
-            if (url == null) {
-                String message = NbBundle.getMessage(SourcePath.class,
-                                                     "No_URL_Warning",
-                                                     csf.getClassName());
-                ErrorManager.getDefault().log(ErrorManager.WARNING, message);
-                StatusDisplayer.getDefault().setStatusText(message);
-                return ;
-            }
-            lineNumber = csf.getLineNumber (stratumn);
-            if (lineNumber < 1) lineNumber = 1;
         }
+        lineNumber = csf.getLineNumber (stratumn);
+        if (lineNumber < 1) lineNumber = 1;
         final int ln = lineNumber;
         final String u = url;
         SwingUtilities.invokeLater (new Runnable () {
@@ -392,9 +493,16 @@ public class SourcePath {
     
     public void showSource (Field v, final boolean reportUnknownSource) {
         String fieldName = ((Field) v).getName ();
+        String url = null;
+        JPDAClassType declaringClass = v.getDeclaringClass();
+        if (declaringClass != null) {
+            url = getClassURL(declaringClass, null);
+        }
         final String className = ((Field) v).getClassName ();
         final String sourcePath = EditorContextBridge.getRelativePath (className);
-        String url = getURL(sourcePath, true);
+        if (url == null) {
+            url = getURL(sourcePath, true);
+        }
         if (url == null) return ;
         int lineNumber = lineNumber = EditorContextBridge.getContext().getFieldLineNumber (
             url,
@@ -483,7 +591,7 @@ public class SourcePath {
         int lineNumber = csf.getLineNumber (stratumn);
         if (lineNumber < 1) return null;
         Operation operation = csf.getCurrentOperation(stratumn);
-        try {
+//        try {
             if (operation != null) {
                 int startOffset;
                 int endOffset;
@@ -494,31 +602,33 @@ public class SourcePath {
                     startOffset = operation.getStartPosition().getOffset();
                     endOffset = operation.getEndPosition().getOffset();
                 }
+                String url = getURL(csf, stratumn);
                 return EditorContextBridge.getContext().annotate (
-                    getURL (convertSlash (csf.getSourcePath (stratumn)), true),
+                    url,
                     startOffset,
                     endOffset,
                     EditorContext.CALL_STACK_FRAME_ANNOTATION_TYPE,
                     debugger
                 );
             } else {
+                String url = getURL(csf, stratumn);
                 return EditorContextBridge.getContext().annotate (
-                    getURL (convertSlash (csf.getSourcePath (stratumn)), true),
+                    url,
                     lineNumber,
                     EditorContext.CALL_STACK_FRAME_ANNOTATION_TYPE,
                     debugger
                 );
             }
-        } catch (AbsentInformationException e) {
-            return EditorContextBridge.getContext().annotate (
-                getURL (
-                    convertClassNameToRelativePath (csf.getClassName ()), true
-                ),
-                lineNumber,
-                EditorContext.CALL_STACK_FRAME_ANNOTATION_TYPE,
-                debugger
-            );
-        }
+//        } catch (AbsentInformationException e) {
+//            return EditorContextBridge.getContext().annotate (
+//                getURL (
+//                    convertClassNameToRelativePath (csf.getClassName ()), true
+//                ),
+//                lineNumber,
+//                EditorContext.CALL_STACK_FRAME_ANNOTATION_TYPE,
+//                debugger
+//            );
+//        }
     }
     
     private static List annotateOperations(JPDADebugger debugger, String url,
@@ -655,6 +765,34 @@ public class SourcePath {
                 }
             }
             return p1;
+        }
+
+        public String getURL(JPDAClassType clazz, String stratum) {
+            try {
+                java.lang.reflect.Method getURLMethod = cp1.getClass().getMethod("getURL", JPDAClassType.class, String.class); // NOI18N
+                String url = (String) getURLMethod.invoke(cp1, clazz, stratum);
+                if (url != null) {
+                    return url;
+                }
+            } catch (IllegalAccessException ex) {
+            } catch (IllegalArgumentException ex) {
+            } catch (NoSuchMethodException ex) {
+            } catch (SecurityException ex) {
+            } catch (InvocationTargetException ex) {
+            }
+            try {
+                java.lang.reflect.Method getURLMethod = cp2.getClass().getMethod("getURL", JPDAClassType.class, String.class); // NOI18N
+                String url = (String) getURLMethod.invoke(cp2, clazz, stratum);
+                if (url != null) {
+                    return url;
+                }
+            } catch (IllegalAccessException ex) {
+            } catch (IllegalArgumentException ex) {
+            } catch (NoSuchMethodException ex) {
+            } catch (SecurityException ex) {
+            } catch (InvocationTargetException ex) {
+            }
+            return null;
         }
 
         public String getRelativePath (

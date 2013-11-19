@@ -171,7 +171,6 @@ is the proper place.
                 registered in the project <code>Lookup</code> when a a build script file has been updated
                 or created.
             </description>
-            <class package="org.netbeans.modules.java.j2seproject.api" name="GeneratedFilesInterceptor"/>
             <issue number="226433"/>
         </change>
 

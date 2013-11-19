@@ -287,6 +287,35 @@ public final class GitUtils {
 
     // cached not sharable files and folders
     private static final Map<File, Set<String>> notSharable = Collections.synchronizedMap(new HashMap<File, Set<String>>(5));
+
+    public static boolean isFromRepository (File repository, File file) {
+        Git git = Git.getInstance();
+        File fileRepository = git.getRepositoryRoot(file);
+        // the file is from the given repository if it is
+        
+        if (repository.equals(fileRepository)) {
+            // either normal file in the repository
+            return true;
+        } else if (file.equals(fileRepository) && repository.equals(git.getRepositoryRoot(file.getParentFile()))) {
+            // or a gitlink inside the repository
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public static String parseRemoteHeadFromFetch (String fetchRefSpec) {
+        if (fetchRefSpec.startsWith("+")) { //NOI18N
+            fetchRefSpec = fetchRefSpec.substring(1);
+        }
+        int pos = fetchRefSpec.indexOf(':');
+        if (pos > 0) {
+            return fetchRefSpec.substring(0, pos);
+        } else {
+            return null;
+        }
+    }
+    
     private static void addNotSharable (File topFile, String ignoredPath) {
         synchronized (notSharable) {
             // get cached patterns

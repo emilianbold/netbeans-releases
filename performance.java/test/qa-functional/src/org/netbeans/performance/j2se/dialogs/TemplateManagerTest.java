@@ -41,58 +41,64 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se.dialogs;
 
+import junit.framework.Test;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.j2se.setup.J2SESetup;
-
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Test of Template Manager invoked from main menu.
  *
- * @author  mmirilovic@netbeans.org
+ * @author mmirilovic@netbeans.org
  */
 public class TemplateManagerTest extends PerformanceTestCase {
 
-    /** Creates a new instance of TemplateManager */
+    /**
+     * Creates a new instance of TemplateManager
+     *
+     * @param testName test name
+     */
     public TemplateManagerTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
-    
-    /** Creates a new instance of TemplateManager */
+
+    /**
+     * Creates a new instance of TemplateManager
+     *
+     * @param testName test name
+     * @param performanceDataName data name
+     */
     public TemplateManagerTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(TemplateManagerTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(J2SESetup.class, "testCloseMemoryToolbar")
+                .addTest(TemplateManagerTest.class)
+                .suite();
     }
 
     public void testTemplateManager() {
         doMeasurement();
     }
-    
-    public void prepare(){
-    }
-    
-    public ComponentOperator open(){
-        String menu = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle","Menu/Tools") + "|" +
-                      Bundle.getStringTrimmed("org.netbeans.modules.templates.actions.Bundle","LBL_TemplatesAction_Name");
-        MainWindowOperator.getDefault().menuBar().pushMenu(menu);
-        return new NbDialogOperator(Bundle.getStringTrimmed("org.netbeans.modules.templates.actions.Bundle","LBL_TemplatesPanel_Title"));
+
+    @Override
+    public void prepare() {
     }
 
+    @Override
+    public ComponentOperator open() {
+        String menu = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/Tools") + "|"
+                + Bundle.getStringTrimmed("org.netbeans.modules.templates.actions.Bundle", "LBL_TemplatesAction_Name");
+        MainWindowOperator.getDefault().menuBar().pushMenu(menu);
+        return new NbDialogOperator(Bundle.getStringTrimmed("org.netbeans.modules.templates.actions.Bundle", "LBL_TemplatesPanel_Title"));
+    }
 }

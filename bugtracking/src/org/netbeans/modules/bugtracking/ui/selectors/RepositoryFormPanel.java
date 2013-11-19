@@ -62,7 +62,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.team.TeamRepositoryPanel;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 
@@ -212,7 +211,7 @@ public class RepositoryFormPanel extends JPanel {
             if (firstTimeUse) {
                 RepositoryInfo info = repositoryImpl.getInfo();
                 Component cmp;
-                if(info != null && TeamUtil.isFromTeamServer(repositoryImpl.getRepository())) {
+                if(info != null && repositoryImpl.isTeamRepository()) {
                     cmp = new TeamRepositoryPanel(info);
                 } else {
                     cmp = controller.getComponent();

@@ -70,18 +70,15 @@ import oracle.eclipse.tools.cloud.dev.tasks.CloudDevConstants;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
-import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
-import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.TaskMapping;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
-import org.netbeans.modules.bugtracking.team.spi.TeamAccessor;
-import org.netbeans.modules.bugtracking.team.spi.TeamProject;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
+import org.netbeans.modules.team.spi.TeamAccessor;
+import org.netbeans.modules.team.spi.TeamProject;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
-import org.netbeans.modules.bugtracking.util.TextUtils;
+import org.netbeans.modules.bugtracking.commons.TextUtils;
 import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.mylyn.util.MylynUtils;
 import org.netbeans.modules.mylyn.util.NbTask;
@@ -94,12 +91,12 @@ import org.netbeans.modules.odcs.tasks.util.ODCSUtil;
 import org.netbeans.modules.mylyn.util.UnsubmittedTasksContainer;
 import org.netbeans.modules.mylyn.util.commands.SimpleQueryCommand;
 import org.netbeans.modules.odcs.tasks.query.QueryParameters;
+import org.netbeans.modules.team.spi.TeamAccessorUtils;
+import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
-import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -112,7 +109,6 @@ public class ODCSRepository implements PropertyChangeListener {
     private RepositoryInfo info;
     private ODCSRepositoryController controller;
     private TaskRepository taskRepository;
-    private Lookup lookup;
     private Cache cache;
     private ODCSExecutor executor;
     private Map<PredefinedTaskQuery, ODCSQuery> predefinedQueries;
@@ -128,10 +124,10 @@ public class ODCSRepository implements PropertyChangeListener {
     private final Object CACHE_LOCK = new Object();
     
     public ODCSRepository (TeamProject project) {
-        this(createInfo(project.getDisplayName(), project.getFeatureLocation())); // use name as id - can't be changed anyway
+        this(createInfo(project.getDisplayName(), project.getFeatureLocation(), project)); // use name as id - can't be changed anyway
         assert project != null;
         this.project = project;
-        TeamUtil.getTeamAccessor(project.getFeatureLocation()).addPropertyChangeListener(this, project.getWebLocation().toString());
+        TeamAccessorUtils.getTeamAccessor(project.getFeatureLocation()).addPropertyChangeListener(this, project.getWebLocation().toString());
     }
     
     public ODCSRepository() {
@@ -166,10 +162,12 @@ public class ODCSRepository implements PropertyChangeListener {
     }
 
     @NbBundle.Messages({"# {0} - repository name", "# {1} - url", "LBL_RepositoryTooltipNoUser={0} : {1}"})
-    private static RepositoryInfo createInfo (String repoName, String url) {
+    private static RepositoryInfo createInfo (String repoName, String url, TeamProject project) {
         String id = getRepositoryId(repoName, url);
         String tooltip = Bundle.LBL_RepositoryTooltipNoUser(repoName, url);
-        return new RepositoryInfo(id, ODCSConnector.ID, url, repoName, tooltip);
+        RepositoryInfo i = new RepositoryInfo(id, ODCSConnector.ID, url, repoName, tooltip);
+        i.putValue(TeamBugtrackingConnector.TEAM_PROJECT_NAME, project.getName());
+        return i;
     }
     
     private static String getRepositoryId (String name, String url) {
@@ -187,7 +185,7 @@ public class ODCSRepository implements PropertyChangeListener {
             String user;
             char[] psswd;
             PasswordAuthentication pa =
-                    TeamUtil.getPasswordAuthentication(project.getWebLocation().toString(), false); // do not force login
+                    TeamAccessorUtils.getPasswordAuthentication(project.getWebLocation().toString(), false); // do not force login
             if (pa != null) {
                 user = pa.getUserName();
                 psswd = pa.getPassword();
@@ -202,7 +200,7 @@ public class ODCSRepository implements PropertyChangeListener {
     
 
     public boolean authenticate (String errroMsg) {
-        PasswordAuthentication pa = TeamUtil.getPasswordAuthentication(project.getWebLocation().toString(), true);
+        PasswordAuthentication pa = TeamAccessorUtils.getPasswordAuthentication(project.getWebLocation().toString(), true);
         if(pa == null) {
             return false;
         }
@@ -235,8 +233,9 @@ public class ODCSRepository implements PropertyChangeListener {
 
     synchronized void setInfoValues(String name, String url, String user, char[] password, String httpUser, char[] httpPassword) {
         setTaskRepository(name, url, user, password, httpUser, httpPassword);
-        String id = info != null ? info.getId() : name + System.currentTimeMillis();
+        String id = info != null ? info.getID() : name + System.currentTimeMillis();
         info = new RepositoryInfo(id, ODCSConnector.ID, url, name, getTooltip(name, user, url), user, httpUser, password, httpPassword);
+        info.putValue(TeamBugtrackingConnector.TEAM_PROJECT_NAME, project.getName());
     }
     
     private void setTaskRepository(String name, String url, String user, char[] password, String httpUser, char[] httpPassword) {
@@ -271,8 +270,16 @@ public class ODCSRepository implements PropertyChangeListener {
     private static void setupProperties (TaskRepository repository, String displayName,
             String user, char[] password, String httpUser, char[] httpPassword) {
         repository.setRepositoryLabel(displayName);
+        
+        // set u/p as well as http u/p which is being used by the odcs http client
+        if(httpUser == null || httpUser.trim().equals("")) {
+            httpUser = user;
+        }
+        if(httpPassword == null || new String(httpPassword).trim().equals("")) {
+            httpPassword = password;
+        }
+        
         MylynUtils.setCredentials(repository, user, password, httpUser, httpPassword);
-        patchHttpCredentials(repository, user, password);
     }
     
     synchronized void resetRepository (boolean logout) {
@@ -398,13 +405,6 @@ public class ODCSRepository implements PropertyChangeListener {
         return false;
     }    
 
-    public Lookup getLookup() {
-        if(lookup == null) {
-            lookup = Lookups.fixed(new Object[] { getIssueCache(), project });
-        }
-        return lookup;
-    }
-
     public Collection<ODCSQuery> getQueries() {
         List<ODCSQuery> ret = new ArrayList<ODCSQuery>();
         synchronized (QUERIES_LOCK) {
@@ -435,7 +435,7 @@ public class ODCSRepository implements PropertyChangeListener {
             for (SavedTaskQuery sq : savedQueries) {
                 ODCSQuery q = ODCSQuery.createSaved(this, sq);
                 queries.add(q);
-                
+
                 ODCS.LOG.log(Level.FINER, "added remote query {0} to repository {1}", new Object[]{sq.getName(), getDisplayName()});
             }
         }
@@ -455,19 +455,21 @@ public class ODCSRepository implements PropertyChangeListener {
     private void initializePredefinedQueries () {
         if (predefinedQueries == null) {
             Map<PredefinedTaskQuery, IRepositoryQuery> queries = new EnumMap<PredefinedTaskQuery, IRepositoryQuery>(PredefinedTaskQuery.class);
-            for (PredefinedTaskQuery ptq : PredefinedTaskQuery.values()) {
-                try {
-                    MylynSupport supp = MylynSupport.getInstance();
-                    IRepositoryQuery query = supp.getRepositoryQuery(getTaskRepository(), ODCSUtil.getPredefinedQueryName(ptq));
-                    if (query == null) {
-                        query = supp.createNewQuery(taskRepository, ODCSUtil.getPredefinedQueryName(ptq));
-                        query.setUrl(CloudDevConstants.PREDEFINED_QUERY);
-                        query.setAttribute(CloudDevConstants.QUERY_NAME, ptq.toString());
-                        supp.addQuery(taskRepository, query);
+            if(!Boolean.getBoolean("odcs.tasks.noPredefinedQueries")) { // NOI18N
+                for (PredefinedTaskQuery ptq : PredefinedTaskQuery.values()) {
+                    try {
+                        MylynSupport supp = MylynSupport.getInstance();
+                        IRepositoryQuery query = supp.getRepositoryQuery(getTaskRepository(), ODCSUtil.getPredefinedQueryName(ptq));
+                        if (query == null) {
+                            query = supp.createNewQuery(taskRepository, ODCSUtil.getPredefinedQueryName(ptq));
+                            query.setUrl(CloudDevConstants.PREDEFINED_QUERY);
+                            query.setAttribute(CloudDevConstants.QUERY_NAME, ptq.toString());
+                            supp.addQuery(taskRepository, query);
+                        }
+                        queries.put(ptq, query);
+                    } catch (CoreException ex) {
+                        ODCS.LOG.log(Level.WARNING, null, ex);
                     }
-                    queries.put(ptq, query);
-                } catch (CoreException ex) {
-                    ODCS.LOG.log(Level.WARNING, null, ex);
                 }
             }
             synchronized(QUERIES_LOCK) {
@@ -510,9 +512,9 @@ public class ODCSRepository implements PropertyChangeListener {
         return ODCSQuery.createNew(this);
     }
 
-    public ODCSIssue[] getIssues(String[] ids) {
+    public List<ODCSIssue> getIssues(String[] ids) {
         if (ids.length == 0) {
-            return new ODCSIssue[0];
+            return Collections.emptyList();
         } else {
             //TODO is there a bulk command?
             List<ODCSIssue> issues = new ArrayList<ODCSIssue>(ids.length);
@@ -522,7 +524,7 @@ public class ODCSRepository implements PropertyChangeListener {
                     issues.add(i);
                 }
             }
-            return issues.toArray(new ODCSIssue[issues.size()]);
+            return issues;
         }
     }
     
@@ -531,7 +533,7 @@ public class ODCSRepository implements PropertyChangeListener {
     }
 
     public String getID() {
-        return info.getId();
+        return info.getID();
     }
 
     public Cache getIssueCache() {
@@ -579,12 +581,6 @@ public class ODCSRepository implements PropertyChangeListener {
     private void fireUnsubmittedIssuesChanged() {
         ODCS.LOG.log(Level.FINER, "firing unsubmitted issues changed for repository {0}", new Object[] { getDisplayName() }); //NOI18N
         support.firePropertyChange(RepositoryProvider.EVENT_UNSUBMITTED_ISSUES_CHANGED, null, null);
-    }
-
-    private static void patchHttpCredentials(TaskRepository taskRepository, String user, char[] password) {
-        // XXX have to setup http credentials as that is requested by the odcs client
-        AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(user != null ? user : "", password != null ? new String(password) : ""); // NOI18N
-        taskRepository.setCredentials(AuthenticationType.HTTP, authenticationCredentials, false);
     }
 
     public void refreshConfiguration() {
@@ -669,6 +665,16 @@ public class ODCSRepository implements PropertyChangeListener {
             ODCS.LOG.log(Level.INFO, null, ex);
             return Collections.<ODCSIssue>emptyList();
         }
+    }
+
+    public TeamProject getTeamProject() {
+        return project;
+    }
+
+    public boolean needsAndHasNoLogin(ODCSQuery q) {
+        return (q != getPredefinedQuery(PredefinedTaskQuery.ALL)
+               || q != getPredefinedQuery(PredefinedTaskQuery.RECENT))
+            && !TeamAccessorUtils.isLoggedIn(project.getWebLocation());
     }
     
     public class Cache {

@@ -42,8 +42,11 @@
 package org.netbeans.modules.bugtracking;
 
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.Collection;
+import javax.swing.JComponent;
 import org.netbeans.modules.bugtracking.spi.QueryController;
+import org.openide.util.HelpCtx;
 
 /**
  *
@@ -63,8 +66,65 @@ public abstract class TestQuery {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    private QueryController controller;
     public QueryController getController() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        if(controller == null) {
+            controller = new QueryController() {
+                private final PropertyChangeSupport support = new PropertyChangeSupport(TestQuery.this);
+                
+                @Override
+                public boolean providesMode(QueryController.QueryMode mode) {
+                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                }
+
+                @Override
+                public JComponent getComponent(QueryController.QueryMode mode) {
+                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                }
+
+                @Override
+                public HelpCtx getHelpCtx() {
+                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                }
+
+                @Override
+                public void opened() {
+                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                }
+
+                @Override
+                public void closed() {
+                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                }
+
+                @Override
+                public boolean saveChanges(String name) {
+                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                }
+
+                @Override
+                public boolean discardUnsavedChanges() {
+                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                }
+
+                @Override
+                public void addPropertyChangeListener(PropertyChangeListener l) {
+                    support.addPropertyChangeListener(l);
+                }
+
+                @Override
+                public void removePropertyChangeListener(PropertyChangeListener l) {
+                    support.removePropertyChangeListener(l);
+                }
+
+                @Override
+                public boolean isChanged() {
+                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                }
+                
+            };
+        }
+        return controller;
     }
 
     public boolean isSaved() {

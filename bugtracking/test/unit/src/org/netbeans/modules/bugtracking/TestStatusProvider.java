@@ -43,13 +43,15 @@
 package org.netbeans.modules.bugtracking;
 
 import java.beans.PropertyChangeListener;
+import java.util.Collection;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
+import org.openide.util.lookup.LookupPermGenLeakTest;
 
 /**
  *
  * @author tomas
  */
-public class TestStatusProvider implements IssueStatusProvider<TestIssue> {
+public class TestStatusProvider implements IssueStatusProvider<TestRepository, TestIssue> {
 
     @Override
     public IssueStatusProvider.Status getStatus(TestIssue issue) {
@@ -57,7 +59,7 @@ public class TestStatusProvider implements IssueStatusProvider<TestIssue> {
     }
 
     @Override
-    public void setSeen(TestIssue issue, boolean seen) {
+    public void setSeenIncoming(TestIssue issue, boolean seen) {
         issue.setSeen(seen);
     }
 
@@ -70,5 +72,20 @@ public class TestStatusProvider implements IssueStatusProvider<TestIssue> {
     public void addPropertyChangeListener(TestIssue issue, PropertyChangeListener listener) {
         issue.addPropertyChangeListener(listener);
     }
+
+    @Override
+    public Collection<TestIssue> getUnsubmittedIssues(TestRepository r) {
+        return r.getUnsubmittedIssues();
+    }
+
+    @Override
+    public void discardOutgoing(TestIssue i) {
+        i.discardOutgoing();
+    }
+    
+    @Override
+    public boolean submit(TestIssue data) {
+        return data.submit();
+    }    
     
 }

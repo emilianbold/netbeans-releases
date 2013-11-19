@@ -42,15 +42,16 @@
 package org.netbeans.modules.bugtracking.spi;
 
 import org.openide.filesystems.FileObject;
-import org.netbeans.modules.bugtracking.api.Repository;
 
 /**
  * Provides information if a file managed in the IDE is somehow associated with 
  * a bugtracking repository.
- * <br/>
+ * <p>
  * Note that this interface is not meant to be implemented by bugtracking plugins.
+ * <p/>
  * 
  * @author Tomas Stupka
+ * @since 1.85
  */
 public interface RepositoryQueryImplementation {
     
@@ -59,6 +60,7 @@ public interface RepositoryQueryImplementation {
      * 
      * @param fileObject
      * @return the remote repository url or null if not available
+     * @since 1.85
      */
     public String getRepositoryUrl(FileObject fileObject);
 }

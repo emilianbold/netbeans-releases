@@ -101,6 +101,23 @@ public class TextToken<T extends TokenId> extends AbstractToken<T> {
     public final CharSequence text() {
         return text;
     }
+
+    @Override
+    public boolean isNoDefaultEmbedding() {
+        return false;
+    }
+
+    @Override
+    public AbstractToken<T> markNoDefaultEmbedding() {
+        CustomTextToken<T> token = new CustomTextToken<T>(id(), text, text.length());
+        token.setTokenList(tokenList);
+        token.setRawOffset(rawOffset);
+        AbstractToken<T> t = token.markNoDefaultEmbedding();
+        assert (t == null);
+        return token;
+    }
+    
+    
     
     public final TextToken<T> createCopy(TokenList<T> tokenList, int rawOffset) {
         TextToken<T> token = new TextToken<T>(id(), rawOffset, text);

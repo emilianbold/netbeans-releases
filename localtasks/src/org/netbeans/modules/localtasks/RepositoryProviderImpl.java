@@ -68,7 +68,7 @@ public class RepositoryProviderImpl implements RepositoryProvider<LocalRepositor
     }
 
     @Override
-    public LocalTask[] getIssues (LocalRepository r, String... ids) {
+    public Collection<LocalTask> getIssues (LocalRepository r, String... ids) {
         return r.getTasks(ids);
     }
 
@@ -118,8 +118,8 @@ public class RepositoryProviderImpl implements RepositoryProvider<LocalRepositor
     }
 
     @Override
-    public Collection<LocalTask> getUnsubmittedIssues(LocalRepository r) {
-        return Collections.emptyList();
+    public boolean canAttachFiles(LocalRepository r) {
+        return true;
     }
     
 }

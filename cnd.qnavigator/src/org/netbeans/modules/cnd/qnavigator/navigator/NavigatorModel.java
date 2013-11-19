@@ -46,8 +46,7 @@ package org.netbeans.modules.cnd.qnavigator.navigator;
 
 import java.awt.Image;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.logging.Level;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JCheckBoxMenuItem;
@@ -55,27 +54,21 @@ import javax.swing.JEditorPane;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
-import javax.swing.Timer;
-import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
-import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
-import org.netbeans.modules.cnd.api.model.CsmModelListener;
-import org.netbeans.modules.cnd.api.model.CsmModelState;
-import org.netbeans.modules.cnd.api.model.CsmProgressListener;
-import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.qnavigator.navigator.CsmFileFilter.SortMode;
 import org.netbeans.modules.cnd.qnavigator.navigator.CsmFileModel.PreBuildModel;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -88,28 +81,22 @@ import org.openide.util.actions.Presenter;
  *
  * @author Alexander Simon
  */
-public class NavigatorModel implements CsmProgressListener, CsmModelListener {
-
-    private static final int DEFAULT_PARSING_DELAY = 2000;
+public class NavigatorModel {
 
     private final DataObject cdo;
+    private final FileObject fo;
     private final NavigatorPanelUI ui;
-    private NavigatorComponent busyListener;
     private final Action[] actions;
     private final AbstractNode root;
 
     private final CsmFileModel fileModel;
-    private Timer checkModifiedTimer;
-    private long lastModified = 0;
-    private long lastDocVersion = 0;
-    private final Timer checkCursorTimer;
-    private long lastCursorPos = -1;
-    private long lastCursorPosWhenChecked = 0;
     private final static class Lock {}
     private final Object lock = new Lock();
+    private final CsmFile csmFile;
 
-    public NavigatorModel(DataObject cdo, NavigatorPanelUI ui, NavigatorComponent component, String mimeType) {
+    public NavigatorModel(DataObject cdo, FileObject fo, NavigatorPanelUI ui, NavigatorComponent component, final String mimeType, final CsmFile csmFile) {
         this.cdo = cdo;
+        this.fo = fo;
         this.ui = ui;
         actions = new Action[]{
             new SortByNameAction(),
@@ -127,56 +114,27 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
 
             @Override
             public Image getIcon(int type) {
-                return NavigatorModel.this.cdo.getNodeDelegate().getIcon(type);
+                if (csmFile != null) {
+                    return CsmImageLoader.getImage(csmFile);
+                } else {
+                    return NavigatorModel.this.cdo.getNodeDelegate().getIcon(type);
+                }
             }
             
         };
         fileModel = new CsmFileModel(new CsmFileFilter(), actions);
-        update(getCsmFile());
-        if (getParsingDelay() > 0) {
-            checkModifiedTimer = new Timer(getParsingDelay(), new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent evt) {
-                    checkModified();
-                }
-            });
-            checkModifiedTimer.start();
-        }
-        checkCursorTimer = new Timer(250, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-                checkCursor();
-            }
-        });
-        checkCursorTimer.start();
+        this.csmFile = csmFile;
     }
 
-    private int getParsingDelay(){
-        //return CppSettings.getDefault().getParsingDelay();
-        return DEFAULT_PARSING_DELAY;
+    public DataObject getDataObject() {
+        return cdo;
     }
 
-    private CsmFile getCsmFile() {
-        CsmFile csmFile = CsmUtilities.getCsmFile(cdo, false, false);
-        if (csmFile != null && !csmFile.isValid()) {
-            csmFile = null;
-        }
+    public CsmFile getCsmFile() {
         return csmFile;
     }
-
-
+    
     void removeNotify() {
-        stopTimers();
-        if (checkModifiedTimer != null) {
-            for(ActionListener listener : checkModifiedTimer.getActionListeners()) {
-                checkModifiedTimer.removeActionListener(listener);
-            }
-        }
-        if (checkModifiedTimer != null) {
-            for(ActionListener listener : checkModifiedTimer.getActionListeners()) {
-                checkModifiedTimer.removeActionListener(listener);
-            }
-        }
         synchronized(lock) {
             fileModel.clear();
             setChildren(null);
@@ -200,113 +158,54 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
         }
     }
 
-    void addNotify() {
-        update(getCsmFile());
-    }
-
-    void addBusyListener(NavigatorComponent navigatorComponent) {
-        busyListener = navigatorComponent;
-    }
-
-    void removeBusyListener(NavigatorComponent navigatorComponent) {
-        busyListener = null;
-    }
-
     public Node getRoot(){
         return root;
     }
 
-    private void update(final CsmFile csmFile) {
-        update(csmFile, false);
+    private void refresh(boolean force) {
+        update(new AtomicBoolean(false), force);
     }
 
-    private void update(final CsmFile csmFile, boolean force) {
-        try {
-            if (CsmModelAccessor.getModelState() != CsmModelState.ON) {
-                return;
+    void update(AtomicBoolean canceled, boolean force) {
+        if (csmFile == null) {
+            synchronized(lock) {
+                fileModel.clear();
+                setChildren(new Node[]{});
             }
-            if (csmFile != null && !csmFile.isValid()) {
-                return;
-            }
-            if (busyListener != null) {
-                busyListener.busyStart();
-            }
-            if (csmFile == null) {
-                synchronized(lock) {
-                    fileModel.clear();
-                    setChildren(new Node[]{new NoCodeModelNode(cdo)});
-                }
-            } else {
-                try {
-                    CsmCacheManager.enter();
-                    PreBuildModel buildPreModel = fileModel.buildPreModel(csmFile);
+        } else {
+            try {
+                CsmCacheManager.enter();
+                PreBuildModel buildPreModel = fileModel.buildPreModel(cdo, fo, csmFile, canceled);
+                if (!canceled.get()) {
                     synchronized(lock) {
                         if (fileModel.buildModel(buildPreModel, csmFile, force)){
                             setChildren(fileModel.getNodes());
                         }
                     }
-                } finally {
-                    CsmCacheManager.leave();
+                }
+            } finally {
+                CsmCacheManager.leave();
+            }
+        }
+        if (!canceled.get()) {
+            ui.newContentReady();
+        }
+    }
+
+    private int storeSelection(){
+        if (ui != null) {
+            Node[] selection = ui.getExplorerManager().getSelectedNodes();
+            if (selection != null && selection.length == 1) {
+                Node selected = selection[0];
+                if (selected instanceof CppDeclarationNode) {
+                    return ((CppDeclarationNode) selected).getOffset();
                 }
             }
-        } finally {
-            if (busyListener != null) {
-                busyListener.busyEnd();
-            }
         }
-        ui.newContentReady();
+        return -1;
     }
 
-    private void checkModified() {
-        stopTimers();
-        updateNodesIfModified(findCurrentJEditorPane());
-        restartTimers();
-    }
-
-    private boolean isUpdateNeeded(JEditorPane jEditorPane) {
-        if (jEditorPane == null || jEditorPane.getDocument() == null) {
-            return false;
-        }
-        if (DocumentUtilities.getDocumentVersion(jEditorPane.getDocument()) <= lastDocVersion) {
-            return false;
-        }
-        long timeSinceLastModification = System.currentTimeMillis() - lastModified;
-        if (timeSinceLastModification < getParsingDelay()) {
-            return false;
-        }
-        return true;
-    }
-
-    private void updateNodesIfModified(JEditorPane jEditorPane) {
-        if (!isUpdateNeeded(jEditorPane)) {
-            return;
-        }
-        lastDocVersion = DocumentUtilities.getDocumentVersion(jEditorPane.getDocument());
-        lastModified = System.currentTimeMillis();
-        lastCursorPos = -1;
-        lastCursorPosWhenChecked = 0;
-    }
-
-    private void checkCursor() {
-        if (checkCursorTimer != null) {
-            checkCursorTimer.stop();
-        }
-        JEditorPane jEditorPane = findCurrentJEditorPane();
-        if (jEditorPane != null) {
-            Caret caret = jEditorPane.getCaret();
-            if (caret.getDot() != lastCursorPos && caret.getDot() == lastCursorPosWhenChecked) {
-                lastCursorPos = caret.getDot();
-                lastCursorPosWhenChecked = lastCursorPos;
-                setSelection(lastCursorPos, jEditorPane);
-            }
-            lastCursorPosWhenChecked = caret.getDot();
-        }
-        if (checkCursorTimer != null) {
-            checkCursorTimer.restart();
-        }
-    }
-
-    private void setSelection(long caretLineNo, JEditorPane jEditorPane) {
+    void setSelection(long caretLineNo, JEditorPane jEditorPane) {
         synchronized(lock) {
             Node node = fileModel.setSelection(caretLineNo);
             if (node != null) {
@@ -330,129 +229,6 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
         return null;
     }
 
-    private void restartTimers() {
-        if (checkModifiedTimer != null) {
-            checkModifiedTimer.restart();
-        }
-        if (checkCursorTimer != null) {
-            checkCursorTimer.restart();
-        }
-    }
-
-    private void stopTimers() {
-        if (checkModifiedTimer != null) {
-            checkModifiedTimer.stop();
-        }
-        if (checkCursorTimer != null) {
-            checkCursorTimer.stop();
-        }
-    }
-
-    @Override
-    public void projectParsingStarted(CsmProject project) {
-    }
-
-    @Override
-    public void projectFilesCounted(CsmProject project, int filesCount) {
-    }
-
-    @Override
-    public void projectParsingFinished(CsmProject project) {
-        projectLoaded(project);
-    }
-
-    @Override
-    public void projectParsingCancelled(CsmProject project) {
-    }
-
-    @Override
-    public void fileInvalidated(CsmFile file) {
-    }
-
-    @Override
-    public void fileAddedToParse(CsmFile file) {
-    }
-
-    @Override
-    public void fileParsingStarted(CsmFile file) {
-    }
-
-    @Override
-    public void projectLoaded(CsmProject project) {
-        if (!project.isValid()) {
-            return;
-        }
-        CsmFileModel.logger.log(Level.FINE, "projectLoaded {0}", project); // NOI18N
-        CsmFile file = getCsmFile();
-        if( file != null && project.equals(file.getProject()) ) {
-            if( file.isParsed() ) {
-                fileParsedOrProjectLoaded(file);
-            }
-        }
-    }
-
-    @Override
-    public void fileParsingFinished(CsmFile file) {
-        if (file.equals(getCsmFile())) {
-    	    fileParsedOrProjectLoaded(file);
-        }
-    }
-
-    private void fileParsedOrProjectLoaded(CsmFile file) {
-        CsmFileModel.logger.log(Level.FINE, "File parsed {0}", file); // NOI18N
-        stopTimers();
-        update(file);
-        restartTimers();
-    }
-
-    @Override
-    public void parserIdle() {
-    }
-
-    @Override
-    public void projectOpened(CsmProject project) {
-    }
-
-    @Override
-    public void projectClosed(CsmProject project) {
-        CsmFile file = getCsmFile();
-        if (file == null || file.getProject() == project) {
-            stopTimers();
-            update(null);
-            restartTimers();
-        } else {
-            stopTimers();
-            update(file);
-            restartTimers();
-        }
-    }
-
-    @Override
-    public void modelChanged(CsmChangeEvent e) {
-        if (e.getRemovedFiles().size()>0) {
-            CsmFile file = getCsmFile();
-            if (file == null || e.getRemovedFiles().contains(file)){
-                CsmFileModel.logger.log(Level.FINE, "File removed"); // NOI18N
-                stopTimers();
-                update(null);
-                restartTimers();
-            }
-        }
-    }
-
-    private int storeSelection(){
-        if (ui != null) {
-            Node[] selection = ui.getExplorerManager().getSelectedNodes();
-            if (selection != null && selection.length == 1) {
-                Node selected = selection[0];
-                if (selected instanceof CppDeclarationNode) {
-                    return ((CppDeclarationNode) selected).getOffset();
-                }
-            }
-        }
-        return -1;
-    }
-
     public CsmFileFilter getFilter(){
         return fileModel.getFilter();
     }
@@ -469,9 +245,9 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
         public void actionPerformed(ActionEvent e) {
             fileModel.getFilter().setShowForwardFunctionDeclarations(!fileModel.getFilter().isShowForwardFunctionDeclarations());
             int selection = storeSelection();
-            update(getCsmFile());
+            refresh(false);
             if (selection >= 0) {
-                setSelection(selection, null);
+                setSelection(selection, findCurrentJEditorPane());
             }
         }
 
@@ -494,9 +270,9 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
         public void actionPerformed(ActionEvent e) {
             fileModel.getFilter().setShowForwardClassDeclarations(!fileModel.getFilter().isShowForwardClassDeclarations());
             int selection = storeSelection();
-            update(getCsmFile());
+            refresh(false);
             if (selection >= 0) {
-                setSelection(selection, null);
+                setSelection(selection, findCurrentJEditorPane());
             }
         }
 
@@ -520,9 +296,9 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
         public void actionPerformed(ActionEvent e) {
             fileModel.getFilter().setShowMacro(!fileModel.getFilter().isShowMacro());
             int selection = storeSelection();
-            update(getCsmFile());
+            refresh(false);
             if (selection >= 0) {
-                setSelection(selection, null);
+                setSelection(selection, findCurrentJEditorPane());
             }
         }
 
@@ -545,9 +321,9 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
         public void actionPerformed(ActionEvent e) {
             fileModel.getFilter().setShowInclude(!fileModel.getFilter().isShowInclude());
             int selection = storeSelection();
-            update(getCsmFile());
+            refresh(false);
             if (selection >= 0) {
-                setSelection(selection, null);
+                setSelection(selection, findCurrentJEditorPane());
             }
         }
 
@@ -570,9 +346,9 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
         public void actionPerformed(ActionEvent e) {
             fileModel.getFilter().setShowTypedef(!fileModel.getFilter().isShowTypedef());
             int selection = storeSelection();
-            update(getCsmFile());
+            refresh(false);
             if (selection >= 0) {
-                setSelection(selection, null);
+                setSelection(selection, findCurrentJEditorPane());
             }
         }
 
@@ -595,9 +371,9 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
         public void actionPerformed(ActionEvent e) {
             fileModel.getFilter().setShowVariable(!fileModel.getFilter().isShowVariable());
             int selection = storeSelection();
-            update(getCsmFile());
+            refresh(false);
             if (selection >= 0) {
-                setSelection(selection, null);
+                setSelection(selection, findCurrentJEditorPane());
             }
         }
 
@@ -620,9 +396,9 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
         public void actionPerformed(ActionEvent e) {
             fileModel.getFilter().setShowField(!fileModel.getFilter().isShowField());
             int selection = storeSelection();
-            update(getCsmFile());
+            refresh(false);
             if (selection >= 0) {
-                setSelection(selection, null);
+                setSelection(selection, findCurrentJEditorPane());
             }
         }
 
@@ -645,9 +421,9 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
         public void actionPerformed(ActionEvent e) {
             fileModel.getFilter().setShowUsing(!fileModel.getFilter().isShowUsing());
             int selection = storeSelection();
-            update(getCsmFile());
+            refresh(false);
             if (selection >= 0) {
-                setSelection(selection, null);
+                setSelection(selection, findCurrentJEditorPane());
             }
         }
 
@@ -672,9 +448,9 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
             if (fileModel.getFilter().getSortMode() != SortMode.Name) {
                 fileModel.getFilter().setSortMode(SortMode.Name);
                 int selection = storeSelection();
-                update(getCsmFile(), true);
+                refresh(true);
                 if (selection >= 0) {
-                    setSelection(selection, null);
+                    setSelection(selection, findCurrentJEditorPane());
                 }
             }
         }
@@ -701,9 +477,9 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
             if (fileModel.getFilter().getSortMode() != SortMode.Offset) {
                 fileModel.getFilter().setSortMode(SortMode.Offset);
                 int selection = storeSelection();
-                update(getCsmFile(), true);
+                refresh(true);
                 if (selection >= 0) {
-                    setSelection(selection, null);
+                    setSelection(selection, findCurrentJEditorPane());
                 }
             }
         }
@@ -727,9 +503,9 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
         public void actionPerformed(ActionEvent e) {
             fileModel.getFilter().setGroupByKind(!fileModel.getFilter().isGroupByKind());
             int selection = storeSelection();
-            update(getCsmFile(), true);
+            refresh(true);
             if (selection >= 0) {
-                setSelection(selection, null);
+                setSelection(selection, findCurrentJEditorPane());
             }
         }
 

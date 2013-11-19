@@ -70,8 +70,9 @@ import org.openide.util.lookup.Lookups;
  */
 @OptionsPanelController.SubRegistration(
     displayName="#LBL_IssueTracking",
+    location="Team",
     keywords="#KW_IssueTracking",
-    keywordsCategory="Advanced/IssueTracking")
+    keywordsCategory="Team/IssueTracking")
 public class BugtrackingOptions extends OptionsPanelController {
         private BugtrackingOptionsPanel panel;
         private boolean initialized = false;
@@ -85,22 +86,22 @@ public class BugtrackingOptions extends OptionsPanelController {
             panel = new BugtrackingOptionsPanel(tasksPanel);
             
             Lookup lookup = Lookups.forPath("BugtrackingOptionsDialog"); // NOI18N
-            Iterator<? extends AdvancedOption> it = lookup.lookup(new Lookup.Template<AdvancedOption> (AdvancedOption.class)).
-                    allInstances().iterator();
+            Iterator<? extends AdvancedOption> it = lookup.lookupAll(AdvancedOption.class).iterator();
             while (it.hasNext()) {
                 AdvancedOption option = it.next();
                 String category = option.getDisplayName();
-                OptionsPanelController controller = null;
+                OptionsPanelController controller;
                 try {
                     controller = option.create();
                 } catch (Throwable t) {
-                    BugtrackingManager.LOG.log(Level.WARNING, "Problems while creating option category : " + category, t);
+                    BugtrackingManager.LOG.log(Level.WARNING, "Problems while creating option category : " + category, t);  // NOI18N
                     continue;
                 }
                 categoryToController.put(category, controller);
             }
         }
         
+        @Override
         public JComponent getComponent(Lookup masterLookup) {
             for(Entry<String, OptionsPanelController> entry : categoryToController.entrySet()) {                                
                 panel.addPanel(entry.getKey(), entry.getValue().getComponent(masterLookup));
@@ -108,6 +109,7 @@ public class BugtrackingOptions extends OptionsPanelController {
             return panel;
         }
         
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener l) {
             for (OptionsPanelController c: categoryToController.values()) {
                 c.removePropertyChangeListener(l);
@@ -115,6 +117,7 @@ public class BugtrackingOptions extends OptionsPanelController {
             tasksPanel.getPropertySupport().removePropertyChangeListener(l);
         }
         
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener l) {
             for (OptionsPanelController c: categoryToController.values()) {
                 c.addPropertyChangeListener(l);
@@ -122,6 +125,7 @@ public class BugtrackingOptions extends OptionsPanelController {
             tasksPanel.getPropertySupport().addPropertyChangeListener(l);
         }
         
+        @Override
         public void update() {
             Iterator<OptionsPanelController> it = categoryToController.values().iterator();
             while (it.hasNext()) {
@@ -130,6 +134,7 @@ public class BugtrackingOptions extends OptionsPanelController {
             tasksPanel.update();
         }
         
+        @Override
         public void applyChanges() {
             Iterator<OptionsPanelController> it = categoryToController.values().iterator();
             while (it.hasNext()) {
@@ -138,6 +143,7 @@ public class BugtrackingOptions extends OptionsPanelController {
             tasksPanel.applyChanges();
         }
         
+        @Override
         public void cancel() {
             Iterator<OptionsPanelController> it = categoryToController.values().iterator();
             while (it.hasNext()) {
@@ -146,6 +152,7 @@ public class BugtrackingOptions extends OptionsPanelController {
             tasksPanel.cancel();
         }
         
+        @Override
         public boolean isValid() {
             Iterator<OptionsPanelController> it = categoryToController.values().iterator();
             while (it.hasNext()) {
@@ -156,6 +163,7 @@ public class BugtrackingOptions extends OptionsPanelController {
             return tasksPanel.isDataValid();
         }
         
+        @Override
         public boolean isChanged() {
             Iterator<OptionsPanelController> it = categoryToController.values().iterator();
             while (it.hasNext()) {
@@ -166,7 +174,8 @@ public class BugtrackingOptions extends OptionsPanelController {
             return tasksPanel.isChanged();
         }
         
+        @Override
         public HelpCtx getHelpCtx() {
-            return new HelpCtx(BugtrackingOptions.class);
+            return new HelpCtx("org.netbeans.modules.bugtracking.settings.BugtrackingOptions"); // NOI18N
         }
 }

@@ -44,7 +44,6 @@ package org.netbeans.modules.odcs.tasks.repository;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.logging.Level;
 import javax.swing.JComponent;
@@ -58,7 +57,7 @@ import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.commons.LogUtils;
 import org.netbeans.modules.odcs.tasks.ODCS;
 import org.netbeans.modules.odcs.tasks.ODCSConnector;
 import org.openide.util.Cancellable;
@@ -160,7 +159,7 @@ public class ODCSRepositoryController implements RepositoryController, DocumentL
     }
 
     @Override
-    public void applyChanges() throws IOException {
+    public void applyChanges() {
         repository.setInfoValues(
             getName(),
             getUrl(),
@@ -168,6 +167,11 @@ public class ODCSRepositoryController implements RepositoryController, DocumentL
             getPassword(),
             getHttpUser(),
             getHttpPassword());
+    }
+    
+    @Override
+    public void cancelChanges() {
+        
     }
     
     @Override
@@ -257,7 +261,7 @@ public class ODCSRepositoryController implements RepositoryController, DocumentL
             }
 
             private void logValidateMessage(String msg, Level level, String name, String url, String user, char[] psswd, String httpUser, char[] httpPsswd) {
-                ODCS.LOG.log(level, msg, new Object[] {name, url, user, BugtrackingUtil.getPasswordLog(psswd), httpUser, BugtrackingUtil.getPasswordLog(httpPsswd)});
+                ODCS.LOG.log(level, msg, new Object[] {name, url, user, LogUtils.getPasswordLog(psswd), httpUser, LogUtils.getPasswordLog(httpPsswd)});
             }
         };
         taskRunner.startTask();

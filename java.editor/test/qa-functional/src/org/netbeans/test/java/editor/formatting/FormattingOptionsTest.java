@@ -65,12 +65,16 @@ public class FormattingOptionsTest extends EditorTestCase {
     }
 
     public static Test suite() {
-        return NbModuleSuite.createConfiguration(FormattingOptionsTest.class)
+        return NbModuleSuite                             
+                .createConfiguration(GeneralFormattingOptionsTest.class)
                 .addTest(GeneralFormattingOptionsTest.class)
                 .addTest(JavaTabsAndIndentsTest.class)
                 .addTest(AlignmentTest.class)
+                .addTest(BracesTest.class)
+                .addTest(WrappingTest.class)
                 .enableModules(".*")
-                .clusters(".*").suite();
+                .clusters(".*")
+                .suite();
     }
 
     @Override
@@ -91,7 +95,7 @@ public class FormattingOptionsTest extends EditorTestCase {
         openSourceFile(packageName, fileName);
         EditorOperator editor = new EditorOperator(fileName);
         MainWindowOperator.getDefault().menuBar().pushMenu("Source|Format", "|");
-        new EventTool().waitNoEvent(500);
+        new EventTool().waitNoEvent(250);
         getRef().print(editor.getText());
         try {
             compareReferenceFiles();

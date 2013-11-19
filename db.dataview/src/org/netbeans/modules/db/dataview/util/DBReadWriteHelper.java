@@ -206,57 +206,12 @@ public class DBReadWriteHelper {
             case Types.VARBINARY:
             case Types.LONGVARBINARY:
             case Types.BLOB: {
-                // Try to get a blob object
-                try {
-                    Blob blob = rs.getBlob(index);
-                    
-                    if (blob == null) {
-                        return null;
-                    }
-
-                    Object result = null;
-                    
-                    if (! rs.wasNull()) {
-                        result = new FileBackedBlob(blob.getBinaryStream());
-                    }
-                    
-                    try {
-                        blob.free();
-                    } catch (java.lang.AbstractMethodError err) {
-                        // Blob gained a new method in jdbc4 (drivers compiled
-                        // against older jdks don't provide this methid
-                    } catch (SQLException ex) {
-                        // DBMS failed to free resource or does not support call
-                        // ignore this, as we can't do more
-                    }
-                    
-                    return result;
-                    // Ok - can happen - the jdbc driver might not support
-                    // blob data or can for example not provide a longvarbinary
-                    // as blob - so fall back to our implementation of blob
-                } catch (SQLException ex) {
-                } catch (java.lang.UnsupportedOperationException ex) {
-                }
-                try {
-                    InputStream is = rs.getBinaryStream(index);
-                    if (is == null) {
-                        return null;
-                    } else {
-                        return new FileBackedBlob(is);
-                    }
-                } catch (SQLDataException x) {
-                    // wrong mapping JavaDB JDBC Type -4
-                    try {
-                        String sdata = rs.getString(index);
-                        if (rs.wasNull()) {
-                            return null;
-                        } else {
-                            return sdata;
-                        }
-                    } catch (SQLException ex) {
-                        // throw the original SQLDataException intead of this one
-                        throw x;
-                    }
+                // Load binary data as stream and hold it internally as a pseudoblob
+                InputStream is = rs.getBinaryStream(index);
+                if (is == null) {
+                    return null;
+                } else {
+                    return new FileBackedBlob(is);
                 }
             }
             case Types.LONGVARCHAR:

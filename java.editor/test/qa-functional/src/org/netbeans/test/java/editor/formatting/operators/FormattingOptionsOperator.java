@@ -133,15 +133,15 @@ public class FormattingOptionsOperator extends NbDialogOperator {
     }
 
     public JComboBoxOperator getComboBoxByLabel(String labeledBy) throws IllegalStateException {
-        return new JComboBoxOperator((JComboBox) getComponentByLabel(labeledBy));
+        return new JComboBoxOperator((JComboBox) getComponentByLabel(labeledBy, JComboBox.class));
     }
 
     public JSpinnerOperator getSpinnerOperatorByLabel(String labeledBy) {
-        return new JSpinnerOperator((JSpinner) getComponentByLabel(labeledBy));
+        return new JSpinnerOperator((JSpinner) getComponentByLabel(labeledBy, JSpinner.class));
     }
 
     public JTextFieldOperator getTextFieldByLabel(String labeledBy) {
-        return new JTextFieldOperator((JTextField) getComponentByLabel(labeledBy));
+        return new JTextFieldOperator((JTextField) getComponentByLabel(labeledBy, JTextField.class));
     }
 
     public JCheckBoxOperator getCheckboxOperatorByLabel(String labeledBy) {
@@ -149,7 +149,11 @@ public class FormattingOptionsOperator extends NbDialogOperator {
     }
 
     public Component getComponentByLabel(String labeledBy) throws IllegalStateException {
-        Component findSubComponent = formattingPanel.findSubComponent(new ComponentChooserByLabel(labeledBy));
+        return getComponentByLabel(labeledBy, null);
+    }
+
+    public Component getComponentByLabel(String labeledBy, Class type) throws IllegalStateException {
+        Component findSubComponent = formattingPanel.findSubComponent(new ComponentChooserByLabel(labeledBy, type));
         if (findSubComponent == null) {
             throw new IllegalStateException("Component labeled by JLabel(" + labeledBy + ") is not found");
         }
@@ -160,17 +164,32 @@ public class FormattingOptionsOperator extends NbDialogOperator {
 
         private final String label;
 
+        private final Class type;
+
         public ComponentChooserByLabel(String label) {
             this.label = label;
+            this.type = null;
+        }
+
+        public ComponentChooserByLabel(String label, Class type) {
+            this.label = label;
+            this.type = type;
         }
 
         @Override
         public boolean checkComponent(Component comp) {
             if (comp instanceof JComponent) {
-                Object labeledBy = ((JComponent) comp).getClientProperty("labeledBy");                
-                if (labeledBy != null && (labeledBy instanceof JLabel)) {                    
-                    String labelText = ((JLabel) labeledBy).getText();                    
-                    return getDefaultStringComparator().equals(labelText, this.label);
+                Object labeledBy = ((JComponent) comp).getClientProperty("labeledBy");
+                if (labeledBy != null && (labeledBy instanceof JLabel)) {
+                    String labelText = ((JLabel) labeledBy).getText();
+                    if (getDefaultStringComparator().equals(labelText, this.label)) {
+                        if (type == null) {
+                            return true; //No type required
+                        }
+                        if (type.isInstance(comp)) {
+                            return true; //Match the type, otherwise continue in searching
+                        }
+                    }
                 }
             }
             return false;
@@ -185,6 +204,8 @@ public class FormattingOptionsOperator extends NbDialogOperator {
     private AllLanguageTabsAndIndentsOperator allLanguageTabsAndIndentsOperator;
     private JavaTabsAndIndentsOperator javaTabsAndIndentsOperator;
     private AlignmentOperator alignmentOperator;
+    private BracesOperator bracesOperator;
+    private WrappingOperator wrappingOperator;
 
     public AllLanguageTabsAndIndentsOperator getAllLanguageTabsAndIndentsOperator() {
         if (allLanguageTabsAndIndentsOperator == null) {
@@ -207,11 +228,31 @@ public class FormattingOptionsOperator extends NbDialogOperator {
         return alignmentOperator;
     }
 
+    public BracesOperator getBracesOperator() {
+        if (bracesOperator == null) {
+            bracesOperator = new BracesOperator(this);
+        }
+        return bracesOperator;
+    }
+    
+        public WrappingOperator getWrappingOperator() {
+        if (wrappingOperator == null) {
+            wrappingOperator = new WrappingOperator(this);
+        }
+        return wrappingOperator;
+
+    }
+
     public static void restoreDefaultValues() {
         FormattingOptionsOperator formattingOperator = FormattingOptionsOperator.invoke(true);
-        formattingOperator.getAllLanguageTabsAndIndentsOperator().restoreDefaultsValues();
-        formattingOperator.getJavaTabsAndIndentsOperator().restoreDefaultsValues();
-        formattingOperator.getAlignmentOperator().restoreDefaultsValues();
-        formattingOperator.ok();
+        try {
+            formattingOperator.getAllLanguageTabsAndIndentsOperator().restoreDefaultsValues();
+            formattingOperator.getJavaTabsAndIndentsOperator().restoreDefaultsValues();
+            formattingOperator.getAlignmentOperator().restoreDefaultsValues();
+            formattingOperator.getBracesOperator().restoreDefaultsValues();
+            formattingOperator.getWrappingOperator().restoreDefaultsValues();
+        } finally {
+            formattingOperator.ok();
+        }
     }
 }

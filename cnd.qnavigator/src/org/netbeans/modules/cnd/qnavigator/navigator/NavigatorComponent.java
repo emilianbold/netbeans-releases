@@ -45,8 +45,6 @@
 package org.netbeans.modules.cnd.qnavigator.navigator;
 
 import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
-import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.filesystems.FileObject;
@@ -55,27 +53,29 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Alexander Simon
  */
+@NavigatorPanel.Registrations({
+@NavigatorPanel.Registration(mimeType = MIMENames.HEADER_MIME_TYPE, displayName = "#LBL_members"),
+@NavigatorPanel.Registration(mimeType = MIMENames.C_MIME_TYPE, displayName = "#LBL_members"),
+@NavigatorPanel.Registration(mimeType = MIMENames.CPLUSPLUS_MIME_TYPE, displayName = "#LBL_members"),
+@NavigatorPanel.Registration(mimeType = MIMENames.FORTRAN_MIME_TYPE, displayName = "#LBL_members")
+})
 public final class NavigatorComponent implements NavigatorPanel, LookupListener {
     
     /** Lookup template to search for java data objects. shared with InheritanceTreePanel */
     private Lookup.Result<DataObject> doContext;
     /** UI of this navigator panel */
     private NavigatorPanelUI panelUI;
-    /** model actually containing content of this panel */
-    private NavigatorModel curModel;
-    /** current context to work on */
+    private static NavigatorComponent INSTANCE;
     /** actual data */
     private DataObject curData;
     private final static class Lock{};
     private final Lock lock = new Lock();
     private final Lock uiLock = new Lock();
-    private static final RequestProcessor RP = new RequestProcessor("Updating C/C++ Navigator Content", 1); // NOI18N
     
     @Override
     public String getDisplayName() {
@@ -97,6 +97,7 @@ public final class NavigatorComponent implements NavigatorPanel, LookupListener 
         String mime = (fo == null) ? "" : fo.getMIMEType();
         return mime;
     }
+    
     /** Called when this panel's component is about to being displayed.
      * Right place to attach listeners to current navigation data context.
      *
@@ -105,6 +106,7 @@ public final class NavigatorComponent implements NavigatorPanel, LookupListener 
     @Override
     public void panelActivated(Lookup context) {
         synchronized(lock) {
+            INSTANCE = this;
             doContext = context.lookupResult(DataObject.class);
             doContext.addLookupListener(this);
             resultChanged(null);
@@ -118,10 +120,9 @@ public final class NavigatorComponent implements NavigatorPanel, LookupListener 
     @Override
     public void panelDeactivated() {
         synchronized(lock) {
+            INSTANCE = null;
             doContext.removeLookupListener(this);
             doContext = null;
-            detachFromModel(curModel);
-            curModel = null;
             curData = null;
         }
     }
@@ -133,7 +134,6 @@ public final class NavigatorComponent implements NavigatorPanel, LookupListener 
             for (DataObject dob : doContext.allInstances()) {
                 if (MIMENames.isFortranOrHeaderOrCppOrC(getMime(dob))) {
                     if (!dob.equals(curData)) {
-                        detachFromModel(curModel);
                         curData = dob;
                         setNewContent(dob);
                     }
@@ -143,93 +143,24 @@ public final class NavigatorComponent implements NavigatorPanel, LookupListener 
         }
     }
 
+    public static NavigatorComponent getInstance() {
+        return INSTANCE;
+    }
+
     @Override
     public Lookup getLookup() {
         return getPanelUI().getLookup();
     }
 
-    // ModelBusyListener impl - sets wait cursor on content during computing
-    
-    public void busyStart() {
-        if (SwingUtilities.isEventDispatchThread()) {
-            getPanelUI().setBusyState(true);
-        } else {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    getPanelUI().setBusyState(true);
-                }
-            });
-        }
-    }
-    
-    public void busyEnd() {
-        if (SwingUtilities.isEventDispatchThread()) {
-            getPanelUI().setBusyState(false);
-        } else {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    getPanelUI().setBusyState(false);
-                }
-            });
-        }
-    }
-    
-    public void newContentReady() {
-        getPanelUI().newContentReady();
-    }
-    
-    // end of ModelBusyListener implementation
-    
-    // RelatedItemListener impl, for selecting method currently edited in editor
-    
-    public void itemsChanged(ItemEvent evt) {
-    }
-    
-    public void itemsCleared(ItemEvent evt) {
-        getPanelUI().getContent().repaint();
-    }
-    
-    
     /********** non public stuff **********/
     
     private void setNewContent(final DataObject cdo) {
         final NavigatorPanelUI ui = getPanelUI();
-	RP.post(new Runnable() {
-            @Override
-	    public void run() {
-		setNewContentImpl(cdo, ui);
-	    }
-	});
+        ui.setDataObject(cdo);
+        ui.showWaitNode();
     }
     
-    private void setNewContentImpl(DataObject cdo, NavigatorPanelUI ui) {
-        NavigatorModel aNavigatorModel = new NavigatorModel(cdo, ui, this, getMime(cdo));
-        CsmListeners.getDefault().addProgressListener(aNavigatorModel);
-        CsmListeners.getDefault().addModelListener(aNavigatorModel);
-        ui.getContent().setModel(aNavigatorModel);
-        try {
-            aNavigatorModel.addBusyListener(this);
-        } catch (Exception exc) {
-            exc.printStackTrace(System.err);
-        }
-        synchronized (lock) {
-            curModel = aNavigatorModel;
-        }
-        aNavigatorModel.addNotify();
-    }
-    
-    private void detachFromModel(NavigatorModel model) {
-	if( model != null ) {
-	    CsmListeners.getDefault().removeProgressListener(model);
-	    CsmListeners.getDefault().removeModelListener(model);
-	    model.removeBusyListener(this);
-	    model.removeNotify();
-	}
-    }
-    
-    private NavigatorPanelUI getPanelUI() {
+    NavigatorPanelUI getPanelUI() {
         synchronized(uiLock) {
             if (panelUI == null) {
                 panelUI = new NavigatorPanelUI();

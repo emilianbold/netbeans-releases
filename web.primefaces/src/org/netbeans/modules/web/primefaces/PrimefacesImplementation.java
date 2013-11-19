@@ -84,8 +84,7 @@ public class PrimefacesImplementation implements JsfComponentImplementation {
 
     // ICEfaces Maven resources
     private static final String MAVEN_PF_REPO ="default:http://repository.primefaces.org/"; //NOI18N
-    private static final String MAVEN_PF_DEP = "org.primefaces:primefaces:3.5:jar"; //NOI18N
-    private static final String MAVEN_APACHE_FILEUPLOAD_DEP = "commons-fileupload:commons-fileupload:1.3:jar"; //NOI18N
+    private static final String MAVEN_PF_DEP = "org.primefaces:primefaces:4.0:jar"; //NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(PrimefacesImplementation.class.getName());
     private static final String PRIMEFACES_SPECIFIC_PRIME_RESOURCE = "org.primefaces.application.PrimeResource"; //NOI18N
@@ -203,8 +202,7 @@ public class PrimefacesImplementation implements JsfComponentImplementation {
     private static Library getMavenLibrary() {
         return JsfComponentUtils.createMavenDependencyLibrary(
                 PRIMEFACES_NAME + "-maven-lib", //NOI18N
-                //issue #228883 hack - JSF2.2 + PF3.5 require Apache Commons FileUpload dependency
-                new String[]{MAVEN_PF_DEP, MAVEN_APACHE_FILEUPLOAD_DEP},
+                new String[]{MAVEN_PF_DEP},
                 new String[]{MAVEN_PF_REPO});
     }
 

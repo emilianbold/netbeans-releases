@@ -59,9 +59,12 @@ import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.project.ui.customizer.MainClassChooser;
 import org.netbeans.spi.project.libraries.LibraryImplementation3;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
+import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 
@@ -164,6 +167,26 @@ public final class CommonProjectUtils {
     public static boolean isMainClass (final String className, ClassPath bootPath, ClassPath compilePath, ClassPath sourcePath) {
         ClasspathInfo cpInfo = ClasspathInfo.create(bootPath, compilePath, sourcePath);
         return SourceUtils.isMainClass(className, cpInfo);
+    }
+
+    /**
+     * Returns the name of the project's build script.
+     * @param eval the project's {@link PropertyEvaluator}
+     * @param propName the name of property holding the reference to project build
+     * script or null. In case of null the {@link ProjectProperties#BUILD_SCRIPT} is used.
+     * @return the name of project build script
+     * @since 1.65
+     */
+    @NonNull
+    public static String getBuildXmlName(
+        @NonNull final PropertyEvaluator eval,
+        @NullAllowed final String propName) {
+        String buildScriptPath = eval.getProperty(
+                propName != null ? propName : ProjectProperties.BUILD_SCRIPT);
+        if (buildScriptPath == null || buildScriptPath.isEmpty()) {
+            buildScriptPath = GeneratedFilesHelper.BUILD_XML_PATH;
+        }
+        return buildScriptPath;
     }
 
     /**

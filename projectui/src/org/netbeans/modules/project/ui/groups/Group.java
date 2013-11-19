@@ -53,6 +53,7 @@ import java.net.URL;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -119,6 +120,12 @@ public abstract class Group {
     protected static final String KEY_PATH = "path"; // NOI18N
     /** Preferences key for main project path URL for AdHocGroup or DirectoryGroup. */
     protected static final String KEY_MAIN = "main"; // NOI18N
+    /** Preferences for None group. */
+    protected static final Preferences NONE_GROUP_NODE = NbPreferences.forModule(Group.class).node("nonegroup");
+    protected static final String NONE_GROUP = "(none)"; // NOI18N
+    protected static final String noneGroupSanitizedId = "none_group"; // NOI18N
+    
+    List<PropertyChangeListener> listeners = new ArrayList<PropertyChangeListener>();
 
     private static Group load(String id) {
         if (id == null) {
@@ -174,28 +181,36 @@ public abstract class Group {
     public static void setActiveGroup(Group nue, boolean isNewGroup) {
         LOG.log(Level.FINE, "set active group: {0}", nue);
         Group old = getActiveGroup();
+        Preferences noneGroupPref = null;
         if (nue != null) {
             NODE.put(KEY_ACTIVE, nue.id);
         } else {
-            if (old == null) {
-                //#141403
-                return;
-            }
+            noneGroupPref = NONE_GROUP_NODE.node(noneGroupSanitizedId);
             NODE.remove(KEY_ACTIVE);
+        }
+        if( old == null) {
+            // OK if nue == old == null; still want to fix open projects.
+            noneGroupPref = NONE_GROUP_NODE.node(noneGroupSanitizedId);
+            noneGroupPref.put(KEY_NAME, NONE_GROUP);
+            Set<String> projectPaths = new TreeSet<String>();
+            for (Project prj : OpenProjects.getDefault().getOpenProjects()) {
+                projectPaths.add(prj.getProjectDirectory().toURL().toExternalForm());
+            }
+            noneGroupPref.put(KEY_PATH, joinPaths(projectPaths));
         }
         if (projectsLoaded) {
             // OK if g == old; still want to fix open projects.
             switchingGroup.set(true);
             OpenProjectList.getDefault().fireProjectGroupChanging(old, getActiveGroup());
             try {
-                open(nue, old != null ? old.getName() : null, isNewGroup);
+                open(nue, old != null ? old.getName() : null, isNewGroup, noneGroupPref);
             } finally {
                 switchingGroup.set(false);
                 OpenProjectList.getDefault().fireProjectGroupChanged(old, getActiveGroup());
             }
         } else {
             OpenProjectListSettings settings = OpenProjectListSettings.getInstance();
-            settings.setOpenProjectsURLsAsStrings(nue != null ? nue.projectPaths() : Collections.<String>emptyList());
+            settings.setOpenProjectsURLsAsStrings(nue != null ? nue.projectPaths() : getProjectPathsByPreferences(noneGroupPref));
             settings.setMainProjectURL(nue != null ? nue.prefs().get(KEY_MAIN, null) : null);
             
             WindowManager.getDefault().addWindowSystemListener(new WindowSystemListener() {
@@ -454,6 +469,7 @@ public abstract class Group {
      * Change the current display name.
      */
     public void setName(String n) {
+        notifyListeners(this, "groupRename", getNameOrNull(), n);
         prefs().put(KEY_NAME, n);
         if (this.equals(getActiveGroup())) {
             EventQueue.invokeLater(new Runnable() {
@@ -554,7 +570,7 @@ public abstract class Group {
         "# {0} - count", "Group.progress_closing=Closing {0} old projects",
         "# {0} - count", "Group.progress_opening=Opening {0} new projects"
     })
-    private static void open(final Group g, String oldGroupName, boolean isNewGroup) {
+    static void open(final Group g, String oldGroupName, boolean isNewGroup, Preferences noneGroupPref) {
         EventQueue.invokeLater(new Runnable() {
             @Override public void run() {
                 ProjectTab.findDefault(ProjectTab.ID_LOGICAL).setGroup(g);
@@ -564,7 +580,7 @@ public abstract class Group {
         if (g != null) {
             handleLabel = Group_open_handle(g.getName());
         } else {
-            handleLabel = Group_close_handle();
+            handleLabel = Group_open_handle(NONE_GROUP);
         }
         final ProgressHandle h = ProgressHandleFactory.createHandle(handleLabel);
         try {
@@ -573,7 +589,7 @@ public abstract class Group {
             final OpenProjectList opl = OpenProjectList.getDefault();
             Set<Project> oldOpen = new HashSet<Project>(Arrays.asList(opl.getOpenProjects()));
             //TODO switching to no group always clears the opened project list.
-            Set<Project> newOpen = g != null ? g.getProjects(h, 10, 100) : Collections.<Project>emptySet();
+            Set<Project> newOpen = g != null ? g.getProjects(h, 10, 100) : getProjectsByPreferences(noneGroupPref, h, 10, 100);
             final Set<Project> toClose = new HashSet<Project>(oldOpen);
             toClose.removeAll(newOpen);
             final Set<Project> toOpen = new HashSet<Project>(newOpen);
@@ -683,5 +699,68 @@ public abstract class Group {
     public boolean isPristine() {
         return getProjects().equals(new HashSet<Project>(Arrays.asList(OpenProjects.getDefault().getOpenProjects())));
     }
+    
+    protected static String joinPaths(Collection<String> paths) {
+        StringBuilder b = new StringBuilder();
+        for (String p : paths) {
+            if (b.length() > 0) {
+                b.append(' ');
+            }
+            b.append(p);
+        }
+        return b.toString();
+    }
+    
+    private static Set<Project> getProjectsByPreferences(Preferences pref, ProgressHandle h, int start, int end) {
+        if (h != null) {
+            h.progress("", start);
+        }
+        Set<Project> projects = new HashSet<Project>();
+        List<String> paths = getProjectPathsByPreferences(pref);
+        for (String path : paths) {
+                Project p = projectForPath(path);
+                if (p != null) {
+                    if (h != null) {
+                    h.progress(progressMessage(p), start += ((end - start) / paths.size()));
+                    }
+                    projects.add(p);
+                }
+            }
+        if (h != null) {
+            h.progress("", end);
+        }
+        assert !projects.contains(null) : "Found null in " + projects + " from (none)";
+        return projects;
+        }
 
+    protected static List<String> getProjectPathsByPreferences(Preferences p) {
+        String paths = p.get(KEY_PATH, "");
+        if (paths.length() > 0) { // "".split(...) -> [""]
+            return Arrays.asList(paths.split(" "));
+        } else {
+            return Collections.emptyList();
+        }
+    }
+    
+    public void addChangeListener(PropertyChangeListener newListener) {
+        synchronized (listeners) {
+            listeners.add(newListener);
+        }
+    }
+    
+    public void removeChangeListener(PropertyChangeListener existingListener) {
+        synchronized (listeners) {
+            listeners.remove(existingListener);
+        }
+    }
+    
+    private void notifyListeners(Object object, String property, String oldValue, String newValue) {
+        ArrayList<PropertyChangeListener> changes = new ArrayList<PropertyChangeListener>();
+        synchronized (listeners) {
+            changes.addAll(listeners);
+        }
+        for (PropertyChangeListener listener : changes) {
+          listener.propertyChange(new PropertyChangeEvent(object, property, oldValue, newValue));
+        }
+    }
 }

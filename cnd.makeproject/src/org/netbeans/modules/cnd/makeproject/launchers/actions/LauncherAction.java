@@ -138,7 +138,7 @@ public class LauncherAction extends AbstractAction implements ContextAwareAction
         add.setText(DEFAULT_ACTION_NAME);
     }
     
-    private class LauncherExecutableAction extends AbstractAction {
+    public class LauncherExecutableAction extends AbstractAction {
 
         private LauncherExecutor executor;
         private Launcher launcher;

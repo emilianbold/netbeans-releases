@@ -86,6 +86,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
@@ -129,15 +130,15 @@ class PlatformNode extends AbstractNode implements ChangeListener {
 
     @Override
     public String getDisplayName () {
-        final Object[] platHolder = pp.getPlatform();
+        final Pair<String,JavaPlatform> platHolder = pp.getPlatform();
         if (platHolder == null) {
             return NbBundle.getMessage(PlatformNode.class, "TXT_UnknownPlatform");
         }
         String name;
-        if (platHolder[1] != null) {
-            name = ((JavaPlatform)platHolder[1]).getDisplayName();
+        if (platHolder.second() != null) {
+            name = platHolder.second().getDisplayName();
         } else {
-            String platformId = (String) platHolder[0];
+            String platformId = platHolder.first();
             if (platformId == null) {
                 name = NbBundle.getMessage(PlatformNode.class,"TXT_BrokenPlatform");
             } else {
@@ -149,11 +150,11 @@ class PlatformNode extends AbstractNode implements ChangeListener {
     
     @Override
     public String getHtmlDisplayName () {
-        final Object[] platHolder = pp.getPlatform();
+        final Pair<String,JavaPlatform> platHolder = pp.getPlatform();
         if (platHolder == null) {
             return null;
         }
-        if (platHolder[1] == null) {
+        if (platHolder.second() == null) {
             String displayName = this.getDisplayName();
             try {
                 displayName = XMLUtil.toElementContent(displayName);
@@ -195,9 +196,9 @@ class PlatformNode extends AbstractNode implements ChangeListener {
 
     @Override
     public String getShortDescription() {
-        final Object[] platHolder = pp.getPlatform();
-        if (platHolder != null && platHolder[1] != null && !((JavaPlatform)platHolder[1]).getInstallFolders().isEmpty()) {
-            final FileObject installFolder = ((JavaPlatform)platHolder[1]).getInstallFolders().iterator().next();
+        final Pair<String,JavaPlatform> platHolder = pp.getPlatform();
+        if (platHolder != null && platHolder.second() != null && !platHolder.second().getInstallFolders().isEmpty()) {
+            final FileObject installFolder = platHolder.second().getInstallFolders().iterator().next();
             return FileUtil.getFileDisplayName(installFolder);
         } else {
             return super.getShortDescription();
@@ -211,8 +212,8 @@ class PlatformNode extends AbstractNode implements ChangeListener {
      * @param platformPropName the name of ant property holding the platform name
      *
      */
-    public static PlatformNode create (PropertyEvaluator eval, String platformPropName, ClassPathSupport cs) {
-        PlatformProvider pp = new PlatformProvider (eval, platformPropName);
+    public static PlatformNode create (PropertyEvaluator eval, String platformPropName, String platformType, ClassPathSupport cs) {
+        PlatformProvider pp = new PlatformProvider (eval, platformPropName, platformType);
         return new PlatformNode (pp, cs);
     }
 
@@ -238,12 +239,12 @@ class PlatformNode extends AbstractNode implements ChangeListener {
         }
 
         private List<SourceGroup> getKeys () {
-            Object[] platHolder = ((PlatformNode)this.getNode()).pp.getPlatform();;
-            if (platHolder == null || platHolder[1] == null) {
+            final Pair<String,JavaPlatform> platHolder = ((PlatformNode)this.getNode()).pp.getPlatform();;
+            if (platHolder == null || platHolder.second() == null) {
                 return Collections.<SourceGroup>emptyList();
             }
             //Todo: Should listen on returned classpath, but now the bootstrap libraries are read only
-            FileObject[] roots = ((JavaPlatform)platHolder[1]).getBootstrapLibraries().getRoots();
+            FileObject[] roots = platHolder.second().getBootstrapLibraries().getRoots();
             List<SourceGroup> result = new ArrayList<SourceGroup>(roots.length);
             for (int i = 0; i < roots.length; i++) {
                     FileObject file;
@@ -278,49 +279,51 @@ class PlatformNode extends AbstractNode implements ChangeListener {
 
         @Override
         public boolean canEdit() {
-            final Object[] platHolder = pp.getPlatform();
-            return platHolder != null && platHolder[1] != null;
+            final Pair<String,JavaPlatform> platHolder = pp.getPlatform();
+            return platHolder != null && platHolder.second() != null;
         }
 
         @Override
         public void edit() {
-            final Object[] platHolder = pp.getPlatform();
-            if (platHolder != null && platHolder[1] != null) {
-                PlatformsCustomizer.showCustomizer((JavaPlatform)platHolder[1]);
+            final Pair<String,JavaPlatform> platHolder = pp.getPlatform();
+            if (platHolder != null && platHolder.second() != null) {
+                PlatformsCustomizer.showCustomizer(platHolder.second());
             }
         }
     }
 
     private static class PlatformProvider implements PropertyChangeListener {
 
-        private static final Object[] BUSY = new Object[0];
+        private static final Pair<String,JavaPlatform> BUSY = Pair.<String,JavaPlatform>of(null,null);
         private static final RequestProcessor RP = new RequestProcessor(PlatformProvider.class);
         
         private final PropertyEvaluator evaluator;
         private final String platformPropName;
-        private final AtomicReference<Object[]> platformCache = new AtomicReference<Object[]>();
+        private final String platformType;
+        private final AtomicReference<Pair<String,JavaPlatform>> platformCache = new AtomicReference<Pair<String,JavaPlatform>>();
         private final ChangeSupport changeSupport = new ChangeSupport(this);
         
-        public PlatformProvider (PropertyEvaluator evaluator, String platformPropName) {
+        public PlatformProvider (PropertyEvaluator evaluator, String platformPropName, String platformType) {
             this.evaluator = evaluator;
             this.platformPropName = platformPropName;
+            this.platformType = platformType;
             this.evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this,evaluator));
         }
                 
-        @CheckForNull   //Todo: Replace by Pair
-        public Object[] getPlatform () {
+        @CheckForNull
+        public Pair<String,JavaPlatform> getPlatform () {
             if (platformCache.compareAndSet(null, BUSY)) {
                 RP.execute(new Runnable() {
                     @Override
                     public void run() {
                         final String platformId = evaluator.getProperty(platformPropName);
-                        final JavaPlatform platform = CommonProjectUtils.getActivePlatform (platformId);
-                        platformCache.set(new Object[]{platformId, platform});
+                        final JavaPlatform platform = CommonProjectUtils.getActivePlatform (platformId, platformType);
+                        platformCache.set(Pair.<String,JavaPlatform>of(platformId, platform));
                         changeSupport.fireChange ();
                     }
                 });
             }
-            Object[] res = platformCache.get();
+            Pair<String,JavaPlatform> res = platformCache.get();
             return res == BUSY ? null : res;
         }
         
@@ -352,19 +355,19 @@ class PlatformNode extends AbstractNode implements ChangeListener {
         
         @Override
         public boolean hasJavadoc() {
-            Object[] platHolder = platformProvider.getPlatform();
-            if (platHolder == null || platHolder[1] == null) {
+            Pair<String,JavaPlatform> platHolder = platformProvider.getPlatform();
+            if (platHolder == null || platHolder.second() == null) {
                 return false;
             }
-            URL[] javadocRoots = getJavadocRoots((JavaPlatform)platHolder[1]);
+            URL[] javadocRoots = getJavadocRoots(platHolder.second());
             return javadocRoots.length > 0;
         }
 
         @Override
         public void showJavadoc() {
-            final Object[] platHolder = platformProvider.getPlatform();
-            if (platHolder != null && platHolder[1] != null) {
-                final JavaPlatform platform = (JavaPlatform) platHolder[1];
+            final Pair<String,JavaPlatform> platHolder = platformProvider.getPlatform();
+            if (platHolder != null && platHolder.second() != null) {
+                final JavaPlatform platform = platHolder.second();
                 URL[] javadocRoots = getJavadocRoots(platform);
                 URL pageURL = ShowJavadocAction.findJavadoc("overview-summary.html",javadocRoots);
                 if (pageURL == null) {
@@ -403,9 +406,9 @@ class PlatformNode extends AbstractNode implements ChangeListener {
             super.beforeLookup(template);
             if (template.getType() == FileObject.class) {
                 final Collection<DataObject> toAdd = new ArrayList<DataObject>(1);
-                final Object[] platHolder = platformProvider.getPlatform();
-                if (platHolder != null && platHolder[1] != null) {
-                    final Collection<? extends FileObject> folders = ((JavaPlatform)platHolder[1]).getInstallFolders();
+                final org.openide.util.Pair<String, JavaPlatform> platHolder = platformProvider.getPlatform();
+                if (platHolder != null && platHolder.second() != null) {
+                    final Collection<? extends FileObject> folders = (platHolder.second()).getInstallFolders();
                     if (!folders.isEmpty()) {
                         final FileObject fo = folders.iterator().next();
                         if (fo.isValid() && fo.isFolder()) {

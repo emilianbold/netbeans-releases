@@ -41,70 +41,74 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se.dialogs;
 
+import junit.framework.Test;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.j2se.setup.J2SESetup;
-
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.JellyTestCase;
+import static org.netbeans.jellytools.JellyTestCase.emptyConfiguration;
 import org.netbeans.jellytools.WizardOperator;
-import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Test of Plugin Manager
  *
- * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
+ * @author anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
 public class PluginManagerTest extends PerformanceTestCase {
 
     protected String BUNDLE, MENU, TITLE;
-    
-    /** Creates a new instance of PluginManager */
+
+    /**
+     * Creates a new instance of PluginManager
+     *
+     * @param testName test name
+     */
     public PluginManagerTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN=2000;
-    }
-    
-    /** Creates a new instance of PluginManager */
-    public PluginManagerTest(String testName, String performanceDataName) {
-        super(testName,performanceDataName);
-        expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN=2000;
+        WAIT_AFTER_OPEN = 2000;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(PluginManagerTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    /**
+     * Creates a new instance of PluginManager
+     *
+     * @param testName test name
+     * @param performanceDataName data name
+     */
+    public PluginManagerTest(String testName, String performanceDataName) {
+        super(testName, performanceDataName);
+        expectedTime = WINDOW_OPEN;
+        WAIT_AFTER_OPEN = 2000;
     }
-    
+
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(J2SESetup.class, "testCloseMemoryToolbar")
+                .addTest(PluginManagerTest.class)
+                .suite();
+    }
+
     public void testPluginManager() {
         doMeasurement();
     }
-    
+
     @Override
     public void initialize() {
         BUNDLE = "org.netbeans.modules.autoupdate.ui.actions.Bundle";
-        MENU = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle","Menu/Tools") + "|" + Bundle.getStringTrimmed(BUNDLE,"PluginManagerAction_Name");
-        TITLE = Bundle.getStringTrimmed(BUNDLE,"PluginManager_Panel_Name");
-    }
-    
-    public void prepare() {
-    }
-    
-    public ComponentOperator open() {
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");
-        JellyTestCase.closeAllModal();
-        return new WizardOperator(TITLE);
+        MENU = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/Tools") + "|" + Bundle.getStringTrimmed(BUNDLE, "PluginManagerAction_Name");
+        TITLE = Bundle.getStringTrimmed(BUNDLE, "PluginManager_Panel_Name");
     }
 
+    @Override
+    public void prepare() {
+    }
+
+    @Override
+    public ComponentOperator open() {
+        new ActionNoBlock(MENU, null).perform();
+        return new WizardOperator(TITLE);
+    }
 }

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="javaewah.dummy" default="netbeans" basedir=".">
+    <import file="../nbbuild/templates/projectized.xml"/>
+    <target name="jar">
+        <jar jarfile="${cluster}/${module.jar}">
+            <manifest>
+                <attribute name="Bundle-SymbolicName" value="javaewah.dummy;singleton:=true"/>
+                <attribute name="Bundle-Version" value="0.5.6"/>
+                <attribute name="Export-Package" value="javaewah;version=0.5.6"/>
+            </manifest>
+        </jar>
+    </target>
+</project>

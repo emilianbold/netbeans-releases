@@ -10,11 +10,16 @@
                     <compile-dependency/>
                     <run-dependency/>
                 </dependency>
+                <dependency>
+                    <code-name-base>javaewah.dummy</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
             </module-dependencies>
             <public-packages/>
             <class-path-extension>
                 <runtime-relative-path>org-eclipse-jgit.jar</runtime-relative-path>
-                <binary-origin>external/org.eclipse.jgit-2.3.1.201302201838-r.jar</binary-origin>
+                <binary-origin>external/org.eclipse.jgit-3.1.0.201310021548-r.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

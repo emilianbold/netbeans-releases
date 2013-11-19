@@ -124,10 +124,18 @@ public class EvaluatorTest extends NbTestCase {
     }
     
     public void testInstanceEvaluation() throws Exception {
+        runInstanceEvaluation(1);
+    }
+    
+    public void testSuperInstanceEvaluation() throws Exception {
+        runInstanceEvaluation(2);
+    }
+    
+    private void runInstanceEvaluation(int bpNo) throws Exception {
         try {
             Utils.BreakPositions bp = Utils.getBreakPositions(System.getProperty ("test.dir.src")+
                                       "org/netbeans/api/debugger/jpda/testapps/EvaluatorApp.java");
-            LineBreakpoint lb = bp.getLineBreakpoints().get(1);
+            LineBreakpoint lb = bp.getLineBreakpoints().get(bpNo);
             DebuggerManager.getDebuggerManager ().addBreakpoint (lb);
             support.doContinue();
             support.waitState (JPDADebugger.STATE_STOPPED);

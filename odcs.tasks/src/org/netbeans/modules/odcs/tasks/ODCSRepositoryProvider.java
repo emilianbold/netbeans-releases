@@ -41,14 +41,12 @@
  */
 package org.netbeans.modules.odcs.tasks;
 
-import com.tasktop.c2c.server.tasks.domain.PredefinedTaskQuery;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
-import org.netbeans.modules.bugtracking.team.spi.TeamProject;
-import org.netbeans.modules.bugtracking.team.spi.TeamRepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
 import org.netbeans.modules.odcs.tasks.query.ODCSQuery;
 import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
@@ -57,7 +55,7 @@ import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
  *
  * @author Tomas Stupka
  */
-public class ODCSRepositoryProvider extends TeamRepositoryProvider<ODCSRepository, ODCSQuery, ODCSIssue> {
+public class ODCSRepositoryProvider implements RepositoryProvider<ODCSRepository, ODCSQuery, ODCSIssue> {
 
     @Override
     public RepositoryInfo getInfo(ODCSRepository r) {
@@ -70,7 +68,7 @@ public class ODCSRepositoryProvider extends TeamRepositoryProvider<ODCSRepositor
     }
 
     @Override
-    public ODCSIssue[] getIssues(ODCSRepository r, String... ids) {
+    public Collection<ODCSIssue> getIssues(ODCSRepository r, String... ids) {
         return r.getIssues(ids);
     }
 
@@ -105,6 +103,11 @@ public class ODCSRepositoryProvider extends TeamRepositoryProvider<ODCSRepositor
     }
 
     @Override
+    public boolean canAttachFiles(ODCSRepository r) {
+        return false;
+    }
+    
+    @Override
     public void removePropertyChangeListener(ODCSRepository r, PropertyChangeListener listener) {
         r.removePropertyChangeListener(listener);
     }
@@ -113,31 +116,7 @@ public class ODCSRepositoryProvider extends TeamRepositoryProvider<ODCSRepositor
     public void addPropertyChangeListener(ODCSRepository r, PropertyChangeListener listener) {
         r.addPropertyChangeListener(listener);
     }
-
-    @Override
-    public Collection<ODCSIssue> getUnsubmittedIssues (ODCSRepository r) {
-        return r.getUnsubmittedIssues();
-    }
-
-    /************************************************************************************
-     * Team Support
-     ************************************************************************************/
-
-    @Override
-    public ODCSQuery getAllIssuesQuery (ODCSRepository repository) {
-        return repository.getPredefinedQuery(PredefinedTaskQuery.ALL);
-    }
-
-    @Override
-    public ODCSQuery getMyIssuesQuery (ODCSRepository repository) {
-        return repository.getPredefinedQuery(PredefinedTaskQuery.MINE);
-    }
-
-    @Override
-    public TeamProject getTeamProject(ODCSRepository repository) {
-        return repository.getKenaiProject();
-    }
-
+    
     @Override
     public ODCSIssue createIssue(ODCSRepository r, String summary, String description) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.

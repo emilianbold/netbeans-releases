@@ -48,15 +48,16 @@ import com.tasktop.c2c.server.tasks.domain.Priority;
 import com.tasktop.c2c.server.tasks.domain.TaskResolution;
 import com.tasktop.c2c.server.tasks.domain.TaskSeverity;
 import com.tasktop.c2c.server.tasks.domain.TaskStatus;
-import org.netbeans.modules.bugtracking.util.AttachmentsPanel;
+import org.netbeans.modules.bugtracking.commons.AttachmentsPanel;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
@@ -76,10 +77,10 @@ import org.eclipse.mylyn.tasks.core.data.TaskOperation;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.IssueController;
-import org.netbeans.modules.bugtracking.spi.IssuePriorityInfo;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
-import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
+import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
 import org.netbeans.modules.mylyn.util.AbstractNbTaskWrapper;
 import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.mylyn.util.NbTask;
@@ -210,6 +211,11 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
         return recentChanges;
     }
     
+    @NbBundle.Messages({
+        "CTL_Issue_Scheduling.Scheduled_Title=Scheduled",
+        "CTL_Issue_Scheduling.Due_Title=Due",
+        "CTL_Issue_Scheduling.Estimate_Title=Estimate"
+    })
     private boolean updateTooltip () {
         String displayName = getDisplayName();
         String oldTooltip = tooltip;
@@ -254,6 +260,33 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
             + "<tr><td><b>" + statusLabel + ":</b></td><td colspan=\"3\">" + status + "</td></tr>" //NOI18N
             + "</table>"; //NOI18N
 
+        String scheduledLabel = Bundle.CTL_Issue_Scheduling_Scheduled_Title();
+        String scheduled = getScheduleDisplayString();
+
+        String dueLabel = Bundle.CTL_Issue_Scheduling_Due_Title();
+        String due = getDueDisplayString();
+        
+
+        String estimateLabel = Bundle.CTL_Issue_Scheduling_Estimate_Title();
+        String estimate = getEstimateDisplayString();
+        if (!scheduled.isEmpty()) {
+            fieldTable += "<tr><td><b>" + scheduledLabel + ":</b></td><td colspan=\"3\">" + scheduled + "</td></tr>"; //NOI18N
+        }
+        boolean addNewLine = !due.isEmpty() || !estimate.isEmpty();
+        if (addNewLine) {
+            fieldTable += "<tr>"; //NOI18N
+        }
+        if (!due.isEmpty()) {
+            fieldTable += "<tr><td><b>" + dueLabel + ":</b></td><td>" + due + "</td>"; //NOI18N
+        }
+        if (!estimate.isEmpty()) {
+            fieldTable += "<td style=\"padding-left:25px;\"><b>" + estimateLabel + ":</b></td><td>" + estimate + "</td>"; //NOI18N
+        }
+        if (addNewLine) {
+            fieldTable += "</tr>"; //NOI18N
+        }
+        fieldTable += "</table>"; //NOI18N
+        
         StringBuilder sb = new StringBuilder("<html>"); //NOI18N
         sb.append("<b>").append(displayName).append("</b><br>"); //NOI18N
         if (stateName != null && !stateName.isEmpty()) {
@@ -555,7 +588,7 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
     public void attachPatch(File file, String description) {
         // HACK for attaching hg bundles - they are NOT patches
         boolean isPatch = !file.getName().endsWith(".hg"); //NOI18N
-        addAttachment(file, null, description, null, isPatch);
+        addAttachment(file, description, description, null, isPatch);
     }
     
     void addAttachment (File file, final String comment, final String desc, String contentType, final boolean patch) {
@@ -708,17 +741,17 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
         return controller;
     }
 
-    public String[] getSubtasks() {
+    public Collection<String> getSubtasks() {
         String value = getRepositoryFieldValue(IssueField.SUBTASK);
         value = value != null ? value.trim() : ""; // NOI18N
         if("".equals(value)) { // NOI18N
-            return new String[0];
+            return Collections.emptyList();
         } else {
             String[] ret = value.split(","); // NOI18N
             for (int i = 0; i < ret.length; i++) {
                 ret[i] = ret[i].trim();
             }
-            return ret;
+            return Arrays.asList(ret);
         }
     }
     
@@ -728,7 +761,7 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
     }
 
     public boolean hasSubtasks() {
-        return getSubtasks().length > 0;
+        return getSubtasks().size() > 0;
     }
 
     public String getParentId() {
@@ -848,16 +881,18 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
         ODCS.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
-                if (node != null) {
-                    node.fireDataChanged();
-                }
-                if (updateTooltip()) {
-                    fireDataChanged();
-                }
-                fireDataChanged();
-                refreshViewData(false);
+                dataChanged();
             }
         });
+    }
+
+    private void dataChanged () {
+        if (node != null) {
+            node.fireDataChanged();
+        }
+        updateTooltip();
+        fireDataChanged();
+        refreshViewData(false);
     }
 
     @Override
@@ -900,9 +935,72 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
         deleteTask();
     }
     
+    void setTaskPrivateNotes (String notes) {
+        super.setPrivateNotes(notes);
+        if (controller != null) {
+            controller.modelStateChanged(true, hasLocalEdits());
+        }
+    }
+    
+    public void setTaskDueDate (final Date date, final boolean persistChange) {
+        runWithModelLoaded(new Runnable() {
+
+            @Override
+            public void run () {
+                setDueDateAndSubmit(date);
+            }
+        });
+    }
+    
+    public void setTaskScheduleDate (IssueScheduleInfo date, boolean persistChange) {
+        super.setScheduleDate(date, persistChange);
+        if (controller != null) {
+            controller.modelStateChanged(hasUnsavedChanges(), hasLocalEdits());
+        }
+        if (persistChange) {
+            dataChanged();
+        }
+    }
+
+    public void setTaskEstimate (int estimate, boolean persistChange) {
+        super.setEstimate(estimate, persistChange);
+        if (controller != null) {
+            controller.modelStateChanged(hasUnsavedChanges(), hasLocalEdits());
+        }
+        if (persistChange) {
+            dataChanged();
+        }
+    }
+    
+    private void setDueDateAndSubmit (final Date date) {
+        refresh();
+        runWithModelLoaded(new Runnable() {
+            @Override
+            public void run () {
+                if (date == null) {
+                    setFieldValue(IssueField.DUEDATE, "");
+                } else {
+                    setFieldValue(IssueField.DUEDATE, IssuePanel.INPUT_DATE_FORMAT.format(date));
+                }
+                submitAndRefresh();
+            }
+        });
+    }
+    
     public boolean discardLocalEdits () {
-        clearUnsavedChanges();
-        return cancelChanges();
+        final boolean retval[] = new boolean[1];
+        runWithModelLoaded(new Runnable() {
+            @Override
+            public void run () {
+                clearUnsavedChanges();
+                retval[0] = cancelChanges();
+                if (controller != null) {
+                    controller.modelStateChanged(hasUnsavedChanges(), hasLocalEdits());
+                    controller.refreshViewData(false);
+                }
+            }
+        });
+        return retval[0];
     }
 
     public String getPriorityID() {
@@ -1082,13 +1180,17 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
      * Notify listeners on this issue that its data were changed
      */
     private void fireDataChanged() {
-        support.firePropertyChange(IssueProvider.EVENT_ISSUE_REFRESHED, null, null);
+        support.firePropertyChange(IssueProvider.EVENT_ISSUE_DATA_CHANGED, null, null);
     }
     
     private void fireStatusChanged() {
         support.firePropertyChange(IssueStatusProvider.EVENT_STATUS_CHANGED, null, null);
     }
 
+    protected void fireChanged() {
+        support.firePropertyChange(IssueController.PROP_CHANGED, null, null);
+    }
+ 
     private boolean refresh(boolean afterSubmitRefresh) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         NbTask task = getNbTask();

@@ -66,7 +66,7 @@ public class TestRepositoryProvider implements RepositoryProvider<TestRepository
     }
 
     @Override
-    public TestIssue[] getIssues(TestRepository r, String... ids) {
+    public Collection<TestIssue> getIssues(TestRepository r, String... ids) {
         return r.getIssues(ids);
     }
 
@@ -116,8 +116,8 @@ public class TestRepositoryProvider implements RepositoryProvider<TestRepository
     }
 
     @Override
-    public Collection<TestIssue> getUnsubmittedIssues(TestRepository r) {
-        return r.getUnsubmittedIssues(r);
+    public boolean canAttachFiles(TestRepository r) {
+        return r.canAttachFile();
     }
-     
+
 }

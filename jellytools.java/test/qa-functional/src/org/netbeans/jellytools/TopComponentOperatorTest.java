@@ -221,7 +221,7 @@ public class TopComponentOperatorTest extends JellyTestCase {
         eo.closeDiscard();
         // clean up - delete editable source
         new DeleteAction().perform(editableSourceNode);
-        new NbDialogOperator("Delete").ok();
+        DeleteAction.confirmDeletion();
         assertFalse("Document is not discarded.", saved);//NOI18N
     }
 

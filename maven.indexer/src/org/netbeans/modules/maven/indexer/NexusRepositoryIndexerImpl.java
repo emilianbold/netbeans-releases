@@ -295,17 +295,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     break LOAD; // XXX does it suffice to just return here, or is code after block needed?
                 }
             }
-            LOGGER.log(Level.FINE, "Loading Context: {0}", info.getId());
+                LOGGER.log(Level.FINE, "Loading Context: {0}", info.getId());
                 File loc = new File(getDefaultIndexLocation(), info.getId()); // index folder
-                try {
-                    if (!loc.exists() || !new File(loc, "timestamp").exists() || !IndexReader.indexExists(new SimpleFSDirectory(loc))) {
-                        index = true;
-                        LOGGER.log(Level.FINER, "Index Not Available: {0} at: {1}", new Object[] {info.getId(), loc.getAbsolutePath()});
-                    }
-                } catch (IOException ex) {
-                    index = true;
-                    LOGGER.log(Level.FINER, "Index Not Available: " + info.getId() + " at: " + loc.getAbsolutePath(), ex);
-                }
 
                 List<IndexCreator> creators = new ArrayList<IndexCreator>();
                 try {
@@ -356,6 +347,21 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 }
             }
         }
+        
+        File loc = new File(getDefaultIndexLocation(), info.getId()); // index folder
+        try {
+            if (!loc.exists() || !new File(loc, "timestamp").exists()) {
+                index = true;
+                LOGGER.log(Level.FINER, "Index Not Available: {0} at: {1}", new Object[]{info.getId(), loc.getAbsolutePath()});
+            } else if (!IndexReader.indexExists(new SimpleFSDirectory(loc))) {
+                index = true;
+                LOGGER.log(Level.FINER, "Index Not Available: {0} at: {1}", new Object[]{info.getId(), loc.getAbsolutePath()});
+            }
+        } catch (IOException ex) {
+            index = true;
+            LOGGER.log(Level.FINER, "Index Not Available: " + info.getId() + " at: " + loc.getAbsolutePath(), ex);
+        }
+        
         return index;
     }
 
@@ -682,7 +688,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                         LOGGER.log(Level.FINE, "Local repository at {0} doesn't exist, no update.", indexingContext.getRepository());  
                         return null;
                     }
-
+                    Set<ArtifactContext> artifactContexts = new HashSet<ArtifactContext>();
                     for (Artifact artifact : artifacts) {
                         String absolutePath;
                         if (artifact.getFile() != null) {
@@ -710,23 +716,24 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                             if (add) {
                                 LOGGER.log(Level.FINE, "indexing " + artifact.getId() );
                                 ArtifactContext ac = contextProducer.getArtifactContext(indexingContext, art);
+                                artifactContexts.add(ac);
     //                            System.out.println("ac gav=" + ac.getGav());
     //                            System.out.println("ac pom=" + ac.getPom());
     //                            System.out.println("ac art=" + ac.getArtifact());
     //                            System.out.println("ac info=" + ac.getArtifactInfo());
     //                                assert indexingContext.getIndexSearcher() != null;
-                                try {
-                                    //TODO batch addition??
-                                    indexer.addArtifactsToIndex(Collections.singleton(ac), indexingContext);
-                                } catch (ZipError err) {
-                                    LOGGER.log(Level.INFO, "#230581 concurrent access to local repository file. Skipping..", err);
-                                }
                             } else {
                                 LOGGER.log(Level.FINE, "Skipped " + artifact.getId() + " already in index.");
                             }
                         }
 
                     }
+                    try {
+                        indexer.addArtifactsToIndex(artifactContexts, indexingContext);
+                    } catch (ZipError err) {
+                        LOGGER.log(Level.INFO, "#230581 concurrent access to local repository file. Skipping..", err);
+                    }
+                    
                     return null;
                 }
             });

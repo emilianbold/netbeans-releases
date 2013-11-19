@@ -161,7 +161,13 @@ public class ModelUtils {
     }
     
     public static JsObject findJsObject(JsObject object, int offset) {
+        HashSet<String> visited = new HashSet<String>();
+        return findJsObject(object, offset, visited);
+    }
+    
+    public static JsObject findJsObject(JsObject object, int offset, Set<String> visited) {
         JsObjectImpl jsObject = (JsObjectImpl)object;
+        visited.add(jsObject.getFullyQualifiedName());
         JsObject result = null;
         JsObject tmpObject = null;
         if (jsObject.getOffsetRange().containsInclusive(offset)) {
@@ -171,11 +177,34 @@ public class ModelUtils {
                 if (kind == JsElement.Kind.OBJECT || kind == JsElement.Kind.ANONYMOUS_OBJECT || kind == JsElement.Kind.OBJECT_LITERAL
                         || kind == JsElement.Kind.FUNCTION || kind == JsElement.Kind.METHOD || kind == JsElement.Kind.CONSTRUCTOR
                         || kind == JsElement.Kind.WITH_OBJECT) {
-                    tmpObject = findJsObject(property, offset);
+                    if (!visited.contains(property.getFullyQualifiedName())) {
+                        tmpObject = findJsObject(property, offset, visited);
+                    }
                 }
                 if (tmpObject != null) {
                     result = tmpObject;
                     break;
+                }
+            }
+            if (object instanceof JsArray) {
+                JsArray array = (JsArray)object;
+                for (TypeUsage type : array.getTypesInArray()) {
+                    if (type.getType().startsWith(SemiTypeResolverVisitor.ST_ANONYM)) {
+                        int anonymOffset = Integer.parseInt(type.getType().substring(SemiTypeResolverVisitor.ST_ANONYM.length()));
+                        if (anonymOffset > 0) {
+                            DeclarationScope scope = getDeclarationScope(array);
+                            for (JsObject property : ((JsObject)scope).getProperties().values()) {
+                                JsElement.Kind kind = property.getJSKind();
+                                if (kind == JsElement.Kind.ANONYMOUS_OBJECT && !visited.contains(property.getFullyQualifiedName())) { 
+                                    tmpObject = findJsObject(property, offset, visited);
+                                }
+                                if (tmpObject != null) {
+                                    result = tmpObject;
+                                    break;
+                                }
+                            }
+                        }   
+                    }
                 }
             }
         }
@@ -451,11 +480,28 @@ public class ModelUtils {
         } else if (type.getType().startsWith(SemiTypeResolverVisitor.ST_CALL)) {
             result.addAll(resolveSemiTypeCallChain(object, type));
         } else if(type.getType().startsWith(SemiTypeResolverVisitor.ST_ANONYM)){
-            int start = Integer.parseInt(type.getType().substring(8));
+            String offsetPart = type.getType().substring(8);
+            String rest = "";
+            int index = offsetPart.indexOf(SemiTypeResolverVisitor.ST_START_DELIMITER);
+            if (index > -1) {
+                rest = offsetPart.substring(index);
+                offsetPart = offsetPart.substring(0, index);
+            }
+            int start = Integer.parseInt(offsetPart);
 //            JsObject globalObject = ModelUtils.getGlobalObject(object);
             JsObject byOffset = ModelUtils.findJsObject(object, start);
+            if (byOffset == null) {
+                JsObject globalObject = ModelUtils.getGlobalObject(object);
+                byOffset = ModelUtils.findJsObject(globalObject, start);
+            }
             if(byOffset != null && byOffset.isAnonymous()) {
-                result.add(new TypeUsageImpl(byOffset.getFullyQualifiedName(), byOffset.getOffset(), true));
+                if (rest.isEmpty()) {
+                    result.add(new TypeUsageImpl(byOffset.getFullyQualifiedName(), byOffset.getOffset(), true));
+                } else {
+                    String newType= SemiTypeResolverVisitor.ST_EXP + byOffset.getFullyQualifiedName().replace(".", SemiTypeResolverVisitor.ST_PRO);
+                    newType = newType + rest;
+                    result.add(new TypeUsageImpl(newType, byOffset.getOffset(), false));
+                }
             }
 //            for(JsObject children : globalObject.getProperties().values()) {
 //                if(children.getOffset() == start && children.getName().startsWith("Anonym$")) {
@@ -678,6 +724,13 @@ public class ModelUtils {
             for (int i = exp.size() - 1; i > -1; i--) {
                 String kind = exp.get(i);
                 String name = exp.get(--i);
+                if (name.startsWith("@ano:")){
+                    String[] parts = name.split(":");
+                    int anoOffset = Integer.parseInt(parts[1]);
+                    JsObject anonym = ModelUtils.findJsObject(model, anoOffset);
+                    lastResolvedObjects.add(anonym);
+                    continue;
+                }
                 if ("this".equals(name)) {
                     JsObject thisObject = ModelUtils.findJsObject(model, offset);
                     JsObject first = thisObject;
@@ -781,13 +834,22 @@ public class ModelUtils {
                             
                             for (TypeUsage typeUsage : typeFromWith) {
                                 String sType = typeUsage.getType();
-                            if (sType.startsWith("@exp;")) {
-                                sType = sType.substring(5);
-                                sType = sType.replace("@pro;", ".");
-                            }   
+                                if (sType.startsWith("@exp;")) {
+                                    sType = sType.substring(5);
+                                    sType = sType.replace("@pro;", ".");
+                                }   
                                 ModelUtils.resolveAssignments(model, jsIndex, sType, fromAssignments);
                                 for (TypeUsage typeUsage1 : fromAssignments) {
-                                    lastResolvedTypes.add(new TypeUsageImpl(typeUsage1.getType() + kind + ";" + name, typeUsage.getOffset(), false));
+                                    String localFqn = localObject != null ? localObject.getFullyQualifiedName() : null;
+                                    if (localFqn != null  && name.startsWith(localFqn) && name.length() > localFqn.length() ) {
+                                        lastResolvedTypes.add(new TypeUsageImpl(typeUsage1.getType() + kind + ";" + name.substring(localFqn.length() + 1), typeUsage.getOffset(), false));
+                                    } else {
+                                        if (!typeUsage1.getType().equals(name)) {
+                                            lastResolvedTypes.add(new TypeUsageImpl(typeUsage1.getType() + kind + ";" + name, typeUsage.getOffset(), false));
+                                        } else {
+                                            lastResolvedTypes.add(typeUsage1);
+                                        }
+                                    }
                                 }
                                 
                             }
@@ -870,8 +932,15 @@ public class ModelUtils {
                         if (jsIndex != null) {
                             // for the type build the prototype chain.
                             Collection<String> prototypeChain = new ArrayList<String>();
-                            prototypeChain.add(typeUsage.getType());
-                            prototypeChain.addAll(findPrototypeChain(typeUsage.getType(), jsIndex));
+                            String typeName = typeUsage.getType();
+                            if (typeName.contains(SemiTypeResolverVisitor.ST_EXP)) {
+                                typeName = typeName.substring(typeName.indexOf(SemiTypeResolverVisitor.ST_EXP) + SemiTypeResolverVisitor.ST_EXP.length());
+                            }
+                            if (typeName.contains(SemiTypeResolverVisitor.ST_PRO)) {
+                                typeName = typeName.replace(SemiTypeResolverVisitor.ST_PRO, ".");
+                            }
+                            prototypeChain.add(typeName);
+                            prototypeChain.addAll(findPrototypeChain(typeName, jsIndex));
 
                             Collection<? extends IndexResult> indexResults = null;
                             String propertyToCheck = null;
@@ -913,7 +982,7 @@ public class ModelUtils {
                                 }
                             }
                             if (checkProperty) {
-                                String propertyFQN = propertyToCheck != null ? propertyToCheck : typeUsage.getType() + "." + name;
+                                String propertyFQN = propertyToCheck != null ? propertyToCheck : typeName + "." + name;
                                 List<TypeUsage> fromAssignment = new ArrayList<TypeUsage>();
                                 resolveAssignments(model, jsIndex, propertyFQN, fromAssignment);
                                 if (fromAssignment.isEmpty()) {
@@ -1430,6 +1499,20 @@ public class ModelUtils {
             } else if (exp.isEmpty() && !lookBefore && offsetFirstRightParen > -1) {
                 // in the case when the expression is like ( new Object()).someMethod
                 exp.addAll(resolveExpressionChain(snapshot, offsetFirstRightParen - 1, true));
+            } else if (wasLastDot && !lookBefore && token.id() == JsTokenId.BRACKET_RIGHT_CURLY) {
+                int balancer = 1;
+                while (balancer > 0 && ts.movePrevious()) {
+                    token = ts.token();
+                    if (token.id() == JsTokenId.BRACKET_RIGHT_CURLY) {
+                        balancer++;
+                    } else {
+                        if (token.id() == JsTokenId.BRACKET_LEFT_CURLY) {
+                            balancer--;
+                        }
+                    }
+                }
+                exp.add("@ano:" + ts.offset());
+                exp.add("@pro");
             }
             return exp;
         }

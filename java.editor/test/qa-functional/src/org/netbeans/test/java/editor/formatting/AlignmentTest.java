@@ -54,9 +54,18 @@ public class AlignmentTest extends FormattingOptionsTest {
     public AlignmentTest(String testMethodName) {
         super(testMethodName);
     }
+    
+    AlignmentOperator operator;
+    
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp(); 
+        operator = FormattingOptionsOperator.invoke(true).getAlignmentOperator();
+    }
+    
+    
     public void testElseAlignment() {
         try {
-            AlignmentOperator operator = FormattingOptionsOperator.invoke(true).getAlignmentOperator();
             operator.getNewLineElseOperator().changeSelection(true);
             operator.ok();
             formatFileAndCompare("general", "Alignment.java");
@@ -67,7 +76,6 @@ public class AlignmentTest extends FormattingOptionsTest {
 
     public void testWhileAlignment() {
         try {
-            AlignmentOperator operator = FormattingOptionsOperator.invoke(true).getAlignmentOperator();
             operator.getNewLineWhileOperator().changeSelection(true);
             operator.ok();
             formatFileAndCompare("general", "Alignment.java");
@@ -78,7 +86,6 @@ public class AlignmentTest extends FormattingOptionsTest {
 
     public void testCatchAlignment() {
         try {
-            AlignmentOperator operator = FormattingOptionsOperator.invoke(true).getAlignmentOperator();
             operator.getNewLineCatch().changeSelection(true);
             operator.ok();
             formatFileAndCompare("general", "Alignment.java");
@@ -89,7 +96,6 @@ public class AlignmentTest extends FormattingOptionsTest {
 
     public void testFinallyAlignment() {
         try {
-            AlignmentOperator operator = FormattingOptionsOperator.invoke(true).getAlignmentOperator();
             operator.getNewLineFinally().changeSelection(true);
             operator.ok();
             formatFileAndCompare("general", "Alignment.java");
@@ -100,7 +106,6 @@ public class AlignmentTest extends FormattingOptionsTest {
 
     public void testModifiersAlignment() {
         try {
-            AlignmentOperator operator = FormattingOptionsOperator.invoke(true).getAlignmentOperator();
             operator.getNewLineAfterModifiers().changeSelection(true);
             operator.ok();
             formatFileAndCompare("general", "Alignment.java");
@@ -111,7 +116,6 @@ public class AlignmentTest extends FormattingOptionsTest {
 
     public void testMethodsParametersAlignment() {
         try {
-            AlignmentOperator operator = FormattingOptionsOperator.invoke(true).getAlignmentOperator();
             operator.getAlignmentMethodsParameters().changeSelection(true);
             operator.ok();
             formatFileAndCompare("general", "Alignment2.java");
@@ -122,7 +126,6 @@ public class AlignmentTest extends FormattingOptionsTest {
 
     public void testAnnotationArgumentsAlignment() {
         try {
-            AlignmentOperator operator = FormattingOptionsOperator.invoke(true).getAlignmentOperator();
             operator.getAlignmentAnnotationArguments().changeSelection(true);
             operator.ok();
             formatFileAndCompare("general", "Alignment2.java");
@@ -133,7 +136,6 @@ public class AlignmentTest extends FormattingOptionsTest {
 
     public void testThrowsListAlignment() {
         try {
-            AlignmentOperator operator = FormattingOptionsOperator.invoke(true).getAlignmentOperator();
             operator.getAlignmentThrowsList().changeSelection(true);
             operator.ok();
             formatFileAndCompare("general", "Alignment2.java");
@@ -144,7 +146,6 @@ public class AlignmentTest extends FormattingOptionsTest {
 
     public void testBinaryOperatorsAlignment() {
         try {
-            AlignmentOperator operator = FormattingOptionsOperator.invoke(true).getAlignmentOperator();
             operator.getAlignmentBinaryOperators().changeSelection(true);
             operator.ok();
             formatFileAndCompare("general", "Alignment2.java");
@@ -155,7 +156,6 @@ public class AlignmentTest extends FormattingOptionsTest {
 
     public void testAssignmentAlignment() {
         try {
-            AlignmentOperator operator = FormattingOptionsOperator.invoke(true).getAlignmentOperator();
             operator.getAlignmentAssignement().changeSelection(true);
             operator.ok();
             formatFileAndCompare("general", "Alignment2.java");
@@ -166,7 +166,6 @@ public class AlignmentTest extends FormattingOptionsTest {
 
     public void testMethodCallArgumentsAlignment() {
         try {
-            AlignmentOperator operator = FormattingOptionsOperator.invoke(true).getAlignmentOperator();
             operator.getAlignmentMethodCallArguments().changeSelection(true);
             operator.ok();
             formatFileAndCompare("general", "Alignment3.java");
@@ -177,7 +176,6 @@ public class AlignmentTest extends FormattingOptionsTest {
 
     public void testImplementsListAlignment() {
         try {
-            AlignmentOperator operator = FormattingOptionsOperator.invoke(true).getAlignmentOperator();
             operator.getAlignmentImplementsList().changeSelection(true);
             operator.ok();
             formatFileAndCompare("general", "Alignment3.java");
@@ -188,7 +186,6 @@ public class AlignmentTest extends FormattingOptionsTest {
 
     public void testArrayInitializerAlignment() {
         try {
-            AlignmentOperator operator = FormattingOptionsOperator.invoke(true).getAlignmentOperator();
             operator.getAlignmentArrayInitializer().changeSelection(true);
             operator.ok();
             formatFileAndCompare("general", "Alignment3.java");
@@ -197,9 +194,8 @@ public class AlignmentTest extends FormattingOptionsTest {
         }
     }
 
-    public void testTermaryOperatorsAlignment() {
+    public void testTernaryOperatorsAlignment() {
         try {
-            AlignmentOperator operator = FormattingOptionsOperator.invoke(true).getAlignmentOperator();
             operator.getAlignmentTernaryOperators().changeSelection(true);
             operator.ok();
             formatFileAndCompare("general", "Alignment3.java");
@@ -210,7 +206,6 @@ public class AlignmentTest extends FormattingOptionsTest {
 
     public void testFor() {
         try {
-            AlignmentOperator operator = FormattingOptionsOperator.invoke(true).getAlignmentOperator();
             operator.getAlignmentFor().changeSelection(true);
             operator.ok();
             formatFileAndCompare("general", "Alignment3.java");

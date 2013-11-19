@@ -51,6 +51,7 @@ import com.tasktop.c2c.server.tasks.domain.TaskResolution;
 import com.tasktop.c2c.server.tasks.domain.TaskSeverity;
 import com.tasktop.c2c.server.tasks.domain.TaskStatus;
 import com.tasktop.c2c.server.tasks.domain.TaskUserProfile;
+import java.awt.EventQueue;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -72,10 +73,10 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.team.spi.TeamProject;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
-import org.netbeans.modules.bugtracking.util.ListValuePicker;
-import org.netbeans.modules.bugtracking.util.SimpleIssueFinder;
+import org.netbeans.modules.bugtracking.api.RepositoryManager;
+import org.netbeans.modules.bugtracking.api.Util;
+import org.netbeans.modules.team.spi.TeamProject;
+import org.netbeans.modules.bugtracking.commons.ListValuePicker;
 import org.netbeans.modules.odcs.tasks.ODCS;
 import org.netbeans.modules.odcs.tasks.ODCSConnector;
 import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
@@ -84,6 +85,7 @@ import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
 import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.mylyn.util.NbTask;
 import org.netbeans.modules.mylyn.util.commands.GetRepositoryTasksCommand;
+import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -96,7 +98,7 @@ public class ODCSUtil {
     
     public static final DateFormat DATE_TIME_FORMAT_DEFAULT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); //NOI18N
     public static final String URL_FRAGMENT_TASK = "/task/"; //NOI18N
-    public static final String URL_FRAGMENT_QUERY = "/tasks/s/"; //NOI18N
+    public static final String URL_FRAGMENT_QUERY = "/tasks/"; //NOI18N
     private static final DateFormat[] dateFormats = new DateFormat[] { 
         DATE_TIME_FORMAT_DEFAULT,
         new SimpleDateFormat("yyyy-MM-dd HH:mm"), //NOI18N
@@ -169,11 +171,11 @@ public class ODCSUtil {
     }
     
     public static void openIssue(ODCSIssue odcsIssue) {
-        ODCS.getInstance().getBugtrackingFactory().openIssue(getRepository(odcsIssue.getRepository()), odcsIssue);
+        ODCS.getInstance().getBugtrackingFactory().openIssue(odcsIssue.getRepository(), odcsIssue);
     }
     
     public static void openQuery(ODCSQuery odcsQuery) {
-        ODCS.getInstance().getBugtrackingFactory().editQuery(getRepository(odcsQuery.getRepository()), odcsQuery);
+        ODCS.getInstance().getBugtrackingFactory().editQuery(odcsQuery.getRepository(), odcsQuery);
     }
 
     public static Repository getRepository(ODCSRepository odcsRepository) {
@@ -187,10 +189,10 @@ public class ODCSUtil {
         // be a teamProject available). 
         // for more info see o.n.m.bugtracking.DelegatingConnector#OVERRIDE_REPOSITORY_MANAGEMENT
         if(teamProject != null) {
-            repository = TeamUtil.getRepository(teamProject);
+            repository = Util.getTeamRepository(teamProject.getHost(), teamProject.getName());
         }
         if (repository == null) {
-            repository = ODCS.getInstance().getBugtrackingFactory().getRepository(ODCSConnector.ID, odcsRepository.getID());
+            repository = RepositoryManager.getInstance().getRepository(ODCSConnector.ID, odcsRepository.getID());
             if(repository == null) {
                 repository = createRepository(odcsRepository);
             }
@@ -201,13 +203,10 @@ public class ODCSUtil {
     public static Repository createRepository(ODCSRepository odcsRepository) {
         return ODCS.getInstance().getBugtrackingFactory().createRepository(
                 odcsRepository,
-                ODCS.getInstance().getRepositoryProvider(),
-                ODCS.getInstance().getQueryProvider(),
-                ODCS.getInstance().getIssueProvider(),
                 ODCS.getInstance().getStatusProvider(),
-                null, 
+                ODCS.getInstance().getSchedulingProvider(),
                 ODCS.getInstance().getPriorityProvider(odcsRepository),
-                SimpleIssueFinder.getInstance());
+                ODCS.getInstance().getODCSIssueFinder());
     }
 
     public static TaskResolution getResolutionByValue(RepositoryConfiguration rc, String value) {
@@ -375,23 +374,18 @@ public class ODCSUtil {
         return date;
     }
 
-    @NbBundle.Messages({"LBL_Mine=Assigned to me",
-                        "LBL_Related=Related to me",
-                        "LBL_Recent=Recently changed",
-                        "LBL_Open=Open tasks",
-                        "LBL_All=All tasks"})
     public static String getPredefinedQueryName(PredefinedTaskQuery ptq) {
         switch(ptq) {
             case ALL:
-                return Bundle.LBL_All();
+                return TeamAccessorUtils.ALL_ISSUES_QUERY_DISPLAY_NAME;
             case MINE:              
-                return Bundle.LBL_Mine();
+                return TeamAccessorUtils.MINE_ISSUES_QUERY_DISPLAY_NAME;
             case OPEN:              
-                return Bundle.LBL_Open();
+                return TeamAccessorUtils.OPEN_ISSUES_QUERY_DISPLAY_NAME;
             case RECENT:              
-                return Bundle.LBL_Recent();
+                return TeamAccessorUtils.RECENT_ISSUES_QUERY_DISPLAY_NAME;
             case RELATED:              
-                return Bundle.LBL_Related();
+                return TeamAccessorUtils.RELATED_ISSUES_QUERY_DISPLAY_NAME;
             default:
                 throw new IllegalStateException("unexpected PredefinedTaskQuery value [" + ptq + "]"); // NOI18N
         }
@@ -426,4 +420,13 @@ public class ODCSUtil {
         }
         return null;
     }
+    
+    public static void runInAwt(Runnable r) {
+        if(EventQueue.isDispatchThread()) {
+            r.run();
+        } else {
+            EventQueue.invokeLater(r);
+        }
+    }
+
 }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configurationDescriptor version="84">
+<configurationDescriptor version="89">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
@@ -33,8 +33,9 @@
   <confs>
     <conf name="netbeans.exe" type="1">
       <toolsSet>
-        <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
         <compilerSet>Cygwin|Cygwin</compilerSet>
+        <dependencyChecking>true</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <compileType>
         <ccTool>
@@ -52,14 +53,41 @@
           <linkerLibItems>
             <linkerOptionItem>netbeans.res</linkerOptionItem>
           </linkerLibItems>
-          <commandLine>-mwindows</commandLine>
+          <commandLine>-mwindows -Wl,--nxcompat -Wl,--dynamicbase</commandLine>
         </linkerTool>
       </compileType>
+      <item path="../../../o.n.bootstrap/launcher/windows/utilsfuncs.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="../../../o.n.bootstrap/launcher/windows/utilsfuncs.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="cmdargs.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nblauncher.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="nblauncher.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="netbeans.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="netbeans.exe.manifest" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="netbeans.rc" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="version.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="version.rc" ex="false" tool="3" flavor2="0">
+      </item>
     </conf>
     <conf name="netbeans64.exe" type="1">
       <toolsSet>
-        <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
         <compilerSet>Cygwin64|Cygwin</compilerSet>
+        <dependencyChecking>true</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <compileType>
         <ccTool>
@@ -77,9 +105,35 @@
           <linkerLibItems>
             <linkerOptionItem>netbeans64.res</linkerOptionItem>
           </linkerLibItems>
-          <commandLine>-mwindows</commandLine>
+          <commandLine>-mwindows -Wl,--nxcompat -Wl,--dynamicbase</commandLine>
         </linkerTool>
       </compileType>
+      <item path="../../../o.n.bootstrap/launcher/windows/utilsfuncs.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="../../../o.n.bootstrap/launcher/windows/utilsfuncs.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="cmdargs.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nblauncher.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="nblauncher.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="netbeans.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="netbeans.exe.manifest" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="netbeans.rc" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="version.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="version.rc" ex="false" tool="3" flavor2="0">
+      </item>
     </conf>
   </confs>
 </configurationDescriptor>

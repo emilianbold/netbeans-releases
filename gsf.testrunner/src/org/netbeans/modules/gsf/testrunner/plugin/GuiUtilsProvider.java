@@ -60,5 +60,6 @@ public abstract class GuiUtilsProvider {
     public abstract JCheckBox[] createCheckBoxes(String[] ids);
     public abstract JComponent createChkBoxGroup(String title, JCheckBox[] elements);
     public abstract String getTestngFramework();
+    public abstract String getJunitFramework();
     
 }

@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.qnavigator.navigator;
 
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 
 /**
@@ -51,11 +52,20 @@ import org.openide.nodes.Node;
  * @author Alexander Simon
  */
 public class NavigatorContent {
-    private NavigatorModel curModel;
+    private volatile NavigatorModel curModel;
+    private volatile DataObject cdo;
     
     public NavigatorContent() {
     }
 
+    void setDataObject(DataObject cdo) {
+        this.cdo= cdo;
+    }
+
+    DataObject getDataObject() {
+        return cdo;
+    }
+    
     void setModel(NavigatorModel curModel) {
         this.curModel = curModel;
     }

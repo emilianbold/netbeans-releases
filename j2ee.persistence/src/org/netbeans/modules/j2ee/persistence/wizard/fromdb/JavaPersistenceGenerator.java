@@ -169,6 +169,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 helper.isGenerateValidationConstraints(),
                 helper.isFullyQualifiedTableNames(), helper.isRegenTablesAttrs(),
                 helper.isUseDefaults(),
+                helper.isGenerateMappedSuperclasses(),
                 helper.getFetchType(), helper.getCollectionType(),
                 handle, progressPanel, helper.getProject());
     }
@@ -183,7 +184,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
         
         generateBeans(entityClasses, generateNamedQueries, generateJAXBAnnotations, 
                 generateValidationConstraints, fullyQualifiedTableNames, regenTablesAttrs, 
-                false, fetchType, collectionType, progressContributor, panel, prj);
+                false, false, fetchType, collectionType, progressContributor, panel, prj);
         
     }
             
@@ -193,6 +194,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             boolean generateValidationConstraints,
             boolean fullyQualifiedTableNames, boolean regenTablesAttrs,
             boolean useDefaults,
+            boolean generateMappedSC,
             FetchType fetchType, CollectionType collectionType,
             ProgressContributor progressContributor, ProgressPanel panel, Project prj) throws IOException {
 
@@ -217,6 +219,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 generateValidationConstraints,
                 fullyQualifiedTableNames, regenTablesAttrs,
                 useDefaults,
+                generateMappedSC,
                 fetchType, collectionType,
                 progressContributor, panel, this).run();
         addToPersistenceUnit(result);
@@ -348,7 +351,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
         private final boolean generateJAXBAnnotations;
         private final boolean generateValidationConstraints;
         private final boolean fullyQualifiedTableNames;
-        private final boolean regenTablesAttrs;
+        private final boolean regenTablesAttrs, generateMappedSC;
         private final FetchType fetchType;
         private final CollectionType collectionType;
         private final Set<FileObject> generatedEntityFOs;
@@ -361,6 +364,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 boolean generateValidationConstraints,
                 boolean fullyQualifiedTableNames, boolean regenTablesAttrs,
                 boolean useDefaults,
+                boolean generateMappedSC,
                 FetchType fetchType, CollectionType collectionType,
                 ProgressContributor progressContributor, ProgressPanel progressPanel,
                 PersistenceGenerator persistenceGen) {
@@ -370,6 +374,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             this.generateValidationConstraints = generateValidationConstraints;
             this.fullyQualifiedTableNames = fullyQualifiedTableNames;
             this.useDefaults = useDefaults;
+            this.generateMappedSC = generateMappedSC;
             this.regenTablesAttrs = regenTablesAttrs;
             this.fetchType = fetchType;
             this.collectionType = collectionType;
@@ -1066,7 +1071,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 if (UpdateType.UPDATE.equals(updateType)) {
                     collectExistingColumns();
                 } else {
-                    newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.persistence.Entity")); // NOI18N
+                    newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation(generateMappedSC ? "javax.persistence.MappedSuperclass" : "javax.persistence.Entity")); // NOI18N
                     List<ExpressionTree> tableAnnArgs = new ArrayList<ExpressionTree>();
                     if(useDefaults && entityClassName.equalsIgnoreCase(dbMappings.getTableName())){
                         //skip
@@ -1385,7 +1390,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
 
             @Override
             protected void afterMembersGenerated() {
-                if (!UpdateType.UPDATE.equals(updateType)) {
+                if (!UpdateType.UPDATE.equals(updateType) && !generateMappedSC) {
                     addFindAllNamedQueryAnnotation();
 
                     newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.persistence.NamedQueries", // NOI18N

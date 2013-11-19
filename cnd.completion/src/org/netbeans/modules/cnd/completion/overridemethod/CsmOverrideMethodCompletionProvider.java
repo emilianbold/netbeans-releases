@@ -63,7 +63,9 @@ import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
@@ -184,6 +186,8 @@ public class CsmOverrideMethodCompletionProvider implements CompletionProvider {
                                     if (CsmKindUtilities.isClass(member)) {
                                         decl = member;
                                         continue loop;
+                                    } else {
+                                        return null;
                                     }
                                 }
                             }
@@ -207,6 +211,7 @@ public class CsmOverrideMethodCompletionProvider implements CompletionProvider {
 
         private Collection<CsmOverrideMethodCompletionItem> getItems(final BaseDocument doc, final int caretOffset) {
             Collection<CsmOverrideMethodCompletionItem> items = new ArrayList<CsmOverrideMethodCompletionItem>();
+            CsmCacheManager.enter();
             try {
                 if (init(doc, caretOffset)) {
                     CsmFile csmFile = CsmUtilities.getCsmFile(doc, true, false);
@@ -214,7 +219,7 @@ public class CsmOverrideMethodCompletionProvider implements CompletionProvider {
                         CsmClass cls = visitDeclarations(csmFile.getDeclarations(), caretOffset);
                         if (cls != null) {
                             Set<CsmMethod> virtual = new HashSet<CsmMethod>();
-                            getVirtualMethods(virtual, cls, new HashSet<CsmClass>());
+                            getVirtualMethods(virtual, cls, new HashSet<AntiLoopElement>());
                             boolean hasDestructor = false;
                             for(CsmMember member : cls.getMembers()) {
                                 if(CsmKindUtilities.isMethod(member)) {
@@ -245,19 +250,27 @@ public class CsmOverrideMethodCompletionProvider implements CompletionProvider {
                 }
             } catch (BadLocationException ex) {
                 // no completion
+            } finally {
+                CsmCacheManager.leave();
             }
             return items;
         }
         
-        private void getVirtualMethods(Set<CsmMethod> res, CsmClass cls, Set<CsmClass> antiLoop) {
-            if (antiLoop.contains(cls)) {
+        private void getVirtualMethods(Set<CsmMethod> res, CsmClass cls, Set<AntiLoopElement> antiLoop) {
+            AntiLoopElement element = new AntiLoopElement(cls);
+            if (antiLoop.contains(element)) {
                 return;
             }
-            antiLoop.add(cls);
+            antiLoop.add(element);
             Collection<CsmInheritance> baseClasses = cls.getBaseClasses();
             for(CsmInheritance inh : baseClasses) {
+                element = new AntiLoopElement(inh);
+                if (antiLoop.contains(element)) {
+                    continue;
+                }
+                antiLoop.add(element);
                 CsmClassifier classifier = inh.getClassifier();
-                if (CsmKindUtilities.isClass(classifier)) {
+                if (CsmKindUtilities.isClass(classifier)/* && !CsmKindUtilities.isInstantiation(classifier)*/) {
                     CsmClass c = (CsmClass) classifier;
                     getVirtualMethods(res, c, antiLoop);
                     for(CsmMember member : c.getMembers()) {
@@ -314,6 +327,29 @@ public class CsmOverrideMethodCompletionProvider implements CompletionProvider {
 
         private boolean matchPrefix(CsmOverrideMethodCompletionItem itm, String prefix) {
             return CharSequenceUtils.startsWith(itm.getSortText(), prefix);
+        }
+    }
+    
+    private static final class AntiLoopElement {
+        private final int offset;
+        private final CsmFile file;
+        AntiLoopElement(CsmOffsetable object) {
+            offset = object.getStartOffset();
+            file = object.getContainingFile();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof AntiLoopElement) {
+                return offset == ((AntiLoopElement)obj).offset && 
+                        file.equals(((AntiLoopElement)obj).file);
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return offset * 31 + file.hashCode() * 37;
         }
     }
 }

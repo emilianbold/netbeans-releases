@@ -88,6 +88,7 @@ import java.util.Map.Entry;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.indent.api.Indent;
 
@@ -351,6 +352,12 @@ public class CasualDiff {
     }
 
     public int endPos(JCTree t) {
+        // compensate for FieldGroupTree, see issue #237574
+        if (t instanceof FieldGroupTree) {
+            FieldGroupTree fgt = (FieldGroupTree)t;
+            VariableTree vt = fgt.getVariables().get(fgt.getVariables().size() - 1);
+            return TreeInfo.getEndPos((JCTree)vt, oldTopLevel.endPositions);
+        }
         return TreeInfo.getEndPos(t, oldTopLevel.endPositions);
         }
 
@@ -683,11 +690,29 @@ public class CasualDiff {
         PositionEstimator est = EstimatorFactory.members(filteredOldTDefs, filteredNewTDefs, diffContext);
         if (localPointer < insertHint)
             copyTo(localPointer, insertHint);
-        if ((newT.mods.flags & Flags.ENUM) != 0 && filteredOldTDefs.isEmpty() && !filteredNewTDefs.isEmpty() && !isEnum(filteredNewTDefs.get(0)) && !newT.getSimpleName().isEmpty()) {
-            printer.blankline();
-            printer.toLeftMargin();
-            printer.print(";"); //NOI18N
-            printer.newline();
+        if ((newT.mods.flags & Flags.ENUM) != 0 && !filteredNewTDefs.isEmpty()) {
+            // also cover the case when the last const is removed for some reason, the semicolon should auto appear
+            boolean constMissing = filteredOldTDefs.isEmpty();
+            boolean firstDiff = false;
+            boolean oldEnum = constMissing;
+            boolean xxx = (newT.mods.flags & Flags.ENUM) != 0 && filteredOldTDefs.isEmpty() && !filteredNewTDefs.isEmpty() && !isEnum(filteredNewTDefs.get(0)) && !newT.getSimpleName().isEmpty();
+            if (constMissing) {
+                firstDiff = !isEnum(filteredNewTDefs.get(0));
+            } else {
+                firstDiff = (oldEnum = isEnum(filteredOldTDefs.get(0))) != isEnum(filteredNewTDefs.get(0));
+            }
+            if (firstDiff && !newT.getSimpleName().isEmpty()) {
+                if (oldEnum) {
+                    printer.blankline();
+                    printer.toLeftMargin();
+                    printer.print(";"); //NOI18N
+                    printer.newline();
+                } else {
+                    // there's probably a semicolon before the 1st member, which must be removed before the 1st constant
+                    // is created.
+                    insertHint = removeExtraEnumSemicolon(insertHint);
+                }
+            }
         }
         localPointer = diffList(filteredOldTDefs, filteredNewTDefs, insertHint, est, Measure.REAL_MEMBER, printer);
         printer.enclClassName = origName;
@@ -702,6 +727,72 @@ public class CasualDiff {
             copyTo(localPointer, bounds[1]);
         }
         return bounds[1];
+    }
+    
+    /**
+     * When the enumeration contains just methods, it is necessary to preced them with single ;. If a constant is
+     * inserted, it must be inserted first; and the semicolon should be removed. This method will attempt to remove entire 
+     * lines of whitespace around the semicolon. Preceding or following comments are preserved.
+     * 
+     * @param insertHint the local Pointer value
+     * @return new localPointer value
+     */
+    private int removeExtraEnumSemicolon(int insertHint) {
+        int startWS = -1;
+        int rewind = tokenSequence.offset();
+        tokenSequence.move(insertHint);
+        tokenSequence.moveNext();
+        boolean semi = false;
+        out: do {
+            Token<JavaTokenId> t = tokenSequence.token();
+            switch (t.id()) {
+                case WHITESPACE:
+                    if (semi) {
+                        // after semicolon, find the last newline
+                        int nl = t.text().toString().lastIndexOf('\n');
+                        if (nl == -1) {
+                            startWS = tokenSequence.offset();
+                        } else {
+                            startWS = tokenSequence.offset() + nl + 1;
+                        }
+                    } else {
+                        // before semicolon, select the 1st complete line.
+                        if (startWS == -1) {
+                            startWS = t.text().toString().indexOf('\n');
+                            if (startWS == -1) {
+                                startWS = tokenSequence.offset();
+                            } else {
+                                startWS += tokenSequence.offset() + 1;
+                            }
+                        }
+                    }
+                break;
+                case SEMICOLON:
+                    if (startWS >= 0) {
+                        // copy up to the WS immediately preceding the semicolon.
+                        copyTo(insertHint, startWS);
+                        insertHint = tokenSequence.offset() + t.length();
+                    }
+                    startWS = -1;
+                    semi = true;
+                    break;
+
+                case LINE_COMMENT: case BLOCK_COMMENT: case JAVADOC_COMMENT:
+                    if (semi) {
+                        break out;
+                    }
+                    startWS = -1;
+                    break;
+                default:
+                    break out;
+            }
+        } while (tokenSequence.moveNext());
+        if (semi && startWS > -1) {
+            insertHint = startWS;
+        }
+        tokenSequence.move(rewind);
+        tokenSequence.moveNext();
+        return insertHint;
     }
         
     private boolean isEnum(Tree tree) {
@@ -3169,6 +3260,7 @@ public class CasualDiff {
         if (!matcher.match()) {
             return localPointer;
         }
+        Queue<JCTree> deletedItems = new LinkedList<JCTree>(); // deleted items
         JCTree lastdel = null; // last deleted element
         ResultItem<JCTree>[] result = matcher.getResult();
 
@@ -3223,7 +3315,8 @@ public class CasualDiff {
                 case MODIFY: {
                     lastGroup = group;
                     int[] bounds = estimator.getPositions(i);
-                    bounds[0] = Math.min(bounds[0], getCommentCorrectedOldPos(oldList.get(i)));
+                    // replace from the actual start, leaving whitespace, currently defined only for MemberEstimator
+                    bounds[0] = Math.min(bounds.length > 4 ? bounds[4] : bounds[0], getCommentCorrectedOldPos(oldList.get(i)));
                     copyTo(localPointer, bounds[0], printer);
                     localPointer = diffTree(oldList.get(i), item.element, bounds);
                     lastdel = null;
@@ -3264,38 +3357,61 @@ public class CasualDiff {
                             }
                         }
                     }
+                    JCTree ld = null;
+//                    if (deletedItems != null && !deletedItems.isEmpty()) {
+//                        ld = deletedItems.poll();
+//                    }
                     if (!found) {
                         if (lastdel != null) {
                             boolean wasInFieldGroup = false;
+                            // PENDING - should it be tested also in the loop of *all* deleted items ? Originally both the 
+                            // FieldGroup and others only cared about the lastdel Tree.
                             if(lastdel instanceof FieldGroupTree) {
                                 FieldGroupTree fieldGroupTree = (FieldGroupTree) lastdel;
                                 for (JCVariableDecl var : fieldGroupTree.getVariables()) {
                                     if(treesMatch(item.element, var, false)) {
+                                        ld = lastdel;
                                         wasInFieldGroup = true;
                                         oldTrees.remove(item.element);
                                         break;
                                     }
                                 }
                             }
-                            if(wasInFieldGroup || treesMatch(item.element, lastdel, false)) {
+                            boolean match = wasInFieldGroup;
+                            for (Iterator<JCTree> it = deletedItems.iterator(); !match && it.hasNext(); ) {
+                                ld = it.next();
+                                if (match = treesMatch(item.element, ld, false)) {
+                                    it.remove();
+                                }
+                            }
+//                            while (!match && (ld = deletedItems.poll()) != null) {
+//                                match = treesMatch(item.element, ld, false);
+//                            }
+                            if(match) {
                                 VeryPretty oldPrinter = this.printer;
                                 int old = oldPrinter.indent();
                                 this.printer = new VeryPretty(diffContext, diffContext.style, tree2Tag, tree2Doc, tag2Span, origText, oldPrinter.toString().length() + oldPrinter.getInitialOffset());//XXX
                                 this.printer.reset(old);
                                 this.printer.oldTrees = oldTrees;
-                                int index = oldList.indexOf(lastdel);
+                                int index = oldList.indexOf(ld);
                                 int[] poss = estimator.getPositions(index);
                                 //TODO: should the original text between the return position of the following method and poss[1] be copied into the new text?
-                                localPointer = Math.max(localPointer - 1, diffTree(lastdel, item.element, poss));
+                                int diffTo = diffTree(ld, item.element, poss);
+                                copyTo(diffTo, poss[1]);
+                                localPointer = Math.max(localPointer, poss[1]);
                                 printer.print(this.printer.toString());
                                 printer.reindentRegions.addAll(this.printer.reindentRegions);
                                 this.printer = oldPrinter;
                                 this.printer.undent(old);
-                                lastdel = null;
+                                if (deletedItems.isEmpty()) {
+                                    lastdel = null;
+                                }
                                 break;
                             }
                         }
                         if (LineInsertionType.BEFORE == estimator.lineInsertType()) printer.newline();
+                        // PENDING: although item.element may be among oldTrees, its surrounding whitespaces are not used
+                        // at all
                         printer.print(item.element);
                         if (LineInsertionType.AFTER == estimator.lineInsertType()) printer.newline();
                     }
@@ -3306,10 +3422,14 @@ public class CasualDiff {
                     if (localPointer < pos[0] && lastdel == null) {
                         copyTo(localPointer, pos[0], printer);
                     }
+                    if (lastdel == null) {
+                        deletedItems.clear();
+                    }
                     lastdel = oldList.get(i);
-                    ++i;
-                    CommentSet ch = comments.getComments(lastdel);
+                    deletedItems.add( lastdel );
+                    CommentSet ch = comments.getComments(oldList.get(i));
                     localPointer = Math.max(pos[1], Math.max(commentEnd(ch, CommentSet.RelativePosition.INLINE), commentEnd(ch, CommentSet.RelativePosition.TRAILING)));
+                    ++i;
                     break;
                 }
                 case NOCHANGE: {
@@ -3689,7 +3809,11 @@ public class CasualDiff {
             localpointer = getOldPos(oldT.name, doc);
             copyTo(elementBounds[0], localpointer);
         }
-        localpointer = diffDocTree(doc, oldT.name, newT.name, new int[] {localpointer, endPos(oldT.name, doc)});
+        int nameEnd = endPos(oldT.name, doc);
+        localpointer = diffDocTree(doc, oldT.name, newT.name, new int[] {localpointer, nameEnd});
+        if(localpointer < nameEnd) {
+            copyTo(localpointer, localpointer = nameEnd);
+        }
         if(oldT.isTypeParameter) {
             localpointer++;
         }

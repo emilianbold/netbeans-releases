@@ -251,4 +251,16 @@ public class JsCodeCompletionTest extends JsCodeCompletionBase {
     public void testIssue232798() throws Exception {
         checkCompletion("testfiles/markoccurences/issue232792.js", "        this.^c // issue 232798", false);
     }
+    
+    public void testIssue238310_01() throws Exception {
+        checkCompletion("testfiles/completion/issue238310_01.js", "var x = {a238310:{oneA:\"test\", twoA:2}}.a^;", false);
+    }
+    
+    public void testIssue238310_02() throws Exception {
+        checkCompletion("testfiles/completion/issue238310_02.js", "var x = {a238310:{oneA:\"test\", twoA:2}}.a238310.^;", false);
+    }
+    
+    public void testIssue238310_03() throws Exception {
+        checkCompletion("testfiles/completion/issue238310_03.js", "x.^", false);
+    }
 }

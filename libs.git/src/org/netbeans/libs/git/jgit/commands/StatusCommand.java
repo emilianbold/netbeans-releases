@@ -54,6 +54,8 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.RenameDetector;
 import org.eclipse.jgit.dircache.DirCache;
@@ -174,6 +176,8 @@ public class StatusCommand extends GitCommand {
                     }
                     lastPath = path;
                     File file = new File(workTreePath + File.separator + path);
+                    Logger.getLogger(StatusCommand.class.getName()).log(Level.FINE, "Inspecting file {0} ---- {1}", //NOI18N
+                            new Object[] { path, file.getAbsolutePath() });
                     int mHead = treeWalk.getRawMode(T_COMMIT);
                     int mIndex = treeWalk.getRawMode(T_INDEX);
                     int mWorking = treeWalk.getRawMode(T_WORKSPACE);
@@ -228,7 +232,10 @@ public class StatusCommand extends GitCommand {
                                 && (autocrlf && fti.isModified(indexEntry, false) 
                                 && (fti.compareMetadata(indexEntry) == WorkingTreeIterator.MetadataDiff.DIFFER_BY_METADATA //entry is modified, but in metadata, no content check needed
                                     || differ(indexEntry.getObjectId(), fti, oi))
-                                || !autocrlf && fti.isModified(indexEntry, true))))) {
+                                || !autocrlf && fti.isModified(indexEntry, true))))
+                                || GitStatus.Status.STATUS_MODIFIED == getGitlinkStatus(
+                                        mWorking, treeWalk.getObjectId(T_WORKSPACE),
+                                        mIndex, treeWalk.getObjectId(T_INDEX))) {
                             statusIndexWC = GitStatus.Status.STATUS_MODIFIED;
                         } else {
                             statusIndexWC = GitStatus.Status.STATUS_NORMAL;
@@ -242,7 +249,10 @@ public class StatusCommand extends GitCommand {
                                     && (indexEntry == null || !indexEntry.isAssumeValid()) //no update-index --assume-unchanged
                                     // head vs wt can be modified only when head vs index or index vs wt are modified, otherwise it's probably line-endings issue
                                     && (statusIndexWC != GitStatus.Status.STATUS_NORMAL || statusHeadIndex != GitStatus.Status.STATUS_NORMAL)
-                                    && !treeWalk.getObjectId(T_COMMIT).equals(fti.getEntryObjectId())))) {
+                                    && !treeWalk.getObjectId(T_COMMIT).equals(fti.getEntryObjectId())))
+                                || GitStatus.Status.STATUS_MODIFIED == getGitlinkStatus(
+                                        mHead, treeWalk.getObjectId(T_WORKSPACE),
+                                        mHead, treeWalk.getObjectId(T_COMMIT))) {
                             statusHeadWC = GitStatus.Status.STATUS_MODIFIED;
                         } else {
                             statusHeadWC = GitStatus.Status.STATUS_NORMAL;
@@ -446,5 +456,18 @@ public class StatusCommand extends GitCommand {
                 } catch (IOException ex) {}
             }
         }
+    }
+
+    private GitStatus.Status getGitlinkStatus (int mode1, ObjectId id1, int mode2, ObjectId id2) {
+        if (mode1 == FileMode.TYPE_GITLINK || mode2 == FileMode.TYPE_GITLINK) {
+            if (mode1 == FileMode.TYPE_MISSING) {
+                return GitStatus.Status.STATUS_REMOVED;
+            } else if (mode2 == FileMode.TYPE_MISSING) {
+                return GitStatus.Status.STATUS_ADDED;
+            } else if (!id1.equals(id2)) {
+                return GitStatus.Status.STATUS_MODIFIED;
+            }
+        }
+        return GitStatus.Status.STATUS_NORMAL;
     }
 }

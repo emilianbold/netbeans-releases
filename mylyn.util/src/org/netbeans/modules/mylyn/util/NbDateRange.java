@@ -43,7 +43,9 @@
 package org.netbeans.modules.mylyn.util;
 
 import java.util.Calendar;
+import java.util.Date;
 import org.eclipse.mylyn.internal.tasks.core.DateRange;
+import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
 
 /**
  *
@@ -62,6 +64,10 @@ public final class NbDateRange implements Comparable<NbDateRange> {
     
     public NbDateRange (Calendar time) {
         this(new DateRange(time));
+    }
+
+    public NbDateRange (IssueScheduleInfo info) {
+        this(toDateRange(info));
     }
     
     @Override
@@ -94,4 +100,18 @@ public final class NbDateRange implements Comparable<NbDateRange> {
         return delegate.hashCode();
     }
     
+    public IssueScheduleInfo toSchedulingInfo () {
+        Calendar startDate = getStartDate();
+        Calendar endDate = getEndDate();
+        int difference = (int) ((endDate.getTimeInMillis() - startDate.getTimeInMillis()) / 1000 / 3600 / 24) + 1;
+        return new IssueScheduleInfo(startDate.getTime(), difference);
+    }
+    
+    private static DateRange toDateRange (IssueScheduleInfo info) {
+        Calendar startDate = Calendar.getInstance();
+        Calendar endDate = Calendar.getInstance();
+        startDate.setTime(info.getDate());
+        endDate.setTime(new Date(info.getDate().getTime() + (info.getInterval() * 24 * 3600 - 1) * 1000));
+        return new DateRange(startDate, endDate);
+    }
 }

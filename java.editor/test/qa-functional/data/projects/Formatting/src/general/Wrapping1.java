@@ -4,41 +4,31 @@
  */
 package general;
 
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.MalformedURLException;
-import javax.swing.DefaultCellEditor;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.table.DefaultTableModel;
 
 /**
  *
  * @author jp159440
  */
-public class Wrapping1 extends DefaultTableModel 
-{
+public class Wrapping1 extends DefaultTableModel {
 
-    class InnerClassWithQuiteALongName extends Thread
-    {
+    class InnerClassWithQuiteALongName extends Thread {
     }
 
-    class InnerClassAgainWithLongName implements
-       Serializable
-    {
+    class InnerClassAgainWithLongName implements Serializable, Cloneable {
     }
 
-    class InnerClass implements Serializable
-    {
-    }
-
-    public Wrapping1 method(int parameter1,
-       int parameter2,
-       String... var)
-    {
+    public Wrapping1 method(int parameter1, int parameter2, String... var) {
         return this;
     }
 
-    @interface MyAnot
-    {
+    @interface MyAnot {
 
         int a();
 
@@ -47,27 +37,25 @@ public class Wrapping1 extends DefaultTableModel
         String c();
     }
 
-    @MyAnot(a = 11111, b = "       ",
-    c = "        ")
-    public void method2()
-    {
-        method(1, 2, "string vararg",
-           "string vararg");
-        method(1, 1, "").method(2, 2, "2").method(
-           3, 3, "3");
+    @MyAnot(a = 11111, b = "       ", c = "        ")
+    public void method2() {
+        method(1, 2, "string vararg", "string vararg");
+        method(1, 1, "").method(2, 2, "2").method(3, 3, "3");
     }
 
-    public void m() throws IOException,
-       MalformedURLException
-    {
+    public void m() throws IOException, MalformedURLException {
     }
 
-    public void lngMethodNa(String a) throws
-       IOException
-    {
+    public void lngMethodNa(String a) throws IOException {
     }
-    String[] s = new String[]
-    {
-        "aaaaa", "bbbbb"
-    };
+    String[] s = new String[]{"aaaaa", "bbbbb"};
+
+    public void test() {
+        try (FileReader fr1 = new FileReader("");FileReader fr2 = new FileReader("")) {
+            fr1.read();
+        } catch (IOException | NullPointerException ex) {
+            Logger.getLogger(Wrapping1.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+    }
 }

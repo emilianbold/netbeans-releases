@@ -61,10 +61,10 @@ import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
-import org.netbeans.modules.bugtracking.team.spi.TeamProject;
-import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
+import org.netbeans.modules.team.spi.TeamProject;
+import org.netbeans.modules.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
-import org.netbeans.modules.bugtracking.util.LogUtils;
+import org.netbeans.modules.bugtracking.commons.LogUtils;
 import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.mylyn.util.NbTask;
 import org.netbeans.modules.mylyn.util.commands.SynchronizeQueryCommand;
@@ -98,7 +98,6 @@ public abstract class ODCSQuery {
 
     private boolean firstRun = true;
     private ColumnDescriptor[] columnDescriptors;
-    private OwnerInfo info;
     
     private final Object ISSUES_LOCK = new Object();
     private final Set<String> issues = new HashSet<String>();
@@ -141,14 +140,6 @@ public abstract class ODCSQuery {
         return saved;
     }
     
-    public void setOwnerInfo (OwnerInfo info) {
-        this.info = info;
-    }
-
-    public OwnerInfo getOwnerInfo () {
-        return info;
-    }
-
     int getSize() {
         synchronized(ISSUES_LOCK) {
             return issues.size();
@@ -243,7 +234,7 @@ public abstract class ODCSQuery {
         return name + " - " + repository.getDisplayName(); // NOI18N
     }
 
-    public final ODCSQueryController getController () {
+    public final synchronized ODCSQueryController getController () {
         if(controller == null) {
             controller = new ODCSQueryController(repository, this, getCriteria(), isModifiable());
         }
@@ -258,16 +249,8 @@ public abstract class ODCSQuery {
         support.removePropertyChangeListener(listener);
     }
 
-    public void fireQuerySaved() {
-        support.firePropertyChange(QueryProvider.EVENT_QUERY_SAVED, null, null);
-    }
-
-    protected void fireQueryRemoved() {
-        support.firePropertyChange(QueryProvider.EVENT_QUERY_REMOVED, null, null);
-    }
-
     private void fireQueryIssuesChanged() {
-        support.firePropertyChange(QueryProvider.EVENT_QUERY_ISSUES_CHANGED, null, null);
+        support.firePropertyChange(QueryProvider.EVENT_QUERY_REFRESHED, null, null);
     }  
 
     public void refresh() {
@@ -512,7 +495,6 @@ public abstract class ODCSQuery {
             }
             setSaved(name); 
             getRepository().saveQuery(this);
-            fireQuerySaved();            
             return true;
         }        
 
@@ -536,7 +518,6 @@ public abstract class ODCSQuery {
             if (repositoryQuery != null) {
                 MylynSupport.getInstance().deleteQuery(repositoryQuery);
             }
-            fireQueryRemoved();
         }
         
         private class ProjectAndClient {
@@ -550,7 +531,7 @@ public abstract class ODCSQuery {
         }
 
         private ProjectAndClient getProjectAndClient() {
-            TeamProject kp = getRepository().getLookup().lookup(TeamProject.class);
+            TeamProject kp = getRepository().getTeamProject();
             assert kp != null; // all odcs repositories should come from team support
             if (kp == null) {
                 ODCS.LOG.log(Level.WARNING, "  no project available for query"); // NOI18N

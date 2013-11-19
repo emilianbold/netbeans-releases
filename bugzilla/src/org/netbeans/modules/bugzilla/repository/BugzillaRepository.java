@@ -72,10 +72,9 @@ import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
-import org.netbeans.modules.bugtracking.team.spi.RepositoryUser;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
+import org.netbeans.modules.team.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.spi.*;
-import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
+import org.netbeans.modules.team.spi.OwnerInfo;
 import org.netbeans.modules.bugzilla.commands.BugzillaExecutor;
 import org.netbeans.modules.bugzilla.query.QueryController;
 import org.netbeans.modules.bugzilla.query.QueryParameter;
@@ -88,15 +87,14 @@ import org.netbeans.modules.mylyn.util.NbTask;
 import org.netbeans.modules.mylyn.util.commands.SimpleQueryCommand;
 import org.netbeans.modules.mylyn.util.commands.SynchronizeTasksCommand;
 import org.netbeans.modules.mylyn.util.UnsubmittedTasksContainer;
+import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
-import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -122,8 +120,6 @@ public class BugzillaRepository {
     private Task refreshQueryTask;
 
     private PropertyChangeSupport support;
-    
-    private Lookup lookup;
     
     private final Object RC_LOCK = new Object();
     private final Object CACHE_LOCK = new Object();
@@ -165,7 +161,7 @@ public class BugzillaRepository {
     }
 
     public String getID() {
-        return info.getId();
+        return info.getID();
     }
 
     public TaskRepository getTaskRepository() {
@@ -229,13 +225,6 @@ public class BugzillaRepository {
         }
     }
 
-    public Lookup getLookup() {
-        if(lookup == null) {
-            lookup = Lookups.fixed(getLookupObjects());
-        }
-        return lookup;
-    }
-    
     public BugzillaIssue getIssueForTask (NbTask task) {
         BugzillaIssue issue = null;
         if (task != null) {
@@ -287,10 +276,6 @@ public class BugzillaRepository {
         return new BugzillaQuery(queryName, query, this, urlParams, true, urlDef, true);
     }
 
-    protected Object[] getLookupObjects() {
-        return new Object[] { getIssueCache() };
-    }
-
     synchronized void resetRepository(boolean keepConfiguration) {
         if(!keepConfiguration) {
             bc = null;
@@ -329,7 +314,7 @@ public class BugzillaRepository {
         return c != null ? c.getPassword().toCharArray() : new char[0]; 
     }
 
-    public BugzillaIssue[] getIssues(final String... ids) {
+    public List<BugzillaIssue> getIssues(final String... ids) {
         final List<BugzillaIssue> ret = new LinkedList<BugzillaIssue>();
         try {
             MylynSupport supp = MylynSupport.getInstance();
@@ -360,7 +345,7 @@ public class BugzillaRepository {
         } catch (CoreException ex) {
             Bugzilla.LOG.log(Level.INFO, null, ex);
         }
-        return ret.toArray(new BugzillaIssue[ret.size()]);
+        return ret;
     }
     
     public BugzillaIssue getIssue(final String id) {
@@ -505,16 +490,17 @@ public class BugzillaRepository {
 
     public synchronized void setInfoValues(String user, char[] password) {
         setTaskRepository(info.getDisplayName(), info.getUrl(), user, password, null, null, Boolean.parseBoolean(info.getValue(IBugzillaConstants.REPOSITORY_SETTING_SHORT_LOGIN)));
-        info = new RepositoryInfo(
-                        info.getId(), info.getConnectorId(), 
-                        info.getUrl(), info.getDisplayName(), info.getTooltip(), 
-                        user, null, password, null);
+        info = createInfo(info.getID(), info.getUrl(), info.getDisplayName(), user, null, password, null);
     }
     
     synchronized void setInfoValues(String name, String url, String user, char[] password, String httpUser, char[] httpPassword, boolean localUserEnabled) {
         setTaskRepository(name, url, user, password, httpUser, httpPassword, localUserEnabled);
-        String id = info != null ? info.getId() : name + System.currentTimeMillis();
-        info = new RepositoryInfo(id, BugzillaConnector.ID, url, name, getTooltip(name, user, url), user, httpUser, password, httpPassword);
+        String id = info != null ? info.getID() : name + System.currentTimeMillis();
+        info = createInfo(id, url, name, user, httpUser, password, httpPassword);
+    }
+
+    protected RepositoryInfo createInfo(String id, String url, String name, String user, String httpUser, char[] password, char[] httpPassword) {
+        return new RepositoryInfo(id, BugzillaConnector.ID, url, name, getTooltip(name, user, url), user, httpUser, password, httpPassword);
     }
     
     public void ensureCredentials() {
@@ -605,7 +591,7 @@ public class BugzillaRepository {
     }
 
     public boolean authenticate(String errroMsg) {
-        return Bugzilla.getInstance().getBugtrackingFactory().editRepository(BugzillaUtil.getRepository(this), errroMsg);
+        return Bugzilla.getInstance().getBugtrackingFactory().editRepository(this, errroMsg);
     }
 
     /**
@@ -626,7 +612,7 @@ public class BugzillaRepository {
         }
         if(BugzillaUtil.isNbRepository(this)) {
             if(nodes != null && nodes.length > 0) {
-                OwnerInfo ownerInfo = TeamUtil.getOwnerInfo(nodes[0]);
+                OwnerInfo ownerInfo = TeamAccessorUtils.getOwnerInfo(nodes[0]);
                 if(ownerInfo != null /*&& ownerInfo.getOwner().equals(product)*/ ) {
                     return ownerInfo;
                 }
@@ -791,18 +777,11 @@ public class BugzillaRepository {
     }
 
     public void refreshAllQueries() {
-        refreshAllQueries(false);
-    }
-
-    protected void refreshAllQueries(final boolean onlyOpened) {
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
                 Collection<BugzillaQuery> qs = getQueries();
                 for (BugzillaQuery q : qs) {
-                    if(onlyOpened && !Bugzilla.getInstance().getBugtrackingFactory().isOpen(BugzillaUtil.getRepository(BugzillaRepository.this), q)) {
-                        continue;
-                    }
                     Bugzilla.LOG.log(Level.FINER, "preparing to refresh query {0} - {1}", new Object[] {q.getDisplayName(), getDisplayName()}); // NOI18N
                     QueryController qc = ((BugzillaQuery) q).getController();
                     qc.onRefresh();

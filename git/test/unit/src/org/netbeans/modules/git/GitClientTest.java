@@ -129,10 +129,12 @@ public class GitClientTest extends AbstractGitTestCase {
                 "getRemotes",
                 "getRepositoryState",
                 "getStatus",
+                "getSubmoduleStatus",  //NOI18N
                 "getTags",
                 "getUser",
                 "ignore",
                 "init",
+                "initializeSubmodules",
                 "listModifiedIndexEntries",
                 "listRemoteBranches",
                 "listRemoteTags",
@@ -151,7 +153,9 @@ public class GitClientTest extends AbstractGitTestCase {
                 "setCallback",
                 "setRemote",
                 "setUpstreamBranch",
-                "unignore"));
+                "unignore",
+                "updateSubmodules"
+        ));
         Set<String> readOnlyMethods = new HashSet<String>(Arrays.asList(
                 "addNotificationListener",
                 "blame",
@@ -172,6 +176,7 @@ public class GitClientTest extends AbstractGitTestCase {
                 "getRemotes",
                 "getRepositoryState",
                 "getStatus",
+                "getSubmoduleStatus",  //NOI18N
                 "getTags",
                 "getUser",
                 "ignore",
@@ -239,9 +244,11 @@ public class GitClientTest extends AbstractGitTestCase {
                 "getRemotes",
                 "getRepositoryState",
                 "getStatus",
+                "getSubmoduleStatus",
                 "getTags",
                 "getUser",
                 "init",
+                "initializeSubmodules",
                 "ignore",
                 "listModifiedIndexEntries",
                 "listRemoteBranches",
@@ -261,7 +268,9 @@ public class GitClientTest extends AbstractGitTestCase {
                 "setCallback",
                 "setRemote",
                 "setUpstreamBranch",
-                "unignore"));
+                "unignore",
+                "updateSubmodules"
+        ));
         Set<String> expectedMethods = new HashSet<String>(Arrays.asList(
                 "checkout",
                 "checkoutRevision",
@@ -278,7 +287,9 @@ public class GitClientTest extends AbstractGitTestCase {
                 "removeRemote",
                 "revert",
                 "setRemote",
-                "setUpstreamBranch"));
+                "setUpstreamBranch",
+                "updateSubmodules"
+        ));
         Field f = GitClient.class.getDeclaredField("NEED_REPOSITORY_REFRESH_COMMANDS");
         f.setAccessible(true);
         Set<String> actualMethods = (Set<String>) f.get(GitClient.class);
@@ -334,9 +345,11 @@ public class GitClientTest extends AbstractGitTestCase {
                 "getRemotes",
                 "getRepositoryState",
                 "getStatus",
+                "getSubmoduleStatus",
                 "getTags",
                 "getUser",
                 "init",
+                "initializeSubmodules",
                 "ignore",
                 "listModifiedIndexEntries",
                 "listRemoteBranches",
@@ -356,13 +369,17 @@ public class GitClientTest extends AbstractGitTestCase {
                 "setCallback",
                 "setRemote",
                 "setUpstreamBranch",
-                "unignore"));
+                "unignore",
+                "updateSubmodules"
+        ));
         Set<String> networkMethods = new HashSet<String>(Arrays.asList(
                 "fetch",
                 "listRemoteBranches",
                 "listRemoteTags",
                 "pull",
-                "push"));
+                "push",
+                "updateSubmodules"
+        ));
         Field f = GitClient.class.getDeclaredField("NETWORK_COMMANDS");
         f.setAccessible(true);
         Set<String> actualNetworkCommands = (Set<String>) f.get(GitClient.class);
@@ -502,9 +519,11 @@ public class GitClientTest extends AbstractGitTestCase {
                 "getRemotes",
                 "getRepositoryState",
                 "getStatus",
+                "getSubmoduleStatus",
                 "getTags",
                 "getUser",
                 "init",
+                "initializeSubmodules",
                 "ignore",
                 "listModifiedIndexEntries",
                 "listRemoteBranches",
@@ -524,7 +543,9 @@ public class GitClientTest extends AbstractGitTestCase {
                 "setCallback",
                 "setRemote",
                 "setUpstreamBranch",
-                "unignore"));
+                "unignore",
+                "updateSubmodules"
+        ));
         Set<String> parallelizableMethods = new HashSet<String>(Arrays.asList(
                 "addNotificationListener",
                 "blame",
@@ -540,6 +561,7 @@ public class GitClientTest extends AbstractGitTestCase {
                 "getRemotes",
                 "getRepositoryState",
                 "getStatus",
+                "getSubmoduleStatus",
                 "getTags",
                 "getUser",
                 "listModifiedIndexEntries",

@@ -57,6 +57,7 @@ import java.awt.font.GlyphVector;
 import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
@@ -639,13 +640,18 @@ public class Term extends JComponent implements Accessible {
     }
 
     private void fireSizeChanged(Dimension cells, Dimension pixels) {
-        ListIterator<TermListener> iter = listeners.listIterator();
-        while (iter.hasNext()) {
-            TermListener l = iter.next();
-            l.sizeChanged(cells, pixels);
+        for (TermListener l : listeners) {
+             l.sizeChanged(cells, pixels);
+         }
+    }
+    
+    private void fireTitleChanged(String title) {
+        for (TermListener l : listeners) {
+            l.titleChanged(title);
         }
     }
-    private LinkedList<TermListener> listeners = new LinkedList<>();
+    
+    private final java.util.List<TermListener> listeners = new CopyOnWriteArrayList<>();
 
     /**
      * Set/unset focus policy.
@@ -846,15 +852,6 @@ public class Term extends JComponent implements Accessible {
 	    System.out.println("\tcontained = " + keystroke_set.contains(ks));	// NOI18N
 	}
         
-        // Check the keymap
-        if (keymap != null) {
-            Action action = keymap.getAction(ks);
-            if (action != null) {
-                if (allowedActions == null || allowedActions.contains(action.getClass().getName())) {
-                    return false;
-                }
-            }
-        }
 
         if (keystroke_set == null || !keystroke_set.contains(ks)) {
             e.consume();
@@ -1783,6 +1780,13 @@ public class Term extends JComponent implements Accessible {
                     c = (char) 13;
                 }
 
+                // Consume ctrl+tab, ctrl+shift+tab event, see #237990
+                if (keymap != null && (c == KeyEvent.VK_TAB)
+                        && ((e.getModifiers() == KeyEvent.CTRL_MASK)
+                        || (e.getModifiers() == (KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK)))) {
+                    e.consume();
+                }
+
                 if (passOn && maybeConsume(e)) {
                     on_char(c);
                     possiblyScrollOnInput();
@@ -1805,12 +1809,24 @@ public class Term extends JComponent implements Accessible {
                 charTyped(c, e);
             }
 
-	    @Override
+	           @Override
             public void keyPressed(KeyEvent e) {
-                if (debugKeys())
+                if (debugKeys()) {
                     System.out.printf("keyPressed %2d %s\n", e.getKeyCode(), KeyEvent.getKeyText(e.getKeyCode())); // NOI18N
+                }
+                KeyStroke ks = KeyStroke.getKeyStrokeForEvent(e);
 
-                // Let Interp's have a first go at special keys
+                // At first check the keymap (higher priority)
+                if (keymap != null) {
+                    Action action = keymap.getAction(ks);
+                    if (action != null) {
+                        if (allowedActions == null || allowedActions.contains(action.getClass().getName())) {
+                            return;
+                        }
+                    }
+                }
+
+                // Then let Interp's have go at special keys
                 interp.keyPressed(e);
                 if (e.isConsumed()) {
                     passOn = false;
@@ -2227,6 +2243,11 @@ public class Term extends JComponent implements Accessible {
         try {
             String string;
             string = (String) contents.getTransferData(DataFlavor.stringFlavor);
+            
+            // bug #237034
+            if (string == null) {
+                return;
+            }
             /* DEBUG
             System.out.println("System selection contains '" + string + "'"); // NOI18N
              */
@@ -4041,6 +4062,7 @@ public class Term extends JComponent implements Accessible {
 
 	@Override
         public void op_win_title(String winTitle) {
+            fireTitleChanged(winTitle);
             if (debugOps()) {
                 System.out.println("op_win_title(" + winTitle + ")"); // NOI18N
             }
@@ -5241,6 +5263,23 @@ public class Term extends JComponent implements Accessible {
         return tab_size;
     }
     private int tab_size = 8;
+    
+    /**
+     * Set select-by-word delimiters.
+     * <p>
+     * When double-clicking on terminal screen selection will expand on left and
+     * right until reaches one of a delimiters or the whitespace symbol (which
+     * is delimiter by default).
+     */
+    public void setSelectByWordDelimiters(String delimiters) {
+        this.delimiters = delimiters;
+        word_delineator.setWordDelimiters(delimiters);
+    }
+
+    public String getSelectByWordDelimiters() {
+        return delimiters;
+    }
+    private String delimiters;
 
     /**
      * Control whether Term scrolls to the bottom on keyboard input.

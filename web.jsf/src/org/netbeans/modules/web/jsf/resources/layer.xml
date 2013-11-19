@@ -171,6 +171,10 @@ made subject to such option by the copyright holder.
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
                         <attr name="template" boolvalue="true"/>
                     </file>
+                    <file name="template.ftl" url="templates/crudtemplate.ftl">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                        <attr name="template" boolvalue="true"/>
+                    </file>
                 </folder>
             </folder>
             <!-- JSF From Entity Snippets -->
@@ -401,6 +405,18 @@ made subject to such option by the copyright holder.
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1300"/>
                     </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+
+    <folder name="org-netbeans-modules-java-hints">
+        <folder name="rules">
+            <folder name="hints">
+                <folder name="javaee">
+                    <folder name="jsf">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.hints.Bundle"/>
+                    </folder>
                 </folder>
             </folder>
         </folder>

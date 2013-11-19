@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.odcs.tasks.query;
 
+import org.netbeans.modules.bugtracking.commons.LogUtils;
 import com.tasktop.c2c.server.common.service.domain.criteria.Criteria;
 import com.tasktop.c2c.server.common.service.domain.criteria.CriteriaBuilder;
 import com.tasktop.c2c.server.common.service.domain.criteria.CriteriaParser;
@@ -49,7 +50,7 @@ import com.tasktop.c2c.server.tasks.domain.Iteration;
 import com.tasktop.c2c.server.tasks.domain.Milestone;
 import com.tasktop.c2c.server.tasks.domain.Product;
 import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
-import org.netbeans.modules.bugtracking.util.SaveQueryPanel;
+import org.netbeans.modules.bugtracking.commons.SaveQueryPanel;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -59,6 +60,8 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.ParseException;
@@ -79,14 +82,13 @@ import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.api.Util;
+import org.netbeans.modules.bugtracking.commons.SaveQueryPanel.QueryNameValidator;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
-import org.netbeans.modules.bugtracking.team.spi.TeamProject;
+import org.netbeans.modules.team.spi.TeamProject;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryController.QueryMode;
-import org.netbeans.modules.bugtracking.util.*;
-import org.netbeans.modules.bugtracking.util.SaveQueryPanel.QueryNameValidator;
 import org.netbeans.modules.odcs.tasks.ODCS;
 import org.netbeans.modules.odcs.tasks.ODCSConfig;
 import org.netbeans.modules.odcs.tasks.ODCSConnector;
@@ -124,7 +126,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
     private final Object CRITERIA_LOCK = new Object();
     private final Semaphore querySemaphore = new Semaphore(1);
     
-    private final IssueTable<ODCSQuery> issueTable;
+    private final IssueTable issueTable;
     private boolean modifiable;
     private Criteria criteria;
     private Criteria originalCriteria;
@@ -137,7 +139,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
         this.modifiable = modifiable;
         this.criteria = criteria;
         
-        issueTable = new IssueTable<ODCSQuery>(ODCSUtil.getRepository(repository), query, query.getColumnDescriptors());
+        issueTable = new IssueTable(repository.getID(), query.getDisplayName(), this, query.getColumnDescriptors(), query.isSaved());
         setupRenderer(issueTable);
         panel = new QueryPanel(issueTable.getComponent());
 
@@ -201,7 +203,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
             querySemaphore.acquireUninterruptibly();
             postPopulate(false);
         } else {
-            hideModificationFields();
+            panel.hideModificationFields();
             populated = true;
         }
     }
@@ -269,7 +271,9 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
     public void setMode(QueryMode mode) {
         switch(mode) {
             case EDIT:
-                onModify();
+                if(query.isSaved()) {
+                    onModify();
+                }
                 break;            
             case VIEW:
                 onCancelChanges();
@@ -374,16 +378,22 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
         }
     }
 
-    protected void enableFields(boolean bl) {
-        // set all non parameter fields
-        panel.enableFields(bl);
-        if(!modifiable) {
-            hideModificationFields();
-        }
-        // set the parameter fields
-        for (QueryParameters.Parameter qp : parameters.getAll()) {
-            qp.setEnabled(bl);
-        }
+    protected void enableFields(final boolean bl) {
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                // set all non parameter fields
+                panel.enableFields(bl);
+                if (!modifiable) {
+                    panel.hideModificationFields();
+                }
+                // set the parameter fields
+                for (QueryParameters.Parameter qp : parameters.getAll()) {
+                    qp.setEnabled(bl);
+                }
+            }
+        };
+        ODCSUtil.runInAwt(r);
     }
 
     protected void selectFirstProduct() {
@@ -542,7 +552,8 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
                     }
                 }
                 assert name != null;
-                save(name);
+                final String fname = name;
+                save(fname);
                 ODCS.LOG.fine("on save finnish");
 
                 if(refresh) {
@@ -564,6 +575,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
             enableFields(false);
             if(query.save(name)) {
                 setAsSaved();
+                fireSaved();
                 if (!query.wasRun()) {
                     ODCS.LOG.log(Level.FINE, "refreshing query '{0}' after save", new Object[]{name});
                     onRefresh();
@@ -625,11 +637,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
                     setIssueCount(issueCount);
                 }
             };
-            if(EventQueue.isDispatchThread()) {
-                r.run();
-            } else {
-                EventQueue.invokeLater(r);
-            }
+            ODCSUtil.runInAwt(r);
         }
         issueTable.setFilter(filter);
     }
@@ -688,7 +696,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
     }
 
     private void onWeb() {
-        TeamProject kp = repository.getLookup().lookup(TeamProject.class);
+        TeamProject kp = repository.getTeamProject();
         assert kp != null; // all odcs repositories should come from team support
         if (kp == null) {
             return;
@@ -873,9 +881,9 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
     }
 
     private void populateProductDetails(RepositoryConfiguration rc) {
-        Set<com.tasktop.c2c.server.tasks.domain.Component> newComponents = new HashSet<com.tasktop.c2c.server.tasks.domain.Component>();
-        Set<Iteration> newIterations = new HashSet<Iteration>();
-        Set<Milestone> newMilestones = new HashSet<Milestone>();
+        Set<com.tasktop.c2c.server.tasks.domain.Component> newComponents = new HashSet<>();
+        Set<Iteration> newIterations = new HashSet<>();
+        Set<Milestone> newMilestones = new HashSet<>();
         
         // XXX why not product specific?
         newIterations.addAll(rc.getIterations());
@@ -929,17 +937,8 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
         }
     }
 
-    private void hideModificationFields () {
-        // can't change the controllers data
-        // so alwasy keep those fields disabled
-        panel.modifyButton.setEnabled(false);
-        panel.removeButton.setEnabled(false);
-        panel.refreshConfigurationButton.setEnabled(false);
-        panel.cloneQueryButton.setEnabled(false);
-    }
-
     String getQueryString() {
-        String queryString = null;
+        String queryString;
         synchronized(CRITERIA_LOCK) {
             if(criteria != null && !parameters.parametersChanged()) {
                 return criteria.toQueryString();
@@ -961,6 +960,36 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
         }
         ODCS.LOG.log(Level.FINE, "returning queryString [{0}]", queryString); // NOI18N        
         return queryString;
+    }
+
+    @Override
+    public boolean saveChanges(String name) {
+        return true;
+    }
+
+    @Override
+    public boolean discardUnsavedChanges() {
+        return true;
+    }
+
+    private void fireSaved() {
+        support.firePropertyChange(PROP_CHANGED, null, null);
+    }
+
+    @Override
+    public boolean isChanged() {
+        return false;
+    }
+    
+    private final PropertyChangeSupport support = new PropertyChangeSupport(this);
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        support.addPropertyChangeListener(l);
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        support.removePropertyChangeListener(l);
     }
 
     private class QueryTask implements Runnable, Cancellable, QueryNotifyListener {
@@ -1113,8 +1142,6 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
             issueTable.started();
             counter = 0;
             setIssueCount(counter);
-            // XXX move to API
-            OwnerUtils.setLooseAssociation(ODCSUtil.getRepository(getRepository()), false);                 
         }
 
         @Override

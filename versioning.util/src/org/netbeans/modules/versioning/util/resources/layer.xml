@@ -96,7 +96,7 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
     <folder name="OptionsExport">
-        <folder name="Advanced">
+        <folder name="Team">
             <file name="ShelveChanges">
                 <attr name="include"
                       stringvalue="config/Versioning/patch-storage/.*|var/versioning/patch-storage/.*"/>

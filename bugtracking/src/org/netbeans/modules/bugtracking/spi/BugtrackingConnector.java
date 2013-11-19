@@ -50,10 +50,25 @@ import org.netbeans.modules.bugtracking.api.Repository;
 
 /**
  * Represents a bugtracking connector.
+ * <p>
+ * Bugtracking system registration can be done via {@link Registration}. 
+ * </p>
  *
+ * <pre>
+ *  {@literal @}BugtrackingConnector.Registration (
+ *      id = "foo.bar.MyConnector",
+ *      displayName ="My Connector",
+ *      tooltip = "This is My Connector")    
+ *   public class MyConnector extends BugtrackingConnector {
+ *  
+ *    ... 
+ * 
+ *   }
+ * </pre>
+ * 
  * @author Tomas Stupka
+ * @since 1.85
  */
-// XXX provide commit hook support instead of addComment() and addAttachent() in Issue
 public interface BugtrackingConnector {
 
     /**
@@ -62,7 +77,8 @@ public interface BugtrackingConnector {
      * @param info repository information based on which the repository should be created
      * 
      * @return a {@link Repository} instance.
-     * @see BugtrackingFactory
+     * @see BugtrackingSupport
+     * @since 1.85
      */
     public Repository createRepository(RepositoryInfo info);  
     
@@ -70,10 +86,18 @@ public interface BugtrackingConnector {
      * Creates a new repository instance. 
      * 
      * @return the created repository
-     * @see BugtrackingFactory
+     * @see BugtrackingSupport
+     * @since 1.85
      */
     public Repository createRepository();
 
+    /**
+     * Register a BugtrackingConnector in the IDE.
+     * 
+     * @author Tomas Stupka
+     * @see org.openide.util.lookup.ServiceProvider
+     * @since 1.85
+     */
     @Retention(RetentionPolicy.SOURCE)
     @Target({ElementType.TYPE, ElementType.METHOD})
     public @interface Registration {    
@@ -81,14 +105,16 @@ public interface BugtrackingConnector {
         /**
          * Returns a unique ID for this connector
          *
-         * @return
+         * @return id
+         * @since 1.85
          */
         public String id();
 
         /**
          * Returns the icon path for this connector
          *
-         * @return
+         * @return the icon path
+         * @since 1.85
          */
         public String iconPath() default "";
 
@@ -96,6 +122,7 @@ public interface BugtrackingConnector {
          * Returns the display name for this connector
          *
          * @return the display name for this connector
+         * @since 1.85
          */
         public String displayName();
 
@@ -103,16 +130,19 @@ public interface BugtrackingConnector {
          * Returns tooltip for this connector
          *
          * @return tooltip for this connector
+         * @since 1.85
          */
         public String tooltip();    
         
         /**
          * Determines if this connector provides the possibility for a user 
-         * to create, edit or removal of repositories.<br/>
+         * to create, edit or removal of repositories.
+         * <p>
          * Typically the expected value for a connector is to return <code>true</code>. 
-         * 
+         * </p>
          * @return <code>true</code> if this connector provides the possibility 
          *         to create, edit or removal of repositories. Otherwise <code>false</code>.
+         * @since 1.85
          */
         public boolean providesRepositoryManagement() default true;
         

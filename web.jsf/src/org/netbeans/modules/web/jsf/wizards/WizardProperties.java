@@ -69,4 +69,5 @@ public class WizardProperties {
     public static final String PAGINATION_TEMPLATE = "PaginationHelper.ftl"; // NOI18N
     public static final String UTIL_TEMPLATE = "JsfUtil.ftl"; // NOI18N
     public static final String BUNDLE_TEMPLATE = "bundle.ftl"; // NOI18N
+    public static final String BASE_TEMPLATE = "template.ftl"; // NOI18N
 }

@@ -39,24 +39,26 @@ package org.netbeans.modules.jira;
 
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
-import java.util.EnumSet;
-import org.netbeans.modules.bugtracking.team.spi.TeamQueryProvider;
-import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.QueryController;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.repository.JiraRepository;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class JiraQueryProvider implements TeamQueryProvider<JiraQuery, NbJiraIssue> {
+public class JiraQueryProvider implements QueryProvider<JiraQuery, NbJiraIssue> {
 
     @Override
     public String getDisplayName(JiraQuery query) {
-        return query.getDisplayName();
+        String name = query.getDisplayName();
+        return name != null ? 
+                name + (needsAndHasNoLogin(query) ? " " +  NbBundle.getMessage(JiraQueryProvider.class, "LBL_NotLoggedIn") : "") :
+                null;
     }
 
     @Override
@@ -67,11 +69,6 @@ public class JiraQueryProvider implements TeamQueryProvider<JiraQuery, NbJiraIss
     @Override
     public QueryController getController(JiraQuery query) {
         return query.getController();
-    }
-
-    @Override
-    public boolean isSaved(JiraQuery query) {
-        return query.isSaved();
     }
 
     @Override
@@ -111,6 +108,9 @@ public class JiraQueryProvider implements TeamQueryProvider<JiraQuery, NbJiraIss
 
     @Override
     public void refresh(JiraQuery query) {
+        if(needsAndHasNoLogin(query)) {
+            return;
+        }        
         query.getController().refresh(true);
     }
     
@@ -118,14 +118,12 @@ public class JiraQueryProvider implements TeamQueryProvider<JiraQuery, NbJiraIss
      * Kenai
      ********************************************************************************/
     
-    @Override
-    public void setOwnerInfo(JiraQuery q, OwnerInfo info) {
-        // meant only for nb bugzilla
-    }
-    
-    @Override
-    public boolean needsLogin(JiraQuery query) {
-        JiraRepository repository = query.getRepository();
-        return query == ((KenaiRepository) repository).getMyIssuesQuery();
-    }
+    private boolean needsAndHasNoLogin(JiraQuery query) {
+        JiraRepository repo =  query.getRepository();
+        if(repo instanceof KenaiRepository ) {
+            KenaiRepository kenaiRepo = (KenaiRepository) repo;
+            return kenaiRepo.isMyIssues(query) && !kenaiRepo.isLoggedIn();
+        }
+        return false;
+    }    
 }

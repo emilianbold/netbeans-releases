@@ -44,19 +44,17 @@ package org.netbeans.modules.bugtracking.ui.selectors;
 
 
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.DelegatingConnector;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
-import org.netbeans.modules.bugtracking.jira.JiraUpdater;
+import org.netbeans.modules.bugtracking.jira.FakeJiraConnector;
 import org.netbeans.modules.bugtracking.tasks.DashboardTopComponent;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.team.ide.spi.IDEServices;
 
 /**
  *
@@ -72,7 +70,6 @@ public class RepositorySelector {
     public RepositoryImpl create(boolean selectNode) {
         DelegatingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
         List<DelegatingConnector> l = new ArrayList<DelegatingConnector>(connectors.length);
-        Iterator<DelegatingConnector> it = l.iterator();
         for(DelegatingConnector dc : connectors) {
             if(dc.providesRepositoryManagement()) {
                 l.add(dc);
@@ -81,17 +78,14 @@ public class RepositorySelector {
         connectors = l.toArray(new DelegatingConnector[l.size()]);
         connectors = addJiraProxyIfNeeded(connectors);
         selectorPanel.setConnectors(connectors);
-        if(!selectorPanel.open()) {
+        boolean didCreate = selectorPanel.create();
+        final RepositoryImpl repo = selectorPanel.getRepository();        
+        if(!didCreate) {
+            repo.cancelChanges();
             return null;
         }
-        final RepositoryImpl repo = selectorPanel.getRepository();
-        try {
-            repo.applyChanges();
-            RepositoryRegistry.getInstance().addRepository(repo);
-        } catch (IOException ex) {
-            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
-            return null;
-        }        
+        repo.applyChanges();
+        RepositoryRegistry.getInstance().addRepository(repo);
         if(selectNode) {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
@@ -104,29 +98,30 @@ public class RepositorySelector {
     }
 
     public boolean edit(RepositoryImpl repository, String errorMessage) {
-        if(!selectorPanel.edit(repository, errorMessage)) {
-            return false;
-        }
+        boolean didEdit = selectorPanel.edit(repository, errorMessage);
         RepositoryImpl repo = selectorPanel.getRepository();
-        try {
-            repo.applyChanges();
-            // no repo on edit
-            RepositoryRegistry.getInstance().addRepository(repo);
-        } catch (IOException ex) {
-            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+        if(!didEdit) {
+            repo.cancelChanges();
             return false;
         }
+        repo.applyChanges();
+        // no repo on edit
+        RepositoryRegistry.getInstance().addRepository(repo);
         return true;
     }
 
     private DelegatingConnector[] addJiraProxyIfNeeded(DelegatingConnector[] connectors) {
-        if(!BugtrackingUtil.isJiraInstalled() && JiraUpdater.supportsDownload()) {
+        if(!BugtrackingUtil.isJiraInstalled() && supportsDownload()) {
             DelegatingConnector[] ret = new DelegatingConnector[connectors.length + 1];
             System.arraycopy(connectors, 0, ret, 0, connectors.length);
-            ret[ret.length - 1] = JiraUpdater.getInstance().getConnector();
+            ret[ret.length - 1] = FakeJiraConnector.getConnector();
             connectors = ret;
         }
         return connectors;
     }
 
+    static boolean supportsDownload() {
+        IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
+        return ideServices != null && ideServices.providesPluginUpdate();
+    }    
 }

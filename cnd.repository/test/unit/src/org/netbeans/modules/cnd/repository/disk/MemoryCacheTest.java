@@ -46,7 +46,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.cnd.modelimpl.test.ModelImplBaseTestCase;
 import org.netbeans.modules.cnd.repository.spi.Key;
-import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 import org.openide.util.RequestProcessor;
@@ -174,7 +173,7 @@ public class MemoryCacheTest extends ModelImplBaseTestCase {
 
     private static final class MyPersistent implements Persistent {
 
-        private double d;
+        private final double d;
 
         private MyPersistent(double d) {
             this.d = d;
@@ -188,20 +187,38 @@ public class MemoryCacheTest extends ModelImplBaseTestCase {
         private MyKey(int i) {
             this.i = i;
         }
+        
+        @Override
+        public int hashCode(int unitID) {
+            return unitID;
+        }
 
         @Override
         public int hashCode() {
-            return i;
+            return hashCode(i);
         }
+
+        @Override
+        public final boolean equals(int thisUnitID, Key object, int objectUnitID) {
+            return thisUnitID == objectUnitID;
+        }
+
+        @Override
+        public final boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final MyKey other = (MyKey) obj;
+            return equals(i, other, other.i);
+        }
+
 
         @Override
         public int getUnitId() {
             return 1;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            return ((MyKey) obj).i == i;
         }
 
         @Override
@@ -242,11 +259,6 @@ public class MemoryCacheTest extends ModelImplBaseTestCase {
         @Override
         public boolean hasCache() {
             return false;
-        }
-
-        @Override
-        public KeyDataPresentation getDataPresentation() {
-            throw new UnsupportedOperationException("Not supported yet.");
         }
     }
 }

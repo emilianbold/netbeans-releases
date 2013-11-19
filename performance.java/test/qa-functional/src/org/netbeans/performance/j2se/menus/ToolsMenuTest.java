@@ -41,70 +41,75 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se.menus;
 
+import junit.framework.Test;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
-
 import org.netbeans.performance.j2se.setup.J2SESetup;
 
 /**
  * Performance test for tools menu invoked when a various node is selected.</p>
- * <p>Each test method reads the label of tested menu.
- * During @link prepare given node is selected and menu is pushed using mouse.
- * The menu is then closed using escape key.
+ * <p>
+ * Each test method reads the label of tested menu. During @link prepare given
+ * node is selected and menu is pushed using mouse. The menu is then closed
+ * using escape key.
+ *
  * @author Radim Kubacki, mmirilovic@netbeans.org
  */
 public class ToolsMenuTest extends MainMenuTest {
-    
+
     protected static Node dataObjectNode;
-    
-    /** Creates a new instance of ToolsMenu */
+
+    /**
+     * Creates a new instance of ToolsMenu
+     *
+     * @param testName test name
+     */
     public ToolsMenuTest(String testName) {
         super(testName);
         expectedTime = UI_RESPONSE;
     }
-    
-    /** Creates a new instance of ToolsMenu */
+
+    /**
+     * Creates a new instance of ToolsMenu
+     *
+     * @param testName test name
+     * @param performanceDataName data name
+     */
     public ToolsMenuTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = UI_RESPONSE;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(ToolsMenuTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(J2SESetup.class, "testCloseMemoryToolbar", "testOpenDataProject")
+                .addTest(ToolsMenuTest.class)
+                .suite();
     }
 
-    
-    public void testJavaToolsMenu(){
+    public void testJavaToolsMenu() {
         testToolsMenu("Main.java");
     }
-    
-    public void testXmlToolsMenu(){
+
+    public void testXmlToolsMenu() {
         testToolsMenu("xmlfile.xml");
     }
-    
-    public void testTxtToolsMenu(){
+
+    public void testTxtToolsMenu() {
         testToolsMenu("textfile.txt");
     }
-    
+
     @Override
     public void prepare() {
         if (dataObjectNode != null) {
             dataObjectNode.select();
         }
     }
-    
-    private void testToolsMenu(String file) {
-        dataObjectNode = new Node(new SourcePackagesNode("PerformanceTestData"),"org.netbeans.test.performance|" + file);
-        super.testMenu("org.netbeans.core.ui.resources.Bundle","Menu/Tools");
-    }
 
+    private void testToolsMenu(String file) {
+        dataObjectNode = new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|" + file);
+        super.testMenu("org.netbeans.core.ui.resources.Bundle", "Menu/Tools");
+    }
 }

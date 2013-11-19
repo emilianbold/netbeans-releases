@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.22.1
+#Version 1.27.1
 
 CLSS public abstract interface java.lang.Iterable<%0 extends java.lang.Object>
 meth public abstract java.util.Iterator<{java.lang.Iterable%0}> iterator()
@@ -44,6 +44,8 @@ hfds description,displayName,optionsPath
 
 CLSS public final static org.netbeans.spi.tasklist.PushTaskScanner$Callback
  outer org.netbeans.spi.tasklist.PushTaskScanner
+meth public boolean isCurrentEditorScope()
+meth public boolean isObserved()
 meth public void clearAllTasks()
 meth public void finished()
 meth public void setTasks(java.util.List<? extends org.netbeans.spi.tasklist.Task>)

@@ -176,18 +176,9 @@ public class InitAction implements ActionListener, HelpCtx.Provider {
                     if (Thread.interrupted()) {
                         return;
                     }
-                    // children can't be versioned
-                    File[] children = dir.listFiles();
-                    for (File f : children) {
-                        File repoRoot = null;
-                        if (f.isDirectory() && (repoRoot = Git.getInstance().getRepositoryRoot(f)) != null) {
-                            valid = false;
-                            if (LOG.isLoggable(Level.FINE) && dir.exists()) {
-                                LOG.log(Level.FINE, "InitAction.selectRootToManage.validateTask: file is versioned: {0}, root: {1}", new Object[]{f, repoRoot}); //NOI18N
-                            }
-                            errorMessage = NbBundle.getMessage(InitAction.class, "LBL_Init_Panel_Error_Versioned"); //NOI18N
-                            break;
-                        }
+                    if (dir.equals(Git.getInstance().getRepositoryRoot(dir))) {
+                        valid = false;
+                        errorMessage = NbBundle.getMessage(InitAction.class, "LBL_Init_Panel_Error_Versioned"); //NOI18N
                     }
                 }
                 if (Thread.interrupted()) {

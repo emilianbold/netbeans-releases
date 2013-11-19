@@ -108,10 +108,23 @@ public class APITestQuery extends TestQuery {
                 
                 @Override public void closed() {  }                
                 @Override public HelpCtx getHelpCtx() { return null; }
-
                 @Override
                 public boolean providesMode(QueryController.QueryMode mode) {
                     return true;
+                }
+                @Override
+                public boolean saveChanges(String name) {
+                    return true;
+                }
+                @Override
+                public boolean discardUnsavedChanges() {
+                    return true;
+                }
+                @Override public void addPropertyChangeListener(PropertyChangeListener l) { }
+                @Override public void removePropertyChangeListener(PropertyChangeListener l) { }
+                 @Override
+                public boolean isChanged() {
+                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
                 }
             }; 
         }
@@ -125,7 +138,7 @@ public class APITestQuery extends TestQuery {
 
     @Override
     public Collection<APITestIssue> getIssues() {
-        return Arrays.asList(repo.getIssues(new String[] {APITestIssue.ID_1}));
+        return repo.getIssues(APITestIssue.ID_1);
     }
 
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
@@ -147,7 +160,7 @@ public class APITestQuery extends TestQuery {
     @Override
     public void refresh() {
         wasRefreshed = true;
-        support.firePropertyChange(QueryProvider.EVENT_QUERY_ISSUES_CHANGED, null, null);
+        support.firePropertyChange(QueryProvider.EVENT_QUERY_REFRESHED, null, null);
     }
 
     @Override

@@ -39,6 +39,7 @@ package org.netbeans.modules.jira;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
@@ -66,9 +67,8 @@ public class JiraIssueProvider implements IssueProvider<NbJiraIssue> {
     }
 
     @Override
-    public String[] getSubtasks(NbJiraIssue data) {
-        List<String> l = data.getSubtaskID();
-        return l.toArray(new String[l.size()]);
+    public Collection<String> getSubtasks(NbJiraIssue data) {
+        return data.getSubtaskID();
     }
     
     @Override
@@ -97,7 +97,7 @@ public class JiraIssueProvider implements IssueProvider<NbJiraIssue> {
     }
 
     @Override
-    public void attachPatch(NbJiraIssue data, File file, String description) {
+    public void attachFile(NbJiraIssue data, File file, String description, boolean isPatch) {
         data.attachPatch(file, description);
     }
 
@@ -116,13 +116,4 @@ public class JiraIssueProvider implements IssueProvider<NbJiraIssue> {
         data.addPropertyChangeListener(listener);
     }
     
-    @Override
-    public boolean submit (NbJiraIssue data) {
-        return data.submitAndRefresh();
-    }
-
-    @Override
-    public void discardOutgoing(NbJiraIssue data) {
-        data.discardLocalEdits();
-    }
 }

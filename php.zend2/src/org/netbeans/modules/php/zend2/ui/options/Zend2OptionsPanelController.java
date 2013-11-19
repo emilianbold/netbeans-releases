@@ -57,16 +57,16 @@ import org.openide.util.Lookup;
 /**
  * Zend 2 IDE Options.
  */
-@OptionsPanelController.SubRegistration(
-    location=UiUtils.OPTIONS_PATH,
-    id=Zend2OptionsPanelController.OPTIONS_SUBPATH,
+@UiUtils.PhpOptionsPanelRegistration(
+    id=Zend2OptionsPanelController.ID,
     displayName="#Zend2OptionsPanelController.options.name",
 //    toolTip="#LBL_OptionsTooltip"
     position=299
 )
 public class Zend2OptionsPanelController extends OptionsPanelController implements ChangeListener {
 
-    public static final String OPTIONS_SUBPATH = "Zend2"; // NOI18N
+    static final String ID = "Zend2"; // NOI18N
+    public static final String OPTIONS_SUBPATH = UiUtils.FRAMEWORKS_AND_TOOLS_SUB_PATH+"/"+ID; // NOI18N
 
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 

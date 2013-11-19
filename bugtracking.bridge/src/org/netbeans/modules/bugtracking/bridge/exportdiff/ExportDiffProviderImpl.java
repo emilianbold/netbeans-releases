@@ -43,6 +43,8 @@
 package org.netbeans.modules.bugtracking.bridge.exportdiff;
 
 import java.io.File;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
@@ -51,8 +53,9 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.bugtracking.api.Issue;
-import org.netbeans.modules.bugtracking.util.OwnerUtils;
 import org.netbeans.modules.versioning.util.ExportDiffSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -62,20 +65,27 @@ import org.netbeans.modules.versioning.util.ExportDiffSupport;
 public class ExportDiffProviderImpl extends ExportDiffSupport.ExportDiffProvider implements DocumentListener, ChangeListener {
 
     private AttachPanel panel;
-    private File[] files;
-    private static Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.exportdiff.AttachIssue");   // NOI18N
+    private FileObject[] files;
+    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.exportdiff.AttachIssue");   // NOI18N
 
     public ExportDiffProviderImpl() {
     }
 
     @Override
     protected void setContext(File[] files) {
-        this.files = files;
+        List<FileObject> fs = new LinkedList<FileObject>();
+        for (File file : files) {
+            FileObject fo = FileUtil.toFileObject(file);
+            if(fo != null) {
+                fs.add(fo);
+            }
+        }
+        this.files = fs.toArray(new FileObject[fs.size()]);
     }
 
     @Override
     public void handleDiffFile(File file) {
-        LOG.log(Level.FINE, "handeDiff start for " + file); // NOI18N
+        LOG.log(Level.FINE, "handeDiff start for {0}", file); // NOI18N
 
         Issue issue = panel.getIssue();
         if (issue == null) {
@@ -83,20 +93,17 @@ public class ExportDiffProviderImpl extends ExportDiffSupport.ExportDiffProvider
             return;
         }
         
-        issue.attachPatch(file, panel.descriptionTextField.getText());
+        issue.attachFile(file, panel.descriptionTextField.getText(), true);
         issue.open();
 
-        OwnerUtils.setFirmAssociations(files, panel.getRepository());
-                
-        LOG.log(Level.FINE, "handeDiff end for " + file); // NOI18N
+        LOG.log(Level.FINE, "handeDiff end for {0}", file); // NOI18N
     }
 
     @Override
     public JComponent createComponent() {
         assert files != null;
-        panel = new AttachPanel(this);
+        panel = new AttachPanel(this, files.length > 0 ? files[0] : null);
         panel.descriptionTextField.getDocument().addDocumentListener(this);        
-        panel.init(files.length > 0 ? files[0] : null);
         return panel;
     }
 
@@ -106,12 +113,12 @@ public class ExportDiffProviderImpl extends ExportDiffSupport.ExportDiffProvider
                 panel.getIssue() != null;
     }
 
-    public void insertUpdate(DocumentEvent e)  { fireDataChanged(); }
-    public void removeUpdate(DocumentEvent e)  { fireDataChanged(); }
-    public void changedUpdate(DocumentEvent e) { fireDataChanged(); }
+    @Override public void insertUpdate(DocumentEvent e)  { fireDataChanged(); }
+    @Override public void removeUpdate(DocumentEvent e)  { fireDataChanged(); }
+    @Override public void changedUpdate(DocumentEvent e) { fireDataChanged(); }
 
     @Override
     public void stateChanged(ChangeEvent e) {
-            fireDataChanged();
+        fireDataChanged();
     }
 }

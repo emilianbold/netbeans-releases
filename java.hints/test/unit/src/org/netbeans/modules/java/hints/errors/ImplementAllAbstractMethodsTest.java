@@ -46,6 +46,7 @@ import com.sun.source.util.TreePath;
 import java.util.List;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.errors.ImplementAllAbstractMethods.FixImpl;
+import org.netbeans.modules.java.hints.errors.ImplementAllAbstractMethods.ImplementOnEnumValues;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsTestBase;
 import org.netbeans.spi.editor.hints.Fix;
 
@@ -159,6 +160,28 @@ public class ImplementAllAbstractMethodsTest extends ErrorHintsTestBase {
                         "}\n").replaceAll("[ \t\n]+", " "));
     }
     
+    public void testEnumWithAbstractMethods() throws Exception {
+        performFixTest("test/Test.java",
+                        "package test;\n" +
+                        "public enum Test {\n" +
+                        "    A;\n" +
+                        "    public abstract int boo();\n" +
+                        "}",
+                       -1,
+                       "IOEV",
+                       ("package test;\n" +
+                        "public enum Test {\n" +
+                        "    A {\n" +
+                        "\n" +
+                        "        @Override\n" +
+                        "        public int boo() {\n" +
+                        "            throw new UnsupportedOperationException(\"Not supported yet.\"); //To change body of generated methods, choose Tools | Templates.\n" +
+                        "        }\n" +
+                        "    };\n" +
+                        "    public abstract int boo();\n" +
+                        "}").replaceAll("[ \t\n]+", " "));
+    }
+    
     @Override
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws Exception {
         return new ImplementAllAbstractMethods().run(info, null, pos, path, null);
@@ -168,6 +191,8 @@ public class ImplementAllAbstractMethodsTest extends ErrorHintsTestBase {
     protected String toDebugString(CompilationInfo info, Fix f) {
         if (f instanceof FixImpl) {
             return ((FixImpl) f).toDebugString();
+        } else if (f instanceof ImplementOnEnumValues) {
+            return "IOEV";
         }
         return super.toDebugString(info, f);
     }

@@ -149,7 +149,7 @@ public class UtilTestCase extends NbTestCase {
                     }
                 }
             }
-            if(System.currentTimeMillis() - t > 5000) {
+            if(System.currentTimeMillis() - t > 50000) {
                 break;
             }
         }
@@ -170,7 +170,7 @@ public class UtilTestCase extends NbTestCase {
     }
     
     private APITestIssue getAPIIssue(String id) {
-        return getApiRepo().getIssues(new String[] {id})[0];
+        return getApiRepo().getIssues(new String[] {id}).iterator().next();
     }
 
     private Issue getIssue(String id) {

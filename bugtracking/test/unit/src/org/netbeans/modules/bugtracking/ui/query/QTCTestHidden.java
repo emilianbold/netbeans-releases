@@ -43,6 +43,7 @@
 package org.netbeans.modules.bugtracking.ui.query;
 
 import java.awt.Image;
+import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -257,7 +258,20 @@ public class QTCTestHidden extends NbTestCase {
 
             @Override public void opened() { }
             @Override public void closed() { }
-
+            @Override
+            public boolean saveChanges(String name) {
+                return true;
+            }
+            @Override
+            public boolean discardUnsavedChanges() {
+                return true;
+            }
+            @Override public void addPropertyChangeListener(PropertyChangeListener l) { }
+            @Override public void removePropertyChangeListener(PropertyChangeListener l) { }
+            @Override
+            public boolean isChanged() {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }    
         };
         private boolean saved;
 

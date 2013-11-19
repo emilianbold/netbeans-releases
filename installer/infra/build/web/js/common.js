@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -53,10 +53,8 @@ var FILES = new Array();
 
 PLATFORM_IDS   	     [0] = "windows";
 PLATFORM_IDS   	     [1] = "linux";
-PLATFORM_IDS         [2] = "solaris-x86";
-PLATFORM_IDS         [3] = "solaris-sparc";
-PLATFORM_IDS         [4] = "macosx";
-PLATFORM_IDS         [5] = "zip";
+PLATFORM_IDS         [2] = "macosx";
+PLATFORM_IDS         [3] = "zip";
 /*
 // Commented since NBI installers are not used for now
 PLATFORM_IDS         [4] = "macosx-x86";
@@ -391,8 +389,6 @@ function get_file_name_short(platform, option, language) {
     }
     if (platform == "windows") {
         file_name += ".exe";
-    } else if ((platform == "macosx-x86") || (platform == "macosx-ppc")) {
-        file_name += ".tgz";
     } else if (platform == "macosx") {
 	file_name += ".dmg";
     } else if(platform == "zip"){

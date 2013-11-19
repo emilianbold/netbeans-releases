@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.lib.api;
 
+import java.util.Collection;
 import org.netbeans.modules.csl.api.Error;
 
 /**
@@ -51,4 +52,23 @@ public interface FilterableError extends Error {
     
     public boolean isFiltered();
     
+    /**
+     * Multiple enable filter actions can be provided.
+     * @return 
+     */
+    public Collection<SetFilterAction> getEnableFilterActions();
+    
+    /**
+     * Once one of the enable filter actions runs a counterpart
+     * to disable it is available.
+     * 
+     * @return 
+     */
+    public SetFilterAction getDisableFilterAction();
+    
+    public static interface SetFilterAction extends Runnable {
+
+        public String getDisplayName();
+        
+    }
 }

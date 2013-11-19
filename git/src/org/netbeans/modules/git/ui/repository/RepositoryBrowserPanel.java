@@ -93,11 +93,17 @@ import org.netbeans.modules.git.ui.branch.DeleteBranchAction;
 import org.netbeans.modules.git.ui.branch.SetTrackingAction;
 import org.netbeans.modules.git.ui.checkout.CheckoutRevisionAction;
 import org.netbeans.modules.git.ui.fetch.FetchAction;
+import org.netbeans.modules.git.ui.fetch.PullAction;
 import org.netbeans.modules.git.ui.merge.MergeRevisionAction;
+import org.netbeans.modules.git.ui.push.PushAction;
+import org.netbeans.modules.git.ui.push.PushMapping;
+import org.netbeans.modules.git.ui.push.PushToUpstreamAction;
 import org.netbeans.modules.git.ui.repository.remote.RemoveRemoteConfig;
 import org.netbeans.modules.git.ui.tag.CreateTagAction;
 import org.netbeans.modules.git.ui.tag.ManageTagsAction;
 import org.netbeans.modules.git.utils.GitUtils;
+import org.netbeans.modules.versioning.spi.VCSAnnotator;
+import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerManager.Provider;
@@ -573,9 +579,8 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
 
         @Override
         protected Action[] getPopupActions (boolean context) {
-            return new Action[] {
-                SystemAction.get(FetchAction.class)
-            };
+            VCSContext ctx = VCSContext.forNodes(new Node[] { this });
+            return Git.getInstance().getVCSAnnotator().getActions(ctx, VCSAnnotator.ActionDestination.PopupMenu);
         }
 
         @Override
@@ -1556,6 +1561,38 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                     action.fetch(repository, getLookup().lookup(GitRemoteConfig.class));
                 }
             });
+            actions.add(new AbstractAction(NbBundle.getMessage(PullAction.class, "LBL_PullAction_PopupName")) { //NOI18N
+                @Override
+                public void actionPerformed (ActionEvent e) {
+                    PullAction action = SystemAction.get(PullAction.class);
+                    GitBranch tracked = getTrackedBranch(RepositoryInfo.getInstance(currRepository));
+                    action.pull(currRepository, getLookup().lookup(GitRemoteConfig.class),
+                            tracked == null ? null : tracked.getName());
+                }
+            });
+            actions.add(null);
+            actions.add(new AbstractAction(NbBundle.getMessage(PushAction.class, "LBL_PushAction_PopupName")) { //NOI18N
+                @Override
+                public void actionPerformed (ActionEvent e) {
+                    PushAction action = SystemAction.get(PushAction.class);
+                    RepositoryInfo info = RepositoryInfo.getInstance(currRepository);
+                    GitBranch activeBranch = info.getActiveBranch();
+                    GitBranch tracked = getTrackedBranch(info);
+                    if (tracked != null) {
+                        GitRemoteConfig remote = getLookup().lookup(GitRemoteConfig.class);
+                        List<PushMapping> pushMappings = new LinkedList<PushMapping>();
+                        String remoteBranchName = PushToUpstreamAction.guessRemoteBranchName(
+                                remote.getFetchRefSpecs(), tracked.getName(), remote.getRemoteName());
+                        if (remoteBranchName != null) {
+                            pushMappings.add(new PushMapping.PushBranchMapping(remoteBranchName, tracked.getId(), activeBranch, false, false));
+                            action.push(currRepository, remote, pushMappings);
+                            return;
+                        }
+                    }
+                    action.push(currRepository);
+                }
+            });
+            actions.add(null);
             actions.add(new AbstractAction(NbBundle.getMessage(RepositoryBrowserPanel.class, "LBL_RepositoryPanel.RemoteNode.remove")) { //NOI18N
                 @Override
                 public void actionPerformed (ActionEvent e) {
@@ -1632,7 +1669,26 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         protected Action[] getPopupActions (boolean context) {
             List<Action> actions = new LinkedList<Action>();
             if (uri.push) {
-                // push action
+                actions.add(new AbstractAction(NbBundle.getMessage(PushAction.class, "LBL_PushAction_PopupName")) { //NOI18N
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        PushAction action = SystemAction.get(PushAction.class);
+                        RepositoryInfo info = RepositoryInfo.getInstance(currRepository);
+                        GitBranch activeBranch = info.getActiveBranch();
+                        GitBranch tracked = getTrackedBranch(info);
+                        if (tracked != null) {
+                            List<PushMapping> pushMappings = new LinkedList<PushMapping>();
+                            String remoteBranchName = PushToUpstreamAction.guessRemoteBranchName(
+                                    remote.getFetchRefSpecs(), tracked.getName(), remote.getRemoteName());
+                            if (remoteBranchName != null) {
+                                pushMappings.add(new PushMapping.PushBranchMapping(remoteBranchName, tracked.getId(), activeBranch, false, false));
+                                action.push(currRepository, uri.uri, pushMappings, remote.getFetchRefSpecs(), null);
+                                return;
+                            }
+                        }
+                        action.push(currRepository);
+                    }
+                });
             } else {
                 actions.add(new AbstractAction(NbBundle.getMessage(FetchAction.class, "LBL_FetchAction_PopupName")) { //NOI18N
                     @Override
@@ -1641,11 +1697,35 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                         action.fetch(currRepository, uri.uri, remote.getFetchRefSpecs(), null);
                     }
                 });
+                actions.add(new AbstractAction(NbBundle.getMessage(PullAction.class, "LBL_PullAction_PopupName")) { //NOI18N
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        PullAction action = SystemAction.get(PullAction.class);
+                        GitBranch tracked = getTrackedBranch(RepositoryInfo.getInstance(currRepository));
+                        action.pull(currRepository, uri.uri, remote.getFetchRefSpecs(),
+                                tracked == null ? null : tracked.getName(), null);
+                    }
+                });
             }
             return actions.toArray(new Action[actions.size()]);
         }
     }
     //</editor-fold>
+
+    private static GitBranch getTrackedBranch (RepositoryInfo info) {
+        GitBranch activeBranch = info.getActiveBranch();
+        if (activeBranch == null) {
+            return null;
+        }
+        GitBranch trackedBranch = activeBranch.getTrackedBranch();
+        if (trackedBranch == null) {
+            return null;
+        }
+        if (!trackedBranch.isRemote()) {
+            return null;
+        }
+        return trackedBranch;
+    }
     
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {

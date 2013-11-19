@@ -111,6 +111,19 @@ public class PullAction extends SingleRepositoryAction {
         pull(repository);
     }
     
+    public void pull (final File repository, GitRemoteConfig remote, String branchToMerge) {
+        if (remote.getUris().size() != 1) {
+            Utils.post(new Runnable () {
+                @Override
+                public void run () {
+                    pull(repository);
+                }
+            });
+        } else {
+            pull(repository, remote.getUris().get(0), remote.getFetchRefSpecs(), branchToMerge, null);
+        }
+    }
+    
     private void pull (final File repository) {
         RepositoryInfo info = RepositoryInfo.getInstance(repository);
         try {
@@ -193,7 +206,11 @@ public class PullAction extends SingleRepositoryAction {
                             getLogger().outputLine(Bundle.MSG_PullAction_branchDeleted(branch));
                         }
                         setProgress(Bundle.MSG_PullAction_fetching());
-                        Map<String, GitTransportUpdate> fetchResult = client.fetch(target, fetchRefSpecs, getProgressMonitor());
+                        Map<String, GitTransportUpdate> fetchResult = FetchAction.fetchRepeatedly(
+                                client, getProgressMonitor(), target, fetchRefSpecs);
+                        if (isCanceled()) {
+                            return null;
+                        }
                         FetchUtils.log(repository, fetchResult, getLogger());
                         if (isCanceled() || branchToMerge == null) {
                             return null;

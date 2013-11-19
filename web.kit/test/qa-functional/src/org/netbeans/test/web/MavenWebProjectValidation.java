@@ -41,7 +41,6 @@ import java.awt.Component;
 import java.awt.Container;
 import java.io.IOException;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JTextField;
 import junit.framework.Test;
 import org.netbeans.jellytools.*;
@@ -51,7 +50,7 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
@@ -120,7 +119,7 @@ public class MavenWebProjectValidation extends WebProjectValidation {
         serverStep.finish();
         // need to increase time to wait for project node
         long oldTimeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 120000);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 240000);
         try {
             if (JAVA_EE_7.equals(getEEVersion())) {
                 verifyWebPagesNode("index.html");
@@ -130,15 +129,23 @@ public class MavenWebProjectValidation extends WebProjectValidation {
         } finally {
             JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", oldTimeout);
         }
-        // disable copy on save
+        // disable compile on save
         new ActionNoBlock(null, "Properties").perform(new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME));
         // "Project Properties"
         NbDialogOperator propertiesDialogOper = new NbDialogOperator("Project Properties");
         // select "Build|Compile" category
         new Node(new JTreeOperator(propertiesDialogOper), "Build|Compile").select();
-        // choose Disable in combo box
-        JLabelOperator cosLabel = new JLabelOperator(propertiesDialogOper, "Compile On Save:");
-        new JComboBoxOperator((JComboBox) cosLabel.getLabelFor()).selectItem("Disable");
+        // untick checkbox
+        JCheckBoxOperator cosCheckBox = new JCheckBoxOperator(propertiesDialogOper,
+                Bundle.getStringTrimmed("org.netbeans.modules.maven.customizer.Bundle",
+                        "CompilePanel.cbCompileOnSave.text"));
+        cosCheckBox.doClick();
+        // not display browser on run
+        new Node(new JTreeOperator(propertiesDialogOper),
+                Bundle.getString("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_Config_Run")).select();
+        new JCheckBoxOperator(propertiesDialogOper,
+                Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.customizer.Bundle",
+                        "LBL_CustomizeRun_DisplayBrowser_JCheckBox")).setSelected(false);
         // confirm properties dialog
         propertiesDialogOper.ok();
         waitScanFinished();
@@ -154,7 +161,21 @@ public class MavenWebProjectValidation extends WebProjectValidation {
 
     @Override
     public void waitBuildSuccessful() {
-        OutputTabOperator console = new OutputTabOperator(PROJECT_NAME);
+        new Action(Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle", "Menu/Window")
+                + "|" + Bundle.getStringTrimmed("org.netbeans.core.output2.Bundle", "OutputWindow"),
+                null).performMenu();
+        String outputName = PROJECT_NAME;
+        String runningTest = getName();
+        if (runningTest.contains("testRunJSP")) {
+            outputName = "pageRunJSP";
+        } else if (runningTest.contains("testViewServlet")) {
+            outputName = "pageViewServlet";
+        } else if (runningTest.contains("testRunServlet")) {
+            outputName = "Servlet1";
+        } else if (runningTest.contains("testRunTag")) {
+            outputName = "pageRunTag";
+        }
+        OutputTabOperator console = new OutputTabOperator(outputName);
         console.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 180000);
         console.waitText("BUILD SUCCESS");
     }

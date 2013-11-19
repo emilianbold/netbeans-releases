@@ -53,6 +53,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.logging.Level;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.IssueImpl;
@@ -60,6 +61,7 @@ import org.netbeans.modules.bugtracking.TestKit;
 import org.netbeans.modules.bugtracking.api.IssueQuickSearch;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
+import org.netbeans.modules.bugtracking.ui.search.QuickSearchPanel;
 import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.HookType;
 import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.PushOperation;
 import org.netbeans.modules.versioning.hooks.HgHook;
@@ -99,7 +101,6 @@ public class HgHookTest extends NbTestCase {
         Thread.sleep(2000);
 
         HookPanel panel = getPanel(hook, getContext());
-        assertTrue(panel.pushRadioButton.isVisible());
         assertTrue(panel.pushRadioButton.isVisible());
 
         assertTrue(panel.linkCheckBox.isSelected());
@@ -215,6 +216,8 @@ public class HgHookTest extends NbTestCase {
     }
 
     public void testAfterCommitLinkResolveAfterPush() throws MalformedURLException, CoreException, IOException, InterruptedException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+        HookIssue.getInstance().reset();
+        
         HgHookImpl hook = getHook();
 
         VCSHooksConfig.getInstance(HookType.HG).setAfterCommit(false); // PUSH!
@@ -267,24 +270,29 @@ public class HgHookTest extends NbTestCase {
         return new HgHookContext(new File[]{new File(getWorkDir(), "f")}, "msg", new HgHookContext.LogEntry("msg", "author", changeset, new Date(System.currentTimeMillis())));
     }
 
-    private void setRepository(Repository repository, HookPanel panel) {
-        DefaultComboBoxModel model = new DefaultComboBoxModel(new Repository[] {repository});
-        panel.repositoryComboBox.setModel(model);
-        panel.repositoryComboBox.setSelectedItem(repository);
+    private void setRepository(Repository repository, HookPanel panel) throws IllegalArgumentException, IllegalAccessException {
+        Field[] fs = panel.qs.getClass().getDeclaredFields();
+        for (Field f : fs) {
+            if(f.getType() == QuickSearchPanel.class) {
+                f.setAccessible(true);
+                QuickSearchPanel qsp = (QuickSearchPanel) f.get(panel.qs);
+                fs = qsp.getClass().getDeclaredFields();
+                for (Field f2 : fs) {
+                    if(f2.getType() == JComboBox.class) {
+                        f2.setAccessible(true);
+                        JComboBox cmb = (JComboBox) f2.get(qsp);
+                        DefaultComboBoxModel model = new DefaultComboBoxModel(new Repository[] {repository});
+                        cmb.setModel(model);
+                        cmb.setSelectedItem(repository);
+                        return;
+                    }
+                }
+            }
+        }
     }
 
     private void setIssue(Repository repository, HookPanel panel) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
-        Field f = panel.getClass().getDeclaredField("qs");
-        f.setAccessible(true);
-        IssueQuickSearch qis = (IssueQuickSearch) f.get(panel);
-        f = qis.getClass().getDeclaredField("bar");
-        f.setAccessible(true);
-        QuickSearchComboBar qs = (QuickSearchComboBar) f.get(qis);
-        Method m = qs.getClass().getDeclaredMethod("setIssue", IssueImpl.class);
-        m.setAccessible(true);
-        HookIssue.getInstance().reset();
-        
-        m.invoke(qs, TestKit.getIssue(repository, HookIssue.getInstance()));
+        panel.qs.setIssue(TestKit.getIssue(repository, HookIssue.getInstance()).getIssue());
     }
 
     private HookPanel getPanel(final HgHookImpl hook, final HgHookContext ctx) throws InterruptedException, InvocationTargetException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException {

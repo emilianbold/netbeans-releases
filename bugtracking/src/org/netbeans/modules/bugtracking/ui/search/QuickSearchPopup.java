@@ -66,16 +66,19 @@ import javax.swing.Timer;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import org.netbeans.modules.bugtracking.APIAccessor;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
 import org.netbeans.modules.bugtracking.ui.search.PopupItem.IssueItem;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
+import org.openide.windows.TopComponent;
 
 /**
  * Component representing drop down for quick search
@@ -251,17 +254,16 @@ class QuickSearchPopup extends javax.swing.JPanel
 
         // first add opened issues
         Set<String> ids = new HashSet<String>();
-        addIssues(BugtrackingUtil.getByIdOrSummary(BugtrackingUtil.getOpenIssues(), criteria), ids);
+        addIssues(getByIdOrSummary(getOpenIssues(), criteria), ids);
 
         // all localy known issues
         Collection<QueryImpl> queries = repository.getQueries();
         for (QueryImpl q : queries) {
-            Collection<IssueImpl> issues = q.getIssues(criteria);
-            addIssues(issues, ids);
+            addIssues(getByIdOrSummary(q.getIssues(), criteria), ids);
         }
 
         // or at least what's already cached
-        addIssues(BugtrackingUtil.getByIdOrSummary(ResultsModel.getInstance().getCachedIssues(repository), criteria), ids);
+        addIssues(getByIdOrSummary(ResultsModel.getInstance().getCachedIssues(repository), criteria), ids);
         populateModel(criteria, false, true);
     }
 
@@ -280,7 +282,7 @@ class QuickSearchPopup extends javax.swing.JPanel
 
     private void populateModel(final String criteria, boolean fullList, final boolean addSearchItem) {
         List<PopupItem> modelList = new ArrayList<PopupItem>();
-        List<IssueImpl> recentIssues = new ArrayList<IssueImpl>(BugtrackingUtil.getRecentIssues(repository));
+        List<IssueImpl> recentIssues = new ArrayList<IssueImpl>(BugtrackingManager.getInstance().getRecentIssues(repository));
         Collections.sort(currentHitlist, new IssueComparator(recentIssues));
 
         for (PopupItem item : currentHitlist) {
@@ -627,7 +629,7 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
 
                     currentHitlist = new ArrayList<PopupItem>();
                     Set<String> ids = new HashSet<String>();
-                    addIssues(BugtrackingUtil.getByIdOrSummary(BugtrackingUtil.getOpenIssues(), criteria), ids);
+                    addIssues(getByIdOrSummary(getOpenIssues(), criteria), ids);
 
                     Collection<IssueImpl> issues = repository.simpleSearch(criteria);
                     addIssues(issues, ids);
@@ -643,4 +645,57 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
             return NbBundle.getMessage(PopupItem.class, "LBL_SearchCommand");   // NOI18N
         }
     }
+    
+    /**
+     * Filters the given issue by the given criteria and returns
+     * those which either contain the criteria
+     * in their summary (w/o matching the case) or those which id equals the criteria.
+     *
+     * @param issues
+     * @param criteria
+     * @return
+     */
+    private static Collection<IssueImpl> getByIdOrSummary(Collection<IssueImpl> issues, String criteria) {
+        if(criteria == null) {
+            return issues;
+        }
+        criteria = criteria.trim();
+        if(criteria.equals("")) {                                               // NOI18N
+            return issues;
+        }
+        criteria = criteria.toLowerCase();
+        List<IssueImpl> ret = new ArrayList<IssueImpl>();
+        for (IssueImpl issue : issues) {
+            if(issue.isNew()) continue;
+            String id = issue.getID();
+            if(id == null) continue;
+            String summary = issue.getSummary();
+            if(id.toLowerCase().startsWith(criteria) ||
+               (summary != null && summary.toLowerCase().indexOf(criteria) > -1))
+            {
+                ret.add(issue);
+            }  
+        }
+        return ret;
+    }
+
+    /**
+     * Returns all currently opened issues which aren't new.
+     * 
+     * @return issues
+     */
+    private static Collection<IssueImpl> getOpenIssues() {
+        Set<TopComponent> tcs = TopComponent.getRegistry().getOpened();
+        List<IssueImpl> issues = new ArrayList<IssueImpl>();
+        for (TopComponent tc : tcs) {
+            if(tc instanceof IssueTopComponent) {
+                IssueImpl issue = ((IssueTopComponent)tc).getIssue();
+                if(issue != null && !issue.isNew()) {
+                    issues.add(issue);
+                }
+            }
+        }
+        return issues;
+    }    
+    
 }

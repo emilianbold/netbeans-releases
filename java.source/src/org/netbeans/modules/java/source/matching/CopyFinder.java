@@ -45,6 +45,7 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ContinueTree;
 import com.sun.source.tree.DoWhileLoopTree;
+import com.sun.source.tree.EmptyStatementTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
@@ -54,6 +55,7 @@ import com.sun.source.tree.IfTree;
 import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -71,7 +73,6 @@ import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
-import com.sun.source.tree.TreeVisitor;
 import com.sun.source.tree.TryTree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
@@ -754,6 +755,17 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
 
         return false;
     }
+
+    @Override
+    public Boolean visitEmptyStatement(EmptyStatementTree node, TreePath p) {
+        if (p == null) {
+            super.visitEmptyStatement(node, p);
+            return false;
+        }
+        return node.getKind() == p.getLeaf().getKind();
+    }
+    
+    
 
     public Boolean visitBlock(BlockTree node, TreePath p) {
         if (p == null) {
@@ -1553,7 +1565,34 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
         }
         return scan(node.getBody(), t.getBody(), p);
     }
-    
+
+    @Override
+    public Boolean visitMemberReference(MemberReferenceTree node, TreePath p) {
+        if (p == null)
+            return super.visitMemberReference(node, p);
+
+        MemberReferenceTree t = (MemberReferenceTree) p.getLeaf();
+        
+        if (!node.getMode().equals(t.getMode()))
+            return false;
+
+        if (!scan(node.getQualifierExpression(), t.getQualifierExpression(), p))
+            return false;
+
+        String ident = t.getName().toString();
+
+        if (ident.startsWith("$")) { //XXX: there should be a utility method for this check
+            if (bindState.variables2Names.containsKey(ident)) {
+                return node.getName().contentEquals(bindState.variables2Names.get(ident));
+            } else {
+                bindState.variables2Names.put(ident, node.getName().toString());
+            }
+            return true;
+        }
+
+        return node.getName().contentEquals(t.getName());
+    }
+
 //
 //    public Boolean visitOther(Tree node, TreePath p) {
 //        throw new UnsupportedOperationException("Not supported yet.");

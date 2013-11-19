@@ -69,7 +69,9 @@ import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.tomcat5.deploy.TomcatManager.TomEEType;
 import org.netbeans.modules.tomcat5.deploy.TomcatManager.TomEEVersion;
 import org.netbeans.modules.tomcat5.deploy.TomcatManager.TomcatVersion;
 import org.openide.util.NbBundle;
@@ -103,6 +105,10 @@ public final class TomcatFactory implements DeploymentFactory {
     public static final String TOMCAT_URI_BASE_PREFIX = ":base=";   // NOI18N
 
     private static final Pattern TOMEE_JAR_PATTERN = Pattern.compile("tomee-common-(\\d+\\.\\d+\\.\\d+)\\.jar"); // NOI18N
+
+    private static final Pattern TOMEE_JAXRS_JAR_PATTERN = Pattern.compile("tomee-jaxrs-(\\d+\\.\\d+\\.\\d+)\\.jar"); // NOI18N
+
+    private static final Pattern TOMEE_GERONIMO_JAR_PATTERN = Pattern.compile("geronimo-connector-(\\d+\\.\\d+\\.\\d+)\\.jar"); // NOI18N
 
     private static final String GENERIC_DISCONNECTED_URI_PREFIX = "tomcat-any:"; // NOI18N
     private static final String GENERIC_DISCONNECTED_URI =
@@ -335,13 +341,36 @@ public final class TomcatFactory implements DeploymentFactory {
         return TomcatVersion.TOMCAT_50;
     }
 
-    public static TomEEVersion getTomEEVersion(File catalinaHome, File catalinaBase, boolean noWebApp)
+    public static TomEEVersion getTomEEVersion(File catalinaHome, File catalinaBase)
             throws IllegalStateException {
         File tomee = getTomEEJar(catalinaHome);
-        if (tomee == null && !noWebApp) {
-            tomee = getTomEEWebAppJar(catalinaHome, catalinaBase);
-        }
         return getTomEEVersion(tomee);
+    }
+
+    public static TomEEType getTomEEType(File catalinaHome, File catalinaBase)
+            throws IllegalStateException {
+        File tomee = getTomEEJar(catalinaHome);
+        return getTomEEType(tomee.getParentFile());
+    }
+
+    @NonNull
+    public static TomEEType getTomEEType(@NonNull File libFolder) {
+        File[] children = libFolder.listFiles();
+        TomEEType type = TomEEType.TOMEE_WEB;
+        if (children != null) {
+            for (File file : children) {
+                if (TOMEE_JAXRS_JAR_PATTERN.matcher(file.getName()).matches()) {
+                    if (type.ordinal() < TomEEType.TOMEE_JAXRS.ordinal()) {
+                        type = TomEEType.TOMEE_JAXRS;
+                    }
+                } else if (TOMEE_GERONIMO_JAR_PATTERN.matcher(file.getName()).matches()) {
+                    if (type.ordinal() < TomEEType.TOMEE_PLUS.ordinal()) {
+                        type = TomEEType.TOMEE_PLUS;
+                    }
+                }
+            }
+        }
+        return type;
     }
 
     public static TomEEVersion getTomEEVersion(File tomeeJar) throws IllegalStateException {

@@ -43,14 +43,19 @@ package org.netbeans.modules.java.hints.suggestions;
 
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree.BodyKind;
 import static com.sun.source.tree.LambdaExpressionTree.BodyKind.STATEMENT;
 import com.sun.source.tree.MemberReferenceTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.Scope;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
@@ -61,8 +66,10 @@ import com.sun.source.util.TreeScanner;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -98,8 +105,8 @@ public class Lambda {
     
     @Hint(displayName="#DN_lambda2Class", description="#DESC_lambda2Class", category="suggestions", hintKind=Hint.Kind.ACTION)
     @Messages({
-        "DN_lambda2Class=Convert lambda expression to anonymous innerclass",
-        "DESC_lambda2Class=Converts lambda expression to anonymous innerclass",
+        "DN_lambda2Class=Convert Lambda Expression to Anonymous Innerclass",
+        "DESC_lambda2Class=Converts lambda expressions to anonymous innerclasses",
         "ERR_lambda2Class="
     })
     @TriggerTreeKind(Kind.LAMBDA_EXPRESSION)
@@ -108,13 +115,73 @@ public class Lambda {
         
         if (samType == null || samType.getKind() != TypeKind.DECLARED) return null;
         
-        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), Bundle.ERR_lambda2Class(), new Lambda2Anonymous(ctx.getInfo(), ctx.getPath()).toEditorFix());
+        return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), Bundle.ERR_lambda2Class(), new Lambda2Anonymous(ctx.getInfo(), ctx.getPath()).toEditorFix());
+    }
+    
+    @Hint(displayName="#DN_lambda2MemberReference", description="#DESC_lambda2MemberReference", category="suggestions", hintKind=Hint.Kind.ACTION)
+    @Messages({
+        "DN_lambda2MemberReference=Convert Lambda Expression to Member Reference",
+        "DESC_lambda2MemberReference=Converts lambda expressions to member references",
+        "ERR_lambda2MemberReference=",
+        "FIX_lambda2MemberReference=Use member reference"
+    })
+    @TriggerTreeKind(Kind.LAMBDA_EXPRESSION)
+    public static ErrorDescription lambda2MemberReference(HintContext ctx) {
+        TypeMirror samType = ctx.getInfo().getTrees().getTypeMirror(ctx.getPath());        
+        if (samType == null || samType.getKind() != TypeKind.DECLARED) {
+            return null;
+        }
+
+        LambdaExpressionTree lambda = (LambdaExpressionTree) ctx.getPath().getLeaf();
+        Tree tree = lambda.getBody();
+        if (tree.getKind() == Tree.Kind.BLOCK) {
+            if (((BlockTree)tree).getStatements().size() == 1) {
+                tree = ((BlockTree)tree).getStatements().get(0);
+                if (tree.getKind() == Tree.Kind.EXPRESSION_STATEMENT) {
+                    tree = ((ExpressionStatementTree)tree).getExpression();
+                } else if (tree.getKind() == Tree.Kind.RETURN) {
+                    tree = ((ReturnTree)tree).getExpression();
+                } else {
+                    return null;
+                }
+            } else {
+                return null;
+            }
+        }
+
+        if (tree.getKind() != Tree.Kind.METHOD_INVOCATION) {
+            return null;
+        }
+
+        boolean check = true;
+        Iterator<? extends VariableTree> paramsIt = lambda.getParameters().iterator();
+        ExpressionTree methodSelect = ((MethodInvocationTree)tree).getMethodSelect();
+        if (paramsIt.hasNext() && methodSelect.getKind() == Tree.Kind.MEMBER_SELECT) {
+            ExpressionTree expr = ((MemberSelectTree) methodSelect).getExpression();
+            if (expr.getKind() == Tree.Kind.IDENTIFIER) {
+                if (!((IdentifierTree)expr).getName().contentEquals(paramsIt.next().getName())) {
+                    paramsIt = lambda.getParameters().iterator();
+                }
+            }
+        }
+        Iterator<? extends ExpressionTree> argsIt = ((MethodInvocationTree)tree).getArguments().iterator();
+        while (check && argsIt.hasNext() && paramsIt.hasNext()) {
+            ExpressionTree arg = argsIt.next();
+            if (arg.getKind() != Tree.Kind.IDENTIFIER || !paramsIt.next().getName().contentEquals(((IdentifierTree)arg).getName())) {
+                check = false;
+            }
+        }
+        if (!check || paramsIt.hasNext() || argsIt.hasNext()) {
+            return null;
+        }
+
+        return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), Bundle.ERR_lambda2MemberReference(), new Lambda2MemberReference(ctx.getInfo(), ctx.getPath()).toEditorFix());
     }
     
     @Hint(displayName="#DN_expression2Return", description="#DESC_expression2Return", category="suggestions", hintKind=Hint.Kind.ACTION)
     @Messages({
-        "DN_expression2Return=Convert lambda body to use a block rather than an expression",
-        "DESC_expression2Return=Converts lambda body to use a block rather than an expression",
+        "DN_expression2Return=Convert Lambda Body to Use a Block",
+        "DESC_expression2Return=Converts lambda bodies to use blocks rather than expressions",
         "ERR_expression2Return=",
         "FIX_expression2Return=Use block as the lambda's body"
     })
@@ -127,15 +194,15 @@ public class Lambda {
                         ? "($args$) -> { return $lambdaExpression; }"
                         : "($args$) -> { $lambdaExpression; }";
         
-        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), Bundle.ERR_expression2Return(), JavaFixUtilities.rewriteFix(ctx, Bundle.FIX_expression2Return(), ctx.getPath(), target));
+        return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), Bundle.ERR_expression2Return(), JavaFixUtilities.rewriteFix(ctx, Bundle.FIX_expression2Return(), ctx.getPath(), target));
     }
     
     @Hint(displayName="#DN_memberReference2Lambda", description="#DESC_memberReference2Lambda", category="suggestions", hintKind=Hint.Kind.ACTION)
     @Messages({
-        "DN_memberReference2Lambda=Convert member reference to lambda expression",
-        "DESC_memberReference2Lambda=Converts member references to a lambda expression",
+        "DN_memberReference2Lambda=Convert Member Reference to Lambda Expression",
+        "DESC_memberReference2Lambda=Converts member references to lambda expressions",
         "ERR_memberReference2Lambda=",
-        "FIX_memberReference2Lambda=Convert to use lambda expression"
+        "FIX_memberReference2Lambda=Use lambda expression"
     })
     @TriggerTreeKind(Kind.MEMBER_REFERENCE)
     public static ErrorDescription reference2Lambda(HintContext ctx) {
@@ -143,15 +210,15 @@ public class Lambda {
         
         if (refered == null || refered.getKind() != ElementKind.METHOD) return null;//XXX: constructors!
         
-        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), Bundle.ERR_memberReference2Lambda(), new MemberReference2Lambda(ctx.getInfo(), ctx.getPath()).toEditorFix());
+        return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), Bundle.ERR_memberReference2Lambda(), new MemberReference2Lambda(ctx.getInfo(), ctx.getPath()).toEditorFix());
     }
     
     @Hint(displayName="#DN_addExplicitLambdaParameters", description="#DESC_addExplicitLambdaParameters", category="suggestions", hintKind=Hint.Kind.ACTION)
     @Messages({
-        "DN_addExplicitLambdaParameters=Convert lambda to use explicit parameter types",
-        "DESC_addExplicitLambdaParameters=Converts lambda to use explicit parameter types",
+        "DN_addExplicitLambdaParameters=Convert Lambda to Use Explicit Parameter Types",
+        "DESC_addExplicitLambdaParameters=Converts lambdas to use explicit parameter types",
         "ERR_addExplicitLambdaParameters=",
-        "FIX_addExplicitLambdaParameters=Convert lambda to use explicit parameter types"
+        "FIX_addExplicitLambdaParameters=Use explicit parameter types"
     })
     @TriggerTreeKind(Kind.LAMBDA_EXPRESSION)
     public static ErrorDescription explicitParameterTypes(HintContext ctx) {
@@ -194,7 +261,7 @@ public class Lambda {
         }
 
         @Override
-        @Messages("FIX_lambda2Class=Convert lambda expression to anonymous innerclass")
+        @Messages("FIX_lambda2Class=Use anonymous innerclass")
         protected String getText() {
             return Bundle.FIX_lambda2Class();
         }
@@ -296,10 +363,77 @@ public class Lambda {
                     }
                 }.scan(lambda.getBody(), null);
             }
-        }
-        
+        }        
     }
-    
+
+    private static final class Lambda2MemberReference extends JavaFix {
+
+        public Lambda2MemberReference(CompilationInfo info, TreePath tp) {
+            super(info, tp);
+        }
+
+        @Override
+        protected String getText() {
+            return Bundle.FIX_lambda2MemberReference();
+        }
+
+        @Override
+        protected void performRewrite(TransformationContext ctx) throws Exception {
+            final WorkingCopy copy = ctx.getWorkingCopy();
+            TypeMirror samType = copy.getTrees().getTypeMirror(ctx.getPath());
+            if (samType == null || samType.getKind() != TypeKind.DECLARED) {
+                //XXX
+                return ;
+            }
+
+            LambdaExpressionTree lambda = (LambdaExpressionTree) ctx.getPath().getLeaf();
+            Tree tree = lambda.getBody();
+            if (tree.getKind() == Tree.Kind.BLOCK) {
+                if (((BlockTree)tree).getStatements().size() == 1) {
+                    tree = ((BlockTree)tree).getStatements().get(0);
+                    if (tree.getKind() == Tree.Kind.EXPRESSION_STATEMENT) {
+                        tree = ((ExpressionStatementTree)tree).getExpression();
+                    } else if (tree.getKind() == Tree.Kind.RETURN) {
+                        tree = ((ReturnTree)tree).getExpression();
+                    } else {
+                        return;
+                    }
+                } else {
+                    return;
+                }
+            }
+
+            if (tree.getKind() != Tree.Kind.METHOD_INVOCATION) {
+                return;
+            }
+
+            ExpressionTree ms = ((MethodInvocationTree)tree).getMethodSelect();
+            Name name = null;
+            ExpressionTree expr = null;
+            TreeMaker make = copy.getTreeMaker();
+            if (ms.getKind() == Tree.Kind.IDENTIFIER) {
+                name = ((IdentifierTree)ms).getName();
+                expr = make.Identifier("this"); //NOI18N
+            } else if (ms.getKind() == Tree.Kind.MEMBER_SELECT) {
+                name = ((MemberSelectTree)ms).getIdentifier();
+                if (lambda.getParameters().size() == ((MethodInvocationTree)tree).getArguments().size()) {
+                    expr = ((MemberSelectTree)ms).getExpression();
+                } else {
+                    Element e = copy.getTrees().getElement(new TreePath(ctx.getPath(), ms));
+                    if (e != null && e.getKind() == ElementKind.METHOD) {
+                        expr = make.Identifier(e.getEnclosingElement());
+                    }
+                }
+            }
+            if (name == null || expr == null) {
+                return;
+            }
+
+            MemberReferenceTree referenceTree = make.MemberReference(MemberReferenceTree.ReferenceMode.INVOKE, expr, name, Collections.<ExpressionTree>emptyList());
+            copy.rewrite(lambda, referenceTree);
+        }
+    }
+
     private static final class MemberReference2Lambda extends JavaFix {
 
         public MemberReference2Lambda(CompilationInfo info, TreePath tp) {
@@ -327,24 +461,29 @@ public class Lambda {
             ExpressionTree reciever = mrt.getQualifierExpression();
             List<VariableTree> formals = new ArrayList<>();
             List<IdentifierTree> actuals = new ArrayList<>();
+            Scope scope = ctx.getWorkingCopy().getTrees().getScope(reference);
+            Set<String> usedNames = new HashSet<String>();
             TreeMaker make = ctx.getWorkingCopy().getTreeMaker();
             
             if (on != null && (on.getKind().isClass() || on.getKind().isInterface()) && !refered.getModifiers().contains(Modifier.STATIC)) {
                 //static reference to instance method:
-                formals.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "_this", null, null));
-                reciever = make.Identifier("_this");
+                String name = org.netbeans.modules.java.hints.errors.Utilities.getName(on.asType());
+                name = org.netbeans.modules.java.hints.errors.Utilities.makeNameUnique(ctx.getWorkingCopy(), scope, name);
+                formals.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), name, null, null));
+                reciever = make.Identifier(name);
+                usedNames.add(name);
             }
             
             for (VariableElement param : ((ExecutableElement) refered).getParameters()) {
-                formals.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), param.getSimpleName(), null, null));
-                actuals.add(make.Identifier(param.getSimpleName()));
+                String name = org.netbeans.modules.java.hints.errors.Utilities.makeNameUnique(ctx.getWorkingCopy(), scope, param.getSimpleName().toString(), usedNames, null, null);                
+                formals.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), name, null, null));
+                actuals.add(make.Identifier(name));
             }
             
             LambdaExpressionTree lambda = make.LambdaExpression(formals, make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(reciever, mrt.getName()), actuals));
             
             ctx.getWorkingCopy().rewrite(mrt, lambda);
         }
-        
     }
     
     private static final class AddExplicitLambdaParameterTypes extends JavaFix {
@@ -370,6 +509,5 @@ public class Lambda {
                 }
             }
         }
-        
     }
 }

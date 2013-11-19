@@ -60,6 +60,7 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.util.Collections;
 
 import java.util.Date;
 import java.util.LinkedList;
@@ -748,7 +749,7 @@ public class ActionTracker {
             Tuple previous = new Tuple(0, "", 0, 0);
 
             // For each Event
-            for (Tuple t : eventList) {
+            for (Tuple t : Collections.unmodifiableList(eventList)) {
                 // log only if it isn't the same
                 if (t != null && !t.equals(previous)) {
                     Element eventElement = doc.createElement(TN_EVENT);

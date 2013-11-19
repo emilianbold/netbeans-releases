@@ -58,7 +58,7 @@ public class RefactorIntroduceMethodAction extends ActionNoBlock {
     private static final String introduceMethodMenu = Bundle.getStringTrimmed("org.netbeans.modules.refactoring.spi.impl.Bundle", "Menu/Refactoring") // Refactoring
             + "|Introduce|Method...";
     private static final KeyStroke keystroke = System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
-            KeyStroke.getKeyStroke(KeyEvent.VK_R, KeyEvent.META_MASK) : //Mac
+            KeyStroke.getKeyStroke(KeyEvent.VK_M, KeyEvent.META_MASK) : //Mac
             KeyStroke.getKeyStroke(KeyEvent.VK_M, KeyEvent.ALT_MASK | KeyEvent.SHIFT_MASK);  //Win, Unix
 
     /**

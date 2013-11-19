@@ -113,39 +113,47 @@ extends ArrayList<TokenOrEmbedding<T>> implements TokenList<T> {
         return new TextLexerInputOperation<T>(this);
     }
 
+    @Override
     public TokenList<?> rootTokenList() {
         return this; // this list should always be the root list of the token hierarchy
     }
     
+    @Override
     public CharSequence inputSourceText() {
         return inputSourceText;
     }
 
+    @Override
     public TokenHierarchyOperation<?,?> tokenHierarchyOperation() {
         return tokenHierarchyOperation;
     }
     
+    @Override
     public LanguagePath languagePath() {
         return languagePath;
     }
     
-    public synchronized int tokenCount() {
+    @Override
+    public int tokenCount() {
         if (lexerInputOperation != null) { // still lexing
             tokenOrEmbeddingImpl(Integer.MAX_VALUE);
         }
         return size();
     }
     
+    @Override
     public int tokenCountCurrent() {
         return size();
     }
 
+    @Override
     public int tokenOffset(AbstractToken<T> token) {
         int rawOffset = token.rawOffset();
         // Children offsets should be absolute
         return rawOffset;
     }
 
+    @Override
     public int tokenOffset(int index) {
         AbstractToken<T> token = existingToken(index);
         int offset;
@@ -165,11 +173,13 @@ extends ArrayList<TokenOrEmbedding<T>> implements TokenList<T> {
         return offset;
     }
 
+    @Override
     public int[] tokenIndex(int offset) {
         return LexerUtilsConstants.tokenIndexLazyTokenCreation(this, offset);
     }
 
-    public synchronized TokenOrEmbedding<T> tokenOrEmbedding(int index) {
+    @Override
+    public TokenOrEmbedding<T> tokenOrEmbedding(int index) {
         return tokenOrEmbeddingImpl(index);
     }
     
@@ -197,18 +207,22 @@ extends ArrayList<TokenOrEmbedding<T>> implements TokenList<T> {
         return get(index).token();
     }
 
+    @Override
     public int lookahead(int index) {
         return (laState != null) ? laState.lookahead(index) : -1;
     }
 
+    @Override
     public Object state(int index) {
         return (laState != null) ? laState.state(index) : null;
     }
 
+    @Override
     public int startOffset() {
         return 0;
     }
 
+    @Override
     public int endOffset() {
         int cntM1 = tokenCount() - 1;
         if (cntM1 >= 0)
@@ -216,35 +230,52 @@ extends ArrayList<TokenOrEmbedding<T>> implements TokenList<T> {
         return 0;
     }
 
+    @Override
     public boolean isRemoved() {
         return false;
     }
 
+    @Override
     public int modCount() {
         return LexerUtilsConstants.MOD_COUNT_IMMUTABLE_INPUT; // immutable input
     }
     
-    public synchronized AbstractToken<T> replaceFlyToken(
+    @Override
+    public AbstractToken<T> replaceFlyToken(
     int index, AbstractToken<T> flyToken, int offset) {
         TextToken<T> nonFlyToken = ((TextToken<T>)flyToken).createCopy(this, offset);
         set(index, nonFlyToken);
         return nonFlyToken;
     }
 
-    public void wrapToken(int index, EmbeddingContainer<T> embeddingContainer) {
-        set(index, embeddingContainer);
+    @Override
+    public void setTokenOrEmbedding(int index, TokenOrEmbedding<T> t) {
+        set(index, t);
     }
 
+    @Override
     public InputAttributes inputAttributes() {
         return inputAttributes;
     }
     
+    @Override
     public boolean isContinuous() {
         return (skipTokenIds == null);
     }
     
+    @Override
     public Set<T> skipTokenIds() {
         return skipTokenIds;
+    }
+
+    @Override
+    public StringBuilder dumpInfo(StringBuilder sb) {
+        return sb;
+    }
+
+    @Override
+    public String dumpInfoType() {
+        return "BTL";
     }
 
 }

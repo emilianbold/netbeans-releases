@@ -73,6 +73,8 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -96,9 +98,8 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
-import org.netbeans.modules.bugtracking.util.OwnerUtils;
-import org.netbeans.modules.bugtracking.util.SaveQueryPanel;
-import org.netbeans.modules.bugtracking.util.SaveQueryPanel.QueryNameValidator;
+import org.netbeans.modules.bugtracking.commons.SaveQueryPanel;
+import org.netbeans.modules.bugtracking.commons.SaveQueryPanel.QueryNameValidator;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
@@ -159,7 +160,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         this.modifiable = modifiable;
         this.jiraFilter = jiraFilter;
 
-        issueTable = new IssueTable(JiraUtils.getRepository(repository), query, query.getColumnDescriptors());
+        issueTable = new IssueTable(repository.getID(), query.getDisplayName(), this, query.getColumnDescriptors(), query.isSaved());
         setupRenderer(issueTable);
         panel = new QueryPanel(issueTable.getComponent(), this, isNamedFilter(jiraFilter));
         panel.projectList.addListSelectionListener(this);
@@ -346,7 +347,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         if(values == null || values.length == 0) {
             return Collections.emptyList();
         }
-        List<T> l = new ArrayList<T>(values.length);
+        List<T> l = new ArrayList<>(values.length);
         for (Object o : values) {
             l.add((T) o);
         }
@@ -561,7 +562,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
 
     private void setSelected (JList list, Object[] selectedItems) {
         if(selectedItems != null) {
-            List<Integer> toSelect = new ArrayList<Integer>();
+            List<Integer> toSelect = new ArrayList<>();
             DefaultListModel model = (DefaultListModel) list.getModel();
             for (Object o : selectedItems) {
                 if(o == null) continue;
@@ -648,13 +649,15 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(JiraQuery.class);
+        return new HelpCtx("org.netbeans.modules.jira.query.JiraQuery"); // NOI18N
     }
 
     public void setMode(QueryMode mode) {
         switch(mode) {
             case EDIT:
-                onModify();
+                if(query.isSaved()) {
+                    onModify();
+                }
                 break;                        
             case VIEW:
                 onCancelChanges();
@@ -782,6 +785,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
 
     private void onSave(final boolean refresh) {
        Jira.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 String name = query.getDisplayName();
                 boolean firstTime = false;
@@ -818,11 +822,12 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         return SaveQueryPanel.show(v, new HelpCtx("org.netbeans.modules.jira.query.savePanel")); // NOI18N
     }
 
-    private void save(String name, boolean firstTime) {
+    void save(String name, boolean firstTime) {
         query.setName(name);
         repository.saveQuery(query);
         query.setSaved(true); // XXX
         setAsSaved();
+        fireSaved();
         if(!query.wasRun()) {
             onRefresh();
         }
@@ -1146,8 +1151,8 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
                         }
                     });
                 }
-                Set<Version> versions = new HashSet<Version>();
-                Set<Component> components = new HashSet<Component>();
+                Set<Version> versions = new HashSet<>();
+                Set<Component> components = new HashSet<>();
                 panel.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 try {
                     for (Project p : projects) {
@@ -1247,6 +1252,37 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         }
     }
 
+    @Override
+    public boolean saveChanges(String name) {
+        return true;
+    }
+
+    @Override
+    public boolean discardUnsavedChanges() {
+        return true;
+    }
+
+    public void fireSaved() {
+        support.firePropertyChange(PROP_CHANGED, null, null);
+    }
+
+    @Override
+    public boolean isChanged() {
+        return false;
+    }
+    
+    
+    private final PropertyChangeSupport support = new PropertyChangeSupport(this);
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        support.addPropertyChangeListener(l);
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        support.removePropertyChangeListener(l);
+    }
+
     private class QueryTask implements Runnable, Cancellable, QueryNotifyListener {
         private ProgressHandle handle;
         private int counter;
@@ -1278,6 +1314,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         private void finnishQuery() {
             task = null;
             EventQueue.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     if(handle != null) {
                         handle.finish();
@@ -1394,9 +1431,6 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
             issueTable.started();
             counter = 0;
             setIssueCount(counter);
-            
-            // XXX move to API
-            OwnerUtils.setLooseAssociation(JiraUtils.getRepository(repository), false);                             
         }
 
         @Override

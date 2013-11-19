@@ -90,7 +90,7 @@ import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
 import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerFactory;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
-import org.netbeans.modules.maven.spi.nodes.NodeUtils;
+import org.netbeans.modules.maven.spi.IconResources;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
@@ -142,7 +142,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
     
     @MultiViewElement.Registration(
         displayName="#TAB_Graph",
-        iconBase=NodeUtils.ICON_DEPENDENCY_JAR,
+        iconBase=IconResources.ICON_DEPENDENCY_JAR,
         persistenceType=TopComponent.PERSISTENCE_NEVER,
         preferredID=ArtifactViewer.HINT_GRAPH,
         mimeType=Constants.POM_MIME_TYPE,
@@ -449,7 +449,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
     }// </editor-fold>//GEN-END:initComponents
     
     private void btnSmallerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSmallerActionPerformed
-        scene.setZoomFactor(scene.getZoomFactor() * 0.8);
+        scene.setMyZoomFactor(scene.getZoomFactor() * 0.8);
         scene.validate();
         scene.repaint();
         if (!pane.getHorizontalScrollBar().isVisible() && 
@@ -461,7 +461,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
     }//GEN-LAST:event_btnSmallerActionPerformed
     
     private void btnBiggerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBiggerActionPerformed
-        scene.setZoomFactor(scene.getZoomFactor() * 1.2);
+        scene.setMyZoomFactor(scene.getZoomFactor() * 1.2);
         scene.validate();
         scene.repaint();
         if (pane.getHorizontalScrollBar().isVisible() || 
@@ -589,7 +589,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
                             }
                             pane.setViewportView(sceneView);
                             scene.setSurroundingScrollPane(pane);
-                            scene.cleanLayout();
+                            scene.initialLayout();
                             scene.setSelectedObjects(Collections.singleton(scene.getRootGraphNode()));
                             txtFind.setEnabled(true);
                             btnBigger.setEnabled(true);

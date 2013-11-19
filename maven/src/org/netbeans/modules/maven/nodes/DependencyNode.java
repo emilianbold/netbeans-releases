@@ -81,11 +81,11 @@ import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Profile;
+import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
@@ -148,14 +148,11 @@ import org.openide.util.lookup.Lookups;
  */
 public class DependencyNode extends AbstractNode implements PreferenceChangeListener {
 
-    private Artifact art;
-    private NbMavenProjectImpl project;
+    
     private boolean longLiving;
     private PropertyChangeListener listener;
     private ChangeListener listener2;
-    private java.util.concurrent.atomic.AtomicReference<FileObject> fileObject;
-    private final java.util.concurrent.atomic.AtomicBoolean sourceExists = new AtomicBoolean(false);
-    private final java.util.concurrent.atomic.AtomicBoolean javadocExists = new AtomicBoolean(false);
+    final Data data;
     
     private volatile String iconBase = IconResources.DEPENDENCY_ICON;
     
@@ -179,9 +176,9 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
         final PathFinder pathFinderDelegate = nodeDelegate == null ? null : nodeDelegate.getLookup().lookup(PathFinder.class);
         final FileObject fo = nodeDelegate == null ? null : nodeDelegate.getLookup().lookup(FileObject.class);
         if (fo != null) {
-            return Lookups.fixed(project, art, PathFinders.createDelegatingPathFinder(pathFinderDelegate), fo);
+            return Lookups.fixed(new Data(art, project, fo), project, art, PathFinders.createDelegatingPathFinder(pathFinderDelegate), fo);
         } else {
-            return Lookups.fixed(project, art, PathFinders.createDelegatingPathFinder(pathFinderDelegate));
+            return Lookups.fixed(new Data(art, project, null), project, art, PathFinders.createDelegatingPathFinder(pathFinderDelegate));
         }
     }
 
@@ -207,10 +204,10 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
             boolean isLongLiving,
             Node nodeDelegate) {
         super(createChildren(nodeDelegate), createLookup(project, art, nodeDelegate));
-        this.project = project;
-        this.art = art;
-        this.fileObject = new AtomicReference<FileObject>(fo);
+        this.data = getLookup().lookup(Data.class);
+        data.fileObject.set(fo);
         longLiving = isLongLiving;
+
         if (longLiving) {
             listener = new PropertyChangeListener() {
                 @Override
@@ -250,45 +247,26 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
                 }
             });
         }
+        data.setNode(this);
     }
 
-    /**
-     * public because of the property sheet
-     */
-    public boolean isTransitive() {
-        List trail = art.getDependencyTrail();
-        return trail != null && trail.size() > 2;
-    }
-
-    public boolean isManaged() {
-        DependencyManagement dm = project.getOriginalMavenProject().getDependencyManagement();
-        if (dm != null) {
-            List<Dependency> dmList = dm.getDependencies();
-            for (Dependency d : dmList) {
-                if (art.getGroupId().equals(d.getGroupId()) &&
-                    art.getArtifactId().equals(d.getArtifactId())) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
+    
 
     private void setIconBase(boolean longLiving) {
         String base;
-        if (longLiving && isDependencyProjectAvailable()) {
-            if (isTransitive()) {
+        if (longLiving && data.isDependencyProjectAvailable()) {
+            if (data.isTransitive()) {
                 base = IconResources.TRANSITIVE_MAVEN_ICON;
             } else {
                 base = IconResources.MAVEN_ICON;
             }
-        } else if (isTransitive()) {
-            if (isAddedToCP()) {
+        } else if (data.isTransitive()) {
+            if (data.isAddedToCP()) {
                 base = IconResources.TRANSITIVE_DEPENDENCY_ICON;
             } else {
                 base = IconResources.TRANSITIVE_ARTIFACT_ICON;
             }
-        } else if (isAddedToCP()) {
+        } else if (data.isAddedToCP()) {
             base = IconResources.DEPENDENCY_ICON;
         } else {
             base = IconResources.ARTIFACT_ICON;
@@ -308,15 +286,15 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
     })
     @Override public String getShortDescription() {
         StringBuilder buf = new StringBuilder();
-        buf.append("<html><i>").append(DESC_Dep1()).append("</i><b> ").append(art.getGroupId()).append("</b><br><i>"); //NOI18N
-        buf.append(DESC_Dep2()).append("</i><b> ").append(art.getArtifactId()).append("</b><br><i>");//NOI18N
-        buf.append(DESC_Dep3()).append("</i><b> ").append(art.getVersion()).append("</b><br><i>");//NOI18N
-        buf.append(DESC_Dep4()).append("</i><b> ").append(art.getType()).append("</b><br>");//NOI18N
-        if (art.getClassifier() != null) {
-            buf.append("<i>").append(DESC_Dep5()).append("</i><b> ").append(art.getClassifier()).append("</b><br>");//NOI18N
+        buf.append("<html><i>").append(DESC_Dep1()).append("</i><b> ").append(data.art.getGroupId()).append("</b><br><i>"); //NOI18N
+        buf.append(DESC_Dep2()).append("</i><b> ").append(data.art.getArtifactId()).append("</b><br><i>");//NOI18N
+        buf.append(DESC_Dep3()).append("</i><b> ").append(data.art.getVersion()).append("</b><br><i>");//NOI18N
+        buf.append(DESC_Dep4()).append("</i><b> ").append(data.art.getType()).append("</b><br>");//NOI18N
+        if (data.art.getClassifier() != null) {
+            buf.append("<i>").append(DESC_Dep5()).append("</i><b> ").append(data.art.getClassifier()).append("</b><br>");//NOI18N
         }
-        buf.append("<i>").append(DESC_scope()).append("</i><b> ").append(art.getScope()).append("</b><br>");
-        List<String> trail = art.getDependencyTrail();
+        buf.append("<i>").append(DESC_scope()).append("</i><b> ").append(data.art.getScope()).append("</b><br>");
+        List<String> trail = data.art.getDependencyTrail();
         for (int i = trail.size() - 2; i > 0 && /* just to be safe */ i < trail.size(); i--) {
             String[] id = trail.get(i).split(":"); // g:a:t[:c]:v
             buf.append("<i>").append(DESC_via()).append("</i> ").append(id[1]).append("<br>");
@@ -326,38 +304,16 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
         return buf.toString();
     }
 
-    private boolean isAddedToCP() {
-        return art.getArtifactHandler().isAddedToClasspath();
-    }
-
-    /**
-     * this call is slow
-     * @return
-     */
-    private boolean isDependencyProjectAvailable() {
-        return getDependencyProjectAvailable() != null;
-    }
     
-     /**
-     * this call is slow
-     * @return
-     */
-    private Project getDependencyProjectAvailable() {
-        if ( Artifact.SCOPE_SYSTEM.equals(art.getScope())) {
-            return null;
-        }
-        URI uri = org.openide.util.Utilities.toURI(art.getFile());
-        return FileOwnerQuery.getOwner(uri);
-    }   
 
     
     private void refreshNode() {
         assert !SwingUtilities.isEventDispatchThread();
-        FileObject fo = FileUtil.toFileObject(art.getFile());
+        FileObject fo = FileUtil.toFileObject(data.art.getFile());
         
-        sourceExists.set(getSourceFile().exists());
-        javadocExists.set(getJavadocFile().exists());
-        fileObject.set(fo);
+        data.sourceExists.set(data.getSourceFile().exists());
+        data.javadocExists.set(data.getJavadocFile().exists());
+        data.fileObject.set(fo);
         setDisplayName(createName(longLiving));
         setIconBase(longLiving);
         fireIconChange();
@@ -368,7 +324,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
         //#142784
         if (longLiving) {
             if (Children.LEAF == getChildren()) {
-                final Node nodeDelegate = createNodeDelegate(art, fo, true);
+                final Node nodeDelegate = createNodeDelegate(data.art, fo, true);
                 Children childs = createChildren(nodeDelegate);
                 if (childs != Children.LEAF) {
                     setChildren(childs);
@@ -382,11 +338,11 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
     public String getHtmlDisplayName() {
         StringBuilder n = new StringBuilder("<html>");
         n.append(getDisplayName());
-        if (ArtifactUtils.isSnapshot(art.getVersion()) && art.getVersion().indexOf("SNAPSHOT") < 0) { //NOI18N
-            n.append(" <b>[").append(art.getVersion()).append("]</b>");
+        if (ArtifactUtils.isSnapshot(data.art.getVersion()) && data.art.getVersion().indexOf("SNAPSHOT") < 0) { //NOI18N
+            n.append(" <b>[").append(data.art.getVersion()).append("]</b>");
         }
-        if (!art.getArtifactHandler().isAddedToClasspath() && !Artifact.SCOPE_COMPILE.equals(art.getScope())) {
-            n.append("  <i>[").append(art.getScope()).append("]</i>");
+        if (!data.art.getArtifactHandler().isAddedToClasspath() && !Artifact.SCOPE_COMPILE.equals(data.art.getScope())) {
+            n.append("  <i>[").append(data.art.getScope()).append("]</i>");
         }
         n.append("</html>");
         return n.toString();
@@ -395,25 +351,25 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
     private String createName(boolean longLiving) {
         if (longLiving) {
             //TODO when the name changes on the other end (dep project) we have no way of knowing..
-            Project prj = getDependencyProjectAvailable();
+            Project prj = data.getDependencyProjectAvailable();
             if (prj != null) {
                 return ProjectUtils.getInformation(prj).getDisplayName();
             }
         }
-        if (NbArtifactFixer.isFallbackFile(art.getFile())) {
-            return art.getArtifactId() + "-" + art.getBaseVersion() + (art.getClassifier() != null ? "-" + art.getClassifier() : "") + "." + art.getArtifactHandler().getExtension();
+        if (NbArtifactFixer.isFallbackFile(data.art.getFile())) {
+            return data.art.getArtifactId() + "-" + data.art.getBaseVersion() + (data.art.getClassifier() != null ? "-" + data.art.getClassifier() : "") + "." + data.art.getArtifactHandler().getExtension();
         }
-        return art.getFile().getName();
+        return data.art.getFile().getName();
     }
 
     @Override
     public Action[] getActions(boolean context) {
         Collection<Action> acts = new ArrayList<Action>();
-        if (longLiving && isDependencyProjectAvailable()) {
+        if (longLiving && data.isDependencyProjectAvailable()) {
             acts.add(OpenProjectAction.SINGLETON);
         }
-        boolean local = isLocal();
-        if (isAddedToCP()) {
+        boolean local = data.isLocal();
+        if (data.isAddedToCP()) {
             InstallLocalArtifactAction act = new InstallLocalArtifactAction();
             acts.add(act);
             if (!local) {
@@ -426,29 +382,29 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
 
 //        acts.add(new EditAction());
 //        acts.add(RemoveDepAction.get(RemoveDepAction.class));
-        if (!hasJavadocInRepository()) {
-            acts.add(new DownloadJavadocSrcAction(true));
-            if (isAddedToCP()) {
+        if (!data.hasJavadocInRepository()) {
+            acts.add(DOWNLOAD_JAVADOC_ACTION);
+            if (data.isAddedToCP()) {
                 acts.add(new InstallLocalJavadocAction());
             }
         }
-        if (!hasSourceInRepository()) {
-            acts.add(new DownloadJavadocSrcAction(false));
-            if (isAddedToCP()) {
+        if (!data.hasSourceInRepository()) {
+            acts.add(DOWNLOAD_SOURCE_ACTION);
+            if (data.isAddedToCP()) {
                 acts.add(new InstallLocalSourcesAction());
             }
         }
-        if (isTransitive()) {
+        if (data.isTransitive()) {
             acts.add(new ExcludeTransitiveAction());
             acts.add(SETINCURRENTINSTANCE);
         } else {
             acts.add(REMOVEDEPINSTANCE);
         }
         acts.add(null);
-        acts.add(CommonArtifactActions.createViewArtifactDetails(art, project.getOriginalMavenProject().getRemoteArtifactRepositories()));
-        acts.add(CommonArtifactActions.createFindUsages(art));
+        acts.add(CommonArtifactActions.createViewArtifactDetails(data.art, data.getMavenProject().getRemoteArtifactRepositories()));
+        acts.add(CommonArtifactActions.createFindUsages(data.art));
         acts.add(null);
-        acts.add(CommonArtifactActions.createViewJavadocAction(art));
+        acts.add(CommonArtifactActions.createViewJavadocAction(data.art));
         /* #164992: disabled
         acts.add(CommonArtifactActions.createViewProjectHomeAction(art, project.getOriginalMavenProject().getRemoteArtifactRepositories()));
         acts.add(CommonArtifactActions.createViewBugTrackerAction(art, project.getOriginalMavenProject().getRemoteArtifactRepositories()));
@@ -459,9 +415,11 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
         return acts.toArray(new Action[acts.size()]);
     }
 
+    
+
     @Override
     public boolean canDestroy() {
-        return !isTransitive();
+        return !data.isTransitive();
     }
     @Override
     public void destroy() throws IOException {
@@ -489,37 +447,8 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
         return false;
     }
 
-    public boolean isLocal() {
-        FileObject fo = fileObject.get();
-        return fo != null && fo.isValid() && !NbArtifactFixer.isFallbackFile(art.getFile());
-    }
-
-    public boolean hasJavadocInRepository() {
-        return javadocExists.get() && (!Artifact.SCOPE_SYSTEM.equals(art.getScope())) ;
-    }
-    
-    //normalized
-    public File getJavadocFile() {
-        File artifact = art.getFile();
-        String version = artifact.getParentFile().getName();
-        String artifactId = artifact.getParentFile().getParentFile().getName();
-        return new File(artifact.getParentFile(), artifactId + "-" + version + (art.getClassifier() != null ? ("tests".equals(art.getClassifier()) ? "-test" : "-" + art.getClassifier()) : "") + "-javadoc.jar"); //NOI18N
-    }
-
-    //normalized
-    public File getSourceFile() {
-        File artifact = art.getFile();
-        String version = artifact.getParentFile().getName();
-        String artifactId = artifact.getParentFile().getParentFile().getName();
-        return new File(artifact.getParentFile(), artifactId + "-" + version + (art.getClassifier() != null ? ("tests".equals(art.getClassifier()) ? "-test" : "-" + art.getClassifier()) : "") + "-sources.jar"); //NOI18N
-    }
-
-    public boolean hasSourceInRepository() {
-        return sourceExists.get() && (!Artifact.SCOPE_SYSTEM.equals(art.getScope()));
-    }
-    
     void downloadJavadocSources(ProgressContributor progress, boolean isjavadoc) {
-        downloadJavadocSources(progress, isjavadoc, art, project);
+        downloadJavadocSources(progress, isjavadoc, data.art, data.project);
         refreshNode();
     }
 
@@ -616,28 +545,28 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
     }
 
     private Image badge(Image retValue) {
-        if (isLocal()) {
+        if (data.isLocal()) {
             if (!isIconProjectBased()) {
-                if (hasJavadocInRepository()) {
+                if (data.hasJavadocInRepository()) {
                     Image ann = ImageUtilities.loadImage(IconResources.JAVADOC_BADGE_ICON); //NOI18N
                     ann = ImageUtilities.addToolTipToImage(ann, toolTipJavadoc);
                     retValue = ImageUtilities.mergeImages(retValue, ann, 12, 0);//NOI18N
                 }
-                if (hasSourceInRepository()) {
+                if (data.hasSourceInRepository()) {
                     Image ann = ImageUtilities.loadImage(IconResources.SOURCE_BADGE_ICON); //NOI18N
                     ann = ImageUtilities.addToolTipToImage(ann, toolTipSource);
                     retValue = ImageUtilities.mergeImages(retValue, ann, 12, 8);//NOI18N
                 }
             }
-            if (showManagedState() && isManaged()) {
+            if (showManagedState() && data.isManaged()) {
                 Image ann = ImageUtilities.loadImage(IconResources.MANAGED_BADGE_ICON); //NOI18N
                 ann = ImageUtilities.addToolTipToImage(ann, toolTipManaged);
                 retValue = ImageUtilities.mergeImages(retValue, ann, 0, 8);//NOI18N
             }
-            FileObject fo = fileObject.get();
+            FileObject fo = data.fileObject.get();
             if (fo != null && fo.isValid()) {
                 for (DependencyTypeIconBadge badge : Lookup.getDefault().lookupAll(DependencyTypeIconBadge.class)) {
-                    Image ann = badge.getBadgeIcon(fo, art);
+                    Image ann = badge.getBadgeIcon(fo, data.art);
                     if (ann != null) {
                         retValue = ImageUtilities.mergeImages(retValue, ann, 0, 0);//NOI18N
                         break;
@@ -669,43 +598,43 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
         Sheet sheet = Sheet.createDefault();
         Sheet.Set basicProps = sheet.get(Sheet.PROPERTIES);
         try {
-            PropertySupport.Reflection artifactId = new PropertySupport.Reflection<String>(art, String.class, "getArtifactId", null); //NOI18N
+            PropertySupport.Reflection artifactId = new PropertySupport.Reflection<String>(data.art, String.class, "getArtifactId", null); //NOI18N
             artifactId.setName("artifactId"); //NOI18N
             artifactId.setDisplayName(org.openide.util.NbBundle.getMessage(DependencyNode.class, "PROP_Artifact"));
             artifactId.setShortDescription(""); //NOI18N
-            PropertySupport.Reflection groupId = new PropertySupport.Reflection<String>(art, String.class, "getGroupId", null); //NOI18N
+            PropertySupport.Reflection groupId = new PropertySupport.Reflection<String>(data.art, String.class, "getGroupId", null); //NOI18N
             groupId.setName("groupId"); //NOI18N
             groupId.setDisplayName(org.openide.util.NbBundle.getMessage(DependencyNode.class, "PROP_Group"));
             groupId.setShortDescription(""); //NOI18N
-            PropertySupport.Reflection version = new PropertySupport.Reflection<String>(art, String.class, "getVersion", null); //NOI18N
+            PropertySupport.Reflection version = new PropertySupport.Reflection<String>(data.art, String.class, "getVersion", null); //NOI18N
             version.setName("version"); //NOI18N
             version.setDisplayName(org.openide.util.NbBundle.getMessage(DependencyNode.class, "PROP_Version"));
             version.setShortDescription(org.openide.util.NbBundle.getMessage(DependencyNode.class, "HINT_Version"));
-            PropertySupport.Reflection type = new PropertySupport.Reflection<String>(art, String.class, "getType", null); //NOI18N
+            PropertySupport.Reflection type = new PropertySupport.Reflection<String>(data.art, String.class, "getType", null); //NOI18N
             type.setName("type"); //NOI18N
             type.setDisplayName(org.openide.util.NbBundle.getMessage(DependencyNode.class, "PROP_Type"));
-            PropertySupport.Reflection scope = new PropertySupport.Reflection<String>(art, String.class, "getScope", null); //NOI18N
+            PropertySupport.Reflection scope = new PropertySupport.Reflection<String>(data.art, String.class, "getScope", null); //NOI18N
             scope.setName("scope"); //NOI18N
             scope.setDisplayName(org.openide.util.NbBundle.getMessage(DependencyNode.class, "PROP_Scope"));
-            PropertySupport.Reflection classifier = new PropertySupport.Reflection<String>(art, String.class, "getClassifier", null); //NOI18N
+            PropertySupport.Reflection classifier = new PropertySupport.Reflection<String>(data.art, String.class, "getClassifier", null); //NOI18N
             classifier.setName("classifier"); //NOI18N
             classifier.setDisplayName(org.openide.util.NbBundle.getMessage(DependencyNode.class, "PROP_Classifier"));
-            PropertySupport.Reflection hasJavadoc = new PropertySupport.Reflection<Boolean>(this, Boolean.TYPE, "hasJavadocInRepository", null); //NOI18N
+            PropertySupport.Reflection hasJavadoc = new PropertySupport.Reflection<Boolean>(data, Boolean.TYPE, "hasJavadocInRepository", null); //NOI18N
             hasJavadoc.setName("javadoc"); //NOI18N
             hasJavadoc.setDisplayName(org.openide.util.NbBundle.getMessage(DependencyNode.class, "PROP_Javadoc_Locally"));
-            PropertySupport.Reflection hasSources = new PropertySupport.Reflection<Boolean>(this, Boolean.TYPE, "hasSourceInRepository", null); //NOI18N
+            PropertySupport.Reflection hasSources = new PropertySupport.Reflection<Boolean>(data, Boolean.TYPE, "hasSourceInRepository", null); //NOI18N
             hasSources.setName("sources"); //NOI18N
             hasSources.setDisplayName(org.openide.util.NbBundle.getMessage(DependencyNode.class, "PROP_Sources_Locally"));
-            PropertySupport.Reflection transitive = new PropertySupport.Reflection<Boolean>(this, Boolean.TYPE, "isTransitive", null); //NOI18N
+            PropertySupport.Reflection transitive = new PropertySupport.Reflection<Boolean>(data, Boolean.TYPE, "isTransitive", null); //NOI18N
             transitive.setName("transitive"); //NOI18N
             transitive.setDisplayName(org.openide.util.NbBundle.getMessage(DependencyNode.class, "PROP_Transitive"));
             
-            PropertySupport.Reflection path = new PropertySupport.Reflection<File>(art, File.class, "getFile", null); //NOI18N
+            PropertySupport.Reflection path = new PropertySupport.Reflection<File>(data.art, File.class, "getFile", null); //NOI18N
             path.setName("path"); //NOI18N
             path.setDisplayName("Path");
             path.setShortDescription("Absolute path to the artifact in the local filesystem.");
             
-            PropertySupport.Reflection repositorypath = new PropertySupport.Reflection<String>(this, String.class, "getArtifactRepositoryPath", null); //NOI18N
+            PropertySupport.Reflection repositorypath = new PropertySupport.Reflection<String>(data, String.class, "getArtifactRepositoryPath", null); //NOI18N
             repositorypath.setName("repositorypath"); //NOI18N
             repositorypath.setDisplayName("Repository Path");
             repositorypath.setShortDescription("Relative path within the local maven repository.");
@@ -720,9 +649,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
         return sheet;
     }
     
-    public String getArtifactRepositoryPath() {
-        return EmbedderFactory.getProjectEmbedder().getLocalRepository().pathOf(art);
-    }
+    
     
 //    private class DownloadJavadocAndSourcesAction extends AbstractAction implements Runnable {
 //        public DownloadJavadocAndSourcesAction() {
@@ -742,6 +669,118 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
 //        }
 //    }
 
+    //extract the model out of the node class
+    public static class Data {
+
+        private Artifact art;
+        private Project project;
+        private java.util.concurrent.atomic.AtomicReference<FileObject> fileObject;
+        private final java.util.concurrent.atomic.AtomicBoolean sourceExists = new AtomicBoolean(false);
+        private final java.util.concurrent.atomic.AtomicBoolean javadocExists = new AtomicBoolean(false);
+        private DependencyNode node;
+
+        public Data(Artifact art, Project project, FileObject fileObject) {
+            this.art = art;
+            this.project = project;
+            this.fileObject = new AtomicReference<FileObject>(fileObject);
+        }
+
+        public String getArtifactRepositoryPath() {
+            return EmbedderFactory.getProjectEmbedder().getLocalRepository().pathOf(art);
+        }
+        
+        public boolean isLocal() {
+            FileObject fo = fileObject.get();
+            return fo != null && fo.isValid() && !NbArtifactFixer.isFallbackFile(art.getFile());
+        }
+
+        public boolean hasJavadocInRepository() {
+            return javadocExists.get() && (!Artifact.SCOPE_SYSTEM.equals(art.getScope()));
+        }
+
+        //normalized
+        public File getJavadocFile() {
+            File artifact = art.getFile();
+            String version = artifact.getParentFile().getName();
+            String artifactId = artifact.getParentFile().getParentFile().getName();
+            return new File(artifact.getParentFile(), artifactId + "-" + version + (art.getClassifier() != null ? ("tests".equals(art.getClassifier()) ? "-test" : "-" + art.getClassifier()) : "") + "-javadoc.jar"); //NOI18N
+        }
+
+        //normalized
+        public File getSourceFile() {
+            File artifact = art.getFile();
+            String version = artifact.getParentFile().getName();
+            String artifactId = artifact.getParentFile().getParentFile().getName();
+            return new File(artifact.getParentFile(), artifactId + "-" + version + (art.getClassifier() != null ? ("tests".equals(art.getClassifier()) ? "-test" : "-" + art.getClassifier()) : "") + "-sources.jar"); //NOI18N
+        }
+
+        public boolean hasSourceInRepository() {
+            return sourceExists.get() && (!Artifact.SCOPE_SYSTEM.equals(art.getScope()));
+        }
+        
+        MavenProject getMavenProject() {
+            return project.getLookup().lookup(NbMavenProject.class).getMavenProject();
+        }
+
+        /**
+         * public because of the property sheet
+         */
+        public boolean isTransitive() {
+            List trail = art.getDependencyTrail();
+            return trail != null && trail.size() > 2;
+        }
+
+        public boolean isManaged() {
+            DependencyManagement dm = project.getLookup().lookup(NbMavenProject.class).getMavenProject().getDependencyManagement();
+            if (dm != null) {
+                List<Dependency> dmList = dm.getDependencies();
+                for (Dependency d : dmList) {
+                    if (art.getGroupId().equals(d.getGroupId())
+                            && art.getArtifactId().equals(d.getArtifactId())) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        private boolean isAddedToCP() {
+            return art.getArtifactHandler().isAddedToClasspath();
+        }
+
+        /**
+         * this call is slow
+         *
+         * @return
+         */
+        private boolean isDependencyProjectAvailable() {
+            return getDependencyProjectAvailable() != null;
+        }
+
+        /**
+         * this call is slow
+         *
+         * @return
+         */
+        private Project getDependencyProjectAvailable() {
+            if (Artifact.SCOPE_SYSTEM.equals(art.getScope())) {
+                return null;
+            }
+            URI uri = org.openide.util.Utilities.toURI(art.getFile());
+            return FileOwnerQuery.getOwner(uri);
+        }
+
+        private void setNode(DependencyNode aThis) {
+            node = aThis;
+        }
+
+        public DependencyNode getNode() {
+            return node;
+        }
+        
+    }
+
+    
     //why oh why do we have to suffer through this??
     private static final RemoveDependencyAction REMOVEDEPINSTANCE = new RemoveDependencyAction(Lookup.EMPTY);
 
@@ -851,24 +890,24 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
             RP.post(new Runnable() {
                 @Override
                 public void run() {
-                    org.apache.maven.shared.dependency.tree.DependencyNode rootnode = DependencyTreeFactory.createDependencyTree(project.getOriginalMavenProject(), EmbedderFactory.getOnlineEmbedder(), Artifact.SCOPE_TEST);
-                    DependencyExcludeNodeVisitor nv = new DependencyExcludeNodeVisitor(art.getGroupId(), art.getArtifactId(), art.getType());
+                    org.apache.maven.shared.dependency.tree.DependencyNode rootnode = DependencyTreeFactory.createDependencyTree(data.getMavenProject(), EmbedderFactory.getOnlineEmbedder(), Artifact.SCOPE_TEST);
+                    DependencyExcludeNodeVisitor nv = new DependencyExcludeNodeVisitor(data.art.getGroupId(), data.art.getArtifactId(), data.art.getType());
                     rootnode.accept(nv);
                     final Set<org.apache.maven.shared.dependency.tree.DependencyNode> nds = nv.getDirectDependencies();
                     Collection<org.apache.maven.shared.dependency.tree.DependencyNode> directs;
                     if (nds.size() > 1) {
-                        final ExcludeDependencyPanel pnl = new ExcludeDependencyPanel(project.getOriginalMavenProject(), art, nds, rootnode);
+                        final ExcludeDependencyPanel pnl = new ExcludeDependencyPanel(data.getMavenProject(), data.art, nds, rootnode);
                         DialogDescriptor dd = new DialogDescriptor(pnl, TIT_Exclude());
                         Object ret = DialogDisplayer.getDefault().notify(dd);
                         if (ret == DialogDescriptor.OK_OPTION) {
-                            directs = pnl.getDependencyExcludes().get(art);
+                            directs = pnl.getDependencyExcludes().get(data.art);
                         } else {
                             return;
                         }
                     } else {
                         directs = nds;
                     }
-                    runModifyExclusions(art, directs);
+                    runModifyExclusions(data.art, directs);
                 }
             });
         }
@@ -883,7 +922,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
                         if (dep == null) {
                             // now check the active profiles for the dependency..
                             List<String> profileNames = new ArrayList<String>();
-                            Iterator it = project.getOriginalMavenProject().getActiveProfiles().iterator();
+                            Iterator it = data.getMavenProject().getActiveProfiles().iterator();
                             while (it.hasNext()) {
                                 Profile prof = (Profile) it.next();
                                 profileNames.add(prof.getId());
@@ -917,23 +956,40 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
                     }
                 }
             };
-            FileObject fo = FileUtil.toFileObject(project.getPOMFile());
+            FileObject fo = FileUtil.toFileObject(data.project.getLookup().lookup(NbMavenProjectImpl.class).getPOMFile());
             org.netbeans.modules.maven.model.Utilities.performPOMModelOperations(fo, Collections.singletonList(operation));
         }
     }
-
+    
+    private static Action DOWNLOAD_JAVADOC_ACTION = new DownloadJavadocSrcAction(true);
+    private static Action DOWNLOAD_SOURCE_ACTION = new DownloadJavadocSrcAction(false);
+    
+    
     @SuppressWarnings("serial")
-    private class DownloadJavadocSrcAction extends AbstractAction {
+    private static class DownloadJavadocSrcAction extends AbstractAction implements ContextAwareAction {
         private final boolean javadoc;
+        private final Lookup actionContext;
         public DownloadJavadocSrcAction(boolean javadoc) {
-            putValue(Action.NAME, javadoc ? LBL_Download_Javadoc() : LBL_Download__Sources());
-            this.javadoc = javadoc;
+            this(javadoc, Lookup.EMPTY);
         }
 
-       
+        private DownloadJavadocSrcAction(boolean javadoc, Lookup actionContext) {
+            putValue(Action.NAME, javadoc ? LBL_Download_Javadoc() : LBL_Download__Sources());
+            this.javadoc = javadoc;
+            this.actionContext = actionContext;
+        }
+
+        @Override
+        public Action createContextAwareInstance(Lookup actionContext) {
+            
+            return new DownloadJavadocSrcAction(javadoc, actionContext);
+        }       
         
         @Override
         public void actionPerformed(ActionEvent evnt) {
+            if (actionContext == null) {
+                return;
+            }
             RP.post(new Runnable() {
                 public @Override void run() {
                     ProgressContributor contributor =AggregateProgressFactory.createProgressContributor("multi-1");
@@ -944,13 +1000,16 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
                     handle.start();
                     try {
                         ProgressTransferListener.setAggregateHandle(handle);
-
-                        if (javadoc && !hasJavadocInRepository()) {
-                            downloadJavadocSources(contributor, javadoc);
-                        } else if (!javadoc && !hasSourceInRepository()) {
-                            downloadJavadocSources(contributor, javadoc);
-                        } else {
-                            contributor.finish();
+                        for (Data data : actionContext.lookupAll(Data.class)) {
+                            ProgressContributor contributor2 = AggregateProgressFactory.createProgressContributor("multi-1");
+                            handle.addContributor(contributor2);
+                            if (javadoc && !data.hasJavadocInRepository()) {
+                                data.getNode().downloadJavadocSources(contributor2, javadoc);
+                            } else if (!javadoc && !data.hasSourceInRepository()) {
+                                data.getNode().downloadJavadocSources(contributor2, javadoc);
+                            } else {
+                                contributor2.finish();
+                            }
                         }
                         
                     } catch (ThreadDeath d) { // download interrupted
@@ -1064,9 +1123,9 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
 
         @Override
         public void actionPerformed(ActionEvent event) {
-            File fil = InstallPanel.showInstallDialog(art);
+            File fil = InstallPanel.showInstallDialog(data.art);
             if (fil != null) {
-                InstallPanel.runInstallGoal(project, fil, art);
+                InstallPanel.runInstallGoal(data.project.getLookup().lookup(NbMavenProjectImpl.class), fil, data.art);
             }
         }
     }
@@ -1079,7 +1138,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
         }
 
         @Override public void actionPerformed(ActionEvent e) {
-            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(art.getFile().getAbsolutePath()), null);
+            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(data.art.getFile().getAbsolutePath()), null);
         }
 
     }
@@ -1103,7 +1162,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
 
         @Override
         public void run() {
-            File target = getJavadocFile();
+            File target = data.getJavadocFile();
             try {
                 FileUtils.copyFile(source, target);
             } catch (IOException ex) {
@@ -1133,7 +1192,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
 
         @Override
         public void run() {
-            File target = getSourceFile();
+            File target = data.getSourceFile();
             try {
                 FileUtils.copyFile(source, target);
             } catch (IOException ex) {

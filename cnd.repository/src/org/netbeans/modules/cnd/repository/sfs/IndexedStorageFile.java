@@ -52,6 +52,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.nio.BufferOverflowException;
+import java.nio.BufferUnderflowException;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Formatter;
 import java.util.Iterator;
@@ -67,6 +70,7 @@ import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.netbeans.modules.cnd.repository.relocate.api.UnitCodec;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.support.RepositoryStatistics;
 import org.netbeans.modules.cnd.repository.testbench.RepositoryStatisticsImpl;
 
@@ -139,7 +143,11 @@ class IndexedStorageFile extends FileStorage {
 
         final ChunkInfo chunkInfo = index.get(key);
         if (chunkInfo != null) {
-            object = fileRWAccess.read(key.getPersistentFactory(), chunkInfo.getOffset(), chunkInfo.getSize());
+            try {
+                object = fileRWAccess.read(key.getPersistentFactory(), chunkInfo.getOffset(), chunkInfo.getSize());
+            } catch(IllegalArgumentException e) {
+                throw new IllegalArgumentException(e.getMessage()+". Key "+key.getClass().getName()); // NOI18N
+            }
             if (Stats.fileStatisticsLevel > 0) {
                 fileStatistics.incrementReadCount(key);
             }
@@ -185,7 +193,7 @@ class IndexedStorageFile extends FileStorage {
                     fileRWAccessSize.set(0);
                     usedSize = 0;
                 } else {
-                    usedSize -= -oldSize;
+                    usedSize -= oldSize;
                 }
             }
         }

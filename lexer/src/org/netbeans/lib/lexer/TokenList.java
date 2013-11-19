@@ -97,9 +97,6 @@ public interface TokenList<T extends TokenId> {
     /**
      * Get token or {@link EmbeddingContainer} at given index in this list.
      * <br/>
-     * The method's implementation may need to be synchronized as multiple
-     * threads can access it at the same time.
-     * <br/>
      * The requested index value may be arbitrarily high
      * (e.g. when TokenSequence.move(index) is used for too high value).
      *
@@ -121,14 +118,13 @@ public interface TokenList<T extends TokenId> {
     AbstractToken<T> replaceFlyToken(int index, AbstractToken<T> flyToken, int offset);
     
     /**
-     * Wrap the token by a branch token list due to language embedding
-     * that exists for the token.
+     * Set the token or embedding at the given index.
      *
      * @param index existing index in this token list at which the token
-     *  should be wrapped with the embedding info.
-     * @param embeddingContainer embedding info that should wrap the token.
+     *  should be set.
+     * @param t non-null token or embedding.
      */
-    void wrapToken(int index, EmbeddingContainer<T> embeddingContainer);
+    void setTokenOrEmbedding(int index, TokenOrEmbedding<T> t);
     
     /**
      * Get absolute offset of the token at the given index in the token list.
@@ -136,8 +132,10 @@ public interface TokenList<T extends TokenId> {
      * This method can only be called if the token at the given index
      * was already fetched by {@link tokenOrEmbedding(int)}.
      * <br/>
-     * For EmbeddedTokenList a EmbeddingContainer.updateStatus() must be called
+     * For EmbeddedTokenList an updateStatus() must be called
      * prior this method to obtain up-to-date results.
+     * 
+     * @param index valid token index in token list.
      */
     int tokenOffset(int index);
     
@@ -210,7 +208,7 @@ public interface TokenList<T extends TokenId> {
      *  Returns -1 if this list is constructed for immutable input and cannot be mutated. 
      */
     int modCount();
-    
+
     /**
      * Get the root token list of the token list hierarchy.
      */
@@ -298,7 +296,7 @@ public interface TokenList<T extends TokenId> {
      * <br/>
      * It's guaranteed that there will be no token starting below this offset.
      * <br/>
-     * For EmbeddedTokenList a EmbeddingContainer.updateStatus() must be called
+     * For EmbeddedTokenList a updateModCount() must be called
      * prior this method to obtain up-to-date results.
      */
     int startOffset();
@@ -310,7 +308,7 @@ public interface TokenList<T extends TokenId> {
      * <br/>
      * It's guaranteed that there will be no token ending above this offset.
      * <br/>
-     * For EmbeddedTokenList a EmbeddingContainer.updateStatus() must be called
+     * For EmbeddedTokenList a updateModCount() must be called
      * prior this method to obtain up-to-date results.
      */
     int endOffset();
@@ -323,5 +321,21 @@ public interface TokenList<T extends TokenId> {
      * @return true if the token list was removed or false otherwise.
      */
     boolean isRemoved();
+
+    /**
+     * Dump extra information (not token infos)
+     * about this token list to the given string builder.
+     *
+     * @param sb non-null string builder.
+     * @return sb passed as an argument.
+     */
+    StringBuilder dumpInfo(StringBuilder sb);
+
+    /**
+     * Type of this token list for dump info purpose.
+     *
+     * @return textual token list type.
+     */
+    String dumpInfoType();
 
 }

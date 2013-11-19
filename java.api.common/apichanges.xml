@@ -105,21 +105,105 @@ is the proper place.
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
-        <change id="BaseActionProvider.CustomPlatformCallback">
+        <change id="ClassPathProviderImpl-bootcp-props">
             <api name="java-api-common"/>
-            <summary>Added <code>BaseActionProvider.CustomPlatformCallback</code> to allow override active platform lookup.</summary>
-            <version major="1" minor="61"/>
-            <date day="10" month="10" year="2013"/>
+            <summary>Possibility to create project's boot classpath based on project properties</summary>
+            <version major="1" minor="67"/>
+            <date day="4" month="11" year="2013"/>
             <author login="tzezula"/>
             <compatibility addition="yes"/>
             <description>
                 <p>
-                    Added <code>BaseActionProvider.CustomPlatformCallback</code> to allow project types to override
-                    active project platform lookup. By default the <code>BaseActionProvider</code> uses the <code>ProjectProperties.PLATFORM_ACTIVE</code>
-                    property to search among j2se platforms.
+                   Added possibility to create project's boot classpath based on project properties
+                   rather than project's platform bootstrap libraries.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.classpath" name="ClassPathProviderImpl"/>
+        </change>
+        <change id="BaseActionProvider-mainClass">
+            <api name="java-api-common"/>
+            <summary>Possibility to override main class check and main class selection</summary>
+            <version major="1" minor="66"/>
+            <date day="4" month="11" year="2013"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                   Added possibility to override main class check and main class selection.
                 </p>
             </description>
             <class package="org.netbeans.modules.java.api.common.project" name="BaseActionProvider"/>
+        </change>
+        <change id="ProjectOperations">
+            <api name="java-api-common"/>
+            <summary>Added <code>ProjectOperations</code> support for project operations in Ant based project.</summary>
+            <version major="1" minor="65"/>
+            <date day="29" month="10" year="2013"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                   Added <code>ProjectOperations</code> support for project operations in Ant based project..
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.project" name="ProjectOperations"/>
+        </change>
+        <change id="ProjectConfigurations">
+            <api name="java-api-common"/>
+            <summary>Added <code>ProjectConfigurations</code> support for <code>ProjectConfiguration</code>s in Ant base project.</summary>
+            <version major="1" minor="64"/>
+            <date day="23" month="10" year="2013"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                   Added <code>ProjectConfigurations</code> support for <code>ProjectConfiguration</code>s in Ant base project.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.project" name="ProjectConfigurations"/>
+        </change>
+        <change id="LibrariesNode.Builder">
+            <api name="java-api-common"/>
+            <summary>Added <code>LibrariesNode.Builder</code> to create configured <code>LibrariesNode</code>.</summary>
+            <version major="1" minor="63"/>
+            <date day="22" month="10" year="2013"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added <code>LibrariesNode.Builder</code> to create configured <code>LibrariesNode</code>.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.project.ui" name="LibrariesNode"/>
+        </change>
+        <change id="LogicalViewProviders">
+            <api name="java-api-common"/>
+            <summary>Added <code>LogicalViewProviders</code> support to create default implementation of the <code>LogicalViewProvider2</code>.</summary>
+            <version major="1" minor="62"/>
+            <date day="17" month="10" year="2013"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added <code>LogicalViewProviders</code> support to create default implementation of the <code>LogicalViewProvider2</code>
+                    for Ant Based Project.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.project.ui" name="LogicalViewProviders"/>
+        </change>
+        <change id="ProjectHooks">
+            <api name="java-api-common"/>
+            <summary>Added <code>ProjectHooks</code> factory to create default implementation of the <code>ProjectOpenedHook</code> and the <code>ProjectXmlSavedHook}</code>.</summary>
+            <version major="1" minor="61"/>
+            <date day="15" month="10" year="2013"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added <code>ProjectHooks</code> factory to create default implementation of the <code>ProjectOpenedHook</code> and <code>ProjectXmlSavedHook</code>.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.project" name="ProjectHooks"/>
         </change>
         <change id="ProjectProperties">
             <api name="java-api-common"/>

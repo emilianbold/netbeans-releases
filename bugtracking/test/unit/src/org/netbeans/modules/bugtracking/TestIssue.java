@@ -43,9 +43,9 @@ package org.netbeans.modules.bugtracking;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.Collection;
 import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
-import org.openide.nodes.Node;
 
 /**
  *
@@ -85,7 +85,7 @@ public abstract class TestIssue {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public void attachPatch(File file, String description) {
+    public void attachFile(File file, String description, boolean isPatch) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -93,7 +93,7 @@ public abstract class TestIssue {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public String[] getSubtasks() {
+    public Collection<String> getSubtasks() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

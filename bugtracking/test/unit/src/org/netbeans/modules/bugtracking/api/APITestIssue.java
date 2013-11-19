@@ -44,13 +44,14 @@ package org.netbeans.modules.bugtracking.api;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
-import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.bugtracking.TestIssue;
 import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.openide.util.HelpCtx;
 
 /**
@@ -79,6 +80,7 @@ public class APITestIssue extends TestIssue {
     private final APITestRepository repo;
     private String summary;
     private String description;
+    private boolean isPatch;
 
     public APITestIssue(String id, APITestRepository repo) {
         this(id, repo, false);
@@ -129,7 +131,7 @@ public class APITestIssue extends TestIssue {
     @Override
     public boolean refresh() {
         wasRefreshed = true;
-        support.firePropertyChange(IssueProvider.EVENT_ISSUE_REFRESHED, null, null);
+        support.firePropertyChange(IssueProvider.EVENT_ISSUE_DATA_CHANGED, null, null);
         return true;
     }
 
@@ -140,9 +142,10 @@ public class APITestIssue extends TestIssue {
     }
 
     @Override
-    public void attachPatch(File file, String description) {
-        attachedPatchDesc = description;
-        attachedFile = file;
+    public void attachFile(File file, String description, boolean isPatch) {
+        this.attachedPatchDesc = description;
+        this.attachedFile = file;
+        this.isPatch = isPatch;
     }
 
     @Override
@@ -163,6 +166,11 @@ public class APITestIssue extends TestIssue {
                 }
                 @Override public HelpCtx getHelpCtx() { return null; }
                 @Override public void closed() { }
+                @Override public boolean saveChanges() { return true; }
+                @Override public boolean discardUnsavedChanges() { return true; }
+                @Override public boolean isChanged() { return false; }
+                @Override public void addPropertyChangeListener(PropertyChangeListener l) { }
+                @Override public void removePropertyChangeListener(PropertyChangeListener l) { }
             };
         }
         return controller;
@@ -180,8 +188,8 @@ public class APITestIssue extends TestIssue {
     }
 
     @Override
-    public String[] getSubtasks() {
-        return new String[] {APITestIssue.ID_SUB_3};
+    public Collection<String> getSubtasks() {
+        return Arrays.asList(new String[] {APITestIssue.ID_SUB_3});
     }
 
     @Override

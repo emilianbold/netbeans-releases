@@ -563,19 +563,21 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
     }
 
     private static boolean isGoToSourceSupported (CallStackFrame f) {
-        String path = DebuggingNodeModel.getCachedFramePath(f);
-        String clazz = null;
-        if (path == null) {
-            clazz = DebuggingNodeModel.getCachedFrameClass(f);
-            if (clazz == null) {
-                return true; // Nothing cached, but go-to-source can be tried...
-            }
-        }
-        SourcePath sp = DebuggerManager.getDebuggerManager().getCurrentEngine().lookupFirst(null, SourcePath.class);
-        if (path != null) {
-            return sp.sourceAvailable(path.replace(java.io.File.separatorChar, '/'), true);
-        }
-        return sp.sourceAvailable(sp.convertClassNameToRelativePath(clazz), true);
+        String url = DebuggingNodeModel.getCachedFrameURL(f);
+        return url != null;
+//        String path = DebuggingNodeModel.getCachedFramePath(f);
+//        String clazz = null;
+//        if (path == null) {
+//            clazz = DebuggingNodeModel.getCachedFrameClass(f);
+//            if (clazz == null) {
+//                return true; // Nothing cached, but go-to-source can be tried...
+//            }
+//        }
+//        SourcePath sp = DebuggerManager.getDebuggerManager().getCurrentEngine().lookupFirst(null, SourcePath.class);
+//        if (path != null) {
+//            return sp.sourceAvailable(path.replace(java.io.File.separatorChar, '/'), true);
+//        }
+//        return sp.sourceAvailable(sp.convertClassNameToRelativePath(clazz), true);
     }
     
     private static void goToSource(final CallStackFrame frame) {

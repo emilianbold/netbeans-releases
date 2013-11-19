@@ -74,6 +74,9 @@ import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.clientproject.api.ClientSideModule;
+import org.netbeans.modules.web.clientproject.api.ProjectDirectoriesProvider;
+import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
+import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.modules.web.clientproject.problems.ProjectPropertiesProblemProvider;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserProvider;
@@ -360,6 +363,11 @@ public class ClientSideProject implements Project {
         return referenceHelper;
     }
 
+    @CheckForNull
+    public JsTestingProvider getJsTestingProvider(boolean showSelectionPanel) {
+        return JsTestingProviders.getDefault().getJsTestingProvider(this, showSelectionPanel);
+    }
+
     public String getName() {
         if (name == null) {
             ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
@@ -435,6 +443,7 @@ public class ClientSideProject implements Project {
                SharabilityQueryImpl.create(projectHelper, eval, ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER,
                     ClientSideProjectConstants.PROJECT_TEST_FOLDER, ClientSideProjectConstants.PROJECT_CONFIG_FOLDER),
                projectBrowserProvider,
+               new ProjectDirectoriesProviderImpl(),
        });
        return new DynamicProjectLookup(this,
                LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-web-clientproject/Lookup"));
@@ -579,6 +588,10 @@ public class ClientSideProject implements Project {
                 browserId = wb.getId();
             }
             CssPreprocessors.getDefault().addCssPreprocessorsListener(project.cssPreprocessorsListener);
+            JsTestingProvider jsTestingProvider = project.getJsTestingProvider(false);
+            if (jsTestingProvider != null) {
+                jsTestingProvider.projectOpened(project);
+            }
             // usage logging
             FileObject cordova = project.getProjectDirectory().getFileObject(".cordova"); // NOI18N
             ClientSideProjectUtilities.logUsage(ClientSideProject.class, "USG_PROJECT_HTML5_OPEN", // NOI18N
@@ -595,6 +608,10 @@ public class ClientSideProject implements Project {
             removeSiteRootListener();
             GlobalPathRegistry.getDefault().unregister(ClassPathProviderImpl.SOURCE_CP, new ClassPath[]{project.getSourceClassPath()});
             CssPreprocessors.getDefault().removeCssPreprocessorsListener(project.cssPreprocessorsListener);
+            JsTestingProvider jsTestingProvider = project.getJsTestingProvider(false);
+            if (jsTestingProvider != null) {
+                jsTestingProvider.projectClosed(project);
+            }
             // browser
             ClientProjectEnhancedBrowserImplementation enhancedBrowserImpl = project.getEnhancedBrowserImpl();
             if (enhancedBrowserImpl != null) {
@@ -861,6 +878,20 @@ public class ClientSideProject implements Project {
 
         @Override
         public void propertiesChanged(AntProjectEvent ev) {
+        }
+
+    }
+
+    private final class ProjectDirectoriesProviderImpl implements ProjectDirectoriesProvider {
+
+        @Override
+        public FileObject getConfigDirectory() {
+            return ClientSideProject.this.getConfigFolder();
+        }
+
+        @Override
+        public FileObject getTestDirectory() {
+            return ClientSideProject.this.getTestsFolder();
         }
 
     }

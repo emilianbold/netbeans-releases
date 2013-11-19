@@ -57,6 +57,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -847,7 +848,13 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                 break;
             }
         }
+        Collections.sort(result, new Comparator<Dependency>() {
 
+            @Override
+            public int compare(Dependency o1, Dependency o2) {
+                return o1.getManagementKey().compareTo(o2.getManagementKey());
+            }
+        });
         return result;
     }
 
@@ -1527,6 +1534,20 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                 }
                 NbMavenProject mav = p.getLookup().lookup(NbMavenProject.class);
                 if (mav != null) {
+                    boolean continueProjectIteration = false;
+                    MavenProject mavenProject = mav.getMavenProject();
+                    Iterator<Dependency> iterator = project.getLookup().lookup(NbMavenProject.class).getMavenProject().getDependencies().iterator();
+                    while (iterator.hasNext()) {
+                        Dependency dependency = iterator.next();
+                        if (mavenProject.getGroupId().equals(dependency.getGroupId())
+                                && mavenProject.getArtifactId().equals(dependency.getArtifactId())) {
+                            continueProjectIteration = true;
+                            break;
+                        }
+                    }
+                    if ( continueProjectIteration ) {
+                        continue;
+                    }
                     LogicalViewProvider lvp = p.getLookup().lookup(LogicalViewProvider.class);
                     toRet.add(createFilterWithDefaultAction(lvp.createLogicalView(), true));
                 }
@@ -1629,7 +1650,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
 
         @Override
         public Action getPreferredAction() {
-            return new DefAction(true, getLookup());
+            return super.getPreferredAction();
         }
 
         @Override

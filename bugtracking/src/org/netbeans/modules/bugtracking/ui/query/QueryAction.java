@@ -55,7 +55,7 @@ import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.spi.QueryController.QueryMode;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
@@ -93,18 +93,18 @@ public class QueryAction extends SystemAction {
     }
 
     public  static void createNewQuery(RepositoryImpl repositoryToSelect) {
-        openQuery(null, repositoryToSelect, false, QueryMode.EDIT);
+        openQuery(null, repositoryToSelect, false, QueryMode.EDIT, true);
     }
     
-    public static void createNewQueryForRepo(RepositoryImpl repositoryToSelect) {
-        openQuery(null, repositoryToSelect, true, QueryMode.EDIT);
+    public static void createNewQuery(RepositoryImpl repositoryToSelect, boolean suggestedSelectionOnly) {
+        openQuery(null, repositoryToSelect, suggestedSelectionOnly, QueryMode.EDIT, true);
     }
 
     public static void openQuery(QueryImpl query, RepositoryImpl repository, QueryMode mode) {
-        openQuery(query, repository, false, mode);
+        openQuery(query, repository, false, mode, false);
     }
     
-    private static void openQuery(final QueryImpl query, final RepositoryImpl repository, final boolean suggestedSelectionOnly, final QueryMode mode) {
+    private static void openQuery(final QueryImpl query, final RepositoryImpl repository, final boolean suggestedSelectionOnly, final QueryMode mode, final boolean isNew) {
         BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
@@ -121,7 +121,7 @@ public class QueryAction extends SystemAction {
                             }
                             if(tc == null) {
                                 tc = new QueryTopComponent();
-                                tc.init(query, repository, file, suggestedSelectionOnly, mode);
+                                tc.init(query, repository, file, suggestedSelectionOnly, mode, isNew);
                             } else {
                                 tc.setMode(mode);
                             }

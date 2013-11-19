@@ -42,14 +42,12 @@
 
 package org.netbeans.modules.bugtracking.kenai;
 
-import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.logging.Level;
@@ -57,12 +55,19 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.bugtracking.*;
+import org.netbeans.modules.bugtracking.APIAccessor;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.DelegatingConnector;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.TestIssue;
+import org.netbeans.modules.bugtracking.TestKit;
+import org.netbeans.modules.bugtracking.TestRepository;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.issuetable.IssueNode;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
-import org.netbeans.modules.bugtracking.spi.*;
+import org.netbeans.modules.bugtracking.api.Util;
+import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
+import org.netbeans.modules.bugtracking.spi.IssueController;
+import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiManager;
@@ -217,7 +222,7 @@ public class IssueAccessorTest extends NbTestCase {
 
         public IATestRepository(String name) throws IOException {
             KenaiProject kp = kenai.getProject(name);
-            delegate = APIAccessor.IMPL.getImpl(TeamUtil.getRepository(kp.getWebLocation().toString(), kp.getName()));
+            delegate = APIAccessor.IMPL.getImpl(Util.getTeamRepository(kp.getWebLocation().toString(), kp.getName()));
         }
 
         @Override
@@ -278,6 +283,18 @@ public class IssueAccessorTest extends NbTestCase {
         }
         @Override public void opened() { }
         @Override public void closed() { }
+
+        @Override
+        public boolean saveChanges() { 
+            return true;
+        }
+        @Override
+        public boolean discardUnsavedChanges() {
+            return true;
+        }
+        @Override public void addPropertyChangeListener(PropertyChangeListener l) { }
+        @Override public void removePropertyChangeListener(PropertyChangeListener l) { }
+        @Override public boolean isChanged() { return false; }
     }
 
     @BugtrackingConnector.Registration(

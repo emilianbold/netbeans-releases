@@ -41,66 +41,66 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se.dialogs;
 
-import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.MainWindowOperator;
+import junit.framework.Test;
+import org.netbeans.jellytools.RuntimeTabOperator;
+import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.j2se.setup.J2SESetup;
 
-import org.netbeans.jellytools.RuntimeTabOperator;
-import org.netbeans.jellytools.actions.RuntimeViewAction;
-import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
-
 /**
- * Test opening Runtime Tab .
+ * Test opening Services Tab .
  *
- * @author  anebuzelsky@netbeans.org
+ * @author anebuzelsky@netbeans.org
  */
 public class RuntimeWindowTest extends PerformanceTestCase {
-    
-    private final String menupath = Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle", "Menu/Window")
-                +"|"+Bundle.getStringTrimmed("org.netbeans.core.ide.Bundle", "CTL_ServicesTabAction");
-    
-    /** Creates a new instance of RuntimeWindow */
+
+    /**
+     * Creates a new instance of RuntimeWindowTest
+     *
+     * @param testName test name
+     */
     public RuntimeWindowTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
 
-    /** Creates a new instance of RuntimeWindow */
+    /**
+     * Creates a new instance of RuntimeWindowTest
+     *
+     * @param testName test name
+     * @param performanceDataName data name
+     */
     public RuntimeWindowTest(String testName, String performanceDataName) {
-        super(testName,performanceDataName);
+        super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(RuntimeWindowTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(J2SESetup.class, "testCloseMemoryToolbar")
+                .addTest(RuntimeWindowTest.class)
+                .suite();
     }
 
     public void testRuntimeWindow() {
         doMeasurement();
-    }    
-    
+    }
+
+    @Override
     public void prepare() {
     }
-    
+
+    @Override
     public ComponentOperator open() {
-        MainWindowOperator.getDefault().menuBar().pushMenu(menupath,"|");
-        return new RuntimeTabOperator();
+        return RuntimeTabOperator.invoke();
     }
-    
+
     @Override
     public void close() {
-        if(testedComponentOperator!=null && testedComponentOperator.isShowing())
-            ((RuntimeTabOperator)testedComponentOperator).close();
+        if (testedComponentOperator != null && testedComponentOperator.isShowing()) {
+            ((RuntimeTabOperator) testedComponentOperator).close();
+        }
     }
-    
 }

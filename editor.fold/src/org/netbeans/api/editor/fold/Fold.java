@@ -44,14 +44,14 @@
 
 package org.netbeans.api.editor.fold;
 
-import javax.swing.event.DocumentEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 import org.netbeans.modules.editor.fold.FoldOperationImpl;
 import org.netbeans.modules.editor.fold.FoldChildren;
 import org.netbeans.modules.editor.fold.FoldUtilitiesImpl;
-import org.openide.ErrorManager;
 
 /**
  * Fold is a building block of the code folding tree-based hierarchy.
@@ -363,6 +363,7 @@ public final class Fold {
         }
     }
 
+    private static final Logger LOG = Logger.getLogger(Fold.class.getName()); 
     /**
      * Remove the fold at the given index
      * and put its children at its place.
@@ -373,6 +374,28 @@ public final class Fold {
     Fold replaceByChildren(int index) {
         Fold fold = getFold(index);
         FoldChildren foldChildren = fold.getChildren();
+        boolean check = false;
+        assert check = true;
+        if (check && foldChildren != null) {
+            Fold[] folds = foldChildren.foldsToArray(0, foldChildren.getFoldCount());
+            Fold toRemove = fold;
+            if (folds.length > 0) {
+                int ps = getStartOffset();
+                int pe = getEndOffset();
+                for (Fold f : folds) {
+                    int fs = f.getStartOffset();
+                    int fe = f.getEndOffset();
+                    if (fs < ps || fe > pe) {
+                        LOG.log(Level.WARNING, "Illegal attempt to replace-by-children fold. Parent fold: {0}, fold to be replaced: {1}, " +
+                                "at index {2}", new Object[] {
+                            this, toRemove, index
+                        });
+                        LOG.log(Level.WARNING, "Dumping hierarchy: " + getHierarchy(), new Throwable());
+                        break;
+                    }
+                }
+            }
+        }
         fold.setChildren(null);
         children.replaceByChildren(index, foldChildren);
         return fold;

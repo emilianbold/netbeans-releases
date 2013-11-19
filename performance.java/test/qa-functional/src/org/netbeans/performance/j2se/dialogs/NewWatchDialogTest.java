@@ -41,68 +41,65 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se.dialogs;
 
+import junit.framework.Test;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.j2se.setup.J2SESetup;
-
-import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Test of New Watch dialog
  *
- * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
+ * @author anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
 public class NewWatchDialogTest extends PerformanceTestCase {
 
-    private String MENU, TITLE;
- 
-
-    /** Creates a new instance of NewWatchDialog */
+    /**
+     * Creates a new instance of NewWatchDialog
+     *
+     * @param testName test name
+     */
     public NewWatchDialogTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
-    
-    /** Creates a new instance of NewWatchDialog */
+
+    /**
+     * Creates a new instance of NewWatchDialog
+     *
+     * @param testName test name
+     * @param performanceDataName data name
+     */
     public NewWatchDialogTest(String testName, String performanceDataName) {
-        super(testName,performanceDataName);
+        super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(NewWatchDialogTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(J2SESetup.class, "testCloseMemoryToolbar")
+                .addTest(NewWatchDialogTest.class)
+                .suite();
     }
-    
+
     public void testNewWatchDialog() {
         doMeasurement();
-    }    
-    
+    }
+
     @Override
     public void initialize() {
-        MENU = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle","Menu/RunProject") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle","CTL_New_Watch");
-        TITLE = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle","CTL_WatchDialog_Title");
     }
-    
+
+    @Override
     public void prepare() {
-   }
-    
-    public ComponentOperator open() {
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");
-        JellyTestCase.closeAllModal();
-        return new NbDialogOperator(TITLE);
     }
-    
+
+    @Override
+    public ComponentOperator open() {
+        new ActionNoBlock("Debug|New Watch", null).perform();
+        return new NbDialogOperator("New Watch");
+    }
 }

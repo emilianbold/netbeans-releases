@@ -2,18 +2,19 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Web Service Attributes Editor: Quality of Service: Output Message</title>
+<title>Web Service Attributes Editor: Quality of Service: Transport</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="org.netbeans.modules.websvc.wsitconf.ui.nodes.BindingOutputNode" name="org.netbeans.modules.websvc.wsitconf.ui.nodes.BindingOutputNode"></a></p>
+<p>Beta Draft: 2013-10-28</p>
+<p><a id="org.netbeans.modules.websvc.wsitconf.ui.client.nodes.TransportClientNode" name="org.netbeans.modules.websvc.wsitconf.ui.client.nodes.TransportClientNode"></a></p>
 <!-- infolevel="all" infotype="General" --><a id="sthref682" name="sthref682"></a>
-<h1>Web Service Attributes Editor: Quality of Service: Output Message</h1>
+<h1>Web Service Attributes Editor: Quality of Service: Transport</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>In the Output Message section of the WSIT configuration editor, you can select the following options for securing an input message. 
+<p>In the Transport section of the WSIT configuration editor, you can select optimal encoding or optimal transport for web service clients interoperating with web services. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1943">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2877">
 <param name="text" value="<html><u>More</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
@@ -32,18 +33,18 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t94" headers="r1c1-t94">
-<p>Authentication Token</p>
+<p>Automatically Select Optimal Encoding (XML/Fast Infoset)</p>
 </td>
 <td align="left" headers="r2c1-t94 r1c2-t94">
-<p>Select a supporting token that will be used to sign and/or encrypt the specified message parts. Options include Username, X509, SAML, Issued, or None.</p>
+<p>Fast Infoset is a more efficient alternative to XML. If the service is configured to allow Fast Infoset, select this option to use Fast Infoset for faster parsing, faster serializing, and smaller document sizes when compared with equivalent XML documents.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t94" headers="r1c1-t94">
-<p>Signed</p>
+<p>Automatically Select Optimal Transport (HTTP/TCP)</p>
 </td>
 <td align="left" headers="r3c1-t94 r1c2-t94">
-<p>Specifies that the authentication token must be a signed, supporting token. A signed supporting token is also signed by the primary message signature.</p>
+<p>If selected, the client runtime checks to see if the service supports TCP, and, if so, the client uses TCP transport automatically for service-client communication. TCP provides better performance when sending smaller messages. The performance enhancement is visible mostly in smaller messages because the overhead of sending messages over the HTTP protocol is eliminated. If the service does not support TCP, or if this option is not selected for the client, HTTP is used for transport.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
@@ -58,11 +59,10 @@
 </table>
 <br />
 <!-- -->
-<p>Click Message Parts to specify which parts of the message need to be encrypted, signed, and/or required.</p>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1842">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1842">
 <param name="text" value="<html><u>&quot;Developing and Securing Web Services&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">

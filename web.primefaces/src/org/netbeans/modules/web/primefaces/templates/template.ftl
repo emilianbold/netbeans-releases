@@ -47,7 +47,7 @@
         <p:growl id="growl" life="3000" />
 
         <p:layout fullPage="true">
-            <p:layoutUnit position="north" size="100" header="${r"#{"}${bundle}.AppName${r"}"}">
+            <p:layoutUnit position="north" size="65" header="${r"#{"}${bundle}.AppName${r"}"}">
                 <h:form id="menuForm">
                     <p:menubar>
                         <p:menuitem value="${r"#{"}${bundle}.Home${r"}"}" outcome="/index" icon="ui-icon-home"/>

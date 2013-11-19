@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.28.1
+#Version 1.32.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -226,4 +226,19 @@ meth public static org.netbeans.spi.editor.hints.Severity valueOf(java.lang.Stri
 meth public static org.netbeans.spi.editor.hints.Severity[] values()
 supr java.lang.Enum<org.netbeans.spi.editor.hints.Severity>
 hfds displayName
+
+CLSS public org.netbeans.spi.editor.hints.settings.FileHintPreferences
+cons public init()
+innr public abstract interface static GlobalHintPreferencesProvider
+meth public static java.util.prefs.Preferences getFilePreferences(org.openide.filesystems.FileObject,java.lang.String)
+meth public static void addChangeListener(javax.swing.event.ChangeListener)
+meth public static void fireChange()
+meth public static void removeChangeListener(javax.swing.event.ChangeListener)
+supr java.lang.Object
+hfds FIRE_WORKER,cs
+hcls WrapperPreferences
+
+CLSS public abstract interface static org.netbeans.spi.editor.hints.settings.FileHintPreferences$GlobalHintPreferencesProvider
+ outer org.netbeans.spi.editor.hints.settings.FileHintPreferences
+meth public abstract java.util.prefs.Preferences getGlobalPreferences()
 

@@ -61,6 +61,7 @@ import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.spi.QueryController.QueryMode;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
@@ -72,6 +73,8 @@ import org.openide.util.test.MockLookup;
  */
 public class QueryTest extends NbTestCase implements TestConstants, QueryConstants {
 
+    private static final EnumSet<IssueStatusProvider.Status> STATUS_ALL = EnumSet.allOf(IssueStatusProvider.Status.class);
+    
     public QueryTest(String arg0) {
         super(arg0);
     }
@@ -86,7 +89,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         super.setUp();
         
         MockLookup.setLayersAndInstances();
-        BugtrackingUtil.getBugtrackingConnectors(); // ensure conector
+        BugtrackingUtil.getBugtrackingConnectors(); // ensure connector
         
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
     }
@@ -166,7 +169,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         assertEquals(id1, i.getID());
 
         // query for issue1 & issue2
-        p =  MessageFormat.format(PARAMETERS_FORMAT, ts);
+        p =  MessageFormat.format(PARAMETERS_FORMAT, Long.toString(ts));
         nl.reset();
         q.refresh(p, false);
         bugzillaIssues = q.getIssues();
@@ -203,7 +206,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
 //        assertEquals(id1, is.iterator().next().getID());
 //        assertEquals(summary1, is.iterator().next().getSummary());
     }
-    private static final EnumSet<IssueStatusProvider.Status> STATUS_ALL = EnumSet.allOf(IssueStatusProvider.Status.class);
+
 
     // XXX test obsolete status
 
@@ -216,7 +219,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         String qname = "q" + System.currentTimeMillis();
         BugzillaQuery q = new BugzillaQuery(qname, QueryTestUtil.getRepository(), parameters, true, true, false);
         long lastRefresh = q.getLastRefresh();
-        assertEquals(0, lastRefresh);
+        assertEquals(-1, lastRefresh);
         long ts = System.currentTimeMillis();
 
         ts = System.currentTimeMillis();
@@ -276,7 +279,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         String name = QUERY_NAME + ts;
         h = new LogHandler(" saved", LogHandler.Compare.ENDS_WITH);
         q.setName(name);
-        q.setSaved(true);
+        q.getController().save(name);
         save(c); // save button
         h.waitUntilDone();
         assertTrue(q.isSaved());
@@ -310,11 +313,14 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
 
         TestQueryNotifyListener nl = new TestQueryNotifyListener(q);
         nl.reset();
-        
-        q.setName(QUERY_NAME + ts);
-        q.setSaved(true);
-        QueryListener ql = new QueryListener();
+
+        QueryListener ql = new QueryListener(q.getRepository(), q);
         q.addPropertyChangeListener(ql);
+        q.getController().addPropertyChangeListener(ql);
+        
+        String name = QUERY_NAME + ts;
+        q.setName(name);
+        q.setSaved(true); 
 
         h = new LogHandler("refresh finish", LogHandler.Compare.STARTS_WITH); // we wan't to check
                                                                               // if the refresh is made after save  
@@ -344,12 +350,13 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         Collection<BugzillaQuery> qs = QueryTestUtil.getRepository().getQueries();
         int queriesCount = qs.size();
 
-
-        q.setName(QUERY_NAME + ts);
-        q.setSaved(true);        
-        
-        QueryListener ql = new QueryListener();
+        QueryListener ql = new QueryListener(q.getRepository(), q);
         q.addPropertyChangeListener(ql);
+        q.getController().addPropertyChangeListener(ql);
+        
+        String name = QUERY_NAME + ts;
+        q.setName(name);
+        q.setSaved(true); 
         
         // save
         h = new LogHandler(" saved", LogHandler.Compare.ENDS_WITH);
@@ -397,11 +404,27 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
     private class QueryListener implements PropertyChangeListener {
         int saved = 0;
         int removed = 0;
+        private final BugzillaRepository repo;
+        private final BugzillaQuery query;
+
+        public QueryListener(BugzillaRepository repo, BugzillaQuery query) {
+            this.repo = repo;
+            this.query = query;
+        }
+        
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if(evt.getPropertyName().equals(QueryProvider.EVENT_QUERY_REMOVED)) {
+            if(evt.getPropertyName().equals(RepositoryProvider.EVENT_QUERY_LIST_CHANGED)) {
+                Collection<BugzillaQuery> queries = repo.getQueries();
+                for (BugzillaQuery q : queries) {
+                    if(q.getDisplayName().equals(query.getDisplayName())) {
+                        // this query wasn't removed
+                        return; 
+                    }
+                }
                 removed++;
             }
-            if(evt.getPropertyName().equals(QueryProvider.EVENT_QUERY_SAVED)) {
+            if(evt.getPropertyName().equals(QueryController.PROP_CHANGED)) {
                 saved++;
             }
         }

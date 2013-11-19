@@ -110,7 +110,13 @@ public final class TerminalSupportImpl {
         return button;
     }
     
-    public static void openTerminalImpl(final IOContainer ioContainer, final String tabTitle, final ExecutionEnvironment env, final String dir, final boolean silentMode) {
+    public static void openTerminalImpl(
+            final IOContainer ioContainer,
+            final String tabTitle,
+            final ExecutionEnvironment env,
+            final String dir,
+            final boolean silentMode,
+            final boolean pwdFlag) {
         final IOProvider term = IOProvider.get("Terminal"); // NOI18N
         if (term != null) {
             final AtomicBoolean destroyed = new AtomicBoolean(false);
@@ -188,6 +194,17 @@ public final class TerminalSupportImpl {
 
                         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
                         npb.addNativeProcessListener(new NativeProcessListener(ioRef.get(), destroyed));
+
+                        if (pwdFlag) {
+                            final String promptCommand = "echo -n \"\033]0;" + tabTitle + " `pwd`\007\"";   // NOI18N
+                            final String commandName = "PROMPT_COMMAND";                                    // NOI18N
+                            String usrPrompt = npb.getEnvironment().get(commandName);
+                            npb.getEnvironment().put(commandName,
+                                    (usrPrompt == null)
+                                    ? promptCommand
+                                    : promptCommand + ';' + usrPrompt
+                            );
+                        }
 
                         String shell = hostInfo.getLoginShell();
                         if (dir != null) {

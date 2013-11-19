@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.java.hints.jdk;
 
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
@@ -56,12 +57,15 @@ import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
@@ -81,8 +85,11 @@ public class ConvertToLambdaPreconditionChecker {
     private boolean foundShadowedVariable = false;
     private boolean foundRecursiveCall = false;
     private boolean foundOverloadWhichMakesLambdaAmbiguous = false;
+    private boolean foundAssignmentToRawType = false;
     private boolean foundAssignmentToSupertype = false;
     private boolean foundErroneousTargetType = false;
+    private BlockTree singleStatementLambdaMethodBody = null;
+    private boolean foundMemberReferenceCandidate = false;
     private boolean havePreconditionsBeenChecked = false;
 
     public ConvertToLambdaPreconditionChecker(TreePath pathToNewClassTree, CompilationInfo info) {
@@ -110,7 +117,8 @@ public class ConvertToLambdaPreconditionChecker {
                 && !foundShadowedVariable()
                 && !foundRecursiveCall()
                 && !foundOverloadWhichMakesLambdaAmbiguous()
-                && !foundAssignmentToSupertype();
+                && !foundAssignmentToSupertype()
+                && !foundAssignmentToRawtype();
     }
     
     private void ensurePreconditionsAreChecked() {
@@ -133,7 +141,9 @@ public class ConvertToLambdaPreconditionChecker {
     public boolean needsCastToExpectedType() {
         ensurePreconditionsAreChecked();
         return foundOverloadWhichMakesLambdaAmbiguous()
-                || foundAssignmentToSupertype();
+                || foundAssignmentToSupertype() 
+                // #234080: cannot infer lambda types from the raw type
+                || foundAssignmentToRawtype();
     }
 
     public boolean foundRefToThisOrSuper() {
@@ -161,9 +171,19 @@ public class ConvertToLambdaPreconditionChecker {
         return foundAssignmentToSupertype;
     }
 
+    public boolean foundAssignmentToRawtype() {
+        ensurePreconditionsAreChecked();
+        return foundAssignmentToRawType;
+    }
+
     public boolean foundErroneousTargetType() {
         ensurePreconditionsAreChecked();
         return foundErroneousTargetType;
+    }
+
+    public boolean foundMemberReferenceCandidate() {
+        ensurePreconditionsAreChecked();
+        return foundMemberReferenceCandidate;
     }
 
     private void checkForOverload() {
@@ -181,6 +201,15 @@ public class ConvertToLambdaPreconditionChecker {
                 return methodTree;
             }
             return super.visitMethod(methodTree, trees);
+        }
+
+        @Override
+        public Tree visitBlock(BlockTree blockTree, Trees trees) {
+            TreePath path = getCurrentPath();
+            if (path.getParentPath().getLeaf() == lambdaMethodTree && blockTree.getStatements().size() == 1) {
+                singleStatementLambdaMethodBody = blockTree;
+            }
+            return super.visitBlock(blockTree, trees);
         }
 
         @Override
@@ -212,6 +241,32 @@ public class ConvertToLambdaPreconditionChecker {
                 if (selector == null || (Utilities.getName(selector) != null
                         && Utilities.getName(selector).contentEquals("this"))) {
                     foundRecursiveCall = true;
+                }
+            }
+            if (singleStatementLambdaMethodBody == getCurrentPath().getParentPath().getParentPath().getLeaf()) {
+                Tree parent = getCurrentPath().getParentPath().getLeaf();
+                if (parent.getKind() == Tree.Kind.EXPRESSION_STATEMENT || parent.getKind() == Tree.Kind.RETURN) {
+                    boolean check = true;
+                    Iterator<? extends VariableTree> paramsIt = lambdaMethodTree.getParameters().iterator();
+                    ExpressionTree methodSelect = methodInvocationTree.getMethodSelect();
+                    if (paramsIt.hasNext() && methodSelect.getKind() == Tree.Kind.MEMBER_SELECT) {
+                        ExpressionTree expr = ((MemberSelectTree) methodSelect).getExpression();
+                        if (expr.getKind() == Tree.Kind.IDENTIFIER) {
+                            if (!((IdentifierTree)expr).getName().contentEquals(paramsIt.next().getName())) {
+                                paramsIt = lambdaMethodTree.getParameters().iterator();
+                            }
+                        }
+                    }
+                    Iterator<? extends ExpressionTree> argsIt = methodInvocationTree.getArguments().iterator();
+                    while (check && argsIt.hasNext() && paramsIt.hasNext()) {
+                        ExpressionTree arg = argsIt.next();
+                        if (arg.getKind() != Tree.Kind.IDENTIFIER || !paramsIt.next().getName().contentEquals(((IdentifierTree)arg).getName())) {
+                            check = false;
+                        }
+                    }
+                    if (check && !paramsIt.hasNext() && !argsIt.hasNext()) {
+                        foundMemberReferenceCandidate = true;
+                    }
                 }
             }
             return super.visitMethodInvocation(methodInvocationTree, trees);
@@ -405,11 +460,7 @@ public class ConvertToLambdaPreconditionChecker {
             return false;
         }
 
-        if (!areMethodParametersEquivalent(found, expected)) {
-            return false;
-        }
-
-        return true;
+        return areMethodParametersEquivalent(found, expected);
     }
 
     private boolean areReturnTypesEquivalent(ExecutableElement found, ExecutableElement expected) {
@@ -443,13 +494,21 @@ public class ConvertToLambdaPreconditionChecker {
             return;
         }
 
-        expectedType = info.getTypes().erasure(expectedType);
+        TypeMirror erasedExpectedType = info.getTypes().erasure(expectedType);
 
         TreePath pathForClassIdentifier = new TreePath(pathToNewClassTree, newClassTree.getIdentifier());
         TypeMirror lambdaType = info.getTrees().getTypeMirror(pathForClassIdentifier);
         lambdaType = info.getTypes().erasure(lambdaType);
 
-        foundAssignmentToSupertype = !info.getTypes().isSameType(expectedType, lambdaType);
+        foundAssignmentToSupertype = !info.getTypes().isSameType(erasedExpectedType, lambdaType);
+        
+        if (erasedExpectedType.getKind() == TypeKind.DECLARED) {
+            TypeElement te = (TypeElement)((DeclaredType)erasedExpectedType).asElement();
+            TypeMirror tt = (DeclaredType)te.asType();
+            if (tt.getKind() == TypeKind.DECLARED && !((DeclaredType)tt).getTypeArguments().isEmpty()) {
+                foundAssignmentToRawType =  info.getTypes().isSameType(erasedExpectedType, expectedType);
+            }
+        }
     }
 
     private TypeMirror findExpectedType(TreePath path) {

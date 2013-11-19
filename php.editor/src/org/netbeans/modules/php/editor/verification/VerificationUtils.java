@@ -73,7 +73,7 @@ public final class VerificationUtils {
                     result = new OffsetRange(lineBegin, lineEnd);
                 }
             } catch (BadLocationException ex) {
-                LOGGER.log(Level.WARNING, null, ex);
+                LOGGER.log(Level.FINE, null, ex);
             }
         }
         return result;

@@ -67,6 +67,7 @@ import org.openide.util.lookup.Lookups;
 @OptionsPanelController.SubRegistration(
     id=VcsAdvancedOptions.ID,
     displayName="#LBL_OptionsPanelName",
+    location="Team",
     keywords="#KW_VersioningOptions",
     keywordsCategory="Advanced/Versioning")
 public class VcsAdvancedOptions extends OptionsPanelController {

@@ -75,6 +75,7 @@ public class JavaGuiUtilsProvider extends GuiUtilsProvider {
         checkboxes.put("CHK_METHOD_BODIES", GuiUtils.CHK_METHOD_BODIES);
         checkboxes.put("CHK_JAVADOC", GuiUtils.CHK_JAVADOC);
         checkboxes.put("CHK_HINTS", GuiUtils.CHK_HINTS);
+        checkboxes.put("CHK_INTEGRATION_TESTS", GuiUtils.CHK_INTEGRATION_TESTS);
     }
 
     @Override
@@ -110,6 +111,11 @@ public class JavaGuiUtilsProvider extends GuiUtilsProvider {
     @Override
     public String getTestngFramework() {
         return GuiUtils.TESTNG_TEST_FRAMEWORK;
+    }
+
+    @Override
+    public String getJunitFramework() {
+        return GuiUtils.JUNIT_TEST_FRAMEWORK;
     }
     
 }

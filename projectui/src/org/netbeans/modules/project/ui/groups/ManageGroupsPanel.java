@@ -41,26 +41,33 @@
  */
 package org.netbeans.modules.project.ui.groups;
 
+import java.awt.Window;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import javax.swing.DefaultListModel;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author mkozeny
  */
-public class ManageGroupsPanel extends javax.swing.JPanel {
+public class ManageGroupsPanel extends javax.swing.JPanel implements PropertyChangeListener{
 
     private static final RequestProcessor RP = new RequestProcessor(ManageGroupsPanel.class.getName());
     
     private static final String NONE_GOUP = "(none)";
-
+    
     /**
      * Creates new form ManageGroupPanel
      */
@@ -84,6 +91,24 @@ public class ManageGroupsPanel extends javax.swing.JPanel {
             @Override
             public void valueChanged(ListSelectionEvent e) {
                 firePropertyChange("selection", null, null);
+            }
+        });
+        groupList.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent evt) {
+                if (evt.getClickCount() == 2) {
+                    RP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            Group.setActiveGroup(getSelectedGroups()[0], false);
+                        }
+                    });
+                    final Window w = SwingUtilities.getWindowAncestor(ManageGroupsPanel.this);
+                    if (w != null) {
+                        w.setVisible(false);
+                        w.dispose();
+                    }
+                }
             }
         });
         final boolean isReady = isReady();
@@ -269,18 +294,44 @@ public class ManageGroupsPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void propertiesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_propertiesButtonActionPerformed
-        GroupsMenu.openProperties(getSelectedGroups()[0]);
+        Group selectedGroup = getSelectedGroups()[0];
+        selectedGroup.addChangeListener(this);
+        GroupsMenu.openProperties(selectedGroup);
+        selectedGroup.removeChangeListener(this);
     }//GEN-LAST:event_propertiesButtonActionPerformed
 
+    @Messages({"ManageGroupsPanel.wrn_remove_selected_groups_msg=Are you sure to remove selected groups?",
+            "ManageGroupsPanel.wrn_remove_selected_groups_title=Confirm remove groups"})
     private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
-        removeGroups(Arrays.asList(getSelectedGroups()));
+        NotifyDescriptor d = new NotifyDescriptor.Confirmation(Bundle.ManageGroupsPanel_wrn_remove_selected_groups_msg(), Bundle.ManageGroupsPanel_wrn_remove_selected_groups_title(), NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE);
+        if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION) {
+            removeGroups(Arrays.asList(getSelectedGroups()));
+        }
     }//GEN-LAST:event_removeButtonActionPerformed
 
+    @Messages({"ManageGroupsPanel.wrn_remove_all_groups_msg=Are you sure to remove all groups?",
+            "ManageGroupsPanel.wrn_remove_all_groups_title=Confirm remove all groups"})
     private void removeAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeAllButtonActionPerformed
-        removeGroups(Group.allGroups());
+        NotifyDescriptor d = new NotifyDescriptor.Confirmation(Bundle.ManageGroupsPanel_wrn_remove_all_groups_msg(), Bundle.ManageGroupsPanel_wrn_remove_all_groups_title(), NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE);
+        if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION) {
+            removeGroups(Group.allGroups());
+        }
     }//GEN-LAST:event_removeAllButtonActionPerformed
 
-
+    @Override
+    public void propertyChange(PropertyChangeEvent event) {
+        if(event.getPropertyName().equals("groupRename")) {
+            String oldGroupName = (String)event.getOldValue();
+            String newGroupName = (String)event.getNewValue();
+            DefaultListModel model = (DefaultListModel) groupList.getModel();
+            for(int i = 0; i < model.getSize(); i++) {
+                if(((String)model.getElementAt(i)).equals(oldGroupName)) {
+                    model.setElementAt(newGroupName, i);
+                }
+            }
+        }
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JList groupList;
     private javax.swing.JScrollPane jScrollPane1;

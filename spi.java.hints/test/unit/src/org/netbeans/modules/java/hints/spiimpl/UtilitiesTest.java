@@ -44,6 +44,7 @@ package org.netbeans.modules.java.hints.spiimpl;
 
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.LambdaExpressionTree;
+import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Scope;
@@ -567,6 +568,22 @@ public class UtilitiesTest extends TestBase {
         
         assertEquals(Kind.IDENTIFIER, let.getParameters().get(0).getKind());
         String golden = "($args$)->$expression";
+        
+        assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString());
+    }
+    
+    public void testMemberReference() throws Exception {
+        prepareTest("test/Test.java", "package test; public class Test{}");
+
+        Scope s = Utilities.constructScope(info, Collections.<String, TypeMirror>emptyMap());
+        Tree result = Utilities.parseAndAttribute(info, "$expression::$name", s);
+
+        assertTrue(result.getKind().name(), result.getKind() == Kind.MEMBER_REFERENCE);
+
+        MemberReferenceTree mrt = (MemberReferenceTree) result;
+        
+        assertEquals(Kind.IDENTIFIER, mrt.getQualifierExpression().getKind());
+        String golden = "$expression::$name";
         
         assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString());
     }

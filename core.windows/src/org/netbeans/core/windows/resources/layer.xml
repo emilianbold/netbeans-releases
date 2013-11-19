@@ -114,6 +114,9 @@ made subject to such option by the copyright holder.
                 <attr name="instanceCreate" methodvalue="org.netbeans.core.windows.actions.ShowEditorOnlyAction.create"/>
                 <attr name="instanceOf" stringvalue="javax.swing.Action"/>
             </file>
+            <file name="GroupsMenuAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.core.windows.documentgroup.GroupsMenuAction.create"/>
+            </file>
         </folder>
     </folder>
     
@@ -277,6 +280,10 @@ made subject to such option by the copyright holder.
             <file name="CloseAllButThisAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseAllButThisAction.instance"/>
                 <attr name="position" intvalue="20600"/>
+            </file>
+            <file name="GroupsMenuAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/GroupsMenuAction.instance"/>
+                <attr name="position" intvalue="20650"/>
             </file>
             <file name="DocumentsAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-DocumentsAction.instance"/>

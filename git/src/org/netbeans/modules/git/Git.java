@@ -64,7 +64,6 @@ import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.modules.git.ui.shelve.ShelveChangesAction;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.shelve.ShelveChangesActionsRegistry;
-import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.util.RootsToFile;
 import org.netbeans.modules.versioning.util.Utils;
@@ -143,7 +142,7 @@ public final class Git {
         });
     }
 
-    public VCSAnnotator getVCSAnnotator() {
+    public Annotator getVCSAnnotator() {
         return annotator;
     }
 
@@ -327,7 +326,9 @@ public final class Git {
                 break;
             }
             if (VersioningSupport.isExcluded(file)) break;
-            if (GitUtils.repositoryExistsFor(file)){
+            // is the folder a special one where metadata should not be looked for?
+            boolean forbiddenFolder = Utils.isForbiddenFolder(file.getAbsolutePath());
+            if (!forbiddenFolder && GitUtils.repositoryExistsFor(file)) {
                 LOG.log(Level.FINE, " found managed parent {0}", new Object[] { file });
                 done.clear();   // all folders added before must be removed, they ARE in fact managed by git
                 topmost =  file;
@@ -349,7 +350,13 @@ public final class Git {
             LOG.log(Level.FINE, " getTopmostManagedParent returns {0} after {1} millis", new Object[] { topmost, System.currentTimeMillis() - t });
         }
         if(topmost != null) {
-            knownRoots.add(topmost);
+            if (knownRoots.add(topmost)) {
+                String homeDir = System.getProperty("user.home"); //NOI18N
+                if (homeDir != null && homeDir.startsWith(topmost.getAbsolutePath())) {
+                    LOG.log(Level.WARNING, "Home folder {0} lies under a git versioned root {1}. " //NOI18N
+                            + "Expecting lots of performance issues.", new Object[] { homeDir, topmost }); //NOI18N
+                }
+            }
         }
 
         return topmost;

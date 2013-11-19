@@ -62,7 +62,6 @@ import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -120,13 +119,17 @@ import javax.swing.text.NumberFormatter;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
-import org.netbeans.modules.bugtracking.team.spi.RepositoryUser;
-import org.netbeans.modules.bugtracking.util.RepositoryUserRenderer;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
+import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.api.IssueQuickSearch;
+import org.netbeans.modules.team.spi.OwnerInfo;
+import org.netbeans.modules.team.spi.RepositoryUser;
+import org.netbeans.modules.team.spi.RepositoryUserRenderer;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
-import org.netbeans.modules.bugtracking.util.*;
+import org.netbeans.modules.bugtracking.commons.AttachmentsPanel;
+import org.netbeans.modules.bugtracking.commons.LinkButton;
+import org.netbeans.modules.bugtracking.commons.NBBugzillaUtils;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
+import org.netbeans.modules.bugtracking.spi.SchedulingPicker;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue.Attachment;
@@ -142,9 +145,11 @@ import org.netbeans.modules.bugzilla.util.NbBugzillaConstants;
 import org.netbeans.modules.mylyn.util.NbDateRange;
 import org.netbeans.modules.spellchecker.api.Spellchecker;
 import org.netbeans.modules.team.ide.spi.IDEServices;
+import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
@@ -165,7 +170,6 @@ import org.openide.windows.WindowManager;
 public class IssuePanel extends javax.swing.JPanel {
     private static Color incomingChangesColor = null;
     private static final RequestProcessor RP = new RequestProcessor("Bugzilla Issue Panel", 5, false); // NOI18N
-    private static final String YYYY_MM_DD = NbBundle.getMessage(IssuePanel.class, "IssuePanel.deadlineField.text");
     private static final URL ICON_REMOTE_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/bugzilla/resources/remote.png"); //NOI18N
     private static final ImageIcon ICON_REMOTE = ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/remote.png", true); //NOI18N
     private static final URL ICON_CONFLICT_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/bugzilla/resources/conflict.png"); //NOI18N
@@ -189,7 +193,6 @@ public class IssuePanel extends javax.swing.JPanel {
     private boolean skipReload;
     private boolean usingTargetMilestones;
     private OwnerInfo ownerInfo;
-    private UndoRedoSupport undoRedoSupport;
     private final Set<String> unsavedFields = new HashSet<>();
     private boolean customFieldsLoaded;
 
@@ -205,7 +208,8 @@ public class IssuePanel extends javax.swing.JPanel {
     private Action[] commentsSectionActions;
     private Action[] privateSectionActions;
     private final IDEServices.DatePickerComponent dueDatePicker;
-    private final IDEServices.DatePickerComponent scheduleDatePicker;
+    private final IDEServices.DatePickerComponent deadlinePicker;
+    private final SchedulingPicker scheduleDatePicker;
     private static final NumberFormatter estimateFormatter = new NumberFormatter(new java.text.DecimalFormat("#0")) {
 
         @Override
@@ -265,9 +269,11 @@ public class IssuePanel extends javax.swing.JPanel {
         ((GroupLayout) commentsSectionPanel.getLayout()).replace(dummyCommentsPanel, commentsPanel);
         ((GroupLayout) attributesSectionPanel.getLayout()).replace(dummyTimetrackingPanel, timetrackingPanel);
         ((GroupLayout) attachmentsSectionPanel.getLayout()).replace(dummyAttachmentsPanel, attachmentsPanel);
+        deadlinePicker = UIUtils.createDatePickerComponent();
+        ((GroupLayout) timetrackingPanel.getLayout()).replace(dummyDeadlineField, deadlinePicker.getComponent());
         GroupLayout layout = (GroupLayout) privatePanel.getLayout();
-        dueDatePicker = BugtrackingUtil.createDatePickerComponent();
-        scheduleDatePicker = BugtrackingUtil.createDatePickerComponent();
+        dueDatePicker = UIUtils.createDatePickerComponent();
+        scheduleDatePicker = new SchedulingPicker();
         layout.replace(dummyDueDateField, dueDatePicker.getComponent());
         dueDateLabel.setLabelFor(dueDatePicker.getComponent());
         layout.replace(dummyScheduleDateField, scheduleDatePicker.getComponent());
@@ -366,19 +372,24 @@ public class IssuePanel extends javax.swing.JPanel {
                     issue.markUserChange();
                 }
                 if (!isDirty) {
-                    unsavedFields.clear();
+                    clearUnsavedFields();
                 }
                 if (enableMap.isEmpty()) {
-                    btnSaveChanges.setEnabled(isDirty);
                     cancelButton.setEnabled(isModified || isDirty);
                 } else {
-                    enableMap.put(btnSaveChanges, isDirty);
                     enableMap.put(cancelButton, isModified || isDirty);
+                }
+                if (!initializingNewTask) {
+                    issue.fireChanged();
                 }
             }
         });
     }
 
+    boolean initializingNewTask() {
+        return initializingNewTask;
+    }
+    
     public void setIssue(BugzillaIssue issue) {
         assert SwingUtilities.isEventDispatchThread() : "Accessing Swing components. Do not call outside event-dispatch thread!"; // NOI18N
         if (this.issue == null) {
@@ -642,7 +653,7 @@ public class IssuePanel extends javax.swing.JPanel {
                     int index = reporter.indexOf('@');
                     String userName = (index == -1) ? reporter : reporter.substring(0,index);
                     String host = ((KenaiRepository) issue.getRepository()).getHost();
-                    JLabel label = TeamUtil.createUserWidget(issue.getRepository().getUrl(), userName, host, TeamUtil.getChatLink(issue.getID()));
+                    JLabel label = TeamAccessorUtils.createUserWidget(issue.getRepository().getUrl(), userName, host, TeamAccessorUtils.getChatLink(issue.getID()));
                     if (label != null) {
                         label.setText(null);
                         ((GroupLayout) attributesSectionPanel.getLayout()).replace(reportedStatusLabel, label);
@@ -659,7 +670,7 @@ public class IssuePanel extends javax.swing.JPanel {
                 privateNotesField.setText(issue.getPrivateNotes());
                 dueDatePicker.setDate(issue.getDueDate());
                 NbDateRange scheduleDate = issue.getScheduleDate();
-                scheduleDatePicker.setDate(scheduleDate == null ? null : scheduleDate.getStartDate().getTime());
+                scheduleDatePicker.setScheduleDate(scheduleDate == null ? null : scheduleDate.toSchedulingInfo());
                 estimateField.setValue(issue.getEstimate());
                 dueDatePicker.getComponent().setEnabled(!hasTimeTracking);
                 
@@ -668,11 +679,7 @@ public class IssuePanel extends javax.swing.JPanel {
                     reloadField(force, estimatedField, IssueField.ESTIMATED_TIME);
                     reloadField(force, workedField, IssueField.WORK_TIME);
                     reloadField(force, remainingField, IssueField.REMAINING_TIME);
-                    reloadField(force, deadlineField, IssueField.DEADLINE);
-                    if("".equals(deadlineField.getText().trim())) {
-                        deadlineField.setText(YYYY_MM_DD); // NOI18N
-                        deadlineField.setForeground(javax.swing.UIManager.getDefaults().getColor("TextField.inactiveForeground")); // NOI18N
-                    }
+                    reloadField(force, deadlinePicker, IssueField.DEADLINE);
 
                     String actualString = issue.getFieldValue(IssueField.ACTUAL_TIME);
                     if(actualString.trim().equals("")) {                            // NOI18N    
@@ -696,7 +703,7 @@ public class IssuePanel extends javax.swing.JPanel {
                 int index = assignee.indexOf('@');
                 String userName = (index == -1) ? assignee : assignee.substring(0,index);
                 String host = ((KenaiRepository) issue.getRepository()).getHost();
-                JLabel label = TeamUtil.createUserWidget(issue.getRepository().getUrl(), userName, host, TeamUtil.getChatLink(issue.getID()));
+                JLabel label = TeamAccessorUtils.createUserWidget(issue.getRepository().getUrl(), userName, host, TeamAccessorUtils.getChatLink(issue.getID()));
                 if (label != null) {
                     label.setText(null);
                     ((GroupLayout) attributesSectionPanel.getLayout()).replace(assignedToStatusLabel, label);
@@ -789,11 +796,11 @@ public class IssuePanel extends javax.swing.JPanel {
         textField.setPreferredSize(fixedDim);
     }
 
-    private void reloadField(boolean force, JComponent component, IssueField field) {
+    private void reloadField (boolean force, Object component, IssueField field) {
         reloadField(component, field);
     }
     
-    private void reloadField (JComponent component, IssueField field) {
+    private void reloadField (Object component, IssueField field) {
         String newValue;
         if (component instanceof JList) {
             newValue = mergeValues(issue.getFieldValues(field));
@@ -820,15 +827,22 @@ public class IssuePanel extends javax.swing.JPanel {
                 }
             } else if (component instanceof JCheckBox) {
                 ((JCheckBox) component).setSelected("1".equals(newValue));
+            } else if (component instanceof IDEServices.DatePickerComponent) {
+                IDEServices.DatePickerComponent picker = (IDEServices.DatePickerComponent) component;
+                try {
+                    picker.setDate(BugzillaIssue.DUE_DATE_FORMAT.parse(newValue));
+                } catch (ParseException ex) {
+                    picker.setDate(null);
+                }
             }
         }
     }
     
-    private void updateFieldDecorations (JComponent component, IssueField field, JLabel warningLabel, JComponent fieldLabel) {
+    private void updateFieldDecorations (Object component, IssueField field, JLabel warningLabel, JComponent fieldLabel) {
         updateFieldDecorations(warningLabel, fieldLabel, fieldName(fieldLabel), Pair.of(field, component));
     }
     
-    private void updateFieldDecorations (JLabel warningLabel, JComponent fieldLabel, Pair<IssueField, ? extends JComponent>... fields) {
+    private void updateFieldDecorations (JLabel warningLabel, JComponent fieldLabel, Pair<IssueField, ? extends Object>... fields) {
         updateFieldDecorations(warningLabel, fieldLabel, fieldName(fieldLabel), fields);
     }
     
@@ -874,14 +888,14 @@ public class IssuePanel extends javax.swing.JPanel {
             + "<p>A new comment was added but not yet submitted.</p>"
     })
     private void updateFieldDecorations (JLabel warningLabel, JComponent fieldLabel, String fieldName,
-            Pair<IssueField, ? extends JComponent>... fields) {
+            Pair<IssueField, ? extends Object>... fields) {
         boolean isNew = issue.isNew();
         String newValue = "", lastSeenValue = "", repositoryValue = ""; //NOI18N
         boolean fieldDirty = false;
         boolean valueModifiedByUser = false;
         boolean valueModifiedByServer = false;
-        for (Pair<IssueField, ? extends JComponent> p : fields) {
-            JComponent component = p.second();
+        for (Pair<IssueField, ? extends Object> p : fields) {
+            Object component = p.second();
             IssueField field = p.first();
             if (component instanceof JList) {
                 newValue += " " + mergeValues(issue.getFieldValues(field));
@@ -1244,7 +1258,7 @@ public class IssuePanel extends javax.swing.JPanel {
         updateFieldDecorations(estimatedField, IssueField.ESTIMATED_TIME, timetrackingWarning, estimatedLabel);
         updateFieldDecorations(remainingField, IssueField.REMAINING_TIME, timetrackingWarning, remainingLabel);
         updateFieldDecorations(workedField, IssueField.WORK_TIME, timetrackingWarning, workedLabel);
-        updateFieldDecorations(deadlineField, IssueField.DEADLINE, timetrackingWarning, deadlineLabel);
+        updateFieldDecorations(deadlinePicker, IssueField.DEADLINE, timetrackingWarning, deadlineLabel);
         updateFieldStatus(newCommentSection.getLabelComponent());
         updateFieldDecorations(addCommentArea, IssueField.COMMENT, commentWarning, newCommentSection.getLabelComponent());
         updateCustomFieldStatuses();
@@ -1303,7 +1317,7 @@ public class IssuePanel extends javax.swing.JPanel {
             values.add(value.toString());
         }
         if (!issue.getFieldValues(field).equals(values)) {
-            unsavedFields.add(field.getKey());
+            addUnsavedField(field.getKey());
             issue.setFieldValues(field, values);
         }
     }
@@ -1323,7 +1337,7 @@ public class IssuePanel extends javax.swing.JPanel {
                 issue.setFieldValue(IssueField.RESOLUTION, ""); //NOI18N
             } else if (value.equals("RESOLVED")) { // NOI18N
                 issue.resolve(resolutionCombo.getSelectedItem().toString());
-                unsavedFields.add(IssueField.RESOLUTION.getKey());
+                addUnsavedField(IssueField.RESOLUTION.getKey());
                 issue.setFieldValue(IssueField.RESOLUTION, resolutionCombo.getSelectedItem().toString());
             } else if (value.equals("ASSIGNED")) { // NOI18N
                 issue.accept();
@@ -1337,7 +1351,7 @@ public class IssuePanel extends javax.swing.JPanel {
             if (value.equals("DUPLICATE")) {
                 issue.duplicate(duplicateField.getText().trim());
                 if (!duplicateField.getText().trim().equals(issue.getFieldValue(IssueField.DUPLICATE_ID))) {
-                    unsavedFields.add(IssueField.DUPLICATE_ID.getKey());
+                    addUnsavedField(IssueField.DUPLICATE_ID.getKey());
                     issue.setFieldValue(IssueField.DUPLICATE_ID, duplicateField.getText().trim());
                 }
             } else {
@@ -1346,13 +1360,13 @@ public class IssuePanel extends javax.swing.JPanel {
         } else if (field == IssueField.DUPLICATE_ID && "RESOLVED".equals(statusCombo.getSelectedItem())
                 && "DUPLICATE".equals(resolutionCombo.getSelectedItem())) {
             issue.duplicate(value);
-            unsavedFields.add(field.getKey());
+            addUnsavedField(field.getKey());
         } else if ((field == IssueField.ASSIGNED_TO) && !issue.isNew()) {
             issue.reassign(value);
-            unsavedFields.add(field.getKey());
+            addUnsavedField(field.getKey());
         }
         if (changed || !issue.getFieldValue(field).equals(value)) {
-            unsavedFields.add(field.getKey());
+            addUnsavedField(field.getKey());
             issue.setFieldValue(field, value);
         }
     }
@@ -1730,7 +1744,7 @@ public class IssuePanel extends javax.swing.JPanel {
         gainLabel = new javax.swing.JLabel();
         gainField = new javax.swing.JTextField();
         deadlineLabel = new javax.swing.JLabel();
-        deadlineField = new javax.swing.JTextField();
+        dummyDeadlineField = new javax.swing.JTextField();
         actualWarning = new javax.swing.JLabel();
         deadlineWarning = new javax.swing.JLabel();
         completeWarning = new javax.swing.JLabel();
@@ -1749,7 +1763,7 @@ public class IssuePanel extends javax.swing.JPanel {
         statusWhiteboardLabel = new javax.swing.JLabel();
         platformWarning = new javax.swing.JLabel();
         statusWarning = new javax.swing.JLabel();
-        urlLabel = new org.netbeans.modules.bugtracking.util.LinkButton();
+        urlLabel = new org.netbeans.modules.bugtracking.commons.LinkButton();
         priorityLabel = new javax.swing.JLabel();
         modifiedField = new javax.swing.JTextField();
         targetMilestoneLabel = new javax.swing.JLabel();
@@ -1839,7 +1853,7 @@ public class IssuePanel extends javax.swing.JPanel {
             }
         };
         attachLogCheckBox = new javax.swing.JCheckBox();
-        viewLogButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+        viewLogButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
         commentWarning = new javax.swing.JLabel();
         messagePanel = new javax.swing.JPanel();
         privatePanel = new javax.swing.JPanel();
@@ -1872,20 +1886,18 @@ public class IssuePanel extends javax.swing.JPanel {
         buttonsPanel = new javax.swing.JPanel();
         separatorLabel4 = new javax.swing.JLabel();
         separatorLabel6 = new javax.swing.JLabel();
-        btnSaveChanges = new org.netbeans.modules.bugtracking.util.LinkButton();
         separatorLabel3 = new javax.swing.JLabel();
         separatorDismissButton = new javax.swing.JLabel();
-        refreshButton = new org.netbeans.modules.bugtracking.util.LinkButton();
-        cancelButton = new org.netbeans.modules.bugtracking.util.LinkButton();
-        showInBrowserButton = new org.netbeans.modules.bugtracking.util.LinkButton();
-        submitButton = new org.netbeans.modules.bugtracking.util.LinkButton();
-        btnDeleteTask = new org.netbeans.modules.bugtracking.util.LinkButton();
-        separatorLabel5 = new javax.swing.JLabel();
+        refreshButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
+        cancelButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
+        showInBrowserButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
+        submitButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
+        btnDeleteTask = new org.netbeans.modules.bugtracking.commons.LinkButton();
         mainScrollPane = new javax.swing.JScrollPane();
         mainPanel = new javax.swing.JPanel();
-        attributesSection = new org.netbeans.modules.bugtracking.util.CollapsibleSectionPanel();
-        attachmentsSection = new org.netbeans.modules.bugtracking.util.CollapsibleSectionPanel();
-        newCommentSection = new org.netbeans.modules.bugtracking.util.SectionPanel();
+        attributesSection = new org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel();
+        attachmentsSection = new org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel();
+        newCommentSection = new org.netbeans.modules.bugtracking.commons.SectionPanel();
         jPanel1 = new javax.swing.JPanel() {
 
             @Override
@@ -1894,8 +1906,8 @@ public class IssuePanel extends javax.swing.JPanel {
             }
         }
         ;
-        commentsSection = new org.netbeans.modules.bugtracking.util.CollapsibleSectionPanel();
-        privateSection = new org.netbeans.modules.bugtracking.util.CollapsibleSectionPanel();
+        commentsSection = new org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel();
+        privateSection = new org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel();
 
         FormListener formListener = new FormListener();
 
@@ -1945,10 +1957,6 @@ public class IssuePanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(deadlineLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.deadlineLabel.text")); // NOI18N
 
-        deadlineField.setForeground(javax.swing.UIManager.getDefaults().getColor("TextField.inactiveForeground"));
-        deadlineField.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.deadlineField.text")); // NOI18N
-        deadlineField.addFocusListener(formListener);
-
         javax.swing.GroupLayout timetrackingPanelLayout = new javax.swing.GroupLayout(timetrackingPanel);
         timetrackingPanel.setLayout(timetrackingPanelLayout);
         timetrackingPanelLayout.setHorizontalGroup(
@@ -1997,7 +2005,7 @@ public class IssuePanel extends javax.swing.JPanel {
                         .addComponent(gainWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(9, 9, 9)
                         .addGroup(timetrackingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(deadlineField, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(dummyDeadlineField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(deadlineLabel))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(deadlineWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -2037,7 +2045,7 @@ public class IssuePanel extends javax.swing.JPanel {
             .addGroup(timetrackingPanelLayout.createSequentialGroup()
                 .addComponent(deadlineLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(deadlineField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(dummyDeadlineField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         attributesSectionPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
@@ -2620,11 +2628,6 @@ public class IssuePanel extends javax.swing.JPanel {
 
         separatorLabel6.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
-        org.openide.awt.Mnemonics.setLocalizedText(btnSaveChanges, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.btnSaveChanges.text")); // NOI18N
-        btnSaveChanges.setToolTipText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.btnSaveChanges.TTtext")); // NOI18N
-        btnSaveChanges.setEnabled(false);
-        btnSaveChanges.addActionListener(formListener);
-
         separatorLabel3.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
         separatorDismissButton.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
@@ -2646,8 +2649,6 @@ public class IssuePanel extends javax.swing.JPanel {
         btnDeleteTask.setToolTipText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.btnDeleteTask.TTtext")); // NOI18N
         btnDeleteTask.addActionListener(formListener);
 
-        separatorLabel5.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-
         javax.swing.GroupLayout buttonsPanelLayout = new javax.swing.GroupLayout(buttonsPanel);
         buttonsPanel.setLayout(buttonsPanelLayout);
         buttonsPanelLayout.setHorizontalGroup(
@@ -2663,10 +2664,6 @@ public class IssuePanel extends javax.swing.JPanel {
                 .addComponent(separatorLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 2, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(submitButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(separatorLabel5)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnSaveChanges, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(separatorLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 2, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -2687,12 +2684,10 @@ public class IssuePanel extends javax.swing.JPanel {
                     .addComponent(showInBrowserButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(separatorLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(submitButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btnSaveChanges, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(cancelButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(separatorLabel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btnDeleteTask, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(separatorDismissButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(separatorLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addComponent(separatorDismissButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
 
         buttonsPanelLayout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {refreshButton, separatorLabel3, showInBrowserButton});
@@ -2821,10 +2816,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private class FormListener implements java.awt.event.ActionListener, java.awt.event.FocusListener {
         FormListener() {}
         public void actionPerformed(java.awt.event.ActionEvent evt) {
-            if (evt.getSource() == btnSaveChanges) {
-                IssuePanel.this.btnSaveChangesActionPerformed(evt);
-            }
-            else if (evt.getSource() == refreshButton) {
+            if (evt.getSource() == refreshButton) {
                 IssuePanel.this.refreshButtonActionPerformed(evt);
             }
             else if (evt.getSource() == cancelButton) {
@@ -2899,17 +2891,11 @@ public class IssuePanel extends javax.swing.JPanel {
         }
 
         public void focusGained(java.awt.event.FocusEvent evt) {
-            if (evt.getSource() == deadlineField) {
-                IssuePanel.this.deadlineFieldFocusGained(evt);
-            }
         }
 
         public void focusLost(java.awt.event.FocusEvent evt) {
             if (evt.getSource() == workedField) {
                 IssuePanel.this.workedFieldFocusLost(evt);
-            }
-            else if (evt.getSource() == deadlineField) {
-                IssuePanel.this.deadlineFieldFocusLost(evt);
             }
         }
     }// </editor-fold>//GEN-END:initComponents
@@ -3054,7 +3040,7 @@ public class IssuePanel extends javax.swing.JPanel {
         String removedCCs = getMissingCCs(oldCCs, newCCs);
         String addedCCs = getMissingCCs(newCCs, oldCCs);
 
-        unsavedFields.add(IssueField.CC.getKey());
+        addUnsavedField(IssueField.CC.getKey());
         issue.setFieldValues(IssueField.CC, new ArrayList<>(ccs(ccField.getText())));
         storeFieldValue(IssueField.REMOVECC, removedCCs);
         storeFieldValue(IssueField.NEWCC, addedCCs);
@@ -3134,12 +3120,13 @@ public class IssuePanel extends javax.swing.JPanel {
     }//GEN-LAST:event_keywordsButtonActionPerformed
 
     private void blocksButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_blocksButtonActionPerformed
-        String newIssueID = BugtrackingUtil.selectIssue(
+        Issue i = IssueQuickSearch.selectIssue(
                 NbBundle.getMessage(IssuePanel.class, "IssuePanel.blocksButton.message"), // NOI18N
                 BugzillaUtil.getRepository(issue.getRepository()),
                 this,
                 new HelpCtx("org.netbeans.modules.bugzilla.blocksChooser")); // NOI18N
-        if (newIssueID != null) {
+        if (i != null) {
+            String newIssueID = i.getID();
             StringBuilder sb = new StringBuilder();
             if (!blocksField.getText().trim().equals("")) { // NOI18N
                 sb.append(blocksField.getText()).append(',').append(' ');
@@ -3150,12 +3137,13 @@ public class IssuePanel extends javax.swing.JPanel {
     }//GEN-LAST:event_blocksButtonActionPerformed
 
     private void dependsOnButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dependsOnButtonActionPerformed
-        String newIssueID = BugtrackingUtil.selectIssue(
+        Issue i = IssueQuickSearch.selectIssue(
                 NbBundle.getMessage(IssuePanel.class, "IssuePanel.dependsOnButton.message"), // NOI18N
                 BugzillaUtil.getRepository(issue.getRepository()),
                 this,
                 new HelpCtx("org.netbeans.modules.bugzilla.dependsOnChooser")); // NOI18N
-        if (newIssueID != null) {
+        if (i != null) {
+            String newIssueID = i.getID();
             StringBuilder sb = new StringBuilder();
             if (!dependsField.getText().trim().equals("")) { // NOI18N
                 sb.append(dependsField.getText()).append(',').append(' ');
@@ -3246,12 +3234,13 @@ public class IssuePanel extends javax.swing.JPanel {
     }
     
     private void duplicateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_duplicateButtonActionPerformed
-        String newIssueID = BugtrackingUtil.selectIssue(
+        Issue i = IssueQuickSearch.selectIssue(
                 NbBundle.getMessage(IssuePanel.class, "IssuePanel.duplicateButton.message"), //NOI18N
                 BugzillaUtil.getRepository(issue.getRepository()),
                 this,
                 new HelpCtx("org.netbeans.modules.bugzilla.duplicateChooser")); // NOI18N
-        if (newIssueID != null) {
+        if (i != null) {
+            String newIssueID = i.getID();
             duplicateField.setText(newIssueID);
         }
     }//GEN-LAST:event_duplicateButtonActionPerformed
@@ -3308,21 +3297,6 @@ private void urlButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         HtmlBrowser.URLDisplayer.getDefault().showURL(url);
     }
 }//GEN-LAST:event_urlButtonActionPerformed
-
-private void deadlineFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_deadlineFieldFocusGained
-    if(deadlineField.getText().trim().equals(YYYY_MM_DD)) { // NOI18N
-        deadlineField.setText("");
-    }
-    deadlineField.setForeground(workedField.getForeground()); 
-}//GEN-LAST:event_deadlineFieldFocusGained
-
-private void deadlineFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_deadlineFieldFocusLost
-    if("".equals(deadlineField.getText().trim())) { 
-        deadlineField.setText(YYYY_MM_DD);
-        deadlineField.setForeground(javax.swing.UIManager.getDefaults().getColor("TextField.inactiveForeground")); // NOI18N
-    }
-}//GEN-LAST:event_deadlineFieldFocusLost
-
 private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_workedFieldFocusLost
     if(!"".equals(workedField.getText().trim())) { 
         String workedString = workedField.getText().trim();
@@ -3398,39 +3372,26 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
                 }
             }
         });
-        if (isNew) {
-            BugzillaRepository repository = issue.getRepository();
-            if (repository != null) {
-                OwnerUtils.setLooseAssociation(BugzillaUtil.getRepository(repository), false);
-            }
-        }
     }//GEN-LAST:event_submitButtonActionPerformed
 
-    private void btnSaveChangesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveChangesActionPerformed
-        skipReload = true;
-        enableComponents(false);
-        RP.post(new Runnable() {
-            @Override
-            public void run() {
-                boolean saved = false;
-                try {
-                    saved = issue.save();
-                } finally {
-                    final boolean fSaved = saved;
-                    EventQueue.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            unsavedFields.clear();
-                            enableComponents(true);
-                            btnSaveChanges.setEnabled(!fSaved);
-                            updateFieldStatuses();
-                            skipReload = false;
-                        }
-                    });
+    boolean saveSynchronously() {
+        boolean saved = false;
+        try {
+            saved = issue.save();
+        } finally {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    clearUnsavedFields();
+                    enableComponents(true);
+                    updateFieldStatuses();
+                    cancelButton.setEnabled(issue.hasLocalEdits());
+                    skipReload = false;
                 }
-            }
-        });
-    }//GEN-LAST:event_btnSaveChangesActionPerformed
+            });
+        }
+        return saved;
+    }
 
     @NbBundle.Messages({
         "LBL_IssuePanel.cancelChanges.title=Cancel Local Edits?",
@@ -3442,6 +3403,10 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
                 Bundle.LBL_IssuePanel_cancelChanges_title(), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
             return;
         }
+        discard();
+    }
+
+    void discard() {
         skipReload = true;
         enableComponents(false);
         RP.post(new Runnable() {
@@ -3455,9 +3420,8 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
                     EventQueue.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            unsavedFields.clear();
+                            clearUnsavedFields();
                             enableComponents(true);
-                            btnSaveChanges.setEnabled(!fCleared);
                             cancelButton.setEnabled(!fCleared);                            
                             skipReload = false;
                             reloadForm(true);
@@ -3467,6 +3431,31 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
             }
         });
     }//GEN-LAST:event_cancelButtonActionPerformed
+
+    void clearUnsavedChanges() {
+        issue.clearUnsavedChanges();
+        clearUnsavedFields();
+    }
+    
+    private void clearUnsavedFields() {
+        boolean fire = !unsavedFields.isEmpty();
+        unsavedFields.clear();
+        if(fire) {
+            issue.fireChanged();
+        }        
+    }
+    
+    private void addUnsavedField(String fieldName) {
+        boolean fire = unsavedFields.isEmpty();
+        unsavedFields.add(fieldName);
+        if(fire) {
+            issue.fireChanged();
+        }
+    }
+    
+    boolean isChanged() {
+        return !initializingNewTask() && getIssue().hasUnsavedChanges();
+    }    
     
     @NbBundle.Messages({
         "LBL_IssuePanel.deleteTask.title=Delete New Task?",
@@ -3502,24 +3491,23 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     private javax.swing.JLabel assignedToStatusLabel;
     private javax.swing.JLabel assignedToWarning;
     private javax.swing.JCheckBox attachLogCheckBox;
-    private org.netbeans.modules.bugtracking.util.CollapsibleSectionPanel attachmentsSection;
+    private org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel attachmentsSection;
     private javax.swing.JPanel attachmentsSectionPanel;
     private javax.swing.JLabel attachmentsWarning;
-    private org.netbeans.modules.bugtracking.util.CollapsibleSectionPanel attributesSection;
+    private org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel attributesSection;
     private javax.swing.JPanel attributesSectionPanel;
     private javax.swing.JButton blocksButton;
     private javax.swing.JTextField blocksField;
     private javax.swing.JLabel blocksLabel;
     private javax.swing.JLabel blocksWarning;
-    private org.netbeans.modules.bugtracking.util.LinkButton btnDeleteTask;
-    private org.netbeans.modules.bugtracking.util.LinkButton btnSaveChanges;
+    private org.netbeans.modules.bugtracking.commons.LinkButton btnDeleteTask;
     private javax.swing.JPanel buttonsPanel;
-    private org.netbeans.modules.bugtracking.util.LinkButton cancelButton;
+    private org.netbeans.modules.bugtracking.commons.LinkButton cancelButton;
     private javax.swing.JTextField ccField;
     private javax.swing.JLabel ccLabel;
     private javax.swing.JLabel ccWarning;
     private javax.swing.JLabel commentWarning;
-    private org.netbeans.modules.bugtracking.util.CollapsibleSectionPanel commentsSection;
+    private org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel commentsSection;
     private javax.swing.JPanel commentsSectionPanel;
     private javax.swing.JTextField completeField;
     private javax.swing.JLabel completeLabel;
@@ -3529,7 +3517,6 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     private javax.swing.JLabel componentWarning;
     private javax.swing.JPanel customFieldsPanelLeft;
     private javax.swing.JPanel customFieldsPanelRight;
-    private javax.swing.JTextField deadlineField;
     private javax.swing.JLabel deadlineLabel;
     private javax.swing.JLabel deadlineWarning;
     private javax.swing.JTextField dependsField;
@@ -3539,6 +3526,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     private javax.swing.JLabel dueDateLabel;
     private javax.swing.JPanel dummyAttachmentsPanel;
     private javax.swing.JPanel dummyCommentsPanel;
+    private javax.swing.JTextField dummyDeadlineField;
     private javax.swing.JTextField dummyDueDateField;
     private javax.swing.JLabel dummyLabel1;
     private javax.swing.JLabel dummyLabel2;
@@ -3575,7 +3563,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     private javax.swing.JLabel milestoneWarning;
     private javax.swing.JTextField modifiedField;
     private javax.swing.JLabel modifiedLabel;
-    private org.netbeans.modules.bugtracking.util.SectionPanel newCommentSection;
+    private org.netbeans.modules.bugtracking.commons.SectionPanel newCommentSection;
     private javax.swing.JPanel newCommentSectionPanel;
     private javax.swing.JLabel notesLabel;
     private javax.swing.JComboBox osCombo;
@@ -3588,7 +3576,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     private javax.swing.JTextArea privateNotesField;
     private javax.swing.JScrollPane privateNotesScrollPane;
     private javax.swing.JPanel privatePanel;
-    private org.netbeans.modules.bugtracking.util.CollapsibleSectionPanel privateSection;
+    private org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel privateSection;
     private javax.swing.JComboBox productCombo;
     private javax.swing.JTextField productField;
     private javax.swing.JLabel productLabel;
@@ -3596,7 +3584,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     private javax.swing.JTextField qaContactField;
     private javax.swing.JLabel qaContactLabel;
     private javax.swing.JLabel qaContactWarning;
-    private org.netbeans.modules.bugtracking.util.LinkButton refreshButton;
+    private org.netbeans.modules.bugtracking.commons.LinkButton refreshButton;
     private javax.swing.JTextField remainingField;
     private javax.swing.JLabel remainingLabel;
     private javax.swing.JLabel remainingWarning;
@@ -3612,17 +3600,16 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     private javax.swing.JLabel separatorDismissButton;
     private javax.swing.JLabel separatorLabel3;
     private javax.swing.JLabel separatorLabel4;
-    private javax.swing.JLabel separatorLabel5;
     private javax.swing.JLabel separatorLabel6;
     private javax.swing.JComboBox severityCombo;
-    private org.netbeans.modules.bugtracking.util.LinkButton showInBrowserButton;
+    private org.netbeans.modules.bugtracking.commons.LinkButton showInBrowserButton;
     private javax.swing.JComboBox statusCombo;
     private javax.swing.JLabel statusLabel;
     private javax.swing.JLabel statusWarning;
     private javax.swing.JTextField statusWhiteboardField;
     private javax.swing.JLabel statusWhiteboardLabel;
     private javax.swing.JLabel statusWhiteboardWarning;
-    private org.netbeans.modules.bugtracking.util.LinkButton submitButton;
+    private org.netbeans.modules.bugtracking.commons.LinkButton submitButton;
     private javax.swing.JTextField summaryField;
     private javax.swing.JLabel summaryLabel;
     private javax.swing.JLabel summaryWarning;
@@ -3632,12 +3619,12 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     private javax.swing.JPanel timetrackingPanel;
     private javax.swing.JLabel timetrackingWarning;
     private javax.swing.JTextField urlField;
-    private org.netbeans.modules.bugtracking.util.LinkButton urlLabel;
+    private org.netbeans.modules.bugtracking.commons.LinkButton urlLabel;
     private javax.swing.JLabel urlWarning;
     private javax.swing.JComboBox versionCombo;
     private javax.swing.JLabel versionLabel;
     private javax.swing.JLabel versionWarning;
-    private org.netbeans.modules.bugtracking.util.LinkButton viewLogButton;
+    private org.netbeans.modules.bugtracking.commons.LinkButton viewLogButton;
     private javax.swing.JTextField workedField;
     private javax.swing.JLabel workedLabel;
     private javax.swing.JLabel workedSumField;
@@ -3707,8 +3694,6 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
 
     void opened() {
         restoreSections();
-        undoRedoSupport = Bugzilla.getInstance().getUndoRedoSupport(issue);
-        undoRedoSupport.register(addCommentArea);
         enableComponents(false);
         issue.opened();
     }
@@ -3717,22 +3702,20 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         if(issue != null) {
             persistSections();
             commentsPanel.storeSettings();
-            if (undoRedoSupport != null) {
-                undoRedoSupport.unregisterAll();
-                undoRedoSupport = null;
-            }
             issue.closed();
         }
     }
 
     private void persistSections () {
-        BugzillaConfig config = BugzillaConfig.getInstance();
-        String repositoryId = issue.getRepository().getID();
-        String taskId = issue.getID();
-        config.setEditorSectionCollapsed(repositoryId, taskId, SECTION_ATTRIBUTES, !attributesSection.isExpanded());
-        config.setEditorSectionCollapsed(repositoryId, taskId, SECTION_ATTACHMENTS, !attachmentsSection.isExpanded());
-        config.setEditorSectionCollapsed(repositoryId, taskId, SECTION_COMMENTS, !commentsSection.isExpanded());
-        config.setEditorSectionCollapsed(repositoryId, taskId, SECTION_PRIVATE, !privateSection.isExpanded());
+        if (!issue.isNew()) {
+            BugzillaConfig config = BugzillaConfig.getInstance();
+            String repositoryId = issue.getRepository().getID();
+            String taskId = issue.getID();
+            config.setEditorSectionCollapsed(repositoryId, taskId, SECTION_ATTRIBUTES, !attributesSection.isExpanded());
+            config.setEditorSectionCollapsed(repositoryId, taskId, SECTION_ATTACHMENTS, !attachmentsSection.isExpanded());
+            config.setEditorSectionCollapsed(repositoryId, taskId, SECTION_COMMENTS, !commentsSection.isExpanded());
+            config.setEditorSectionCollapsed(repositoryId, taskId, SECTION_PRIVATE, !privateSection.isExpanded());
+        }
     }
 
     private void restoreSections () {
@@ -3809,7 +3792,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
             void fieldModified () {
                 if (!(reloading || issue.isNew())) {
                     issue.setFieldValue(IssueField.COMMENT, addCommentArea.getText().trim());
-                    unsavedFields.add(IssueField.COMMENT.getKey());
+                    addUnsavedField(IssueField.COMMENT.getKey());
                     updateDecorations();
                 }
             }
@@ -3876,11 +3859,22 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         estimatedField.getDocument().addDocumentListener(new FieldChangeListener(estimatedField, IssueField.ESTIMATED_TIME, timetrackingWarning, estimatedLabel));
         workedField.getDocument().addDocumentListener(new FieldChangeListener(workedField, IssueField.WORK_TIME, timetrackingWarning, workedLabel));
         remainingField.getDocument().addDocumentListener(new FieldChangeListener(remainingField, IssueField.REMAINING_TIME, timetrackingWarning, remainingLabel));
-        deadlineField.getDocument().addDocumentListener(new FieldChangeListener(deadlineField, IssueField.DEADLINE, timetrackingWarning, deadlineLabel) {
+        deadlinePicker.addChangeListener(new FieldChangeListener(deadlinePicker.getComponent(),
+                IssueField.DEADLINE, timetrackingWarning, deadlineLabel, Pair.of(IssueField.DEADLINE, deadlinePicker)) {
+
             @Override
-            public boolean isEnabled () {
-                return super.isEnabled() && !deadlineField.getText().trim().equals(YYYY_MM_DD);
+            void fieldModified () {
+                if (!reloading && isEnabled()) {
+                    Date date = deadlinePicker.getDate();
+                    String value = date == null ? "" : BugzillaIssue.DUE_DATE_FORMAT.format(date);
+                    if (!issue.getFieldValue(IssueField.DEADLINE).equals(value)) {
+                        addUnsavedField(IssueField.DEADLINE.getKey());
+                        issue.setFieldValue(IssueField.DEADLINE, value);
+                        updateDecorations();
+                    }
+                }
             }
+
         });
         attachLogCheckBox.addActionListener(new FieldChangeListener(attachLogCheckBox, IssueField.NB_ATTACH_IDE_LOG) {
             @Override
@@ -3897,7 +3891,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
             public void stateChanged (ChangeEvent e) {
                 if (!reloading && attachmentsPanel.isVisible()) {
                     if (issue.setUnsubmittedAttachments(attachmentsPanel.getNewAttachments())) {
-                        unsavedFields.add(IssueField.NB_NEW_ATTACHMENTS.getKey());
+                        addUnsavedField(IssueField.NB_NEW_ATTACHMENTS.getKey());
                         updateAttachmentsStatus();
                     }
                 }
@@ -3911,27 +3905,21 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
                 return true;
             }
         });
-        dueDatePicker.addChangeListener(new DatePickerListener(dueDatePicker,
+        dueDatePicker.addChangeListener(new DatePickerListener(dueDatePicker.getComponent(),
                 ATTRIBUTE_DUE_DATE, dueDateLabel) {
 
             @Override
             protected boolean storeValue () {
-                issue.setTaskDueDate(dueDatePicker.getDate());
+                issue.setTaskDueDate(dueDatePicker.getDate(), false);
                 return true;
             }
         });
-        scheduleDatePicker.addChangeListener(new DatePickerListener(scheduleDatePicker,
+        scheduleDatePicker.addChangeListener(new DatePickerListener(scheduleDatePicker.getComponent(),
                 ATTRIBUTE_SCHEDULE_DATE, scheduleDateLabel) {
 
             @Override
             protected boolean storeValue () {
-                Date date = scheduleDatePicker.getDate();
-                Calendar cal = null;
-                if (date != null) {
-                    cal = Calendar.getInstance();
-                    cal.setTime(date);
-                }
-                issue.setTaskScheduleDate(cal == null ? null : new NbDateRange(cal));
+                issue.setTaskScheduleDate(scheduleDatePicker.getScheduleDate(), false);
                 return true;
             }
         });
@@ -3942,7 +3930,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
             protected boolean storeValue () {
                 int value = ((Number) estimateField.getValue()).intValue();
                 if (value != issue.getEstimate()) {
-                    issue.setTaskEstimate(value);
+                    issue.setTaskEstimate(value, false);
                     return true;
                 } else {
                     return false;
@@ -3951,7 +3939,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
             
         });
     }
-    
+
     private void setupCustomFieldsListeners () {
         // custom fields
         for (CustomFieldInfo field : customFields) {
@@ -4061,10 +4049,9 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         if (privateSectionActions == null) {
             privateSectionActions = new Action[] {
                 new AbstractAction(Bundle.IssuePanel_addToCategory_text()) {
-                
                     @Override
                     public void actionPerformed (ActionEvent e) {
-                        Bugzilla.getInstance().getBugtrackingFactory().addToCategory(BugzillaUtil.getRepository(issue.getRepository()), issue);
+                        Bugzilla.getInstance().getBugtrackingFactory().addToCategory(issue.getRepository(), issue);
                     }
                 }
             };
@@ -4159,13 +4146,14 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         
     }
 
-    private class FieldChangeListener implements DocumentListener, ActionListener, ListSelectionListener {
+    private class FieldChangeListener implements DocumentListener, ActionListener,
+            ListSelectionListener, ChangeListener {
         private final IssueField field;
         private final JComponent component;
         private final JLabel warningLabel;
         private final JComponent fieldLabel;
         private final String fieldName;
-        private Pair<IssueField, ? extends JComponent>[] decoratedFields;
+        private Pair<IssueField, ? extends Object>[] decoratedFields;
 
         public FieldChangeListener (JComponent component, IssueField field) {
             this(component, field, null, null);
@@ -4182,13 +4170,13 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         }
         
         public FieldChangeListener (JComponent component, IssueField field, JLabel warningLabel,
-                JComponent fieldLabel, Pair<IssueField, ? extends JComponent>... multiField) {
+                JComponent fieldLabel, Pair<IssueField, ? extends Object>... multiField) {
             this(component, field, warningLabel, fieldLabel,
                     fieldLabel == null ? null : fieldName(fieldLabel), multiField);
         }
         
         public FieldChangeListener (JComponent component, IssueField field, JLabel warningLabel,
-                JComponent fieldLabel, String fieldName, Pair<IssueField, ? extends JComponent>... multiField) {
+                JComponent fieldLabel, String fieldName, Pair<IssueField, ? extends Object>... multiField) {
             this.component = component;
             this.field = field;
             this.warningLabel = warningLabel;
@@ -4224,6 +4212,11 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
             if (!e.getValueIsAdjusting() && e.getSource() == component) {
                 fieldModified();
             }
+        }
+
+        @Override
+        public void stateChanged (ChangeEvent e) {
+            fieldModified();
         }
         
         void fieldModified () {
@@ -4292,7 +4285,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
 
         void fieldModified () {
             if (!reloading && isEnabled() && storeValue()) {
-                unsavedFields.add(attributeName);
+                addUnsavedField(attributeName);
                 updateDecorations();
             }
         }
@@ -4311,10 +4304,10 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     private abstract class DatePickerListener implements ChangeListener {
 
         private final String attributeName;
-        private final IDEServices.DatePickerComponent component;
+        private final JComponent component;
         private final JComponent fieldLabel;
 
-        public DatePickerListener (IDEServices.DatePickerComponent component,
+        public DatePickerListener (JComponent component,
                 String attributeName, JComponent fieldLabel) {
             this.component = component;
             this.attributeName = attributeName;
@@ -4323,7 +4316,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
 
         void fieldModified () {
             if (!reloading && isEnabled() && storeValue()) {
-                unsavedFields.add(attributeName);
+                addUnsavedField(attributeName);
                 updateDecorations();
             }
         }
@@ -4334,7 +4327,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         }
         
         public boolean isEnabled () {
-            return component.getComponent().isVisible() && component.getComponent().isEnabled();
+            return component.isVisible() && component.isEnabled();
         }
 
         protected final void updateDecorations () {

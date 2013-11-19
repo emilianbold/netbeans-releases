@@ -54,6 +54,7 @@ import java.util.List;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
@@ -70,6 +71,7 @@ import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 
 /**
@@ -102,14 +104,13 @@ public final class LibrariesNodeFactory implements NodeFactory {
         private ReferenceHelper resolver;
         private final ClassPathSupport cs;
         
-        LibrariesNodeList(J2SEProject proj) {
+        LibrariesNodeList(@NonNull final J2SEProject proj) {
+            Parameters.notNull("proj", proj);   //NOI18N
             project = proj;
             testSources = project.getTestSourceRoots();
-            J2SELogicalViewProvider logView = project.getLookup().lookup(J2SELogicalViewProvider.class);
-            assert logView != null;
-            evaluator = logView.getEvaluator();
-            helper = logView.getUpdateHelper();
-            resolver = logView.getRefHelper();
+            evaluator = project.evaluator();
+            helper = project.getUpdateHelper();
+            resolver = project.getReferenceHelper();
             cs = new ClassPathSupport(evaluator, resolver, helper.getAntProjectHelper(), helper, null);
         }
         
@@ -143,7 +144,7 @@ public final class LibrariesNodeFactory implements NodeFactory {
             if (key == LIBRARIES) {
                 //Libraries Node
                 return  
-                    new LibrariesNode(NbBundle.getMessage(J2SELogicalViewProvider.class,"CTL_LibrariesNode"),
+                    new LibrariesNode(NbBundle.getMessage(LibrariesNodeFactory.class,"CTL_LibrariesNode"),
                         project, evaluator, helper, resolver, ProjectProperties.RUN_CLASSPATH,
                         new String[] {ProjectProperties.BUILD_CLASSES_DIR},
                         "platform.active", // NOI18N
@@ -160,7 +161,7 @@ public final class LibrariesNodeFactory implements NodeFactory {
                     );
             } else if (key == TEST_LIBRARIES) {
                 return  
-                    new LibrariesNode(NbBundle.getMessage(J2SELogicalViewProvider.class,"CTL_TestLibrariesNode"),
+                    new LibrariesNode(NbBundle.getMessage(LibrariesNodeFactory.class,"CTL_TestLibrariesNode"),
                         project, evaluator, helper, resolver, ProjectProperties.RUN_TEST_CLASSPATH,
                         new String[] {
                             ProjectProperties.BUILD_TEST_CLASSES_DIR,

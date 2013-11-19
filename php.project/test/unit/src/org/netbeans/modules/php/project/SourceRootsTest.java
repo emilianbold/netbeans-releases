@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.php.project;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -59,7 +60,7 @@ public class SourceRootsTest extends NbTestCase {
 
     public void testSourceRootsNames() {
         List<String> paths = Arrays.asList(
-                "/project1/test"
+                makeOsDependentPath("/project1/test")
         );
         List<String> names = SourceRoots.getSourceRootsNames(paths, DISPLAY_NAME);
         assertEquals(1, names.size());
@@ -84,7 +85,7 @@ public class SourceRootsTest extends NbTestCase {
         paths = Arrays.asList(
                 (String) null,
                 (String) null,
-                "/project1/test"
+                makeOsDependentPath("/project1/test")
         );
         names = SourceRoots.getSourceRootsNames(paths, DISPLAY_NAME);
         assertEquals(3, names.size());
@@ -93,8 +94,8 @@ public class SourceRootsTest extends NbTestCase {
         assertEquals(String.format(DISPLAY_NAME_TEMPLATE, "test"), names.get(2));
 
         paths = Arrays.asList(
-                "/project1/test1",
-                "/project1/test2"
+                makeOsDependentPath("/project1/test1"),
+                makeOsDependentPath("/project1/test2")
         );
         names = SourceRoots.getSourceRootsNames(paths, DISPLAY_NAME);
         assertEquals(2, names.size());
@@ -102,8 +103,8 @@ public class SourceRootsTest extends NbTestCase {
         assertEquals(String.format(DISPLAY_NAME_TEMPLATE, "test2"), names.get(1));
 
         paths = Arrays.asList(
-                "/project1/bundle1/test",
-                "/project1/bundle2/test"
+                makeOsDependentPath("/project1/bundle1/test"),
+                makeOsDependentPath("/project1/bundle2/test")
         );
         names = SourceRoots.getSourceRootsNames(paths, DISPLAY_NAME);
         assertEquals(names.toString(), 2, names.size());
@@ -111,9 +112,9 @@ public class SourceRootsTest extends NbTestCase {
         assertEquals(String.format(DISPLAY_NAME_TEMPLATE, "bundle2"), names.get(1));
 
         paths = Arrays.asList(
-                "/project1/bundle1/test",
-                "/project1/bundle2/test",
-                "/tmp/test"
+                makeOsDependentPath("/project1/bundle1/test"),
+                makeOsDependentPath("/project1/bundle2/test"),
+                makeOsDependentPath("/tmp/test")
         );
         names = SourceRoots.getSourceRootsNames(paths, DISPLAY_NAME);
         assertEquals(3, names.size());
@@ -122,9 +123,9 @@ public class SourceRootsTest extends NbTestCase {
         assertEquals(String.format(DISPLAY_NAME_TEMPLATE, "tmp"), names.get(2));
 
         paths = Arrays.asList(
-                "/project1/bundle1/test",
-                "/project1/bundle2/test",
-                "/project1/alltests"
+                makeOsDependentPath("/project1/bundle1/test"),
+                makeOsDependentPath("/project1/bundle2/test"),
+                makeOsDependentPath("/project1/alltests")
         );
         names = SourceRoots.getSourceRootsNames(paths, DISPLAY_NAME);
         assertEquals(3, names.size());
@@ -140,24 +141,28 @@ public class SourceRootsTest extends NbTestCase {
 
     public void testInvalidSourceRootsNames() {
         List<String> paths = Arrays.asList(
-                "/project1/bundle1/test",
-                "/project1/bundle1/test"
+                makeOsDependentPath("/project1/bundle1/test"),
+                makeOsDependentPath("/project1/bundle1/test")
         );
         List<String> names = SourceRoots.getSourceRootsNames(paths, DISPLAY_NAME);
         assertEquals(names.toString(), 2, names.size());
-        assertEquals(String.format(DISPLAY_NAME_TEMPLATE, "/project1/bundle1/test"), names.get(0));
-        assertEquals(String.format(DISPLAY_NAME_TEMPLATE, "/project1/bundle1/test"), names.get(1));
+        assertEquals(String.format(DISPLAY_NAME_TEMPLATE, makeOsDependentPath("/project1/bundle1/test")), names.get(0));
+        assertEquals(String.format(DISPLAY_NAME_TEMPLATE, makeOsDependentPath("/project1/bundle1/test")), names.get(1));
 
         paths = Arrays.asList(
-                "/project1/bundle1/test",
-                "/project1/bundle1/test",
-                "/tmp/test"
+                makeOsDependentPath("/project1/bundle1/test"),
+                makeOsDependentPath("/project1/bundle1/test"),
+                makeOsDependentPath("/tmp/test")
         );
         names = SourceRoots.getSourceRootsNames(paths, DISPLAY_NAME);
         assertEquals(names.toString(), 3, names.size());
-        assertEquals(String.format(DISPLAY_NAME_TEMPLATE, "/project1/bundle1/test"), names.get(0));
-        assertEquals(String.format(DISPLAY_NAME_TEMPLATE, "/project1/bundle1/test"), names.get(1));
-        assertEquals(String.format(DISPLAY_NAME_TEMPLATE, "/tmp/test"), names.get(2));
+        assertEquals(String.format(DISPLAY_NAME_TEMPLATE, makeOsDependentPath("/project1/bundle1/test")), names.get(0));
+        assertEquals(String.format(DISPLAY_NAME_TEMPLATE, makeOsDependentPath("/project1/bundle1/test")), names.get(1));
+        assertEquals(String.format(DISPLAY_NAME_TEMPLATE, makeOsDependentPath("/tmp/test")), names.get(2));
+    }
+
+    private String makeOsDependentPath(String path) {
+        return path.replace('/', File.separatorChar);
     }
 
 }

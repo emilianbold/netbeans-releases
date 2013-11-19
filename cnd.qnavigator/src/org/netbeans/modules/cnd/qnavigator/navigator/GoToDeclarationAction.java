@@ -56,7 +56,7 @@ import org.openide.util.NbBundle;
  */
 public class GoToDeclarationAction extends AbstractAction {
     
-    private CsmOffsetable csmObject;
+    private final CsmOffsetable csmObject;
     
     public GoToDeclarationAction(CsmOffsetable csmObject) {
         this.csmObject = csmObject;

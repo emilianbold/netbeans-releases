@@ -158,4 +158,316 @@ public class TooStrongCastTest extends NbTestCase {
             run(TooStrongCast.class).
             assertWarnings(THROW_WARNINGS);
     }
+    
+    /**
+     * Checks that a type (null) explicitly casted to varargs array
+     * type does not produce a warning
+     * @throws Exception 
+     */
+    public void testVarargsOK() throws Exception {
+        HintTest.create().
+            input("package test;\n" +
+                "public class Test {\n" +
+                "    private void varargMethod(String s, CharSequence... args) {}\n" +
+                "    \n" +
+                "    public void varargsCall() {\n" +
+                "        varargMethod(\"ble\", (CharSequence[])null); \n" +
+                "    }\n" +
+                "}\n" +
+                "").
+            run(TooStrongCast.class).
+            assertWarnings();
+    }
+    
+    public void testVarargRedudantCastToItem() throws Exception {
+        HintTest.create().
+            input("package test;\n" +
+            "public class Test {\n" +
+            "    private void varargMethod(String s, CharSequence... args) {}\n" +
+            "    public void varargsCall() {\n" +
+            "        varargMethod(\"ble\", \"fuj\", (CharSequence)null);  \n" +
+            "    }\n" +
+            "}\n" +
+            "").
+            run(TooStrongCast.class).
+            assertWarnings("4:36-4:48:verifier:Unnecessary cast to CharSequence");
+    }
+    
+    public void testVarargStrongCastToVarArray() throws Exception {
+        HintTest.create().
+            input("package test;\n" +
+            "public class Test {\n" +
+            "    private void varargMethod(String s, CharSequence... args) {}\n" +
+            "    public void varargsCall() { \n" +
+            "        Object arr = null;\n" +
+            "        varargMethod(\"ble\", (String[])arr);  \n" +
+            "    }\n" +
+            "}\n" +
+            "").
+            run(TooStrongCast.class).
+            assertWarnings("5:28-5:41:verifier:Type cast to String[] is too strong. CharSequence[] should be used instead");
+    }
+    
+    public void testVarargRedundantCastArray() throws Exception {
+        HintTest.create().
+            input("package test;\n" +
+            "public class Test {\n" +
+            "    private void varargMethod(String s, CharSequence... args) {}\n" +
+            "    public void varargsCall() { \n" +
+            "        String[] arr = null;\n" +
+            "        varargMethod(\"ble\", (String[])arr);  \n" +
+            "    }\n" +
+            "}\n" +
+            "").
+            run(TooStrongCast.class).
+            assertWarnings("5:29-5:37:verifier:Unnecessary cast to String[]");
+    }
+
+    /**
+     * It is unnecessary to cast a String- variable passed on vararg
+     * position.
+     * 
+     * @throws Exception 
+     */
+    public void testVarargRedundantCastFirstItem() throws Exception {
+        HintTest.create().
+            input("package test;\n" +
+            "public class Test {\n" +
+            "    private void varargMethod(String s, CharSequence... args) {}\n" +
+            "    public void varargsCall() { \n" +
+            "        String s = \"\";\n" +
+            "        varargMethod(\"ble\", (String)s);  \n" +
+            "    }\n" +
+            "}\n" +
+            "").
+            run(TooStrongCast.class).
+            assertWarnings("5:29-5:35:verifier:Unnecessary cast to String");
+    }
+
+    /**
+     * It is OK to cast null item to item type to avoid 'possibly ambiguous null'
+     * type warning from varargs hint
+     * 
+     * @throws Exception 
+     */
+    public void testVarargOKCastNullItem() throws Exception {
+        HintTest.create().
+            input("package test;\n" +
+            "public class Test {\n" +
+            "    private void varargMethod(String s, CharSequence... args) {}\n" +
+            "    public void varargsCall() { \n" +
+            "        varargMethod(\"ble\", (CharSequence)null);  \n" +
+            "    }\n" +
+            "}\n" +
+            "").
+            run(TooStrongCast.class).
+            assertWarnings();
+    }
+
+    public void testVarargStrongCastNullItem() throws Exception {
+        HintTest.create().
+            input("package test;\n" +
+            "public class Test {\n" +
+            "    private void varargMethod(String s, CharSequence... args) {}\n" +
+            "    public void varargsCall() { \n" +
+            "        varargMethod(\"ble\", (String)null);  \n" +
+            "    }\n" +
+            "}\n" +
+            "").
+            run(TooStrongCast.class).
+            assertWarnings("4:28-4:40:verifier:Type cast to String is too strong. CharSequence should be used instead");
+    }
+
+    public void testVarargStrongCastFirstItem() throws Exception {
+        HintTest.create().
+            input("package test;\n" +
+            "public class Test {\n" +
+            "    private void varargMethod(String s, CharSequence... args) {}\n" +
+            "    public void varargsCall() { \n" +
+            "        Object s = \"\";\n" +
+            "        varargMethod(\"ble\", (String)s);  \n" +
+            "    }\n" +
+            "}\n" +
+            "").
+            run(TooStrongCast.class).
+            assertWarnings("5:28-5:37:verifier:Type cast to String is too strong. CharSequence should be used instead");
+    }
+
+    public void testVarargStromgCastToItem() throws Exception {
+        HintTest.create().
+            input("package test;\n" +
+            "public class Test {\n" +
+            "    private void varargMethod(String s, CharSequence... args) {}\n" +
+            "    public void varargsCall() {\n" +
+            "        varargMethod(\"ble\", \"fuj\", (String)null);  \n" +
+            "    }\n" +
+            "}\n" +
+            "").
+            run(TooStrongCast.class).
+            assertWarnings("4:36-4:42:verifier:Unnecessary cast to String");
+    }
+    
+    /**
+     * Do not hint if the typecast is needed to select the appropriate method
+     * @throws Exception 
+     */
+    public void testOKAmbiguousMethod() throws Exception {
+        HintTest.create().
+            input("package test;\n" +
+"import java.io.Serializable;\n" +
+"abstract class VarArgsCast {\n" +
+"    public void varargsCall() { \n" +
+"        String value = null;\n" +
+"        findByPropertyValue(\"\", (Serializable)value, true);  \n" +
+"        \n" +
+"    }\n" +
+"    abstract Object findByPropertyValue(String name, Object value);\n" +
+"    abstract Object findByPropertyValue(String name, String value, boolean ignoreCase);\n" +
+"    abstract Object findByPropertyValue(String name, Serializable value, boolean ignoreCase);\n" +
+"}\n" +
+"").
+            run(TooStrongCast.class).
+            assertWarnings("");
+    }
+    
+    public void testStrongOverloadedMethd() throws Exception {
+        HintTest.create().
+            input("package test;\n" +
+"import java.io.Serializable;\n" +
+"abstract class VarArgsCast {\n" +
+"    public void varargsCall() { \n" +
+"        Integer value = null;\n" +
+"        findByPropertyValue(\"\", (Serializable)value, true);  \n" +
+"        \n" +
+"    }\n" +
+"    abstract Object findByPropertyValue(String name, Object value);\n" +
+"    abstract Object findByPropertyValue(String name, String value, boolean ignoreCase);\n" +
+"    abstract Object findByPropertyValue(String name, Serializable value, boolean ignoreCase);\n" +
+"}\n" +
+"").
+            run(TooStrongCast.class).
+            assertWarnings("5:33-5:45:verifier:Unnecessary cast to Serializable");
+    }
+    
+    public void testNoHintInferredType() throws Exception {
+        HintTest.create().
+            input("package test;\n" +
+            "\n" +
+            "import java.util.ArrayList;\n" +
+            "import java.util.Collections;\n" +
+            "import java.util.List;\n" +
+            "\n" +
+            "class VarArgsCast {\n" +
+            "    void bu() {\n" +
+            "        List<String> strings = new ArrayList<String>();\n" +
+            "        strings.addAll(Collections.nCopies(10, (String)null));\n" +
+            "    }\n" +
+            "}\n" +
+            "").
+            run(TooStrongCast.class).
+            assertWarnings();
+    }
+    
+    /**
+     * Checks that widening in arithmetic operation does not generate a hint. E.g. (float)a/b where a and b are int
+     * 
+     */
+    public void testArithmeticWidening() throws Exception {
+        HintTest.create().
+            input("package test;\n" +
+            "class Test {\n" +
+            "    void bu() {\n" +
+            "        int a = 2; int b = 5;\n" +
+            "        double y = ((double)a) / b;   \n" +
+            "    }\n" +
+            "}\n" +
+            "").
+            run(TooStrongCast.class).
+            assertWarnings();
+    }
+    
+    /**
+     * If one argument is casted to float and the other to double, it is not necessary to cast the operand to float,
+     * since using double promotes the other operand (to double, wider than float) automatically
+     */
+    public void testArithmeticRedundantWideningCast() throws Exception {
+        HintTest.create().
+            input("package test;\n" +
+            "class Test {\n" +
+            "    void bu() {\n" +
+            "        int a = 2; int b = 5;\n" +
+            "        double y = (double)a / (float)b;   \n" +
+            "    }\n" +
+            "}\n" +
+            "").
+            run(TooStrongCast.class).
+            assertWarnings("4:32-4:37:verifier:Unnecessary cast to float");
+    }
+    
+    /**
+     * If one argument is casted to float and the other is already typed as double, it is not necessary to cast the operand to float,
+     * since using double promotes the other operand (to double, wider than float) automatically
+     */
+    public void testArithmeticRedundantWideningType() throws Exception {
+        HintTest.create().
+            input("package test;\n" +
+            "class Test {\n" +
+            "    void bu() {\n" +
+            "        int a = 2; double b = 5;\n" +
+            "        double y = ((double)a) / b;   \n" +
+            "    }\n" +
+            "}\n" +
+            "").
+            run(TooStrongCast.class).
+            assertWarnings("4:21-4:27:verifier:Unnecessary cast to double");
+    }
+
+    public void testCharToCodeConversionInt() throws Exception {
+        HintTest.create().
+            input("package test;\n" +
+            "class Test {\n" +
+            "    void bu() {\n" +
+            "        char c = 'a';\n" +
+            "        String s = \"Character \" + c + \" has ASCII code \" + (int)c;\n" +
+            "    }\n" +
+            "}\n" +
+            "").
+            run(TooStrongCast.class).
+            assertWarnings();
+    }
+    
+    /**
+     * Prints the char's code but in floating point notation
+     */
+    public void testCharToCodeConversionFloat() throws Exception {
+        HintTest.create().
+            input("package test;\n" +
+            "class Test {\n" +
+            "    void bu() {\n" +
+            "        char c = 'a';\n" +
+            "        String s = \"Character \" + c + \" has ASCII code \" + (float)c;\n" +
+            "    }\n" +
+            "}\n" +
+            "").
+            run(TooStrongCast.class).
+            assertWarnings();
+    }
+
+    /**
+     * Should warn, char is not necessary to convert to double,
+     * float will also generate the same String representation
+     */
+    public void testCharToCodeConversionDouble() throws Exception {
+        HintTest.create().
+            input("package test;\n" +
+            "class Test {\n" +
+            "    void bu() {\n" +
+            "        char c = 'a';\n" +
+            "        String s = \"Character \" + c + \" has ASCII code \" + (double)c;\n" +
+            "    }\n" +
+            "}\n" +
+            "").
+            run(TooStrongCast.class).
+            assertWarnings("4:59-4:68:verifier:Type cast to double is too strong. float should be used instead");
+    }
 }

@@ -187,9 +187,10 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
             boolean editable = (editor instanceof EnhancedPropertyEditor)
                 ? ((EnhancedPropertyEditor) editor).supportsEditingTaggedValues()
                 : ((env != null) && Boolean.TRUE.equals(env.getFeatureDescriptor().getValue("canEditAsText"))); //NOI18N
+            boolean noAutoComplete = null != env && Boolean.FALSE.equals(env.getFeatureDescriptor().getValue("canAutoComplete")); //NOI18N
 
             strictAutoCompleteMatching = !editable;
-            setEditable(editable || isAutoComplete);
+            setEditable(editable || (isAutoComplete && !noAutoComplete));
             setActionCommand(COMMAND_SUCCESS);
 
             //Support for custom ListCellRenderer injection via PropertyEnv
@@ -314,8 +315,15 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
                     int selItem = ComboBoxAutoCompleteSupport.findMatch( this, editorItem.toString() );
                     if( selItem >= 0 && selItem < getItemCount() )
                         return getItemAt( selItem );
-                    if( strictAutoCompleteMatching )
+                    if( strictAutoCompleteMatching ) {
+                        int selIndex = getSelectedIndex();
+                        if( selIndex < 0 ) {
+                            if( null != editor )
+                                return editor.getAsText();
+                            return null;
+                        }
                         return getSelectedItem();
+                    }
                 }
             }
             return getEditor().getItem();

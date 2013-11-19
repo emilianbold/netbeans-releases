@@ -346,7 +346,11 @@ public class JsCodeCompletionGeneralTest extends JsCodeCompletionBase {
     public void testIssue235252() throws Exception {
         checkCompletion("testfiles/completion/general/issue235252.js", "location.h^", false);
     }
- 
+  
+    public void testIssue238289() throws Exception {
+        checkCompletion("testfiles/completion/general/issue238289.js", "beamer.s^", false);
+    }
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());

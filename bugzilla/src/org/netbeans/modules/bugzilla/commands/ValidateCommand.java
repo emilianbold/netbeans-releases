@@ -50,7 +50,7 @@ import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClient;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.commons.LogUtils;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.mylyn.util.BugtrackingCommand;
 
@@ -109,7 +109,7 @@ public class ValidateCommand extends BugtrackingCommand {
         if(c == null) {
             return "null, null";                                                            // NOI18N
         }
-        return c.getUserName() + "," + BugtrackingUtil.getPasswordLog(c.getPassword().toCharArray());     // NOI18N
+        return c.getUserName() + "," + LogUtils.getPasswordLog(c.getPassword().toCharArray());     // NOI18N
     }
 
 

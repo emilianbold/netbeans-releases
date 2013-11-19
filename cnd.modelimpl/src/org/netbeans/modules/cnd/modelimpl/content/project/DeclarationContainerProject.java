@@ -169,16 +169,17 @@ public class DeclarationContainerProject extends DeclarationContainer {
         if (TEST_DATABASE) {
             CsmUID<CsmOffsetableDeclaration> uid = UIDCsmConverter.declarationToUID(decl);
             Key key = RepositoryUtils.UIDtoKey(uid);
-            @SuppressWarnings("unchecked")
-            MapBasedTable table = (MapBasedTable) RepositoryAccessor.getRepository().getDatabaseTable(key, DeclarationContainerProjectStorage.TABLE_NAME);
-            KeyDataPresentation dataPresentation = key.getDataPresentation();
-            KeyDataPresentationImpl keyImpl = new KeyDataPresentationImpl(
-                    dataPresentation.getUnitPresentation(), dataPresentation.getNamePresentation(),
-                    dataPresentation.getKindPresentation(), dataPresentation.getFilePresentation(),
-                    dataPresentation.getStartPresentation(), dataPresentation.getEndPresentation());
-            try {
-                getLock().writeLock().lock();
-                DataPresentationImpl removedKeyImpl = (DataPresentationImpl) table.remove(keyImpl);
+            if (key instanceof KeyDataPresentation) {
+                KeyDataPresentation dataPresentation = (KeyDataPresentation) key;
+                @SuppressWarnings("unchecked")
+                MapBasedTable table = (MapBasedTable) RepositoryAccessor.getRepository().getDatabaseTable(key, DeclarationContainerProjectStorage.TABLE_NAME);
+                KeyDataPresentationImpl keyImpl = new KeyDataPresentationImpl(
+                        dataPresentation.getUnitPresentation(), dataPresentation.getNamePresentation(),
+                        dataPresentation.getHandler(), dataPresentation.getFilePresentation(),
+                        dataPresentation.getStartPresentation(), dataPresentation.getEndPresentation());
+                try {
+                    getLock().writeLock().lock();
+                    DataPresentationImpl removedKeyImpl = (DataPresentationImpl) table.remove(keyImpl);
 //                CharSequence uin = decl.getUniqueName();
 //                UniqueNameImpl uinImpl = new UniqueNameImpl(uin);
 //                DataPresentationImpl valueImpl = new DataPresentationImpl(keyImpl,uinImpl);
@@ -194,8 +195,9 @@ public class DeclarationContainerProject extends DeclarationContainer {
 //                                      "\tNew UIN="+uinImpl.getUin()).printStackTrace();
 //                    }
 //                }
-            } finally {
-                getLock().writeLock().unlock();
+                } finally {
+                    getLock().writeLock().unlock();
+                }
             }
         }
     }
@@ -207,26 +209,28 @@ public class DeclarationContainerProject extends DeclarationContainer {
             CharSequence uin = decl.getUniqueName();
             CsmUID<CsmOffsetableDeclaration> uid = UIDCsmConverter.declarationToUID(decl);
             Key key = RepositoryUtils.UIDtoKey(uid);
-            @SuppressWarnings("unchecked")
-            MapBasedTable table = (MapBasedTable) RepositoryAccessor.getRepository().getDatabaseTable(key, DeclarationContainerProjectStorage.TABLE_NAME);
-            KeyDataPresentation dataPresentation = key.getDataPresentation();
-            KeyDataPresentationImpl keyImpl = new KeyDataPresentationImpl(
-                    dataPresentation.getUnitPresentation(), dataPresentation.getNamePresentation(),
-                    dataPresentation.getKindPresentation(), dataPresentation.getFilePresentation(),
-                    dataPresentation.getStartPresentation(), dataPresentation.getEndPresentation());
-            UniqueNameImpl uinImpl = new UniqueNameImpl(uin);
-            DataPresentationImpl valueImpl = new DataPresentationImpl(keyImpl,uinImpl);
-            try {
-                getLock().writeLock().lock();
-                table.put(keyImpl, valueImpl);
-            } finally {
-                getLock().writeLock().unlock();
-            }
-            try {
-                getLock().readLock().lock();
-                assert table.get(keyImpl).equals(valueImpl);
-            } finally {
-                getLock().readLock().unlock();
+            if (key instanceof KeyDataPresentation) {
+                KeyDataPresentation dataPresentation = (KeyDataPresentation) key;
+                @SuppressWarnings("unchecked")
+                MapBasedTable table = (MapBasedTable) RepositoryAccessor.getRepository().getDatabaseTable(key, DeclarationContainerProjectStorage.TABLE_NAME);
+                KeyDataPresentationImpl keyImpl = new KeyDataPresentationImpl(
+                        dataPresentation.getUnitPresentation(), dataPresentation.getNamePresentation(),
+                        dataPresentation.getHandler(), dataPresentation.getFilePresentation(),
+                        dataPresentation.getStartPresentation(), dataPresentation.getEndPresentation());
+                UniqueNameImpl uinImpl = new UniqueNameImpl(uin);
+                DataPresentationImpl valueImpl = new DataPresentationImpl(keyImpl,uinImpl);
+                try {
+                    getLock().writeLock().lock();
+                    table.put(keyImpl, valueImpl);
+                } finally {
+                    getLock().writeLock().unlock();
+                }
+                try {
+                    getLock().readLock().lock();
+                    assert table.get(keyImpl).equals(valueImpl);
+                } finally {
+                    getLock().readLock().unlock();
+                }
             }
         }
     }

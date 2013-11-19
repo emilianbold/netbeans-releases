@@ -762,11 +762,17 @@ public final class PositionRef extends Object implements Serializable {
                         doc = mgr.getCloneableEditorSupport().openDocument();
                     }
 
-                    int retOffset = new DocumentRenderer(
-                            mgr, DocumentRenderer.LINE_KIND_GET_OFFSET, this, line, column, doc
-                        ).renderToInt();
+                    try {
+                        // PositionRefs can still have LineKind even after doc's opening.
+                        // Therefore service the case when the line is above doc's end here.
+                        int retOffset = new DocumentRenderer(
+                                mgr, DocumentRenderer.LINE_KIND_GET_OFFSET, this, line, column, doc
+                            ).renderToInt();
+                        return retOffset;
+                    } catch (IndexOutOfBoundsException e) {
+                        return doc.getEndPosition().getOffset();
+                    }
 
-                    return retOffset;
                 } catch (IOException e) {
                     // what to do? hopefully unlikelly
                     return 0;

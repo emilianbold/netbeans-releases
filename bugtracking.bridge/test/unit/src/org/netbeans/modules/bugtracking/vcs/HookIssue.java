@@ -44,12 +44,10 @@ package org.netbeans.modules.bugtracking.vcs;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.IOException;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.bugtracking.TestIssue;
 import org.netbeans.modules.bugtracking.spi.IssueController;
-import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.openide.util.HelpCtx;
 
 /**
@@ -116,7 +114,7 @@ public class HookIssue extends TestIssue {
     }
 
     @Override
-    public void attachPatch(File file, String description) {
+    public void attachFile(File file, String description, boolean isPatch) {
         // do nothing
     }
 
@@ -135,6 +133,17 @@ public class HookIssue extends TestIssue {
                 }
                 @Override public void opened() { }
                 @Override public void closed() { }
+                @Override
+                public boolean saveChanges() {
+                    return true;
+                }
+                @Override
+                public boolean discardUnsavedChanges() {
+                    return true;
+                }
+                @Override public void addPropertyChangeListener(PropertyChangeListener l) { }
+                @Override public void removePropertyChangeListener(PropertyChangeListener l) { }
+                @Override public boolean isChanged() { return false; }
             };
         }
         return controller;

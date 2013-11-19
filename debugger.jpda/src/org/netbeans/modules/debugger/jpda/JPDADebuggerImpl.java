@@ -46,12 +46,14 @@ package org.netbeans.modules.debugger.jpda;
 
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.Bootstrap;
+import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.ClassType;
 import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.IntegerValue;
 import com.sun.jdi.InterfaceType;
 import com.sun.jdi.InternalException;
 import com.sun.jdi.InvalidStackFrameException;
+import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.LocalVariable;
 import com.sun.jdi.Method;
 import com.sun.jdi.ObjectCollectedException;
@@ -70,6 +72,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
+import java.io.InvalidObjectException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -132,6 +135,7 @@ import org.netbeans.modules.debugger.jpda.models.ThreadsCache;
 import org.netbeans.modules.debugger.jpda.util.Operator;
 import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
 import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.IllegalArgumentExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.IntegerValueWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
@@ -140,6 +144,7 @@ import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ValueWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
+import org.netbeans.modules.debugger.jpda.models.VariableMirrorTranslator;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.debugger.DelegatingSessionProvider;
 
@@ -987,7 +992,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         Method method,
         Value[] arguments
     ) throws InvalidExpressionException {
-        return invokeMethod(null, reference, method, arguments, 0);
+        return invokeMethod(null, reference, null, method, arguments, 0);
     }
 
     public Value invokeMethod (
@@ -996,7 +1001,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         Value[] arguments,
         int maxLength
     ) throws InvalidExpressionException {
-        return invokeMethod(null, reference, method, arguments, maxLength);
+        return invokeMethod(null, reference, null, method, arguments, maxLength);
     }
 
     /**
@@ -1008,12 +1013,25 @@ public class JPDADebuggerImpl extends JPDADebugger {
         Method method,
         Value[] arguments
     ) throws InvalidExpressionException {
-        return invokeMethod(thread, reference, method, arguments, 0);
+        return invokeMethod(thread, reference, null, method, arguments, 0);
+    }
+
+    /**
+     * Used by JPDAClassTypeImpl.
+     */
+    public Value invokeMethod (
+        JPDAThreadImpl thread,
+        ClassType classType,
+        Method method,
+        Value[] arguments
+    ) throws InvalidExpressionException {
+        return invokeMethod(thread, null, classType, method, arguments, 0);
     }
 
     private Value invokeMethod (
         JPDAThreadImpl thread,
         ObjectReference reference,
+        ClassType classType,
         Method method,
         Value[] arguments,
         int maxLength
@@ -1061,14 +1079,26 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     throw e;
                 }
                 try {
-                    Value v = org.netbeans.modules.debugger.jpda.expr.TreeEvaluator.
-                        invokeVirtual (
-                            reference,
-                            method,
-                            tr,
-                            Arrays.asList (arguments),
-                            this
-                        );
+                    Value v;
+                    if (reference != null) {
+                        v = org.netbeans.modules.debugger.jpda.expr.TreeEvaluator.
+                            invokeVirtual (
+                                reference,
+                                method,
+                                tr,
+                                Arrays.asList (arguments),
+                                this
+                            );
+                    } else {
+                        v = org.netbeans.modules.debugger.jpda.expr.TreeEvaluator.
+                            invokeVirtual (
+                                classType,
+                                method,
+                                tr,
+                                Arrays.asList (arguments),
+                                this
+                            );
+                    }
                     if (maxLength > 0 && maxLength < Integer.MAX_VALUE && (v instanceof StringReference)) {
                         v = cutLength((StringReference) v, maxLength, tr);
                     }
@@ -1918,6 +1948,49 @@ public class JPDADebuggerImpl extends JPDADebugger {
         return getLocalsTreeModel ().getVariable (value);
     }
 
+    @Override
+    public Variable createMirrorVar(Object obj, boolean isPrimitive) throws InvalidObjectException {
+        if (obj == null) {
+            return null;
+        }
+        Variable v;
+        try {
+            v = getVariable(VariableMirrorTranslator.createValueFromMirror(obj, !isPrimitive, this));
+        } catch (IllegalArgumentExceptionWrapper ex) {
+            InvalidObjectException ioex = new InvalidObjectException(ex.getLocalizedMessage());
+            ioex.initCause(ex);
+            throw ioex;
+        } catch (InternalExceptionWrapper ex) {
+            InvalidObjectException ioex = new InvalidObjectException(ex.getLocalizedMessage());
+            ioex.initCause(ex);
+            throw ioex;
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            InvalidObjectException ioex = new InvalidObjectException(ex.getLocalizedMessage());
+            ioex.initCause(ex);
+            throw ioex;
+        } catch (ObjectCollectedExceptionWrapper ex) {
+            InvalidObjectException ioex = new InvalidObjectException(ex.getLocalizedMessage());
+            ioex.initCause(ex);
+            throw ioex;
+        } catch (InvalidTypeException ex) {
+            InvalidObjectException ioex = new InvalidObjectException(ex.getLocalizedMessage());
+            ioex.initCause(ex);
+            throw ioex;
+        } catch (ClassNotLoadedException ex) {
+            InvalidObjectException ioex = new InvalidObjectException(ex.getLocalizedMessage());
+            ioex.initCause(ex);
+            throw ioex;
+        } catch (ClassNotPreparedExceptionWrapper ex) {
+            InvalidObjectException ioex = new InvalidObjectException(ex.getLocalizedMessage());
+            ioex.initCause(ex);
+            throw ioex;
+        }
+        if (v == null) {
+            throw new InvalidObjectException("No target value from "+obj);
+        }
+        return v;
+    }
+    
     public void markObject(ObjectVariable var, String label) {
         synchronized (markedObjects) {
             long uid = var.getUniqueID();
@@ -2233,6 +2306,12 @@ public class JPDADebuggerImpl extends JPDADebugger {
                         if (!"JAVA".equals(extension)) {    // NOI18N
                             l = Collections.singletonList(extension);
                             stratum = extension;
+                        }
+                    } else if ("<eval>".equals(sourceName)) {
+                        // Check Nashorn:
+                        if ("jdk/nashorn/internal/scripts/<eval>".equals(f.getSourcePath(null))) {
+                            l = Collections.singletonList("JS");
+                            stratum = "JS";
                         }
                     }
                 }

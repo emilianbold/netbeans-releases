@@ -66,6 +66,7 @@ public class DashboardSettings {
     private static final String TASKS_LIMIT_CATEGORY = "dashboard.tasks_limit_category"; //NOI18N
     private static final String TASKS_LIMIT_QUERY = "dashboard.tasks_limit_query"; //NOI18N
     private static final String FINISHED_TASK_FILTER = "dashboard.finished_task_filter"; //NOI18N
+    private static final String SHOW_SCHEDULE = "dashboard.show_schedule"; //NOI18N
     /*
      * default values in fields
      */
@@ -76,6 +77,7 @@ public class DashboardSettings {
     private static final boolean DEFAULT_TASKS_LIMIT_CATEGORY = false;
     private static final boolean DEFAULT_TASKS_LIMIT_QUERY = true;
     private static final boolean DEFAULT_FINISHED_TASK_FILTER = true;
+    private static final boolean DEFAULT_SHOW_SCHEDULE = true;
 
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
 
@@ -171,17 +173,31 @@ public class DashboardSettings {
         getPreferences().putBoolean(FINISHED_TASK_FILTER, tasksLimitQuery);
     }
 
-    public void updateAttributesRank(List<TaskAttribute> attributes) {
+    public void updateSortingAttributes(List<TaskAttribute> attributes) {
         for (TaskAttribute taskAttribute : attributes) {
-            taskAttribute.setRank(getPreferences().getInt(taskAttribute.getId(), 0));
+            taskAttribute.setRank(getPreferences().getInt(taskAttribute.getId(), taskAttribute.getRank()));
+            taskAttribute.setAsceding(getPreferences().getBoolean(getAttributeAscedingId(taskAttribute.getId()), taskAttribute.isAsceding()));
         }
     }
 
     public void setSortingAttributes(List<TaskAttribute> attributes) {
         for (TaskAttribute taskAttribute : attributes) {
             getPreferences().putInt(taskAttribute.getId(), taskAttribute.getRank());
+            getPreferences().putBoolean(getAttributeAscedingId(taskAttribute.getId()), taskAttribute.isAsceding());
         }
         fireSortChangedEvent();
+    }
+
+    public boolean showSchedule(String settingId) {
+        return getPreferences().getBoolean(SHOW_SCHEDULE + "." + settingId, DEFAULT_FINISHED_TASK_FILTER);
+    }
+
+    public void updateShowSchedule(String settingId, boolean selected) {
+        getPreferences().putBoolean(SHOW_SCHEDULE + "." + settingId, selected);
+    }
+
+    private String getAttributeAscedingId(String attributeId) {
+        return attributeId + ".asceding";
     }
 
     private Preferences getPreferences() {

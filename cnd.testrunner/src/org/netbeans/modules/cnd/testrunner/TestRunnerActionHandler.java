@@ -89,9 +89,11 @@ import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescrip
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
 
 /**
@@ -169,6 +171,14 @@ public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionL
 
         // TODO: this is actual only for sun studio compiler
         env.put("SPRO_EXPAND_ERRORS", ""); // NOI18N
+        
+        CompilerSet cs = conf.getCompilerSet().getCompilerSet();
+
+        if (conf.getDevelopmentHost().isLocalhost() && Utilities.isWindows()
+                && cs.getCompilerFlavor().isMinGWCompiler()
+                && pae.getExecutable().contains("make")) { // NOI18N
+            env.put("MAKE", WindowsSupport.getInstance().convertToMSysPath(pae.getExecutable())); // NOI18N
+        }
 
         String workingDirectory = convertToRemoteIfNeeded(execEnv, pae.getProject(), runDirectory);
 

@@ -317,14 +317,13 @@ public class PHPTypeSearcher implements IndexSearcher {
                 if (s) {
                     sb.append(" in ");
                 }
-                String pathToDisplay;
                 String filePath = FileUtil.getFileDisplayName(file);
+                String pathToDisplay = filePath;
                 if (projectDirectory != null) {
                     String projectPath = FileUtil.getFileDisplayName(projectDirectory);
-                    assert (projectPath.length() < filePath.length() && projectPath.length() > 0) : projectPath + " :: " + filePath;
-                    pathToDisplay = getProjectName() + " ." + filePath.substring(projectPath.length()); //NOI18N
-                } else {
-                    pathToDisplay = filePath;
+                    if (projectPath.length() > 0 && projectPath.length() < filePath.length()) {
+                        pathToDisplay = getProjectName() + " ." + filePath.substring(projectPath.length()); //NOI18N
+                    }
                 }
                 sb.append(pathToDisplay); //NOI18N
             }

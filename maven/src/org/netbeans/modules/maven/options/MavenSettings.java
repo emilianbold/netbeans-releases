@@ -58,7 +58,6 @@ import java.util.prefs.Preferences;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -83,6 +82,8 @@ public final class MavenSettings  {
     private static final String PROP_ALWAYS_OUTPUT = "alwaysShowOutput";
     private static final String PROP_REUSE_OUTPUT = "reuseOutputTabs";
     private static final String PROP_COLLAPSE_FOLDS = "collapseSuccessFolds";
+    private static final String PROP_OUTPUT_TAB_CONFIG = "showConfigInOutputTab";
+    private static final String PROP_OUTPUT_TAB_NAME = "showOutputTabAs";
 
     //these are from former versions (6.5) and are here only for conversion
     private static final String PROP_DEBUG = "showDebug"; // NOI18N
@@ -298,6 +299,36 @@ public final class MavenSettings  {
     
     public void setCollapseSuccessFolds(boolean collapse) {
         getPreferences().putBoolean(PROP_COLLAPSE_FOLDS, collapse);
+    }
+
+    public void setOutputTabShowConfig(boolean selected) {
+        getPreferences().putBoolean(PROP_OUTPUT_TAB_CONFIG, selected);
+    }
+    
+    public boolean isOutputTabShowConfig() {
+        return getPreferences().getBoolean(PROP_OUTPUT_TAB_CONFIG, false);
+    }
+    
+    public OutputTabName getOutputTabName() {
+        String val = getPreferences().get(PROP_OUTPUT_TAB_NAME, OutputTabName.PROJECT_NAME.name());
+        try {
+            return OutputTabName.valueOf(val);
+        } catch (IllegalArgumentException ex) {
+            return OutputTabName.PROJECT_NAME;
+        }
+    }
+    
+    public void setOutputTabName(OutputTabName ds) {
+        if (ds != null) {
+            getPreferences().put(PROP_OUTPUT_TAB_NAME, ds.name());
+        } else {
+            getPreferences().remove(PROP_OUTPUT_TAB_NAME);
+        }
+    }
+    
+    public static enum OutputTabName {
+        PROJECT_NAME,
+        PROJECT_ID
     }
     
     public static enum DownloadStrategy {
