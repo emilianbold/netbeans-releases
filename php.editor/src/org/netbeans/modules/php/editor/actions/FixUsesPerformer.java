@@ -160,24 +160,24 @@ public class FixUsesPerformer {
     private void resolveDuplicateSelections() {
         List<ImportData.DataItem> dataItems = importData.getItems();
         List<ItemVariant> selectionsCopy = new ArrayList<>(selections);
-        List<Integer> itemsToRemove = new ArrayList<>();
+        List<Integer> itemIndexesToRemove = new ArrayList<>();
         for (int i = 0; i < selections.size(); i++) {
             List<UsedNamespaceName> usedNamespaceNames = new ArrayList<>();
             ItemVariant baseVariant = selections.get(i);
             for (int j = i + 1; j < selectionsCopy.size(); j++) {
                 ItemVariant testedVariant = selectionsCopy.get(j);
-                if (baseVariant.equals(testedVariant) && !itemsToRemove.contains(j)) {
+                if (baseVariant.equals(testedVariant) && !itemIndexesToRemove.contains(j)) {
                     ImportData.DataItem duplicateItem = dataItems.get(j);
                     usedNamespaceNames.addAll(duplicateItem.getUsedNamespaceNames());
-                    itemsToRemove.add(j);
+                    itemIndexesToRemove.add(j);
                 }
             }
             if (!usedNamespaceNames.isEmpty()) {
                 dataItems.get(i).addUsedNamespaceNames(usedNamespaceNames);
             }
         }
-        for (Integer integer : itemsToRemove) {
-            selections.remove((int) integer);
+        for (Integer itemIndexToRemove : itemIndexesToRemove) {
+            selections.remove((int) itemIndexToRemove);
         }
     }
 
