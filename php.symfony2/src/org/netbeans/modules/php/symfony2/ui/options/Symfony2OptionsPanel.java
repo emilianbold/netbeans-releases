@@ -77,8 +77,12 @@ import org.openide.util.NbBundle;
 /**
  * Panel for SYmfony2 options.
  */
-@OptionsPanelController.Keywords(keywords={"php", "symfony", "symfony2", "framework", "sf", "sf2"}, location=UiUtils.OPTIONS_PATH, tabTitle= "#LBL_Symfony2OptionsName")
-@NbBundle.Messages("LBL_ZipFilesFilter=Zip File (*.zip)")
+@NbBundle.Messages({
+        "LBL_ZipFilesFilter=Zip File (*.zip)",
+        "PhpOptions.Symfony2.keywordsTabTitle=Frameworks & Tools"
+})
+@OptionsPanelController.Keywords(keywords={"php", "symfony", "symfony2", "framework", "sf", "sf2"}, 
+        location=UiUtils.OPTIONS_PATH, tabTitle= "#PhpOptions.Symfony2.keywordsTabTitle")
 public class Symfony2OptionsPanel extends JPanel {
 
     private static final long serialVersionUID = -4674683641321L;

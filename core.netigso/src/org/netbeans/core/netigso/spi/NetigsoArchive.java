@@ -43,6 +43,9 @@
 package org.netbeans.core.netigso.spi;
 
 import java.io.IOException;
+import java.lang.instrument.IllegalClassFormatException;
+import java.lang.instrument.Instrumentation;
+import java.security.ProtectionDomain;
 import org.netbeans.ArchiveResources;
 import org.netbeans.core.netigso.Netigso;
 import org.netbeans.core.netigso.NetigsoArchiveFactory;
@@ -111,6 +114,25 @@ public final class NetigsoArchive {
      */
     public boolean isActive() {
         return netigso.isArchiveActive();
+    }
+    
+    /** Gives OSGi containers that support bytecode patching a chance to
+     * call into NetBeans internal patching system based on 
+     * {@link Instrumentation}. 
+     * 
+     * @param l class loader loading the class
+     * @param className the name of the class to define
+     * @param pd its protection domain
+     * @param arr bytecode (must not be modified)
+     * @return the same or alternative bytecode to use for the defined class
+     * @since 1.25
+     */
+    public final byte[] patchByteCode(ClassLoader l, 
+        String className, 
+        ProtectionDomain pd, 
+        byte[] arr
+    ) {
+        return netigso.patchBC(l, className, pd, arr);
     }
 
     static {

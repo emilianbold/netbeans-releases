@@ -79,6 +79,7 @@ public class FilterPanel extends javax.swing.JPanel {
     private final String TODAY_SETTING_ID = "scheduleToday";
     private final String THIS_WEEK_SETTING_ID = "scheduleThisWeek";
     private final String ALL_SETTING_ID = "scheduleAll";
+    private ShowScheduleAction showTodayAction;
 
     public FilterPanel() {
         REQUEST_PROCESSOR = DashboardViewer.getInstance().getRequestProcessor();
@@ -173,6 +174,11 @@ public class FilterPanel extends javax.swing.JPanel {
         lblCount.setText("(" + hits + " " + NbBundle.getMessage(FilterPanel.class, "LBL_Matches") + ")"); //NOI18N
     }
 
+    public void showTodayCategory() {
+        showTodayAction.menuItem.setSelected(true);
+        showTodayAction.actionPerformed(null);
+    }
+
     @Override
     public void paintComponent(Graphics g) {
         if (ColorManager.getDefault().isAqua()) {
@@ -239,11 +245,18 @@ public class FilterPanel extends javax.swing.JPanel {
 
         JCheckBoxMenuItem chbToday = new JCheckBoxMenuItem();
         IssueScheduleInfo todayInfo = DashboardUtils.getToday();
-        AbstractAction showTodayAction = new ShowScheduleAction(
+        showTodayAction = new ShowScheduleAction(
                 NbBundle.getMessage(FilterPanel.class, "LBL_ScheduleToday"),
                 TODAY_SETTING_ID, todayInfo,
                 chbToday
-        );
+        ) {
+
+            @Override
+            public void afterUpdate() {
+                DashboardViewer.getInstance().selectTodayCategory();
+            }
+
+        };
         chbToday.setAction(showTodayAction);
         boolean showTodaySchedule = DashboardSettings.getInstance().showSchedule(TODAY_SETTING_ID);
         chbToday.setSelected(showTodaySchedule);
@@ -308,6 +321,7 @@ public class FilterPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     private class ShowScheduleAction extends AbstractAction {
+
         private final IssueScheduleInfo scheduleInfo;
         private final JMenuItem menuItem;
         private final String settingId;
@@ -337,8 +351,13 @@ public class FilterPanel extends javax.swing.JPanel {
                     }
                     DashboardViewer.getInstance().updateCategoryFilter(scheduleCategoryFilter);
                     DashboardSettings.getInstance().updateShowSchedule(settingId, selected);
+                    afterUpdate();
                 }
             });
+        }
+
+        public void afterUpdate() {
+
         }
     }
 }

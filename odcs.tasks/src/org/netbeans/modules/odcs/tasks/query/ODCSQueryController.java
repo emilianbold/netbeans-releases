@@ -89,6 +89,7 @@ import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
 import org.netbeans.modules.team.spi.TeamProject;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryController.QueryMode;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.odcs.tasks.ODCS;
 import org.netbeans.modules.odcs.tasks.ODCSConfig;
 import org.netbeans.modules.odcs.tasks.ODCSConnector;
@@ -132,6 +133,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
     private Criteria originalCriteria;
     private final QueryParameters parameters;
     private boolean populated = false;
+    private QueryProvider.IssueContainer<ODCSIssue> delegatingIssueContainer;
         
     ODCSQueryController(ODCSRepository repository, ODCSQuery query, Criteria criteria, boolean modifiable) {
         this.repository = repository;
@@ -992,6 +994,10 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
         support.removePropertyChangeListener(l);
     }
 
+    public void setIssueContainer(QueryProvider.IssueContainer<ODCSIssue> c) {
+        delegatingIssueContainer = c;
+    }
+
     private class QueryTask implements Runnable, Cancellable, QueryNotifyListener {
         private ProgressHandle handle;
         private Task task;
@@ -1011,7 +1017,9 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
 ////            if(lastChageFrom != null && !lastChageFrom.equals("")) {    // NOI18N
 ////                ODCSConfig.getInstance().setLastChangeFrom(lastChageFrom);
 ////            }
-            
+            if(delegatingIssueContainer != null) {
+                delegatingIssueContainer.refreshingStarted();
+            }
             setQueryRunning(true);
             handle = ProgressHandleFactory.createHandle(
                     NbBundle.getMessage(
@@ -1033,6 +1041,9 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
         } 
 
         private void finnishQuery() {
+            if(delegatingIssueContainer != null) {
+                delegatingIssueContainer.refreshingFinished();
+            }
             setQueryRunning(false); // XXX do we need this? its called in finishQuery anyway
             synchronized(REFRESH_LOCK) {
                 task = null;
@@ -1124,7 +1135,10 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
         }
 
         @Override
-        public void notifyData(final ODCSIssue issue) {
+        public void notifyDataAdded(final ODCSIssue issue) {
+            if(delegatingIssueContainer != null) {
+                delegatingIssueContainer.add(issue);
+            }
             issueTable.addNode(issue.getNode());
             setIssueCount(++counter);
             if(counter == 1) {
@@ -1137,6 +1151,13 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
             }
         }
 
+        @Override
+        public void notifyDataRemoved(ODCSIssue issue) {
+            if(delegatingIssueContainer != null) {
+                delegatingIssueContainer.remove(issue);
+            }
+        }
+        
         @Override
         public void started() {
             issueTable.started();

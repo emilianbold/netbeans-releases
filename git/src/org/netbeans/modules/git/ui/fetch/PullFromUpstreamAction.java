@@ -50,6 +50,7 @@ import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.ui.actions.ActionProgress;
 import org.netbeans.modules.git.ui.actions.MultipleRepositoryAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.utils.GitUtils;
@@ -60,7 +61,6 @@ import org.openide.awt.ActionRegistration;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
-import org.openide.util.RequestProcessor.Task;
 
 /**
  *
@@ -84,12 +84,13 @@ public class PullFromUpstreamAction extends MultipleRepositoryAction {
     
     @Override
     protected RequestProcessor.Task performAction (File repository, File[] roots, VCSContext context) {
-        return pull(repository);
+        ActionProgress p = pull(repository);
+        return p == null ? null : p.getActionTask();
     }
     
     @Messages({"LBL_Pull.pullFromUpstreamFailed=Pull from Upstream Failed", "LBL_PullFromUpstreamAction.preparing=Preparing Pull..."})
-    private Task pull (final File repository) {
-        final Task[] t = new Task[1];
+    public ActionProgress pull (final File repository) {
+        final ActionProgress[] t = new ActionProgress[1];
         GitProgressSupport supp = new GitProgressSupport.NoOutputLogging() {
             @Override
             protected void perform () {

@@ -48,6 +48,7 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.beans.*;
+import javax.swing.JPanel;
 import org.openide.util.Exceptions;
 
 
@@ -66,8 +67,6 @@ public class BrowserFactoryBeanInfo extends SimpleBeanInfo {
                                 new PropertyDescriptor("id", BrowserFactory.class, "getId", null)
                              };
 
-            properties[0].setDisplayName("JavaFX Runtime Location");
-            properties[0].setShortDescription ("Location of JavaFX runtime libraries.");
             properties[0].setPreferred(true);
             properties[0].setPropertyEditorClass(EBPropertyEditor.class);
 
@@ -123,13 +122,9 @@ public class BrowserFactoryBeanInfo extends SimpleBeanInfo {
             return null;
         }
 
-        private EmbeddedBrowserEditor editor;
         @Override
         public Component getCustomEditor() {
-            if( null == editor ) {
-                editor = new EmbeddedBrowserEditor(this);
-            }
-            return editor;
+            return new JPanel();
         }
 
         @Override

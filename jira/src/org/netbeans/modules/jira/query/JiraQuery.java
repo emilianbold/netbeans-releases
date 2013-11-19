@@ -86,7 +86,6 @@ public class JiraQuery {
     private boolean firstRun = true;
     private boolean saved;
     protected long lastRefresh;
-    private final PropertyChangeSupport support;
     private SynchronizeQueryCommand queryCmd;
     private IRepositoryQuery iquery;
     private final Object ISSUES_LOCK = new Object();
@@ -105,7 +104,6 @@ public class JiraQuery {
         this.name = name;
         this.jiraFilter = jiraFilter;
         this.lastRefresh = JiraConfig.getInstance().getLastQueryRefresh(repository, getStoredQueryName());
-        this.support = new PropertyChangeSupport(this);
         
         if(initControler) {
             // enforce controller creation
@@ -119,18 +117,6 @@ public class JiraQuery {
         }
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        support.addPropertyChangeListener(listener);
-    }
-    
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        support.removePropertyChangeListener(listener);
-    }
-
-    protected void fireQueryIssuesChanged() {
-        support.firePropertyChange(QueryProvider.EVENT_QUERY_REFRESHED, null, null);
-    }  
-    
     public String getDisplayName() {
         return name;
     }
@@ -381,8 +367,10 @@ public class JiraQuery {
                 // using taskId here, task key not yet available for fresh incoming tasks
                 ids.remove(task.getTaskId());
             }
-            // when issue table or task dashboard is able to handle removals
-            // fire an event from here
+            NbJiraIssue issue = repository.getIssueForTask(task);
+            if (issue != null) {
+                fireNotifyDataRemoved(issue);
+            }            
         }
 
         @Override
@@ -393,7 +381,7 @@ public class JiraQuery {
                 NbJiraIssue issue = repository.getIssueForTask(task);
                 if (issue != null) {
                     issues.add(task.getTaskKey());
-                    fireNotifyData(issue); // XXX - !!! triggers getIssues()
+                    fireNotifyDataAdded(issue); // XXX - !!! triggers getIssues()
                 }
             }
         }
@@ -409,7 +397,7 @@ public class JiraQuery {
                         if (issue != null) {
                             // using taskId here, task key not yet available for fresh incoming tasks
                             if (addedIds.add(task.getTaskId())) {
-                                fireNotifyData(issue); // XXX - !!! triggers getIssues()
+                                fireNotifyDataAdded(issue); // XXX - !!! triggers getIssues()
                             }
                         }
                     }
@@ -435,10 +423,17 @@ public class JiraQuery {
         }
     }
 
-    protected void fireNotifyData(NbJiraIssue issue) {
+    protected void fireNotifyDataAdded(NbJiraIssue issue) {
         QueryNotifyListener[] listeners = getListeners();
         for (QueryNotifyListener l : listeners) {
-            l.notifyData(issue);
+            l.notifyDataAdded(issue);
+        }
+    }
+    
+    protected void fireNotifyDataRemoved(NbJiraIssue issue) {
+        QueryNotifyListener[] listeners = getListeners();
+        for (QueryNotifyListener l : listeners) {
+            l.notifyDataRemoved(issue);
         }
     }
 
@@ -463,7 +458,6 @@ public class JiraQuery {
             r.run();
         } finally {
             fireFinished();
-            fireQueryIssuesChanged();
             lastRefresh = System.currentTimeMillis();
         }
     }

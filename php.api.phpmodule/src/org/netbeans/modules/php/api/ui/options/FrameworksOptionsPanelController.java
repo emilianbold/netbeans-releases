@@ -45,12 +45,18 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.JComponent;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.spi.options.AdvancedOption;
 import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Item;
@@ -69,12 +75,9 @@ import org.openide.util.lookup.Lookups;
 @OptionsPanelController.SubRegistration(
         id = "FrameworksAndTools",
         location = UiUtils.OPTIONS_PATH,
-        displayName = "#AdvancedOption_DisplayName_Frameworks",
-        keywords = "#AdvancedOption_Keywords_Frameworks",
-        keywordsCategory = "PHP/Frameworks",
+        displayName = "#LBL_FrameworksTabTitle",
         position = 10000
 )
-@org.openide.util.NbBundle.Messages({"AdvancedOption_DisplayName_Frameworks=Frameworks & Tools", "AdvancedOption_Keywords_Frameworks=Frameworks Tools"})
 public final class FrameworksOptionsPanelController extends OptionsPanelController {
 
     static final String FRAMEWORKS_AND_TOOLS_OPTIONS_PATH = "PHP/OptionsDialog/FrameworksAndTools"; //NOI18N
@@ -173,4 +176,15 @@ public final class FrameworksOptionsPanelController extends OptionsPanelControll
     void fireChange( PropertyChangeEvent pce ) {
         pcs.firePropertyChange(pce.getPropertyName(), pce.getOldValue(), pce.getNewValue());
     }
+
+    @Override
+    public void handleSuccessfulSearch(String searchText, List<String> matchedKeywords) {
+        if( null != panel ) {
+            panel.handleSearch( matchedKeywords );
+        } else {
+            super.handleSuccessfulSearch(searchText, matchedKeywords);
+        }
+    }
+    
+    
 }
