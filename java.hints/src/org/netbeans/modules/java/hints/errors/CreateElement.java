@@ -528,6 +528,11 @@ public final class CreateElement implements ErrorRule<Void> {
         if (formalArguments == null) {
             return Collections.<Fix>emptyList();
         }
+        
+        if (superType != null && 
+            (superType.getKind() == TypeKind.OTHER || superType.getKind() == TypeKind.TYPEVAR)) {
+            return Collections.<Fix>emptyList();
+        }
 
         ClassPath cp = info.getClasspathInfo().getClassPath(PathKind.SOURCE);
         FileObject root = cp.findOwnerRoot(info.getFileObject());
