@@ -1014,15 +1014,6 @@ public final class J2MEProjectProperties {
         return compilingPanel;
     }
 
-    private J2MEPackagingPanel packagingPanel = null;
-
-    public J2MEPackagingPanel getPackagingPanel() {
-        if (packagingPanel == null) {
-            packagingPanel = new J2MEPackagingPanel(this);
-        }
-        return packagingPanel;
-    }
-
     private J2MERunPanel runPanel = null;
 
     public J2MERunPanel getRunPanel() {
@@ -1030,24 +1021,6 @@ public final class J2MEProjectProperties {
             runPanel = new J2MERunPanel(this);
         }
         return runPanel;
-    }
-
-    private J2MEApplicationPanel applicationPanel = null;
-
-    public J2MEApplicationPanel getApplicationPanel() {
-        if (applicationPanel == null) {
-            applicationPanel = new J2MEApplicationPanel(this);
-        }
-        return applicationPanel;
-    }
-
-    private J2MEDeploymentPanel deploymentPanel = null;
-
-    public J2MEDeploymentPanel getDeploymentPanel() {
-        if (deploymentPanel == null) {
-            deploymentPanel = new J2MEDeploymentPanel(this);
-        }
-        return deploymentPanel;
     }
 
     /**
