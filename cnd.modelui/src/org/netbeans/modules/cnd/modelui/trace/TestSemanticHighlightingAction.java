@@ -143,7 +143,7 @@ public class TestSemanticHighlightingAction extends TestProjectActionBase{
     }
     
     private void testFile(final CsmFile file,
-            final OutputWriter out, final OutputWriter err, Interrupter interrupter) {
+            final OutputWriter out, final OutputWriter err, InterrupterImpl interrupter) {
 
         long time = System.currentTimeMillis();
         out.printf("\nHighlighting file %s    %s\n", file.getName(), file.getAbsolutePath()); // NOI18N
