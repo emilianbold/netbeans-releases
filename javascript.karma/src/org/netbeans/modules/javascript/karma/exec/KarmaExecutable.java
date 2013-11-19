@@ -51,6 +51,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.print.ConvertedLine;
@@ -273,14 +275,22 @@ public final class KarmaExecutable {
                 testRunner.process(line);
                 return Collections.emptyList();
             }
-            // karma log
-            assert browsers != null;
             OutputListener outputListener = null;
-            for (Browser browser : browsers) {
-                Pair<String, Integer> fileLine = browser.getOutputFileLine(line);
+            if (browsers == null) {
+                // some error?
+                Pair<String, Integer> fileLine = FileLineParser.getOutputFileLine(line);
                 if (fileLine != null) {
                     outputListener = new FileOutputListener(fileLine.first(), fileLine.second());
-                    break;
+                }
+                return Collections.singletonList(ConvertedLine.forText(line, outputListener));
+            } else {
+                // karma log
+                for (Browser browser : browsers) {
+                    Pair<String, Integer> fileLine = browser.getOutputFileLine(line);
+                    if (fileLine != null) {
+                        outputListener = new FileOutputListener(fileLine.first(), fileLine.second());
+                        break;
+                    }
                 }
             }
             return Collections.singletonList(ConvertedLine.forText(line, outputListener));
@@ -318,6 +328,28 @@ public final class KarmaExecutable {
         @Override
         public void outputLineCleared(OutputEvent ev) {
             // noop
+        }
+
+    }
+
+    static final class FileLineParser {
+
+        // (/usr/lib/node_modules/karma/node_modules/coffee-script/lib/coffee-script/coffee-script.js:211:36)
+        // ^/home/gapon/NetBeansProjects/Calculator-PHPUnit5/README.md:1$
+        static final Pattern OUTPUT_FILE_LINE_PATTERN = Pattern.compile("(?:^|\\()(?<FILE>[^(]+?):(?<LINE>\\d+)(?::\\d+)?(?:$|\\))"); // NOI18N
+
+
+        static Pair<String, Integer> getOutputFileLine(String line) {
+            Matcher matcher = OUTPUT_FILE_LINE_PATTERN.matcher(line);
+            if (!matcher.find()) {
+                return null;
+            }
+            String file = matcher.group("FILE"); // NOI18N
+            if (!new File(file).isFile()) {
+                // incomplete path
+                return null;
+            }
+            return Pair.of(file, Integer.valueOf(matcher.group("LINE"))); // NOI18N
         }
 
     }
