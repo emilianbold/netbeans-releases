@@ -210,4 +210,13 @@ public class OptionPropertySupport extends PropertySupport {
     Validity getValidity(String text) {
 	return option.getValidity(text);
     }
+    
+    @Override
+    public Object getValue(String attributeName) {
+        if (attributeName.equals("canAutocomplete")) { //NOI18N
+            return Boolean.FALSE;
+        }
+        return super.getValue(attributeName);
+    }
+    
 }
