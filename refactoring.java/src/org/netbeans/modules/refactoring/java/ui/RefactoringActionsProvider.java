@@ -48,41 +48,101 @@ import java.awt.EventQueue;
 import java.awt.datatransfer.Transferable;
 import java.util.*;
 import javax.swing.Action;
+import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.ui.ScanDialog;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.refactoring.api.ui.ExplorerContext;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
+import org.netbeans.modules.refactoring.java.plugins.InstantRefactoringPerformer;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.PasteType;
+import static org.netbeans.modules.refactoring.java.ui.Bundle.*;
 
 
 /**
  *
  * @author Jan Becicka
  */
+@NbBundle.Messages({"WARN_CannotPerformHere=Cannot perform rename here."})
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider.class, position=100)
 public class RefactoringActionsProvider extends ActionsImplementationProvider{
 
     /** Creates a new instance of RefactoringActionsProvider */
     public RefactoringActionsProvider() {
     }
+    
     @Override
     public void doRename(final Lookup lookup) {
+        final EditorCookie ec = lookup.lookup(EditorCookie.class);
+        if(RefactoringUtils.isFromEditor(ec)) {
+            invokeInstantRename(lookup, ec);
+        } else {
+            doFullRename(lookup);
+        }
+    }
+    
+    private void invokeInstantRename(final Lookup lookup, final EditorCookie ec) {
+        try {
+            JEditorPane target = ec.getOpenedPanes()[0];
+            final int caret = target.getCaretPosition();
+            String ident = Utilities.getIdentifier(Utilities.getDocument(target), caret);
+            
+            if (ident == null) {
+                Utilities.setStatusBoldText(target, WARN_CannotPerformHere());
+                return;
+            }
+            
+            DataObject od = (DataObject) target.getDocument().getProperty(Document.StreamDescriptionProperty);
+            JavaSource js = od != null ? JavaSource.forFileObject(od.getPrimaryFile()) : null;
+
+            if (js == null) {
+                Utilities.setStatusBoldText(target, WARN_CannotPerformHere());
+                return;
+            }
+            InstantRefactoringUI ui = InstantRefactoringUIImpl.create(js, caret);
+            
+            if (ui != null) {
+                if (ui.getRegions().isEmpty()) {
+                    doFullRename(lookup);
+                } else {
+                    doInstantRename(target, js, caret, ui);
+                }
+            } else {
+                Utilities.setStatusBoldText(target, WARN_CannotPerformHere());
+            }
+        } catch (BadLocationException e) {
+            Exceptions.printStackTrace(e);
+        }
+    }
+    
+    public static void doInstantRename(JTextComponent target, JavaSource js, int caretOffset, InstantRefactoringUI ui) throws BadLocationException {
+        new InstantRefactoringPerformer(target, caretOffset, ui);
+    }
+
+    private void doFullRename(final Lookup lookup) {
         final Runnable task = ContextAnalyzer.createTask(lookup, RenameRefactoringUI.factory(lookup));
         if(!EventQueue.isDispatchThread()) {
             SwingUtilities.invokeLater(new Runnable() {
-
+                
                 @Override
                 public void run() {
                     ScanDialog.runWhenScanFinished(task, getActionName(RefactoringActionsFactory.renameAction()));
