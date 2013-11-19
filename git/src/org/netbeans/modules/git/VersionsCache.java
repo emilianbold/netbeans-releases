@@ -80,7 +80,7 @@ public class VersionsCache {
 
         File repository = Git.getInstance().getRepositoryRoot(base);
         if (GitUtils.CURRENT.equals(revision)) {
-            return base;
+            return base.exists() ? base : null;
         } else {
             File tempFile = new File(Utils.getTempFolder(), "nb-git-" + base.getName()); //NOI18N
             tempFile.deleteOnExit();
