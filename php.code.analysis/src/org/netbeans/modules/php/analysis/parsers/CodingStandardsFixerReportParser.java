@@ -64,9 +64,10 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
-public class CodingStandardsFixerReportParser extends DefaultHandler {
+public final class CodingStandardsFixerReportParser extends DefaultHandler {
 
     private static final Logger LOGGER = Logger.getLogger(CodingStandardsFixerReportParser.class.getName());
+
     private final List<Result> results = new ArrayList<>();
     private final XMLReader xmlReader;
 
@@ -174,6 +175,7 @@ public class CodingStandardsFixerReportParser extends DefaultHandler {
     }
 
     //~ Getters
+
     public List<Result> getResults() {
         return results;
     }

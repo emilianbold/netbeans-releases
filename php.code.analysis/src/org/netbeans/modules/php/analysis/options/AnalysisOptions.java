@@ -43,6 +43,7 @@ package org.netbeans.modules.php.analysis.options;
 
 import java.util.List;
 import java.util.prefs.Preferences;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.php.analysis.commands.CodeSniffer;
 import org.netbeans.modules.php.analysis.commands.CodingStandardsFixer;
 import org.netbeans.modules.php.analysis.commands.MessDetector;
@@ -79,6 +80,7 @@ public final class AnalysisOptions {
         return INSTANCE;
     }
 
+    @CheckForNull
     public String getCodeSnifferPath() {
         String codeSnifferPath = getPreferences().get(CODE_SNIFFER_PATH, null);
         if (codeSnifferPath == null && !codeSnifferSearched) {
@@ -96,6 +98,7 @@ public final class AnalysisOptions {
         getPreferences().put(CODE_SNIFFER_PATH, path);
     }
 
+    @CheckForNull
     public String getCodeSnifferStandard() {
         return getPreferences().get(CODE_SNIFFER_STANDARD, null);
     }
@@ -108,6 +111,7 @@ public final class AnalysisOptions {
         getPreferences().put(CODE_SNIFFER_STANDARD, standard);
     }
 
+    @CheckForNull
     public String getMessDetectorPath() {
         String messDetectorPath = getPreferences().get(MESS_DETECTOR_PATH, null);
         if (messDetectorPath == null && !messDetectorSearched) {
@@ -137,6 +141,7 @@ public final class AnalysisOptions {
         getPreferences().put(MESS_DETECTOR_RULE_SETS, AnalysisUtils.serialize(ruleSets));
     }
 
+    @CheckForNull
     public String getCodingStandardsFixerPath() {
         String codingStandardsFixerPath = getPreferences().get(CODING_STANDARDS_FIXER_PATH, null);
         if (codingStandardsFixerPath == null && !codingStandardsFixerSearched) {
@@ -154,6 +159,7 @@ public final class AnalysisOptions {
         getPreferences().put(CODING_STANDARDS_FIXER_PATH, path);
     }
 
+    @CheckForNull
     public String getCodingStandardsFixerLevel() {
         return getPreferences().get(CODING_STANDARDS_FIXER_LEVEL, null);
     }
@@ -165,6 +171,7 @@ public final class AnalysisOptions {
         getPreferences().put(CODING_STANDARDS_FIXER_LEVEL, level);
     }
 
+    @CheckForNull
     public String getCodingStandardsFixerConfig() {
         return getPreferences().get(CODING_STANDARDS_FIXER_CONFIG, null);
     }

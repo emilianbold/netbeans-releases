@@ -44,7 +44,12 @@ package org.netbeans.modules.php.analysis.ui.options;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.text.Collator;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -72,7 +77,7 @@ public class AnalysisOptionsPanelController extends OptionsPanelController imple
     // @GuardedBy("EDT")
     private AnalysisOptionsPanel analysisOptionsPanel = null;
     // @GuardedBy("EDT")
-    private Collection<AnalysisCategoryPanel> categoryPanels = null;
+    private List<AnalysisCategoryPanel> categoryPanels = null;
     private volatile boolean changed = false;
 
 
@@ -187,7 +192,15 @@ public class AnalysisOptionsPanelController extends OptionsPanelController imple
     private Collection<AnalysisCategoryPanel> getCategoryPanels() {
         assert EventQueue.isDispatchThread();
         if (categoryPanels == null) {
-            categoryPanels = AnalysisCategoryPanels.getCategoryPanels();
+            categoryPanels = new ArrayList<>(AnalysisCategoryPanels.getCategoryPanels());
+            // sort them by name
+            final Collator collator = Collator.getInstance();
+            Collections.sort(categoryPanels, new Comparator<AnalysisCategoryPanel>() {
+                @Override
+                public int compare(AnalysisCategoryPanel o1, AnalysisCategoryPanel o2) {
+                    return collator.compare(o1.getCategoryName(), o2.getCategoryName());
+                }
+            });
         }
         return categoryPanels;
     }
