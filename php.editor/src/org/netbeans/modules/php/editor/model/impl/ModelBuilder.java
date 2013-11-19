@@ -80,11 +80,11 @@ import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
  */
 class ModelBuilder {
     private final FileScopeImpl fileScope;
-    private NamespaceScopeImpl namespaceScope;
-    private NamespaceScopeImpl defaultNamespaceScope;
-    private Stack<ScopeImpl> currentScope;
-    private Program program;
+    private final NamespaceScopeImpl defaultNamespaceScope;
+    private final Stack<ScopeImpl> currentScope;
     private final Map<VariableNameFactory, Map<String, VariableNameImpl>> vars;
+    private NamespaceScopeImpl namespaceScope;
+    private Program program;
 
     ModelBuilder(FileScopeImpl fileScope) {
         this.fileScope = fileScope;
