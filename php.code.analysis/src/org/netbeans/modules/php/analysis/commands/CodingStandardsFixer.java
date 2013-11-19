@@ -72,13 +72,11 @@ import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 public final class CodingStandardsFixer {
 
-    private static final Logger LOGGER = Logger.getLogger(CodingStandardsFixer.class.getName());
-    private final String codingStandardsFixerPath;
+    static final Logger LOGGER = Logger.getLogger(CodingStandardsFixer.class.getName());
 
     public static final String NAME = "php-cs-fixer"; // NOI18N
     public static final String LONG_NAME = NAME + ".phar"; // NOI18N
@@ -129,6 +127,9 @@ public final class CodingStandardsFixer {
             "sf20", // NOI18N
             "sf21" // NOI18N
     );
+
+    private final String codingStandardsFixerPath;
+
     private int analyzeGroupCounter = 1;
 
     private CodingStandardsFixer(String codingStandardsFixerPath) {
@@ -155,7 +156,8 @@ public final class CodingStandardsFixer {
 
     @NbBundle.Messages({
         "# {0} - command",
-        "CodingStandardsFixer.script.run=Coding Standards Fixer({0})"})
+        "CodingStandardsFixer.script.run=Coding Standards Fixer({0})",
+    })
     public Future<Integer> selfUpdate(PhpModule phpModule) {
         return runCommand(phpModule, SELF_UPDATE_COMMAND, Bundle.CodingStandardsFixer_script_run(SELF_UPDATE_COMMAND));
     }
@@ -184,7 +186,8 @@ public final class CodingStandardsFixer {
 
     @NbBundle.Messages({
         "# {0} - counter",
-        "CodingStandardsFixer.analyze=Coding Standards Fixer (analyze #{0})",})
+        "CodingStandardsFixer.analyze=Coding Standards Fixer (analyze #{0})",
+    })
     @CheckForNull
     public List<Result> analyze(String level, String conifg, String options, FileObject file) {
         assert file.isValid() : "Invalid file given: " + file;
@@ -232,7 +235,7 @@ public final class CodingStandardsFixer {
                     }
                 }
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                LOGGER.log(Level.INFO, null, ex);
             } // XXX end
 
             return CodingStandardsFixerReportParser.parse(XML_LOG, file);

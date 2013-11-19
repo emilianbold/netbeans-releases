@@ -32,9 +32,9 @@
                   <Group type="102" attributes="0">
                       <Component id="codingStandardsFixerTextField" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="codingStandardsFixerBrowseButton" min="-2" max="-2" attributes="0"/>
+                      <Component id="codingStandardsFixerBrowseButton" linkSize="1" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="codingStandardsFixerSearchButton" min="-2" max="-2" attributes="0"/>
+                      <Component id="codingStandardsFixerSearchButton" linkSize="1" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
           </Group>

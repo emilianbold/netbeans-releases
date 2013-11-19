@@ -79,12 +79,15 @@ public final class CodingStandardsFixerAnalyzerImpl implements Analyzer {
 
     @NbBundle.Messages({
         "CodingStandardsFixerAnalyzerImpl.codingStandardsFixer.error=Coding Standards Fixer is not valid",
-        "CodingStandardsFixerAnalyzerImpl.codingStandardsFixer.error.description=Invalid coding standards fixer set in IDE Options.",})
+        "CodingStandardsFixerAnalyzerImpl.codingStandardsFixer.error.description=Invalid coding standards fixer set in IDE Options.",
+    })
     @Override
     public Iterable<? extends ErrorDescription> analyze() {
         CodingStandardsFixer codingStandardsFixer = getValidCodingStandardsFixer();
         if (codingStandardsFixer == null) {
-            context.reportAnalysisProblem(Bundle.CodingStandardsFixerAnalyzerImpl_codingStandardsFixer_error(), Bundle.CodingStandardsFixerAnalyzerImpl_codingStandardsFixer_error_description());
+            context.reportAnalysisProblem(
+                    Bundle.CodingStandardsFixerAnalyzerImpl_codingStandardsFixer_error(),
+                    Bundle.CodingStandardsFixerAnalyzerImpl_codingStandardsFixer_error_description());
             return Collections.emptyList();
         }
         String level = getValidCodingStandardsFixerLevel();
@@ -115,8 +118,10 @@ public final class CodingStandardsFixerAnalyzerImpl implements Analyzer {
 
     @NbBundle.Messages({
         "CodingStandardsFixerAnalyzerImpl.analyze.error=Coding standards fixer analysis error",
-        "CodingStandardsFixerAnalyzerImpl.analyze.error.description=Error occurred during coding standards fixer analysis, review Output window for more information.",})
-    private Iterable<? extends ErrorDescription> doAnalyze(Scope scope, CodingStandardsFixer codingStandardsFixer, String level, String conifg, String options, Map<FileObject, Integer> fileCount) {
+        "CodingStandardsFixerAnalyzerImpl.analyze.error.description=Error occurred during coding standards fixer analysis, review Output window for more information.",
+    })
+    private Iterable<? extends ErrorDescription> doAnalyze(Scope scope, CodingStandardsFixer codingStandardsFixer,
+            String level, String conifg, String options, Map<FileObject, Integer> fileCount) {
         List<ErrorDescription> errors = new ArrayList<>();
         int progress = 0;
         codingStandardsFixer.startAnalyzeGroup();
@@ -126,7 +131,9 @@ public final class CodingStandardsFixerAnalyzerImpl implements Analyzer {
             }
             List<org.netbeans.modules.php.analysis.results.Result> results = codingStandardsFixer.analyze(level, conifg, options, root);
             if (results == null) {
-                context.reportAnalysisProblem(Bundle.CodingStandardsFixerAnalyzerImpl_analyze_error(), Bundle.CodingStandardsFixerAnalyzerImpl_analyze_error_description());
+                context.reportAnalysisProblem(
+                        Bundle.CodingStandardsFixerAnalyzerImpl_analyze_error(),
+                        Bundle.CodingStandardsFixerAnalyzerImpl_analyze_error_description());
                 return Collections.emptyList();
             }
             errors.addAll(Mappers.map(results));
@@ -140,7 +147,9 @@ public final class CodingStandardsFixerAnalyzerImpl implements Analyzer {
             }
             List<org.netbeans.modules.php.analysis.results.Result> results = codingStandardsFixer.analyze(level, conifg, options, file);
             if (results == null) {
-                context.reportAnalysisProblem(Bundle.CodingStandardsFixerAnalyzerImpl_analyze_error(), Bundle.CodingStandardsFixerAnalyzerImpl_analyze_error_description());
+                context.reportAnalysisProblem(
+                        Bundle.CodingStandardsFixerAnalyzerImpl_analyze_error(),
+                        Bundle.CodingStandardsFixerAnalyzerImpl_analyze_error_description());
                 return Collections.emptyList();
             }
             errors.addAll(Mappers.map(results));
@@ -155,7 +164,9 @@ public final class CodingStandardsFixerAnalyzerImpl implements Analyzer {
             FileObject folder = nonRecursiveFolder.getFolder();
             List<org.netbeans.modules.php.analysis.results.Result> results = codingStandardsFixer.analyze(level, conifg, options, folder);
             if (results == null) {
-                context.reportAnalysisProblem(Bundle.CodingStandardsFixerAnalyzerImpl_analyze_error(), Bundle.CodingStandardsFixerAnalyzerImpl_analyze_error_description());
+                context.reportAnalysisProblem(
+                        Bundle.CodingStandardsFixerAnalyzerImpl_analyze_error(),
+                        Bundle.CodingStandardsFixerAnalyzerImpl_analyze_error_description());
                 return Collections.emptyList();
             }
             errors.addAll(Mappers.map(results));
