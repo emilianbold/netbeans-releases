@@ -121,7 +121,7 @@ public interface RepositoryProvider<R, Q, I> {
      *
      * @param r an implementation specific repository
      * 
-     * @return a new QueryProvider instance or null if it's not possible
+     * @return a new Query instance or <code>null</code> if it's not possible
      * to access the repository.
      * 
      * @see QueryProvider
@@ -134,7 +134,7 @@ public interface RepositoryProvider<R, Q, I> {
      *
      * @param r an implementation specific repository
      * 
-     * @return return a new issue instance or null if it's not possible
+     * @return return a new Issue instance or <code>null</code> if it's not possible
      * to create an issue.
      * 
      * @see IssueProvider
@@ -149,7 +149,7 @@ public interface RepositoryProvider<R, Q, I> {
      * @param summary 
      * @param description
      * 
-     * @return return a new issue instance or null if it's not possible
+     * @return return a new issue instance or <code>null</code> if it's not possible
      * to create an issue.
      * 
      * @see IssueProvider
