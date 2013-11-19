@@ -151,6 +151,14 @@ public class CompilerSetNodeProp extends Node.Property<String> {
         return true;
     }
 
+    @Override
+    public Object getValue(String attributeName) {
+        if (attributeName.equals("canAutocomplete")) { //NOI18N
+            return Boolean.FALSE;
+        }
+        return super.getValue(attributeName);
+    }
+    
     public void repaint() {
         ((CompilerSetEditor) getPropertyEditor()).repaint();
     }
