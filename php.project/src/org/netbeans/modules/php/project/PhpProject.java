@@ -111,6 +111,8 @@ import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.browser.spi.PageInspectorCustomizer;
+import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
+import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.modules.web.common.api.CssPreprocessor;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.common.api.CssPreprocessorsListener;
@@ -847,6 +849,11 @@ public final class PhpProject implements Project {
                 PhpCoverageProvider.notifyProjectOpened(PhpProject.this);
             }
 
+            JsTestingProvider jsTestingProvider = JsTestingProviders.getDefault().getJsTestingProvider(PhpProject.this, false);
+            if (jsTestingProvider != null) {
+                jsTestingProvider.projectOpened(PhpProject.this);
+            }
+
             // #187060 - exception in projectOpened => project IS NOT opened (so move it at the end of the hook)
             getCopySupport().projectOpened();
 
@@ -878,6 +885,11 @@ public final class PhpProject implements Project {
 
                 // browser
                 lookup.lookup(ClientSideDevelopmentSupport.class).close();
+
+                JsTestingProvider jsTestingProvider = JsTestingProviders.getDefault().getJsTestingProvider(PhpProject.this, false);
+                if (jsTestingProvider != null) {
+                    jsTestingProvider.projectClosed(PhpProject.this);
+                }
 
             } finally {
                 // #187060 - exception in projectClosed => project IS closed (so do it in finally block)

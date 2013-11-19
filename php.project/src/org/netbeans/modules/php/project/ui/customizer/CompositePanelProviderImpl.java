@@ -67,6 +67,7 @@ import org.netbeans.modules.php.spi.framework.PhpModuleCustomizerExtender;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
 import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibraries;
 import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel;
+import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.spi.project.support.ant.ui.CustomizerUtilities;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
@@ -343,6 +344,13 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
     )
     public static CompositePanelProviderImpl createTesting() {
         return new CompositePanelProviderImpl(TESTING);
+    }
+
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+            projectType = UiUtils.CUSTOMIZER_PATH,
+            position = 351)
+    public static ProjectCustomizer.CompositeCategoryProvider createJsTesting() {
+        return JsTestingProviders.getDefault().createCustomizer();
     }
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
