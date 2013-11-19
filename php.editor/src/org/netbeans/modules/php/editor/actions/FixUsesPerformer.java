@@ -177,7 +177,6 @@ public class FixUsesPerformer {
             }
         }
         for (Integer integer : itemsToRemove) {
-            dataItems.remove((int) integer);
             selections.remove((int) integer);
         }
     }
