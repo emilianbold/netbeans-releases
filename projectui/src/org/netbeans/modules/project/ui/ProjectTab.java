@@ -1023,7 +1023,7 @@ public class ProjectTab extends TopComponent
             if( selectedNodes != null && selectedNodes.length > 0 ) {
                 Node selectedNode = selectedNodes[0];
                 Node rootNode = ProjectTab.this.manager.getRootContext();
-                while ( !selectedNode.getParentNode().equals(rootNode)) {
+                while ( selectedNode.getParentNode() != null && !selectedNode.getParentNode().equals(rootNode)) {
                     selectedNode = selectedNode.getParentNode();
                 }
                 projectNode = selectedNode;
