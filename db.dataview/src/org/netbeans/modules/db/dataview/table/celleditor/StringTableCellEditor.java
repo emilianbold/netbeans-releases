@@ -108,7 +108,7 @@ public class StringTableCellEditor extends ResultSetTableCellEditor implements T
                 ActionMap am = c.getActionMap();
                 
                 if (tc != null && ks.isOnKeyRelease()) {
-                    table.getModel().setValueAt(tc.getText(), table.convertRowIndexToModel(row), column);
+                    table.getModel().setValueAt(tc.getText(), table.convertRowIndexToModel(row), table.convertColumnIndexToModel(column));
                 }
 
                 if (map != null && am != null && isEnabled()) {
