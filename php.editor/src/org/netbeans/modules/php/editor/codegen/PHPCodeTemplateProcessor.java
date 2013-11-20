@@ -324,10 +324,7 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
         } catch (TimeoutException ex) {
             LOGGER.log(Level.FINE, "Timeout for getting parser result has been exceed: {0}", TIMEOUT);
         }
-        if (info == null) {
-            return false;
-        }
-        return true;
+        return info != null;
     }
 
     private Collection<? extends VariableName> getDeclaredVariables(final int caretOffset) {
