@@ -543,10 +543,15 @@ public class JSTestDriverSupport {
         private Manager manager;
         private Report report;
 
+
+        @NbBundle.Messages({
+            "# {0} - project name",
+            "JsTestDriverSupport.runner.title={0} (JS Test Driver)",
+        })
         public Listener(Project project, Rerun rerun) {
             manager = Manager.getInstance();
             testSession = new TestSession(
-                    NbBundle.getMessage(JSTestDriverSupport.class, "TESTING", ProjectUtils.getInformation(project).getDisplayName()),
+                    Bundle.JsTestDriverSupport_runner_title(ProjectUtils.getInformation(project).getDisplayName()),
                     project, TestSession.SessionType.TEST);
             testSession.setRerunHandler(rerun);
             manager.testStarted(testSession);

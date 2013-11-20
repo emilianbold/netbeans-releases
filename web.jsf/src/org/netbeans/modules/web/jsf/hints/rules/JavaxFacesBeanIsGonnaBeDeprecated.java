@@ -163,7 +163,7 @@ public class JavaxFacesBeanIsGonnaBeDeprecated {
         }
 
         @NbBundle.Messages({
-            "ChangeClassFix.lbl.change.class.fix=Change scope {0} to the {1}"
+            "ChangeClassFix.lbl.change.class.fix=Change {0} to the {1}"
         })
         @Override
         public String getText() {
