@@ -124,11 +124,18 @@ public class NPECheck {
             return null;
         }
         State r = computeExpressionsState(ctx).get(select.getLeaf());
-        if (r != null && r.isNotNull() && !ignore(ctx, false)) {
-            return null;
+        if (r == NULL || r == NULL_HYPOTHETICAL) {
+            String displayName = NbBundle.getMessage(NPECheck.class, "ERR_DereferencingNull");
+            
+            return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
         }
-        String displayName = NbBundle.getMessage(NPECheck.class, "ERR_PossiblyDereferencingNull");
-        return ErrorDescriptionFactory.forName(ctx, select, displayName);
+
+        if (r == State.POSSIBLE_NULL_REPORT) {
+            String displayName = NbBundle.getMessage(NPECheck.class, "ERR_PossiblyDereferencingNull");
+            
+            return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
+        }
+        return null;
     }
     
     
