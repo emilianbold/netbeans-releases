@@ -458,10 +458,11 @@ public final class ParagraphView extends EditorView implements EditorView.Parent
                 
                 float textsize = docView.op.getDefaultCharWidth() * prefixlength;
                 float tabwidth = docView.op.getDefaultCharWidth() * docView.op.getIndentLevelSize();
+                int rowHeight = (int) docView.op.getDefaultRowHeight();
                 if (tabwidth > 0) {
                     int x = alloc.getBounds().x;
                     while (x < alloc.getBounds().x + alloc.getBounds().width && x < textsize) {
-                        g.drawLine(x, alloc.getBounds().y, x, alloc.getBounds().y + alloc.getBounds().height);
+                        g.drawLine(x, alloc.getBounds().y, x, alloc.getBounds().y + rowHeight);
                         x += tabwidth;
                     } 
                 }
