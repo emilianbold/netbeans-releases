@@ -506,7 +506,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     @Override
     public void setAttribute(String attrName, Object value) throws IOException {
         if (attrName.equals("warmup")) { // NOI18N
-            warmup();
+            if (Boolean.getBoolean("remote.fs_server.warmup")) {
+                warmup();
+            }
         } else {
             super.setAttribute(attrName, value);
         }
