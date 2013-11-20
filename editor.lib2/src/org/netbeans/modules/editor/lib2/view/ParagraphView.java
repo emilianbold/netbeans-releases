@@ -421,7 +421,7 @@ public final class ParagraphView extends EditorView implements EditorView.Parent
                 } else {
                     firstNonWhite = 0;
                     prefixlength = 0;
-                    int secondNonWhite = getEndOffset() + 1;
+                    int secondNonWhite = getEndOffset();
                     for (; secondNonWhite < docText.length(); secondNonWhite++) {
                         char currentChar = docText.charAt(secondNonWhite);
                         firstNonWhite++;
