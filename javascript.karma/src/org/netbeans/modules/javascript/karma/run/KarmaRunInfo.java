@@ -50,7 +50,7 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
 
-public final class RunInfo {
+public final class KarmaRunInfo {
 
     private final Project project;
     private final RerunHandler rerunHandler;
@@ -60,7 +60,7 @@ public final class RunInfo {
     private final Map<String, String> envVars = new ConcurrentHashMap<>();
 
 
-    private RunInfo(Builder builder) {
+    private KarmaRunInfo(Builder builder) {
         assert builder != null;
         assert builder.project != null;
         assert builder.rerunHandler != null;
@@ -157,8 +157,8 @@ public final class RunInfo {
             return this;
         }
 
-        public RunInfo build() {
-            return new RunInfo(this);
+        public KarmaRunInfo build() {
+            return new KarmaRunInfo(this);
         }
 
     }
