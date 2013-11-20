@@ -102,7 +102,7 @@ import org.openide.util.CharSequences;
 
     @Override
     public int hashCode() {
-        return 17*fileNameIndex + super.hashCode();
+        return hashCode(getUnitId());
     }
     
 

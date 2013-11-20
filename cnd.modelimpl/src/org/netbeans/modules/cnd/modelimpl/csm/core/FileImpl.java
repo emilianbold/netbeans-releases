@@ -617,8 +617,9 @@ public final class FileImpl implements CsmFile,
                     }
                     
                     if (CndTraceFlags.TEXT_INDEX) {
-                        APTIndexingWalker aptIndexingWalker = new APTIndexingWalker(fullAPT, getTextIndexKey(), getProjectImpl(true).getCacheLocation());
-                        aptIndexingWalker.index();
+                         int unitID = getProjectImpl(true).getUnitId();
+                         APTIndexingWalker aptIndexingWalker = new APTIndexingWalker(fullAPT, getTextIndexKey());
+                         aptIndexingWalker.index();
                     }
                     
                     switch (curState) {

@@ -171,11 +171,6 @@ public final class ModuleImpl extends OffsetableDeclarationBase<CsmNamespaceDefi
     }
 
     @Override
-    public boolean isInline() {
-        return false;
-    }
-
-    @Override
     public Collection<CsmScopeElement> getScopeElements() {
         List<CsmScopeElement> l = new ArrayList<CsmScopeElement>();
         for (Iterator<CsmOffsetableDeclaration> iter = getDeclarations().iterator(); iter.hasNext();) {

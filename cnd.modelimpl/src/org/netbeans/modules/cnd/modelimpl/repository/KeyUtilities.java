@@ -58,8 +58,9 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
-import org.netbeans.modules.cnd.repository.api.CacheLocation;
+import org.netbeans.modules.cnd.repository.api.UnitDescriptor;
 import org.netbeans.modules.cnd.repository.spi.Key;
+import org.openide.filesystems.FileSystem;
 
 /**
  * help methods to create repository keys
@@ -82,14 +83,22 @@ public class KeyUtilities {
         return new NamespaceKey(ns);
     }
 
-    public static Key createProjectKey(CharSequence projectQualifiedName, CacheLocation cacheLocation) {
-        return new ProjectKey(KeyUtilities.getUnitId(projectQualifiedName, cacheLocation));
+    public static UnitDescriptor createUnitDescriptor(CharSequence projectQualifiedName, FileSystem fs) {
+        return new UnitDescriptor(projectQualifiedName, fs);
+    }
+
+    public static UnitDescriptor createUnitDescriptor(NativeProject nativeProject) {
+        CharSequence uniqueName = ProjectBase.getRepositoryUnitName(nativeProject.getFileSystem(), nativeProject);
+        return new UnitDescriptor(uniqueName, nativeProject.getFileSystem());
+    }
+
+    public static Key createProjectKey(UnitDescriptor unitDescriptor, int sourceUnitId) {
+        return new ProjectKey(KeyUtilities.getUnitId(unitDescriptor, sourceUnitId));
     }
 
     public static Key createProjectKey(NativeProject nativeProject) {
-        return new ProjectKey(KeyUtilities.getUnitId(
-                ProjectBase.getUniqueName(nativeProject),
-                ProjectBase.getCacheLocation(nativeProject)));
+        UnitDescriptor unitDescriptor = createUnitDescriptor(nativeProject);
+        return new ProjectKey(KeyUtilities.getUnitId(unitDescriptor));
     }
 
     public static Key createProjectKey(ProjectBase project) {
@@ -137,8 +146,12 @@ public class KeyUtilities {
      * @param cacheLocation can be null, in this case standard location 
      * ${userdir}/var/cache/cnd/model will be used
      */
-    public static int getUnitId(CharSequence unitName, CacheLocation cacheLocation) {
-        return APTSerializeUtils.getUnitId(unitName, cacheLocation);
+    public static int getUnitId(UnitDescriptor unitDescriptor) {
+        return APTSerializeUtils.getUnitId(unitDescriptor);
+    }
+
+    public static int getUnitId(UnitDescriptor unitDescriptor, int sourceUnitId) {
+        return APTSerializeUtils.getUnitId(unitDescriptor, sourceUnitId);
     }
 
     public static CharSequence getUnitName(int unitIndex) {

@@ -154,13 +154,13 @@ public class RepositoryListenerImpl implements RepositoryListener {
         return true;
     }
 
-    @Override
-    public boolean repositoryOpened(int repositoryId, CacheLocation cacheLocation) {
-        if (TraceFlags.TRACE_REPOSITORY_LISTENER) {
-            trace("RepositoryListener: repositoryOpened %s\n", cacheLocation.getLocation().getAbsolutePath()); //NOI18N // NOI18N
-        }
-        return true;
-    }
+//    @Override
+//    public boolean repositoryOpened(int repositoryId, CacheLocation cacheLocation) {
+//        if (TraceFlags.TRACE_REPOSITORY_LISTENER) {
+//            trace("RepositoryListener: repositoryOpened %s\n", cacheLocation.getLocation().getAbsolutePath()); //NOI18N // NOI18N
+//        }
+//        return true;
+//    }
 
     /** RepositoryListener implementation */
     @Override
@@ -177,12 +177,12 @@ public class RepositoryListenerImpl implements RepositoryListener {
         }
     }
 
-    @Override
-    public void unitRemoved(int unitId, CharSequence unitName) {
-    }
+//    @Override
+//    public void unitRemoved(int unitId, CharSequence unitName) {
+//    }
 
     /** RepositoryListener implementation */
-    @Override
+//    @Override
     public void anExceptionHappened(final int unitId, final CharSequence unitName, RepositoryException exc) {
         assert exc != null;
         if (TraceFlags.DEBUG_BROKEN_REPOSITORY && exc.getMessage() != null && exc.getMessage().contains("INTENTIONAL")) { // NOI18N

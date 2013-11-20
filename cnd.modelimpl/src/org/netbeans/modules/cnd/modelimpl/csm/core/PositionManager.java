@@ -48,14 +48,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
-import org.netbeans.modules.cnd.modelimpl.csm.core.PositionStorageImpl.PositionDataImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.core.PositionStorageImpl.FilePositionKey;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
-import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.spi.Key;
-import org.netbeans.modules.cnd.repository.spi.MapBasedTable;
 
 /**
  *
@@ -83,26 +79,26 @@ public class PositionManager {
         }
     }
 
-    private static MapBasedTable getPositionTable(Key key) {
-        return (MapBasedTable) RepositoryAccessor.getRepository().getDatabaseTable(key, PositionStorageImpl.TABLE_NAME);
-    }
+//    private static MapBasedTable getPositionTable(Key key) {
+//        return (MapBasedTable) RepositoryAccessor.getRepository().getDatabaseTable(key, PositionStorageImpl.TABLE_NAME);
+//    }
     
     public static int getOffset(CsmUID<CsmFile> uid, int posID) {
         if (IMPL == Impl.trivial) {
             return posID;
         }
         Key key = RepositoryUtils.UIDtoKey(uid);
-        if (IMPL == Impl.optimistic || IMPL == Impl.full) {
-            @SuppressWarnings("unchecked")
-            MapBasedTable table = getPositionTable(key);
-            FilePositionKey positionKey = new PositionStorageImpl.FilePositionKey(KeyUtilities.getProjectFileIndex(key), posID);
-            Position position = (Position) table.get(positionKey);
-            return position.getOffset();
-        } else {
+//        if (IMPL == Impl.optimistic || IMPL == Impl.full) {
+//            @SuppressWarnings("unchecked")
+//            MapBasedTable table = getPositionTable(key);
+//            FilePositionKey positionKey = new PositionStorageImpl.FilePositionKey(KeyUtilities.getProjectFileIndex(key), posID);
+//            Position position = (Position) table.get(positionKey);
+//            return position.getOffset();
+//        } else {
             // map implementation
             Map<Integer, Integer> fileMap = getFileMap(key);
             return fileMap.get(posID);
-        }
+//        }
     }
 
     public static int createPositionID(CsmUID<CsmFile> uid, int offset, Position.Bias bias) {
@@ -111,32 +107,32 @@ public class PositionManager {
         }
         Key key = RepositoryUtils.UIDtoKey(uid);
         int maxPositionId = 0;
-        if (IMPL == Impl.optimistic || IMPL == Impl.full) {
-            @SuppressWarnings("unchecked")
-            MapBasedTable table = getPositionTable(key);
-            if (IMPL == Impl.full) {
-                FilePositionKey positionStart = new PositionStorageImpl.FilePositionKey(KeyUtilities.getProjectFileIndex(key), 0);
-                FilePositionKey positionEnd = new PositionStorageImpl.FilePositionKey(KeyUtilities.getProjectFileIndex(key), Integer.MAX_VALUE);
-                maxPositionId = 0;
-                for(Map.Entry<?, ?> entry : table.getSubMap(positionStart, positionEnd)) {
-                    FilePositionKey positionKey = (FilePositionKey) entry.getKey();
-                    Position position = (Position) entry.getValue();
-                    if (position.getOffset() == offset) {
-                        return positionKey.getPositionID();
-                    }
-                    if (maxPositionId < positionKey.getPositionID()) {
-                        maxPositionId = positionKey.getPositionID();
-                    }
-                }
-                maxPositionId++;
-            } else if (IMPL == Impl.optimistic) {
-                maxPositionId = offset;
-            }
-            FilePositionKey newPositionKey = new PositionStorageImpl.FilePositionKey(KeyUtilities.getProjectFileIndex(key), maxPositionId);
-            PositionDataImpl newPositionData = new PositionDataImpl(offset, -1, -1);
-            table.put(newPositionKey, newPositionData);
-            return maxPositionId;
-        } else {
+//        if (IMPL == Impl.optimistic || IMPL == Impl.full) {
+//            @SuppressWarnings("unchecked")
+//            MapBasedTable table = getPositionTable(key);
+//            if (IMPL == Impl.full) {
+//                FilePositionKey positionStart = new PositionStorageImpl.FilePositionKey(KeyUtilities.getProjectFileIndex(key), 0);
+//                FilePositionKey positionEnd = new PositionStorageImpl.FilePositionKey(KeyUtilities.getProjectFileIndex(key), Integer.MAX_VALUE);
+//                maxPositionId = 0;
+//                for(Map.Entry<?, ?> entry : table.getSubMap(positionStart, positionEnd)) {
+//                    FilePositionKey positionKey = (FilePositionKey) entry.getKey();
+//                    Position position = (Position) entry.getValue();
+//                    if (position.getOffset() == offset) {
+//                        return positionKey.getPositionID();
+//                    }
+//                    if (maxPositionId < positionKey.getPositionID()) {
+//                        maxPositionId = positionKey.getPositionID();
+//                    }
+//                }
+//                maxPositionId++;
+//            } else if (IMPL == Impl.optimistic) {
+//                maxPositionId = offset;
+//            }
+//            FilePositionKey newPositionKey = new PositionStorageImpl.FilePositionKey(KeyUtilities.getProjectFileIndex(key), maxPositionId);
+//            PositionDataImpl newPositionData = new PositionDataImpl(offset, -1, -1);
+//            table.put(newPositionKey, newPositionData);
+//            return maxPositionId;
+//        } else {
             // map implementation
             TreeMap<Integer, Integer> fileMap = getFileMap(key);
             if (fileMap.isEmpty()) {
@@ -149,7 +145,7 @@ public class PositionManager {
             fileMap.put(maxPositionId, offset);
 
             return maxPositionId;
-        }
+//        }
     }
 
     private static TreeMap<Integer,Integer> getFileMap(Key key) {

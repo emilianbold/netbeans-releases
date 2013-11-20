@@ -45,8 +45,8 @@ package org.netbeans.modules.cnd.modelimpl.debug;
 
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.modelimpl.uid.KeyBasedUID;
-import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.repository.support.RepositoryTestUtils;
 
 /**
  * Allows to get control as soon as an exception occurs
@@ -94,7 +94,7 @@ public class DiagnosticExceptoins {
     
     public static void registerIllegalRepositoryStateException(String text, Key key) {
         register(new IllegalRepositoryStateException(text, key));
-        RepositoryAccessor.getRepository().debugDump(key);
+        RepositoryTestUtils.debugDump(key);
     }
     
     public static void registerIllegalRepositoryStateException(String text, CsmUID uid) {

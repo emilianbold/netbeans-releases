@@ -88,7 +88,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
-import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
+import org.netbeans.modules.cnd.repository.support.RepositoryTestUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -660,7 +660,7 @@ public class TraceModel extends TraceModelBase {
 
         if (dumpModelAfterCleaningCache) {
             anyKey("Press any key to clean repository:"); // NOI18N
-            RepositoryAccessor.getRepository().debugClear();
+            RepositoryTestUtils.deleteDefaultCacheLocation();
             System.gc();
             System.gc();
             System.gc();
@@ -1225,7 +1225,7 @@ public class TraceModel extends TraceModelBase {
             fileImpl = null;
             ParserThreadManager.instance().waitEmptyProjectQueue((ProjectBase) prj);
             waitProjectParsed(getProject(), false);
-            RepositoryAccessor.getRepository().debugClear();
+            RepositoryTestUtils.deleteDefaultCacheLocation();
             fileImpl = (FileImpl) prj.findFile(absPath, true, false);
         }
 
@@ -1326,7 +1326,7 @@ public class TraceModel extends TraceModelBase {
     }
 
     private void testLibProject() {
-        LibProjectImpl libProject = LibProjectImpl.createInstance(getModel(), CndFileUtils.getLocalFileSystem(), "/usr/include", null); // NOI18N
+        LibProjectImpl libProject = LibProjectImpl.createInstance(getModel(), CndFileUtils.getLocalFileSystem(), "/usr/include", -1); // NOI18N
         getModel().testAddProject(libProject);
         tracer.dumpModel(libProject);
     }

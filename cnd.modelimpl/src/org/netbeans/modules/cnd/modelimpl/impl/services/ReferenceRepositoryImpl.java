@@ -90,7 +90,6 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
-import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.CharSequences;
@@ -478,38 +477,23 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
 
     @Override
     public Collection<CsmFile> findRelevantFiles(Collection<CsmProject> projects, CharSequence id) {
-        Set<CacheLocation> locations = new HashSet<CacheLocation>();
+        Collection<CsmFile> res = new HashSet<CsmFile>();
         for (CsmProject project : projects) {
             if (project instanceof ProjectBase) {
-                locations.add(((ProjectBase)project).getCacheLocation());
-            }
-        }
-        Collection<CsmFile> res = new HashSet<CsmFile>();
-        for (CacheLocation cacheLocation : locations) {
-            for (CndTextIndexKey key : CndTextIndex.query(cacheLocation, id)) {
-                for (CsmProject prj : projects) {
-                    if (prj instanceof ProjectBase) {
-                        ProjectBase prjBase = (ProjectBase)prj;
-                        if (key.getUnitId() == prjBase.getUnitId()) {
-                            CharSequence path = KeyUtilities.getFileNameByIdSafe(key.getUnitId(), key.getFileNameIndex());
-                            if (path == null || "?".contentEquals(path)) { //NOI18N
-                                if (CndUtils.isDebugMode()) {
-                                    CndUtils.assertTrueInConsole(false, "Can not find file name #" + key.getFileNameIndex() + " in project " + prjBase);
-                                }
-                            } else {
-                                FileImpl file = prjBase.getFile(path, false);
-                                if (file != null) {
-                                    res.add(file);
-                                    break;
-                                } else {
-                                    APTUtils.LOG.log(Level.INFO, "File {0} was not fould in project {1}", new Object[] {path, prjBase}); //NOI18N
-                                }
-                            }
-                        }
+                ProjectBase prjBase = (ProjectBase)project;
+                int unitID = prjBase.getUnitId();
+                for (CndTextIndexKey key : CndTextIndex.query(unitID, id)) {
+                    CharSequence path = KeyUtilities.getFileNameById(key.getUnitId(), key.getFileNameIndex());
+                    FileImpl file = prjBase.getFile(path, false);
+                    if (file != null) {
+                        res.add(file);
+                    } else {
+                        APTUtils.LOG.log(Level.INFO, "File {0} was not fould in project {1}", new Object[]{path, prjBase}); //NOI18N
                     }
                 }
             }
         }
         return res;
     }
+
 }

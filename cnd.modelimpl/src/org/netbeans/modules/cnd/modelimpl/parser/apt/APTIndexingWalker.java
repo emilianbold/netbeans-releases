@@ -44,11 +44,11 @@
 
 package org.netbeans.modules.cnd.modelimpl.parser.apt;
 
-import org.netbeans.modules.cnd.antlr.TokenStream;
-import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.modules.cnd.antlr.TokenStream;
+import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
 import org.netbeans.modules.cnd.apt.structure.APTElif;
@@ -68,7 +68,6 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.indexing.api.CndTextIndex;
 import org.netbeans.modules.cnd.indexing.api.CndTextIndexKey;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
-import org.netbeans.modules.cnd.repository.api.CacheLocation;
 
 
 /**
@@ -80,13 +79,11 @@ import org.netbeans.modules.cnd.repository.api.CacheLocation;
 public final class APTIndexingWalker extends APTWalker {
     private final Set<CharSequence> ids = new HashSet<CharSequence>();
     private final CndTextIndexKey key;
-    private final CacheLocation location;
     
-    public APTIndexingWalker(APTFile apt, CndTextIndexKey key, CacheLocation location) {
+    public APTIndexingWalker(APTFile apt, CndTextIndexKey key) {
         super(apt, null);
         assert apt.isTokenized() : "only full APT have to be passed here " + apt.getPath();
         this.key = key;
-        this.location = location;
     }
 
     @Override
@@ -163,7 +160,7 @@ public final class APTIndexingWalker extends APTWalker {
     
     public void index() {
         super.visit();
-        CndTextIndex.put(location, key, ids);
+        CndTextIndex.put(key, ids);
     }
 
     private boolean analyzeToken(APTToken token) {

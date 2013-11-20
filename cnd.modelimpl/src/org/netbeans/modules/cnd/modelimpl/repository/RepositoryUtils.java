@@ -57,9 +57,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.uid.KeyBasedUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDManager;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
-import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.api.Repository;
-import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.api.RepositoryException;
 import org.netbeans.modules.cnd.repository.impl.spi.UnitsConverter;
 import org.netbeans.modules.cnd.repository.spi.Key;
@@ -76,11 +74,10 @@ public final class RepositoryUtils {
     private static final Logger LOG = Logger.getLogger(RepositoryUtils.class.getName());
     private static final boolean TRACE_ARGS = CndUtils.getBoolean("cnd.repository.trace.args", false); //NOI18N;
     private static final boolean TRACE_REPOSITORY_ACCESS = TRACE_ARGS || DebugUtils.getBoolean("cnd.modelimpl.trace.repository", false);
-    private static final Repository repository = RepositoryAccessor.getRepository();
     /**
      * the version of the persistency mechanism
      */
-    private static final int CURRENT_VERSION_OF_PERSISTENCY = 155;
+    private static final int CURRENT_VERSION_OF_PERSISTENCY = 154;
 
 //    /** temporary flag, to be removed as soon as relocatable repository is achieved */
 //    public static final boolean RELOCATABLE = true;
@@ -102,27 +99,18 @@ public final class RepositoryUtils {
         return out;
     }
 
-    public static Persistent tryGet(Key key) {
-        assert key != null;
-        Persistent out = repository.tryGet(key);
-        if (TRACE_REPOSITORY_ACCESS && isTracingKey(key)) {
-            System.err.printf("%d:trying key %s got %s", nextIndex(), key, out);
-        }
-        return out;
-    }
-
     public static Persistent get(Key key) {
         assert key != null;
         if (TRACE_REPOSITORY_ACCESS && isTracingKey(key)) {
             long time = System.currentTimeMillis();
             int index = nextIndex();
             System.err.println(index + ": " + System.identityHashCode(key) + "@getting key " + key);
-            Persistent out = repository.get(key);
+            Persistent out = Repository.get(key);
             time = System.currentTimeMillis() - time;
             System.err.println(index + ": " + System.identityHashCode(key) + "@got" + (out == null ? " - NULL":"") + " in " + time + "ms the key " + key);
             return out;
         }
-        return repository.get(key);
+        return Repository.get(key);
     }
 
     private static synchronized int nextIndex() {
@@ -138,14 +126,14 @@ public final class RepositoryUtils {
                     int index = nextIndex();
                     System.err.println(index + ": " + System.identityHashCode(key) + "@removing key " + key);
                     if (!TraceFlags.SAFE_REPOSITORY_ACCESS) {
-                        repository.remove(key);
+                        Repository.remove(key);
                     }
                     time = System.currentTimeMillis() - time;
                     System.err.println(index + ": " + System.identityHashCode(key) + "@removed in " + time + "ms the key " + key);
                     return;
                 }
                 if (!TraceFlags.SAFE_REPOSITORY_ACCESS) {
-                    repository.remove(key);
+                    Repository.remove(key);
                 }
             } finally {
                 disposeUID(uid, obj);
@@ -189,12 +177,12 @@ public final class RepositoryUtils {
                 long time = System.currentTimeMillis();
                 int index = nextIndex();
                 System.err.println(index + ": " + System.identityHashCode(key) + "@putting key " + key);
-                repository.put(key, obj);
+                Repository.put(key, obj);
                 time = System.currentTimeMillis() - time;
                 System.err.println(index + ": " + System.identityHashCode(key) + "@put in " + time + "ms the key " + key);
                 return;
             }
-            repository.put(key, obj);
+            Repository.put(key, obj);
         }
     }
 
@@ -218,12 +206,12 @@ public final class RepositoryUtils {
                 long time = System.currentTimeMillis();
                 int index = nextIndex();
                 System.err.println(index + ": " + System.identityHashCode(key) + "@hanging key " + key);
-                repository.hang(key, obj);
+                Repository.hang(key, obj);
                 time = System.currentTimeMillis() - time;
                 System.err.println(index + ": " + System.identityHashCode(key) + "@hung in " + time + "ms the key " + key);
                 return;
             }
-            repository.hang(key, obj);
+            Repository.hang(key, obj);
         }
     }
 
@@ -264,9 +252,9 @@ public final class RepositoryUtils {
     }
 
     public static void startup() {
-        repository.startup(CURRENT_VERSION_OF_PERSISTENCY);
-        repository.unregisterRepositoryListener(getRepositoryListenerProxy());
-        repository.registerRepositoryListener(getRepositoryListenerProxy());
+        Repository.startup(CURRENT_VERSION_OF_PERSISTENCY);
+//        Repository.unregisterRepositoryListener(getRepositoryListenerProxy());
+//        Repository.registerRepositoryListener(getRepositoryListenerProxy());
     }
 
     private static RepositoryListenerProxy myRepositoryListenerProxy;
@@ -287,16 +275,16 @@ public final class RepositoryUtils {
     public static void shutdown() {
         // we intentionally do not unregister listener here since it will be automatically
         // unregistered as soon as shutdown (which is async.) finishes
-        repository.shutdown();
+        Repository.shutdown();
     }
 
-    public static void cleanCashes() {
-        repository.cleanCaches();
-    }
-
-    public static void debugClear() {
-        repository.debugClear();
-    }
+//    public static void cleanCashes() {
+//        Repository.cleanCaches();
+//    }
+//
+//    public static void debugClear() {
+//        Repository.debugClear();
+//    }
 
     public static<T> void closeUnit(CsmUID<T> uid, Set<Integer> requiredUnits, boolean cleanRepository) {
         closeUnit(UIDtoKey(uid), requiredUnits, cleanRepository);
@@ -317,7 +305,7 @@ public final class RepositoryUtils {
 
     private static void _closeUnit(int unitId, Set<Integer> requiredUnits, boolean cleanRepository) {        
         if (!cleanRepository) {
-            int errors = myRepositoryListenerProxy.getErrorCount(unitId);
+            int errors = getRepositoryListenerProxy().getErrorCount(unitId);
             if (errors > 0) {
                 if (LOG.isLoggable(Level.INFO)) {
                     CharSequence unit = KeyUtilities.getUnitNameSafe(unitId);
@@ -326,8 +314,8 @@ public final class RepositoryUtils {
                 cleanRepository = true;
             }
         }
-        myRepositoryListenerProxy.cleanErrorCount(unitId);
-        repository.closeUnit(unitId, cleanRepository, requiredUnits);
+        getRepositoryListenerProxy().cleanErrorCount(unitId);
+        Repository.closeUnit(unitId, cleanRepository, requiredUnits);
     }
 
     public static int getRepositoryErrorCount(ProjectBase project){
@@ -343,7 +331,7 @@ public final class RepositoryUtils {
     
     public static void onProjectDeleted(NativeProject nativeProject) {
         Key key = KeyUtilities.createProjectKey(nativeProject);
-        repository.removeUnit(key.getUnitId());
+        Repository.removeUnit(key.getUnitId());
     }
 
     public static void openUnit(ProjectBase project) {
@@ -360,11 +348,11 @@ public final class RepositoryUtils {
     private static void openUnit(int unitId, CharSequence unitName) {
         // TODO explicit open should be called here:
         RepositoryListenerImpl.instance().onExplicitOpen(unitId);
-        repository.openUnit(unitId, unitName);
+        Repository.openUnit(unitId);
     }
 
     public static void unregisterRepositoryListener(RepositoryListener listener) {
-        repository.unregisterRepositoryListener(listener);
+//        Repository.unregisterRepositoryListener(listener);
     }
 
     private static boolean isTracingKey(Key key) {
@@ -403,25 +391,25 @@ public final class RepositoryUtils {
             return parent.unitOpened(unitId, unitName);
         }
 
-        @Override
-        public boolean repositoryOpened(int repositoryId, CacheLocation cacheLocation) {
-            return parent.repositoryOpened(repositoryId, cacheLocation);
-        }
+//        @Override
+//        public boolean repositoryOpened(int repositoryId, CacheLocation cacheLocation) {
+//            return parent.repositoryOpened(repositoryId, cacheLocation);
+//        }
 
         @Override
         public void unitClosed(int unitId, CharSequence unitName) {
             parent.unitClosed(unitId, unitName);
         }
 
-        @Override
-        public void unitRemoved(int unitId, CharSequence unitName) {
-            parent.unitRemoved(unitId, unitName);
-        }
+//        @Override
+//        public void unitRemoved(int unitId, CharSequence unitName) {
+//            parent.unitRemoved(unitId, unitName);
+//        }
 
-        @Override
+//        @Override
         public void anExceptionHappened(final int unitId, CharSequence unitName, RepositoryException exc) {
             primitiveErrorStrategy(unitId, exc);
-            parent.anExceptionHappened(unitId, unitName, exc);
+//            parent.anExceptionHappened(unitId, unitName, exc);
         }
 
         /**

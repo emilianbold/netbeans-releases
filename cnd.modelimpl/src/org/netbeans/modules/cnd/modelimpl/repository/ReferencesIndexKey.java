@@ -43,8 +43,9 @@ package org.netbeans.modules.cnd.modelimpl.repository;
 
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
-import org.netbeans.modules.cnd.repository.api.CacheLocation;
+import org.netbeans.modules.cnd.repository.api.UnitDescriptor;
 import org.netbeans.modules.cnd.repository.spi.*;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.CharSequences;
 
 /**
@@ -56,7 +57,7 @@ public final class ReferencesIndexKey extends ProjectContainerKey {
     public static final CharSequence UNIT_NAME = CharSequences.create("Global$$Model$$Data"); // NOI18N
 
     public ReferencesIndexKey() {
-        super(KeyUtilities.getUnitId(UNIT_NAME, CacheLocation.DEFAULT));
+        super(KeyUtilities.getUnitId(new UnitDescriptor(UNIT_NAME, CndFileUtils.getLocalFileSystem())));
         // TODO: ???
 //        KeyUtilities.getFileIdByName(getUnitId(), "ReferencesIndexKey$$"); // NOI18N
     }
