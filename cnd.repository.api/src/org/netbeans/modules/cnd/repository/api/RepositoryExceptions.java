@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,20 +37,48 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.repository.spi;
+package org.netbeans.modules.cnd.repository.api;
 
-import java.io.DataInput;
-import java.io.IOException;
-import org.openide.filesystems.FileSystem;
+import java.util.concurrent.CopyOnWriteArrayList;
+import org.netbeans.modules.cnd.repository.spi.Key;
+import org.openide.util.Exceptions;
 
 /**
  *
- * @author Alexander Simon
+ * @author akrasny
  */
-public interface RepositoryDataInput extends DataInput {
-    CharSequence readCharSequenceUTF() throws IOException;
-    int readUnitId() throws IOException;
-    FileSystem readFileSystem() throws IOException;
+public final class RepositoryExceptions {
+
+    private static final CopyOnWriteArrayList<RepositoryExceptionListener> exceptionListeners = new CopyOnWriteArrayList<RepositoryExceptionListener>();
+
+    private RepositoryExceptions() {
+    }
+
+    /* package*/ static void addRepositoryExceptionListener(RepositoryExceptionListener listener) {
+        exceptionListeners.add(listener);
+    }
+
+    /* package*/ static void removeRepositoryExceptionListener(RepositoryExceptionListener listener) {
+        exceptionListeners.remove(listener);
+    }
+
+    public static void throwException(Object source, int unitID, CharSequence name, Throwable ex) {
+        for (RepositoryExceptionListener listener : exceptionListeners) {
+            listener.anExceptionHappened(unitID, name, new RepositoryException(ex));
+        }
+        Exceptions.printStackTrace(ex);
+    }
+
+    public static void throwException(Object source, Key key, Throwable ex) {
+        for (RepositoryExceptionListener listener : exceptionListeners) {
+            listener.anExceptionHappened(key.getUnitId(), key.getUnit(), new RepositoryException(ex));
+        }
+        Exceptions.printStackTrace(ex);
+    }
+
+    public static void throwException(Object source, Throwable ex) {
+        Exceptions.printStackTrace(ex);
+    }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,14 +37,47 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.repository.impl.spi;
 
-package org.netbeans.modules.cnd.repository.api;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.List;
+import org.netbeans.modules.cnd.repository.api.UnitDescriptor;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
- * @author Alexander Simon
+ * @author vkvashin
  */
-public interface DatabaseTable {
+public interface WriteLayerCapability extends LayerCapability {
+
+    public void write(LayerKey key, ByteBuffer byteBuffer);
+
+    public void remove(LayerKey key, boolean keepRemovedTable);
+
+    public void removeUnit(int unitIDInLayer);
+    
+    public void closeUnit(int unitIDInLayer, boolean cleanRespository);
+
+    public void storeFilesTable(Integer unitIDInLayer, List<CharSequence> filesList);
+
+    public int registerNewUnit(UnitDescriptor unitDescriptor);
+
+    public int registerClientFileSystem(FileSystem clientFileSystem);
+    
+/** 
+     * Determines the necessity of maintenance.
+     * When a maintenancy is to be done, repository
+     * sorts all units in accordance with the returned value.
+     * So greater is the value, more need in maintenance unit has.
+     */
+    public int getMaintenanceWeight() throws IOException;
+    
+/**
+     * Performes necessary maintenance (such as defragmentation) during the given timeout
+     * @return true if maintenance was finished by timeout and needs more time to be completed
+     */
+    public boolean maintenance(long timeout)  throws IOException;    
 }

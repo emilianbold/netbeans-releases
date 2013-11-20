@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,23 +37,63 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.cnd.repository.spi;
+package org.netbeans.modules.cnd.repository.support;
 
 import java.io.File;
-import org.netbeans.modules.cnd.repository.api.DatabaseTable;
+import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.utils.CndUtils;
+import org.openide.modules.Places;
 
 /**
  *
- * @author as204739
+ * @author vkvashin
  */
-public interface DatabaseStorage {
-    public interface Provider {
-        DatabaseStorage create(int unitID, File unitStorageBaseDir);
+public final class RepositoryTestUtils {
+
+    private RepositoryTestUtils() {
     }
 
-    DatabaseTable getTable(String tableID);
-    void close();
+//    public static void debugClear() {
+//        LM.debugClear();
+//    }
+//
+    public static void debugDistribution() {
+//        Repository.debugDistribution();
+    }
+
+    public static void debugDump(Key key) {
+//        Repository.debugDump(key);
+    }
+
+    public static void deleteDefaultCacheLocation() {
+        deleteDirectory(getDefaultCacheLocation());
+    }
+
+    private static File getDefaultCacheLocation() {
+        return Places.getCacheSubdirectory("cnd/model"); // NOI18N
+    }
+
+    private static void deleteDirectory(File path) {
+        if (path.exists()) {
+            File[] files = path.listFiles();
+            if (files != null) {
+                for (int i = 0; i < files.length; i++) {
+                    if (files[i].isDirectory()) {
+                        deleteDirectory(files[i]);
+                    } else {
+                        if (!files[i].delete()) {
+                            if (!CndUtils.isUnitTestMode()) {
+                                System.err.println("Cannot delete repository file " + files[i].getAbsolutePath());
+                            }
+                        }
+                    }
+                }
+            }
+            if (!path.delete()) {
+                System.err.println("Cannot delete repository folder " + path.getAbsolutePath());
+            }
+        }
+    }
 }

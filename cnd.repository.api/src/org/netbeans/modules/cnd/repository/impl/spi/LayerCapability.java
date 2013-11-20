@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,47 +37,14 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.repository.relocate.api;
-
-import java.util.Collection;
-import org.netbeans.modules.cnd.repository.api.CacheLocation;
-import org.netbeans.modules.cnd.repository.relocate.spi.RelocationSupportProvider;
-import org.openide.util.lookup.Lookups;
+package org.netbeans.modules.cnd.repository.impl.spi;
 
 /**
  *
- * @author Vladimir Voskresensky
+ * @author vkvashin
  */
-public final class RelocationSupport {
-    
-    public static UnitCodec get(CacheLocation cacheLocation) {
-        Collection<? extends RelocationSupportProvider> providers = Lookups.forPath(RelocationSupportProvider.PATH).lookupAll(RelocationSupportProvider.class);
-        for (RelocationSupportProvider relocationCodecProvider : providers) {
-            UnitCodec unitCodec = relocationCodecProvider.getUnitCodec(cacheLocation);
-            if (unitCodec != null) {
-                return unitCodec;
-            }
-        }
-        System.err.println("No Code Provider was found for " + cacheLocation);
-        return EMPTY;
-    }    
-
-    private static final UnitCodec EMPTY = new NoopUnitCodecImpl();
-    private static final class NoopUnitCodecImpl implements UnitCodec {
-
-        public NoopUnitCodecImpl() {
-        }
-
-        @Override
-        public int unmaskRepositoryID(int clientUnitId) {
-            return clientUnitId;
-        }
-
-        @Override
-        public int maskByRepositoryID(int internalUnitId) {
-            return internalUnitId;
-        }
-    }
+public interface LayerCapability {
+    public boolean knowsKey(LayerKey key);
 }

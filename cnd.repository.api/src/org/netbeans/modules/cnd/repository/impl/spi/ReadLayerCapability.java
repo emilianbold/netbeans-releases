@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,28 +37,20 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.repository.relocate.api;
+package org.netbeans.modules.cnd.repository.impl.spi;
+
+import java.nio.ByteBuffer;
 
 /**
  *
- * @author vk155633
+ * @author vkvashin
  */
-public interface UnitCodec {
-    /**
-     * returns internal presentation for unit ID used by clients
-     *
-     * @param clientUnitId
-     * @return
-     */
-    int unmaskRepositoryID(int clientUnitId);
+public interface ReadLayerCapability extends LayerCapability {
 
-    /**
-     * returns unit ID to be used by clients for passed internal index
-     *
-     * @param locationUnitId
-     * @return
-     */
-    int maskByRepositoryID(int internalUnitId);
+    // Returnes RAW data associated with the Key.
+    // Key is always in terms of this Layer. UnitID is already the 'right one'
+    // No any conversion here
+    public ByteBuffer read(LayerKey key);
 }

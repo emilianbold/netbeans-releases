@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,20 +37,56 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.repository.spi;
+package org.netbeans.modules.cnd.repository.impl.spi;
 
-import java.io.DataInput;
-import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import org.netbeans.modules.cnd.repository.api.UnitDescriptor;
 import org.openide.filesystems.FileSystem;
 
 /**
  *
- * @author Alexander Simon
+ *
+ * @author vkvashin
  */
-public interface RepositoryDataInput extends DataInput {
-    CharSequence readCharSequenceUTF() throws IOException;
-    int readUnitId() throws IOException;
-    FileSystem readFileSystem() throws IOException;
+public interface Layer {
+
+    public boolean startup(int persistMechanismVersion);
+
+    public void shutdown();
+
+    public void openUnit(int unitIdInLayer);
+
+    public void closeUnit(int unitIdInLayer, boolean cleanRepository,
+            Set<Integer> requiredUnits);
+
+    public void setExceptionsListener(LayerExceptionsListener listener);
+
+    //TODO: should be FSPath table
+    public List<CharSequence> getFileNameTable(int unitIdInLayer);
+
+    // Index in the returned list IS an ID of the unit in this layer
+    public List<UnitDescriptor> getUnitsTable();
+
+    public List<FileSystem> getFileSystemsTable();
+
+    public ReadLayerCapability getReadCapability();
+
+    public WriteLayerCapability getWriteCapability();
+    
+    public Collection<LayerKey> removedTableKeySet();
+
+    //-----------------------------------------        
+    public LayerDescriptor getLayerDescriptor();
+
+    /**
+     * Returns an index in the FileSystemsTable for an equivalent client
+     * FileSystem or -1 if no matching found.
+     *
+     * @param clientFileSystem
+     */
+    public int findMatchedFileSystemIndexInLayer(FileSystem clientFileSystem);
 }

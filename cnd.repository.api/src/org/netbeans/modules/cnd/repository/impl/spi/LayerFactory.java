@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,25 +37,23 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.cnd.repository.spi;
-
-import java.util.Collection;
+package org.netbeans.modules.cnd.repository.impl.spi;
 
 /**
  *
- * @author Alexander Simon
+ * @author vkvashin
  */
-public interface DatabaseTableDescription {
-    String getTableName();
-    Class<?> getKeyClass();
-    Class<?> getDataClass();
-    Collection<Index> getIndexes();
-    public interface Index {
-        String getIndexName();
-        Class<?> getIndexClass();
-        Object createSecondaryKey(Object key, Object value);
-    }
+public interface LayerFactory {
+
+    boolean canHandle(LayerDescriptor layerDescriptor);
+
+    /**
+     * Creates and initializes a layer.
+     *
+     * @param layerDescriptor
+     * @return
+     */
+    Layer createLayer(LayerDescriptor layerDescriptor);
 }

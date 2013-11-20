@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,20 +37,22 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.cnd.repository.spi;
 
-import java.io.DataInput;
-import java.io.IOException;
-import org.openide.filesystems.FileSystem;
+import org.netbeans.modules.cnd.repository.api.UnitDescriptor;
 
 /**
  *
- * @author Alexander Simon
+ * @author akrasny
  */
-public interface RepositoryDataInput extends DataInput {
-    CharSequence readCharSequenceUTF() throws IOException;
-    int readUnitId() throws IOException;
-    FileSystem readFileSystem() throws IOException;
+public interface UnitDescriptorsMatcherImplementation {
+
+    /**
+     * @param descriptor1
+     * @param descriptor2
+     * @return 
+     */
+    public boolean matches(UnitDescriptor descriptor1, UnitDescriptor descriptor2);
 }

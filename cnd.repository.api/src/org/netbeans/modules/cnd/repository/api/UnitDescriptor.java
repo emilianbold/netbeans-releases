@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,65 +34,67 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.repository.api;
 
-//import org.netbeans.modules.cnd.repository.impl.HashMapRepository;
-//import org.netbeans.modules.cnd.repository.impl.KeyValidatorRepository;
-//import org.netbeans.modules.cnd.repository.testbench.Stats;
-import org.openide.util.Lookup;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.openide.filesystems.FileSystem;
+import org.openide.util.CharSequences;
 
 /**
  *
- * @author Sergey Grinev
+ * @author vkvashin
  */
-public class RepositoryAccessor 
-{
-    private RepositoryAccessor() {};
-   
-    private static Repository repository;
-    private static RepositoryTranslation translator;
-    
-    private static final Object lock = new Object();
+public final class UnitDescriptor {
 
-    /**
-     * Default way for clients to get repository
-     * 
-     * @return repository of Repository
-     */
-    public static Repository getRepository() {
-        if (repository == null) {
-            synchronized (lock) {
-                // double check is necessary because 
-                // it is possible to have concurrent creators serialized on lock
-                if (repository == null) {
-                    repository = Lookup.getDefault().lookup(Repository.class);
-                }
-            }
-            assert(repository != null);
-        }
-        
-        return repository;
+    private final CharSequence name;
+    private final FileSystem fileSystem;
+
+    public UnitDescriptor(CharSequence unitName, FileSystem unitFileSystem) {
+        this.name = CharSequences.create(unitName);
+        this.fileSystem = unitFileSystem;
     }
-    
-    /**
-     * Default way for clients to get translator
-     * 
-     * @return repository of Repository
-     */
-    public static RepositoryTranslation getTranslator() {
-        if (translator == null) {
-            synchronized (lock) {
-                // double check is necessary because 
-                // it is possible to have concurrent creators serialized on lock
-                if (translator == null) {
-                    translator = Lookup.getDefault().lookup(RepositoryTranslation.class);
-                }
-            }
-            assert(translator != null);
+
+    public CharSequence getName() {
+        return name;
+    }
+
+    public FileSystem getFileSystem() {
+        return fileSystem;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 79 * hash + (this.name != null ? this.name.hashCode() : 0);
+        hash = 79 * hash + (this.fileSystem != null ? this.fileSystem.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
         }
-        
-        return translator;
-    }    
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final UnitDescriptor other = (UnitDescriptor) obj;
+        if (this.name != other.name && (this.name == null || !this.name.equals(other.name))) {
+            return false;
+        }
+        if (this.fileSystem != other.fileSystem && (this.fileSystem == null || !this.fileSystem.equals(other.fileSystem))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return CndFileUtils.isLocalFileSystem(fileSystem) ? name.toString() :  (fileSystem.getDisplayName() + ":" + name); // NOI18N
+    }
 }

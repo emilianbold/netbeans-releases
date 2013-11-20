@@ -41,21 +41,79 @@
  */
 package org.netbeans.modules.cnd.repository.impl.spi;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 /**
  *
- * @author akrasny
+ * @author vkvashin
  */
-public interface UnitsConverter {
+public final class LayerDescriptor {
 
-    /**
-     * Converts unit ID from original one (i.e. 100001 gotten from a key) to
-     * correspondent unit ID in this layer.
-     */
-    int clientToLayer(int clientUnitID);
+    public static final String RO_FRAGMENT = "r/o"; //NOI18N
+    public static final String RW_FRAGMENT = "r/w"; //NOI18N
+    private final URI uri;
+    private final boolean isWritable;
 
-    /**
-     * Converts unit ID from this layer to the one that will be returned to a
-     * client
-     */
-    int layerToClient(int unitIDInLayer);
+    public LayerDescriptor(URI uri) {
+        this.uri = removeFragment(uri);
+        boolean _isWritable = true;
+        String fragment = uri.getFragment();
+        if (fragment != null) {
+            if (fragment.contains(RO_FRAGMENT)) {
+                _isWritable = false;
+            } else if (uri.getFragment().contains(RW_FRAGMENT)) {
+                _isWritable = true;
+            }
+        }
+        isWritable = _isWritable;
+    }
+
+    // TODO: decribe schema
+    public URI getURI() {
+        return uri;
+    }
+
+    public boolean isWritable() {
+        return isWritable;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 37 * hash + (this.uri != null ? this.uri.hashCode() : 0);
+        hash = 37 * hash + (this.isWritable ? 1 : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final LayerDescriptor other = (LayerDescriptor) obj;
+        if (this.uri != other.uri && (this.uri == null || !this.uri.equals(other.uri))) {
+            return false;
+        }
+        if (this.isWritable != other.isWritable) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return uri.toString() + (isWritable ? "#r/w" : "#r/o"); // NOI18N
+    }
+
+    private URI removeFragment(URI uri) {
+        try {
+            return new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), uri.getPort(), uri.getPath(), uri.getQuery(), null);
+        } catch (URISyntaxException ex) {
+            return uri;
+        }
+    }
 }

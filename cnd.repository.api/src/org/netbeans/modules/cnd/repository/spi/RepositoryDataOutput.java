@@ -43,12 +43,19 @@ package org.netbeans.modules.cnd.repository.spi;
 
 import java.io.DataOutput;
 import java.io.IOException;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
  * @author Alexander Simon
  */
 public interface RepositoryDataOutput extends DataOutput {
+
     void writeCharSequenceUTF(CharSequence s) throws IOException;
+
     void writeUnitId(int unitId) throws IOException;
+
+    void writeFileSystem(FileSystem fileSystem) throws IOException;
+
+    void commit();
 }

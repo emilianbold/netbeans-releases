@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,64 +37,17 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.repository.api;
+package org.netbeans.modules.cnd.repository.impl.spi;
 
-import java.io.File;
-import org.openide.modules.Places;
+import org.netbeans.modules.cnd.repository.api.RepositoryException;
 
 /**
- * Determines repository storage location
- * @author Vladimir Kvashin
+ *
+ * @author vkvashin
  */
-public final class CacheLocation {
-    
-    public static final CacheLocation DEFAULT = new CacheLocation(getDefault()); // NOI18N
-        
-    private final File location;
+public interface LayerExceptionsListener {
 
-    public CacheLocation(File location) {
-        assert location != null;
-        this.location = location;
-    }
-    
-    public File getLocation() {
-        return location;
-    }
-
-    @Override
-    public String toString() {
-        return "" + location; //NOI18N
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 3;
-        hash = 67 * hash + this.location.hashCode();
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final CacheLocation other = (CacheLocation) obj;
-        return this.location.equals(other.location);
-    }
-
-    private static File getDefault() {
-        // TODO: find more elegant soluition than duplicating "cnd.repository.cache.path" in CacheLocation and MakeProject
-        // What we can do is our own Places impl. that delegates to the next Places impl. if this property is not set; is it worth doing?
-        String diskRepositoryPath = System.getProperty("cnd.repository.cache.path");
-        if (diskRepositoryPath != null) {
-            return new File(diskRepositoryPath);
-        } else {
-            return Places.getCacheSubdirectory("cnd/model"); // NOI18N
-        }
-    }
+    void anExceptionHappened(int unitId, CharSequence unitName, RepositoryException exc);
 }

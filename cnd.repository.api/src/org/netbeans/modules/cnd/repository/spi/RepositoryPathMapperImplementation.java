@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,23 +37,18 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.repository.spi;
 
-import java.util.Collection;
-import java.util.Map;
-import org.netbeans.modules.cnd.repository.api.DatabaseTable;
+import org.netbeans.modules.cnd.repository.api.FilePath;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
- * @author Alexander Simon
+ * @author akrasny
  */
-public interface MapBasedTable extends DatabaseTable {
-    Object put(Object key, Object data);
-    Object get(Object key);
-    Object remove(Object key);
-    Collection<Map.Entry<?,?>> getSubMap(Object from, Object to);
-    Collection<?> duplicates(Object key);
+public interface RepositoryPathMapperImplementation {
+
+    public CharSequence map(FileSystem targetFileSystem, FilePath sourceFilePath);
 }

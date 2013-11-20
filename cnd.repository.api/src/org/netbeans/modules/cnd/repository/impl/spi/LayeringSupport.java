@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,21 +37,26 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.repository.relocate.spi;
+package org.netbeans.modules.cnd.repository.impl.spi;
 
-import org.netbeans.modules.cnd.repository.api.CacheLocation;
-import org.netbeans.modules.cnd.repository.relocate.api.UnitCodec;
+import java.util.List;
 
 /**
- * @author Vladimir Voskresensky
+ *
+ * @author akrasny
  */
-public interface RelocationSupportProvider {
-    /**
-     * service provider to be registered as
-     * @ServiceProvider(path = RelocationSupportProvider.PATH, service = RelocationSupportProvider.class, position = 1000)
-     */
-    public static final String PATH = "CND/Repository/RelocationSupportProvider"; // NOI18N
-    public UnitCodec getUnitCodec(CacheLocation cacheLocation);
+public interface LayeringSupport {
+
+    public List<LayerDescriptor> getLayerDescriptors();
+
+    // 1
+    public int getStorageID();
+
+    // 100002 <-> 5
+    public UnitsConverter getReadUnitsConverter(LayerDescriptor layerDescriptor);
+
+    public UnitsConverter getWriteUnitsConverter(LayerDescriptor layerDescriptor);
+     
 }

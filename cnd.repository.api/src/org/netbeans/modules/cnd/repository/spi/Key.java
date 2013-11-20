@@ -45,7 +45,6 @@
 
 package org.netbeans.modules.cnd.repository.spi;
 
-import org.netbeans.modules.cnd.repository.impl.spi.UnitsConverter;
 
 /**
  * interface for repository keys, must be implemented in client of repository

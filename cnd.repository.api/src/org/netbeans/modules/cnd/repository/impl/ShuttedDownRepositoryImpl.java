@@ -39,23 +39,105 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.repository.impl.spi;
+package org.netbeans.modules.cnd.repository.impl;
+
+import java.util.Set;
+import org.netbeans.modules.cnd.repository.api.UnitDescriptor;
+import org.netbeans.modules.cnd.repository.impl.spi.LayeringSupport;
+import org.netbeans.modules.cnd.repository.impl.spi.RepositoryImplementation;
+import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.repository.spi.Persistent;
 
 /**
  *
  * @author akrasny
  */
-public interface UnitsConverter {
+public final class ShuttedDownRepositoryImpl implements RepositoryImplementation {
 
-    /**
-     * Converts unit ID from original one (i.e. 100001 gotten from a key) to
-     * correspondent unit ID in this layer.
-     */
-    int clientToLayer(int clientUnitID);
+    private final String msg;
 
-    /**
-     * Converts unit ID from this layer to the one that will be returned to a
-     * client
-     */
-    int layerToClient(int unitIDInLayer);
+    public ShuttedDownRepositoryImpl(String msg) {
+        this.msg = msg;
+    }
+
+    @Override
+    public Persistent get(Key key) {
+        return null;
+    }
+
+    @Override
+    public void put(Key key, Persistent obj) {
+    }
+
+    @Override
+    public void remove(Key key) {
+    }
+
+    @Override
+    public void shutdown() {
+    }
+
+    @Override
+    public void closeUnit(int unitId, boolean cleanRepository, Set<Integer> requiredUnits) {
+    }
+
+    @Override
+    public void openUnit(int unitId) {
+    }
+
+    @Override
+    public void removeUnit(int unitId) {
+    }
+
+    @Override
+    public void hang(Key key, Persistent obj) {
+    }
+
+    @Override
+    public void debugDistribution() {
+    }
+
+    @Override
+    public void debugDump(Key key) {
+    }
+
+    @Override
+    public int getFileIdByName(int unitId, CharSequence fileName) {
+        return -1;
+    }
+
+    @Override
+    public CharSequence getFileNameById(int unitId, int fileId) {
+        return null;
+    }
+
+    @Override
+    public CharSequence getFileNameByIdSafe(int unitId, int fileId) {
+        return null;
+    }
+
+    @Override
+    public CharSequence getUnitName(int unitId) {
+        return null;
+    }
+
+    @Override
+    public int getUnitID(UnitDescriptor unitDescriptor, int sourceUnitId) {
+        return -1;
+    }
+
+    @Override
+    public int getUnitID(UnitDescriptor unitDescriptor) {
+        return -1;
+    }
+
+    @Override
+    public int getRepositoryID(int sourceUnitId) {
+        return -1;
+    }
+
+    @Override
+    public LayeringSupport getLayeringSupport(int clientUnitID) {
+        return null;
+    }
 }
