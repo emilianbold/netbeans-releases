@@ -780,7 +780,7 @@ is divided into following sections:
             <target name="create-jad">
                 <xsl:attribute name="description">Creates JAD file.</xsl:attribute>
                 <fail unless="dist.jad">Must set dist.jad</fail>
-                <echo file="${{dist.dir}}/${{dist.jad}}" message="${{manifest.midlets}}${{manifest.others}}" encoding="UTF-8"/>
+                <echo file="${{dist.dir}}/${{dist.jad}}" message="${{manifest.midlets}}${{manifest.others}}${{manifest.apipermissions}}${{manifest.pushregistry}}" encoding="UTF-8"/>
                 <antcall target="-add-configuration" inheritall="true" inheritrefs="true"/>
                 <antcall target="-add-profile" inheritall="true" inheritrefs="true"/>
                 <nb-jad jadfile="${{dist.dir}}/${{dist.jad}}" jarfile="${{dist.jar}}" url="${{dist.jar.file}}" sign="${{sign.enabled}}" keystore="${{sign.keystore}}" keystorepassword="${{sign.keystore.password}}" alias="${{sign.alias}}" aliaspassword="${{sign.alias.password}}" encoding="UTF-8"/>
