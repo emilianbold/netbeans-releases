@@ -76,6 +76,7 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
 
     private WebSocketClient webSocket;
     private static final Logger LOGGER = Logger.getLogger(AndroidDebugTransport.class.getName());
+    private boolean flush;
 
     @Override
     public boolean detach() {
@@ -161,7 +162,7 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
 
     private URI getURI() {
         JSONArray array = null;
-        for (long stop = System.nanoTime() + TimeUnit.MINUTES.toNanos(2); stop > System.nanoTime();) {
+        for (long stop = System.nanoTime() + TimeUnit.MINUTES.toNanos(2); stop > System.nanoTime() && !flush;) {
             try {
                 JSONParser parser = new JSONParser();
 
@@ -209,4 +210,8 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
         throw new IllegalStateException("Cannot get websocket address"); // NOI18N
     }
 
+    @Override
+    public void flush() {
+        flush=true;
+    }
 }
