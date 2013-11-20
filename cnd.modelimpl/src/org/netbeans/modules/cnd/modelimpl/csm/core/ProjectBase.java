@@ -379,7 +379,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return readInstance(model, createProjectKey(platformProject), platformProject, name);
     }
 
-    protected static ProjectBase readInstance(ModelImpl model, FileSystem fs, CharSequence platformProject, String name, int sourceUnitId) {
+    protected static ProjectBase readInstance(ModelImpl model, FileSystem fs, CharSequence platformProject, CharSequence name, int sourceUnitId) {
         ProjectBase instance = readInstance(model, createProjectKey(fs, platformProject, sourceUnitId), platformProject, name);
         return instance;
     }

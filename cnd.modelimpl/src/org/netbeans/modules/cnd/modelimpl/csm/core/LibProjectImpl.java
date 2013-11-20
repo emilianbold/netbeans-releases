@@ -67,14 +67,14 @@ public final class LibProjectImpl extends ProjectBase {
     private final CharSequence includePath;
     private final SourceRootContainer projectRoots = new SourceRootContainer(true);
 
-    private LibProjectImpl(ModelImpl model, FileSystem fs, String includePathName, int sourceUnitId) {
+    private LibProjectImpl(ModelImpl model, FileSystem fs, CharSequence includePathName, int sourceUnitId) {
         super(model, fs, includePathName, includePathName, sourceUnitId);
         this.includePath = FilePathCache.getManager().getString(includePathName);
         this.projectRoots.fixFolder(includePathName);
         assert this.includePath != null;
     }
 
-    public static LibProjectImpl createInstance(ModelImpl model, FileSystem fs, String includePathName, int sourceUnitId) {
+    public static LibProjectImpl createInstance(ModelImpl model, FileSystem fs, CharSequence includePathName, int sourceUnitId) {
         ProjectBase instance = null;
         assert includePathName != null;
         if (TraceFlags.PERSISTENT_REPOSITORY) {
