@@ -62,6 +62,8 @@ import org.netbeans.modules.php.project.ui.testrunner.ControllableRerunHandler;
 import org.netbeans.modules.php.project.ui.testrunner.UnitTestRunner;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
 import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
+import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
+import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.spi.project.SingleMethod;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -149,6 +151,11 @@ class ConfigActionTest extends ConfigAction {
 
     @Override
     public void runProject() {
+        runPhpTests();
+        runJsTests();
+    }
+
+    private void runPhpTests() {
         // first, let user select test directory
         List<FileObject> testDirs = getTestDirectories(true);
         if (testDirs.isEmpty()) {
@@ -157,6 +164,18 @@ class ConfigActionTest extends ConfigAction {
         TestRunInfo testRunInfo = getTestRunInfoForDirs(testDirs, false);
         assert testRunInfo != null;
         run(testRunInfo);
+    }
+
+    private void runJsTests() {
+        JsTestingProvider jsTestingProvider = JsTestingProviders.getDefault().getJsTestingProvider(project, false);
+        if (jsTestingProvider != null) {
+            org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo testRunInfo
+                    = new org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo.Builder()
+                            .setSessionType(org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo.SessionType.TEST)
+                            .setCoverageEnabled(false)
+                            .build();
+            jsTestingProvider.runTests(project, testRunInfo);
+        }
     }
 
     @Override
