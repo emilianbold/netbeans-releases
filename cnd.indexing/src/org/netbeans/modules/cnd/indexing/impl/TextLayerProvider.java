@@ -41,46 +41,40 @@
  */
 package org.netbeans.modules.cnd.indexing.impl;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.cnd.indexing.api.CndTextIndex;
-import org.netbeans.modules.cnd.indexing.api.CndTextIndexKey;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.modules.cnd.indexing.spi.TextIndexLayer;
+import org.netbeans.modules.cnd.indexing.spi.TextIndexLayerFactory;
+import org.netbeans.modules.cnd.repository.impl.spi.LayerDescriptor;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author akrasny
  */
-public class CndTextIndexImpl {
+public final class TextLayerProvider {
 
-    public void put(CndTextIndexKey key, Set<CharSequence> ids) {
-        TextIndexStorage index = TextIndexStorageManager.get(key.getUnitId());
-        if (index != null) {
-            index.put(key, ids);
-        }
+    private static final Map<LayerDescriptor, TextIndexLayer> cache = new HashMap<LayerDescriptor, TextIndexLayer>();
+
+    private TextLayerProvider() {
     }
 
-    public List<CndTextIndexKey> query(int unitID, CharSequence text) {
-        TextIndexStorage index = TextIndexStorageManager.get(unitID);
-
-        if (index == null) {
-            return Collections.<CndTextIndexKey>emptyList();
+    public static TextIndexLayer getLayer(LayerDescriptor layerDescriptor) {
+        TextIndexLayer layer;
+        synchronized (cache) {
+            layer = cache.get(layerDescriptor);
+            if (layer == null) {
+                Collection<? extends TextIndexLayerFactory> factories = Lookup.getDefault().lookupAll(TextIndexLayerFactory.class);
+                for (TextIndexLayerFactory factory : factories) {
+                    if (factory.canHandle(layerDescriptor)) {
+                        layer = factory.createLayer(layerDescriptor);
+                        cache.put(layerDescriptor, layer);
+                        break;
+                    }
+                }
+            }
         }
-
-        try {
-            return index.query(text);
-        } catch (Exception ex) {
-            Logger.getLogger(CndTextIndex.class.getName()).log(Level.SEVERE, null, ex);
-            return Collections.<CndTextIndexKey>emptyList();
-        }
-    }
-
-    public void remove(CndTextIndexKey key) {
-        TextIndexStorage index = TextIndexStorageManager.get(key.getUnitId());
-        if (index != null) {
-            index.remove(key);
-        }
+        return layer;
     }
 }

@@ -41,46 +41,47 @@
  */
 package org.netbeans.modules.cnd.indexing.impl;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.io.File;
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.cnd.indexing.api.CndTextIndex;
-import org.netbeans.modules.cnd.indexing.api.CndTextIndexKey;
+import org.netbeans.modules.cnd.indexing.spi.TextIndexLayer;
+import org.netbeans.modules.cnd.indexing.spi.TextIndexLayerFactory;
+import org.netbeans.modules.cnd.repository.impl.spi.LayerDescriptor;
+import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
+import org.netbeans.modules.parsing.lucene.support.IndexManager;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author akrasny
  */
-public class CndTextIndexImpl {
+@ServiceProvider(service = TextIndexLayerFactory.class)
+public final class DistTextIndexLayerFactory implements TextIndexLayerFactory {
 
-    public void put(CndTextIndexKey key, Set<CharSequence> ids) {
-        TextIndexStorage index = TextIndexStorageManager.get(key.getUnitId());
-        if (index != null) {
-            index.put(key, ids);
-        }
+    private static final String INDEX_FOLDER_NAME = "text_index"; // NOI18N
+
+    @Override
+    public boolean canHandle(final LayerDescriptor layerDescriptor) {
+        String scheme = layerDescriptor.getURI().getScheme();
+        return "file".equals(scheme);
     }
 
-    public List<CndTextIndexKey> query(int unitID, CharSequence text) {
-        TextIndexStorage index = TextIndexStorageManager.get(unitID);
-
-        if (index == null) {
-            return Collections.<CndTextIndexKey>emptyList();
-        }
-
+    @Override
+    public TextIndexLayer createLayer(final LayerDescriptor layerDescriptor) {
         try {
-            return index.query(text);
-        } catch (Exception ex) {
-            Logger.getLogger(CndTextIndex.class.getName()).log(Level.SEVERE, null, ex);
-            return Collections.<CndTextIndexKey>emptyList();
+            File indexRoot = new File(new File(layerDescriptor.getURI().getPath()), INDEX_FOLDER_NAME);
+            if (!indexRoot.exists() && layerDescriptor.isWritable()) {
+                indexRoot.mkdirs();
+            }
+            if (!indexRoot.exists()) {
+                return null;
+            }
+            DocumentIndex index = IndexManager.createDocumentIndex(indexRoot);
+            return new DiskTextIndexLayer(layerDescriptor, index);
+        } catch (IOException ex) {
+            Logger.getLogger(DistTextIndexLayerFactory.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }
-
-    public void remove(CndTextIndexKey key) {
-        TextIndexStorage index = TextIndexStorageManager.get(key.getUnitId());
-        if (index != null) {
-            index.remove(key);
-        }
+        return null;
     }
 }

@@ -39,48 +39,17 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.indexing.impl;
+package org.netbeans.modules.cnd.indexing.spi;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.cnd.indexing.api.CndTextIndex;
-import org.netbeans.modules.cnd.indexing.api.CndTextIndexKey;
+import org.netbeans.modules.cnd.repository.impl.spi.LayerDescriptor;
 
 /**
  *
  * @author akrasny
  */
-public class CndTextIndexImpl {
+public interface TextIndexLayerFactory {
 
-    public void put(CndTextIndexKey key, Set<CharSequence> ids) {
-        TextIndexStorage index = TextIndexStorageManager.get(key.getUnitId());
-        if (index != null) {
-            index.put(key, ids);
-        }
-    }
+    public boolean canHandle(LayerDescriptor layerDescriptor);
 
-    public List<CndTextIndexKey> query(int unitID, CharSequence text) {
-        TextIndexStorage index = TextIndexStorageManager.get(unitID);
-
-        if (index == null) {
-            return Collections.<CndTextIndexKey>emptyList();
-        }
-
-        try {
-            return index.query(text);
-        } catch (Exception ex) {
-            Logger.getLogger(CndTextIndex.class.getName()).log(Level.SEVERE, null, ex);
-            return Collections.<CndTextIndexKey>emptyList();
-        }
-    }
-
-    public void remove(CndTextIndexKey key) {
-        TextIndexStorage index = TextIndexStorageManager.get(key.getUnitId());
-        if (index != null) {
-            index.remove(key);
-        }
-    }
+    public TextIndexLayer createLayer(LayerDescriptor layerDescriptor);
 }

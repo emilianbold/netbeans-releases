@@ -41,53 +41,30 @@
  */
 package org.netbeans.modules.cnd.indexing.api;
 
-import org.netbeans.modules.cnd.indexing.impl.CndTextIndexManager;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.modules.cnd.indexing.impl.CndTextIndexImpl;
-import org.netbeans.modules.cnd.repository.api.CacheLocation;
 
 /**
  *
  * @author Egor Ushakov <gorrus@netbeans.org>
  */
 public final class CndTextIndex {
+
+    private static CndTextIndexImpl impl = new CndTextIndexImpl();
+
     private CndTextIndex() {
     }
-    
-    public static void put(final CacheLocation location, final CndTextIndexKey key, final Set<CharSequence> ids) {
-        CndTextIndexImpl index = CndTextIndexManager.get(location);
-        if (index != null) {
-            index.put(key, ids);
-        }
+
+    public static void put(final CndTextIndexKey key, final Set<CharSequence> ids) {
+        impl.put(key, ids);
     }
-    
-    public static Collection<CndTextIndexKey> query(final CacheLocation location, final CharSequence text) {
-        CndTextIndexImpl index = CndTextIndexManager.get(location);
-        if (index == null) {
-            return Collections.emptySet();
-        }
-        
-        try {
-            return index.query(text.toString());
-        } catch (Exception ex) {
-            Logger.getLogger(CndTextIndex.class.getName()).log(Level.SEVERE, null, ex);
-            return Collections.emptySet();
-        }
+
+    public static List<CndTextIndexKey> query(final int unitID, final CharSequence text) {
+        return impl.query(unitID, text);
     }
-    
-    public static void remove(final CacheLocation location, final CndTextIndexKey key) {
-        CndTextIndexImpl index = CndTextIndexManager.get(location);
-        // TODO: For now just write empty content, need to figure out how to remove records.
-        if (index != null) {
-            index.put(key, Collections.EMPTY_SET);
-        }
-    }
-    
-    public static void shutdown() {
-        new CndTextIndexManager.Cleanup().run();
+
+    public static void remove(final CndTextIndexKey key) {
+        impl.remove(key);
     }
 }

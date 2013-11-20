@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,50 +37,59 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.cnd.indexing.impl;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.cnd.indexing.api.CndTextIndex;
-import org.netbeans.modules.cnd.indexing.api.CndTextIndexKey;
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.modules.cnd.repository.api.Repository;
+import org.netbeans.modules.cnd.repository.impl.spi.LayeringSupport;
+import org.openide.modules.OnStop;
 
 /**
  *
- * @author akrasny
+ * @author Egor Ushakov <gorrus@netbeans.org>
  */
-public class CndTextIndexImpl {
+public final class TextIndexStorageManager {
 
-    public void put(CndTextIndexKey key, Set<CharSequence> ids) {
-        TextIndexStorage index = TextIndexStorageManager.get(key.getUnitId());
-        if (index != null) {
-            index.put(key, ids);
+    public static final String FIELD_IDS = "ids"; // NOI18N
+    public static final String FIELD_UNIT_ID = "unitId"; // NOI18N
+    // storageID <-> storage
+    private static final Map<Integer, TextIndexStorage> storages = new HashMap<Integer, TextIndexStorage>();
+
+    @OnStop
+    public static class Shutdown implements Runnable {
+
+        @Override
+        public void run() {
+            shutdown();
         }
     }
 
-    public List<CndTextIndexKey> query(int unitID, CharSequence text) {
-        TextIndexStorage index = TextIndexStorageManager.get(unitID);
-
-        if (index == null) {
-            return Collections.<CndTextIndexKey>emptyList();
+    public static TextIndexStorage get(int unitID) {
+        LayeringSupport ls = Repository.getLayeringSupport(unitID);
+        if (ls == null) {
+            return null;
         }
-
-        try {
-            return index.query(text);
-        } catch (Exception ex) {
-            Logger.getLogger(CndTextIndex.class.getName()).log(Level.SEVERE, null, ex);
-            return Collections.<CndTextIndexKey>emptyList();
+        Integer storageID = Integer.valueOf(ls.getStorageID());
+        TextIndexStorage storage;
+        synchronized (storages) {
+            storage = storages.get(storageID);
+            if (storage == null) {
+                storage = new TextIndexStorage(ls);
+                storages.put(storageID, storage);
+            }
         }
+        return storage;
     }
 
-    public void remove(CndTextIndexKey key) {
-        TextIndexStorage index = TextIndexStorageManager.get(key.getUnitId());
-        if (index != null) {
-            index.remove(key);
+    public static void shutdown() {
+        synchronized (storages) {
+            for (TextIndexStorage storage : storages.values()) {
+                storage.shutdown();
+            }
+            storages.clear();
         }
     }
 }
