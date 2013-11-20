@@ -1,5 +1,5 @@
 Name: Java Server Faces
-Version: 2.2.2 fcs
+Version: 2.2.4
 License: CDDL and GNU Public License v.2 w/Classpath Exception
 OSR: Sun
 Description: Java Server Faces

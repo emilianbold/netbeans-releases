@@ -236,4 +236,9 @@ public final class JsTestingProvider {
         delegate.notifyEnabled(project, enabled);
     }
 
+    @Override
+    public String toString() {
+        return "JsTestingProvider{" + "identifier=" + delegate.getIdentifier() + '}'; // NOI18N
+    }
+
 }
