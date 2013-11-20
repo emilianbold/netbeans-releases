@@ -63,7 +63,7 @@ public abstract class BaseSyncFactory extends RemoteSyncFactory {
        ExecutionEnvironment execEnv = RemoteProjectSupport.getExecutionEnvironment(project);
        if (execEnv.isRemote()) {
                    FileObject privateStorageFile = RemoteProjectSupport.getPrivateStorage(project);
-                   if (privateStorageFile == null || !privateStorageFile.isValid()) {
+                   if (privateStorageFile != null && !privateStorageFile.isValid()) {
                        System.err.printf("Error creating directory %s\n", privateStorageFile.getPath());
                    }
                    AtomicReference<String> runDir = new AtomicReference<String>();
