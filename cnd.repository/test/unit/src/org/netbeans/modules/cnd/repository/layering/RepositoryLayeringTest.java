@@ -188,7 +188,7 @@ public class RepositoryLayeringTest extends TraceModelTestBase {
         resetProject();
 
         Repository.shutdown();
-        Repository.startup(154);
+        Repository.startup(155);
         parseCount.set(0);
 
         parseProject(projectRoot, dump2, L1, L2);
