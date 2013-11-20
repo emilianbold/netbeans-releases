@@ -80,11 +80,11 @@ public class ProxyURLStreamHandlerFactoryTest extends NbTestCase {
         }
         File uncFile = new File("\\\\computerName\\sharedFolder\\a\\b\\c\\d.txt");
         URI uri = Utilities.toURI(uncFile);
-        String expectedURI = "file:////computerName/sharedFolder/a/b/c/d.txt";
+        String expectedURI = "file://computerName/sharedFolder/a/b/c/d.txt";
         assertEquals("Wrong URI from File.toURI.", expectedURI, uri.toString());
         URL url = uri.toURL();
         assertEquals("Wrong URL from URI.toURL", expectedURI, url.toString());
-        assertNull("URL.getAuthority must be null.", url.getAuthority());
+        assertEquals("URL.getAuthority must is now computer name.", "computerName", url.getAuthority());
         uri = url.toURI();
         assertEquals("Wrong URI from URL.toURI.", expectedURI, uri.toString());
     }
