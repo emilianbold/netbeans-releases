@@ -827,10 +827,13 @@ public final class ReferencesSupport {
                     }
                     if(ts.token().id().equals(CppTokenId.PREPROCESSOR_DIRECTIVE)) {
                         ts = (TokenSequence<TokenId>)ts.embedded();
+                        if(ts == null) {
+                            return;
+                        }
                         if (!ts.moveNext()) {
                             return;
                         }
-                        if(ts == null || !ts.token().id().equals(CppTokenId.PREPROCESSOR_START)) {
+                        if(!ts.token().id().equals(CppTokenId.PREPROCESSOR_START)) {
                             return;
                         }
                         if (!ts.moveNext()) {

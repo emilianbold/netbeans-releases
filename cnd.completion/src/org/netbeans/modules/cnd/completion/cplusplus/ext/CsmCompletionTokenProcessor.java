@@ -2858,7 +2858,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
         return true;        
     }
     
-    private class OffsetableToken {
+    private static class OffsetableToken {
         Token<TokenId> token;
         int offset;
         boolean macro;

@@ -81,7 +81,7 @@ public final class FileReferencesContext extends CsmProgressAdapter {
     private static final class Lock{}
     private final Lock lock = new Lock();
     private CsmFile csmFile;
-    private int lastOffset;
+    //private int lastOffset;
     private boolean isClened = false;
     private Map<String,List<CsmUID<CsmVariable>>> fileLocalVars;
     private Map<String,Collection<CsmEnumerator>> libEnumerators;
@@ -98,7 +98,7 @@ public final class FileReferencesContext extends CsmProgressAdapter {
         } else if (CsmKindUtilities.isOffsetable(csmScope)) {
             csmFile = ((CsmOffsetable)csmScope).getContainingFile();
         }
-        lastOffset = 0;
+        //lastOffset = 0;
         CsmListeners.getDefault().addProgressListener(this);
     }
 
@@ -126,7 +126,7 @@ public final class FileReferencesContext extends CsmProgressAdapter {
         if (csmFile == null) {
             return;
         }
-        lastOffset = offset;
+        //lastOffset = offset;
     }
 
     public SymTabCache getSymTabCache(){
@@ -353,9 +353,9 @@ public final class FileReferencesContext extends CsmProgressAdapter {
     }
 
     private static class Offsets implements Comparable<Offsets> {
-        private int startOffset;
-        private int endOffset;
-        private CsmObject object;
+        private final int startOffset;
+        private final int endOffset;
+        private final CsmObject object;
         Offsets(CsmOffsetableDeclaration declaration){
             startOffset = declaration.getStartOffset();
             endOffset = declaration.getEndOffset();
@@ -374,6 +374,7 @@ public final class FileReferencesContext extends CsmProgressAdapter {
         Offsets(int offset){
             startOffset = offset;
             endOffset = offset;
+            object = null;
         }
 
         @Override
