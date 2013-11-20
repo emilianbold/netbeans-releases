@@ -109,6 +109,22 @@ public class JsfHtmlExtensionTest extends TestBaseForTestProject {
         testCC("testWebProject/web/resources/ezcomp/test2.xhtml", "<cc:attribute name=\"testAttr\" type=\"org.mysite.|\"/>", new String[]{"classtaglib"}, Match.EXACT);
     }
 
+    public void testCompletionInsertName01() throws Exception {
+        // type attribute completion in cc:attribute element
+        testCC("testWebProject/web/cctest.xhtml", "<ui:composition template=\"./template.xhtml\">\n" +
+"            <ui:define name=\"|\">\n" +
+"            </ui:define>\n" +
+"        </ui:composition>", new String[]{"body", "title"}, Match.CONTAINS);
+    }
+
+    public void testCompletionInsertName02() throws Exception {
+        // type attribute completion in cc:attribute element
+        testCC("testWebProject/web/cctest.xhtml", "<ui:composition template=\"./template_custom.xhtml\">\n" +
+"            <ui:define name=\"|\">\n" +
+"            </ui:define>\n" +
+"        </ui:composition>", new String[]{"body", "title"}, Match.CONTAINS);
+    }
+
     protected void testCC(String filePath, String testText, String[] expected, Match matchType) throws Exception {
         testCC(filePath, testText, expected, matchType, -1);
     }

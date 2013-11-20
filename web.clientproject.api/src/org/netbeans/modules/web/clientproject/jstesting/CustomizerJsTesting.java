@@ -99,6 +99,18 @@ class CustomizerJsTesting extends JPanel {
         });
     }
 
+    @NbBundle.Messages("CustomizerJsTesting.warning.restart.needed=Confirm and reopen this dialog to apply the changes.")
+    void validateData() {
+        String message;
+        if (Objects.equals(originalProvider, selectedProvider)) {
+            message = null;
+        } else {
+            message = Bundle.CustomizerJsTesting_warning_restart_needed();
+        }
+        category.setErrorMessage(message);
+        category.setValid(true);
+    }
+
     void storeData() {
         assert !EventQueue.isDispatchThread();
         if (Objects.equals(originalProvider, selectedProvider)) {
@@ -123,12 +135,9 @@ class CustomizerJsTesting extends JPanel {
 
         providerLabel = new JLabel();
         providerComboBox = new JComboBox<JsTestingProvider>();
-        infoLabel = new JLabel();
 
         providerLabel.setLabelFor(providerComboBox);
         Mnemonics.setLocalizedText(providerLabel, NbBundle.getMessage(CustomizerJsTesting.class, "CustomizerJsTesting.providerLabel.text")); // NOI18N
-
-        Mnemonics.setLocalizedText(infoLabel, NbBundle.getMessage(CustomizerJsTesting.class, "CustomizerJsTesting.infoLabel.text")); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
@@ -137,24 +146,18 @@ class CustomizerJsTesting extends JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addComponent(providerLabel)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addComponent(infoLabel)
-                    .addComponent(providerComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+                .addComponent(providerComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                    .addComponent(providerLabel)
-                    .addComponent(providerComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(infoLabel))
+            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                .addComponent(providerLabel)
+                .addComponent(providerComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private JLabel infoLabel;
     private JComboBox<JsTestingProvider> providerComboBox;
     private JLabel providerLabel;
     // End of variables declaration//GEN-END:variables
@@ -168,6 +171,7 @@ class CustomizerJsTesting extends JPanel {
             if (e.getStateChange() == ItemEvent.SELECTED) {
                 selectedProvider = (JsTestingProvider) providerComboBox.getSelectedItem();
             }
+            validateData();
         }
 
     }
