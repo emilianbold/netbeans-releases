@@ -91,24 +91,14 @@ public class IntNodeProp extends Node.Property {
         }
     }
 
-    @Override
     public Object getValue() {
         return Integer.valueOf(intConfiguration.getValue());
     }
 
-    @Override
     public void setValue(Object v) {
         intConfiguration.setValue((String) v);
     }
 
-    @Override
-    public Object getValue(String attributeName) {
-        if (attributeName.equals("canAutocomplete")) { //NOI18N
-            return Boolean.FALSE;
-        }
-        return super.getValue(attributeName);
-    }
-    
     @Override
     public void restoreDefaultValue() {
         intConfiguration.reset();
@@ -124,7 +114,6 @@ public class IntNodeProp extends Node.Property {
         return !intConfiguration.getModified();
     }
 
-    @Override
     public boolean canWrite() {
         return canWrite;
     }
@@ -133,7 +122,6 @@ public class IntNodeProp extends Node.Property {
         this.canWrite = canWrite;
     }
 
-    @Override
     public boolean canRead() {
         return true;
     }
