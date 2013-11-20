@@ -126,7 +126,7 @@ public final class RepositoryImpl implements RepositoryImplementation, RemoveKey
                     }
                     storage.getInputStream(key);
                     throw new IllegalArgumentException(ex.getMessage()+". Occured for the key: "+key.getClass().getName() + // NOI18N
-                            " with unit id: "+key.getUnitId()+" "+unitName+" and behaviour: "+key.getBehavior()); // NOI18N
+                            " with unit id: "+key.getUnitId()+" "+unitName+" and behaviour: "+key.getBehavior(), ex); // NOI18N
                 }
                 if (result == null) {
                     result = REMOVED_OBJECT;
