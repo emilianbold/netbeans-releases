@@ -152,6 +152,8 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.cakephp.netbeans</friend>
+                <friend>org.nbphpcouncil.modules.php.ci</friend>
+                <friend>org.nbphpcouncil.modules.php.laravel4</friend>
                 <friend>org.nbphpcouncil.modules.php.yii</friend>
                 <friend>org.netbeans.modules.hudson.php</friend>
                 <friend>org.netbeans.modules.php.api.annotation</friend>
