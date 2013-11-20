@@ -70,6 +70,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.openide.util.Pair;
+import org.openide.util.RequestProcessor;
 
 /**
  * Action implementation for TEST configuration.
@@ -77,6 +78,9 @@ import org.openide.util.Pair;
  * @author Tomas Mysik
  */
 class ConfigActionTest extends ConfigAction {
+
+    private static final RequestProcessor RP = new RequestProcessor(ConfigActionTest.class);
+
 
     protected ConfigActionTest(PhpProject project) {
         super(project);
@@ -167,12 +171,17 @@ class ConfigActionTest extends ConfigAction {
     }
 
     private void runJsTests() {
-        JsTestingProvider jsTestingProvider = JsTestingProviders.getDefault().getJsTestingProvider(project, false);
+        final JsTestingProvider jsTestingProvider = JsTestingProviders.getDefault().getJsTestingProvider(project, false);
         if (jsTestingProvider != null) {
-            org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo testRunInfo
-                    = new org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo.Builder()
-                            .build();
-            jsTestingProvider.runTests(project, testRunInfo);
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo testRunInfo
+                            = new org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo.Builder()
+                                    .build();
+                    jsTestingProvider.runTests(project, testRunInfo);
+                }
+            });
         }
     }
 
