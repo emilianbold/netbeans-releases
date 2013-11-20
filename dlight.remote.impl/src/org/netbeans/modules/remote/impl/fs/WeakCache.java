@@ -61,7 +61,7 @@ public class WeakCache<K, V> {
     private final ConcurrentMap<K, Ref<K, V>> map;
     private final ReferenceQueue<V> referenceQueue;
     private final Lock lock;
-    private final Object replacementLock = new Object();
+    //private final Object replacementLock = new Object();
             
     private static class Ref<K, V> extends SoftReference<V> {
         private final K key;

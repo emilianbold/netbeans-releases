@@ -126,7 +126,7 @@ public class FindBasedExecutablesCompletionProviderFactory implements Autocomple
             return result;
         }
 
-        private final class Find implements Callable<String[]> {
+        private static final class Find implements Callable<String[]> {
 
             private final ExecutionEnvironment env;
 

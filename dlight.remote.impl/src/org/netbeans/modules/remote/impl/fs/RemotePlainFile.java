@@ -145,7 +145,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
     // from the finalizer as it is executed in separate thread: the exception will happen if you try. And this homemade lock
     // do not have this restriction.
     // Some facts about RWL implementation can be found here: http://java.dzone.com/news/java-concurrency-read-write-lo
-    private final class SimpleRWLock {
+    private static final class SimpleRWLock {
 
         private int activeReaders = 0;
         private Thread writer = null;

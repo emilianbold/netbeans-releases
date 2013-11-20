@@ -69,7 +69,6 @@ import org.netbeans.spi.extexecution.ProcessBuilderImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Lookup;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -90,7 +89,7 @@ abstract public class FileOperationsProvider {
 
         private final ExecutionEnvironment env;
         private final RemoteFileSystem fileSystem;
-        private final RequestProcessor RP;
+        //private final RequestProcessor RP;
         
         private static final boolean USE_CACHE;
         static {
@@ -103,7 +102,7 @@ abstract public class FileOperationsProvider {
             if (root instanceof RemoteFileObject) {
                 env = ((RemoteFileObject)root).getExecutionEnvironment();
                 fileSystem = (RemoteFileSystem) fs;
-                RP = new RequestProcessor("Refresh for "+env); //NOI18N
+                //RP = new RequestProcessor("Refresh for "+env); //NOI18N
             } else {
                 throw new IllegalArgumentException();
             }

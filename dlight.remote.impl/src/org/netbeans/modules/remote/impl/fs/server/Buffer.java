@@ -75,7 +75,7 @@ import java.nio.BufferUnderflowException;
 
     public int getInt() {
         skipSpaces();
-        StringBuilder sb = new StringBuilder(16);
+        //StringBuilder sb = new StringBuilder(16);
         int result = 0;
         while (curr < text.length()) {
             char c = text.charAt(curr++);
@@ -91,7 +91,7 @@ import java.nio.BufferUnderflowException;
 
     public long getLong() {
         skipSpaces();
-        StringBuilder sb = new StringBuilder(16);
+        //StringBuilder sb = new StringBuilder(16);
         long result = 0;
         while (curr < text.length()) {
             char c = text.charAt(curr++);
