@@ -87,9 +87,10 @@ public class ElementGripFactory {
         if (start == null) {
             return null;
         }
-        try {
-            return start.get(position).item;
-        } catch (RuntimeException e) {
+        Interval interval = start.get(position);
+        if (interval != null) {
+            return interval.item;
+        } else {
             return start.item;
         }
     }
