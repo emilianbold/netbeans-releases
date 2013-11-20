@@ -86,7 +86,7 @@ public final class BufferedRWAccess implements FileRWAccess {
 
     @Override
     public ByteBuffer readData(long offset, int size) throws IOException {
-        ByteBuffer buffer = SharedReadByteBuffer.get(size);
+        ByteBuffer buffer = ByteBuffer.allocate(size);
         long fileSize = virtualSize - BUFFER_SIZE;
         log.log(Level.FINE, "will read from the file {0} starting from offset {1} and size {2}"
                 , new Object[]{path, offset, size});
