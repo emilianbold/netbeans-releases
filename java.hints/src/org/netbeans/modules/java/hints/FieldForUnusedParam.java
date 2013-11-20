@@ -76,6 +76,7 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
+import org.netbeans.modules.java.hints.errors.CreateElementUtilities;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -270,7 +271,8 @@ public class FieldForUnusedParam extends AbstractHint {
                     
                     if (!existing) {
                         Set<Modifier> modifiers = EnumSet.of(Modifier.PRIVATE);
-                        if (finalFields) {
+                        // we know the variable is not used in the ctor - no need to flow-analyze the body.
+                        if (finalFields && CreateElementUtilities.canDeclareVariableFinal(wc, variable.getParentPath(), null)) {
                             modifiers.add(Modifier.FINAL);
                         }
                         VariableTree field = make.Variable(make.Modifiers(modifiers), vt.getName(), vt.getType(), null);
