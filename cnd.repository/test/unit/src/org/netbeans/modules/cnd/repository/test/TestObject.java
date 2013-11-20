@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.repository.test;
 
 import java.io.*;
+import org.netbeans.modules.cnd.repository.impl.spi.LayerKey;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
@@ -65,13 +66,17 @@ public class TestObject implements Persistent {
 	read(in);
     }
     
-    public TestObject(String key, String unit, Key.Behavior behavior, String... data) {
-	this.key = new TestKey(key, unit, behavior);
+    public TestObject(String key, int unitId, String unit, Key.Behavior behavior, String... data) {
+	this.key = new TestKey(key, unitId, unit, behavior);
 	this.sData = data;
     }
     
     public Key getKey() {
 	return key;
+    }
+
+    public LayerKey getLayerKey() {
+        return LayerKey.create(key, key.getUnitId());
     }
     
     public void write(RepositoryDataOutput out) throws IOException {

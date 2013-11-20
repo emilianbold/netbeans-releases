@@ -60,25 +60,26 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  */
 public class TestKey implements Key, SelfPersistent {
     
-    private String key;
-    private String unit;
-    private int unitId;
-    private Behavior behavior;
+    private final String key;
+    private final String unit;
+    private final int unitId;
+    private final Behavior behavior;
     
     @Override
     public Behavior getBehavior() {
 	return Behavior.Default;
     }
     
-    public TestKey(String key, String unit, Behavior behavior) {
+    public TestKey(String key, int unitId, String unit, Behavior behavior) {
 	this.key = key;
         this.unit = unit;
+        this.unitId = unitId;
         this.behavior = behavior;
     }
     
 
     public TestKey(RepositoryDataInput stream) throws IOException {
-        this(stream.readUTF(), stream.readUTF(), 
+        this(stream.readUTF(), stream.readInt(), stream.readUTF(),
                 stream.readBoolean() ? Behavior.LargeAndMutable : Behavior.Default);
     }
     
@@ -157,7 +158,7 @@ public class TestKey implements Key, SelfPersistent {
     
     @Override
     public String toString() {
-	return unit + ':' + key + ' ' + behavior;
+	return unitId + ' ' + unit + ':' + key + ' ' + behavior;
     }
 
     @Override
@@ -173,6 +174,7 @@ public class TestKey implements Key, SelfPersistent {
     @Override
     public void write(RepositoryDataOutput output) throws IOException {
         output.writeUTF(key);
+        output.writeInt(unitId);
         output.writeUTF(unit);
         output.writeBoolean(behavior == Behavior.LargeAndMutable);
     }

@@ -38,11 +38,13 @@
 package org.netbeans.modules.cnd.repository.impl;
 
 import java.util.List;
+import org.netbeans.junit.RandomlyFails;
 
 /**
  *
  * @author vv159170
  */
+@RandomlyFails
 public class IncrementalParseRepositoryValidationFinal extends RepositoryValidationBase {
 
     public IncrementalParseRepositoryValidationFinal(String testName) {

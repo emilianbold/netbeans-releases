@@ -54,7 +54,10 @@ import org.netbeans.modules.cnd.repository.spi.Key;
  * @author Vladimir Kvashin
  */
 public class TestObjectCreator {
-    
+
+    private static int currUnitId = 0;
+
+    private final int unitId;
     private String unit;
     private Key.Behavior behavior;
     
@@ -63,6 +66,7 @@ public class TestObjectCreator {
     }
     
     public TestObjectCreator(String unit, Key.Behavior behavior) {
+        this.unitId = currUnitId++;
         this.unit = unit;
         this.behavior = behavior;
     }
@@ -88,7 +92,7 @@ public class TestObjectCreator {
     }
     
     private void createTestObjects(File file, Collection<TestObject> objects) {
-	TestObject  obj = new TestObject(file.getAbsolutePath(), unit, behavior);
+	TestObject  obj = new TestObject(file.getAbsolutePath(), unitId, unit, behavior);
 	if( file.exists() ) {
 	    obj.lData = file.length();
 	    objects.add(obj);

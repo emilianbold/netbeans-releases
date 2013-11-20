@@ -37,10 +37,13 @@
  */
 package org.netbeans.modules.cnd.repository.impl;
 
+import org.netbeans.junit.RandomlyFails;
+
 /**
  *
  * @author vv159170
  */
+@RandomlyFails
 public class ReopenRepositoryValidationFinal extends RepositoryValidationFinal {
 
     public ReopenRepositoryValidationFinal(String testName) {

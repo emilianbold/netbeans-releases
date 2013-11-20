@@ -48,7 +48,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.openide.util.Exceptions;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -60,24 +59,10 @@ public class RepositoryValidationBase extends TraceModelTestBase {
         super(testName);
     }
 
-    protected static final File localFilesStorage = new File(getHomeDir(), "cnd-test-files-storage");
     protected static final String nimi = "ModelBuiltFromRepository"; //NOI18N
     protected static final String modelimplName = "cnd.modelimpl";
     protected static final String moduleName = "cnd.repository";
     private static String goldenDirectory;
-
-    private static String getHomeDir() {
-        String path;
-        if (Utilities.isWindows()) {
-            path = System.getenv("USERPROFILE");
-        } else {
-            path = System.getenv("HOME");
-        }
-        if (path == null) { // paranoia
-            path = System.getProperty("user.home");
-        }
-        return path;
-    }
 
     @Override
     protected File getTestCaseDataDir() {
@@ -86,18 +71,6 @@ public class RepositoryValidationBase extends TraceModelTestBase {
         return Manager.normalizeFile(new File(dataPath, filePath));
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        System.out.println("### " + getClass().getSimpleName() + "." + getName() + " setUp");
-        super.setUp();
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-        System.out.println("### " + getClass().getSimpleName() + "." + getName() + " tearDown");
-    }
-    
     @Override
     protected void doTest(String[] args, PrintStream streamOut, PrintStream streamErr, Object... params) throws Exception {
         super.doTest(args, streamOut, streamErr, params);
@@ -183,47 +156,35 @@ public class RepositoryValidationBase extends TraceModelTestBase {
                 finish.set(true);
             }
         };
-        String pkg = "pkg-config-0.25";
-        File file = new File(dataPath, pkg);
+        File file = new File(dataPath, "pkg-config-0.25");
         if (!file.exists()){
             file.mkdirs();
         }
         if (file.list().length == 0){
-            File fileFromStorage = new File(localFilesStorage, pkg+".tar.gz");
-            if (fileFromStorage.exists()) {
-                execute("cp", dataPath, fileFromStorage.getAbsolutePath(), dataPath);
-            } else {
-                execute("wget", dataPath, "-qN", "http://pkgconfig.freedesktop.org/releases/"+pkg+".tar.gz");
-            }
-            execute("gzip", dataPath, "-d", pkg+".tar.gz");
-            execute("tar", dataPath, "xf", pkg+".tar");
+            execute("wget", dataPath, "-qN", "http://pkgconfig.freedesktop.org/releases/pkg-config-0.25.tar.gz");
+            execute("gzip", dataPath, "-d", "pkg-config-0.25.tar.gz");
+            execute("tar", dataPath, "xf", "pkg-config-0.25.tar");
         }
 
-        String sqlite = "sqlite-autoconf-3071700";
-        file = new File(dataPath, sqlite);
+        file = new File(dataPath, "litesql-0.3.3");
         if (!file.exists()){
             file.mkdirs();
         }
         if (file.list().length == 0){
-            File fileFromStorage = new File(localFilesStorage, sqlite+".tar.gz");
-            if (fileFromStorage.exists()) {
-                execute("cp", dataPath, fileFromStorage.getAbsolutePath(), dataPath);
-            } else {           
-                execute("wget", dataPath, "-qN", "http://www.sqlite.org/2013/"+sqlite+".tar.gz");
-            }
-            execute("gzip", dataPath, "-d", sqlite+".tar.gz");
-            execute("tar", dataPath, "xf", sqlite+".tar");
+            execute("wget", dataPath, "-qN", "http://www.mirrorservice.org/sites/download.sourceforge.net/pub/sourceforge/l/project/li/litesql/litesql/0.3.3/litesql-0.3.3.tar.gz");
+            execute("gzip", dataPath, "-d", "litesql-0.3.3.tar.gz");
+            execute("tar", dataPath, "xf", "litesql-0.3.3.tar");
         }
-        list.add(dataPath + "/"+pkg); //NOI18N
-        list.add(dataPath + "/"+sqlite); //NOI18N
+        list.add(dataPath + "/pkg-config-0.25"); //NOI18N
+        list.add(dataPath + "/litesql-0.3.3"); //NOI18N
         for(String f : list){
             file = new File(f);
             assertTrue("Not found folder "+f, file.exists());
         }
         list = expandAndSort(list);
         list.add("-DHAVE_CONFIG_H");
-        list.add("-I"+dataPath + "/"+pkg);
-        list.add("-I"+dataPath + "/"+sqlite);
+        list.add("-I"+dataPath + "/pkg-config-0.25");
+        list.add("-I"+dataPath + "/litesql-0.3.3");
         return list;
     }
 

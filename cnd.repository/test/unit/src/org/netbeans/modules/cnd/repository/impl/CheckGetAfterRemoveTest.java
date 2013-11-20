@@ -43,10 +43,16 @@ package org.netbeans.modules.cnd.repository.impl;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertNotNull;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
+import org.netbeans.modules.cnd.repository.api.Repository;
+import org.netbeans.modules.cnd.repository.keys.TestLargeKey;
+import org.netbeans.modules.cnd.repository.keys.TestSmallKey;
+import org.netbeans.modules.cnd.repository.keys.TestValue;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 
@@ -75,33 +81,44 @@ public class CheckGetAfterRemoveTest extends GetPutTestBase {
     }
 
     public void testGetAfterRemove() throws InterruptedException {
-        SmallKey smallKey = new SmallKey("small_1");
-        LargeKey largeKey = new LargeKey("large_1");
-        RepositoryAccessor.getRepository().openUnit(smallKey.getUnitId(), smallKey.getUnit());
-        RepositoryAccessor.getRepository().openUnit(largeKey.getUnitId(), smallKey.getUnit());
-        _test(smallKey, new Value("small_obj_1"));
-        _test(largeKey, new Value("large_obj_1"));
+        TestSmallKey smallKey = new TestSmallKey("small_1", getUnitID());
+        TestLargeKey largeKey = new TestLargeKey("large_1", getUnitID());
+        Repository.openUnit(smallKey.getUnitId());
+        Repository.openUnit(largeKey.getUnitId());
+        _test(smallKey, new TestValue("small_obj_1"));
+        _test(largeKey, new TestValue("large_obj_1"));
+        Repository.shutdown();
+        Repository.startup(0);
+        Repository.openUnit(getUnitID());
+        _test(smallKey, new TestValue("small_obj_1"));
+        _test(largeKey, new TestValue("large_obj_1"));
+        _test1(smallKey, new TestValue("small_obj_1"));
+        _test1(largeKey, new TestValue("large_obj_1"));
     }
     private final AtomicBoolean readFlag = new AtomicBoolean(false);
     private volatile CountDownLatch writeLatch;
 
     @Override
-    protected void onReadHook(Factory factory, Persistent obj) {
+    public void onReadHook() {
         readFlag.set(true);
     }
 
     @Override
-    protected void onWriteHook(Factory factory, Persistent obj) {
+    public void onWriteHook() {
         sleep(1000);
         writeLatch.countDown();
     }
 
-    private void _test(Key key, Value value) throws InterruptedException {
+    @Override
+    public void onRemoveHook() {
+    }
+    
+    private void _test(Key key, TestValue value) throws InterruptedException {
         writeLatch = new CountDownLatch(1);
-        repository.startup(0);
-        repository.put(key, value);
+        Repository.startup(0);
+        Repository.put(key, value);
 
-        Persistent v2 = repository.get(key);
+        Persistent v2 = Repository.get(key);
 
         assertNotNull(v2);
         assertEquals(value, v2);
@@ -109,8 +126,8 @@ public class CheckGetAfterRemoveTest extends GetPutTestBase {
         writeLatch.await();
         long time = System.currentTimeMillis();
         readFlag.set(false);
-        repository.remove(key);
-        while ((v2 = repository.get(key)) != null) {
+        Repository.remove(key);
+        while ((v2 = Repository.get(key)) != null) {
             assertFalse("get shouldn't cause reading object from disk after remove", readFlag.get());
             assertNotNull(v2);
             assertEquals(value, v2);
@@ -119,6 +136,35 @@ public class CheckGetAfterRemoveTest extends GetPutTestBase {
             }
         }
         assertFalse("get shouldn't cause reading object from disk after remove", readFlag.get());
-        repository.debugClear();
+//        RepositoryTestUtils.debugClear();
+    }
+
+    private void _test1(Key key, TestValue value) throws InterruptedException {
+        writeLatch = new CountDownLatch(1);
+        Repository.startup(0);
+        Repository.put(key, value);
+        Repository.shutdown();
+        Repository.startup(0);
+        Repository.openUnit(getUnitID());
+        
+        Persistent v2 = Repository.get(key);
+
+        assertNotNull(v2);
+        assertEquals(value, v2);
+
+        writeLatch.await();
+        long time = System.currentTimeMillis();
+        readFlag.set(false);
+        Repository.remove(key);
+        while ((v2 = Repository.get(key)) != null) {
+            assertFalse("get shouldn't cause reading object from disk after remove", readFlag.get());
+            assertNotNull(v2);
+            assertEquals(value, v2);
+            if (System.currentTimeMillis() - time > 30000) {
+                break;
+            }
+        }
+        assertFalse("get shouldn't cause reading object from disk after remove", readFlag.get());
+//        RepositoryTestUtils.debugClear();
     }
 }

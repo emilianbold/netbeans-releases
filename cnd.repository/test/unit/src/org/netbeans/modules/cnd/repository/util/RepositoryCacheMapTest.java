@@ -61,20 +61,20 @@ public class RepositoryCacheMapTest extends CndBaseTestCase {
         tryEqualKeys(map);
         tryEqualValues(map);
 
-        Filter<String> filter = new Filter<String>() {
-
-            @Override
-            public boolean accept(String value) {
-                return true;
-            }
-        };
-
-        map.remove(filter);
-
-        tryEqualKeys(map);
-        tryEqualValues(map);
-
-        map.remove(filter);
+//        Filter<String> filter = new Filter<String>() {
+//
+//            @Override
+//            public boolean accept(String value) {
+//                return true;
+//            }
+//        };
+//
+//        map.remove(filter);
+//
+//        tryEqualKeys(map);
+//        tryEqualValues(map);
+//
+//        map.remove(filter);
     }
 
     private void tryEqualKeys(RepositoryCacheMap<String, String> map) {

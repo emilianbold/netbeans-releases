@@ -41,22 +41,38 @@
  */
 package org.netbeans.modules.cnd.repository.disk;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.test.ModelImplBaseTestCase;
-import org.netbeans.modules.cnd.repository.api.CacheLocation;
+import org.netbeans.modules.cnd.repository.api.Repository;
+import org.netbeans.modules.cnd.repository.api.UnitDescriptor;
+import org.netbeans.modules.cnd.repository.impl.spi.LayerDescriptor;
+import org.netbeans.modules.cnd.repository.impl.spi.LayerKey;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
+import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.repository.storage.data.RepositoryDataInputStream;
+import org.netbeans.modules.cnd.repository.storage.data.RepositoryDataOutputStream;
 import org.netbeans.modules.cnd.repository.test.TestObject;
 import org.netbeans.modules.cnd.repository.test.TestObjectCreator;
-import org.netbeans.modules.cnd.repository.relocate.api.UnitCodec;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.RequestProcessor;
 
 /**
  * Test for FilesAccessStrategyImpl
+ *
  * @author Vladimir Kvashin
  */
 public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
@@ -71,22 +87,26 @@ public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
         //System.setProperty("access.strategy.threads", "12");
         //System.setProperty("cnd.repository.trace.conflicts", "true");
     }
-    private final FilesAccessStrategyImpl strategy = new FilesAccessStrategyImpl(
-            new StorageAllocator(CacheLocation.DEFAULT),
-            new UnitCodec() {
-                @Override
-                public int unmaskRepositoryID(int unitId) {
-                    return unitId;
-                }
+    private final DiskLayerImpl diskLayerImpl;
+    private File tmpDir;
 
-                @Override
-                public int maskByRepositoryID(int unitId) {
-                    return unitId;
-                }
-            });
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        Repository.startup(0);
+    }
 
-    public FilesAccessStrategyTest(String testName) {
+    public FilesAccessStrategyTest(String testName) throws IOException {
         super(testName);
+        tmpDir = createTempFile("FilesAccessStrategyTest", "", true);
+        diskLayerImpl = new DiskLayerImpl(new LayerDescriptor(tmpDir.toURI()));
+        diskLayerImpl.startup(0, true);
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        removeDirectory(tmpDir);
     }
 
     public void testSignleThread() throws Exception {
@@ -103,13 +123,14 @@ public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
         write(slice);
         readAndCompare(slice);
         if (TRACE) {
-            strategy.printStatistics();
+//            strategy.printStatistics();
         }
-        if (strategy.getCacheSize() >= 10) {
-            assertTrue("Write hit percentage should be ", strategy.getWriteHitPercentage() > 40);
-            assertTrue("", strategy.getReadHitPercentage() > 90);
-        }
-        strategy.closeUnit(unit);
+//        if (strategy.getCacheSize() >= 10) {
+//            assertTrue("Write hit percentage should be ", strategy.getWriteHitPercentage() > 40);
+//            assertTrue("", strategy.getReadHitPercentage() > 90);
+//        }
+        int unitId = Repository.getUnitId(new UnitDescriptor(unit, CndFileUtils.getLocalFileSystem()));
+        diskLayerImpl.closeUnit(unitId, false, Collections.<Integer>emptySet(), true);
         assertNoExceptions();
     }
     private volatile boolean proceed;
@@ -129,14 +150,14 @@ public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
         synchronized (barrier) {
             if (TRACE) {
                 System.out.printf("notifyBarrier\n");
-            }            
+            }
             barrier.notifyAll();
         }
     }
 
     public void testMultyThread() throws Exception {
         String dataPath = convertToModelImplDataDir("repository");
-        dataPath = dataPath+"/org"; //NOI18N
+        dataPath = dataPath + "/org"; //NOI18N
 
         String[] units = new String[]{
             "FilesAccessStrategyTestUnit1", "FilesAccessStrategyTestUnit2",
@@ -157,9 +178,8 @@ public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
             System.out.printf("\n\ntestMultyThread: %d objects, %d laps, %d reading threads\n\n", objects.length, lapsCount, readingThreadCount);
         }
         final CountDownLatch stopSignal = new CountDownLatch(readingThreadCount);
-        
-        Runnable r = new Runnable() {
 
+        Runnable r = new Runnable() {
             @Override
             public void run() {
                 try {
@@ -175,9 +195,9 @@ public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
                             int last = filled;
                             // wait until the first object is written
                             if (last >= 0) {
-                                int i = rnd.nextInt(last+1);
-                                Persistent read = strategy.read(objects[i].getKey());
-                                assertEquals("non equal object for index "+i+": [0-"+ last+"]", objects[i], read);
+                                int i = rnd.nextInt(last + 1);
+                                Persistent read = read(objects[i].getLayerKey());
+                                assertEquals("non equal object for index " + i + ": [0-" + last + "]", objects[i], read);
                             } else {
                                 if (TRACE) {
                                     System.out.println("waiting for the first written object");
@@ -212,9 +232,10 @@ public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
             public void run() {
                 proceed = false;
             }
-        }, 60*1000);
+        }, 60 * 1000);
 
-        loop:for (int lap = 0; lap < lapsCount; lap++) {
+        loop:
+        for (int lap = 0; lap < lapsCount; lap++) {
             if (TRACE) {
                 System.out.printf("Writing objects: lap %d\n", lap);
             }
@@ -222,13 +243,17 @@ public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
                 if (!proceed) {
                     break loop;
                 }
-                strategy.write(objects[i].getKey(), objects[i]);
+
+                write(objects[i]);
+
+//                strategy.getWriteCapability().write(objects[i].getLayerKey(), );
                 if (lap == 0) {
                     filled = i;
                     if (i == 0) {
                         notifyBarrier();
                     }
-                    assertNotNull("Read shouldn't return null for an object that has been just written", strategy.read(objects[i].getKey()));
+                    assertNotNull("Read shouldn't return null for an object that has been just written",
+                            read(objects[i].getLayerKey()));
                 }
             }
         }
@@ -236,32 +261,50 @@ public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
         try {
             stopSignal.await();
         } catch (InterruptedException ie) {
-             DiagnosticExceptoins.register(ie);
+            DiagnosticExceptoins.register(ie);
         }
         if (TRACE) {
-            strategy.printStatistics();
+//            strategy.printStatistics();
         }
         for (int i = 0; i < units.length; i++) {
-            strategy.closeUnit(units[i]);
+            int unitId = Repository.getUnitId(new UnitDescriptor(units[i], CndFileUtils.getLocalFileSystem()));
+            diskLayerImpl.closeUnit(unitId, false, null, true);// testCloseUnit(unitId);
         }
         assertNoExceptions();
     }
 
     private void write(TestObject object) throws Exception {
-        strategy.write(object.getKey(), object);
+        RepositoryDataOutput out = new RepositoryDataOutputStream(
+                object.getLayerKey(),
+                diskLayerImpl.getWriteCapability(),
+                null, null);
+
+        try {
+            object.getLayerKey().getPersistentFactory().write(out, object);
+        } finally {
+            out.commit();
+        }
     }
 
     private void write(Collection<TestObject> objects) throws Exception {
         for (TestObject object : objects) {
-            strategy.write(object.getKey(), object);
+            write(object);
         }
     }
 
     private void readAndCompare(Collection<TestObject> objects) throws Exception {
         for (TestObject object : objects) {
-            Persistent read = strategy.read(object.getKey());
+            Persistent read = read(object.getLayerKey());
             assertEquals(object, read);
         }
+    }
+
+    private Persistent read(LayerKey key) throws IOException {
+        ByteBuffer buffer = diskLayerImpl.getReadCapability().read(key);
+        assertNotNull(buffer);
+        PersistentFactory factory = key.getPersistentFactory();
+        RepositoryDataInput in = new RepositoryDataInputStream(new DataInputStream(new ByteArrayInputStream(buffer.array())));
+        return factory.read(in);
     }
 
     private Collection<TestObject> slice(Collection<TestObject> objects, int size) {
