@@ -1337,6 +1337,13 @@ public final class DocumentViewOp
             }
             if (propName == null || SimpleValueNames.TAB_SIZE.equals(propName)) {
                 releaseChildren = true;
+                Integer tabSizeInteger = (Integer) docView.getDocument().getProperty(SimpleValueNames.TAB_SIZE);
+                tabSize = (tabSizeInteger != null) ? tabSizeInteger : tabSize;
+            }
+            if (propName == null || SimpleValueNames.SPACES_PER_TAB.equals(propName)) {
+                releaseChildren = true;
+                Integer indentLevelInteger = (Integer) docView.getDocument().getProperty(SimpleValueNames.SPACES_PER_TAB);
+                indentLevelSize = (indentLevelInteger != null) ? indentLevelInteger : indentLevelSize;
             }
             if (propName == null || SimpleValueNames.TEXT_LIMIT_WIDTH.equals(propName)) {
                 updateTextLimitLine(docView.getDocument());
