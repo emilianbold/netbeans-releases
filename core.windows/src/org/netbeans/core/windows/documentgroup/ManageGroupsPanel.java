@@ -106,6 +106,7 @@ class ManageGroupsPanel extends javax.swing.JPanel {
         descriptor.setValid( false );
         dialog = DialogDisplayer.getDefault().createDialog( descriptor );
         dialog.setVisible( true );
+        GroupsMenuAction.refreshMenu();
     }
     /**
      * This method is called from within the constructor to initialize the form.
