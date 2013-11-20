@@ -308,7 +308,7 @@ public class JsfAttributesCompletionHelper {
                             HtmlParserResult htmlResult = (HtmlParserResult) result;
                             Node root = JsfUtils.getRoot(htmlResult, DefaultLibraryInfo.FACELETS);
                             if (root != null) {
-                                List<OpenTag> foundNodes = findValue(root.children(OpenTag.class), "ui:insert", new ArrayList<OpenTag>()); //NOI18N
+                                List<OpenTag> foundNodes = findValue(root.children(OpenTag.class), getPrefixForFaceletsNs(htmlResult) + ":insert", new ArrayList<OpenTag>()); //NOI18N
                                 for (OpenTag node : foundNodes) {
                                     org.netbeans.modules.html.editor.lib.api.elements.Attribute attr = node.getAttribute("name"); //NOI18N
                                     if (attr != null) {
@@ -326,6 +326,15 @@ public class JsfAttributesCompletionHelper {
                 Exceptions.printStackTrace(ex);
             }
         }
+    }
+
+    private static String getPrefixForFaceletsNs(HtmlParserResult result) {
+        String prefix = result.getNamespaces().get(DefaultLibraryInfo.FACELETS.getNamespace());
+        if (prefix != null) {
+            return prefix;
+        }
+
+        return result.getNamespaces().get(DefaultLibraryInfo.FACELETS.getLegacyNamespace());
     }
 
     private static List<OpenTag> findValue(Collection<OpenTag> nodes, String tagName, List<OpenTag> foundNodes) {
