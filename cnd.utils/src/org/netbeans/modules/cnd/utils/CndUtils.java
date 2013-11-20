@@ -185,6 +185,10 @@ public class CndUtils {
         }
     }
 
+    public static void severe(Exception exception) {
+         LOG.log(Level.SEVERE, exception.getMessage(), lastAssertion = exception);
+    }
+
     private static void severe(String message) {
         LOG.log(Level.SEVERE, message, lastAssertion = new Exception(message));
     }

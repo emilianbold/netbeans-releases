@@ -74,6 +74,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
@@ -623,7 +624,18 @@ public final class CndFileUtils {
         }
         return Collections.<FSPath>emptyList();
     }
-    
+
+    public static FileSystem decodeFileSystem(CharSequence stringRepresentation) throws IOException {
+        FileObject rootFileObject = CndFileUtils.urlToFileObject(stringRepresentation);
+        assert (rootFileObject != null) : "Restored null file object for URL " + stringRepresentation;
+        return rootFileObject.getFileSystem();
+    }
+
+    public static CharSequence codeFileSystem(FileSystem fs) throws IOException {
+        CharSequence rootUrl = CharSequences.create(CndFileUtils.fileObjectToUrl(fs.getRoot()));
+        return rootUrl;
+    }
+
     private static final Lock maRefLock = new ReentrantLock();
 
     private static final Map<FileSystem, Reference<ConcurrentMap<String, Flags>>> maps = 
