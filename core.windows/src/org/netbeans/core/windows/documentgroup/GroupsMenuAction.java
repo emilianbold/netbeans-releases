@@ -66,6 +66,8 @@ import org.openide.util.actions.Presenter;
 })
 public class GroupsMenuAction extends AbstractAction implements Presenter.Menu {
 
+    private static final JMenu menu = new JMenu(NbBundle.getMessage(GroupsMenuAction.class, "Menu_DOCUMENT_GROUPS"));
+    
     private GroupsMenuAction() {
         super( NbBundle.getMessage(GroupsMenuAction.class, "Menu_DOCUMENT_GROUPS"));
     }
@@ -78,7 +80,6 @@ public class GroupsMenuAction extends AbstractAction implements Presenter.Menu {
 
     @Override
     public JMenuItem getMenuPresenter() {
-        final JMenu menu = new JMenu(NbBundle.getMessage(GroupsMenuAction.class, "Menu_DOCUMENT_GROUPS"));
         if (EventQueue.isDispatchThread()) {
             fillMenu(menu);
         } else {
@@ -92,7 +93,12 @@ public class GroupsMenuAction extends AbstractAction implements Presenter.Menu {
         return menu;
     }
     
-    private void fillMenu( JMenu menu ) {
+    static void refreshMenu() {
+        fillMenu(menu);
+    }
+    
+    private static void fillMenu( JMenu menu ) {
+        menu.removeAll();
         GroupsManager gm = GroupsManager.getDefault();
         DocumentGroupImpl current = gm.getCurrentGroup();
         List<DocumentGroupImpl> groups = gm.getGroups();
@@ -159,6 +165,7 @@ public class GroupsMenuAction extends AbstractAction implements Presenter.Menu {
                 public void run() {
                     try {
                         group.open();
+                        refreshMenu();
                     } finally {
                         wait.uninstall();
                     }
