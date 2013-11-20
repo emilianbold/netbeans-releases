@@ -125,6 +125,10 @@ public final class TestRunner {
         return Manager.getInstance();
     }
 
+    @NbBundle.Messages({
+        "# {0} - project name",
+        "TestRunner.runner.title={0} (Karma)",
+    })
     private String getOutputTitle() {
         StringBuilder sb = new StringBuilder(30);
         sb.append(ProjectUtils.getInformation(runInfo.getProject()).getDisplayName());
@@ -133,7 +137,7 @@ public final class TestRunner {
             sb.append(":"); // NOI18N
             sb.append(new File(testFile).getName());
         }
-        return sb.toString();
+        return Bundle.TestRunner_runner_title(sb.toString());
     }
 
     private void sessionStarted(String line) {

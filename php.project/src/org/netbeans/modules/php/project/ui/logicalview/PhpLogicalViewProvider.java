@@ -75,6 +75,7 @@ import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.framework.PhpModuleActionsExtender;
 import org.netbeans.modules.php.spi.framework.actions.RunCommandAction;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
+import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.modules.web.clientproject.api.remotefiles.RemoteFilesNodeFactory;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
@@ -722,6 +723,11 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
     @NodeFactory.Registration(projectType = "org-netbeans-modules-php-project", position = 250)
     public static NodeFactory createRemoteFiles() {
         return RemoteFilesNodeFactory.createRemoteFilesNodeFactory();
+    }
+
+    @NodeFactory.Registration(projectType = "org-netbeans-modules-php-project", position = 1000)
+    public static NodeFactory createJsTestingProvidersNodes() {
+        return JsTestingProviders.getDefault().createJsTestingProvidersNodeFactory();
     }
 
 }
