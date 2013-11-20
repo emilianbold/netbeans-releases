@@ -81,6 +81,8 @@ import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
 class ModelBuilder {
     private final FileScopeImpl fileScope;
     private final NamespaceScopeImpl defaultNamespaceScope;
+    private final Object currentScopeLock = new Object();
+    // @GuardedBy("currentScopeLock")
     private final Stack<ScopeImpl> currentScope;
     private final Map<VariableNameFactory, Map<String, VariableNameImpl>> vars;
     private NamespaceScopeImpl namespaceScope;
@@ -164,16 +166,18 @@ class ModelBuilder {
     }
 
     void reset() {
-        if (!currentScope.empty()) {
-            ScopeImpl createdScope = currentScope.peek();
-            if (createdScope instanceof NamespaceScopeImpl) {
-                namespaceScope = defaultNamespaceScope;
-                if (!((NamespaceScopeImpl) createdScope).isDefaultNamespace()) {
-                    // don't remove default namespace, it's included in constructor
+        synchronized (currentScopeLock) {
+            if (!currentScope.empty()) {
+                ScopeImpl createdScope = currentScope.peek();
+                if (createdScope instanceof NamespaceScopeImpl) {
+                    namespaceScope = defaultNamespaceScope;
+                    if (!((NamespaceScopeImpl) createdScope).isDefaultNamespace()) {
+                        // don't remove default namespace, it's included in constructor
+                        currentScope.pop();
+                    }
+                } else {
                     currentScope.pop();
                 }
-            } else {
-                currentScope.pop();
             }
         }
     }
@@ -184,12 +188,16 @@ class ModelBuilder {
      * @param scope
      */
     void prepareForScope(Scope scope) {
-        currentScope.clear();
+        synchronized (currentScopeLock) {
+            currentScope.clear();
+        }
         while (scope != null) {
             if (scope instanceof NamespaceScopeImpl) {
                 namespaceScope = (NamespaceScopeImpl) scope;
             }
-            currentScope.add(0, (ScopeImpl) scope);
+            synchronized (currentScopeLock) {
+                currentScope.add(0, (ScopeImpl) scope);
+            }
             scope = scope.getInScope();
         }
     }
@@ -209,7 +217,9 @@ class ModelBuilder {
      * @return the currentScope or null
      */
     ScopeImpl getCurrentScope() {
-        return currentScope.isEmpty() ? null : currentScope.peek();
+        synchronized (currentScopeLock) {
+            return currentScope.isEmpty() ? null : currentScope.peek();
+        }
     }
 
     /**
@@ -219,7 +229,9 @@ class ModelBuilder {
         if (scope instanceof NamespaceScopeImpl) {
             namespaceScope = (NamespaceScopeImpl) scope;
         }
-        this.currentScope.push(scope);
+        synchronized (currentScopeLock) {
+            this.currentScope.push(scope);
+        }
     }
 
     /**
