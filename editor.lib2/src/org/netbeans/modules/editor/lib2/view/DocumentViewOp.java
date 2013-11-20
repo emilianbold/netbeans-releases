@@ -1100,7 +1100,7 @@ public final class DocumentViewOp
     }
     
     public boolean isGuideLinesEnable() {
-        return guideLinesEnable;
+        return guideLinesEnable && !asTextField;
     }
 
     public int getIndentLevelSize() {
