@@ -68,7 +68,7 @@ final class APTFortranEOSFilter implements APTLanguageFilter {
         return new FilterStream(origStream);
     }
 
-    private final class FilterStream implements TokenStream {
+    private static final class FilterStream implements TokenStream {
         private TokenStream orig;
         private Token currentToken;
         boolean newLine = false;
