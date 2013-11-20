@@ -155,12 +155,7 @@ class ConfigActionTest extends ConfigAction {
 
     @Override
     public void runProject() {
-        RP.post(new Runnable() {
-            @Override
-            public void run() {
-                runJsTests();
-            }
-        });
+        runJsTests();
         runPhpTests();
     }
 
@@ -175,13 +170,18 @@ class ConfigActionTest extends ConfigAction {
         run(testRunInfo);
     }
 
-    void runJsTests() {
-        JsTestingProvider jsTestingProvider = JsTestingProviders.getDefault().getJsTestingProvider(project, false);
+    private void runJsTests() {
+        final JsTestingProvider jsTestingProvider = JsTestingProviders.getDefault().getJsTestingProvider(project, false);
         if (jsTestingProvider != null) {
-            org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo testRunInfo
-                    = new org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo.Builder()
-                            .build();
-            jsTestingProvider.runTests(project, testRunInfo);
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo testRunInfo
+                            = new org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo.Builder()
+                                    .build();
+                    jsTestingProvider.runTests(project, testRunInfo);
+                }
+            });
         }
     }
 
