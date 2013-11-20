@@ -59,9 +59,21 @@ class JUnitTestcase extends Testcase{
     }
     
     public FileObject getClassFileObject(){
+        return getClassFileObject(false);
+    }
+    
+    public FileObject getClassFileObject(boolean searchForInnerClass){
         FileLocator fileLocator = getSession().getFileLocator();
         if ((classFO == null) && (fileLocator != null) && (getClassName() != null)){
-            classFO = fileLocator.find(getClassName().replace('.', '/') + ".java"); //NOI18N
+            String className = getClassName();
+            classFO = fileLocator.find(className.replace('.', '/') + ".java"); //NOI18N
+            if (classFO == null && searchForInnerClass) {
+                int indexOf = className.indexOf('$');
+                if (indexOf != -1) { // innerclass
+                    className = className.substring(0, indexOf);
+                    return fileLocator.find(className.replace('.', '/') + ".java"); //NOI18N
+                }
+            }
         }
         return classFO;
     }
