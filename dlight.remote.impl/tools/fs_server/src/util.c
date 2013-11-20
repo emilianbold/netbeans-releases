@@ -13,6 +13,7 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <signal.h>
+#include <limits.h>
 
 static TraceLevel trace_level = TRACE_NONE;
 static FILE *log_file = NULL;
@@ -301,23 +302,66 @@ char* signal_name(int signal) {
     }
 }
 
-static bool clean_dir_impl(const char* path, char* child_path_buf) {
-    struct dirent *entry;
-    union {
-        struct dirent d;
-        char b[MAXNAMLEN];
-    } entry_buf;
-    entry_buf.d.d_reclen = MAXNAMLEN + sizeof (struct dirent);
-    DIR *d = NULL;
-    d = opendir(path);
+static bool removing_visitor(char* name, struct stat *stat_buf, char* link, const char* path, void *p) {
+    bool *success = p;
+    if (S_ISDIR(stat_buf->st_mode)) {
+        if (clean_dir(path)) {
+            if (rmdir(path)) {
+                report_error("error deleting '%s': %s\n", path, strerror(errno));
+                *success = false;
+            }
+        } else {
+            *success = false;
+        }
+    } else {
+        if (unlink(path)) {
+            report_error("error deleting '%s': %s\n", path, strerror(errno));
+            *success = false;
+        }
+    }
+    return true;    
+}
+
+bool clean_dir(const char* path) {
+    char* child_abspath = malloc(PATH_MAX);
+    bool res = true;
+    visit_dir_entries(path, removing_visitor, &res);
+    free(child_abspath);
+    return res;
+}
+
+buffer buffer_alloc(int size) {
+    buffer result = { size, malloc(size) };
+    return result;
+}
+
+void buffer_free(buffer* buf) {
+    if (buf) {
+        free(buf->data);
+    }
+}
+
+bool visit_dir_entries(const char* path, 
+        bool (*visitor) (char* name, struct stat *st, char* link, const char* abspath, void *data), void *data) {
+    DIR *d = d = opendir(path);
     if (d) {
+        union {
+            struct dirent d;
+            char b[MAXNAMLEN];
+        } entry_buf;
+        entry_buf.d.d_reclen = MAXNAMLEN + sizeof (struct dirent);
+        int buf_size = PATH_MAX;
+        char *abspath = malloc(buf_size);
+        char *link = malloc(buf_size);
+        // TODO: error processing (malloc() can return null)
         int base_len = strlen(path);
-        strcpy(child_path_buf, path);
-        child_path_buf[base_len] = '/';       
+        strcpy(abspath, path);
+        abspath[base_len] = '/';
+        struct dirent *entry;
         while (true) {
             if (readdir_r(d, &entry_buf.d, &entry)) {
                 report_error("error reading directory %s: %s\n", path, strerror(errno));
-                return false;
+                break;
             }
             if (!entry) {
                 break;
@@ -325,38 +369,33 @@ static bool clean_dir_impl(const char* path, char* child_path_buf) {
             if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
                 continue;
             }
-            strcpy(child_path_buf + base_len + 1, entry->d_name);
+            strcpy(abspath + base_len + 1, entry->d_name);
             struct stat stat_buf;
-            if (lstat(child_path_buf, &stat_buf) == 0) {
-                if (S_ISDIR(stat_buf.st_mode)) {
-                    if (clean_dir(child_path_buf)) {
-                        if (rmdir(child_path_buf)) {
-                            report_error("error deleting '%s': %s\n", child_path_buf, strerror(errno));
-                            return false;
-                        }
+            if (lstat(abspath, &stat_buf) == 0) {
+                bool is_link = S_ISLNK(stat_buf.st_mode);
+                if (is_link) {
+                    ssize_t sz = readlink(abspath, link, buf_size);
+                    if (sz == -1) {
+                        report_error("error performing readlink for %s: %s\n", abspath, strerror(errno));
+                        strcpy(link, "?");
                     } else {
-                        return false;
-                    }
-                } else {
-                    if (unlink(child_path_buf)) {
-                        report_error("error deleting '%s': %s\n", child_path_buf, strerror(errno));
-                        return false;
+                        link[sz] = 0;
                     }
                 }
+                if (!visitor(entry->d_name, &stat_buf, link, abspath, data)) {
+                    break;
+                }
             } else {
-                report_error("error getting stat for '%s': %s\n", child_path_buf, strerror(errno));
-                return false;
+                report_error("error getting stat for '%s': %s\n", abspath, strerror(errno));                
             }
         }
+        free(abspath);
+        free(link);
+        closedir(d);
+        return true; // TODO: error processing: what some of them has errors?
     } else {
         report_error("error opening directory '%s': %s\n", path, strerror(errno));
+        return false;
     }
-        return true;    
 }
 
-bool clean_dir(const char* path) {
-    char* child_abspath = malloc(PATH_MAX);
-    bool res = clean_dir_impl(path, child_abspath);
-    free(child_abspath);
-    return res;
-}

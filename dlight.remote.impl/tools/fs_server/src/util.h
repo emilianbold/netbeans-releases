@@ -67,6 +67,25 @@ long long get_mtime(struct stat *stat_buf);
 
 bool clean_dir(const char* path);
 
+/** 
+ * I often have to pass one or more pairs (char *buffer, int buffer_size) to a function.
+ * struct buffer and buffer_alloc/buffer_free functions help to simplify this
+ */
+
+typedef struct {
+    const int size;
+    char* data;
+} buffer;
+
+buffer buffer_alloc(int size);
+
+void buffer_free(buffer* buf);
+
+bool visit_dir_entries(
+        const char* path, 
+        bool (*visitor) (char* name, struct stat *st, char* link, const char* abspath, void *data), 
+        void *data);
+
 #ifdef	__cplusplus
 }
 #endif

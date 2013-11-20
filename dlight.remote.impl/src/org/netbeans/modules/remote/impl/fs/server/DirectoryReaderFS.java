@@ -157,8 +157,7 @@ public class DirectoryReaderFS implements DirectoryReader {
                     int respId = buf.getInt();
                     assert respId == request.getId();
                     String serverPath = buf.getString();
-                    int cnt = buf.getInt();
-                    List<DirEntry> entries = readEntries(response, serverPath, cnt, request.getId(), realCnt);
+                    List<DirEntry> entries = readEntries(response, serverPath, request.getId(), realCnt);
                     cache.put(serverPath, entries);
                     paths.add(serverPath);
                 }
@@ -232,8 +231,7 @@ public class DirectoryReaderFS implements DirectoryReader {
             assert respId == request.getId();
             String serverPath = buf.getString();
             assert serverPath.equals(path);
-            int cnt = buf.getInt();
-            return readEntries(response, path, cnt, request.getId(), realCnt);
+            return readEntries(response, path, request.getId(), realCnt);
         } finally {
             dirReadCnt.incrementAndGet();
             if (response != null) {
@@ -245,12 +243,12 @@ public class DirectoryReaderFS implements DirectoryReader {
         }
     }
 
-    private List<DirEntry> readEntries(FSSResponse response, String path, int cnt, long reqId, AtomicInteger realCnt) 
+    private List<DirEntry> readEntries(FSSResponse response, String path, long reqId, AtomicInteger realCnt) 
             throws IOException, InterruptedException, ExecutionException {
         try {
             RemoteLogger.finest("Reading response #{0} from fs_server for directry {1})",
                     reqId, path);
-            List<FSSResponse.Package> packages = new ArrayList<FSSResponse.Package>(cnt);
+            List<FSSResponse.Package> packages = new ArrayList<FSSResponse.Package>();
             for (FSSResponse.Package pkg = response.getNextPackage(); 
                     pkg.getKind() != FSSResponseKind.END; 
                     pkg = response.getNextPackage()) {
@@ -266,7 +264,7 @@ public class DirectoryReaderFS implements DirectoryReader {
             }
             RemoteLogger.finest("Processing response #{0} from fs_server for directry {1}",
                     reqId, path);
-            List<DirEntry> result = new ArrayList<DirEntry>(cnt);
+            List<DirEntry> result = new ArrayList<DirEntry>();
             for (FSSResponse.Package pkg : packages) {
                 try {
                     assert pkg != null;
