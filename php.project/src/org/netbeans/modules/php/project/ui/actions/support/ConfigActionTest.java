@@ -171,8 +171,6 @@ class ConfigActionTest extends ConfigAction {
         if (jsTestingProvider != null) {
             org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo testRunInfo
                     = new org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo.Builder()
-                            .setSessionType(org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo.SessionType.TEST)
-                            .setCoverageEnabled(false)
                             .build();
             jsTestingProvider.runTests(project, testRunInfo);
         }

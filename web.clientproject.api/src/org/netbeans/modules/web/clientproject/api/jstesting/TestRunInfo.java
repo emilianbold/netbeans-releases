@@ -71,7 +71,6 @@ public final class TestRunInfo {
 
     private final SessionType sessionType;
     private final String testFile;
-    private final boolean coverageEnabled;
 
 
     private TestRunInfo(Builder builder) {
@@ -79,7 +78,6 @@ public final class TestRunInfo {
         assert builder.sessionType != null;
         sessionType = builder.sessionType;
         testFile = builder.testFile;
-        coverageEnabled = builder.coverageEnabled;
     }
 
     /**
@@ -99,30 +97,24 @@ public final class TestRunInfo {
         return testFile;
     }
 
-    /**
-     * Check whether code coverage should be collected or not.
-     * @return {@code true} if coverage is enabled, {@code false} otherwise
-     */
-    public boolean isCoverageEnabled() {
-        return coverageEnabled;
-    }
-
     @Override
     public String toString() {
-        return "TestRunInfo{" + "sessionType=" + sessionType + ", testFile=" + testFile + ", coverageEnabled=" + coverageEnabled + '}'; // NOI18N
+        return "TestRunInfo{" + "sessionType=" + sessionType + ", testFile=" + testFile + '}'; // NOI18N
     }
 
     //~ Inner classes
 
     /**
      * Builder for {@link TestRunInfo}.
+     * <p>
+     * The default {@link Builder#setSessionType(org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo.SessionType) session type}
+     * is {@link SessionType#TEST}.
      * @since 1.49
      */
     public static final class Builder {
 
         SessionType sessionType = SessionType.TEST;
         String testFile;
-        boolean coverageEnabled;
 
 
         /**
@@ -143,16 +135,6 @@ public final class TestRunInfo {
          */
         public Builder setTestFile(@NullAllowed String testFile) {
             this.testFile = testFile;
-            return this;
-        }
-
-        /**
-         * Set {@code true} if the coverage is enabled and should be collected.
-         * @param coverageEnabled {@code true} if the coverage is enabled and should be collected
-         * @return this instance
-         */
-        public Builder setCoverageEnabled(boolean coverageEnabled) {
-            this.coverageEnabled = coverageEnabled;
             return this;
         }
 
