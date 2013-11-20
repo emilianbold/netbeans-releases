@@ -749,6 +749,10 @@ public class MakeJNLP extends Task {
         while(tok.hasMoreElements()) {
             String s = tok.nextToken();
             
+            if (s.contains("${java.home}")) {
+                continue;
+            }
+            
             File e = new File(f.getParentFile(), s);
             if (!e.canRead()) {
                 throw new BuildException("Cannot read extension " + e + " referenced from " + f);
