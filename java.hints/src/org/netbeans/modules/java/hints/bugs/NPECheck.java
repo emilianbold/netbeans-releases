@@ -124,11 +124,18 @@ public class NPECheck {
             return null;
         }
         State r = computeExpressionsState(ctx).get(select.getLeaf());
-        if (r != null && r.isNotNull() && !ignore(ctx, false)) {
-            return null;
+        if (r == NULL || r == NULL_HYPOTHETICAL) {
+            String displayName = NbBundle.getMessage(NPECheck.class, "ERR_DereferencingNull");
+            
+            return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
         }
-        String displayName = NbBundle.getMessage(NPECheck.class, "ERR_PossiblyDereferencingNull");
-        return ErrorDescriptionFactory.forName(ctx, select, displayName);
+
+        if (r == State.POSSIBLE_NULL_REPORT) {
+            String displayName = NbBundle.getMessage(NPECheck.class, "ERR_PossiblyDereferencingNull");
+            
+            return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
+        }
+        return null;
     }
     
     
@@ -572,7 +579,6 @@ public class NPECheck {
 
         @Override
         public State visitBinary(BinaryTree node, Void p) {
-            boolean subnodesAlreadyProcessed = false;
             Kind kind = node.getKind();
             
             if (not) {
@@ -584,48 +590,47 @@ public class NPECheck {
                 }
             }
             
-            if (kind == Kind.CONDITIONAL_AND) {
-                scan(node.getLeftOperand(), p);
-                scan(node.getRightOperand(), p);
-                
-                subnodesAlreadyProcessed = true;
-            }
-            
-            if (kind == Kind.CONDITIONAL_OR) {
-                HashMap<VariableElement, State> orig = new HashMap<VariableElement, NPECheck.State>(variable2State);
-                
-                scan(node.getLeftOperand(), p);
-                
-                Map<VariableElement, State> afterLeft = variable2State;
-                
-                variable2State = orig;
-                
-                boolean oldNot = not;
-                boolean oldDoNotRecord = doNotRecord;
-                
-                not ^= true;
-                doNotRecord = true;
-                scan(node.getLeftOperand(), p);
-                not = oldNot;
-                doNotRecord = oldDoNotRecord;
-                
-                scan(node.getRightOperand(), p);
-                
-                mergeIntoVariable2State(afterLeft);
-                
-                subnodesAlreadyProcessed = true;
-            }
-            
             State left = null;
             State right = null;
             
-            if (!subnodesAlreadyProcessed) {
-                boolean oldNot = not;
+            switch (kind) {
+                case CONDITIONAL_AND:
+                case AND: case OR: case XOR:
+                    scan(node.getLeftOperand(), p);
+                    scan(node.getRightOperand(), p);
+                    break;
 
-                not = false;
-                left = scan(node.getLeftOperand(), p);
-                right = scan(node.getRightOperand(), p);
-                not = oldNot;
+                case CONDITIONAL_OR: {
+                    HashMap<VariableElement, State> orig = new HashMap<VariableElement, NPECheck.State>(variable2State);
+
+                    scan(node.getLeftOperand(), p);
+
+                    Map<VariableElement, State> afterLeft = variable2State;
+
+                    variable2State = orig;
+
+                    boolean oldNot = not;
+                    boolean oldDoNotRecord = doNotRecord;
+
+                    not ^= true;
+                    doNotRecord = true;
+                    scan(node.getLeftOperand(), p);
+                    not = oldNot;
+                    doNotRecord = oldDoNotRecord;
+
+                    scan(node.getRightOperand(), p);
+
+                    mergeIntoVariable2State(afterLeft);
+                    break;
+                }
+                
+                default: {
+                    boolean oldNot = not;
+                    not = false;
+                    left = scan(node.getLeftOperand(), p);
+                    right = scan(node.getRightOperand(), p);
+                    not = oldNot;
+                }
             }
             
             if (kind == Kind.EQUAL_TO) {

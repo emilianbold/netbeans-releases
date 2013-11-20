@@ -529,8 +529,7 @@ public final class CreateElement implements ErrorRule<Void> {
             return Collections.<Fix>emptyList();
         }
         
-        if (superType != null && 
-            (superType.getKind() == TypeKind.OTHER || superType.getKind() == TypeKind.TYPEVAR)) {
+        if (superType != null && (superType.getKind() == TypeKind.OTHER)) {
             return Collections.<Fix>emptyList();
         }
 
