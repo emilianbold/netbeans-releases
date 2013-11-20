@@ -153,48 +153,48 @@ public class APTTraceUtils {
         return buf.toString();
     }
     
-    private static String decode(String text) {
-        char c, c1, c2, c3, c4, c5;
-        StringBuilder n = new StringBuilder();
-        for (int i = 0; i < text.length(); i++) {
-            c = text.charAt(i);
-            if (c == '&') {
-                c1 = text.charAt(i + 1);
-                c2 = text.charAt(i + 2);
-                c3 = text.charAt(i + 3);
-                c4 = text.charAt(i + 4);
-                c5 = text.charAt(i + 5);
-
-                if (c1 == 'a' && c2 == 'm' && c3 == 'p' && c4 == ';') {
-                    n.append("&"); // NOI18N
-                    i += 5;
-                }
-                else if (c1 == 'l' && c2 == 't' && c3 == ';') {
-                    n.append("<"); // NOI18N
-                    i += 4;
-                }
-                else if (c1 == 'g' && c2 == 't' && c3 == ';') {
-                    n.append(">"); // NOI18N
-                    i += 4;
-                }
-                else if (c1 == 'q' && c2 == 'u' && c3 == 'o' &&
-                    c4 == 't' && c5 == ';') {
-                    n.append("\""); // NOI18N
-                    i += 6;
-                }
-                else if (c1 == 'a' && c2 == 'p' && c3 == 'o' &&
-                    c4 == 's' && c5 == ';') {
-                    n.append("'"); // NOI18N
-                    i += 6;
-                }
-                else
-                    n.append("&"); // NOI18N
-            }
-            else
-                n.append(c);
-        }
-        return new String(n);
-    }
+//    private static String decode(String text) {
+//        char c, c1, c2, c3, c4, c5;
+//        StringBuilder n = new StringBuilder();
+//        for (int i = 0; i < text.length(); i++) {
+//            c = text.charAt(i);
+//            if (c == '&') {
+//                c1 = text.charAt(i + 1);
+//                c2 = text.charAt(i + 2);
+//                c3 = text.charAt(i + 3);
+//                c4 = text.charAt(i + 4);
+//                c5 = text.charAt(i + 5);
+//
+//                if (c1 == 'a' && c2 == 'm' && c3 == 'p' && c4 == ';') {
+//                    n.append("&"); // NOI18N
+//                    i += 5;
+//                }
+//                else if (c1 == 'l' && c2 == 't' && c3 == ';') {
+//                    n.append("<"); // NOI18N
+//                    i += 4;
+//                }
+//                else if (c1 == 'g' && c2 == 't' && c3 == ';') {
+//                    n.append(">"); // NOI18N
+//                    i += 4;
+//                }
+//                else if (c1 == 'q' && c2 == 'u' && c3 == 'o' &&
+//                    c4 == 't' && c5 == ';') {
+//                    n.append("\""); // NOI18N
+//                    i += 6;
+//                }
+//                else if (c1 == 'a' && c2 == 'p' && c3 == 'o' &&
+//                    c4 == 's' && c5 == ';') {
+//                    n.append("'"); // NOI18N
+//                    i += 6;
+//                }
+//                else
+//                    n.append("&"); // NOI18N
+//            }
+//            else
+//                n.append(c);
+//        }
+//        return new String(n);
+//    }
 
     private static String encode(String text) {
         char c;

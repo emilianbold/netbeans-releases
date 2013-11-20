@@ -55,12 +55,12 @@ public final class APTCommentToken extends APTTokenAbstact {
     public APTCommentToken() {
     }
     
-    protected int type = INVALID_TYPE; // we have two kinds of comments :(
-    protected int offset = 0;
-    protected int length;
-    protected int line;
-    protected int column;
-    protected int endLine;
+    private int type = INVALID_TYPE; // we have two kinds of comments :(
+    private int offset = 0;
+    private int length;
+    private int line;
+    private int column;
+    private int endLine;
 
     @Override
     public String getText() {
