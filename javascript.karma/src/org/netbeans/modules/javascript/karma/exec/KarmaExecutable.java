@@ -63,7 +63,7 @@ import org.netbeans.modules.javascript.karma.browsers.Browser;
 import org.netbeans.modules.javascript.karma.browsers.Browsers;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferencesValidator;
-import org.netbeans.modules.javascript.karma.run.RunInfo;
+import org.netbeans.modules.javascript.karma.run.KarmaRunInfo;
 import org.netbeans.modules.javascript.karma.run.TestRunner;
 import org.netbeans.modules.javascript.karma.ui.customizer.KarmaCustomizer;
 import org.netbeans.modules.javascript.karma.util.ExternalExecutable;
@@ -123,10 +123,10 @@ public final class KarmaExecutable {
         "KarmaExecutable.start=Karma ({0})",
     })
     @CheckForNull
-    public Future<Integer> start(int port, RunInfo runInfo) {
+    public Future<Integer> start(int port, KarmaRunInfo karmaRunInfo) {
         List<String> params = new ArrayList<>(4);
         params.add(START_COMMAND);
-        params.add(runInfo.getNbConfigFile());
+        params.add(karmaRunInfo.getNbConfigFile());
         params.add(PORT_PARAMETER);
         params.add(Integer.toString(port));
         final CountDownLatch countDownLatch = new CountDownLatch(1);
@@ -138,8 +138,8 @@ public final class KarmaExecutable {
         };
         Future<Integer> task = getExecutable(Bundle.KarmaExecutable_start(ProjectUtils.getInformation(project).getDisplayName()), getProjectDir())
                 .additionalParameters(params)
-                .environmentVariables(runInfo.getEnvVars())
-                .run(getStartDescriptor(runInfo, countDownTask));
+                .environmentVariables(karmaRunInfo.getEnvVars())
+                .run(getStartDescriptor(karmaRunInfo, countDownTask));
         assert task != null : karmaPath;
         try {
             countDownLatch.await(15, TimeUnit.SECONDS);
@@ -175,13 +175,13 @@ public final class KarmaExecutable {
                 .noOutput(false);
     }
 
-    private ExecutionDescriptor getStartDescriptor(RunInfo runInfo, Runnable serverStartTask) {
+    private ExecutionDescriptor getStartDescriptor(KarmaRunInfo karmaRunInfo, Runnable serverStartTask) {
         return new ExecutionDescriptor()
                 .frontWindow(false)
                 .frontWindowOnError(false)
                 .outLineBased(true)
                 .errLineBased(true)
-                .outConvertorFactory(new ServerLineConvertorFactory(runInfo, serverStartTask))
+                .outConvertorFactory(new ServerLineConvertorFactory(karmaRunInfo, serverStartTask))
                 .postExecution(serverStartTask);
     }
 
@@ -208,10 +208,10 @@ public final class KarmaExecutable {
         private final LineConvertor serverLineConvertor;
 
 
-        public ServerLineConvertorFactory(RunInfo runInfo, Runnable startFinishedTask) {
-            assert runInfo != null;
+        public ServerLineConvertorFactory(KarmaRunInfo karmaRunInfo, Runnable startFinishedTask) {
+            assert karmaRunInfo != null;
             assert startFinishedTask != null;
-            serverLineConvertor = new ServerLineConvertor(runInfo, startFinishedTask);
+            serverLineConvertor = new ServerLineConvertor(karmaRunInfo, startFinishedTask);
         }
 
         @Override
@@ -225,7 +225,7 @@ public final class KarmaExecutable {
 
         private static final String NB_BROWSERS = "$NB$netbeans browsers "; // NOI18N
 
-        private final RunInfo runInfo;
+        private final KarmaRunInfo karmaRunInfo;
         private final Runnable startFinishedTask;
         private final TestRunner testRunner;
 
@@ -236,22 +236,22 @@ public final class KarmaExecutable {
         private int connectedBrowsers = 0;
 
 
-        public ServerLineConvertor(RunInfo runInfo, Runnable startFinishedTask) {
-            assert runInfo != null;
+        public ServerLineConvertor(KarmaRunInfo karmaRunInfo, Runnable startFinishedTask) {
+            assert karmaRunInfo != null;
             assert startFinishedTask != null;
-            this.runInfo = runInfo;
+            this.karmaRunInfo = karmaRunInfo;
             this.startFinishedTask = startFinishedTask;
-            testRunner = new TestRunner(runInfo);
+            testRunner = new TestRunner(karmaRunInfo);
         }
 
         @Override
         public List<ConvertedLine> convert(String line) {
             // info
             if (firstLine
-                    && line.contains(runInfo.getNbConfigFile())) {
+                    && line.contains(karmaRunInfo.getNbConfigFile())) {
                 firstLine = false;
                 return Collections.singletonList(ConvertedLine.forText(
-                        line.replace(runInfo.getNbConfigFile(), runInfo.getProjectConfigFile()), null));
+                        line.replace(karmaRunInfo.getNbConfigFile(), karmaRunInfo.getProjectConfigFile()), null));
             }
             // server start
             if (browsers == null
