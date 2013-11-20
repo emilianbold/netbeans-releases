@@ -46,26 +46,26 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.bugtracking.tasks.SchedulingPickerImpl;
 
 /**
- * Provides a component for setting and updating task scheduling info. The UI
- * component can be placed into a task editor, get the component from
+ * Provides a component for setting and updating Issue schedule info. The UI
+ * component can be placed into an Issue editor, get the component from
  * {@link #getComponent()}.
  *
  * @author Ondrej Vrabec
  */
-public final class SchedulingPicker {
+public final class SchedulePicker {
 
     private final SchedulingPickerImpl impl;
 
     /**
      * Creates an instance of the picker.
      */
-    public SchedulingPicker () {
+    public SchedulePicker () {
         impl = new SchedulingPickerImpl();
     }
 
     /**
      * Returns a UI component that can be placed into a component hierarchy. The
-     * component is able to edit and set task scheduling info.
+     * component is able to edit and set Issue schedule info.
      *
      * @return UI component
      */

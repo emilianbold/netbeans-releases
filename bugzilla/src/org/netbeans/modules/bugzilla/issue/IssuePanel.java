@@ -129,7 +129,7 @@ import org.netbeans.modules.bugtracking.commons.AttachmentsPanel;
 import org.netbeans.modules.bugtracking.commons.LinkButton;
 import org.netbeans.modules.bugtracking.commons.NBBugzillaUtils;
 import org.netbeans.modules.bugtracking.commons.UIUtils;
-import org.netbeans.modules.bugtracking.spi.SchedulingPicker;
+import org.netbeans.modules.bugtracking.spi.SchedulePicker;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue.Attachment;
@@ -209,7 +209,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private Action[] privateSectionActions;
     private final IDEServices.DatePickerComponent dueDatePicker;
     private final IDEServices.DatePickerComponent deadlinePicker;
-    private final SchedulingPicker scheduleDatePicker;
+    private final SchedulePicker scheduleDatePicker;
     private static final NumberFormatter estimateFormatter = new NumberFormatter(new java.text.DecimalFormat("#0")) {
 
         @Override
@@ -274,7 +274,7 @@ public class IssuePanel extends javax.swing.JPanel {
         ((GroupLayout) timetrackingPanel.getLayout()).replace(dummyDeadlineField, deadlinePicker.getComponent());
         GroupLayout layout = (GroupLayout) privatePanel.getLayout();
         dueDatePicker = UIUtils.createDatePickerComponent();
-        scheduleDatePicker = new SchedulingPicker();
+        scheduleDatePicker = new SchedulePicker();
         layout.replace(dummyDueDateField, dueDatePicker.getComponent());
         dueDateLabel.setLabelFor(dueDatePicker.getComponent());
         layout.replace(dummyScheduleDateField, scheduleDatePicker.getComponent());

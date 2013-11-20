@@ -134,7 +134,7 @@ import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.commons.LinkButton;
 import org.netbeans.modules.team.spi.RepositoryUserRenderer;
 import org.netbeans.modules.bugtracking.commons.UIUtils;
-import org.netbeans.modules.bugtracking.spi.SchedulingPicker;
+import org.netbeans.modules.bugtracking.spi.SchedulePicker;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.issue.NbJiraIssue.IssueField;
@@ -213,7 +213,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private static final String ATTRIBUTE_SCHEDULE_DATE = "nb.schedule.date"; //NOI18N
     private final IDEServices.DatePickerComponent privateDueDatePicker;
     private final IDEServices.DatePickerComponent dueDatePicker;
-    private final SchedulingPicker scheduleDatePicker;
+    private final SchedulePicker scheduleDatePicker;
     private static final NumberFormatter estimateFormatter = new NumberFormatter(new java.text.DecimalFormat("#0")) {
 
         @Override
@@ -280,7 +280,7 @@ public class IssuePanel extends javax.swing.JPanel {
         
         GroupLayout layout = (GroupLayout) privateSectionPanel.getLayout();
         privateDueDatePicker = UIUtils.createDatePickerComponent();
-        scheduleDatePicker = new SchedulingPicker();
+        scheduleDatePicker = new SchedulePicker();
         layout.replace(privateDummyDueDateField, privateDueDatePicker.getComponent());
         privateDueDateLabel.setLabelFor(privateDueDatePicker.getComponent());
         layout.replace(dummyScheduleDateField, scheduleDatePicker.getComponent());
