@@ -840,6 +840,58 @@ public final class TreeUtilities {
         return findNameSpan(var.getName().toString(), var);
     }
     
+    /**Find span of the {@link LabeledStatementTree#getLabel()} identifier in the source.
+     * Returns starting and ending offset of the name in the source code that was parsed
+     * (ie. {@link CompilationInfo.getText()}, which may differ from the positions in the source
+     * document if it has been already altered.
+     * 
+     * @param lst labeled statement which name should be searched for
+     * @return the span of the name, or null if cannot be found
+     * @since 0.131
+     */
+    public int[] findNameSpan(LabeledStatementTree lst) {
+        return findNameSpan(lst.getLabel().toString(), lst);
+    }
+    
+    /**Find span of the {@link TypeParameterTree#getName()} identifier in the source.
+     * Returns starting and ending offset of the name in the source code that was parsed
+     * (ie. {@link CompilationInfo.getText()}, which may differ from the positions in the source
+     * document if it has been already altered.
+     * 
+     * @param tpt type parameter which name should be searched for
+     * @return the span of the name, or null if cannot be found
+     * @since 0.131
+     */
+    public int[] findNameSpan(TypeParameterTree tpt) {
+        return findNameSpan(tpt.getName().toString(), tpt);
+    }
+    
+    /**Find span of the {@link LabeledStatementTree#getLabel()} identifier in the source.
+     * Returns starting and ending offset of the name in the source code that was parsed
+     * (ie. {@link CompilationInfo.getText()}, which may differ from the positions in the source
+     * document if it has been already altered.
+     * 
+     * @param brk labeled statement which name should be searched for
+     * @return the span of the name, or null if cannot be found
+     * @since 0.131
+     */
+    public int[] findNameSpan(BreakTree brk) {
+        return findNameSpan(brk.getLabel().toString(), brk);
+    }
+    
+    /**Find span of the {@link LabeledStatementTree#getLabel()} identifier in the source.
+     * Returns starting and ending offset of the name in the source code that was parsed
+     * (ie. {@link CompilationInfo.getText()}, which may differ from the positions in the source
+     * document if it has been already altered.
+     * 
+     * @param cont labeled statement which name should be searched for
+     * @return the span of the name, or null if cannot be found
+     * @since 0.131
+     */
+    public int[] findNameSpan(ContinueTree cont) {
+        return findNameSpan(cont.getLabel().toString(), cont);
+    }
+    
     /**Find span of the {@link MethodTree#getParameters()} parameter list in the source.
      * Returns the position of the opening and closing parentheses of the parameter list
      * in the source code that was parsed (ie. {@link CompilationInfo.getText()}, which

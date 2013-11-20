@@ -51,6 +51,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -62,6 +63,7 @@ import javax.swing.text.Document;
 import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldHierarchyEvent;
 import org.netbeans.api.editor.fold.FoldStateChange;
+import org.netbeans.api.editor.fold.FoldType;
 import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.spi.editor.fold.FoldHierarchyTransaction;
 import org.netbeans.spi.editor.fold.FoldManager;
@@ -168,6 +170,11 @@ public final class FoldHierarchyTransactionImpl {
     
     private int affectedEndOffset;
     
+    /**
+     * Folds that have gone out of sync with hierarchy and have to be reinserted.
+     */
+    private Set<Fold> reinsertSet;
+    
     
     public FoldHierarchyTransactionImpl(FoldHierarchyExecution execution) {
         this.execution = execution;
@@ -200,13 +207,6 @@ public final class FoldHierarchyTransactionImpl {
     public void commit() {
         checkNotCommitted();
 
-        /**
-         * Mark the transaction as committed now
-         * to prevent problems in case one of the listeners fails later.
-         */
-        committed = true;
-        execution.clearActiveTransaction();
-
         if (!isEmpty()) {
             if (LOG.isLoggable(Level.FINEST)) {
                 LOG.finest("FoldHierarchy BEFORE transaction commit:\n" + execution);
@@ -230,6 +230,13 @@ public final class FoldHierarchyTransactionImpl {
 
             } else {
                 addedFolds = EMPTY_FOLDS;
+            }
+            
+            // the following will generate some additions to addedToHierarchySet, but not important
+            if (reinsertSet != null) {
+                for (Fold f : reinsertSet) {
+                    addFold(f);
+                }
             }
 
             FoldStateChange[] stateChanges;
@@ -260,10 +267,17 @@ public final class FoldHierarchyTransactionImpl {
                 execution.checkConsistency();
             }
 
+            committed = true;
+            execution.clearActiveTransaction();
+
             execution.createAndFireFoldHierarchyEvent(
                 removedFolds, addedFolds, stateChanges,
                 affectedStartOffset, affectedEndOffset
             );
+        } else {
+            committed = true;
+            execution.clearActiveTransaction();
+            
         }
     }
 
@@ -519,9 +533,10 @@ public final class FoldHierarchyTransactionImpl {
     }
     
     private boolean isEmpty() {
-        return (fold2StateChange == null || fold2StateChange.size() == 0)
-            && (addedToHierarchySet == null || addedToHierarchySet.size() == 0)
-            && (removedFromHierarchySet == null || removedFromHierarchySet.size() == 0);
+        return (fold2StateChange == null || fold2StateChange.isEmpty())
+            && (addedToHierarchySet == null || addedToHierarchySet.isEmpty())
+            && (removedFromHierarchySet == null || removedFromHierarchySet.isEmpty())
+            && (reinsertSet == null || reinsertSet.isEmpty());
     }
 
     public FoldStateChange getFoldStateChange(Fold fold) {
@@ -546,7 +561,7 @@ public final class FoldHierarchyTransactionImpl {
             LOG.fine("removeFold: " + fold + '\n');
         }
         checkNotCommitted();
-
+        
         Fold parent = fold.getParent();
         if (parent != null) { // present in hierarchy
             int index = parent.getFoldIndex(fold);
@@ -571,17 +586,25 @@ public final class FoldHierarchyTransactionImpl {
         processUnblocked(); // attempt to reinsert unblocked folds
     }
     
+    // for debugging only, set during removeAllFolds()
+    private boolean removeAll;
+    
     /**
      * Remove all present folds in the hierarchy
      * once the managers are going to be switched.
      */
     void removeAllFolds(Fold[] allBlocked) {
-        // First remove all blocked folds 
-        for (int i = allBlocked.length - 1; i >= 0; i--) {
-            removeFold(allBlocked[i]);
+        removeAll = true;
+        try {
+            // First remove all blocked folds 
+            for (int i = allBlocked.length - 1; i >= 0; i--) {
+                removeFold(allBlocked[i]);
+            }
+
+            removeAllChildrenAndSelf(execution.getRootFold());
+        } finally {
+            removeAll = false;
         }
-        
-        removeAllChildrenAndSelf(execution.getRootFold());
     }
     
     private void removeAllChildrenAndSelf(Fold fold) {
@@ -1150,6 +1173,46 @@ public final class FoldHierarchyTransactionImpl {
             }
         }
         unblockedFoldMaxPriority = -1;
+    }
+    
+    /**
+     * Removes the fold from the hierarchy temporarily, and re-adds it at the end of the transaction at the appropriate
+     * position in the tree. This operation preserves Fold identity and could cause less unexpected collapsing when
+     * folds are recomputed.<p/>
+     * The entire fold subtree will be removed from the hierarchy and put to the reinsert set (linked) in the 
+     * 
+     * @param f fold
+     */
+    void reinsertFoldTree(Fold f) {
+        if (reinsertSet != null && reinsertSet.contains(f)) {
+            return;
+        }
+        boolean bl = false;
+        if (f.getParent() == null) {
+            if (execution.isBlocked(f)) {
+                execution.unmarkBlocked(f);
+                bl = true;
+            } else {
+                return;
+            }
+        }
+        if (reinsertSet == null) {
+            reinsertSet = new LinkedHashSet();
+        }
+        if (bl) {
+            reinsertSet.add(f);
+        } else {
+            Collection<Fold> c = new ArrayList<Fold>();
+            ApiPackageAccessor.get().foldTearOut(f, c);
+            for (Fold x : c) {
+                unblockBlocked(x);
+            }
+            reinsertSet.addAll(c);
+        }
+    }
+    
+    boolean isReinserting(Fold f) {
+        return reinsertSet != null && reinsertSet.contains(f);
     }
 
     private void markFoldAddedToHierarchy(Fold fold) {
