@@ -488,6 +488,10 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
                 // this is caused by our CountingSecurityManager being on
                 return false;
             }
+            if (onStack.getName().startsWith("org.openide.util.lookup.implspi.ActiveQueue$Daemon")) {
+                // ignore random Garbage collection kicks-in
+                return false;
+            }
         }
         for (Class<?> onStack : getClassContext()) {
             if (onStack.getName().startsWith("org.eclipse")) {

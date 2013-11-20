@@ -54,28 +54,45 @@ public class DependencyQueueTest extends NbTestCase {
         super(n);
     }
 
-    public void testOffer() {
+    public void testOfferNoDeps() {
         DependencyQueue<String,String> q = new DependencyQueue<String,String>();
         assertEquals(list("1"), q.offer("1", set(), set(), set()));
-        q = new DependencyQueue<String,String>();
+    }
+    
+    public void testOfferApiAndImpl() {
+        DependencyQueue<String, String> q = new DependencyQueue<String,String>();
         assertEquals(list("api"), q.offer("api", set("api"), set(), set()));
         assertEquals(list("impl"), q.offer("impl", set(), set("api"), set()));
-        q = new DependencyQueue<String,String>();
+    }
+    
+    public void testOfferImplRequiresAPI() {
+        DependencyQueue<String, String> q = new DependencyQueue<String,String>();
         assertEquals(list(), q.offer("impl", set(), set("api"), set()));
         assertEquals(list("api", "impl"), q.offer("api", set("api"), set(), set()));
-        q = new DependencyQueue<String,String>();
+    }
+    
+    public void testAPIThatNeedsItsImpl() {
+        DependencyQueue<String, String> q = new DependencyQueue<String,String>();
         assertEquals(list(), q.offer("api", set("api"), set(), set("impl")));
         assertEquals(list(), q.offer("client", set(), set("api"), set()));
         assertEquals(list("api", "impl", "client"), q.offer("impl", set("impl"), set("api"), set()));
-        q = new DependencyQueue<String,String>();
+    }
+    public void testSimpleChain3requires2requires1() {
+        DependencyQueue<String, String> q = new DependencyQueue<String,String>();
         assertEquals(list(), q.offer("3", set("3"), set("2"), set()));
         assertEquals(list(), q.offer("2", set("2"), set("1"), set()));
         assertEquals(list("1", "2", "3"), q.offer("1", set("1"), set(), set()));
-        q = new DependencyQueue<String,String>();
+    }
+    
+    public void test1requires2needs3requires1() {
+        DependencyQueue<String, String> q = new DependencyQueue<String,String>();
         assertEquals(list(), q.offer("1", set("1"), set("2"), set()));
         assertEquals(list(), q.offer("2", set("2"), set(), set("3")));
         assertEquals(list("2", "1", "3"), q.offer("3", set("3"), set("1"), set()));
-        q = new DependencyQueue<String,String>();
+    }
+    
+    public void testAffectedByOrderOnJDK8_1requires2and0_2needs3_3requires1_Oisthere() {
+        DependencyQueue<String, String> q = new DependencyQueue<String,String>();
         assertEquals(list(), q.offer("1", set("1"), set("2", "0"), set()));
         assertEquals(list(), q.offer("2", set("2"), set(), set("3")));
         assertEquals(list(), q.offer("3", set("3"), set("1"), set()));
