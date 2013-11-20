@@ -56,7 +56,8 @@ import java.io.*;
 import org.netbeans.junit.Manager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.mobility.project.TestUtil;
-import org.netbeans.modules.mobility.project.security.MEKeyTool.KeyDetail;
+import org.netbeans.modules.j2me.keystore.MEKeyTool;
+import org.netbeans.modules.j2me.keystore.MEKeyTool.KeyDetail;
 import org.openide.filesystems.FileUtil;
 
 /**

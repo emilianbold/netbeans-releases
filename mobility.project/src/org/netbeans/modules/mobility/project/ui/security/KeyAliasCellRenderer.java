@@ -57,7 +57,7 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JList;
-import org.netbeans.modules.mobility.project.security.KeyStoreRepository;
+import org.netbeans.modules.j2me.keystore.KeyStoreRepository;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;

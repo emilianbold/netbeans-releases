@@ -55,13 +55,6 @@ made subject to such option by the copyright holder.
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="noIconInMenu" boolvalue="true"/>
             </file>
-            <file name="org-netbeans-modules-mobility-project-ui-security-SecurityManagerAction.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.Bundle"/>
-                <attr name="delegate" newvalue="org.netbeans.modules.mobility.project.ui.security.SecurityManagerAction"/>
-                <attr name="displayName" bundlevalue="org.netbeans.modules.mobility.project.ui.security.Bundle#NAME_SecurityManagerAction"/>
-                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="noIconInMenu" boolvalue="true"/>
-            </file>
         </folder>
     </folder>
     <folder name="Projects">
@@ -227,12 +220,6 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="950"/>
             </file>
         </folder>
-    </folder>
-
-    <folder name="Services">
-        <file name="org-netbeans-modules-mobility-project-security-KeyStoreRepository.settings" url="KeyStoreRepository.settings">
-            <attr boolvalue="true" name="hidden"/>
-        </file>
     </folder>
 
     <folder name="Templates">
