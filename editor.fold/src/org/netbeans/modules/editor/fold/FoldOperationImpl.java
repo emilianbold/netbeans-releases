@@ -50,6 +50,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -515,6 +516,7 @@ public final class FoldOperationImpl {
         private Set<Fold>               removedFolds = new HashSet<Fold>();
         private Collection<FoldInfo>    toAdd = new ArrayList<FoldInfo>();
         private Map<FoldInfo, Fold>     currentFolds = new LinkedHashMap<FoldInfo, Fold>();
+        private Map<Fold, FoldInfo>     foldsToUpdate = new IdentityHashMap<Fold, FoldInfo>();
 
         /**
          * Transaction which covers the update
@@ -621,13 +623,6 @@ public final class FoldOperationImpl {
 
         }
         
-        private boolean containsSame(FoldInfo i, Fold f) {
-            if (i == null || f == null || i.getType() != f.getType()) {
-                return false;
-            }
-            return containsOneAnother(i, f);
-        }
-        
         private Fold markRemoveFold(Fold f) {
             toRemove.add(f);
             removedFolds.add(f);
@@ -663,12 +658,23 @@ public final class FoldOperationImpl {
             foldIt = foldIterator();
             infoIt = ll.iterator();
             
-            Fold f = foldIt.hasNext() ? foldIt.next() : null;
-            FoldInfo i = ni();
-            
             tran = openTransaction();
             Document d = getDocument();
             int len = d.getLength();
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "Updating fold hierarchy, doclen = {1}, foldInfos = " + ll, len );
+                Collection c = new ArrayList<Fold>();
+                while (foldIt.hasNext()) {
+                    c.add(foldIt.next());
+                }
+                LOG.log(Level.FINE, "Current ordered folds: " + c);
+                LOG.log(Level.FINE, "Current hierarchy: " + getOperation().getHierarchy());
+                foldIt = foldIterator();
+            }
+            
+            Fold f = foldIt.hasNext() ? foldIt.next() : null;
+            FoldInfo i = ni();
+
             try {
                 while (f != null || i != null) {
                     if (LOG.isLoggable(Level.FINEST)) {
@@ -689,28 +695,12 @@ public final class FoldOperationImpl {
                         continue;
                     }
                     
-                    // the new fold's bounds must conform to its parent, possibly overriden in the currentFolds (parent
-                    // should have been processed earlier)
-                    Fold p = f.getParent();
-                    if (p != null) {
-                        boolean removeAnyway = false;
-
-// existing folds should be nested correctly, if parent ceases to exist, they will be first moved up the hierarchy bottom-up,
-// and only then updated top-down.                       
-//                        if (toRemove.contains(p)) {
-//                            removeAnyway = true;
-//                        } else {
-                            int s = i.getStart();
-                            int e = i.getEnd();
-                            int ps = p.getStartOffset();
-                            int pe = p.getEndOffset();
-                            removeAnyway = s < ps || e > pe;
-//                        }
-                        if (removeAnyway) {
-                            f = markRemoveFold(f);
-                            continue;
-                        }
+                    // ignore folds that have not been changed; the information what folds were actually updated will
+                    // be useful later.
+                    if (isChanged(f, i)) {
+                        foldsToUpdate.put(f, i);
                     }
+                    // all surviving folds should be in the output set
                     currentFolds.put(i, f);
                     i = ni();
                     f = foldIt.hasNext() ? foldIt.next() : null;
@@ -730,9 +720,17 @@ public final class FoldOperationImpl {
                         removeFromHierarchy(fold, tran);
                     }
                 }
-                for (Map.Entry<FoldInfo, Fold> updateEntry : currentFolds.entrySet()) {
-                    FoldInfo fi = updateEntry.getKey();
-                    Fold ff = updateEntry.getValue();
+                for (Map.Entry<Fold, FoldInfo> updateEntry : foldsToUpdate.entrySet()) {
+                    FoldInfo fi = updateEntry.getValue();
+                    Fold ff = updateEntry.getKey();
+                    if (!checkFoldInPlace(ff, fi)) {
+                        LOG.finest("Updated fold does not fit in hierarchy, scheduling reinsertion: " + ff + ", info: " + fi);
+                        // if the fold does not fit the location, it will be removed with the entire subtree. Otherwise it would
+                        // compromise hierarchy constraints after update(x,y) and subsequent add() would not find the appropriate
+                        // place for insertion of new folds.
+                        tran.reinsertFoldTree(ff);
+                    }
+                    // update the data
                     update(ff, fi);
                 }
                 for (FoldInfo info : toAdd) {
@@ -741,32 +739,6 @@ public final class FoldOperationImpl {
                             // invalid fold info; possibly document has changed from the time FoldInfo was created.
                             continue;
                         }
-                        /*
-                        FoldInfos which do not satisfy this condition are filtered out in isValidFold()
-                        if ((info.getEnd() - info.getStart()) < (info.getTemplate().getGuardedStart() + info.getTemplate().getGuardedEnd())) {
-                            Element rootEl = DocumentUtilities.getParagraphRootElement(d);
-                            int startLine = rootEl.getElementIndex(info.getStart());
-                            int endLine = rootEl.getElementIndex(info.getEnd());
-                            int max = rootEl.getElementCount();
-                            
-                            Element sEl = rootEl.getElement(Math.max(0, startLine - 3));
-                            Element eEl = rootEl.getElement(Math.min(max - 1, endLine + 3));
-                            int sOff = sEl.getStartOffset();
-                            int eOff = eEl.getEndOffset();
-                            
-                            String text = d.getText(sOff, eOff - sOff);
-                            int begin = info.getStart() - sOff;
-                            int end = info.getEnd() - sOff;
-                            LOG.log(Level.WARNING, "Illegal fold length, see issue #234289: (end={0} - start={1}) < (guardedStart={2} + guardedEnd={3}). Context is: {4}###{5}###{6}", // NOI18N
-                                    new Object[] { 
-                                        info.getEnd(),  info.getStart(), 
-                                        info.getTemplate().getGuardedStart(),  info.getTemplate().getGuardedEnd(),
-                                        text.substring(0, begin),
-                                        text.substring(begin, begin + info.getEnd() - info.getStart()),
-                                        text.substring(end)
-                                    });
-                        }
-                        */
                         currentFolds.put(info, getOperation().addToHierarchy(
                                 info.getType(), 
                                 info.getStart(), info.getEnd(),
@@ -782,9 +754,124 @@ public final class FoldOperationImpl {
                         Exceptions.printStackTrace(ex);
                     }
                 }
+                if (LOG.isLoggable(Level.FINE)) {
+                    execution.checkConsistency();
+                }
             } finally {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "Updated fold hierarchy: " + getOperation().getHierarchy());
+                }
                 tran.commit();
             }
+        }
+        
+        /**
+         * Determines if FoldInfo changes the fold in some way. PENDING - extract to some functional interface,
+         * as if FoldInfo is expanded in the future, the comparison should be as well
+         */
+        private boolean isChanged(Fold f, FoldInfo info) {
+            int fs = f.getStartOffset();
+            int fe = f.getEndOffset();
+            boolean c = f.isCollapsed();
+            String fd = f.getDescription();
+            
+            if (fs != info.getStart() || fe != info.getEnd()) {
+                return true;
+            }
+            if (info.getCollapsed() != null && c != info.getCollapsed()) {
+                return true;
+            }
+            return !fd.equals(getInfoDescription(info));
+        }
+        
+        private String getInfoDescription(FoldInfo info) {
+            String desc = info.getDescriptionOverride();
+            if (desc == null) {
+                desc = info.getTemplate().getDescription();
+            }
+            return desc;
+        }
+        
+        private int getUpdatedFoldStart(Fold f) {
+            FoldInfo update = foldsToUpdate.get(f);
+            if (update == null) {
+                return f.getStartOffset();
+            } else {
+                return update.getStart();
+            }
+        }
+        
+        private int getUpdatedFoldEnd(Fold f) {
+            FoldInfo update = foldsToUpdate.get(f);
+            if (update == null) {
+                return f.getEndOffset();
+            } else {
+                return update.getEnd();
+            }
+        }
+        
+        /**
+         * Checks if the fold will fit in its place even after updates are done.
+         * 
+         * @param f the existing fold
+         * @param info the future state of the fold
+         * @return true, if the fold may remain as it is, or false if it needs to be reinserted. 
+         */
+        private boolean checkFoldInPlace(Fold f, FoldInfo info) {
+            if (getHierarchy().getRootFold() == f) {
+                // root fold is always OK
+                return true;
+            }
+            Fold parent = f.getParent();
+            
+            // check if the fold's boundary does not cross its parent
+            if (parent == null) {
+                // return false, if the fold is blocked - will be also reinserted, since it has been updated somehow.
+                assert execution.isBlocked(f) || tran.isReinserting(f);
+                return !execution.isBlocked(f);
+            }
+            int s = getUpdatedFoldStart(parent);
+            int e = getUpdatedFoldEnd(parent);
+            
+            int is = info.getStart(), ie = info.getEnd();
+            
+            if (is < s || ie > e) {
+                return false;
+            }
+            
+            // check if the fold does not cross its siblings
+            int index = parent.getFoldIndex(f);
+            if (index > 0) {
+                Fold prev = parent.getFold(index - 1);
+                e = getUpdatedFoldEnd(prev);
+                if (is < e) {
+                    return false;
+                }
+            }
+            if (index < parent.getFoldCount() - 1) {
+                Fold next = parent.getFold(index + 1);
+                s = getUpdatedFoldStart(next);
+                if (ie > s) {
+                    return false;
+                }
+            }
+            
+            // last: if the fold has some children && the start/end crosses the 1st child or last child
+            int cc = f.getFoldCount();
+            if (cc > 0) {
+                Fold c1 = f.getFold(0);
+                s = getUpdatedFoldStart(c1);
+                if (is > s) {
+                    return false;
+                }
+                Fold c2 = cc > 1 ? f.getFold(cc - 1) : c1;
+                e = getUpdatedFoldEnd(c2);
+                if (ie < e) {
+                    return false;
+                }
+            }
+            
+            return true;
         }
         
         public Fold update(Fold f, FoldInfo info) throws BadLocationException {
@@ -823,10 +910,7 @@ public final class FoldOperationImpl {
                 LOG.warning("Updated end offset < start offset, dumping fold hierarchy: " + execution);
                 LOG.warning("FoldInfo: " + info + ", fold: " + f);
             }
-            String desc = info.getDescriptionOverride();
-            if (desc == null) {
-                desc = info.getTemplate().getDescription();
-            }
+            String desc = getInfoDescription(info);
             // sanity check
             Fold p = f.getParent();
             if (p != null) {
@@ -871,7 +955,7 @@ public final class FoldOperationImpl {
             }
             return fsch = tran.getFoldStateChange(f);
         }
-
+        
     }
     
     public String toString() {

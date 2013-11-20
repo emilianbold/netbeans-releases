@@ -957,6 +957,49 @@ public class Utilities {
 
         return null;
     }
+    
+    /**
+     * Finds the top-level block or expression that contains the 'from' path.
+     * The result could be a 
+     * <ul>
+     * <li>BlockTree representing method body
+     * <li>ExpressionTree representing field initializer
+     * <li>BlockTree representing class initializer
+     * <li>ExpressionTree representing lambda expression
+     * <li>BlockTree representing lambda expression
+     * </ul>
+     * @param from start from 
+     * @return nearest enclosing top-level block/expression as defined above.
+     */
+    public static TreePath findTopLevelBlock(TreePath from) {
+        if (from.getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
+            return null;
+        }
+        TreePath save = null;
+        
+        while (from != null) {
+            Tree.Kind k = from.getParentPath().getLeaf().getKind();
+            if (k == Kind.METHOD || k == Kind.LAMBDA_EXPRESSION) {
+                return from;
+            } else if (k == Kind.VARIABLE) {
+                save = from;
+            } else if (TreeUtilities.CLASS_TREE_KINDS.contains(k)) {
+                if (save != null) {
+                    // variable initializer from the previous iteration
+                    return save;
+                }
+                if (from.getLeaf().getKind() == Kind.BLOCK) {
+                    // parent is class, from is block -> initializer
+                    return from;
+                }
+                return null;
+            } else {
+                save = null;
+            }
+            from = from.getParentPath();
+        }
+        return null;
+    }
 
     public static boolean isInConstructor(HintContext ctx) {
         TreePath method = findEnclosingMethodOrConstructor(ctx, ctx.getPath());

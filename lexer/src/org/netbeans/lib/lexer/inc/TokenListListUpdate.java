@@ -235,7 +235,7 @@ final class TokenListListUpdate<T extends TokenId> {
         if (becomeJoining) {
             // Create JTL to init tokens
             tokenListList.setJoinSections(true);
-            tokenListList.joinTokenList();
+            tokenListList.checkCreateJoinTokenList();
         }
         for (int i = 0; i < addedTokenLists.size(); i++) {
             EmbeddedTokenList<?,T> addedEtl = addedTokenLists.get(i);
