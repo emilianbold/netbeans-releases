@@ -74,11 +74,8 @@ public class ClassViewInstaller implements CsmModelStateListener {
     }
     
     private static class ProjectListener implements CsmModelListener {
-        private static ProjectListener instance;
+        private static ProjectListener instance = new ProjectListener();
         private static ProjectListener getInstance() {
-            if (instance==null) {
-                instance = new ProjectListener();
-            }
             return instance;
         }
 

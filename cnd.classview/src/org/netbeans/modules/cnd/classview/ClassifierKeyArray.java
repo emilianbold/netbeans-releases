@@ -176,9 +176,9 @@ public class ClassifierKeyArray extends HostKeyArray implements UpdatebleHost {
         return res;
     }
     
-    private CsmNamespace findNamespace(String nsId){
-        return getProject().findNamespace(nsId);
-    }
+//    private CsmNamespace findNamespace(String nsId){
+//        return getProject().findNamespace(nsId);
+//    }
     
     protected Node createNode(PersistentKey key) {
         ChildrenUpdater updater = getUpdater();

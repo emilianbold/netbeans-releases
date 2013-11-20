@@ -267,9 +267,9 @@ public class NamespaceKeyArray extends HostKeyArray implements UpdatebleHost, Cs
         return (CsmOffsetableDeclaration) declId.getObject();
     }
     
-    private CsmNamespace findNamespace(PersistentKey nsId){
-        return (CsmNamespace) nsId.getObject();
-    }
+//    private CsmNamespace findNamespace(PersistentKey nsId){
+//        return (CsmNamespace) nsId.getObject();
+//    }
     
     protected Node createNode(PersistentKey key) {
         Node node = null;
