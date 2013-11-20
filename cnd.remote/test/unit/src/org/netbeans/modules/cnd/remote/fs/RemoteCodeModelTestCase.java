@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
+import org.netbeans.modules.cnd.repository.support.RepositoryTestUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
@@ -84,7 +85,7 @@ public class RemoteCodeModelTestCase extends RemoteBuildTestBase {
         ModelImpl model = (ModelImpl) CsmModelAccessor.getModel();
         model.startup();
         ModelSupport.instance().startup();
-        RepositoryUtils.cleanCashes();
+        RepositoryTestUtils.deleteDefaultCacheLocation();
     }
 
     @Override

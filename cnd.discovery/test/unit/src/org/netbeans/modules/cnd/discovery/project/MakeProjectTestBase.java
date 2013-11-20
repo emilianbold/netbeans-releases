@@ -69,8 +69,6 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
-import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
@@ -78,8 +76,8 @@ import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
-import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.test.ModelBasedTestCase;
+import org.netbeans.modules.cnd.repository.support.RepositoryTestUtils;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -87,7 +85,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.WizardDescriptor;
 import org.openide.util.Exceptions;
@@ -154,7 +151,7 @@ public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends
     private void startupModel() {
         ModelImpl model = (ModelImpl) CsmModelAccessor.getModel();
         model.startup();
-        RepositoryUtils.cleanCashes();
+        RepositoryTestUtils.deleteDefaultCacheLocation();
     }
 
     @Override
@@ -166,8 +163,7 @@ public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends
     private void shutdownModel() {
         ModelImpl model = (ModelImpl) CsmModelAccessor.getModel();
         model.shutdown();
-        RepositoryUtils.cleanCashes();
-        RepositoryUtils.debugClear();
+        RepositoryTestUtils.deleteDefaultCacheLocation();
     }
 
     protected File detectConfigure(String path){
