@@ -57,7 +57,7 @@ import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
 import org.netbeans.modules.gsf.testrunner.api.RerunType;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
-import org.netbeans.modules.javascript.karma.run.RunInfo;
+import org.netbeans.modules.javascript.karma.run.KarmaRunInfo;
 import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
@@ -104,12 +104,12 @@ public final class KarmaServer {
             fireChange();
             return false;
         }
-        RunInfo runInfo = getRunInfo();
-        if (runInfo == null) {
+        KarmaRunInfo karmaRunInfo = getKarmaRunInfo();
+        if (karmaRunInfo == null) {
             // some error
             return false;
         }
-        server = karmaExecutable.start(port, runInfo);
+        server = karmaExecutable.start(port, karmaRunInfo);
         starting = false;
         if (server != null) {
             started = true;
@@ -178,9 +178,9 @@ public final class KarmaServer {
     }
 
     @CheckForNull
-    private RunInfo getRunInfo() {
+    private KarmaRunInfo getKarmaRunInfo() {
         String projectConfig = getProjectConfigFile();
-        return new RunInfo.Builder(project)
+        return new KarmaRunInfo.Builder(project)
                 .setProjectConfigFile(projectConfig)
                 .setNbConfigFile(getNetBeansKarmaConfig().getAbsolutePath())
                 .setRerunHandler(new RerunHandlerImpl(this))

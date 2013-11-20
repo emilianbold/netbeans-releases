@@ -85,7 +85,7 @@ public final class TestRunner {
     private static final Pattern NAME_DURATION_PATTERN = Pattern.compile(NAME_REGEX + " " + DURATION_REGEX); // NOI18N
     private static final Pattern NAME_DETAILS_DURATION_PATTERN = Pattern.compile(NAME_REGEX + " " + DETAILS_REGEX + " " + DURATION_REGEX); // NOI18N
 
-    private final RunInfo runInfo;
+    private final KarmaRunInfo karmaRunInfo;
     private final AtomicLong browserCount = new AtomicLong();
 
     private TestSession testSession;
@@ -94,9 +94,9 @@ public final class TestRunner {
     private boolean hasTests = false;
 
 
-    public TestRunner(RunInfo runInfo) {
-        assert runInfo != null;
-        this.runInfo = runInfo;
+    public TestRunner(KarmaRunInfo karmaRunInfo) {
+        assert karmaRunInfo != null;
+        this.karmaRunInfo = karmaRunInfo;
     }
 
     public void process(String line) {
@@ -131,8 +131,8 @@ public final class TestRunner {
     })
     private String getOutputTitle() {
         StringBuilder sb = new StringBuilder(30);
-        sb.append(ProjectUtils.getInformation(runInfo.getProject()).getDisplayName());
-        String testFile = runInfo.getTestFile();
+        sb.append(ProjectUtils.getInformation(karmaRunInfo.getProject()).getDisplayName());
+        String testFile = karmaRunInfo.getTestFile();
         if (testFile != null) {
             sb.append(":"); // NOI18N
             sb.append(new File(testFile).getName());
@@ -142,9 +142,9 @@ public final class TestRunner {
 
     private void sessionStarted(String line) {
         assert testSession == null;
-        testSession = new TestSession(getOutputTitle(), runInfo.getProject(), TestSession.SessionType.TEST,
-                new KarmaTestRunnerNodeFactory(new CallStackCallback(runInfo.getProject())));
-        testSession.setRerunHandler(runInfo.getRerunHandler());
+        testSession = new TestSession(getOutputTitle(), karmaRunInfo.getProject(), TestSession.SessionType.TEST,
+                new KarmaTestRunnerNodeFactory(new CallStackCallback(karmaRunInfo.getProject())));
+        testSession.setRerunHandler(karmaRunInfo.getRerunHandler());
         getManager().testStarted(testSession);
     }
 
