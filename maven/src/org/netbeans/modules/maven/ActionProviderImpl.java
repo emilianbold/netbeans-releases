@@ -98,6 +98,7 @@ import org.netbeans.modules.maven.spi.actions.MavenActionsProvider;
 import org.netbeans.modules.maven.spi.actions.ReplaceTokenProvider;
 import org.netbeans.spi.project.ActionProgress;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ProjectContainerProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.SingleMethod;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -663,10 +664,8 @@ public class ActionProviderImpl implements ActionProvider {
             RP.post(new Runnable() {
                 @Override
                 public void run() {
-                    //mkleint: usage of subprojectprovider is correct here
-                    SubprojectProvider subs = project.getLookup().lookup(SubprojectProvider.class);
-                    Set<? extends Project> lst = subs.getSubprojects();
-                    Project[] arr = lst.toArray(new Project[lst.size()]);
+                    Set<Project> res = ProjectUtils.getContainedProjects(project, true);
+                    Project[] arr = res.toArray(new Project[res.size()]);
                     OpenProjects.getDefault().close(arr);
                 }
             });

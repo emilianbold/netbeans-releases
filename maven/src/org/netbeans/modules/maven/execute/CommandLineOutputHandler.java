@@ -79,6 +79,7 @@ import org.netbeans.modules.maven.execute.cmd.ExecMojo;
 import org.netbeans.modules.maven.execute.cmd.ExecProject;
 import org.netbeans.modules.maven.execute.cmd.ExecSession;
 import org.netbeans.modules.maven.options.MavenSettings;
+import org.netbeans.spi.project.ProjectContainerProvider;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -636,8 +637,7 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
 
         @Override public @CheckForNull NbMavenProject find(@NonNull Project root) {
             // XXX EventSpy (#194090) would make this more reliable and efficient
-            //mkleint: usage of subprojectprovider is correct here
-            for (Project module : root.getLookup().lookup(SubprojectProvider.class).getSubprojects()) {
+            for (Project module : root.getLookup().lookup(ProjectContainerProvider.class).getContainedProjects().getProjects()) {
                 if (Thread.interrupted()) {
                     break;
                 }

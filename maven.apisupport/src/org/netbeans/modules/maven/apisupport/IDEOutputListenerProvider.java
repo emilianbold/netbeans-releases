@@ -83,6 +83,7 @@ public class IDEOutputListenerProvider implements OutputProcessor {
         ClassPath[] cp = cpp.getProjectClassPaths(ClassPath.EXECUTE);
         list.addAll(Arrays.asList(cp));
         //for pom packaging projects subprojects/modules matter
+        //TODO for application project it's DependencyProjectProvider, for pom project (run-ide?) it's containerprojectprovider
         SubprojectProvider spp = prj.getLookup().lookup(SubprojectProvider.class);
         if (spp != null) {
             for (Project sub : spp.getSubprojects()) {
