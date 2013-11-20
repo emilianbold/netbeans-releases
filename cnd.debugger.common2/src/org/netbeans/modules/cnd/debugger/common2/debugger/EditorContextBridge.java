@@ -43,8 +43,6 @@
 package org.netbeans.modules.cnd.debugger.common2.debugger;
 
 import java.beans.PropertyChangeListener;
-import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisassemblyUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.filesystems.FileObject;
@@ -57,15 +55,15 @@ public class EditorContextBridge {
     private static final EditorContextDispatcher contextDispatcher = EditorContextDispatcher.getDefault();
 
     public static String getCurrentURL() {
-        return contextDispatcher.getCurrentURLAsString();
+        return contextDispatcher.getMostRecentURLAsString();
     }
 
     public static FileObject getCurrentFileObject() {
-        return contextDispatcher.getCurrentFile();
+        return contextDispatcher.getMostRecentFile();
     }
 
     public static String getCurrentFilePath() {
-        FileObject currentFile = contextDispatcher.getCurrentFile();
+        FileObject currentFile = contextDispatcher.getMostRecentFile();
         if (currentFile != null) {
             return currentFile.getPath();
         }
@@ -73,11 +71,11 @@ public class EditorContextBridge {
     }
 
     public static int getCurrentLineNumber() {
-        return contextDispatcher.getCurrentLineNumber();
+        return contextDispatcher.getMostRecentLineNumber();
     }
     
     public static String getCurrentMIMEType() {
-        FileObject fo = contextDispatcher.getCurrentFile();
+        FileObject fo = contextDispatcher.getMostRecentFile();
         return fo != null ? fo.getMIMEType() : ""; // NOI18N
     }
 
