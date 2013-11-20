@@ -52,6 +52,9 @@ import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.text.Bidi;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 
 /**
  * Utilities related to text layout and TextLayoutPart.
@@ -59,6 +62,9 @@ import java.text.Bidi;
  * @author Miloslav Metelka
  */
 final class TextLayoutUtils {
+    
+    // -J-Dorg.netbeans.modules.editor.lib2.view.TextLayoutUtils.level=FINE
+    private static final Logger LOG = Logger.getLogger(TextLayoutUtils.class.getName());
     
     private TextLayoutUtils() {
         // NO instances
@@ -89,9 +95,22 @@ final class TextLayoutUtils {
             Bidi.requiresBidi(textLayoutText.toCharArray(), 0, textLayoutText.length()))
         {
             width = textLayout.getAdvance();
-        } else { // Compute pixel bounds (with frc equal to textLayout's frc and default bounds)
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("TLUtils.getWidth(\"" + CharSequenceUtilities.debugText(textLayoutText) + // NOI18N
+                        "\"): Using TL.getAdvance()=" + width + // NOI18N
+//                        textLayoutDump(textLayout) + 
+                        '\n');
+            }
+        } else {
+            // Compute pixel bounds (with frc being null - means use textLayout's frc; and with default bounds)
             Rectangle pixelBounds = textLayout.getPixelBounds(null, 0, 0);
             width = (float) pixelBounds.getMaxX();
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("TLUtils.getWidth(\"" + CharSequenceUtilities.debugText(textLayoutText) + // NOI18N
+                        "\"): Using TL.getPixelBounds().getMaxX()=" + width + // NOI18N
+                        textLayoutDump(textLayout) +
+                        '\n');
+            }
         }
 //        width = textLayout.getPixelBounds(null, 0f, 0f).getMaxX();
 //        width = Math.abs(textLayout.getAdvance());
@@ -104,6 +123,12 @@ final class TextLayoutUtils {
         // Ceil the width to avoid rendering artifacts.
         width = (float) Math.ceil(width);
         return width;
+    }
+    
+    private static String textLayoutDump(TextLayout textLayout) {
+        return "\n  TL.getAdvance()=" + textLayout.getAdvance() + // NOI18N
+                "\n  TL.getBounds()=" + textLayout.getBounds() + // NOI18N
+                "\n  TL: " + textLayout; // NOI18N
     }
     
     /**
