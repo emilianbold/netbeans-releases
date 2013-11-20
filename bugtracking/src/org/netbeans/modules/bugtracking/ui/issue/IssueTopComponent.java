@@ -617,7 +617,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     }
 
     private void setNameAndTooltip() throws MissingResourceException {
-        SwingUtilities.invokeLater(new Runnable() {
+        UIUtils.runInAWT(new Runnable() {
             @Override
             public void run() {
                 if(issue != null) {
@@ -638,8 +638,14 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if(evt.getPropertyName().equals(IssueImpl.EVENT_ISSUE_DATA_CHANGED)) {
-            repoPanel.setVisible(false);
-            setNameAndTooltip();
+            UIUtils.runInAWT(new Runnable() {
+                @Override
+                public void run() {
+                    repoPanel.setVisible(false);
+                    setNameAndTooltip();
+                }
+            });
+            
         } else if(evt.getPropertyName().equals(RepositoryRegistry.EVENT_REPOSITORIES_CHANGED)) {
             if(!repositoryComboBox.isEnabled()) {
                 // well, looks like there shuold be only one repository available
