@@ -64,7 +64,7 @@ public final class DistTextIndexLayerFactory implements TextIndexLayerFactory {
     @Override
     public boolean canHandle(final LayerDescriptor layerDescriptor) {
         String scheme = layerDescriptor.getURI().getScheme();
-        return "file".equals(scheme);
+        return "file".equals(scheme);//NOI18N
     }
 
     @Override

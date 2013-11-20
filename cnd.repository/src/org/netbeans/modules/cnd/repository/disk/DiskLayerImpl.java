@@ -72,9 +72,6 @@ public final class DiskLayerImpl {
         fas = new FilesAccessStrategyImpl(layerIndex, cacheDirectory, layerDescriptor);
     }
         
-    public boolean maintain(long timeout) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }    
     
 
     public Collection<LayerKey> removedTableKeySet() {

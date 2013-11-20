@@ -273,7 +273,7 @@ public final class FilesAccessStrategyImpl implements ReadLayerCapability, Write
         //check if not removed already
         if (this.removedKeysFile.keySet().contains(key)) {
             log.log(Level.FINE, " the key with unit id:{0} and behaviour: {1} is "
-                    + "removed from the layer, will not read from the disk", new Object[]{key.getUnitId(), key.getBehavior()});
+                    + "removed from the layer, will not read from the disk", new Object[]{key.getUnitId(), key.getBehavior()});//NOI18N
             return null;
         }
         UnitStorage unitStorage = getUnitStorage(key.getUnitId());

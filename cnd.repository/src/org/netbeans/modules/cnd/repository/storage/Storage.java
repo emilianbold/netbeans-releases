@@ -270,7 +270,7 @@ import org.openide.util.Lookup;
                 return null;
             }
             log.log(Level.FINE, "will get ByteBuffer from the read capability for the key "
-                    + "with unit id:{0} and behaviour: {1}", new Object[]{key.getUnitId(), key.getBehavior()});
+                    + "with unit id:{0} and behaviour: {1}", new Object[]{key.getUnitId(), key.getBehavior()});//NOI18N
             ByteBuffer rawData = layer.getReadCapability().read(layerKey);
             if (rawData != null) {
                 return new RepositoryDataInputStream(
