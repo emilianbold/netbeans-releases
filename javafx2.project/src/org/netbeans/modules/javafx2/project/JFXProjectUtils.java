@@ -1204,19 +1204,21 @@ public final class JFXProjectUtils {
                                 is.close();
                             }
                         }
-                        updateClassPathExtensionProperties(ep);
-                        OutputStream os = null;
-                        FileLock lock = null;
-                        try {
-                            lock = projPropsFO.lock();
-                            os = projPropsFO.getOutputStream(lock);
-                            ep.store(os);
-                        } finally {
-                            if (os != null) {
-                                os.close();
-                            }
-                            if (lock != null) {
-                                lock.releaseLock();
+                        boolean cpExtUpdated = updateClassPathExtensionProperties(ep);
+                        if (cpExtUpdated) {
+                            OutputStream os = null;
+                            FileLock lock = null;
+                            try {
+                                lock = projPropsFO.lock();
+                                os = projPropsFO.getOutputStream(lock);
+                                ep.store(os);
+                            } finally {
+                                if (os != null) {
+                                    os.close();
+                                }
+                                if (lock != null) {
+                                    lock.releaseLock();
+                                }
                             }
                         }
                         return null;
@@ -1507,8 +1509,12 @@ public final class JFXProjectUtils {
         changed = ep.remove(PROPERTY_JAVAFX_SDK) != null ? true : changed;
         Collection<String> extendExtProp = getUpdatedExtensionProperty(ep);
         if(extendExtProp != null && !extendExtProp.isEmpty()) {
-            ep.setProperty(JavaFXPlatformUtils.JAVAFX_CLASSPATH_EXTENSION, getPaths(extendExtProp));
-            changed = true;
+            Collection<String> currentCpExt = getExistingProperty(ep, JavaFXPlatformUtils.JAVAFX_CLASSPATH_EXTENSION);
+            if (!extendExtProp.equals(currentCpExt)) {
+                //update javafx.classpath.extension only in case that current value doesn't contain required jars
+                ep.setProperty(JavaFXPlatformUtils.JAVAFX_CLASSPATH_EXTENSION, getPaths(extendExtProp));
+                changed = true;
+            }
         } else {
             changed = ep.remove(JavaFXPlatformUtils.JAVAFX_CLASSPATH_EXTENSION) != null ? true : changed;
             //ep.remove(JFXProjectProperties.JAVASE_KEEP_JFXRT_ON_CLASSPATH);
@@ -1516,8 +1522,11 @@ public final class JFXProjectUtils {
         Collection<String> extendCPProp = getUpdatedCPProperty(ep, extendExtProp == null || extendExtProp.isEmpty());
         // JAVAC_CLASSPATH to be preserved even if empty (create new project creates it empty by default)
         if(extendCPProp != null) {
-            ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, getPaths(extendCPProp));
-            changed = true;
+            Collection<String> currentJavacCp = getExistingProperty(ep, ProjectProperties.JAVAC_CLASSPATH);
+            if (!extendCPProp.equals(currentJavacCp)) {
+                ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, getPaths(extendCPProp));
+                changed = true;
+            }
         }
         // Remove JavaFX endorsed.classpath entries if they are present (#235380, see also #214386)
         final String endorsedCp = ep.get(ProjectProperties.ENDORSED_CLASSPATH);
