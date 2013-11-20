@@ -483,7 +483,9 @@ public class Actions {
             @Override
             public void stateChanged(ChangeEvent e) {
                 for (TaskNode taskNode : taskNodes) {
-                    taskNode.getTask().setSchedule(scheduleMenu.getScheduleInfo());
+                    if (taskNode.getTask().hasSchedule()) {
+                        taskNode.getTask().setSchedule(scheduleMenu.getScheduleInfo());
+                    }
                 }
                 scheduleMenu.removeChangeListener(this);
             }
