@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.remote.sync;
 
 import java.io.PrintWriter;
+import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
@@ -67,10 +68,9 @@ class RfsSyncFactory extends BaseSyncFactory {
     public static final String ID = "rfs"; //NOI18N
 
     @Override
-    public RemoteSyncWorker createNew( ExecutionEnvironment executionEnvironment,
-            PrintWriter out, PrintWriter err, FileObject privProjectStorageDir, String workingDir,
-            FSPath... files) {
-        return new RfsSyncWorker(executionEnvironment, out, err, privProjectStorageDir, files);
+    public RemoteSyncWorker createNew( ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, 
+            FileObject privProjectStorageDir, String workingDir, List<FSPath> files, List<FSPath> buildResults) {
+        return new RfsSyncWorker(executionEnvironment, out, err, privProjectStorageDir, files, buildResults);
     }
 
     @Override

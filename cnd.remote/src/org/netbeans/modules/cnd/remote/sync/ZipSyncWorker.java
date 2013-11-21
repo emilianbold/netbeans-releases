@@ -51,6 +51,7 @@ import java.io.InterruptedIOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -135,8 +136,8 @@ import org.openide.util.NbBundle;
     }
 
     public ZipSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, 
-            FileObject privProjectStorageDir, FSPath... paths) {
-        super(executionEnvironment, out, err, privProjectStorageDir, paths);
+            FileObject privProjectStorageDir, List<FSPath> paths, List<FSPath> buildResults) {
+        super(executionEnvironment, out, err, privProjectStorageDir, paths, buildResults);
     }
 
     private static File getTemp() {

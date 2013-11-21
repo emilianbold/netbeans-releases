@@ -53,6 +53,7 @@ import java.io.PrintWriter;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.concurrent.ExecutionException;
@@ -93,10 +94,10 @@ import org.openide.util.RequestProcessor;
     private ErrorReader errorReader;
 
     public RfsSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, 
-            FileObject privProjectStorageDir, FSPath... paths) {
-        super(executionEnvironment, out, err, privProjectStorageDir, paths);
+            FileObject privProjectStorageDir, List<FSPath> paths, List<FSPath> buildResults) {
+        super(executionEnvironment, out, err, privProjectStorageDir, paths, buildResults);
     }
-
+ 
     @Override
     public boolean startup(Map<String, String> env2add) {
 
@@ -193,7 +194,7 @@ import org.openide.util.RequestProcessor;
         final BufferedReader rcInputStreamReader = ProcessUtils.getReader(rcInputStream, executionEnvironment.isRemote());
         final PrintWriter rcOutputStreamWriter = ProcessUtils.getWriter(rcOutputStream, executionEnvironment.isRemote());
         localController = new RfsLocalController(
-                executionEnvironment, files, remoteController, rcInputStreamReader,
+                executionEnvironment, files, buildResults, remoteController, rcInputStreamReader,
                 rcOutputStreamWriter, err, privProjectStorageDir);
 
         if (!localController.init()) {

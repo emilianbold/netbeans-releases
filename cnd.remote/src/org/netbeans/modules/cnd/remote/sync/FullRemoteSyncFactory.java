@@ -44,6 +44,8 @@ package org.netbeans.modules.cnd.remote.sync;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.util.Collections;
+import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
@@ -67,9 +69,8 @@ public class FullRemoteSyncFactory extends BaseSyncFactory {
     private final PathMap pathMapper = new FullRemotePathMap();
 
     @Override
-    public RemoteSyncWorker createNew( ExecutionEnvironment executionEnvironment,
-            PrintWriter out, PrintWriter err, FileObject privProjectStorageDir, String workingDir,
-            FSPath... files) {
+    public RemoteSyncWorker createNew( ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, 
+            FileObject privProjectStorageDir, String workingDir, List<FSPath> files, List<FSPath> buildResults) {
         return new FullRemoteSyncWorker(executionEnvironment, out, err, files);
     }
 
@@ -77,7 +78,7 @@ public class FullRemoteSyncFactory extends BaseSyncFactory {
     public RemoteSyncWorker createNew(Project project, PrintWriter out, PrintWriter err) {
         ExecutionEnvironment execEnv = RemoteProjectSupport.getExecutionEnvironment(project);
         FileSystem fileSystem = RemoteFileUtil.getProjectSourceFileSystem(project);
-        return new FullRemoteSyncWorker(execEnv, out, err, FSPath.toFSPath(project.getProjectDirectory()));
+        return new FullRemoteSyncWorker(execEnv, out, err, Collections.singletonList(FSPath.toFSPath(project.getProjectDirectory())));
     }
 
     @Override

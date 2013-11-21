@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.remote.sync;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.util.Collections;
 import junit.framework.Test;
 import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.utils.FSPath;
@@ -65,7 +66,8 @@ public class FtpSyncWorkerTestCase extends AbstractSyncWorkerTestCase {
     BaseSyncWorker createWorker(File src, ExecutionEnvironment execEnv, 
             PrintWriter out, PrintWriter err, FileObject privProjectStorageDir) {
         return new FtpSyncWorker(execEnv, out, err, privProjectStorageDir,
-                FSPath.toFSPath(FileUtil.toFileObject(FileUtil.normalizeFile(src))));
+                Collections.singletonList(FSPath.toFSPath(FileUtil.toFileObject(FileUtil.normalizeFile(src)))),
+                Collections.<FSPath>emptyList());
     }
 
     @Override

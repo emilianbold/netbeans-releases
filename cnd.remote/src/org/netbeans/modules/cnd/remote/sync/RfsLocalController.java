@@ -96,7 +96,7 @@ import org.openide.util.RequestProcessor;
         KILLED
     }
 
-    public RfsLocalController(ExecutionEnvironment executionEnvironment, File[] files,
+    public RfsLocalController(ExecutionEnvironment executionEnvironment, File[] files, List<File> buildResults,
             RfsSyncWorker.RemoteProcessController remoteController, BufferedReader requestStreamReader, PrintWriter responseStreamWriter, PrintWriter err,
             FileObject privProjectStorageDir) throws IOException {
         super("RFS local controller thread " + executionEnvironment); //NOI18N
@@ -109,7 +109,7 @@ import org.openide.util.RequestProcessor;
         this.fileData = FileData.get(privProjectStorageDir, executionEnvironment);
         this.logger = new RemoteUtil.PrefixedLogger("LC[" + executionEnvironment + "]"); //NOI18N
         this.filter = new SharabilityFilter();
-        this.fileCollector = new FileCollector(files, logger, mapper, filter, fileData, execEnv, err);
+        this.fileCollector = new FileCollector(files, buildResults, logger, mapper, filter, fileData, execEnv, err);
     }
 
     private void respond_ok() {

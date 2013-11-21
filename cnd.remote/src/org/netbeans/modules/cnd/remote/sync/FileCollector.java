@@ -51,6 +51,7 @@ import java.io.InterruptedIOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -91,7 +92,8 @@ import org.openide.util.Utilities;
  */
 /*package*/ class FileCollector {
 
-    private final File[] files;
+    private final List<File> files;
+    private final List<File> buildResults;
     private final RemoteUtil.PrefixedLogger logger;
     private final RemotePathMap mapper;
     private final SharabilityFilter filter;
@@ -112,9 +114,11 @@ import org.openide.util.Utilities;
 
     private static final RequestProcessor RP = new RequestProcessor("RfsLocalController", 1); // NOI18N
 
-    public FileCollector(File[] files, RemoteUtil.PrefixedLogger logger, RemotePathMap mapper, SharabilityFilter filter,
-            FileData fileData, ExecutionEnvironment execEnv, PrintWriter err) {
-        this.files = files;
+    public FileCollector(File[] files, List<File> buildResults, RemoteUtil.PrefixedLogger logger, RemotePathMap mapper, SharabilityFilter filter,
+            FileData fileData, ExecutionEnvironment execEnv, PrintWriter err) {        
+        this.files = new ArrayList<>(files.length);
+        this.files.addAll(Arrays.asList(files));
+        this.buildResults = new ArrayList<>(buildResults);
         this.logger = logger;
         this.mapper = mapper;
         this.filter = filter;
@@ -445,7 +449,12 @@ import org.openide.util.Utilities;
         int oldSize = remoteUpdates.size();
 
         StringBuilder remoteDirs = new StringBuilder();
-        for (File file : files) {
+        
+        List<File> filesAndBuildResults = new ArrayList<>(files.size()+ buildResults.size());
+        filesAndBuildResults.addAll(files);
+        filesAndBuildResults.addAll(buildResults);
+        
+        for (File file : filesAndBuildResults) {
             if (file.isDirectory()) {
                 String rPath = mapper.getRemotePath(file.getAbsolutePath(), false);
                 if (rPath == null) {
@@ -481,6 +490,9 @@ import org.openide.util.Utilities;
                 extOptions.append(" -o "); // NOI18N
             }
             extOptions.append(" -name Makefile"); // NOI18N
+            for (File file : buildResults) {
+                extOptions.append(" -o -name ").append(file.getName()); // NOI18N
+            }
         }
 
         String script = String.format(
@@ -503,11 +515,17 @@ import org.openide.util.Utilities;
                     logger.log(Level.FINE, "Can't find local path for %s", remoteFile);
                 } else {
                     File localFile = CndFileUtils.createLocalFile(localPath);
-                    if (fileData == null || fileData.getFileInfo(localFile) == null) { // this is only for files we don't control
+                    boolean add = false;
+                    if (buildResults.contains(localFile)) {
+                        add = true;
+                    } else if (fileData == null || fileData.getFileInfo(localFile) == null) { // this is only for files we don't control
                         if (filter.accept(localFile)) {
-                            remoteUpdates.add(localFile);
-                            RfsListenerSupportImpl.getInstanmce(execEnv).fireFileChanged(localFile, remoteFile);
+                            add = true;
                         }
+                    }
+                    if (add) {
+                        remoteUpdates.add(localFile);
+                        RfsListenerSupportImpl.getInstanmce(execEnv).fireFileChanged(localFile, remoteFile);
                     }
                 }
             }

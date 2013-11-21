@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.remote.sync;
 
 import java.io.PrintWriter;
+import java.util.List;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
@@ -63,10 +64,9 @@ public class SharedSyncFactory extends BaseSyncFactory {
     public static final String ID = "shared"; //NOI18N
 
     @Override
-    public RemoteSyncWorker createNew( ExecutionEnvironment executionEnvironment,
-            PrintWriter out, PrintWriter err, FileObject privProjectStorageDir, String workingDir,
-            FSPath... files) {
-        return new SharedSyncWorker(executionEnvironment, out, err, workingDir, files);
+    public RemoteSyncWorker createNew( ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, 
+            FileObject privProjectStorageDir, String workingDir, List<FSPath> files, List<FSPath> buildResults) {
+        return new SharedSyncWorker(executionEnvironment, out, err, workingDir, files, buildResults);
     }
 
     @Override

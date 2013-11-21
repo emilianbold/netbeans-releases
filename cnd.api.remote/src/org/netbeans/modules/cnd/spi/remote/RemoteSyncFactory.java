@@ -44,7 +44,9 @@ package org.netbeans.modules.cnd.spi.remote;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -84,9 +86,16 @@ public abstract class RemoteSyncFactory {
      *
      * @return new instance of the RemoteSyncWorker
      */
-    public abstract RemoteSyncWorker createNew(ExecutionEnvironment executionEnvironment, 
+    public abstract RemoteSyncWorker createNew(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, 
+            FileObject privProjectStorageDir, String workingDir, List<FSPath> files, List<FSPath> buildResults);
+    
+    @Deprecated
+    public RemoteSyncWorker createNew(ExecutionEnvironment executionEnvironment, 
             PrintWriter out, PrintWriter err, FileObject privProjectStorageDir, String workingDir, 
-            FSPath... files);
+            FSPath... files) {
+        return createNew(executionEnvironment, out, err, privProjectStorageDir, workingDir,                
+                Arrays.asList(files), Collections.<FSPath>emptyList());
+    }
 
     /**
      * Creates an instance of RemoteSyncWorker.
