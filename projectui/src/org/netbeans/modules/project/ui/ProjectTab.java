@@ -819,7 +819,7 @@ public class ProjectTab extends TopComponent
                     Rectangle projectNodeCoordinates = tree.getPathBounds(path);
                     Rectangle prjTabScrollCoordinates = tree.getVisibleRect();
                     //Constant 0.75 was choosed, b/c sometimes is project node partially visible
-                    if (prjTabScrollCoordinates.y <= ( projectNodeCoordinates.y + (projectNodeCoordinates.height * 0.75) )) {
+                    if (prjTabScrollCoordinates.y <= ( projectNodeCoordinates.y + (projectNodeCoordinates.height * 0.5) )) {
                         nodeSelectionProjectPanel.minimize();
                     } else {
                         nodeSelectionProjectPanel.maximize();
@@ -917,16 +917,18 @@ public class ProjectTab extends TopComponent
                                                 break;
                                             }
                                         }
-                                        Project projectOwner = FileOwnerQuery.getOwner(activeFile);
-                                        Node projectNode = null;
-                                        for (Node node : children.getNodes(true)) {
-                                            if(projectOwner.equals(node.getLookup().lookup(Project.class))) {
-                                                projectNode = node;
-                                                break;
+                                        if ( activeFile != null ) {
+                                            Project projectOwner = FileOwnerQuery.getOwner(activeFile);
+                                            Node projectNode = null;
+                                            for (Node node : children.getNodes(true)) {
+                                                if(projectOwner.equals(node.getLookup().lookup(Project.class))) {
+                                                    projectNode = node;
+                                                    break;
+                                                }
                                             }
+                                            tab.manager.setSelectedNodes(new Node[] {projectNode});
+                                            tab.btv.scrollToNode(projectNode);
                                         }
-                                        tab.manager.setSelectedNodes(new Node[] {projectNode});
-                                        tab.btv.scrollToNode(projectNode);
                                     } catch (PropertyVetoException e) {
                                         // Node found but can't be selected
                                     }
@@ -1023,7 +1025,7 @@ public class ProjectTab extends TopComponent
             if( selectedNodes != null && selectedNodes.length > 0 ) {
                 Node selectedNode = selectedNodes[0];
                 Node rootNode = ProjectTab.this.manager.getRootContext();
-                while ( !selectedNode.getParentNode().equals(rootNode)) {
+                while ( selectedNode.getParentNode() != null && !selectedNode.getParentNode().equals(rootNode)) {
                     selectedNode = selectedNode.getParentNode();
                 }
                 projectNode = selectedNode;

@@ -214,23 +214,11 @@ public class SvnClientFactory {
     private void setup() {
         try {
             exception = null;
-            SvnModuleConfig config = SvnModuleConfig.getDefault();
-            String factoryType = config.getGlobalSvnFactory();
             // ping config file copying
             SvnConfigFiles.getInstance();
 
-            if ((factoryType == null || factoryType.trim().isEmpty())
-                    && config.isForcedCommandlineClient()) {
-                // fallback to commandline only if factoryType is not set explicitely
-                factoryType = FACTORY_TYPE_COMMANDLINE;
-                LOG.log(Level.INFO, "setup: using commandline as the client - saved in preferences");
-            } else {
-                config.setForceCommnandlineClient(false);
-            }
+            String factoryType = getDefaultFactoryType(false);
             
-            if(factoryType == null || factoryType.trim().equals("")) {
-                factoryType = config.getPreferredFactoryType(DEFAULT_FACTORY);
-            }
             if (factoryType.trim().equals(FACTORY_TYPE_JAVAHL)) {
                 if(setupJavaHl()) {
                     return;
@@ -519,6 +507,25 @@ public class SvnClientFactory {
                 LOG.log(Level.INFO, null, ex);
             }
         }
+    }
+    
+    private String getDefaultFactoryType (boolean forcedCommandlineFallbackEnabled) {
+        SvnModuleConfig config = SvnModuleConfig.getDefault();
+        String factoryType = config.getGlobalSvnFactory();
+        if (forcedCommandlineFallbackEnabled 
+                && (factoryType == null || factoryType.trim().isEmpty())
+                && config.isForcedCommandlineClient()) {
+            // fallback to commandline only if factoryType is not set explicitely
+            factoryType = FACTORY_TYPE_COMMANDLINE;
+            LOG.log(Level.INFO, "setup: using commandline as the client - saved in preferences");
+        } else {
+            config.setForceCommnandlineClient(false);
+        }
+
+        if (factoryType == null || factoryType.trim().isEmpty()) {
+            factoryType = config.getPreferredFactoryType(DEFAULT_FACTORY);
+        }
+        return factoryType;
     }
 
     private abstract class ClientAdapterFactory {

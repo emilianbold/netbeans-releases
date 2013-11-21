@@ -77,15 +77,7 @@ public class BrkptsViewActionProvider implements NodeActionsProviderFilter {
             throws UnknownTypeException 
     {
         Action[] actions = original.getActions(node);
-        if (node instanceof LineBreakpoint) {
-            Action[] newActions = new Action [actions.length + 4];
-            newActions [0] = GO_TO_SOURCE_ACTION;
-            newActions [1] = null;
-            System.arraycopy (actions, 0, newActions, 2, actions.length);
-            newActions [newActions.length - 2] = null;
-            newActions [newActions.length - 1] = CUSTOMIZE_ACTION;
-            actions = newActions;
-        } else if (node instanceof AbstractBreakpoint) {
+        if (node instanceof AbstractBreakpoint) {
             Action[] newActions = new Action [actions.length + 2];
             System.arraycopy (actions, 0, newActions, 0, actions.length);
             newActions [newActions.length - 2] = null;
@@ -100,20 +92,9 @@ public class BrkptsViewActionProvider implements NodeActionsProviderFilter {
     public void performDefaultAction(NodeActionsProvider original, Object node) 
         throws UnknownTypeException 
     {
-        if(node instanceof LineBreakpoint) {
-            goToSource((LineBreakpoint) node);
-        } else {
-            original.performDefaultAction(node);
-        }
+        original.performDefaultAction(node);
     }
 
-    private static void goToSource(LineBreakpoint breakpoint ) {
-        Line line = breakpoint.getLine();
-        if (line != null) {
-            line.show(Line.ShowOpenType.REUSE, Line.ShowVisibilityType.FOCUS);
-        }
-    }
-    
     @NbBundle.Messages("CTL_Breakpoint_Customizer_Title=Breakpoint Properties")
     private static void customize(AbstractBreakpoint ab) {
         JComponent c = AbstractBreakpointCustomizer.getCustomizerComponent(ab);
@@ -162,33 +143,6 @@ public class BrkptsViewActionProvider implements NodeActionsProviderFilter {
         d.setVisible (true);
     }
 
-    @NbBundle.Messages("CTL_Breakpoint_GoToSource_Label=Go to Source")
-    private static final Action GO_TO_SOURCE_ACTION = Models.createAction(
-            Bundle.CTL_Breakpoint_GoToSource_Label(), 
-            new GoToSourcePerformer(),
-            Models.MULTISELECTION_TYPE_EXACTLY_ONE
-        );
-
-    private static class GoToSourcePerformer implements Models.ActionPerformer {
-
-        /* (non-Javadoc)
-         * @see org.netbeans.spi.viewmodel.Models.ActionPerformer#isEnabled(java.lang.Object)
-         */
-        @Override
-        public boolean isEnabled( Object arg ) {
-            return true;
-        }
-
-        /* (non-Javadoc)
-         * @see org.netbeans.spi.viewmodel.Models.ActionPerformer#perform(java.lang.Object[])
-         */
-        @Override
-        public void perform( Object[] nodes ) {
-            goToSource((LineBreakpoint) nodes [0]);            
-        }
-        
-    }
-    
     @NbBundle.Messages("CTL_Breakpoint_Customize_Label=Properties")
     private static final Action CUSTOMIZE_ACTION = Models.createAction (
         Bundle.CTL_Breakpoint_Customize_Label(),

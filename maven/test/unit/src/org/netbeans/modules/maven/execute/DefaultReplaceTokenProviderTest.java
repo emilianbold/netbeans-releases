@@ -81,8 +81,8 @@ public class DefaultReplaceTokenProviderTest extends NbTestCase {
         assertEquals("FirstTest.java", ActionProviderImpl.replacements(p, ActionProvider.COMMAND_TEST_SINGLE, Lookups.singleton(d.getFileObject("src/test/java/p1/FirstTest.java"))).get(DefaultReplaceTokenProvider.CLASSNAME_EXT));
         // #212839: multiselections
         assertEquals("p1.FirstTest,p2.deeper.ThirdTest", ActionProviderImpl.replacements(p, ActionProvider.COMMAND_TEST_SINGLE, Lookups.fixed(d.getFileObject("src/test/java/p1/FirstTest.java"), d.getFileObject("src/test/java/p2/deeper/ThirdTest.java"))).get(DefaultReplaceTokenProvider.PACK_CLASSNAME));
-        assertEquals("p1.*Test", ActionProviderImpl.replacements(p, ActionProvider.COMMAND_TEST_SINGLE, Lookups.singleton(d.getFileObject("src/test/java/p1"))).get(DefaultReplaceTokenProvider.PACK_CLASSNAME));
-        assertEquals("p2.deeper.*Test", ActionProviderImpl.replacements(p, ActionProvider.COMMAND_TEST_SINGLE, Lookups.singleton(d.getFileObject("src/test/java/p2/deeper"))).get(DefaultReplaceTokenProvider.PACK_CLASSNAME));
+        assertEquals("p1.**.*Test", ActionProviderImpl.replacements(p, ActionProvider.COMMAND_TEST_SINGLE, Lookups.singleton(d.getFileObject("src/test/java/p1"))).get(DefaultReplaceTokenProvider.PACK_CLASSNAME));
+        assertEquals("p2.deeper.**.*Test", ActionProviderImpl.replacements(p, ActionProvider.COMMAND_TEST_SINGLE, Lookups.singleton(d.getFileObject("src/test/java/p2/deeper"))).get(DefaultReplaceTokenProvider.PACK_CLASSNAME));
         // XXX TBD what should be passed for src/test/java/p2; is p2.*Test (i.e. nonrecursive) OK? If Surefire supports either, do we check for NonrecursiveFolder?
         // XXX test src/main/java selections
         // XXX test selections across groups, or outside groups

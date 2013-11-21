@@ -226,6 +226,7 @@ public class IssuePanel extends javax.swing.JPanel {
         }
 
     };
+    private boolean opened;
     
     public IssuePanel() {
         initComponents();
@@ -525,7 +526,7 @@ public class IssuePanel extends javax.swing.JPanel {
 
     private int oldCommentCount;
     void reloadForm(boolean force) {
-        if (skipReload) {
+        if (skipReload || !opened) {
             return;
         }
         enableComponents(true);
@@ -3696,12 +3697,14 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         restoreSections();
         enableComponents(false);
         issue.opened();
+        opened = true;
     }
     
     void closed() {
         if(issue != null) {
             persistSections();
             commentsPanel.storeSettings();
+            opened = false;
             issue.closed();
         }
     }

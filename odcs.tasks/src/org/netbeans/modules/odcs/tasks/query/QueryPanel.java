@@ -64,7 +64,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.plaf.basic.BasicTreeUI;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.commons.UIUtils;
-import org.netbeans.modules.odcs.tasks.util.ODCSUtil;
 
 /**
  *
@@ -163,7 +162,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 cancelChangesButton.setEnabled(!running);                
             }
         };
-        ODCSUtil.runInAwt(r);
+        UIUtils.runInAWT(r);
     }
 
     /** This method is called from within the constructor to
@@ -1243,7 +1242,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 refreshConfigurationButton.setEnabled(enable);
             }
         };
-        ODCSUtil.runInAwt(r);
+        UIUtils.runInAWT(r);
     }
 
     void switchQueryFields(final boolean showAdvanced) {
@@ -1256,7 +1255,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 byPeople.setVisible(showAdvanced);
             }
         };
-        ODCSUtil.runInAwt(r);
+        UIUtils.runInAWT(r);
     }
 
     void showError(final String text) {
@@ -1272,7 +1271,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 }
             }
         };
-        ODCSUtil.runInAwt(r);
+        UIUtils.runInAWT(r);
     }
 
     void showSearchingProgress(final boolean on, final String text) {
@@ -1288,7 +1287,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 }
             }
         };
-        ODCSUtil.runInAwt(r);
+        UIUtils.runInAWT(r);
     }
 
     void showRetrievingProgress(final boolean on, final String text, final boolean searchPanelVisible) {
@@ -1306,7 +1305,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 }
             }
         };
-        ODCSUtil.runInAwt(r);
+        UIUtils.runInAWT(r);
     }
 
     void showNoContentPanel(boolean on) {
@@ -1328,7 +1327,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 saveButton.setVisible(!b);
             }
         };
-        ODCSUtil.runInAwt(r);
+        UIUtils.runInAWT(r);
     }
 
     void setSaved(final String name, final String lastRefresh) {
@@ -1345,7 +1344,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 setLastRefresh(lastRefresh);
             }
         };
-        ODCSUtil.runInAwt(r);
+        UIUtils.runInAWT(r);
     }
 
     void setLastRefresh(final String lastRefresh) {
@@ -1354,7 +1353,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 lastRefreshDateLabel.setText(lastRefresh);
             }
         };
-        ODCSUtil.runInAwt(r);
+        UIUtils.runInAWT(r);
     }
 
     void hideModificationFields () {
@@ -1369,7 +1368,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 cloneQueryButton.setEnabled(false);
             }
         };
-        ODCSUtil.runInAwt(r);
+        UIUtils.runInAWT(r);
     }
 
     public void focusGained(FocusEvent e) {

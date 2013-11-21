@@ -98,6 +98,7 @@ import org.netbeans.modules.maven.spi.actions.MavenActionsProvider;
 import org.netbeans.modules.maven.spi.actions.ReplaceTokenProvider;
 import org.netbeans.spi.project.ActionProgress;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ProjectContainerProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.SingleMethod;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -335,7 +336,7 @@ public class ActionProviderImpl implements ActionProvider {
         "# {0} - artifactId", "TXT_Test=Test ({0})",
         "# {0} - artifactId", "TXT_Build=Build ({0})"
     })
-    private void setupTaskName(String action, RunConfig config, Lookup lkp) {
+    private static void setupTaskName(String action, RunConfig config, Lookup lkp) {
         assert config instanceof BeanRunConfig;
         BeanRunConfig bc = (BeanRunConfig) config;
         String title;
@@ -344,7 +345,7 @@ public class ActionProviderImpl implements ActionProvider {
         //#118926 prevent NPE, how come the dobj is null?
         String dobjName = dobj != null ? dobj.getName() : ""; //NOI18N
         String prjLabel = MavenSettings.OutputTabName.PROJECT_NAME.equals(MavenSettings.getDefault().getOutputTabName()) 
-                ? ProjectUtils.getInformation(proj).getDisplayName()
+                ? ProjectUtils.getInformation(bc.getProject()).getDisplayName()
                 : prj.getMavenProject().getArtifactId();
         if (MavenSettings.getDefault().isOutputTabShowConfig()) {
             prjLabel = prjLabel + ", " + bc.getProject().getLookup().lookup(M2ConfigProvider.class).getActiveConfiguration().getDisplayName();
@@ -398,21 +399,23 @@ public class ActionProviderImpl implements ActionProvider {
         return ActionToGoalUtils.isActionEnable(convertedAction, proj.getLookup().lookup(NbMavenProjectImpl.class), lookup);
     }
 
-    public Action createCustomMavenAction(String name, NetbeansActionMapping mapping, boolean showUI, Lookup context) {
-        return new CustomAction(name, mapping, showUI, context);
+    public static Action createCustomMavenAction(String name, NetbeansActionMapping mapping, boolean showUI, Lookup context, Project project) {
+        return new CustomAction(name, mapping, showUI, context, project);
     }
 
-    private final class CustomAction extends AbstractAction {
+    private final static class CustomAction extends AbstractAction {
 
         private final NetbeansActionMapping mapping;
         private final boolean showUI;
         private final Lookup context;
+        private final Project proj;
 
-        private CustomAction(String name, NetbeansActionMapping mapp, boolean showUI, Lookup context) {
+        private CustomAction(String name, NetbeansActionMapping mapp, boolean showUI, Lookup context, Project project) {
             mapping = mapp;
             putValue(Action.NAME, name);
             this.showUI = showUI;
             this.context = context;
+            this.proj = project;
         }
 
         @Messages("TIT_Run_Maven=Run Maven")
@@ -610,11 +613,11 @@ public class ActionProviderImpl implements ActionProvider {
                     }
                     final List<Action> acts = new ArrayList<Action>();
                     for (NetbeansActionMapping mapp : maps) {
-                        Action act = createCustomMavenAction(mapp.getActionName(), mapp, false, lookup);
+                        Action act = createCustomMavenAction(mapp.getActionName(), mapp, false, lookup, proj);
                         act.putValue(NAME, mapp.getDisplayName() == null ? mapp.getActionName() : mapp.getDisplayName());
                         acts.add(act);
                     }
-                    acts.add(createCustomMavenAction(LBL_Custom_run_goals(), new NetbeansActionMapping(), true, lookup));
+                    acts.add(createCustomMavenAction(LBL_Custom_run_goals(), new NetbeansActionMapping(), true, lookup, proj));
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
@@ -661,10 +664,8 @@ public class ActionProviderImpl implements ActionProvider {
             RP.post(new Runnable() {
                 @Override
                 public void run() {
-                    //mkleint: usage of subprojectprovider is correct here
-                    SubprojectProvider subs = project.getLookup().lookup(SubprojectProvider.class);
-                    Set<? extends Project> lst = subs.getSubprojects();
-                    Project[] arr = lst.toArray(new Project[lst.size()]);
+                    Set<Project> res = ProjectUtils.getContainedProjects(project, true);
+                    Project[] arr = res.toArray(new Project[res.size()]);
                     OpenProjects.getDefault().close(arr);
                 }
             });

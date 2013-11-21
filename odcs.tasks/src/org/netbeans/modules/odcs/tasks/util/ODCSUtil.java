@@ -420,13 +420,5 @@ public class ODCSUtil {
         }
         return null;
     }
-    
-    public static void runInAwt(Runnable r) {
-        if(EventQueue.isDispatchThread()) {
-            r.run();
-        } else {
-            EventQueue.invokeLater(r);
-        }
-    }
 
 }

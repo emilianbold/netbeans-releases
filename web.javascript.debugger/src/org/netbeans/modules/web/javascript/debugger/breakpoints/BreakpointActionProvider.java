@@ -52,6 +52,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
 import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
@@ -63,16 +64,17 @@ import org.openide.util.WeakListeners;
  *
  */
 @ActionsProvider.Registration(actions={"toggleBreakpoint"}, 
-        activateForMIMETypes={MiscEditorUtil.JAVASCRIPT_MIME_TYPE, MiscEditorUtil.HTML_MIME_TYPE})
+        //activateForMIMETypes={MiscEditorUtil.JAVASCRIPT_MIME_TYPE, MiscEditorUtil.HTML_MIME_TYPE})
+        activateForMIMETypes={MiscEditorUtil.HTML_MIME_TYPE})
 public class BreakpointActionProvider extends ActionsProviderSupport
         implements PropertyChangeListener 
 {
 
     public BreakpointActionProvider() {
         setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, false);
-        EditorContextDispatcher.getDefault().addPropertyChangeListener(
-                MiscEditorUtil.JAVASCRIPT_MIME_TYPE,
-                WeakListeners.propertyChange(this, EditorContextDispatcher.getDefault()));
+//        EditorContextDispatcher.getDefault().addPropertyChangeListener(
+//                MiscEditorUtil.JAVASCRIPT_MIME_TYPE,
+//                WeakListeners.propertyChange(this, EditorContextDispatcher.getDefault()));
         EditorContextDispatcher.getDefault().addPropertyChangeListener(
                 MiscEditorUtil.HTML_MIME_TYPE,
                 WeakListeners.propertyChange(this, EditorContextDispatcher.getDefault()));
@@ -109,8 +111,8 @@ public class BreakpointActionProvider extends ActionsProviderSupport
                 .getBreakpoints();
         boolean add = true;
         for ( Breakpoint breakpoint : breakpoints ) {
-            if (breakpoint instanceof LineBreakpoint
-                    && ((LineBreakpoint) breakpoint).getLine().equals(line)  )
+            if (breakpoint instanceof JSLineBreakpoint
+                    && ((JSLineBreakpoint) breakpoint).getLine().equals(line)  )
             {
                 DebuggerManager.getDebuggerManager().removeBreakpoint(
                         breakpoint );
@@ -121,7 +123,7 @@ public class BreakpointActionProvider extends ActionsProviderSupport
         add = add && MiscEditorUtil.isInJavaScript(line);
         if ( add ) {
             DebuggerManager.getDebuggerManager().addBreakpoint(
-                    new LineBreakpoint(line));
+                    new JSLineBreakpoint(line));
         }
     }
 

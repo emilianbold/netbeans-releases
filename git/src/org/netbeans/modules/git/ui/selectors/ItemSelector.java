@@ -66,17 +66,20 @@ import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.git.ui.selectors.ItemSelector.Item;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Tomas Stupka
  */
 public class ItemSelector<I extends Item> implements ListSelectionListener {
-    private ItemsPanel panel;
-    private ChangeSupport changeSupport = new ChangeSupport(this);
+    private final ItemsPanel panel;
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private boolean deletesAllowed;
 
     public ItemSelector(String title) {
         panel = new ItemsPanel();
+        panel.btnAllowDeletes.setVisible(false);
         Mnemonics.setLocalizedText(panel.titleLabel, title); 
         panel.list.setCellRenderer(new ItemRenderer());
         attachListeners();
@@ -99,6 +102,9 @@ public class ItemSelector<I extends Item> implements ListSelectionListener {
         DefaultListModel model = new DefaultListModel();
         for (I i : branches) {
             model.addElement(i);
+            if (i.isDeletion()) {
+                panel.btnAllowDeletes.setVisible(true);
+            }
         }
         panel.list.setModel(model);        
         //inform listeners like select all/none buttons
@@ -143,7 +149,10 @@ public class ItemSelector<I extends Item> implements ListSelectionListener {
     private void selectAll(boolean newState) {
         for (int i = 0; i < panel.list.getModel().getSize(); i++) {
             Item item = (Item) panel.list.getModel().getElementAt(i);
-            item.isSelected = newState;
+            // allways allow deselect but allow select only when the delete is allowed
+            if (!newState || isSelectedStateAllowed(item)) {
+                item.isSelected = newState;
+            }
         }
         panel.list.repaint();
         changeSupport.fireChange();
@@ -179,6 +188,33 @@ public class ItemSelector<I extends Item> implements ListSelectionListener {
                 selectAll(false);
             }
         });
+        panel.btnAllowDeletes.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                deletesAllowed = !deletesAllowed;
+                boolean fireChange = false;
+                if (!deletesAllowed) {
+                    int maxItemsCount = panel.list.getModel().getSize();
+                    for (int i = 0; i < maxItemsCount; i++) {
+                        Item item = (Item) panel.list.getModel().getElementAt(i);
+                        if (item.isDelete) {
+                            fireChange = item.isSelected;
+                            item.isSelected = false;
+                        }
+                    }
+                }
+                panel.list.repaint();
+                if (deletesAllowed) {
+                    Mnemonics.setLocalizedText(panel.btnAllowDeletes, NbBundle.getMessage(ItemsPanel.class, "ItemsPanel.btnDisableDeletes.text")); //NOI18N
+                } else {
+                    Mnemonics.setLocalizedText(panel.btnAllowDeletes, NbBundle.getMessage(ItemsPanel.class, "ItemsPanel.btnAllowDeletes.text")); //NOI18N
+                }
+                if (fireChange) {
+                    changeSupport.fireChange();
+                }
+            }
+        });
 
         changeSupport.addChangeListener(new ChangeListener() {
 
@@ -202,10 +238,16 @@ public class ItemSelector<I extends Item> implements ListSelectionListener {
     private void switchSelection(int index) {
         if (index != -1) {
             Item item = (Item) panel.list.getModel().getElementAt(index);
-            item.isSelected = !item.isSelected;
-            panel.list.repaint();
-            changeSupport.fireChange();
+            if (isSelectedStateAllowed(item)) {
+                item.isSelected = !item.isSelected;
+                panel.list.repaint();
+                changeSupport.fireChange();
+            }
         }
+    }
+    
+    private boolean isSelectedStateAllowed (Item item) {
+        return !item.isDelete || deletesAllowed;
     }
     
     public class ItemRenderer implements ListCellRenderer {
@@ -230,6 +272,7 @@ public class ItemSelector<I extends Item> implements ListSelectionListener {
                 renderer.setText("<html>" + item.getText() + "</html>");
                 renderer.setToolTipText(item.getTooltipText());
                 renderer.setSelected(item.isSelected);
+                renderer.setEnabled(!item.isDelete || deletesAllowed);
             }
             renderer.setBorder(isSelected ? UIManager.getBorder("List.focusCellHighlightBorder") : noFocusBorder);
             return renderer;
@@ -239,13 +282,19 @@ public class ItemSelector<I extends Item> implements ListSelectionListener {
     
     public abstract static class Item implements Comparable<Item> {
         boolean isSelected;
+        private final boolean isDelete;
 
-        protected Item (boolean selected) {
+        protected Item (boolean selected, boolean delete) {
             this.isSelected = selected;
+            this.isDelete = delete;
         }
         
         public abstract String getText();
         public abstract String getTooltipText();
+
+        public final boolean isDeletion () {
+            return isDelete;
+        }
     }
     
 }

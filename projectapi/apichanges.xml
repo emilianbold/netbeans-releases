@@ -107,6 +107,29 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        
+        <change id="DependencyProjectProvider">
+            <api name="general"/>
+            <summary></summary>
+            <version major="1" minor="56"/>
+            <date day="20" month="11" year="2013"/>
+            <author login="mkleint"/>
+            <compatibility semantic="compatible" addition="yes"/>
+            <description>
+                <p>
+                    Newly introduced interfaces <code>DependencyProjectProvider</code> and <code>ProjectContainerProvider</code> are meant as less general replacement for <code>SubprojectProvider</code>
+                    as they explicitly declaring their contract 
+                    (<code>DependencyProjectProvider</code> the project's dependency projects and <code>ProjectContainerProvider</code> projects that are build as part of this project). Code using <code>SubprojectProvider</code> currently
+                    should evaluate if <code>DependencyProjectProvider</code> or <code>ProjectContainerProvider</code> contracts suit their usage better. Please note that the new interfaces are not
+                    mandatory for project types to implement and if it's missing, <code>SubprojectProvider</code> should be used.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.project" name="DependencyProjectProvider"/>
+            <class package="org.netbeans.spi.project" name="ProjectContainerProvider"/>
+            <class package="org.netbeans.api.project" name="ProjectUtils"/>
+            <issue number="210465"/>
+        </change>
+        
         <change id="LookupProviderSupport.multi">
             <api name="general"/>
             <summary>New method createCompositeLookup(Lookup, Lookup) in LookupProviderSupport</summary>

@@ -96,8 +96,7 @@ public final class SchedulingPicker {
     }
 
     /**
-     * Adds a listener that will be notified when the selected schedule date
-     * changes.
+     * Adds a listener that will be notified when the selected schedule changes.
      *
      * @param listener listener to add
      */
