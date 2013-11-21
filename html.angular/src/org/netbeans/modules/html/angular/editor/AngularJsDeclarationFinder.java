@@ -50,7 +50,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
@@ -151,19 +153,27 @@ public class AngularJsDeclarationFinder implements DeclarationFinder {
         SourceGroup[] sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
         
         String[] endPath = endPartName.split("/");
-        Collection<FileObject> files = new ArrayList<>();
+        Map<String, FileObject> files = new HashMap<>();
         for (SourceGroup sourceGroup : sourceGroups) {
-            findFilesWithEndPath(endPath, sourceGroup.getRootFolder(), files);
+            Collection<FileObject> filesInGroup = new ArrayList<>();
+            findFilesWithEndPath(endPath, sourceGroup.getRootFolder(), filesInGroup);
+            int rootPathLength = sourceGroup.getRootFolder().getPath().length();
+            for (FileObject fileObject : filesInGroup) {
+                String shortPathName = fileObject.getPath();
+                shortPathName = shortPathName.substring(rootPathLength + 1);
+                files.put(shortPathName, fileObject);
+            }
         }
         
         if (!files.isEmpty()) {
             DeclarationLocation dl = null;
-            for (FileObject fileObject : files) {
+            for (String shortPathName : files.keySet()) {
+                FileObject fileObject = files.get(shortPathName);
                 DeclarationLocation dloc = new DeclarationLocation(fileObject, 0);
                 if (dl == null) {
                     dl = dloc;
                 }
-                AlternativeLocation aloc = new AlternativeLocationImpl(fileObject.getName(), dloc, new AngularFileHandle(fileObject));
+                AlternativeLocation aloc = new AlternativeLocationImpl(shortPathName, dloc, new AngularFileHandle(shortPathName, fileObject));
                 dl.addAlternative(aloc);
             }
             if (dl != null && dl.getAlternativeLocations().size() == 1) {
@@ -224,7 +234,7 @@ public class AngularJsDeclarationFinder implements DeclarationFinder {
                             //locations simply must be "main"!!!
                             dl = dloc;
                         }
-                        AlternativeLocation aloc = new AlternativeLocationImpl(controller.getName(), dloc, new AngularFileHandle(dfo));
+                        AlternativeLocation aloc = new AlternativeLocationImpl(controller.getName(), dloc, new ElementHandle.UrlHandle(dfo.getPath()));
                         dl.addAlternative(aloc);
                     }
                 }
@@ -267,9 +277,11 @@ public class AngularJsDeclarationFinder implements DeclarationFinder {
     private static class AngularFileHandle implements ElementHandle {
 
         private final FileObject fileObject;
-
-        public AngularFileHandle(FileObject fileObject) {
+        private final String displayName;
+        
+        public AngularFileHandle(final String displayName, final FileObject fileObject) {
             this.fileObject = fileObject;
+            this.displayName = displayName;
         }
         
         @Override
@@ -284,7 +296,7 @@ public class AngularJsDeclarationFinder implements DeclarationFinder {
 
         @Override
         public String getName() {
-            return fileObject.getNameExt();
+            return displayName;
         }
 
         @Override
@@ -332,11 +344,11 @@ public class AngularJsDeclarationFinder implements DeclarationFinder {
 
         @Override
         public String getDisplayHtml(HtmlFormatter formatter) {
-            FileObject fo = location.getFileObject();
-            if (fo != null) {
-                return fo.getPath();
-            }
-            return name;
+            StringBuilder sb = new StringBuilder();
+            sb.append("<font color='black'>");
+            sb.append(element.getName());
+            sb.append("</font>");
+            return sb.toString();
         }
 
         @Override

@@ -43,19 +43,17 @@
 package org.netbeans.modules.javascript.karma.preferences;
 
 import java.io.File;
-import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.javascript.karma.util.KarmaUtils;
 import org.netbeans.modules.javascript.karma.util.StringUtils;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Mutex;
 
 /**
  * Project specific Karma preferences.
@@ -67,8 +65,7 @@ public final class KarmaPreferences {
     private static final String CONFIG = "config"; // NOI18N
     private static final String AUTOWATCH = "autowatch"; // NOI18N
 
-    // @GuardedBy("Mutex & CACHE")
-    static final Map<Project, Preferences> CACHE = new WeakHashMap<>();
+    private static final ConcurrentMap<Project, Preferences> CACHE = new ConcurrentHashMap<>();
 
 
     private KarmaPreferences() {
@@ -117,34 +114,23 @@ public final class KarmaPreferences {
     }
 
     public static void removeFromCache(final Project project) {
-        ProjectManager.mutex().readAccess(new Runnable() {
-            @Override
-            public void run() {
-                synchronized (CACHE) {
-                    CACHE.remove(project);
-                }
-            }
-        });
+        CACHE.remove(project);
     }
 
     private static Preferences getPreferences(final Project project) {
         assert project != null;
-        Preferences preferences = ProjectManager.mutex().readAccess(new Mutex.Action<Preferences>() {
-            @Override
-            public Preferences run() {
-                synchronized (CACHE) {
-                    Preferences preferences = CACHE.get(project);
-                    if (preferences == null) {
-                        preferences = ProjectUtils.getPreferences(project, KarmaPreferences.class, false);
-                        CACHE.put(project, preferences);
-                        // run autodetection
-                        detectKarma(project);
-                        detectConfig(project);
-                    }
-                    return preferences;
-                }
+        Preferences preferences = CACHE.get(project);
+        if (preferences == null) {
+            preferences = ProjectUtils.getPreferences(project, KarmaPreferences.class, false);
+            Preferences currentPreferences = CACHE.putIfAbsent(project, preferences);
+            if (currentPreferences != null) {
+                preferences = currentPreferences;
+            } else {
+                // preferences put into cache, run autodetection
+                detectKarma(project);
+                detectConfig(project);
             }
-        });
+        }
         assert preferences != null;
         return preferences;
     }

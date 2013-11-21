@@ -110,12 +110,12 @@ public class AngularJsDelcarationFinderTest extends JsTestBase {
         ClassPathProvider classpathProvider = new TestClassPathProvider(srcFo, createClassPathsForTest());
         MockLookup.setInstances(new TestProjectFactory(classpathProvider, sources));
         
-        IndexingManager.getDefault().refreshIndexAndWait(srcFo.getURL(), null);
+        IndexingManager.getDefault().refreshIndexAndWait(srcFo.getURL(), null, true);
         
     }
     
     public void testDeclaration_01() throws Exception {
-        //checkDeclaration("angularTestProject/public_html/gotoTest.html", "<body ng-controller=\"Ph^oneListCtrl\">", "angularTestProject/public_html/js/controllers.js", 10);
+        checkDeclaration("angularTestProject/public_html/gotoTest.html", "<body ng-controller=\"Ph^oneListCtrl\">", "controllers.js", 79);
     }
     
     
