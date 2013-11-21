@@ -140,6 +140,7 @@ public interface SiteTemplateImplementation {
         private String siteRootFolder;
         private String testFolder;
         private String configFolder;
+        private String jsTestingProvider;
 
 
         /**
@@ -197,6 +198,27 @@ public interface SiteTemplateImplementation {
          */
         public ProjectProperties setConfigFolder(String configFolder) {
             this.configFolder = configFolder;
+            return this;
+        }
+
+        /**
+         * Get JS testing provider (its identifier).
+         * @return JS testing provider (its identifier); can be {@code null} if there is no default JS testing provider
+         * @since 1.54
+         */
+        @CheckForNull
+        public String getJsTestingProvider() {
+            return jsTestingProvider;
+        }
+
+        /**
+         * Set JS testing provider (its identifier), can be {@code null} if there is no default JS testing provider.
+         * @param jsTestingProvider JS testing provider (its identifier), can be {@code null} if there is no default JS testing provider
+         * @return itself
+         * @since 1.54
+         */
+        public ProjectProperties setJsTestingProvider(String jsTestingProvider) {
+            this.jsTestingProvider = jsTestingProvider;
             return this;
         }
 

@@ -64,6 +64,8 @@ import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibraries;
+import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
+import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.modules.web.clientproject.spi.ClientProjectExtender;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation.ProjectProperties;
@@ -505,6 +507,21 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             String librariesPath = (String) wizardDescriptor.getProperty(LIBRARIES_PATH);
             if (librariesPath != null) {
                 JavaScriptLibraries.setJsLibFolder(project, librariesPath);
+            }
+            // js testing provider
+            String jsTestingProvider = properties.getJsTestingProvider();
+            if (jsTestingProvider != null) {
+                boolean found = false;
+                for (JsTestingProvider testingProvider : JsTestingProviders.getDefault().getJsTestingProviders()) {
+                    if (testingProvider.getIdentifier().equals(jsTestingProvider)) {
+                        found = true;
+                        testingProvider.notifyEnabled(project, true);
+                        break;
+                    }
+                }
+                if (!found) {
+                    LOGGER.log(Level.WARNING, "JS testing provider {0} was not found", jsTestingProvider);
+                }
             }
         }
 
