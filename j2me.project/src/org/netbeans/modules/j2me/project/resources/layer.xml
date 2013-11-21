@@ -174,7 +174,7 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javame/project/templates/MEEPlet.html"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/project/templates/MEEPlet.html"/>
                 <attr name="templateCategory" stringvalue="javame"/>
             </file>
         </folder>
