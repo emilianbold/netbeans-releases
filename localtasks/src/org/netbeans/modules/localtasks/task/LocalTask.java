@@ -282,6 +282,7 @@ public final class LocalTask extends AbstractLocalTask {
     }
 
     public void delete () {
+        clearUnsavedChanges();
         fireChanged();
         if (controller != null) {
             controller.taskDeleted();

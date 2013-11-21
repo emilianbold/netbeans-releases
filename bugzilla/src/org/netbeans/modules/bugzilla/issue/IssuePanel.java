@@ -3467,6 +3467,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
                 Bundle.LBL_IssuePanel_deleteTask_title(), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
             return;
         }
+        clearUnsavedChanges();
         Container tc = SwingUtilities.getAncestorOfClass(TopComponent.class, this);
         if (tc instanceof TopComponent) {
             ((TopComponent) tc).close();
