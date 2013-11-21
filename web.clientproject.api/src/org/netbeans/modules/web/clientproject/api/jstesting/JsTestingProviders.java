@@ -124,6 +124,23 @@ public final class JsTestingProviders {
     }
 
     /**
+     * Find JS testing provider for the given {@link JsTestingProvider#getIdentifier() identifier}.
+     * @param identifier identifier of JS testing provider
+     * @return JS testing provider or {@code null} if not found
+     * @since 1.54
+     */
+    @CheckForNull
+    public JsTestingProvider findJsTestingProvider(@NonNull String identifier) {
+        Parameters.notNull("identifier", identifier); // NOI18N
+        for (JsTestingProvider jsTestingProvider : jsTestingProviders) {
+            if (jsTestingProvider.getIdentifier().equals(identifier)) {
+                return jsTestingProvider;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Get selected JS testing provider for the given project. Returns {@code null} if none is selected (yet);
      * can display dialog for JS testing provider selection if {@code showSelectionPanel} is set to {@code true}.
      * @param project project to be checked
@@ -149,6 +166,27 @@ public final class JsTestingProviders {
             }
         }
         return null;
+    }
+
+    /**
+     * Set given JS testing provider for the given project. If there already is any JS testing provider
+     * and if it is the same as the given one, this method does nothing.
+     * @param project project to be configured
+     * @param jsTestingProvider JS testing provider to be set
+     * @since 1.54
+     */
+    public void setJsTestingProvider(@NonNull Project project, @NonNull JsTestingProvider jsTestingProvider) {
+        Parameters.notNull("project", project); // NOI18N
+        Parameters.notNull("jsTestingProvider", jsTestingProvider); // NOI18N
+        JsTestingProvider currentTestingProvider = getJsTestingProvider(project, false);
+        if (currentTestingProvider != null) {
+            if (currentTestingProvider.getIdentifier().equals(jsTestingProvider.getIdentifier())) {
+                // already set the same one
+                return;
+            }
+            currentTestingProvider.notifyEnabled(project, false);
+        }
+        jsTestingProvider.notifyEnabled(project, true);
     }
 
     /**
