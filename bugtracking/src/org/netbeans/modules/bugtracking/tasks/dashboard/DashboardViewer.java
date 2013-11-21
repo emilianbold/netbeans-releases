@@ -1023,6 +1023,8 @@ public final class DashboardViewer implements PropertyChangeListener {
     private UnsubmittedCategoryNode createUnsubmittedCategoryNode(RepositoryImpl repository) {
         Category unsubmittedCategory = new UnsubmittedCategory(repository);
         UnsubmittedCategoryNode unsubmittedCategoryNode = new UnsubmittedCategoryNode(unsubmittedCategory, repository);
+        //update to have nodes updated for filtering
+        unsubmittedCategoryNode.updateContent();
         return unsubmittedCategoryNode;
     }
 
