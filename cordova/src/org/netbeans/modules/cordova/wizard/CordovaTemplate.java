@@ -130,6 +130,11 @@ public class CordovaTemplate implements SiteTemplateImplementation {
         return "CORDOVA"; // NOI18N
     }
 
+    @Override
+    public void cleanup() {
+        // noop
+    }
+
     @ServiceProvider(service=ClientProjectExtender.class)
     public static class CordovaExtender implements ClientProjectExtender {
 

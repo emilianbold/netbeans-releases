@@ -118,6 +118,14 @@ public interface SiteTemplateImplementation {
     void apply(@NonNull FileObject projectDir, @NonNull ProjectProperties projectProperties, @NullAllowed ProgressHandle handle) throws IOException;
 
     /**
+     * Clean up the possibly {@link #prepare() prepared} site template. Typically, locally cached file is
+     * simply deleted.
+     * @throws IOException if any error occurs
+     * @since 1.54
+     */
+    void cleanup() throws IOException;
+
+    /**
      * Get list of full relative paths of supported JavaScript libraries.
      * @return list of full relative paths of supported JavaScript libraries.
      */

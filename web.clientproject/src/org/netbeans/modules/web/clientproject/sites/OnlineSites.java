@@ -118,6 +118,15 @@ public abstract class OnlineSites implements SiteTemplateImplementation {
         SiteHelper.unzipProjectTemplate(getTargetDir(projectDir, projectProperties), libFile, handle);
     }
 
+    @Override
+    public void cleanup() {
+        if (libFile.isFile()) {
+            if (!libFile.delete()) {
+                libFile.deleteOnExit();
+            }
+        }
+    }
+
     protected FileObject getTargetDir(FileObject projectDir, ProjectProperties projectProperties) {
         // by default, extract template to site root
         return projectDir.getFileObject(projectProperties.getSiteRootFolder());
