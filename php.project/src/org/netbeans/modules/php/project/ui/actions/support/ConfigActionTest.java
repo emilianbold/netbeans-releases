@@ -155,8 +155,8 @@ class ConfigActionTest extends ConfigAction {
 
     @Override
     public void runProject() {
-        runPhpTests();
         runJsTests();
+        runPhpTests();
     }
 
     private void runPhpTests() {

@@ -52,7 +52,6 @@ import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
 import org.netbeans.modules.gsf.testrunner.api.RerunType;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
@@ -228,10 +227,6 @@ public final class KarmaServer {
             assert netBeansKarmaConfig != null;
         }
         return netBeansKarmaConfig;
-    }
-
-    private String getProjectName() {
-        return ProjectUtils.getInformation(project).getName();
     }
 
     @Override
