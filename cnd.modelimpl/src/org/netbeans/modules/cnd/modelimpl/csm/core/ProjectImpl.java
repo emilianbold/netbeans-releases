@@ -115,13 +115,10 @@ public final class ProjectImpl extends ProjectBase {
     public 
     @Override
     void onFileEditStart(final FileBuffer buf, NativeFileItem nativeFile) {
-        if (!Utils.acceptNativeItem(nativeFile)) {
-            return;
-        }
         if (TraceFlags.DEBUG) {
             Diagnostic.trace("------------------------- onFileEditSTART " + buf.getUrl()); //NOI18N
         }
-        final FileImpl impl = createOrFindFileImpl(buf, nativeFile);
+        final FileImpl impl = getFile(buf.getAbsolutePath(), false);
         if (impl != null) {
             APTDriver.invalidateAPT(buf);
             APTFileCacheManager.getInstance(buf.getFileSystem()).invalidate(buf.getAbsolutePath());
@@ -154,9 +151,6 @@ public final class ProjectImpl extends ProjectBase {
     public 
     @Override
     void onFileEditEnd(FileBuffer buf, NativeFileItem nativeFile, boolean undo) {
-        if (!Utils.acceptNativeItem(nativeFile)) {
-            return;
-        }
         if (TraceFlags.DEBUG) {
             Diagnostic.trace("------------------------- onFileEditEND " + buf.getUrl()); //NOI18N
         }
