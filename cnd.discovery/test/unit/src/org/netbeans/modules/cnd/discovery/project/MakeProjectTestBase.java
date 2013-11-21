@@ -98,6 +98,7 @@ import org.openide.util.Utilities;
 public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends NbTestCase
     protected static final String LOG_POSTFIX = ".discoveryLog";
     private static final boolean TRACE = true;
+    private Logger logger1;
 
     public MakeProjectTestBase(String name) {
         super(name);
@@ -112,7 +113,8 @@ public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends
         System.setProperty("parser.report.include.failures","true"); // NOI18N
         //System.setProperty("cnd.modelimpl.timing.per.file.flat","true"); // NOI18N
         //System.setProperty("cnd.dump.native.file.item.paths","true"); // NOI18N
-        Logger.getLogger("org.netbeans.modules.editor.settings.storage.Utils").setLevel(Level.SEVERE);
+        logger1 = Logger.getLogger("org.netbeans.modules.editor.settings.storage.Utils");
+        logger1.setLevel(Level.SEVERE);
         //System.setProperty("org.netbeans.modules.cnd.apt.level","WARNING"); // NOI18N
         //Logger.getLogger("org.netbeans.modules.cnd.apt").setLevel(Level.WARNING);
         //MockServices.setServices(MakeProjectType.class);
