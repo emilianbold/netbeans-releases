@@ -68,6 +68,7 @@ import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
 import org.netbeans.modules.bugtracking.commons.AttachmentsPanel;
 import org.netbeans.modules.bugtracking.commons.AttachmentsPanel.AttachmentInfo;
+import org.netbeans.modules.bugtracking.spi.IssueScheduleProvider;
 import org.netbeans.modules.mylyn.util.NbTask;
 import org.netbeans.modules.mylyn.util.NbTaskDataModel;
 import org.netbeans.modules.mylyn.util.localtasks.AbstractLocalTask;
@@ -130,14 +131,17 @@ public final class LocalTask extends AbstractLocalTask {
         RP.post(new Runnable() {
             @Override
             public void run () {
-                dataChanged();
+                dataChanged(false);
             }
         });
     }
 
-    private void dataChanged () {
+    private void dataChanged (boolean scheduleChanged) {
         updateTooltip();
         fireDataChanged();
+        if(scheduleChanged) {
+            fireScheduleChanged();
+        }
         if (controller != null) {
             controller.refreshViewData();
         }
@@ -361,6 +365,10 @@ public final class LocalTask extends AbstractLocalTask {
     private void fireDataChanged () {
         support.firePropertyChange(IssueProvider.EVENT_ISSUE_DATA_CHANGED, null, null);
     }
+    
+    private void fireScheduleChanged () {
+        support.firePropertyChange(IssueScheduleProvider.EVENT_ISSUE_SCHEDULE_CHANGED, null, null);
+    }
 
     protected void fireChanged() {
         support.firePropertyChange(IssueController.PROP_CHANGED, null, null);
@@ -538,17 +546,17 @@ public final class LocalTask extends AbstractLocalTask {
             controller.modelStateChanged(hasUnsavedChanges());
         }
         if (persistChange) {
-            dataChanged();
+            dataChanged(false);
         }
     }
     
-    public void setTaskScheduleDate (IssueScheduleInfo date, boolean persistChange) {
+    public void setTaskScheduleDate (IssueScheduleInfo date, boolean persistChange, boolean notifyChange) {
         super.setScheduleDate(date, persistChange);
         if (controller != null) {
             controller.modelStateChanged(hasUnsavedChanges());
         }
         if (persistChange) {
-            dataChanged();
+            dataChanged(notifyChange);
         }
     }
     
@@ -558,7 +566,7 @@ public final class LocalTask extends AbstractLocalTask {
             controller.modelStateChanged(hasUnsavedChanges());
         }
         if (persistChange) {
-            dataChanged();
+            dataChanged(false);
         }
     }
 

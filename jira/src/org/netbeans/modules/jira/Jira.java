@@ -250,7 +250,7 @@ public class Jira {
 
                 @Override
                 public void setSchedule (NbJiraIssue i, IssueScheduleInfo scheduleInfo) {
-                    i.setTaskScheduleDate(scheduleInfo, true);
+                    i.setTaskScheduleDate(scheduleInfo, true, false);
                 }
 
                 @Override

@@ -1003,7 +1003,7 @@ final class TaskPanel extends javax.swing.JPanel {
 
             @Override
             protected boolean storeValue () {
-                task.setTaskScheduleDate(scheduleDatePicker.getScheduleDate(), false);
+                task.setTaskScheduleDate(scheduleDatePicker.getScheduleDate(), false, true);
                 return true;
             }
         });

@@ -99,6 +99,7 @@ import org.netbeans.modules.bugtracking.commons.AttachmentsPanel.AttachmentInfo;
 import org.netbeans.modules.bugtracking.commons.TextUtils;
 import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
+import org.netbeans.modules.bugtracking.spi.IssueScheduleProvider;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
@@ -218,17 +219,20 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
         Jira.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
-                dataChanged();
+                dataChanged(false);
             }
         });
     }
 
-    private void dataChanged () {
+    private void dataChanged (boolean scheduleChange) {
         if (node != null) {
             node.fireDataChanged();
         }
         updateTooltip();
         fireDataChanged();
+        if(scheduleChange) {
+           fireScheduleChanged(); 
+        }
         refreshViewData(false);
     }
 
@@ -306,13 +310,13 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
         });
     }
     
-    public void setTaskScheduleDate (IssueScheduleInfo date, boolean persistChange) {
+    public void setTaskScheduleDate (IssueScheduleInfo date, boolean persistChange, boolean notifyChange) {
         super.setScheduleDate(date, persistChange);
         if (controller != null) {
             controller.modelStateChanged(hasUnsavedChanges(), hasLocalEdits());
         }
         if (persistChange) {
-            dataChanged();
+            dataChanged(notifyChange);
         }
     }
 
@@ -322,7 +326,7 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
             controller.modelStateChanged(hasUnsavedChanges(), hasLocalEdits());
         }
         if (persistChange) {
-            dataChanged();
+            dataChanged(false);
         }
     }
     
@@ -492,6 +496,10 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
      */
     protected void fireDataChanged() {
         support.firePropertyChange(IssueProvider.EVENT_ISSUE_DATA_CHANGED, null, null);
+    }
+    
+    private void fireScheduleChanged() {
+        support.firePropertyChange(IssueScheduleProvider.EVENT_ISSUE_SCHEDULE_CHANGED, null, null);
     }
     
     private void fireStatusChanged() {

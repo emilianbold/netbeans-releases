@@ -3921,7 +3921,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
 
             @Override
             protected boolean storeValue () {
-                issue.setTaskScheduleDate(scheduleDatePicker.getScheduleDate(), false);
+                issue.setTaskScheduleDate(scheduleDatePicker.getScheduleDate(), false, true);
                 return true;
             }
         });

@@ -3061,7 +3061,7 @@ public class IssuePanel extends javax.swing.JPanel {
 
             @Override
             protected boolean storeValue () {
-                issue.setTaskScheduleDate(scheduleDatePicker.getScheduleDate(), false);
+                issue.setTaskScheduleDate(scheduleDatePicker.getScheduleDate(), false, true);
                 return true;
             }
         });

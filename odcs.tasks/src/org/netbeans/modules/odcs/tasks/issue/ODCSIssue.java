@@ -81,6 +81,7 @@ import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
+import org.netbeans.modules.bugtracking.spi.IssueScheduleProvider;
 import org.netbeans.modules.mylyn.util.AbstractNbTaskWrapper;
 import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.mylyn.util.NbTask;
@@ -881,17 +882,20 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
         ODCS.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
-                dataChanged();
+                dataChanged(false);
             }
         });
     }
 
-    private void dataChanged () {
+    private void dataChanged (boolean scheduleChanged) {
         if (node != null) {
             node.fireDataChanged();
         }
         updateTooltip();
         fireDataChanged();
+        if(scheduleChanged) {
+            fireScheduleChanged();
+        }
         refreshViewData(false);
     }
 
@@ -952,13 +956,13 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
         });
     }
     
-    public void setTaskScheduleDate (IssueScheduleInfo date, boolean persistChange) {
+    public void setTaskScheduleDate (IssueScheduleInfo date, boolean persistChange, boolean notifyChange) {
         super.setScheduleDate(date, persistChange);
         if (controller != null) {
             controller.modelStateChanged(hasUnsavedChanges(), hasLocalEdits());
         }
         if (persistChange) {
-            dataChanged();
+            dataChanged(notifyChange);
         }
     }
 
@@ -968,7 +972,7 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
             controller.modelStateChanged(hasUnsavedChanges(), hasLocalEdits());
         }
         if (persistChange) {
-            dataChanged();
+            dataChanged(false);
         }
     }
     
@@ -1181,6 +1185,10 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
      */
     private void fireDataChanged() {
         support.firePropertyChange(IssueProvider.EVENT_ISSUE_DATA_CHANGED, null, null);
+    }
+    
+    private void fireScheduleChanged() {
+        support.firePropertyChange(IssueScheduleProvider.EVENT_ISSUE_SCHEDULE_CHANGED, null, null);
     }
     
     private void fireStatusChanged() {
