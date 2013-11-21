@@ -171,7 +171,7 @@ public class QueryPanel extends javax.swing.JPanel {
     }
 
     void setQueryRunning(final boolean running) {
-        BugzillaUtil.runInAWT(new Runnable() {
+        UIUtils.runInAWT(new Runnable() {
             @Override
             public void run() {
                 modifyButton.setEnabled(!running);
@@ -1293,7 +1293,7 @@ public class QueryPanel extends javax.swing.JPanel {
      */
     void enableFields(final boolean enable) {
         
-        BugzillaUtil.runInAWT(new Runnable() {
+        UIUtils.runInAWT(new Runnable() {
             @Override
             public void run() {
                 summaryLabel.setEnabled(enable);
@@ -1331,7 +1331,7 @@ public class QueryPanel extends javax.swing.JPanel {
     }
 
     void switchQueryFields(final boolean showAdvanced) {
-        BugzillaUtil.runInAWT(new Runnable() {
+        UIUtils.runInAWT(new Runnable() {
             @Override
             public void run() {
                 byDetails.setVisible(showAdvanced);
@@ -1350,7 +1350,7 @@ public class QueryPanel extends javax.swing.JPanel {
     }
 
     void showError(final String text) {
-        BugzillaUtil.runInAWT(new Runnable() {
+        UIUtils.runInAWT(new Runnable() {
             @Override
             public void run() {
                 noContentPanel.setVisible(true);
@@ -1365,7 +1365,7 @@ public class QueryPanel extends javax.swing.JPanel {
     }
 
     void showSearchingProgress(final boolean on, final String text) {
-        BugzillaUtil.runInAWT(new Runnable() {
+        UIUtils.runInAWT(new Runnable() {
             public void run() {
                 noContentPanel.setVisible(on);
                 tableSummaryLabel.setVisible(!on);
@@ -1379,7 +1379,7 @@ public class QueryPanel extends javax.swing.JPanel {
     }
 
     void showRetrievingProgress(final boolean on, final String text, final boolean searchPanelVisible) {
-        BugzillaUtil.runInAWT(new Runnable() {
+        UIUtils.runInAWT(new Runnable() {
             @Override
             public void run() {
                 noContentPanel.setVisible(on);
@@ -1400,7 +1400,7 @@ public class QueryPanel extends javax.swing.JPanel {
     }
 
     void setModifyVisible(final boolean b) {
-        BugzillaUtil.runInAWT(new Runnable() {
+        UIUtils.runInAWT(new Runnable() {
             @Override
             public void run() {
                 searchPanel.setVisible(b);
@@ -1422,7 +1422,7 @@ public class QueryPanel extends javax.swing.JPanel {
     }
 
     void setSaved(final String name, final String lastRefresh) {
-        BugzillaUtil.runInAWT(new Runnable() {
+        UIUtils.runInAWT(new Runnable() {
             @Override
             public void run() {
                 searchPanel.setVisible(false);
@@ -1439,7 +1439,7 @@ public class QueryPanel extends javax.swing.JPanel {
     }
 
     void setLastRefresh(final String lastRefresh) {
-        BugzillaUtil.runInAWT(new Runnable() {
+        UIUtils.runInAWT(new Runnable() {
             @Override
             public void run() {
                 lastRefreshDateLabel.setText(lastRefresh);
@@ -1448,7 +1448,7 @@ public class QueryPanel extends javax.swing.JPanel {
     }
 
     void setNBFieldsVisible(final boolean visible) {
-        BugzillaUtil.runInAWT(new Runnable() {
+        UIUtils.runInAWT(new Runnable() {
             @Override
             public void run() {
                 whiteboardLabel.setVisible(visible);

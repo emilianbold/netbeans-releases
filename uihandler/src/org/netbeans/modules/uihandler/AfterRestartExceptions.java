@@ -76,10 +76,14 @@ class AfterRestartExceptions implements Runnable {
     
     private AfterRestartExceptions() {}
     
-    static boolean schedule(LogRecord record) {
+    static boolean willSchedule(LogRecord record) {
+        return getScheduledThrownClassName(record) != null;
+    }
+    
+    private static String getScheduledThrownClassName(LogRecord record) {
         Throwable thrown = record.getThrown();
         if (thrown == null) {
-            return false;
+            return null;
         }
         Throwable cause;
         while (((cause = thrown.getCause()) != null) && (cause.getStackTrace().length != 0)){
@@ -87,6 +91,15 @@ class AfterRestartExceptions implements Runnable {
         }
         String thrownClassName = thrown.getClass().getName();
         if (scheduledThrowableClasses.contains(thrownClassName)) {
+            return thrownClassName;
+        } else {
+            return null;
+        }
+    }
+    
+    static boolean schedule(LogRecord record) {
+        String thrownClassName = getScheduledThrownClassName(record);
+        if (thrownClassName != null) {
             if (OutOfMemoryError.class.getName().equals(thrownClassName)) {
                 addHeapDump(record);
             }

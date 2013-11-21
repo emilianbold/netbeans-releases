@@ -46,9 +46,7 @@ package org.netbeans.jellytools;
 
 import java.awt.Component;
 import org.netbeans.jellytools.actions.FavoritesAction;
-import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.ComponentChooser;
-import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 
 /** Operator handling Favorites TopComponent.<p>
@@ -98,6 +96,16 @@ public class FavoritesOperator extends TopComponentOperator {
             _tree = new JTreeOperator(this);
         }
         return _tree;
+    }
+    
+    /**
+     * Collapse all nodes.
+     */
+    public void collapseAll() {
+        JTreeOperator tree = tree();
+        for (int i = tree.getRowCount() - 1; i >= 0; i--) {
+            tree.collapseRow(i);
+        }
     }
 
     /** Performs verification by accessing all sub-components */    

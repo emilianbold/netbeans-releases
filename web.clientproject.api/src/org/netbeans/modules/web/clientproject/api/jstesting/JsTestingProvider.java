@@ -220,6 +220,11 @@ public final class JsTestingProvider {
         delegate.projectClosed(project);
     }
 
+    void notifyEnabled(@NonNull Project project, boolean enabled) {
+        Parameters.notNull("project", project); // NOI18N
+        delegate.notifyEnabled(project, enabled);
+    }
+
     @CheckForNull
     NodeList<Node> createNodeList(@NonNull Project project) {
         Parameters.notNull("project", project); // NOI18N
@@ -229,11 +234,6 @@ public final class JsTestingProvider {
     boolean isEnabled(@NonNull Project project) {
         Parameters.notNull("project", project); // NOI18N
         return delegate.isEnabled(project);
-    }
-
-    void notifyEnabled(@NonNull Project project, boolean enabled) {
-        Parameters.notNull("project", project); // NOI18N
-        delegate.notifyEnabled(project, enabled);
     }
 
     @Override

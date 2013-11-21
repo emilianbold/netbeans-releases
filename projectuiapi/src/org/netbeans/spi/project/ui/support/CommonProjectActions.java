@@ -108,6 +108,7 @@ public class CommonProjectActions {
      * </p>
      * @return an action
      * @see org.netbeans.spi.project.SubprojectProvider
+     * @see org.netbeans.spi.project.ProjectContainerProvider
      */
     public static Action openSubprojectsAction() {
         return Utilities.getActionsFactory().openSubprojectsAction();

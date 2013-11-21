@@ -98,14 +98,15 @@ public class Utils {
      */
     private static final Set<String> forbiddenFolders;
     static {
-        List<String> files = new ArrayList<String>();
+        Set<String> files = new HashSet<String>();
         try {
             String forbidden = System.getProperty("versioning.forbiddenFolders", ""); //NOI18N
             files.addAll(Arrays.asList(forbidden.split("\\;"))); //NOI18N
+            files.remove(""); //NOI18N
         } catch (Exception e) {
             Logger.getLogger(Utils.class.getName()).log(Level.INFO, e.getMessage(), e);
         }
-        forbiddenFolders = new HashSet<String>(files);
+        forbiddenFolders = files;
     }
 
     /**

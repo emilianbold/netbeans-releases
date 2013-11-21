@@ -371,14 +371,6 @@ public class JiraUtils {
         Jira.getInstance().getBugtrackingFactory().editQuery(jiraQuery.getRepository(), jiraQuery);
     }    
     
-    public static void runInAWT(Runnable r) {
-        if(SwingUtilities.isEventDispatchThread()) {
-            r.run();
-        } else {
-            SwingUtilities.invokeLater(r);
-        }
-    }    
-
     public static boolean isLeaveOperation (TaskOperation value) {
         return "leave".equals(value.getOperationId());
     }

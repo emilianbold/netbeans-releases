@@ -51,7 +51,9 @@ import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -66,6 +68,8 @@ import org.netbeans.modules.projectapi.AuxiliaryConfigImpl;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.CacheDirectoryProvider;
+import org.netbeans.spi.project.DependencyProjectProvider;
+import org.netbeans.spi.project.ProjectContainerProvider;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.GenericSources;
 import org.openide.filesystems.FileObject;
@@ -166,6 +170,69 @@ public class ProjectUtils {
                 return visit(new HashMap<Project,Boolean>(), master, master, candidate);
             }
         });
+    }
+    
+    /**
+     * Utility method for access to {@link DependencyProjectProvider}, a less vague variant of the {@link SubprojectProvider} for code
+     * that wants to access project's dependencies that are also projects. Even when recursive, will only use DependencyProjectProvider on other projects.
+     * Unlike some java level API this doesn't distinguish between compile, runtime, test level dependencies. 
+     * 
+     * @param root project where to start calculating dependencies
+     * @param recursive true if entire dependency tree should be calculated, 
+     *                some project implementation can return just direct dependency projects that themselves have dependency projects.
+     *                Please note that false value does NOT guarantee that only direct dependency projects will be returned.
+     * @return null if project doesn't have {@link DependencyProjectProvider} in it's lookup, or a set with projects, ordering not mandated
+     * @since 1.56
+     */
+    public static Set<Project> getDependencyProjects(@NonNull Project root, boolean recursive) {
+        DependencyProjectProvider prov = root.getLookup().lookup(DependencyProjectProvider.class);
+        if (prov != null) {
+            Set<Project> toRet = new HashSet<Project>();
+            DependencyProjectProvider.Result res = prov.getDependencyProjects();
+            toRet.addAll(res.getProjects());
+            if (recursive && !res.isRecursive()) {
+                for (Project p : res.getProjects()) {
+                    Set<Project> subs = getDependencyProjects(p, recursive);
+                    if (subs != null) {
+                        toRet.addAll(subs);
+                    }
+                }
+            }
+            return toRet;
+        }
+        return null;
+    }
+    
+    /**
+     * Utility method for access to {@link ProjectContainerProvider}, a less vague variant of the {@link SubprojectProvider} for code
+     * that wants to access projects that the current project serves as container for. Eg. in case of Maven based projects it means projects referenced by &lt;modules&gt;
+     * pom.xml section.
+     * Even when recursive, will only use ProjectContainerProvider on other projects.
+     * 
+     * @param root project where to start calculating contained projects
+     * @param recursive true if entire container tree should be calculated, 
+     *                some project implementation can return just direct subprojects that themselves contain projects.
+     *                Please note that false value does NOT guarantee that only direct projects will be returned.
+     * @return null if project doesn't have {@link ProjectContainerProvider} in it's lookup, or a set with projects, ordering not mandated
+     * @since 1.56
+     */
+    public static Set<Project> getContainedProjects(@NonNull Project root, boolean recursive) {
+        ProjectContainerProvider prov = root.getLookup().lookup(ProjectContainerProvider.class);
+        if (prov != null) {
+            Set<Project> toRet = new HashSet<Project>();
+            ProjectContainerProvider.Result res = prov.getContainedProjects();
+            toRet.addAll(res.getProjects());
+            if (recursive && !res.isRecursive()) {
+                for (Project p : res.getProjects()) {
+                    Set<Project> subs = getContainedProjects(p, recursive);
+                    if (subs != null) {
+                        toRet.addAll(subs);
+                    }
+                }
+            }
+            return toRet;
+        }
+        return null;
     }
     
     /**

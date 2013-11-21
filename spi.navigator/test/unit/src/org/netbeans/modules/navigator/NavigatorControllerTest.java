@@ -48,13 +48,14 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComponent;
-import junit.framework.*;
+import static junit.framework.Assert.assertNotNull;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.navigator.NavigatorTCTest.GlobalLookup4TestImpl;
 import org.netbeans.modules.navigator.NavigatorTCTest.TestLookupHint;
 import org.netbeans.spi.navigator.NavigatorLookupPanelsPolicy;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -69,7 +70,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Dafe Simonek
  */
-public class NavigatorControllerTest extends TestCase {
+public class NavigatorControllerTest extends NbTestCase {
     
     private static final String JAVA_DATA_TYPE = "text/marvelous/data_type";
     
@@ -84,6 +85,7 @@ public class NavigatorControllerTest extends TestCase {
      * 
      * @throws java.lang.Exception 
      */
+    @RandomlyFails
     public void testObtainProviders() throws Exception {
         System.out.println("Testing NavigatorController.obtainProviders");
 

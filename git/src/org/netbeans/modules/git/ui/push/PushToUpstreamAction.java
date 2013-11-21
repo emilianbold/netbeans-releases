@@ -124,7 +124,7 @@ public class PushToUpstreamAction extends MultipleRepositoryAction {
                 Utils.logVCSExternalRepository("GIT", uri); //NOI18N
                 if (!isCanceled()) {
                     t[0] = SystemAction.get(PushAction.class).push(repository, uri, pushMappings,
-                            cfg.getFetchRefSpecs(), null, repositories);
+                            cfg.getFetchRefSpecs(), null, repositories, true);
                 }
             }
         };

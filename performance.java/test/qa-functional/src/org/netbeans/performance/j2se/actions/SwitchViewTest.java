@@ -61,6 +61,7 @@ import org.netbeans.performance.j2se.setup.J2SESetup;
  */
 public class SwitchViewTest extends PerformanceTestCase {
 
+    private static boolean initialized = false;
     private String operator;
     private int ke;
 
@@ -71,10 +72,6 @@ public class SwitchViewTest extends PerformanceTestCase {
      */
     public SwitchViewTest(String testName) {
         super(testName);
-        ProjectsTabOperator.invoke();
-        RuntimeTabOperator.invoke();
-        FilesTabOperator.invoke();
-        FavoritesOperator.invoke();
         expectedTime = 100;
         WAIT_AFTER_OPEN = 200;
     }
@@ -87,17 +84,13 @@ public class SwitchViewTest extends PerformanceTestCase {
      */
     public SwitchViewTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        ProjectsTabOperator.invoke();
-        RuntimeTabOperator.invoke();
-        FilesTabOperator.invoke();
-        FavoritesOperator.invoke();
         expectedTime = 100;
         WAIT_AFTER_OPEN = 200;
     }
 
     public static Test suite() {
         return emptyConfiguration()
-                .addTest(J2SESetup.class, "testCloseMemoryToolbar")
+                .addTest(J2SESetup.class).reuseUserDir(true)
                 .addTest(SwitchViewTest.class)
                 .suite();
     }
@@ -128,6 +121,13 @@ public class SwitchViewTest extends PerformanceTestCase {
 
     @Override
     protected void initialize() {
+        if (!initialized) {
+            ProjectsTabOperator.invoke().collapseAll();
+            RuntimeTabOperator.invoke().collapseAll();
+            FilesTabOperator.invoke().collapseAll();
+            FavoritesOperator.invoke().collapseAll();
+            initialized = true;
+        }
     }
 
     @Override

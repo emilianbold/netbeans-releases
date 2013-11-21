@@ -395,7 +395,8 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
 
     @Override
     public void engineRemoved (final DebuggerEngine engine) {
-        if (DebuggerModule.findObject(DebuggerModule.class).isClosing()) {
+        DebuggerModule dm = DebuggerModule.findObject(DebuggerModule.class);
+        if (dm != null && dm.isClosing()) {
             // Do not interfere with closeDebuggerUI()
             SwingUtilities.invokeLater(new Runnable() {
                 @Override

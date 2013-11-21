@@ -468,4 +468,12 @@ public class UIUtils {
             return false;
         }
     }
+    
+    public static void runInAWT(Runnable r) {
+        if(SwingUtilities.isEventDispatchThread()) {
+            r.run();
+        } else {
+            SwingUtilities.invokeLater(r);
+        }
+    }
 }

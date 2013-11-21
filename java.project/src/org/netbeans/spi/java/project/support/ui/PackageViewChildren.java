@@ -99,6 +99,7 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
@@ -133,6 +134,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
     private final RequestProcessor.Task visibility_refresh;
     private FileChangeListener wfcl;    // Weak listener on the system filesystem
     private ChangeListener wvqcl;       // Weak listener on the VisibilityQuery
+    private final Action testPackageAction;
 
     /**
      * Creates children based on a single source root.
@@ -142,6 +144,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
         
         // Sem mas dat cache a bude to uplne nejrychlejsi na svete
         names2nodes = Collections.synchronizedMap(new TreeMap<String,Object>());
+        testPackageAction = FileSensitiveActions.fileCommandAction(ActionProvider.COMMAND_TEST_SINGLE, NbBundle.getMessage(PackageViewChildren.class, "LBL_TestPackageAction_Name"), null);
         this.root = group.getRootFolder();
         this.group = group;
         visibility_refresh = VISIBILITY_CHANGE_RP.create(new Runnable() {
@@ -757,6 +760,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
                         else if ( superActions[i] instanceof FileSystemAction ) {
                             actionList.add (null); // insert separator and new action
                             actionList.add (FileSensitiveActions.fileCommandAction(ActionProvider.COMMAND_COMPILE_SINGLE, LBL_CompilePackage_Action(), null));                           
+                            actionList.add (testPackageAction);
                             actionList.addAll((List<Action>) org.openide.util.Utilities.actionsForPath("Projects/package/Actions"));
                         }
                         

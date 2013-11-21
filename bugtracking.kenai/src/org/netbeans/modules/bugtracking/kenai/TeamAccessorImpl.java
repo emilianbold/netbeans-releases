@@ -453,6 +453,10 @@ public class TeamAccessorImpl extends TeamAccessor {
             Registry registry = WindowManager.getDefault().getRegistry();
             if (Registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
                 TopComponent tc = registry.getActivated();
+                if(tc == null) {
+                    // might happen on TC close - see issue #238419
+                    return;
+                }
                 Support.LOG.log(Level.FINER, "activated TC : {0}", tc); // NOI18N
                 final Lookup lookup = tc.getLookup();
                 Query query = lookup.lookup(Query.class);

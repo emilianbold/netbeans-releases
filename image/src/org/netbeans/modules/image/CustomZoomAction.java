@@ -153,5 +153,9 @@ public class CustomZoomAction extends CallableSystemAction {
     protected String iconResource() {
         return "org/netbeans/modules/image/customZoom.gif"; // NOI18N
     }
-    
+
+    @Override
+    protected boolean asynchronous() {
+        return false;
+    }
 }
