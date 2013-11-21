@@ -1490,44 +1490,22 @@ public class Utilities {
         return Visibility.PUBLIC;
     }
     
-    public static boolean isVariableShadowedInScope(CharSequence variableName, Scope localScope) {
-        if (localScope == null) {
+    private static final EnumSet VARIABLE_KINDS = EnumSet.of(
+            ElementKind.LOCAL_VARIABLE, ElementKind.ENUM_CONSTANT, ElementKind.FIELD, ElementKind.PARAMETER,
+            ElementKind.RESOURCE_VARIABLE, ElementKind.EXCEPTION_PARAMETER, ElementKind.TYPE_PARAMETER);
+    
+    public static boolean isSymbolUsed(CompilationInfo info, TreePath target, CharSequence variableName, Scope localScope) {
+        SourcePositions[] pos = new SourcePositions[1];
+        Tree t = info.getTreeUtilities().parseExpression(variableName.toString(), pos);
+        TypeMirror tm = info.getTreeUtilities().attributeTree(t, localScope);
+        Element el = info.getTrees().getElement(new TreePath(target, t));
+        if (el == null) {
             return false;
         }
-
-        if (areAnyLocalVariablesShadowed(variableName, localScope)) {
-            return true;
-        }
-
-        if (areEnclosingMethodParamsShadowed(variableName, localScope)) {
-            return true;
-        }
-
-        return false;
+        ElementKind k = el.getKind();
+        return VARIABLE_KINDS.contains(k);
     }
 
-    private static boolean areAnyLocalVariablesShadowed(CharSequence variableName, Scope localScope) {
-        for (Element e : localScope.getLocalElements()) {
-            if (e.getKind() == ElementKind.LOCAL_VARIABLE
-                    && e.getSimpleName().contentEquals(variableName)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static boolean areEnclosingMethodParamsShadowed(CharSequence variableName, Scope localScope) {
-        if (localScope.getEnclosingMethod() != null) {
-            ExecutableElement enclMethod = localScope.getEnclosingMethod();
-            for (VariableElement varElement : enclMethod.getParameters()) {
-                if (varElement.getSimpleName().contentEquals(variableName)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-    
     /**
      * Determines if the element corresponds to never-returning, terminating method.
      * System.exit, Runtime.exit, Runtime.halt are checked. The passed element is
