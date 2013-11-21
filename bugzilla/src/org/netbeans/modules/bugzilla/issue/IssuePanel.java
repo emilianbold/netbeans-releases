@@ -149,7 +149,6 @@ import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
-import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
@@ -3645,7 +3644,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         }
     }
 
-    private static final String CURRENT_NB_VERSION = "7.4";                     // NOI18N
+    private static final String CURRENT_NB_VERSION = "8.0";                     // NOI18N
     private String getCurrentNetBeansVersion() {        
         String version = parseProductVersion(getProductVersionValue());        
         if(version != null) {
