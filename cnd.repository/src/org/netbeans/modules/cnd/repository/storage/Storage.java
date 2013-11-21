@@ -102,7 +102,7 @@ import org.openide.util.Lookup;
     private static final java.util.logging.Logger log = org.netbeans.modules.cnd.repository.Logger.getInstance();
 
     Storage(final int persistMechanismVersion, final int storageID, final List<LayerDescriptor> layerDescriptors, final UnitsConverter unitIDConverter) {
-        assert layerDescriptors != null && layerDescriptors.size() > 0;
+        assert layerDescriptors != null; //&& layerDescriptors.size() > 0;
         if (log.isLoggable(Level.FINE)) {
             log.log(Level.FINE, "New storage with storageID == {0} created",
                     new Object[]{storageID, unitIDConverter});
@@ -111,7 +111,7 @@ import org.openide.util.Lookup;
         this.storageID = storageID;
         this.storageMask = unitIDConverter;
         this.layers = Collections.unmodifiableList(createLayers(layerDescriptors, persistMechanismVersion));
-        assert layers != null && layers.size() > 0;
+        assert layers != null;// && layers.size() > 0;
         // Initialize layerDescriptors list with descriptors of created layers
         // only.
         List<LayerDescriptor> descriptors = new ArrayList<LayerDescriptor>();
