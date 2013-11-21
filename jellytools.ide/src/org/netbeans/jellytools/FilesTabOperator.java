@@ -48,7 +48,6 @@ import java.awt.Component;
 import org.netbeans.jellytools.actions.FilesViewAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.ComponentChooser;
-import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 
 /** Operator handling Files TopComponent.<p>
@@ -99,6 +98,16 @@ public class FilesTabOperator extends TopComponentOperator {
             _tree = new JTreeOperator(this);
         }
         return _tree;
+    }
+
+    /**
+     * Collapse all nodes.
+     */
+    public void collapseAll() {
+        JTreeOperator tree = tree();
+        for (int i = tree.getRowCount() - 1; i >= 0; i--) {
+            tree.collapseRow(i);
+        }
     }
 
     /** Gets node representing a project.

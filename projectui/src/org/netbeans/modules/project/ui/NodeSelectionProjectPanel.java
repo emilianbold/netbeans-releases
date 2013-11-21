@@ -69,7 +69,6 @@ public class NodeSelectionProjectPanel extends javax.swing.JPanel implements Pre
     public static final Preferences prefs = NbPreferences.forModule(NodeSelectionProjectPanel.class);
 
     public static final String KEY_ACTUALSELECTIONPROJECT = "enable.actualselectionproject";
-    public static final boolean SHOW_ACTUALSELECTIONPROJECT = true;
     private boolean enabled;
 
     public static final int COMPONENT_HEIGHT = 22;
@@ -97,7 +96,7 @@ public class NodeSelectionProjectPanel extends javax.swing.JPanel implements Pre
     @Override
     public void preferenceChange(PreferenceChangeEvent evt) {
         if (evt == null || KEY_ACTUALSELECTIONPROJECT.equals(evt.getKey())) {
-            enabled = prefs.getBoolean(KEY_ACTUALSELECTIONPROJECT, SHOW_ACTUALSELECTIONPROJECT);
+            enabled = prefs.getBoolean(KEY_ACTUALSELECTIONPROJECT, false);
             updatePreferredSize();
         }
     }

@@ -148,7 +148,7 @@ public class FetchBranchesStep extends AbstractWizardPanel implements ChangeList
         private final GitBranch branch;
 
         public Branch(GitBranch branch, boolean selected) {
-            super(selected);
+            super(selected, false);
             this.branch = branch;
         }
         

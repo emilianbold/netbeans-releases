@@ -114,6 +114,7 @@ public class MavenNbModuleImpl implements NbModuleProvider {
     private final RequestProcessor.Task tsk = RP.create(dependencyAdder);
     
     public static final String NETBEANS_REPO_ID = "netbeans";
+    public static final String NETBEANS_SNAPSHOT_REPO_ID = "netbeans-snapshot";
     /**
      * the property defined by nbm-maven-plugin's run-ide goal.
      * can help finding the defined netbeans platform.
@@ -123,6 +124,9 @@ public class MavenNbModuleImpl implements NbModuleProvider {
     public static final String GROUPID_MOJO = "org.codehaus.mojo";
     public static final String NBM_PLUGIN = "nbm-maven-plugin";
     public static final String LATEST_NBM_PLUGIN_VERSION = "3.11.1";
+    
+    public static final String NETBEANSAPI_GROUPID = "org.netbeans.api";  
+    
 
     /** Creates a new instance of MavenNbModuleImpl 
      * @param project 
@@ -313,14 +317,14 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         if (dep == null) {
             //TODO try to guess 
             dep = new Dependency();
-            dep.setGroupId("org.netbeans.api"); //NOI18N
+            dep.setGroupId(NETBEANSAPI_GROUPID); //NOI18N
             dep.setArtifactId(artifactId);
             if (version != null) {
                 dep.setVersion(version.toString());
             } else {
                 //try guessing the version according to the rest of netbeans dependencies..
                 for (Dependency d : watch.getMavenProject().getModel().getDependencies()) {
-                    if ("org.netbeans.api".equals(d.getGroupId())) { // NOI18N
+                    if (NETBEANSAPI_GROUPID.equals(d.getGroupId())) { // NOI18N
                         dep.setVersion(d.getVersion());
                     }
                 }
@@ -351,6 +355,7 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         }
         dependencyAdder.run();
     }
+
 
     @Override public void addModulesToTargetPlatform(NbModuleProvider.ModuleDependency[] dependencies) throws IOException {
         
@@ -498,7 +503,7 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         for (Artifact art : watch.getMavenProject().getArtifacts()) {
             if (art.getGroupId().startsWith("org.netbeans")) { // NOI18N
                 Artifact art2 = EmbedderFactory.getProjectEmbedder().getLocalRepository().find(
-                        new DefaultArtifact("org.netbeans.api", artifactId, art.getVersion(), null, "jar", null, new DefaultArtifactHandler("jar"))); // NOI18N
+                        new DefaultArtifact(NETBEANSAPI_GROUPID, artifactId, art.getVersion(), null, "jar", null, new DefaultArtifactHandler("jar"))); // NOI18N
                 File jar = art2.getFile();
                 if (jar != null && jar.isFile()) {
                     ExamineManifest exa = new ExamineManifest();

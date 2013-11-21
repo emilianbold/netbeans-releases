@@ -2397,7 +2397,7 @@ is divided into following sections:
             <target name="-do-test-run">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-test,-pre-test-run</xsl:attribute>
-                <j2seproject3:test testincludes="**/*Test.java"/>
+                <j2seproject3:test testincludes="**/*Test.java" includes="${{includes}}"/>
             </target>
             
             <target name="-post-test-run">

@@ -46,6 +46,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -307,10 +308,12 @@ public final class TaskSchedulingManager {
                 repositoryIds = persistedTasks.keySet().toArray(new String[persistedTasks.size()]);
             }
             for (String repositoryId : repositoryIds) {
-                // refresh only not yet initialized repositories and the requested ones
-                if (!initializedRepositories.contains(repositoryId) && repositories.contains(repositoryId)) {
-                    if (initializeTasks(repositoryId)) {
-                        fireChange = true;
+                synchronized (initializedRepositories) {
+                    // refresh only not yet initialized repositories and the requested ones
+                    if (!initializedRepositories.contains(repositoryId) && repositories.contains(repositoryId)) {
+                        if (initializeTasks(repositoryId)) {
+                            fireChange = true;
+                        }
                     }
                 }
             }
@@ -342,8 +345,35 @@ public final class TaskSchedulingManager {
         initializedRepositories.add(repository.getId());
         String[] taskIds = getRepositoryTasks(repository.getId()).toArray(new String[0]);
         if (taskIds.length > 0) {
-            repository.getIssueImpls(taskIds);
+            Collection<IssueImpl> issues = repository.getIssueImpls(taskIds);
+            for (IssueImpl impl : issues) {
+                handleSingleIssue(impl);
+            }
         }
+    }
+
+    private boolean handleSingleIssue (IssueImpl issue) {
+        IssueScheduleInfo info = issue.getSchedule();
+        boolean changed = false;
+        synchronized (initializedRepositories) {
+            if (info == null) {
+                if (scheduledTasks.remove(issue) != null) {
+                    changed = true;
+                }
+                if (getRepositoryTasks(issue.getRepositoryImpl().getId()).remove(issue.getID())) {
+                    persist();
+                }
+            } else {
+                IssueScheduleInfo oldInfo = scheduledTasks.put(issue, info);
+                if (!info.equals(oldInfo)) {
+                    changed = true;
+                }
+                if (getRepositoryTasks(issue.getRepositoryImpl().getId()).add(issue.getID())) {
+                    persist();
+                }
+            }
+        }
+        return changed;
     }
 
     private class HandleTask implements Runnable {
@@ -357,23 +387,7 @@ public final class TaskSchedulingManager {
             }
             boolean changed = false;
             for (IssueImpl issue : issues) {
-                IssueScheduleInfo info = issue.getSchedule();
-                if (info == null) {
-                    if (scheduledTasks.remove(issue) != null) {
-                        changed = true;
-                    }
-                    if (getRepositoryTasks(issue.getRepositoryImpl().getId()).remove(issue.getID())) {
-                        persist();
-                    }
-                } else {
-                    IssueScheduleInfo oldInfo = scheduledTasks.put(issue, info);
-                    if (!info.equals(oldInfo)) {
-                        changed = true;
-                    }
-                    if (getRepositoryTasks(issue.getRepositoryImpl().getId()).add(issue.getID())) {
-                        persist();
-                    }
-                }
+                changed |= handleSingleIssue(issue);
             }
             if (changed && !initializing) {
                 fireChange();

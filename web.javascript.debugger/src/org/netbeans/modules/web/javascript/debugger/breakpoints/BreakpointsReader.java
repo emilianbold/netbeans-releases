@@ -47,7 +47,9 @@ package org.netbeans.modules.web.javascript.debugger.breakpoints;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Set;
+import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.Properties;
+import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
 import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
@@ -72,11 +74,12 @@ public class BreakpointsReader implements Properties.Reader {
     private static final String ENABED          = "enabled";                    // NOI18N
     private static final String GROUP_NAME      = "groupName";                  // NOI18N
 
+    private static final String OLD_LINE_BP_CLASS_NAME = "org.netbeans.modules.web.javascript.debugger.breakpoints.LineBreakpoint";
 
     @Override
     public String [] getSupportedClassNames() {
         return new String[] {
-            LineBreakpoint.class.getName(),
+            OLD_LINE_BP_CLASS_NAME,
             DOMBreakpoint.class.getName(),
             EventsBreakpoint.class.getName(),
             XHRBreakpoint.class.getName(),
@@ -85,14 +88,14 @@ public class BreakpointsReader implements Properties.Reader {
 
     @Override
     public Object read( String typeID, Properties properties ) {
-        if (typeID.equals(LineBreakpoint.class.getName())) {
+        if (typeID.equals(OLD_LINE_BP_CLASS_NAME)) {
             Line line = MiscEditorUtil.getLine(properties.getString(URL, null), properties
                     .getInt(LINE_NUMBER, 1));
 
             if (line == null) {
                 return null;
             }
-            LineBreakpoint breakpoint = new LineBreakpoint(line);
+            JSLineBreakpoint breakpoint = new JSLineBreakpoint(line);
             readGeneralProperties(properties, breakpoint);
             return breakpoint;
         }
@@ -148,14 +151,14 @@ public class BreakpointsReader implements Properties.Reader {
     
     @Override
     public void write(Object object, Properties properties) {
-        if (object instanceof LineBreakpoint) {
+        /*if (object instanceof LineBreakpoint) {
             LineBreakpoint breakpoint = (LineBreakpoint) object;
             
             properties.setString(URL, breakpoint.getURLStringToPersist());
             properties.setInt(LINE_NUMBER, breakpoint.getLine().getLineNumber());
             writeGeneralProperties(properties, breakpoint);
         }
-        else if (object instanceof DOMBreakpoint) {
+        else*/ if (object instanceof DOMBreakpoint) {
             DOMBreakpoint db = (DOMBreakpoint) object;
             
             String urlStr;
@@ -188,14 +191,14 @@ public class BreakpointsReader implements Properties.Reader {
         }
     }
     
-    private void readGeneralProperties(Properties properties, AbstractBreakpoint breakpoint) {
+    private void readGeneralProperties(Properties properties, Breakpoint breakpoint) {
         if (!properties.getBoolean(ENABED, true)) {
             breakpoint.disable();
         }
         breakpoint.setGroupName(properties.getString(GROUP_NAME, ""));
     }
 
-    private void writeGeneralProperties(Properties properties, AbstractBreakpoint breakpoint) {
+    private void writeGeneralProperties(Properties properties, Breakpoint breakpoint) {
         properties.setBoolean(ENABED, breakpoint.isEnabled());
         properties.setString(GROUP_NAME, breakpoint.getGroupName());
     }

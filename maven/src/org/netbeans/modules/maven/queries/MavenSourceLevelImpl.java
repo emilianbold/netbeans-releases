@@ -96,27 +96,42 @@ public class MavenSourceLevelImpl implements SourceLevelQueryImplementation2 {
         assert "file".equals(uri.getScheme());
         String goal = "compile"; //NOI18N
         String property = "maven.compiler.source";
+        String param = Constants.SOURCE_PARAM;
         NbMavenProjectImpl nbprj = project.getLookup().lookup(NbMavenProjectImpl.class);
         for (URI testuri : nbprj.getSourceRoots(true)) {
             if (uri.getPath().startsWith(testuri.getPath())) {
                 goal = "testCompile"; //NOI18N
                 property = "maven.compiler.testSource";
+                param = "testSource";
             }
         }
         for (URI testuri : nbprj.getGeneratedSourceRoots(true)) {
             if (uri.getPath().startsWith(testuri.getPath())) {
                 goal = "testCompile"; //NOI18N
                 property = "maven.compiler.testSource";
+                param = "testSource";
             }
         }
         String sourceLevel = PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS,  //NOI18N
                                                               Constants.PLUGIN_COMPILER,  //NOI18N
-                                                              Constants.SOURCE_PARAM,  //NOI18N
+                                                              param,  //NOI18N
                                                               goal,
                                                               property);
         if (sourceLevel != null) {
             return sourceLevel;
         }
+        if ("testCompile".equals(goal)) { //#237986 in tests, first try "testSource" param, then fallback to "source"
+            sourceLevel = PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS,  //NOI18N
+                                                              Constants.PLUGIN_COMPILER,  //NOI18N
+                                                              Constants.SOURCE_PARAM,  //NOI18N
+                                                              "testCompile",
+                                                              "maven.compiler.source");            
+            if (sourceLevel != null) {
+                return sourceLevel;
+            }
+        }
+        
+        
         String version = PluginPropertyUtils.getPluginVersion(
                 nbprj.getOriginalMavenProject(),
                 Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER);

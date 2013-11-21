@@ -49,6 +49,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeSupport;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -84,7 +85,7 @@ implements ActionListener, Runnable, Callable<JButton> {
     private static final int MAX_RECORDS_TO_WRITE_OUT = 1111; // Be sure not to hold more than this number of log records.
     private final SlownessReporter reporter;
 
-    private volatile boolean someRecordsScheduled = false;
+    private final AtomicBoolean someRecordsScheduled = new AtomicBoolean(false);
 
     private static boolean exceptionHandler;
     public static void registerExceptionHandler(boolean enable) {
@@ -158,9 +159,15 @@ implements ActionListener, Runnable, Callable<JButton> {
             if (!exceptionHandler) {
                 return;
             }
-            boolean scheduled = AfterRestartExceptions.schedule(record);
-            if (scheduled) {
-                someRecordsScheduled = true;
+            if (AfterRestartExceptions.willSchedule(record)) {
+                // Set this ASAP:
+                someRecordsScheduled.set(true);
+                boolean scheduled = AfterRestartExceptions.schedule(record);
+                if (!scheduled) {
+                    someRecordsScheduled.set(false);
+                }
+            } else {
+                someRecordsScheduled.set(false);
             }
         } else {
             if ((record.getLevel().equals(Level.CONFIG)) && record.getMessage().equals("Slowness detected")){
@@ -236,7 +243,7 @@ implements ActionListener, Runnable, Callable<JButton> {
     private JButton button;
     @Override
     public JButton call() throws Exception {
-        if (someRecordsScheduled) {
+        if (someRecordsScheduled.getAndSet(false)) {
             return null;    // No submits when some records are scheduled after the next start.
         }
         if (button == null) {

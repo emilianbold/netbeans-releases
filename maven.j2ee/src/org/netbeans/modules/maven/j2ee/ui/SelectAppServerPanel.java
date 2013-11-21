@@ -203,6 +203,7 @@ public class SelectAppServerPanel extends javax.swing.JPanel {
         MavenProjectSupport.changeServer(project, true);
 
         // refresh all subprojects
+        //TODO replace with DependencyProjectProvider or ProjectContainerProvider
         SubprojectProvider spp = targetPrj.getLookup().lookup(SubprojectProvider.class);
         //mkleint: we are assuming complete result (transitive projects included)
         //that's ok as far as the current maven impl goes afaik, but not according to the
