@@ -193,6 +193,10 @@ public class OracleInstance {
             ch = new char[]{' '};
         }
         String userName = new String(ch);
+        String possiblePrefix = identityDomain + "."; // NOI18N
+        if (userName.startsWith(possiblePrefix) && userName.length() > possiblePrefix.length()) {
+            userName = userName.substring(possiblePrefix.length());
+        }
         
         synchronized (this) {
             if (!userLoaded) {
@@ -292,18 +296,18 @@ public class OracleInstance {
     
     public synchronized ApplicationManager getApplicationManager() {
         if (platform == null) {
-            platform = createApplicationManager(adminURL, getUser(), getPassword(), sdkFolder);
+            platform = createApplicationManager(adminURL, getIdentityDomain(), getUser(), getPassword(), sdkFolder);
         }
         return platform;
     }
     
-    public static ApplicationManager createApplicationManager(String adminUrl, String user, String password, String sdkFolder) {
+    public static ApplicationManager createApplicationManager(String adminUrl, String identityDomain, String user, String password, String sdkFolder) {
         String url = adminUrl;
         if (!url.endsWith("/")) {
             url += "/";
         }
         url += "manager/rest"; // NOI18N
-        return CloudSDKHelper.createSDKFactory(sdkFolder).createServiceEndpoint(url, user, password);
+        return CloudSDKHelper.createSDKFactory(sdkFolder).createServiceEndpoint(url, identityDomain, user, password);
     }
     
     public void testConnection() throws ManagerException {
