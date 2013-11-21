@@ -110,6 +110,8 @@ public final class DocumentViewOp
     // Whether use fractional metrics rendering hint
     static final Map<Object, Object> extraRenderingHints = new HashMap<Object, Object>();
     
+    static final Boolean doubleBuffered;
+    
     static {
         String aa = System.getProperty("org.netbeans.editor.aa");
         if (aa != null) {
@@ -171,6 +173,9 @@ public final class DocumentViewOp
                 // Do not add the key
             }
         }
+        
+        String dBuffered = System.getProperty("org.netbeans.editor.double.buffered");
+        doubleBuffered = (dBuffered != null) ? Boolean.parseBoolean(dBuffered) : null;
     }
     
     static final char PRINTING_SPACE = '\u00B7';
@@ -567,6 +572,10 @@ public final class DocumentViewOp
         textComponent.addPropertyChangeListener(this);
         viewHierarchyImpl = ViewHierarchyImpl.get(textComponent);
         viewHierarchyImpl.setDocumentView(docView);
+        if (doubleBuffered != null) {
+            textComponent.setDoubleBuffered(doubleBuffered);
+            ViewHierarchyImpl.SETTINGS_LOG.fine("DocumentViewOp.parentViewSet(): Setting doubleBuffered to " + doubleBuffered + "\n");
+        }
         if (ViewHierarchyImpl.REPAINT_LOG.isLoggable(Level.FINER)) {
             DebugRepaintManager.register(textComponent);
         }
