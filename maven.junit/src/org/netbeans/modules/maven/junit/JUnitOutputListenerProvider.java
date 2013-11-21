@@ -42,6 +42,8 @@
 package org.netbeans.modules.maven.junit;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.StringReader;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -60,6 +62,7 @@ import javax.swing.event.ChangeListener;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.versioning.ComparableVersion;
+import org.apache.maven.model.Plugin;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.StringUtils;
 import org.jdom.Document;
@@ -106,6 +109,8 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
     
     private static final Logger LOG = Logger.getLogger(JUnitOutputListenerProvider.class.getName());
     private final RunConfig config;
+    private boolean surefireRunningInParallel = false;
+    private ArrayList<String> runningTestClasses;
     
     public JUnitOutputListenerProvider(RunConfig config) {
         runningPattern = Pattern.compile("(?:\\[surefire\\] )?Running (.*)", Pattern.DOTALL); //NOI18N
@@ -114,8 +119,53 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
         this.config = config;
         usedNames = new HashSet<String>();
         startTimeStamp = System.currentTimeMillis();
+        runningTestClasses = new ArrayList<String>();
+        surefireRunningInParallel = isSurefireRunningInParallel();
     }
-
+    
+    private boolean isSurefireRunningInParallel() {
+        List<Plugin> buildPlugins = config.getMavenProject().getBuildPlugins();
+        for(Plugin plugin : buildPlugins) {
+            String artifactId = plugin.getArtifactId();
+            if(artifactId != null && artifactId.equals("maven-surefire-plugin")) { //NOI18N
+                Object pluginConfiguration = plugin.getConfiguration();
+                if (pluginConfiguration != null) {
+                    String conf = pluginConfiguration.toString();                    
+                    try {
+                        SAXBuilder saxBuilder = new SAXBuilder();
+                        Document doc = saxBuilder.build(new StringReader(conf));
+                        Element configuration = doc.getRootElement();
+                        Element parallel = configuration.getChild("parallel"); //NOI18N
+                        if(parallel != null) {
+                            String value = parallel.getTextTrim();
+                            if(value.equals("methods") || value.equals("classes") || value.equals("both")) { //NOI18N
+                                return true;
+                            }
+                        }
+                        Element forkMode = configuration.getChild("forkMode"); //NOI18N
+                        if (forkMode != null) {
+                            String value = forkMode.getTextTrim();
+                            if(!value.equals("never")) { //NOI18N
+                                return true;
+                            }
+                        }
+                        Element forkCount = configuration.getChild("forkCount"); //NOI18N
+                        if (forkCount != null) {
+                            String value = forkCount.getTextTrim();
+                            if(!value.equals("0")) { //NOI18N
+                                return true;
+                            }
+                        }                        
+                    } catch (JDOMException x) {
+                        LOG.log(Level.INFO, "parsing " + conf, x);
+                    } catch (IOException x) {
+                        LOG.log(Level.WARNING, "parsing " + conf, x);
+                    }
+                }
+            }
+        }
+        return false;
+    }
 
     public @Override String[] getRegisteredOutputSequences() {
         return new String[] {
@@ -147,9 +197,17 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
         match = runningPattern.matcher(line);
         if (match.matches()) {
             if (runningTestClass != null && outputDir != null) {
-                generateTest();
+                if(!surefireRunningInParallel) {
+                    // tests are running sequentially, so update Test Results Window
+                    generateTest();
+                }
             }
             runningTestClass = match.group(1);
+            if (surefireRunningInParallel) {
+                // tests are running in parallel, so keep track of the tests that are running
+                // and update Test Results Window when all are finished
+                runningTestClasses.add(runningTestClass);
+            }
         }
     }
 
@@ -333,12 +391,23 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
             return;
         }
         if (runningTestClass != null && outputDir != null) {
-            generateTest();
+            if(surefireRunningInParallel) {
+                // tests are running in parallel, so now that all are finished 
+                // and the result files are created update Test Results Window
+                for(String testClass : runningTestClasses) {
+                    runningTestClass = testClass;
+                    generateTest();
+                }
+            } else {
+                generateTest();
+            }
         }
         Manager.getInstance().sessionFinished(session);
         runningTestClass = null;
         outputDir = null;
         session = null;
+        surefireRunningInParallel = false;
+        runningTestClasses = null;
     }
 
     private static final Pattern COMPARISON_PATTERN = Pattern.compile(".*expected:<(.*)> but was:<(.*)>$"); //NOI18N
