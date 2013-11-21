@@ -42,8 +42,6 @@
 package org.netbeans.modules.maven.junit;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.StringReader;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -63,8 +61,11 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.apache.maven.model.Plugin;
+import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
+import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.StringUtils;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
@@ -91,6 +92,7 @@ import org.netbeans.modules.maven.api.output.OutputProcessor;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
 import org.netbeans.modules.maven.junit.nodes.JUnitTestRunnerNodeFactory;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /**
@@ -125,46 +127,71 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
     
     private boolean isSurefireRunningInParallel() {
         List<Plugin> buildPlugins = config.getMavenProject().getBuildPlugins();
-        for(Plugin plugin : buildPlugins) {
+        for (Plugin plugin : buildPlugins) {
             String artifactId = plugin.getArtifactId();
-            if(artifactId != null && artifactId.equals("maven-surefire-plugin")) { //NOI18N
-                Object pluginConfiguration = plugin.getConfiguration();
-                if (pluginConfiguration != null) {
-                    String conf = pluginConfiguration.toString();                    
-                    try {
-                        SAXBuilder saxBuilder = new SAXBuilder();
-                        Document doc = saxBuilder.build(new StringReader(conf));
-                        Element configuration = doc.getRootElement();
-                        Element parallel = configuration.getChild("parallel"); //NOI18N
-                        if(parallel != null) {
-                            String value = parallel.getTextTrim();
-                            if(value.equals("methods") || value.equals("classes") || value.equals("both")) { //NOI18N
+            if (artifactId != null && artifactId.equals("maven-surefire-plugin")) { //NOI18N
+                // http://maven.apache.org/surefire/maven-surefire-plugin/test-mojo.html
+                // http://maven.apache.org/surefire/maven-surefire-plugin/examples/fork-options-and-parallel-execution.html
+                String parallel = PluginPropertyUtils.getPluginPropertyBuildable(config.getProject(),
+                        plugin.getGroupId(), artifactId, "build", new ConfigBuilder("parallel")); //NOI18N
+                if (parallel != null) {
+                    return true;
+                }
+                String forkMode = PluginPropertyUtils.getPluginPropertyBuildable(config.getProject(),
+                        plugin.getGroupId(), artifactId, "build", new ConfigBuilder("forkMode")); //NOI18N
+                if (forkMode != null) {
+                    if (forkMode.equals("perthread")) { //NOI18N
+                        String threadCount = PluginPropertyUtils.getPluginPropertyBuildable(config.getProject(),
+                                plugin.getGroupId(), artifactId, "build", new ConfigBuilder("threadCount")); //NOI18N
+                        if (threadCount != null) {
+                            if (Integer.parseInt(threadCount) > 1) {
                                 return true;
                             }
                         }
-                        Element forkMode = configuration.getChild("forkMode"); //NOI18N
-                        if (forkMode != null) {
-                            String value = forkMode.getTextTrim();
-                            if(!value.equals("never")) { //NOI18N
-                                return true;
-                            }
-                        }
-                        Element forkCount = configuration.getChild("forkCount"); //NOI18N
-                        if (forkCount != null) {
-                            String value = forkCount.getTextTrim();
-                            if(!value.equals("0")) { //NOI18N
-                                return true;
-                            }
-                        }                        
-                    } catch (JDOMException x) {
-                        LOG.log(Level.INFO, "parsing " + conf, x);
-                    } catch (IOException x) {
-                        LOG.log(Level.WARNING, "parsing " + conf, x);
+                    }
+                }
+                String forkCount = PluginPropertyUtils.getPluginPropertyBuildable(config.getProject(),
+                        plugin.getGroupId(), artifactId, "build", new ConfigBuilder("forkCount")); //NOI18N
+                if (forkCount != null) {
+                    int index = forkCount.indexOf("C");
+                    int cpuCores = 1;
+                    if (index != -1) {
+                        forkCount = forkCount.substring(0, index);
+                        cpuCores = Runtime.getRuntime().availableProcessors();
+                    }
+                    int forks = Integer.parseInt(forkCount);
+                    if (forks * cpuCores > 1) {
+                        return true;
                     }
                 }
             }
         }
         return false;
+    }
+
+    private class ConfigBuilder implements PluginPropertyUtils.ConfigurationBuilder<String> {
+
+        private String child;
+
+        public ConfigBuilder(String child) {
+            this.child = child;
+        }
+
+        @Override
+        public String build(Xpp3Dom configRoot, ExpressionEvaluator eval) {
+            if (configRoot != null) {
+                Xpp3Dom domChild = configRoot.getChild(child);
+                if (domChild != null) {
+                    try {
+                        return (String) eval.evaluate(domChild.getValue());
+                    } catch (ExpressionEvaluationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+            return null;
+        }
+
     }
 
     public @Override String[] getRegisteredOutputSequences() {
