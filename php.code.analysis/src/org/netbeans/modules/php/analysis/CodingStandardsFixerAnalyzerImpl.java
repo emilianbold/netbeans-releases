@@ -233,9 +233,8 @@ public final class CodingStandardsFixerAnalyzerImpl implements Analyzer {
     @ServiceProvider(service = AnalyzerFactory.class)
     public static final class CodingStandardsFixerAnalyzerFactory extends AnalyzerFactory {
 
-        // TODO create icon
         @StaticResource
-        private static final String ICON_PATH = "org/netbeans/modules/php/analysis/ui/resources/code-sniffer.png"; // NOI18N
+        private static final String ICON_PATH = "org/netbeans/modules/php/analysis/ui/resources/coding-standards-fixer.png"; // NOI18N
 
         @NbBundle.Messages("CodingStandardsFixerAnalyzerFactory.displayName=Coding Standards Fixer")
         public CodingStandardsFixerAnalyzerFactory() {
