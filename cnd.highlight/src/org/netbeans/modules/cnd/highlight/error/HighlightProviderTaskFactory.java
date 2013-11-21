@@ -46,6 +46,7 @@ import java.util.Collections;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.highlight.semantic.debug.InterrupterImpl;
 import org.netbeans.modules.cnd.model.tasks.CndParserResult;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -55,6 +56,7 @@ import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
@@ -77,7 +79,7 @@ public final class HighlightProviderTaskFactory extends TaskFactory {
 
     private final class ErrorsHighlighter extends ParserResultTask<CndParserResult> {
 
-        private InterrupterImpl interrupter;
+        private final InterrupterImpl interrupter;
 
         public ErrorsHighlighter(InterrupterImpl interrupter) {
             this.interrupter = interrupter;
@@ -87,9 +89,17 @@ public final class HighlightProviderTaskFactory extends TaskFactory {
         public void run(CndParserResult result, SchedulerEvent event) {
             try {
                 interrupter.resume();
+                final FileObject fo = result.getSnapshot().getSource().getFileObject();
+                if (fo == null) {
+                    return;
+                }
+                final CsmFile csmFile = result.getCsmFile();
+                if (csmFile == null) {
+                    return;
+                }
                 final Document doc = result.getSnapshot().getSource().getDocument(false);
-                DataObject dobj = DataObject.find(result.getSnapshot().getSource().getFileObject());
-                HighlightProvider.getInstance().update(result.getCsmFile(), doc, dobj, interrupter);
+                DataObject dobj = DataObject.find(fo);
+                HighlightProvider.getInstance().update(csmFile, doc, dobj, interrupter);
             } catch (DataObjectNotFoundException ex) {
                 Exceptions.printStackTrace(ex);
             }
