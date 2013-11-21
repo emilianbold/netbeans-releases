@@ -118,6 +118,14 @@ public interface SiteTemplateImplementation {
     void apply(@NonNull FileObject projectDir, @NonNull ProjectProperties projectProperties, @NullAllowed ProgressHandle handle) throws IOException;
 
     /**
+     * Clean up the possibly {@link #prepare() prepared} site template. Typically, locally cached file is
+     * simply deleted.
+     * @throws IOException if any error occurs
+     * @since 1.54
+     */
+    void cleanup() throws IOException;
+
+    /**
      * Get list of full relative paths of supported JavaScript libraries.
      * @return list of full relative paths of supported JavaScript libraries.
      */
@@ -140,6 +148,7 @@ public interface SiteTemplateImplementation {
         private String siteRootFolder;
         private String testFolder;
         private String configFolder;
+        private String jsTestingProvider;
 
 
         /**
@@ -197,6 +206,27 @@ public interface SiteTemplateImplementation {
          */
         public ProjectProperties setConfigFolder(String configFolder) {
             this.configFolder = configFolder;
+            return this;
+        }
+
+        /**
+         * Get JS testing provider (its identifier).
+         * @return JS testing provider (its identifier); can be {@code null} if there is no default JS testing provider
+         * @since 1.54
+         */
+        @CheckForNull
+        public String getJsTestingProvider() {
+            return jsTestingProvider;
+        }
+
+        /**
+         * Set JS testing provider (its identifier), can be {@code null} if there is no default JS testing provider.
+         * @param jsTestingProvider JS testing provider (its identifier), can be {@code null} if there is no default JS testing provider
+         * @return itself
+         * @since 1.54
+         */
+        public ProjectProperties setJsTestingProvider(String jsTestingProvider) {
+            this.jsTestingProvider = jsTestingProvider;
             return this;
         }
 
