@@ -45,22 +45,15 @@
 package org.netbeans.modules.java.j2seproject.ui.customizer;
 
 import java.awt.Dialog;
-import java.awt.Dimension;
-import java.util.LinkedList;
 import javax.lang.model.SourceVersion;
-import javax.swing.Box;
 import javax.swing.ButtonModel;
 import javax.swing.DefaultListModel;
-import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.DefaultTableModel;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
-import org.netbeans.modules.java.j2seproject.api.J2SECategoryExtensionProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -68,23 +61,8 @@ import org.openide.util.NbBundle;
 
 public class CustomizerCompile extends JPanel implements HelpCtx.Provider {
 
-    private J2SEProject project;
-    private java.util.List<J2SECategoryExtensionProvider> compProviders = new LinkedList<>();
-    
     public CustomizerCompile( J2SEProjectProperties uiProperties ) {
         initComponents();
-
-        int nextExtensionYPos = 0;
-        this.project = uiProperties.getProject();
-        for (J2SECategoryExtensionProvider compProvider : project.getLookup().lookupAll(J2SECategoryExtensionProvider.class)) {
-            if( compProvider.getCategory() == J2SECategoryExtensionProvider.ExtensibleCategory.COMPILING ) {
-                if( addExtPanel(project,compProvider,nextExtensionYPos) ) {
-                    compProviders.add(compProvider);
-                    nextExtensionYPos++;
-                }
-            }
-        }
-        addPanelFiller(nextExtensionYPos);
 
         uiProperties.COMPILE_ON_SAVE_MODEL.setMnemonic(compileOnSave.getMnemonic());
         compileOnSave.setModel(new UnselectedWhenDisabledButtonModel(uiProperties.COMPILE_ON_SAVE_MODEL,
@@ -114,16 +92,13 @@ public class CustomizerCompile extends JPanel implements HelpCtx.Provider {
         enableAPTCheckBoxActionPerformed(null);
     }
 
-    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx( CustomizerCompile.class );
     }
 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
-        mainPanel = new javax.swing.JPanel();
         compileOnSave = new javax.swing.JCheckBox();
         compileOnSaveDescription = new javax.swing.JLabel();
         debugInfoCheckBox = new javax.swing.JCheckBox();
@@ -144,9 +119,6 @@ public class CustomizerCompile extends JPanel implements HelpCtx.Provider {
         additionalJavacParamsLabel = new javax.swing.JLabel();
         additionalJavacParamsField = new javax.swing.JTextField();
         additionalJavacParamsExample = new javax.swing.JLabel();
-        extPanel = new javax.swing.JPanel();
-
-        setLayout(new java.awt.GridBagLayout());
 
         org.openide.awt.Mnemonics.setLocalizedText(compileOnSave, org.openide.util.NbBundle.getBundle(CustomizerCompile.class).getString("CustomizerCompile.CompileOnSave")); // NOI18N
 
@@ -237,54 +209,53 @@ public class CustomizerCompile extends JPanel implements HelpCtx.Provider {
 
         org.openide.awt.Mnemonics.setLocalizedText(additionalJavacParamsExample, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_AdditionalCompilerOptionsExample")); // NOI18N
 
-        javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
-        mainPanel.setLayout(mainPanelLayout);
-        mainPanelLayout.setHorizontalGroup(
-            mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(mainPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(mainPanelLayout.createSequentialGroup()
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addComponent(additionalJavacParamsLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(additionalJavacParamsExample, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(additionalJavacParamsField)))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
-                        .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(additionalJavacParamsExample)
+                    .addComponent(additionalJavacParamsField, javax.swing.GroupLayout.DEFAULT_SIZE, 375, Short.MAX_VALUE))
+                .addContainerGap())
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(compileOnSave, javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(debugInfoCheckBox, javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(deprecationCheckBox, javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(doDependCheckBox, javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(enableAPTCheckBox, javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, mainPanelLayout.createSequentialGroup()
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addGap(21, 21, 21)
-                                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(annotationProcessorsLabel, javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(enableAPTEditorCheckBox, javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(annotationProcessorsLabel)
+                            .addComponent(enableAPTEditorCheckBox)))
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                        .addGap(21, 21, 21)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(processorOptionsLabel)
-                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
-                                            .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                                .addComponent(processorOptionsScrollPane, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 463, Short.MAX_VALUE)
-                                                .addComponent(AnnotationProcessorsScrollPane))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(processorOptionsScrollPane, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 458, Short.MAX_VALUE)
+                                    .addComponent(AnnotationProcessorsScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 458, Short.MAX_VALUE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                            .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(removeOptionButton)
-                                                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                         .addComponent(addOptionButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                         .addComponent(addProcessorButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                    .addComponent(removeProcessorButton))))))))
-                        .addGap(2, 2, 2))
-                    .addGroup(mainPanelLayout.createSequentialGroup()
+                                        .addComponent(removeProcessorButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))))
+                .addGap(12, 12, 12))
+            .addGroup(layout.createSequentialGroup()
                 .addGap(21, 21, 21)
-                        .addComponent(compileOnSaveDescription)))
+                .addComponent(compileOnSaveDescription, javax.swing.GroupLayout.DEFAULT_SIZE, 552, Short.MAX_VALUE)
                 .addContainerGap())
         );
-        mainPanelLayout.setVerticalGroup(
-            mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(mainPanelLayout.createSequentialGroup()
-                .addContainerGap()
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addComponent(compileOnSave)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(compileOnSaveDescription, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -301,27 +272,27 @@ public class CustomizerCompile extends JPanel implements HelpCtx.Provider {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(annotationProcessorsLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(mainPanelLayout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
                         .addComponent(addProcessorButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(removeProcessorButton))
-                    .addComponent(AnnotationProcessorsScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                    .addComponent(AnnotationProcessorsScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 90, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(processorOptionsLabel)
                 .addGap(6, 6, 6)
-                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(processorOptionsScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                    .addGroup(mainPanelLayout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(processorOptionsScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 83, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
                         .addComponent(addOptionButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(removeOptionButton)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(additionalJavacParamsLabel)
                     .addComponent(additionalJavacParamsField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(additionalJavacParamsExample, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(additionalJavacParamsExample)
                 .addContainerGap())
         );
 
@@ -341,25 +312,6 @@ public class CustomizerCompile extends JPanel implements HelpCtx.Provider {
         removeOptionButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "BTN_ACSD_RemoveProcessorOption")); // NOI18N
         removeOptionButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "BTN_ACSD_RemoveProcessorOption")); // NOI18N
         additionalJavacParamsField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage (CustomizerCompile.class,"AD_AdditionalCompilerOptions"));
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        add(mainPanel, gridBagConstraints);
-
-        extPanel.setLayout(new java.awt.GridBagLayout());
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 0.1;
-        gridBagConstraints.weighty = 0.1;
-        add(extPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void addProcessorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addProcessorButtonActionPerformed
@@ -479,8 +431,6 @@ public class CustomizerCompile extends JPanel implements HelpCtx.Provider {
     private javax.swing.JCheckBox doDependCheckBox;
     private javax.swing.JCheckBox enableAPTCheckBox;
     private javax.swing.JCheckBox enableAPTEditorCheckBox;
-    private javax.swing.JPanel extPanel;
-    private javax.swing.JPanel mainPanel;
     private javax.swing.JLabel processorOptionsLabel;
     private javax.swing.JScrollPane processorOptionsScrollPane;
     private javax.swing.JTable processorOptionsTable;
@@ -506,35 +456,5 @@ public class CustomizerCompile extends JPanel implements HelpCtx.Provider {
             delegate.setSelected(b);
         }
 
-    }
-    
-    private boolean addExtPanel(Project p, J2SECategoryExtensionProvider compProvider, int gridY) {
-        if (compProvider != null) {
-            JComponent comp = compProvider.createComponent(p, null);
-            if (comp != null) {
-                java.awt.GridBagConstraints constraints = new java.awt.GridBagConstraints();
-                constraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-                constraints.gridx = 0;
-                constraints.gridy = gridY;
-                constraints.weightx = 1.0;
-                extPanel.add(comp, constraints);
-                return true;
-}
-        }
-        return false;
-    }
-
-    private void addPanelFiller(int gridY) {
-        java.awt.GridBagConstraints constraints = new java.awt.GridBagConstraints();
-        constraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        constraints.gridx = 0;
-        constraints.gridy = gridY;
-        constraints.weightx = 1.0;
-        constraints.weighty = 1.0;
-        extPanel.add( new Box.Filler(
-                new Dimension(), 
-                new Dimension(),
-                new Dimension(10000,10000) ),
-                constraints);
     }
 }
