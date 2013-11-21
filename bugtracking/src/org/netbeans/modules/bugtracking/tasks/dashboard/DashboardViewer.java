@@ -622,7 +622,7 @@ public final class DashboardViewer implements PropertyChangeListener {
         if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.YES_OPTION) {
             List<TaskNode> finished = new ArrayList<TaskNode>();
             for (CategoryNode categoryNode : categoryNodes) {
-                if (!categoryNode.isOpened()) {
+                if (!categoryNode.isOpened() || !categoryNode.getCategory().persist()) {
                     continue;
                 }
                 for (TaskNode taskNode : categoryNode.getTaskNodes()) {
