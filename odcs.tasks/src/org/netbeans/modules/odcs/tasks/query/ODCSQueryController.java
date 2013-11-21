@@ -1022,14 +1022,14 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
                 delegatingIssueContainer.refreshingStarted();
             }
             setQueryRunning(true);
+            String displayName = query.getDisplayName() != null ? query.getDisplayName() + " (" + repository.getDisplayName() + ")" // NOI18N
+                    : repository.getDisplayName();
             handle = ProgressHandleFactory.createHandle(
                     NbBundle.getMessage(
                         ODCSQueryController.class,
                         "MSG_SearchingQuery",                                       // NOI18N
                         new Object[] {
-                            query.getDisplayName() != null ?
-                                query.getDisplayName() :
-                                repository.getDisplayName()}),
+                            displayName}),
                     this);
             EventQueue.invokeLater(new Runnable() {
                 @Override

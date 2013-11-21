@@ -1305,7 +1305,8 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    String displayName = query.getDisplayName() != null ? query.getDisplayName() : repository.getDisplayName();
+                    String displayName = query.getDisplayName() != null ? query.getDisplayName() + " (" + repository.getDisplayName() + ")" // NOI18N
+                            : repository.getDisplayName();
                     handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(QueryController.class, "MSG_SearchingQuery", new Object[] { displayName }), QueryTask.this); // NOI18N
                     handle.start();
 
