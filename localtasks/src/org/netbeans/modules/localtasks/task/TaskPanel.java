@@ -109,7 +109,7 @@ import org.netbeans.modules.localtasks.task.LocalTask.Attachment;
 import org.netbeans.modules.localtasks.task.LocalTask.TaskReference;
 import org.netbeans.modules.bugtracking.commons.AttachmentsPanel;
 import org.netbeans.modules.bugtracking.commons.UIUtils;
-import org.netbeans.modules.bugtracking.spi.SchedulingPicker;
+import org.netbeans.modules.bugtracking.spi.SchedulePicker;
 import org.netbeans.modules.mylyn.util.NbDateRange;
 import org.netbeans.modules.mylyn.util.localtasks.IssueField;
 import org.netbeans.modules.spellchecker.api.Spellchecker;
@@ -150,7 +150,7 @@ final class TaskPanel extends javax.swing.JPanel {
     private final AttachmentsPanel attachmentsPanel;
     private static final Logger LOG = LocalRepository.LOG;
     private final IDEServices.DatePickerComponent dueDatePicker;
-    private final SchedulingPicker scheduleDatePicker;
+    private final SchedulePicker scheduleDatePicker;
     private static final NumberFormatter estimateFormatter = new NumberFormatter(new java.text.DecimalFormat("#0")) {
 
         @Override
@@ -197,7 +197,7 @@ final class TaskPanel extends javax.swing.JPanel {
         
         GroupLayout layout = (GroupLayout) attributesPanel.getLayout();
         dueDatePicker = UIUtils.createDatePickerComponent();
-        scheduleDatePicker = new SchedulingPicker();
+        scheduleDatePicker = new SchedulePicker();
         layout.replace(dummyDueDateField, dueDatePicker.getComponent());
         dueDateLabel.setLabelFor(dueDatePicker.getComponent());
         layout.replace(dummyScheduleDateField, scheduleDatePicker.getComponent());

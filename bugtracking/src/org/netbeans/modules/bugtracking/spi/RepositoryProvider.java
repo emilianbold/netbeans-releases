@@ -90,7 +90,7 @@ public interface RepositoryProvider<R, Q, I> {
     public Image getIcon(R r);
 
     /**
-     * Returns an issue with the given ID.
+     * Returns issues with the given IDs.
      *
      * @param r an implementation specific repository
      * @param ids
