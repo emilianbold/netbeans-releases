@@ -133,8 +133,8 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
                 int selectionStart = caretOffset;
                 int selectionEnd = caretOffset;
                 if (comp != null) {
-                    selectionStart = comp.getSelectionStart();
-                    selectionEnd = comp.getSelectionEnd();
+                    selectionStart = Math.min(cursorEvent.getCaretOffset(),cursorEvent.getMarkOffset());//comp.getSelectionStart();
+                    selectionEnd = Math.max(cursorEvent.getCaretOffset(),cursorEvent.getMarkOffset());//comp.getSelectionEnd();
                 }
                 StatementResult res = findExpressionStatement(file.getDeclarations(), selectionStart, selectionEnd, doc);
                 if (res == null) {
