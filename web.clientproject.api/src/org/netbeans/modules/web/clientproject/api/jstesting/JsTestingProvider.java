@@ -220,14 +220,7 @@ public final class JsTestingProvider {
         delegate.projectClosed(project);
     }
 
-    /**
-     * Notify provider that it has been enabled/disabled in the given project (so
-     * the provider can, if necessary, adjust UI etc.).
-     * @param project the project, never {@code null}
-     * @param enabled {@code true} if enabled, {@code false} otherwise
-     * @since 1.54
-     */
-    public void notifyEnabled(@NonNull Project project, boolean enabled) {
+    void notifyEnabled(@NonNull Project project, boolean enabled) {
         Parameters.notNull("project", project); // NOI18N
         delegate.notifyEnabled(project, enabled);
     }
