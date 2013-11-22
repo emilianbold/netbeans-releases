@@ -47,7 +47,7 @@ import org.netbeans.api.editor.EditorActionRegistration;
 
 @EditorActionRegistration(name="toggle-lines-view",
                           menuPath="View",
-                          menuPosition=887,
+                          menuPosition=898,
                           preferencesKey=ShowLinesAction.KEY_LINES,
                           preferencesDefault=ShowLinesAction.DEF_LINES)
 public class ShowLinesAction extends AbstractAction {
