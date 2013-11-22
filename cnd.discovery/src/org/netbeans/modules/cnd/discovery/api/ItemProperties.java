@@ -102,7 +102,7 @@ public interface ItemProperties {
 
     public enum LanguageStandard {
         Unknown,
-        C, C89, C99,
+        C, C89, C99, C11,
         CPP, CPP11,
         F77, F90, F95,
         Default

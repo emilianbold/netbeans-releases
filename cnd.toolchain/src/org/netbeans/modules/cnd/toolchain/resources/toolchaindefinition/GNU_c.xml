@@ -106,6 +106,7 @@ made subject to such option by the copyright holder.
             <default flags="" default="true"/>
             <c89 flags="-std=c89"/>
             <c99 flags="-std=c99"/>
+            <c11 flags="-std=c11"/>
         </c_standard>
         <output_object_file flags="-o " />
         <dependency_generation flags="-MMD -MP -MF &quot;$@.d&quot;" />

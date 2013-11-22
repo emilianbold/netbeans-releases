@@ -841,7 +841,7 @@ public final class ToolchainManagerImpl {
         Element e = doc.createElement("c_standard"); // NOI18N
         element.appendChild(e);
         Element c;
-        String[] names = new String[]{"default", "c89", "c99"}; // NOI18N
+        String[] names = new String[]{"default", "c89", "c99", "c11"}; // NOI18N
         for (int i = 0; i < flags.length; i++) {
             c = doc.createElement(names[i]);
             c.setAttribute("flags", flags[i]); // NOI18N
@@ -1447,15 +1447,16 @@ public final class ToolchainManagerImpl {
         String cDefault;
         String c89;
         String c99;
+        String c11;
         int default_selection = 0;
 
         public boolean isValid() {
-            return cDefault != null && c89 != null && c99 != null;
+            return cDefault != null && c89 != null && c99 != null && c11 != null;
         }
 
         public String[] values() {
             if (isValid()) {
-                return new String[]{cDefault, c89, c99};
+                return new String[]{cDefault, c89, c99, c11};
             }
             return null;
         }
@@ -1963,6 +1964,11 @@ public final class ToolchainManagerImpl {
                     st.c99 = flags;
                     if (isDefault) {
                         st.default_selection = 2;
+                    }
+                } else if (path.endsWith(".c11")) { // NOI18N
+                    st.c11 = flags;
+                    if (isDefault) {
+                        st.default_selection = 3;
                     }
                 }
             } else if (path.endsWith(".strip")) { // NOI18N

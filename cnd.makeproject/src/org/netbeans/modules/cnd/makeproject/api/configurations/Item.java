@@ -916,6 +916,8 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
                     switch (itemConfiguration.getCCompilerConfiguration().getInheritedCStandard()) {
                         case CCompilerConfiguration.STANDARD_C99:
                             return LanguageFlavor.C99;
+                        case CCompilerConfiguration.STANDARD_C11:
+                            return LanguageFlavor.C11;
                         case CCompilerConfiguration.STANDARD_C89:
                         case CCompilerConfiguration.STANDARD_DEFAULT:
                             return LanguageFlavor.C89;
