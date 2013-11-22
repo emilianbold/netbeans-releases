@@ -165,12 +165,12 @@ public class RepositoryCacheMap<K, V> {
     public V put(K key, V value) {
         RepositoryCacheValue<V> entry = new RepositoryCacheValue<V>(value);
         try {
-            softAssert(!(keyToValue.size() < valueToKey.size()), "valueToKeyStorage contains more elements than keyToValueStorage key=" + key); //NOI18N
-            softAssert(!(keyToValue.size() > valueToKey.size()), "keyToValueStorage contains more elements than valueToKeyStorage"); //NOI18N
+            softAssert(!(keyToValue.size() < valueToKey.size()), "valueToKeyStorage contains more elements than keyToValueStorage key=", key); //NOI18N
+            softAssert(!(keyToValue.size() > valueToKey.size()), "keyToValueStorage contains more elements than valueToKeyStorage", null); //NOI18N
 
             if (keyToValue.size() < capacity) {
                 RepositoryCacheValue<V> oldValue = keyToValue.put(key, entry);
-                softAssert(oldValue == null, "Value replacement in RepositoryCacheMap key=" + key); //NOI18N
+                softAssert(oldValue == null, "Value replacement in RepositoryCacheMap key=", key); //NOI18N
                 valueToKey.put(entry, key);
             } else {
                 RepositoryCacheValue<V> minValue = valueToKey.firstKey();
@@ -180,13 +180,13 @@ public class RepositoryCacheMap<K, V> {
                 valueToKey.remove(minValue);
 
                 RepositoryCacheValue<V> oldValue = keyToValue.put(key, entry);
-                softAssert(oldValue == null, "Value replacement in RepositoryCacheMap key=" + key); //NOI18N
+                softAssert(oldValue == null, "Value replacement in RepositoryCacheMap key=", key); //NOI18N
                 valueToKey.put(entry, key);
 
                 return minValue.value;
             }
         } catch (NoSuchElementException e) {
-            e.printStackTrace();
+            e.printStackTrace(System.err);
         }
         return null;
     }
@@ -237,11 +237,15 @@ public class RepositoryCacheMap<K, V> {
         return retSet;
     }
 
-    private void softAssert(boolean condition, String message) {
+    private void softAssert(boolean condition, String message, K key) {
         if (ASSERTIONS && !condition) {
             Exception ex = new Exception();
             StackTraceElement[] trace = ex.getStackTrace();
-            System.err.println(message);
+            if (key == null) {
+                System.err.println(message);
+            } else {
+                System.err.println(message+key);
+            }
             for (int i = 1; i < trace.length; i++) {
                 System.err.println("\tat " + trace[i]); //NOI18N
             }
