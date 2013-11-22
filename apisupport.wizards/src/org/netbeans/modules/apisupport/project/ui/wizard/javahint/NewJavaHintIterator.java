@@ -172,7 +172,7 @@ public class NewJavaHintIterator extends BasicWizardIterator {
         replaceTokens.put("PACKAGE_NAME", model.getPackageName()); // NOI18N
         replaceTokens.put("GENERATE_FIX", model.isDoFix() ? "true" : null); // NOI18N
         replaceTokens.put("DISPLAY_NAME", model.getDisplayName()); // NOI18N
-        replaceTokens.put("DESCRIPTION", model.getDescription()); // NOI18N
+        replaceTokens.put("DESCRIPTION", replaceLineBreaksWithHTMLLineBreaks(model.getDescription())); // NOI18N
         replaceTokens.put("WARNING_MESSAGE", model.getWarningMessage()); // NOI18N
         if (model.isDoFix()) {
             replaceTokens.put("FIX_MESSAGE", model.getFixText()); // NOI18N
@@ -195,6 +195,12 @@ public class NewJavaHintIterator extends BasicWizardIterator {
         model.setCreatedModifiedFiles(cmf);
     }
 
+    private static String replaceLineBreaksWithHTMLLineBreaks(String text) {
+        String result = null != text ? text : ""; // NOI18N
+        result = result.trim().replaceAll("(\r?\n|\r)(?=.)", "<br/>\" +\n\""); // NOI18N
+        return result;
+    }
+    
     private static NbProjectProvider getProjectProvider(Project prj) {
             return prj.getLookup().lookup(NbProjectProvider.class);
     }

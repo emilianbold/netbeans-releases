@@ -129,6 +129,40 @@ public class FieldForUnusedParamTest extends TreeRuleTestBase {
                             "}\n");
     }
 
+    public void testMultipleCtors() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "     private int a;\n" +
+                       "     private int c;\n" +
+                       "     public Test() {}\n" +
+                       "     public Test(int a, int |b, int c) {\n" +
+                       "          this.a = a;\n" +
+                       "          this.c = c;\n" +
+                       "     }\n" +
+                       "}\n",
+                       "5:28-5:28:hint:Unused Parameter",
+                       "FixImpl:false",
+                       "package test; public class Test { private int a; private int b; private int c; public Test() {} public Test(int a, int b, int c) { this.a = a; this.b = b; this.c = c; } } ");
+    }
+    
+    public void testMultipleCtorsChained() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "     private int a;\n" +
+                       "     private int c;\n" +
+                       "     public Test() { this(0, 0, 0); }\n" +
+                       "     public Test(int a, int |b, int c) {\n" +
+                       "          this.a = a;\n" +
+                       "          this.c = c;\n" +
+                       "     }\n" +
+                       "}\n",
+                       "5:28-5:28:hint:Unused Parameter",
+                       "FixImpl:false",
+                       "package test; public class Test { private int a; private final int b; private int c; public Test() { this(0, 0, 0); } public Test(int a, int b, int c) { this.a = a; this.b = b; this.c = c; } } ");
+    }
+
     @Override
     protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path, int offset) {
         FieldForUnusedParam h = new FieldForUnusedParam();
