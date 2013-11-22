@@ -81,7 +81,9 @@ public class RepositorySelector {
         boolean didCreate = selectorPanel.create();
         final RepositoryImpl repo = selectorPanel.getRepository();        
         if(!didCreate) {
-            repo.cancelChanges();
+            if(repo != null) {
+                repo.cancelChanges();
+            }
             return null;
         }
         repo.applyChanges();
@@ -101,7 +103,9 @@ public class RepositorySelector {
         boolean didEdit = selectorPanel.edit(repository, errorMessage);
         RepositoryImpl repo = selectorPanel.getRepository();
         if(!didEdit) {
-            repo.cancelChanges();
+            if(repo != null) {
+                repo.cancelChanges();
+            }
             return false;
         }
         repo.applyChanges();
