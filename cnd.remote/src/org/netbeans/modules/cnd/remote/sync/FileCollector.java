@@ -455,7 +455,7 @@ import org.openide.util.Utilities;
         filesAndBuildResults.addAll(buildResults);
         
         for (File file : filesAndBuildResults) {
-            if (file.isDirectory()) {
+            if (file.isDirectory() || buildResults.contains(file)) {
                 String rPath = mapper.getRemotePath(file.getAbsolutePath(), false);
                 if (rPath == null) {
                     logger.log(Level.INFO, "Can't get remote path for %s at %s", file.getAbsolutePath(), execEnv);
