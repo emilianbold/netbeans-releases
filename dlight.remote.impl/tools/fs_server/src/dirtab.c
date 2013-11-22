@@ -170,6 +170,7 @@ static bool load_impl() {
         }
         if (*p != ' ') {
             report_error("error in file %s: index not followed by space in line '%s'\n", dirtab_file_path, line);
+            fclose(f);
             return false; //TODO: clear the table!
         }
         char* path = ++p;
