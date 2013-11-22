@@ -153,7 +153,6 @@ import org.netbeans.modules.spellchecker.api.Spellchecker;
 import org.netbeans.modules.team.ide.spi.IDEServices;
 import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.openide.awt.HtmlBrowser;
-import org.openide.util.ChangeSupport;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -2668,6 +2667,7 @@ public class IssuePanel extends javax.swing.JPanel {
                 Bundle.LBL_IssuePanel_deleteTask_title(), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
             return;
         }
+        discardUnsavedChanges();
         Container tc = SwingUtilities.getAncestorOfClass(TopComponent.class, this);
         if (tc instanceof TopComponent) {
             ((TopComponent) tc).close();
@@ -3061,7 +3061,7 @@ public class IssuePanel extends javax.swing.JPanel {
 
             @Override
             protected boolean storeValue () {
-                issue.setTaskScheduleDate(scheduleDatePicker.getScheduleDate(), false, true);
+                issue.setTaskScheduleDate(scheduleDatePicker.getScheduleDate(), false);
                 return true;
             }
         });
@@ -3787,7 +3787,7 @@ public class IssuePanel extends javax.swing.JPanel {
         public boolean add (String value) {
             boolean added = super.add(value);
             if (added) {
-                issue.fireChanged();
+                issue.fireChangeEvent();
             }
             return added;
         }
@@ -3796,7 +3796,7 @@ public class IssuePanel extends javax.swing.JPanel {
         public boolean remove (Object o) {
             boolean removed = super.remove(o);
             if (removed && isEmpty()) {
-                issue.fireChanged();
+                issue.fireChangeEvent();
             }
             return removed;
         }
@@ -3806,7 +3806,7 @@ public class IssuePanel extends javax.swing.JPanel {
             boolean fire = !isEmpty();
             super.clear();
             if (fire) {
-                issue.fireChanged();
+                issue.fireChangeEvent();
             }
         }
         
