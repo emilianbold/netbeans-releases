@@ -858,7 +858,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         String message = NbBundle.getMessage(IntroduceHint.class, "MSG_DuplicateMethodPiece");
 
         NotifyDescriptor nd = new NotifyDescriptor.Confirmation(message, title, NotifyDescriptor.YES_NO_OPTION);
-
+        
         return DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.YES_OPTION;
     }
 
