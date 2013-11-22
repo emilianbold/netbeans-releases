@@ -125,7 +125,11 @@ public class AngularJsDeclarationFinder implements DeclarationFinder {
     public OffsetRange getReferenceSpan(Document doc, int caretOffset) {
 //        int embeddedOffset = info.getSnapshot().getEmbeddedOffset(caretOffset);
         TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, caretOffset);
-
+        
+        if (ts == null) {
+            return OffsetRange.NONE;
+        }
+        
         ts.move(caretOffset);
         if (ts.moveNext()) {
             JsTokenId id = ts.token().id();
