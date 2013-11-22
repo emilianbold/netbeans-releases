@@ -74,6 +74,8 @@ public final class CreateProjectProperties {
     private String siteRootFolder;
     private String testFolder;
     private String configFolder;
+    private String jsTestingProvider;
+
 
     public CreateProjectProperties() {
         setSiteRootFolder(ClientSideProjectConstants.DEFAULT_SITE_ROOT_FOLDER);
@@ -101,7 +103,7 @@ public final class CreateProjectProperties {
      */
     @NonNull
     public CreateProjectProperties setProjectDir(@NonNull FileObject projectDir) {
-        Parameters.notNull("projectDir", projectDir);
+        Parameters.notNull("projectDir", projectDir); // NOI18N
         this.projectDir = projectDir;
         return this;
     }
@@ -126,7 +128,7 @@ public final class CreateProjectProperties {
      */
     @NonNull
     public CreateProjectProperties setProjectName(@NonNull String projectName) {
-        Parameters.notEmpty("projectName", projectName);
+        Parameters.notEmpty("projectName", projectName); // NOI18N
         this.projectName = projectName;
         return this;
     }
@@ -151,7 +153,7 @@ public final class CreateProjectProperties {
      */
     @NonNull
     public CreateProjectProperties setSiteRootFolder(@NonNull String siteRootFolder) {
-        Parameters.notEmpty("siteRootFolder", siteRootFolder);
+        Parameters.notEmpty("siteRootFolder", siteRootFolder); // NOI18N
         this.siteRootFolder = siteRootFolder;
         return this;
     }
@@ -176,7 +178,7 @@ public final class CreateProjectProperties {
      */
     @NonNull
     public CreateProjectProperties setTestFolder(@NullAllowed String testFolder) {
-        Parameters.notEmpty("testFolder", testFolder);
+        Parameters.notEmpty("testFolder", testFolder); // NOI18N
         this.testFolder = testFolder;
         return this;
     }
@@ -204,4 +206,26 @@ public final class CreateProjectProperties {
         this.configFolder = configFolder;
         return this;
     }
+
+    /**
+     * Get JS testing provider (its identifier).
+     * @return JS testing provider (its identifier); can be {@code null} if there is no default JS testing provider
+     * @since 1.50
+     */
+    @CheckForNull
+    public String getJsTestingProvider() {
+        return jsTestingProvider;
+    }
+
+    /**
+     * Set JS testing provider (its identifier), can be {@code null} if there is no default JS testing provider.
+     * @param jsTestingProvider JS testing provider (its identifier), can be {@code null} if there is no default JS testing provider
+     * @return itself
+     * @since 1.50
+     */
+    public CreateProjectProperties setJsTestingProvider(@NullAllowed String jsTestingProvider) {
+        this.jsTestingProvider = jsTestingProvider;
+        return this;
+    }
+
 }

@@ -69,8 +69,8 @@ public class NodeSelectionProjectPanel extends javax.swing.JPanel implements Pre
     public static final Preferences prefs = NbPreferences.forModule(NodeSelectionProjectPanel.class);
 
     public static final String KEY_ACTUALSELECTIONPROJECT = "enable.actualselectionproject";
-    public static final boolean SHOW_ACTUALSELECTIONPROJECT = true;
     private boolean enabled;
+    private boolean isMinimized;
 
     public static final int COMPONENT_HEIGHT = 22;
     private static final int BORDER_WIDTH = 1;
@@ -97,7 +97,7 @@ public class NodeSelectionProjectPanel extends javax.swing.JPanel implements Pre
     @Override
     public void preferenceChange(PreferenceChangeEvent evt) {
         if (evt == null || KEY_ACTUALSELECTIONPROJECT.equals(evt.getKey())) {
-            enabled = prefs.getBoolean(KEY_ACTUALSELECTIONPROJECT, SHOW_ACTUALSELECTIONPROJECT);
+            enabled = prefs.getBoolean(KEY_ACTUALSELECTIONPROJECT, false);
             updatePreferredSize();
         }
     }
@@ -106,9 +106,11 @@ public class NodeSelectionProjectPanel extends javax.swing.JPanel implements Pre
         if (enabled) {
             setPreferredSize(new Dimension(Integer.MAX_VALUE, COMPONENT_HEIGHT + BORDER_WIDTH));
             setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+            isMinimized = false;
         } else {
             setPreferredSize(new Dimension(0, 0));
             setMaximumSize(new Dimension(0, 0));
+            isMinimized = true;
         }
         revalidate();
     }
@@ -116,13 +118,19 @@ public class NodeSelectionProjectPanel extends javax.swing.JPanel implements Pre
     void minimize() {
         setPreferredSize(new Dimension(0, 0));
         setMaximumSize(new Dimension(0, 0));
+        isMinimized = true;
         revalidate();
     }
     
     void maximize() {
         setPreferredSize(new Dimension(Integer.MAX_VALUE, COMPONENT_HEIGHT + BORDER_WIDTH));
         setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+        isMinimized = false;
         revalidate();
+    }
+    
+    public boolean isMinimized() {
+        return isMinimized;
     }
 
     private static final class SeparatorBorder implements Border {

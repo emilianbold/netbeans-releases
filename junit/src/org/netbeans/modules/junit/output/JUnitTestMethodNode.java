@@ -84,7 +84,8 @@ public class JUnitTestMethodNode extends TestMethodNode{
             actions.add(preferred);
         }
 //        FileObject suiteFile = ((JUnitTestcase)testcase).getTestSuite().getSuiteFile();
-        FileObject testFO = ((JUnitTestcase)testcase).getClassFileObject();
+        // Method node might belong to an inner class
+        FileObject testFO = ((JUnitTestcase)testcase).getClassFileObject(true);
         if (testFO == null){
             Logger.getLogger(JUnitTestMethodNode.class.getName()).log(Level.INFO, "Test running process was probably abnormally interrupted. Could not locate FileObject for {0}", testcase.toString());
             for (Action prefAction : actions) {

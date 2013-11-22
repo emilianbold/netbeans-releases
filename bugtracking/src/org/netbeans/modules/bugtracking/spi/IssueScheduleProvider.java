@@ -72,6 +72,15 @@ import java.util.Date;
 public interface IssueScheduleProvider<I> {
         
     /**
+     * Issue schedule has changed. Fire this on registered IssueProvider listeners
+     * in case changes were made plugin-internally and not via the setters on this interface.  
+     * 
+     * @since 1.85
+     * @see IssueProvider#addPropertyChangeListener(java.lang.Object, java.beans.PropertyChangeListener) 
+     */
+    public static final String EVENT_ISSUE_SCHEDULE_CHANGED = "issue.schedule_changed"; // NOI18N
+    
+    /**
      * Sets the date when the Issue is to be finished. 
      * <p>
      * Note that this is a different date as for when the Issue is scheduled. 

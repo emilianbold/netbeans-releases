@@ -129,7 +129,7 @@ import org.netbeans.modules.bugtracking.commons.AttachmentsPanel;
 import org.netbeans.modules.bugtracking.commons.LinkButton;
 import org.netbeans.modules.bugtracking.commons.NBBugzillaUtils;
 import org.netbeans.modules.bugtracking.commons.UIUtils;
-import org.netbeans.modules.bugtracking.spi.SchedulingPicker;
+import org.netbeans.modules.bugtracking.spi.SchedulePicker;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue.Attachment;
@@ -149,7 +149,6 @@ import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
-import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
@@ -209,7 +208,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private Action[] privateSectionActions;
     private final IDEServices.DatePickerComponent dueDatePicker;
     private final IDEServices.DatePickerComponent deadlinePicker;
-    private final SchedulingPicker scheduleDatePicker;
+    private final SchedulePicker scheduleDatePicker;
     private static final NumberFormatter estimateFormatter = new NumberFormatter(new java.text.DecimalFormat("#0")) {
 
         @Override
@@ -226,6 +225,7 @@ public class IssuePanel extends javax.swing.JPanel {
         }
 
     };
+    private boolean opened;
     
     public IssuePanel() {
         initComponents();
@@ -273,7 +273,7 @@ public class IssuePanel extends javax.swing.JPanel {
         ((GroupLayout) timetrackingPanel.getLayout()).replace(dummyDeadlineField, deadlinePicker.getComponent());
         GroupLayout layout = (GroupLayout) privatePanel.getLayout();
         dueDatePicker = UIUtils.createDatePickerComponent();
-        scheduleDatePicker = new SchedulingPicker();
+        scheduleDatePicker = new SchedulePicker();
         layout.replace(dummyDueDateField, dueDatePicker.getComponent());
         dueDateLabel.setLabelFor(dueDatePicker.getComponent());
         layout.replace(dummyScheduleDateField, scheduleDatePicker.getComponent());
@@ -525,7 +525,7 @@ public class IssuePanel extends javax.swing.JPanel {
 
     private int oldCommentCount;
     void reloadForm(boolean force) {
-        if (skipReload) {
+        if (skipReload || !opened) {
             return;
         }
         enableComponents(true);
@@ -3644,7 +3644,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         }
     }
 
-    private static final String CURRENT_NB_VERSION = "7.4";                     // NOI18N
+    private static final String CURRENT_NB_VERSION = "8.0";                     // NOI18N
     private String getCurrentNetBeansVersion() {        
         String version = parseProductVersion(getProductVersionValue());        
         if(version != null) {
@@ -3696,12 +3696,14 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         restoreSections();
         enableComponents(false);
         issue.opened();
+        opened = true;
     }
     
     void closed() {
         if(issue != null) {
             persistSections();
             commentsPanel.storeSettings();
+            opened = false;
             issue.closed();
         }
     }
@@ -3919,7 +3921,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
 
             @Override
             protected boolean storeValue () {
-                issue.setTaskScheduleDate(scheduleDatePicker.getScheduleDate(), false);
+                issue.setTaskScheduleDate(scheduleDatePicker.getScheduleDate(), false, true);
                 return true;
             }
         });

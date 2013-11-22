@@ -802,13 +802,14 @@ public class ProjectTab extends TopComponent
             }
         }
         
-        public void showOrHideNodeSelectionProjectPanel(final Node n) {
+        public void showOrHideNodeSelectionProjectPanel(final Node n, final Node sn) {
             SwingUtilities.invokeLater(new Runnable() {
 
                 @Override
                 public void run() {
                     TreeNode tn = Visualizer.findVisualizer(n);
-                    if (tn == null) {
+                    TreeNode tsn = Visualizer.findVisualizer(sn);
+                    if (tn == null || tsn == null) {
                         return;
                     }
                     TreeModel model = tree.getModel();
@@ -816,17 +817,30 @@ public class ProjectTab extends TopComponent
                         return;
                     }
                     TreePath path = new TreePath(((DefaultTreeModel) model).getPathToRoot(tn));
+                    TreePath snPath = new TreePath(((DefaultTreeModel) model).getPathToRoot(tsn));
                     Rectangle projectNodeCoordinates = tree.getPathBounds(path);
+                    Rectangle selectedNodeCoordinates = tree.getPathBounds(snPath);
                     Rectangle prjTabScrollCoordinates = tree.getVisibleRect();
-                    //Constant 0.75 was choosed, b/c sometimes is project node partially visible
-                    if (prjTabScrollCoordinates.y <= ( projectNodeCoordinates.y + (projectNodeCoordinates.height * 0.75) )) {
+                    
+                    //Constant 0.5 was choosed, b/c sometimes is project node partially visible
+                    Integer projectTabTopPos = prjTabScrollCoordinates.y;
+                    Integer projectTabBottomPos = prjTabScrollCoordinates.y + prjTabScrollCoordinates.height + 
+                            (nodeSelectionProjectPanel.isMinimized()?0:(NodeSelectionProjectPanel.COMPONENT_HEIGHT));
+                    Double projectNodePos = projectNodeCoordinates.y + (projectNodeCoordinates.height * 0.5);
+                    Double selectedNodePos = selectedNodeCoordinates.y + (selectedNodeCoordinates.height * 0.5);
+                    //Adding and subtacting 1 for project tab bottom y-index, b/c this index is slightly changing, when panel appears, then disappears and again appears
+                    if ((projectTabTopPos < projectNodePos && projectTabBottomPos > projectNodePos)
+                         || (projectTabTopPos > selectedNodePos 
+                            || (projectTabBottomPos < selectedNodePos
+                            || projectTabBottomPos + 1 < selectedNodePos 
+                            || projectTabBottomPos - 1 < selectedNodePos))) {
                         nodeSelectionProjectPanel.minimize();
                     } else {
                         nodeSelectionProjectPanel.maximize();
                     }
                 }
             });
-    }
+        }
     }
     
 
@@ -917,16 +931,18 @@ public class ProjectTab extends TopComponent
                                                 break;
                                             }
                                         }
-                                        Project projectOwner = FileOwnerQuery.getOwner(activeFile);
-                                        Node projectNode = null;
-                                        for (Node node : children.getNodes(true)) {
-                                            if(projectOwner.equals(node.getLookup().lookup(Project.class))) {
-                                                projectNode = node;
-                                                break;
+                                        if ( activeFile != null ) {
+                                            Project projectOwner = FileOwnerQuery.getOwner(activeFile);
+                                            Node projectNode = null;
+                                            for (Node node : children.getNodes(true)) {
+                                                if(projectOwner.equals(node.getLookup().lookup(Project.class))) {
+                                                    projectNode = node;
+                                                    break;
+                                                }
                                             }
+                                            tab.manager.setSelectedNodes(new Node[] {projectNode});
+                                            tab.btv.scrollToNode(projectNode);
                                         }
-                                        tab.manager.setSelectedNodes(new Node[] {projectNode});
-                                        tab.btv.scrollToNode(projectNode);
                                     } catch (PropertyVetoException e) {
                                         // Node found but can't be selected
                                     }
@@ -1022,8 +1038,9 @@ public class ProjectTab extends TopComponent
             Node projectNode = null;
             if( selectedNodes != null && selectedNodes.length > 0 ) {
                 Node selectedNode = selectedNodes[0];
+                Node originallySelectedNode = selectedNodes[0];
                 Node rootNode = ProjectTab.this.manager.getRootContext();
-                while ( !selectedNode.getParentNode().equals(rootNode)) {
+                while ( selectedNode.getParentNode() != null && !selectedNode.getParentNode().equals(rootNode)) {
                     selectedNode = selectedNode.getParentNode();
                 }
                 projectNode = selectedNode;
@@ -1042,7 +1059,7 @@ public class ProjectTab extends TopComponent
                     }
                 }
                 if ( projectNode != null ) {
-                    ProjectTab.this.btv.showOrHideNodeSelectionProjectPanel(projectNode);
+                    ProjectTab.this.btv.showOrHideNodeSelectionProjectPanel(projectNode, originallySelectedNode);
                     text = projectNode.getDisplayName();
                 }
             } else {
@@ -1074,5 +1091,5 @@ public class ProjectTab extends TopComponent
             }
         }
     }
-    
+
 }

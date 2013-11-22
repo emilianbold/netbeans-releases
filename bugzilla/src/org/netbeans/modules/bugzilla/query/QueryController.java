@@ -84,6 +84,8 @@ import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
 import org.netbeans.modules.bugtracking.commons.SaveQueryPanel.QueryNameValidator;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
@@ -151,6 +153,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
     private boolean populated = false;
     private boolean wasOpened;
     private boolean wasModeShow;
+    private QueryProvider.IssueContainer<BugzillaIssue> delegatingIssueContainer;
         
     public QueryController(BugzillaRepository repository, BugzillaQuery query, String urlParameters, boolean urlDef) {
         this(repository, query, urlParameters, urlDef, true);
@@ -1039,7 +1042,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
 
     @Override
     public void stateChanged(ChangeEvent e) {
-        BugzillaUtil.runInAWT(new Runnable() {
+        UIUtils.runInAWT(new Runnable() {
             @Override
             public void run() {
                 if (!ignoreChanges && isChanged()) {
@@ -1106,6 +1109,10 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
     IssueTable getIssueTable() {
         return issueTable;
     }
+
+    public void setContainer(QueryProvider.IssueContainer<BugzillaIssue> c) {
+        delegatingIssueContainer = c;
+    }
     
     private class QueryTask implements Runnable, Cancellable, QueryNotifyListener {
         private ProgressHandle handle;
@@ -1121,14 +1128,15 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         }
 
         private void startQuery() {
+            // NOI18N
+            String displayName = query.getDisplayName() != null ? query.getDisplayName() + " (" + repository.getDisplayName() + ")" // NOI18N
+                    : repository.getDisplayName();
             handle = ProgressHandleFactory.createHandle(
                     NbBundle.getMessage(
-                        QueryController.class,
-                        "MSG_SearchingQuery",                                       // NOI18N
-                        new Object[] {
-                            query.getDisplayName() != null ?
-                                query.getDisplayName() :
-                                repository.getDisplayName()}),
+                            QueryController.class,
+                            "MSG_SearchingQuery", // NOI18N
+                            new Object[]{
+                                displayName}),
                     this);
             EventQueue.invokeLater(new Runnable() {
                 @Override
@@ -1137,11 +1145,17 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
                     panel.showSearchingProgress(true, NbBundle.getMessage(QueryController.class, "MSG_Searching")); // NOI18N
                 }
             });
+            if(delegatingIssueContainer != null) {
+                delegatingIssueContainer.refreshingStarted();
+            }
             handle.start();
         }
 
         private void finnishQuery() {
             task = null;
+            if(delegatingIssueContainer != null) {
+                delegatingIssueContainer.refreshingFinished();
+            }
             if(handle != null) {
                 handle.finish();
                 handle = null;
@@ -1253,6 +1267,9 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
 
         @Override
         public void notifyDataAdded (final BugzillaIssue issue) {
+            if(delegatingIssueContainer != null) {
+                delegatingIssueContainer.add(issue);
+            }
             if(wasOpened && wasModeShow) {
                 issueTable.addNode(issue.getNode());
             } else {
@@ -1273,6 +1290,9 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
 
         @Override
         public void notifyDataRemoved (final BugzillaIssue issue) {
+            if(delegatingIssueContainer != null) {
+                delegatingIssueContainer.remove(issue);
+            }
             // issue table cannot remove data
         }
 

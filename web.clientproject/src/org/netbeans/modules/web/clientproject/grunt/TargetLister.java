@@ -109,17 +109,18 @@ public class TargetLister {
     private static void parse(String output, FileObject gruntFile) throws IOException {
         BufferedReader r = new BufferedReader(new StringReader(output));
 
+        Collection<Target> col = new ArrayList<>();
         while (r.ready()) {
             String line = r.readLine();
             if (line == null) {
-                return;
+                col.add(new Target("default", gruntFile));//NI18N
+                break;
             }
             if (line.trim().toLowerCase().startsWith("available tasks")) {//NOI18N
                 break;
             }
         }
         
-        Collection<Target> col = new ArrayList<>();
         while (r.ready()) {
             String line = r.readLine();
             if (line == null) {

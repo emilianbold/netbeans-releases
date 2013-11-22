@@ -1,0 +1,196 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ */
+
+package org.netbeans.modules.avatar_js.project.ui.customizer;
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import javax.swing.JScrollPane;
+import javax.swing.border.Border;
+import javax.swing.event.ChangeListener;
+import javax.swing.tree.TreeSelectionModel;
+import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.view.BeanTreeView;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFilter;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.util.ChangeSupport;
+
+/**
+ *
+ * @author Martin
+ */
+public class MainFileChooser extends javax.swing.JPanel implements ExplorerManager.Provider {
+    
+    private static final Set<String> JS_MIME_TYPES = new HashSet<>(Arrays.asList(new String[] {
+        "application/javascript",       // NOI18N
+        "text/javascript",              // NOI18N
+    }));
+    
+    private static Border SCROLL_PANE_BORDER = new JScrollPane().getBorder();
+    
+    private final FileObject sourceRoot;
+    private final ExplorerManager emanager;
+    private final BeanTreeView btv;
+    private final ChangeSupport chs = new ChangeSupport(this);
+
+    /**
+     * Creates new form MainFileChooser
+     */
+    public MainFileChooser(String message, FileObject sourceRoot) {
+        this.sourceRoot = sourceRoot;
+        initComponents();
+        messageLabel.setText(message);
+        DataFolder folder = DataFolder.findFolder(sourceRoot);
+        Children children = folder.createNodeChildren(new DataFilter.FileBased() {
+            @Override
+            public boolean acceptFileObject(FileObject fo) {
+                return JS_MIME_TYPES.contains(fo.getMIMEType());
+            }
+            @Override
+            public boolean acceptDataObject(DataObject obj) {
+                return acceptFileObject(obj.getPrimaryFile());
+            }
+        });
+        AbstractNode root = new AbstractNode(children);
+        emanager = new ExplorerManager();
+        emanager.setRootContext(root);
+        emanager.addPropertyChangeListener(new EManagerListener());
+        btv = new BeanTreeView();
+        btv.setRootVisible(false);
+        btv.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        btv.setPopupAllowed(false);
+        btv.setBorder(SCROLL_PANE_BORDER);
+        fileSelectPanel.add(btv, java.awt.BorderLayout.CENTER);
+    }
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        fileSelectLabel = new javax.swing.JLabel();
+        fileSelectPanel = new javax.swing.JPanel();
+        messageLabel = new javax.swing.JLabel();
+
+        fileSelectLabel.setLabelFor(fileSelectPanel);
+        org.openide.awt.Mnemonics.setLocalizedText(fileSelectLabel, org.openide.util.NbBundle.getMessage(MainFileChooser.class, "MainFileChooser.fileSelectLabel.text")); // NOI18N
+
+        fileSelectPanel.setLayout(new java.awt.BorderLayout());
+
+        org.openide.awt.Mnemonics.setLocalizedText(messageLabel, "<message label>"); // NOI18N
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(fileSelectPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(fileSelectLabel)
+                    .addComponent(messageLabel))
+                .addGap(0, 259, Short.MAX_VALUE))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(messageLabel)
+                .addGap(18, 18, 18)
+                .addComponent(fileSelectLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(fileSelectPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 246, Short.MAX_VALUE))
+        );
+    }// </editor-fold>//GEN-END:initComponents
+
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel fileSelectLabel;
+    private javax.swing.JPanel fileSelectPanel;
+    private javax.swing.JLabel messageLabel;
+    // End of variables declaration//GEN-END:variables
+
+    @Override
+    public ExplorerManager getExplorerManager() {
+        return emanager;
+    }
+    
+    public String getSelectedFile() {
+        Node[] selectedNodes = emanager.getSelectedNodes();
+        if (selectedNodes.length > 0) {
+            FileObject fo = selectedNodes[0].getLookup().lookup(FileObject.class);
+            return FileUtil.getRelativePath(sourceRoot, fo);
+        } else {
+            return null;
+        }
+    }
+    
+    public void addChangeListener(ChangeListener chl) {
+        chs.addChangeListener(chl);
+    }
+    
+    public void removeChangeListener(ChangeListener chl) {
+        chs.removeChangeListener(chl);
+    }
+    
+    private final class EManagerListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
+                chs.fireChange();
+            }
+        }
+        
+    }
+}

@@ -211,14 +211,6 @@ public class BugzillaUtil {
         Bugzilla.getInstance().getBugtrackingFactory().editQuery(bugzillaQuery.getRepository(), bugzillaQuery);
     }
 
-    public static void runInAWT(Runnable r) {
-        if(SwingUtilities.isEventDispatchThread()) {
-            r.run();
-        } else {
-            SwingUtilities.invokeLater(r);
-        }
-    }
-
     public static Color getErrorForegroundColor () {
         return ERROR_COLOR;
     }

@@ -41,34 +41,34 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.php.dbgp.annotations;
 
 import org.openide.text.Annotatable;
 import org.openide.text.Annotation;
 
-
 /**
  * Debugger Annotation class.
  *
- * @author   ads
+ * @author ads
  */
 public abstract class DebuggerAnnotation extends Annotation {
+    /**
+     * Annotation type constants.
+     */
+    public static final String CURRENT_LINE_ANNOTATION_TYPE2 = "CurrentPC2"; //NOI18N
+    public static final String CURRENT_LINE_PART_ANNOTATION_TYPE = "CurrentPCLinePart"; //NOI18N
+    public static final String CURRENT_LINE_PART_ANNOTATION_TYPE2 = "CurrentPC2LinePart"; //NOI18N
+    private String myMessage;
 
-    /** Annotation type constants. */
-    public static final String CURRENT_LINE_ANNOTATION_TYPE2 = "CurrentPC2";
-    public static final String CURRENT_LINE_PART_ANNOTATION_TYPE = "CurrentPCLinePart";
-    public static final String CURRENT_LINE_PART_ANNOTATION_TYPE2 = "CurrentPC2LinePart";
-    
     public DebuggerAnnotation(Annotatable annotatable) {
         attach(annotatable);
     }
 
     public DebuggerAnnotation(Annotatable annotatable, String message) {
-        this( annotatable );
+        this(annotatable);
         myMessage = message;
     }
-    
+
     /**
      * <pre>
      * The type returned should correspond to "name" of annotation.
@@ -77,37 +77,20 @@ public abstract class DebuggerAnnotation extends Annotation {
      * Each annotation has its xml file with annotation properties.
      * Annotaitons could be user defined ( as PHPError, PHPWarning and PHPNotice )
      * and defined in other ( f.e. debugger code module ).
-     * There are a lot of annotaions available in 
+     * There are a lot of annotaions available in
      * org.netbeans.modules.debugger.resources package.
      * All types except  PHPError, PHPWarning and PHPNotice are got from there.
-     * 
-     * </pre> 
+     *
+     * </pre>
+     *
      * @see org.openide.text.Annotation#getAnnotationType()
      */
     @Override
     public abstract String getAnnotationType();
 
     @Override
-    public String getShortDescription(){
+    public String getShortDescription() {
         return myMessage;
     }
 
-/*     
-        } else if (type == CURRENT_LINE_ANNOTATION_TYPE2) {
-            return NbBundle.getMessage(DebuggerAnnotation.class,
-                    "TT_CURRENT_PC_2"); // NOI18N
-        } else if (type == CURRENT_LINE_PART_ANNOTATION_TYPE) {
-            return NbBundle.getMessage(DebuggerAnnotation.class,
-                    "TT_CURRENT_PC"); // NOI18N
-        } else if (type == CALL_STACK_FRAME_ANNOTATION_TYPE) {
-            return NbBundle.getBundle(DebuggerAnnotation.class).getString(
-                    "TT_CALLSITE"); // NOI18N
-        }
-        else if (message != null) {
-            return message;
-        }
-        
-        return null;*/
-    
-    private String myMessage;
 }

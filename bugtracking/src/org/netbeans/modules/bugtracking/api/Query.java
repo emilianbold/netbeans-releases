@@ -58,7 +58,7 @@ public final class Query {
      * Fired after the Query was refreshed. 
      * @since 1.85
      */
-    public final static String EVENT_QUERY_REFRESHED = QueryProvider.EVENT_QUERY_REFRESHED;
+    public final static String EVENT_QUERY_REFRESHED = "bugtracking.query.finished"; // NOI18N
     
     private final QueryImpl impl;
 

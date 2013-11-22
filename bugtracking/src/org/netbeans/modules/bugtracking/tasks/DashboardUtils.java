@@ -228,7 +228,7 @@ public class DashboardUtils {
         return result;
     }
 
-    private static String getTaskDisplayName(IssueImpl task) {
+    static String getTaskDisplayName(IssueImpl task) {
         String displayName = task.getDisplayName();
         if (displayName.startsWith("#")) {
             displayName = displayName.replaceFirst("#", "");
@@ -534,7 +534,7 @@ public class DashboardUtils {
         return new IssueScheduleInfo(calendar.getTime(), Integer.MAX_VALUE);
     }
 
-    private static Calendar getTodayCalendar() {
+    public static Calendar getTodayCalendar() {
         Calendar cal = Calendar.getInstance();
         cal.set(Calendar.HOUR_OF_DAY, 0);
         cal.set(Calendar.MINUTE, 0);
@@ -629,11 +629,10 @@ public class DashboardUtils {
                 notScheduled.setSelected(true);
                 return;
             }
-            boolean findPrevious = true;
             for (JMenuItem item : menuItems) {
                 if (item != null && item.getAction() instanceof ScheduleItemAction) {
                     IssueScheduleInfo assignedSchedule = ((ScheduleItemAction) item.getAction()).getAssignedSchedule();
-                    if (findPrevious && assignedSchedule.equals(previousSchedule)) {
+                    if (assignedSchedule != null && assignedSchedule.equals(previousSchedule)) {
                         item.setSelected(true);
                         return;
                     }

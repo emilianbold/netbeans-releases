@@ -56,7 +56,7 @@ import org.openide.util.Lookup;
     displayName = "#LBL_Options", // NOI18N
     location="Team", // NOI18N
     keywords = "#KW_Odcs", // NOI18N
-    keywordsCategory = "Advanced/Odcs" // NOI18N
+    keywordsCategory = "Team/Odcs" // NOI18N
 )
 public class OdcsOptionsController extends OptionsPanelController {
 

@@ -100,6 +100,7 @@ import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
 import org.netbeans.modules.bugtracking.commons.SaveQueryPanel;
 import org.netbeans.modules.bugtracking.commons.SaveQueryPanel.QueryNameValidator;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
@@ -149,6 +150,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
     private final Object REFRESH_LOCK = new Object();
     private final Semaphore querySemaphore = new Semaphore(1);
     private boolean populated = false;
+    private QueryProvider.IssueContainer<NbJiraIssue> delegatingIssueContainer;
     
     public QueryController(JiraRepository repository, JiraQuery query, FilterDefinition fd) {
         this(repository, query, fd, true);
@@ -1283,6 +1285,10 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         support.removePropertyChangeListener(l);
     }
 
+    public void setIssueContainer(QueryProvider.IssueContainer<NbJiraIssue> c) {
+        delegatingIssueContainer = c;
+    }
+
     private class QueryTask implements Runnable, Cancellable, QueryNotifyListener {
         private ProgressHandle handle;
         private int counter;
@@ -1299,7 +1305,8 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    String displayName = query.getDisplayName() != null ? query.getDisplayName() : repository.getDisplayName();
+                    String displayName = query.getDisplayName() != null ? query.getDisplayName() + " (" + repository.getDisplayName() + ")" // NOI18N
+                            : repository.getDisplayName();
                     handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(QueryController.class, "MSG_SearchingQuery", new Object[] { displayName }), QueryTask.this); // NOI18N
                     handle.start();
 
@@ -1309,10 +1316,16 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
                     QueryController.this.renderer.resetDefaultRowHeight();
                 }
             });
+            if(delegatingIssueContainer != null) {
+                delegatingIssueContainer.refreshingStarted();
+            }
         }
 
         private void finnishQuery() {
             task = null;
+            if(delegatingIssueContainer != null) {
+                delegatingIssueContainer.refreshingFinished();
+            }
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
@@ -1413,7 +1426,10 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         }
 
         @Override
-        public void notifyData(final NbJiraIssue issue) {
+        public void notifyDataAdded(final NbJiraIssue issue) {
+            if(delegatingIssueContainer != null) {
+                delegatingIssueContainer.add(issue);
+            }
             issueTable.addNode(issue.getNode());
             setIssueCount(++counter);
             if(counter == 1) {
@@ -1426,6 +1442,13 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
             }
         }
 
+        @Override
+        public void notifyDataRemoved(NbJiraIssue issue) {
+            if(delegatingIssueContainer != null) {
+                delegatingIssueContainer.remove(issue);
+            }
+        }
+        
         @Override
         public void started() {
             issueTable.started();

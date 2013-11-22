@@ -66,7 +66,7 @@ import org.openide.util.HelpCtx;
  * </p>
  * 
  * <p>
- * Please <b>note</b>, that the results of an query (see {@link QueryProvider#getIssues(java.lang.Object)}  
+ * Please <b>note</b>, that the results of an query 
  * are always presented in the TaskDashboard, but eventually, in case the need appears,
  * it is also possible for the bugtracking plugin implementation to provide a
  * customized result view - e.g a table listing more attributes than then TasksDashboard does.

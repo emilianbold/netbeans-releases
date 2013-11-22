@@ -92,20 +92,10 @@ public class BugzillaQueryProvider implements QueryProvider<BugzillaQuery, Bugzi
     }
     
     @Override
-    public Collection<BugzillaIssue> getIssues(BugzillaQuery query) {
-        return query.getIssues();
+    public void setIssueContainer(BugzillaQuery query, IssueContainer<BugzillaIssue> c) {
+        query.getController().setContainer(c);
     }
-
-    @Override
-    public void removePropertyChangeListener(BugzillaQuery query, PropertyChangeListener listener) {
-        query.removePropertyChangeListener(listener);
-    }
-
-    @Override
-    public void addPropertyChangeListener(BugzillaQuery query, PropertyChangeListener listener) {
-        query.addPropertyChangeListener(listener);
-    }
-
+    
     @Override
     public void refresh(BugzillaQuery query) {
         if(needsAndHasNoLogin(query)) {
@@ -127,5 +117,5 @@ public class BugzillaQueryProvider implements QueryProvider<BugzillaQuery, Bugzi
         }
         return false;
     }
-    
+
 }

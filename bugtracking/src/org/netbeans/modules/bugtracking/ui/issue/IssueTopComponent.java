@@ -88,6 +88,7 @@ import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.commons.HyperlinkSupport;
 import org.netbeans.modules.bugtracking.commons.HyperlinkSupport.IssueRefProvider;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.util.*;
@@ -97,6 +98,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.UndoRedo;
 import org.openide.util.Cancellable;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -111,7 +113,7 @@ import org.openide.windows.TopComponent;
  */
 public final class IssueTopComponent extends TopComponent implements PropertyChangeListener {
     /** Set of opened {@code IssueTopComponent}s. */
-    private static Set<IssueTopComponent> openIssues = new HashSet<IssueTopComponent>();
+    private static final Set<IssueTopComponent> openIssues = new HashSet<IssueTopComponent>();
     /** Issue displayed by this top-component. */
     private IssueImpl issue;
     private RequestProcessor rp = new RequestProcessor("Bugtracking issue", 1, true); // NOI18N
@@ -127,7 +129,9 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
      */
     public IssueTopComponent() {
         initComponents();
+        instanceContent.add(getActionMap());
         associateLookup(new AbstractLookup(instanceContent));
+        
         RepositoryRegistry.getInstance().addPropertyChangeListener(this);
         preparingLabel.setVisible(false);
         newButton.addActionListener(new ActionListener() {
@@ -147,6 +151,11 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
             delegatingUndoRedoManager = new DelegatingUndoRedoManager();
         }
         return delegatingUndoRedoManager;
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return super.getLookup(); //To change body of generated methods, choose Tools | Templates.
     }
     
     /**
@@ -541,6 +550,21 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         return super.canClose(); 
     }
     
+    public static void closeFor(RepositoryImpl repo) {
+        for (IssueTopComponent itc : openIssues) {
+            IssueImpl tcIssue = itc.getIssue();
+            if(tcIssue == null) {
+                continue;
+            }
+            RepositoryImpl tcRepo = tcIssue.getRepositoryImpl();
+            if(tcRepo.getId().equals(repo.getId()) && 
+               tcRepo.getConnectorId().equals(repo.getConnectorId()) ) 
+            {
+                itc.closeInAwt();
+            }
+        }
+    }
+
     /**
      * Returns top-component that should display the given issue.
      *
@@ -593,7 +617,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     }
 
     private void setNameAndTooltip() throws MissingResourceException {
-        SwingUtilities.invokeLater(new Runnable() {
+        UIUtils.runInAWT(new Runnable() {
             @Override
             public void run() {
                 if(issue != null) {
@@ -614,8 +638,14 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if(evt.getPropertyName().equals(IssueImpl.EVENT_ISSUE_DATA_CHANGED)) {
-            repoPanel.setVisible(false);
-            setNameAndTooltip();
+            UIUtils.runInAWT(new Runnable() {
+                @Override
+                public void run() {
+                    repoPanel.setVisible(false);
+                    setNameAndTooltip();
+                }
+            });
+            
         } else if(evt.getPropertyName().equals(RepositoryRegistry.EVENT_REPOSITORIES_CHANGED)) {
             if(!repositoryComboBox.isEnabled()) {
                 // well, looks like there shuold be only one repository available
@@ -652,6 +682,15 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         } 
     }
     
+    private void closeInAwt() {
+        UIUtils.runInAWT(new Runnable() {
+            @Override
+            public void run() {
+                close();
+            }
+        });
+    }
+        
     private IssueSavable getSavable() {
         return getLookup().lookup(IssueSavable.class);
     }

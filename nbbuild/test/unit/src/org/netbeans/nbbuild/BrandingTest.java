@@ -103,7 +103,14 @@ public class BrandingTest extends NbTestCase {
                 if (entry.isDirectory()) {
                     continue;
                 }
-                assertEquals("org/netbeans/core/startup/Bundle_myapp.properties", entry.getName());
+                assertEquals("META-INF/MANIFEST.MF", entry.getName());
+                while (entries.hasMoreElements()) {
+                    entry = entries.nextElement();
+                    if (entry.isDirectory()) {
+                        continue;
+                    }
+                    assertEquals("org/netbeans/core/startup/Bundle_myapp.properties", entry.getName());
+                }
             }
         } finally {
             jf.close();

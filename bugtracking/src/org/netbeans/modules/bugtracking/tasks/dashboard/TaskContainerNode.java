@@ -208,10 +208,12 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
         synchronized (LOCK) {
             int count = 0;
             for (TaskNode taskNode : filteredTaskNodes) {
-                if (taskNode.getTask().getStatus() != IssueStatusProvider.Status.SEEN) {
+                if (taskNode.getTask().getStatus() == IssueStatusProvider.Status.INCOMING_MODIFIED
+                        || taskNode.getTask().getStatus() == IssueStatusProvider.Status.INCOMING_NEW
+                        || taskNode.getTask().getStatus() == IssueStatusProvider.Status.CONFLICT) {
                     count++;
                 }
-            } 
+            }
             return count;
         }
     }

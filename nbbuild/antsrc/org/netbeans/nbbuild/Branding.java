@@ -51,7 +51,7 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
-import org.apache.tools.ant.taskdefs.Zip;
+import org.apache.tools.ant.taskdefs.Jar;
 import org.apache.tools.ant.types.ZipFileSet;
 import org.apache.tools.ant.types.selectors.SelectorUtils;
 
@@ -166,7 +166,7 @@ public final class Branding extends Task {
         scanner.scan();
         String[] files = scanner.getIncludedFiles();
         if(files.length > 0) {
-            Zip zip = (Zip) getProject().createTask("zip");
+            Jar zip = (Jar) getProject().createTask("jar");
             String name = destJarBase.getName();
             String nameBase = name.substring(0, name.length() - ".jar".length());
             File destFolder = new File(destJarBase.getParentFile(), "locale");

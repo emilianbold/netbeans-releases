@@ -45,13 +45,11 @@ package org.netbeans.modules.php.dbgp.packets;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.netbeans.modules.php.dbgp.DebugSession;
 import org.netbeans.modules.php.dbgp.SessionManager;
 import org.netbeans.modules.php.dbgp.models.VariablesModel.ContextNode;
 import org.netbeans.modules.php.dbgp.packets.ContextNamesResponse.Context;
 import org.w3c.dom.Node;
-
 
 /**
  * @author ads
@@ -59,46 +57,39 @@ import org.w3c.dom.Node;
  */
 public class ContextGetResponse extends DbgpResponse {
 
-    public ContextGetResponse( Node node ) {
+    public ContextGetResponse(Node node) {
         super(node);
     }
 
-    public int getContextId(){
-        String id = getAttribute( getNode(), ContextNamesResponse.CONTEXT);
+    public int getContextId() {
+        String id = getAttribute(getNode(), ContextNamesResponse.CONTEXT);
         try {
-            return Integer.parseInt( id );
-        }
-        catch( NumberFormatException e ){
+            return Integer.parseInt(id);
+        } catch (NumberFormatException e) {
             return -1;
         }
     }
 
-    public List<Property> getProperties(){
-        List<Node> nodes = getChildren( getNode() , Property.PROPERTY );
-        List<Property> result = new ArrayList<>( nodes.size() );
+    public List<Property> getProperties() {
+        List<Node> nodes = getChildren(getNode(), Property.PROPERTY);
+        List<Property> result = new ArrayList<>(nodes.size());
         for (Node node : nodes) {
-            result.add( new Property( node ));
+            result.add(new Property(node));
         }
         return result;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpMessage#process(org.netbeans.modules.php.dbgp.DebugSession, org.netbeans.modules.php.dbgp.packets.DbgpCommand)
-     */
     @Override
-    public void process( DebugSession session, DbgpCommand command )
-    {
-        if ( !( command instanceof ContextGetCommand )) {
+    public void process(DebugSession session, DbgpCommand command) {
+        if (!(command instanceof ContextGetCommand)) {
             return;
         }
-        ContextGetCommand getCommand = ( ContextGetCommand )command;
+        ContextGetCommand getCommand = (ContextGetCommand) command;
         Context ctx = getCommand.getContext();
-        ContextNode node = new ContextNode( ctx , getProperties() );
-        DebugSession currentSession = SessionManager.getInstance().
-            getSession( session.getSessionId() );
-        if ( currentSession == session ){
-            // perform update local view only if response appears in current session
-            session.getBridge().getVariablesModel().updateContext( node );
+        ContextNode node = new ContextNode(ctx, getProperties());
+        DebugSession currentSession = SessionManager.getInstance().getSession(session.getSessionId());
+        if (currentSession == session) {
+            session.getBridge().getVariablesModel().updateContext(node);
         }
     }
 

@@ -110,6 +110,16 @@ public class ProjectsTabOperator extends TopComponentOperator {
         }
         return _tree;
     }
+    
+    /**
+     * Collapse all nodes.
+     */
+    public void collapseAll() {
+        JTreeOperator tree = tree();
+        for (int i = tree.getRowCount() - 1; i >= 0; i--) {
+            tree.collapseRow(i);
+        }
+    }
 
     /**
      * Gets ProjectRootNode. Wait if Opening Projects label is in main window
