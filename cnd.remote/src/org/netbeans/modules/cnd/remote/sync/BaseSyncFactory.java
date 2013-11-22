@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.remote.sync;
 
 import java.io.PrintWriter;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
