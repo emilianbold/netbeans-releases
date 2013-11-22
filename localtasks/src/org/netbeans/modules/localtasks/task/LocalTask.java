@@ -85,7 +85,6 @@ public final class LocalTask extends AbstractLocalTask {
     private final NbTask task;
     private final LocalRepository repository;
     private TaskController controller;
-    private boolean loading;
     private static final RequestProcessor RP = LocalRepository.getInstance().getRequestProcessor();
     private static final String NB_ATTACHMENT = "nb.attachment."; //NOI18N
     private static final String NB_TASK_REFERENCE = "nb.taskreference."; //NOI18N
@@ -107,12 +106,12 @@ public final class LocalTask extends AbstractLocalTask {
 
     @Override
     protected void attributeChanged (NbTaskDataModel.NbTaskDataModelEvent event, NbTaskDataModel model) {
-        getTaskController().modelStateChanged(model.isDirty() || hasUnsavedAttributes());
+        modelStateChanged(model.isDirty() || hasUnsavedAttributes());
     }
 
     @Override
     protected void modelSaved (NbTaskDataModel model) {
-        getTaskController().modelStateChanged(model.isDirty() || hasUnsavedAttributes());
+        modelStateChanged(model.isDirty() || hasUnsavedAttributes());
     }
 
     @Override
@@ -237,12 +236,10 @@ public final class LocalTask extends AbstractLocalTask {
     }
 
     void opened () {
-        loading = true;
         LocalRepository.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run () {
                 if (editorOpened()) {
-                    loading = false;
                     getTaskController().refreshViewData();
                 } else {
                     // should close somehow
@@ -389,7 +386,7 @@ public final class LocalTask extends AbstractLocalTask {
 
     void setUnsubmittedAttachments (List<AttachmentInfo> attachments) {
         unsavedAttachments = new ArrayList<>(attachments);
-        getTaskController().modelStateChanged(true);
+        modelStateChanged(true);
     }
 
     private void persistAttachments (NbTaskDataModel model, TaskData td) {
@@ -505,14 +502,12 @@ public final class LocalTask extends AbstractLocalTask {
     
     void setTaskPrivateNotes (String notes) {
         super.setPrivateNotes(notes);
-        getTaskController().modelStateChanged(true);
+        modelStateChanged(true);
     }
     
     public void setTaskDueDate (Date date, boolean persistChange) {
         super.setDueDate(date, persistChange);
-        if (controller != null) {
-            controller.modelStateChanged(hasUnsavedChanges());
-        }
+        modelStateChanged(hasUnsavedChanges());
         if (persistChange) {
             dataChanged();
         }
@@ -520,9 +515,7 @@ public final class LocalTask extends AbstractLocalTask {
     
     public void setTaskScheduleDate (IssueScheduleInfo date, boolean persistChange) {
         super.setScheduleDate(date, persistChange);
-        if (controller != null) {
-            controller.modelStateChanged(hasUnsavedChanges());
-        }
+        modelStateChanged(hasUnsavedChanges());
         if (persistChange) {
             dataChanged();
         }
@@ -530,9 +523,7 @@ public final class LocalTask extends AbstractLocalTask {
     
     public void setTaskEstimate (int estimate, boolean persistChange) {
         super.setEstimate(estimate, persistChange);
-        if (controller != null) {
-            controller.modelStateChanged(hasUnsavedChanges());
-        }
+        modelStateChanged(hasUnsavedChanges());
         if (persistChange) {
             dataChanged();
         }
@@ -548,8 +539,10 @@ public final class LocalTask extends AbstractLocalTask {
             finish();
         }
         save();
-        getTaskController().modelStateChanged(false);
-        getTaskController().refreshViewData();
+        modelStateChanged(false);
+        if (controller != null) {
+            controller.refreshViewData();
+        }
     }
 
     public void attachPatch (final File file, final String description) {
@@ -567,8 +560,10 @@ public final class LocalTask extends AbstractLocalTask {
                         }
                         addAttachment(model, parentTA, file, description, null, true);
                         save();
-                        getTaskController().modelStateChanged(false);
-                        getTaskController().refreshViewData();
+                        modelStateChanged(false);
+                        if (controller != null) {
+                            controller.refreshViewData();
+                        }
                     }
                 }
             });
@@ -577,6 +572,12 @@ public final class LocalTask extends AbstractLocalTask {
 
     void fireChangeEvent () {
         fireChanged();
+    }
+
+    private void modelStateChanged (boolean dirty) {
+        if (controller != null) {
+            controller.modelStateChanged(dirty);
+        }
     }
     
     final static class TaskReference {
