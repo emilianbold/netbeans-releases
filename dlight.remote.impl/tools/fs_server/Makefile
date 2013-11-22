@@ -33,6 +33,10 @@ CC_FreeBSD-x86    = $(CC_COMMON)
 CC_FreeBSD-x86_64 = $(CC_COMMON)
 CC=$(CC_$(CONF))
 
+ifdef PARFAIT
+   CC=parfait-gcc
+endif
+
 SOURCES=\
 	$(ROOT_DIR)/src/fs_server.c \
 	$(ROOT_DIR)/src/queue.c \
@@ -75,6 +79,10 @@ LF_Linux-x86_64   = $(LF_COMMON)
 
 CFLAGS=$(CF_$(CONF))
 LDFLAGS=$(LF_$(CONF)) -lpthread
+
+parfait: all
+	@echo Processing parfait output. This can take a while...
+	@parfait --enable=all $(OBJ_DIRS)/*.bc
 
 all: $(EXEC)
 	@$(LINE) =
