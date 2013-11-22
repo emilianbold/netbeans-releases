@@ -315,7 +315,7 @@ public class JarFileSystem extends AbstractFileSystem {
 
         if (openJar) {
             try {
-                tempJar = new JarFile(s);
+                tempJar = new JarFile(s, false);
                 LOGGER.log(Level.FINE, "opened: "+ System.currentTimeMillis()+ "   " + s);//NOI18N
             } catch (ZipException e) {
                 throw new FSException(NbBundle.getMessage(JarFileSystem.class, "EXC_NotValidJarFile2", e.getLocalizedMessage(), s));
@@ -962,7 +962,7 @@ public class JarFileSystem extends AbstractFileSystem {
         if (jar == null && create) {
             try {
                 if (root.canRead()) {
-                    jar = new JarFile(root);
+                    jar = new JarFile(root, false);
                     LOGGER.log(Level.FINE, "opened: {0} {1}", new Object[]{root.getAbsolutePath(), System.currentTimeMillis()}); //NOI18N
                     return jar;
                 }
