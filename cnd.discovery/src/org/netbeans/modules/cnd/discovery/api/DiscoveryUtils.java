@@ -517,6 +517,8 @@ public class DiscoveryUtils {
             } else if (option.equals("-xc99") || // NOI18N
                        option.equals("-std=c99")){ // NOI18N
                 artifacts.languageArtifacts.add("c99"); // NOI18N
+            } else if (option.equals("-std=c11")){ // NOI18N
+                artifacts.languageArtifacts.add("c11"); // NOI18N
             } else if (option.equals("-std=c++0x") || // NOI18N
                        option.equals("-std=c++11") || // NOI18N
                        option.equals("-std=gnu++0x") || // NOI18N
