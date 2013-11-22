@@ -61,7 +61,7 @@ public interface IssueProvider<I> {
     public static final String EVENT_ISSUE_DATA_CHANGED = "issue.data_changed"; // NOI18N
 
     /**
-     * Returns this issues display name. 
+     * Returns the display name for the given issue. 
      * 
      * @param i an implementation specific issue instance
      * @return the display name for the given Issue
@@ -70,7 +70,7 @@ public interface IssueProvider<I> {
     public String getDisplayName(I i);
 
     /**
-     * Returns this issues tooltip. 
+     * Returns the tooltip for the given issue. 
      * 
      * @param i an implementation specific issue instance
      * @return tooltip for the given Issue
@@ -79,7 +79,7 @@ public interface IssueProvider<I> {
     public String getTooltip(I i);
 
     /**
-     * Returns this issues unique ID. Might be null in case this Issue is locally new.
+     * Returns the unique ID for the given issue. Might be null in case the issue is locally new.
      * 
      * @param i an implementation specific issue instance
      * @return id of the given Issue
@@ -99,7 +99,7 @@ public interface IssueProvider<I> {
     public Collection<String> getSubtasks(I i);
 
     /**
-     * Returns this issues summary.
+     * Returns the summary for the given issue.
      * 
      * @param i an implementation specific issue instance
      * @return summary
@@ -128,7 +128,7 @@ public interface IssueProvider<I> {
     public boolean isFinished(I i);
 
     /**
-     * Refreshes this Issues data from its bugtracking repository.
+     * Refreshes from the remote bugtracking repository the data for the given issue.
      *
      * <p>
      * In case an error appears during execution, the implementation 
@@ -181,7 +181,7 @@ public interface IssueProvider<I> {
     public void attachFile(I i, File file, String description, boolean isPatch);
 
     /**
-     * Returns this issues controller.
+     * Returns a controller for the given issue.
      * 
      * @param i an implementation specific issue instance
      * @return an IssueController for the given issue
