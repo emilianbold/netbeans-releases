@@ -132,8 +132,14 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
     private static final Pattern JERSEY_PATTERN = Pattern.compile(
             "^.*com\\.sun\\.jersey.*\\.jar$");
 
+    private static final Pattern JERSEY_PLAIN_PATTERN = Pattern.compile(
+            "^jersey-.*[\\d]+\\.[\\d]+\\.[\\d]+\\.jar$");
+
     private static final Pattern GLASSFISH_JAXWS_PATTERN = Pattern.compile(
             "^.*glassfish\\.jaxws\\.rt.*\\.jar$");
+
+    private static final Pattern GLASSFISH_JSF2_PATTERN = Pattern.compile(
+            "^.*glassfish\\.jsf_2\\..*\\.jar$");
 
     private static final Pattern OEPE_CONTRIBUTIONS_PATTERN = Pattern.compile("^.*oepe-contributions\\.jar.*$"); // NOI18N
 
@@ -219,7 +225,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             }
 
             addPersistenceLibrary(list, platformRoot, mwHome, j2eePlatform);
-            addWebserviceLibrary(list, platformRoot, mwHome, j2eePlatform);
+            addMissingLibraries(list, platformRoot, mwHome, j2eePlatform);
 
             // file needed for jsp parsing WL9 and WL10
             addFileToList(list, new File(platformRoot, "server/lib/wls-api.jar")); // NOI18N
@@ -291,8 +297,8 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         }
 
         return urls;
-    }    
-    
+    }
+
     //XXX there seems to be a bug in api.jar - it does not contain link to javax.persistence
     // method checks whether there is already persistence API present in the list
     private static void addPersistenceLibrary(List<URL> list, @NonNull File serverRoot,
@@ -360,9 +366,10 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         }
     }
 
-    //XXX there seems to be a bug in api.jar - it does not contain link to javax.ws
-    // method checks whether there is already persistence API present in the list
-    private static void addWebserviceLibrary(List<URL> list, @NonNull File serverRoot,
+    //XXX there seems to be a bug in api.jar - it does not contain link to
+    // javax.ws and (in 12.1.2 and higher) glassfish.jsf_2.x.x where jsf2 is
+    // available
+    private static void addMissingLibraries(List<URL> list, @NonNull File serverRoot,
             @NullAllowed File middleware, @NullAllowed J2eePlatformImplImpl j2eePlatform) throws MalformedURLException {
 
         if (middleware != null) {
@@ -377,14 +384,28 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                 FilenameFilter filter = new FilenameFilter() {
                     @Override
                     public boolean accept(File dir, String name) {
-                        return (JERSEY_PATTERN.matcher(name).matches() && serverVersion != null
+                        return ((JERSEY_PATTERN.matcher(name).matches() || JERSEY_PLAIN_PATTERN.matcher(name).matches())
+                                && serverVersion != null
                                 && JAX_RS_SUPPORTED_SERVER_VERSION.isBelowOrEqual(serverVersion))
                                         || GLASSFISH_JAXWS_PATTERN.matcher(name).matches();
                     }
                 };
-                for (File jerseyFile : modules.listFiles(filter)) {
-                    addFileToList(list, jerseyFile);
+                for (File missingFile : modules.listFiles(filter)) {
+                    addFileToList(list, missingFile);
                 }
+            }
+        }
+
+        File serverModules = getServerModules(serverRoot);
+        if (serverModules != null && serverModules.exists()) {
+            FilenameFilter filter = new FilenameFilter() {
+                @Override
+                public boolean accept(File dir, String name) {
+                    return GLASSFISH_JSF2_PATTERN.matcher(name).matches();
+                }
+            };
+            for (File missingFile : serverModules.listFiles(filter)) {
+                addFileToList(list, missingFile);
             }
         }
     }
@@ -394,6 +415,11 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         if (!modules.exists() || !modules.isDirectory()) {
             modules = new File(new File(middleware, "oracle_common"), "modules"); // NOI18N
         }
+        return modules;
+    }
+
+    private static File getServerModules(File server) {
+        File modules = new File(server, "modules"); // NOI18N
         return modules;
     }
 
