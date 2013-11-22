@@ -121,8 +121,6 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Table
                 }
                 int end = Math.min(list.size(), to);
                 List<ModelNode> contexts = list.subList(from, end);
-                //Collections.sort( contexts, COMPARATOR );
-
                 return contexts.toArray(new Object[contexts.size()]);
             } else if (parent instanceof ModelNode) {
                 usedParent = (ModelNode) parent;
@@ -201,15 +199,14 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Table
                         result = modelNode.getValue();
                     } catch (UnsufficientValueException e) {
                         sendValueCommand(modelNode);
-                        return NbBundle.getMessage(VariablesModel.class,
-                                EVALUATING);
+                        return NbBundle.getMessage(VariablesModel.class, EVALUATING);
                     }
                 } else if (node == null) {
                     result = "";
                 }
                 break;
             default:
-            //no-op
+                //no-op
         }
 
         return result;
@@ -227,20 +224,16 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Table
             if (!(node instanceof VariableNode)) {
                 throw new UnknownTypeException(node);
             }
-
             ModelNode modelNode = (ModelNode) node;
-
             if (modelNode.isReadOnly()) {
                 throw new UnknownTypeException(node);
             }
-
             DebugSession session = getSession();
             if (session == null) {
                 // TODO : need signal to user about inability to set value
                 return;
             }
-            PropertySetCommand command = new PropertySetCommand(
-                    session.getTransactionId());
+            PropertySetCommand command = new PropertySetCommand(session.getTransactionId());
             command.setData((String) value);
             assert node instanceof AbstractVariableNode;
             ((AbstractVariableNode) node).setupCommand(command);
@@ -331,8 +324,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Table
             String propertyName = property.getName();
             if ((propertyFullName != null && propertyFullName.equals(name)) || propertyName.equals(name)) {
                 Collection<ModelEvent> events = new ArrayList<>();
-                var.collectUpdates(this, AbstractModelNode.
-                        createVariable(property, var.getParent()), events);
+                var.collectUpdates(this, AbstractModelNode.createVariable(property, var.getParent()), events);
                 fireTableUpdate(events);
                 return true;
             }
@@ -349,8 +341,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Table
         List<ModelNode> result = new LinkedList<>();
         for (ModelNode node : myNodes) {
             if (node instanceof ContextNode && !((ContextNode) node).isGlobal()) {
-                result.addAll(Arrays.asList(
-                        node.getChildren(0, node.getChildrenSize())));
+                result.addAll(Arrays.asList(node.getChildren(0, node.getChildrenSize())));
             } else {
                 result.add(0, node);
             }
@@ -442,18 +433,8 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Table
         }
     }
 
-
-    /*private static class ContextOrder implements Comparator<ModelNode> {
-
-     public int compare( ModelNode nodeOne, ModelNode nodeTwo ) {
-     assert nodeOne instanceof ContextNode && nodeTwo instanceof ContextNode;
-     ContextNode one = (ContextNode) nodeOne;
-     ContextNode two = (ContextNode) nodeTwo;
-     return one.getIndex()-two.getIndex();
-     }
-
-     }*/
     public static class ContextNode extends org.netbeans.modules.php.dbgp.models.nodes.ContextNode {
+
         public ContextNode(Context ctx, List<Property> properties) {
             super(ctx, properties);
         }
