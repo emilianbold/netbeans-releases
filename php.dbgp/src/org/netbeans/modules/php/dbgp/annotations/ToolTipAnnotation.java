@@ -73,74 +73,54 @@ import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.util.RequestProcessor;
 
-
 /**
  * @author ads
  *
  */
-public class ToolTipAnnotation extends Annotation
-    implements PropertyChangeListener
-{
-
+public class ToolTipAnnotation extends Annotation implements PropertyChangeListener {
     private static final RequestProcessor RP = new RequestProcessor("Tool Tip Annotation"); //NOI18N
 
-    /* (non-Javadoc)
-     * @see org.openide.text.Annotation#getAnnotationType()
-     */
     @Override
-    public String getAnnotationType()
-    {
+    public String getAnnotationType() {
         return null; // Currently return null annotation type
     }
 
-    /* (non-Javadoc)
-     * @see org.openide.text.Annotation#getShortDescription()
-     */
     @Override
-    public String getShortDescription()
-    {
+    public String getShortDescription() {
         final Line.Part part = (Line.Part) getAttachedAnnotatable();
         if (part != null) {
             Runnable runnable = new Runnable() {
-
                 @Override
                 public void run() {
                     evaluate(part);
                 }
             };
-            if ( SwingUtilities.isEventDispatchThread()){
+            if (SwingUtilities.isEventDispatchThread()) {
                 runnable.run();
-            }
-            else {
-                SwingUtilities.invokeLater( runnable );
+            } else {
+                SwingUtilities.invokeLater(runnable);
             }
         }
-
         return null;
     }
 
-    /* (non-Javadoc)
-     * @see java.beans.PropertyChangeListener#propertyChange(java.beans.PropertyChangeEvent)
-     */
     @Override
-    public void propertyChange( PropertyChangeEvent event ) {
-        if ((event.getSource() instanceof EvalCommand) ||
-                (event.getSource() instanceof PropertyGetCommand)) {
+    public void propertyChange(PropertyChangeEvent event) {
+        if ((event.getSource() instanceof EvalCommand) || (event.getSource() instanceof PropertyGetCommand)) {
             Object newValue = event.getNewValue();
             if (newValue instanceof Property) {
                 Property value = (Property) event.getNewValue();
-                firePropertyChange(PROP_SHORT_DESCRIPTION, null,
-                        getFormattedValue(value));
+                firePropertyChange(PROP_SHORT_DESCRIPTION, null, getFormattedValue(value));
             }
         }
     }
 
-    private String getFormattedValue( Property value ) {
+    private String getFormattedValue(Property value) {
         return getFormattedValue(value, 0);
     }
 
-    private String getFormattedValue( Property value, int spaces ) {
-        if ( value == null ){
+    private String getFormattedValue(Property value, int spaces) {
+        if (value == null) {
             return null;
         }
         StringBuilder builder = new StringBuilder(600);
@@ -148,32 +128,33 @@ public class ToolTipAnnotation extends Annotation
         return builder.toString();
     }
 
-    private void evaluate( Line.Part part ){
+    private void evaluate(Line.Part part) {
         Line line = part.getLine();
         if (line == null) {
             return;
         }
         DataObject dataObject = DataEditorSupport.findDataObject(line);
-        if ( !isPhpDataObject( dataObject) ){
+        if (!isPhpDataObject(dataObject)) {
             return;
         }
         EditorCookie editorCookie = (EditorCookie) dataObject.getLookup().lookup(EditorCookie.class);
         StyledDocument document = editorCookie.getDocument();
-        if (document == null) {return;}
-        final int offset = NbDocument.findLineOffset(document,
-                part.getLine().getLineNumber()) + part.getColumn();
+        if (document == null) {
+            return;
+        }
+        final int offset = NbDocument.findLineOffset(document, part.getLine().getLineNumber()) + part.getColumn();
         JEditorPane ep = EditorContextDispatcher.getDefault().getCurrentEditor();
-        String selectedText = getSelectedText( ep, offset);
-        if ( selectedText != null ){
+        String selectedText = getSelectedText(ep, offset);
+        if (selectedText != null) {
             if (isPHPIdentifier(selectedText)) {
                 sendPropertyGetCommand(selectedText);
             } else if (PhpOptions.getInstance().isDebuggerWatchesAndEval()) {
-                sendEvalCommand( selectedText );
+                sendEvalCommand(selectedText);
             }
         } else {
             final String identifier = ep != null ? getIdentifier(document, ep, offset) : null;
             if (identifier != null) {
-                Runnable runnable = new Runnable(){
+                Runnable runnable = new Runnable() {
                     @Override
                     public void run() {
                         sendPropertyGetCommand(identifier);
@@ -190,12 +171,16 @@ public class ToolTipAnnotation extends Annotation
         if ((ep.getSelectionStart() <= offset) && (offset <= ep.getSelectionEnd())) {
             t = ep.getSelectedText();
         }
-        if (t != null) { return t; }
+        if (t != null) {
+            return t;
+        }
         int line = NbDocument.findLineNumber(doc, offset);
         int col = NbDocument.findLineColumn(doc, offset);
         Element lineElem = NbDocument.findLineRootElement(doc).getElement(line);
         try {
-            if (lineElem == null) { return null; }
+            if (lineElem == null) {
+                return null;
+            }
             int lineStartOffset = lineElem.getStartOffset();
             int lineLen = lineElem.getEndOffset() - lineStartOffset;
             if (col + 1 >= lineLen) {
@@ -212,7 +197,12 @@ public class ToolTipAnnotation extends Annotation
     static String getExpressionToEvaluate(String text, int col) {
         int identStart = col;
         boolean isInFieldDeclaration = false;
-        while (identStart > 0 && ((text.charAt(identStart - 1) == ' ') || isPHPIdentifier(text.charAt(identStart - 1)) || (text.charAt(identStart - 1) == '.') || (text.charAt(identStart - 1) == '>'))) {
+        while (identStart > 0
+                && (
+                    (text.charAt(identStart - 1) == ' ')
+                    || isPHPIdentifier(text.charAt(identStart - 1))
+                    || (text.charAt(identStart - 1) == '.')
+                    || (text.charAt(identStart - 1) == '>'))) {
             identStart--;
             if (identStart > 0 && text.charAt(identStart) == '>') { // NOI18N
                 if (text.charAt(identStart - 1) == '-') { // NOI18N
@@ -264,92 +254,57 @@ public class ToolTipAnnotation extends Annotation
     }
 
     private static boolean isDollarMark(char ch) {
-        return ch == '$';//NOI18N
+        return ch == '$'; //NOI18N
     }
 
-    private boolean isPhpDataObject( DataObject dataObject ) {
-        return Utils.isPhpFile( dataObject.getPrimaryFile() );
+    private boolean isPhpDataObject(DataObject dataObject) {
+        return Utils.isPhpFile(dataObject.getPrimaryFile());
     }
 
-    //TODO: review, replace the code depending on lexer.model - part II (methods computeVariable, getExpression)
-    /*private void computeVariable( FileObject fObject, int offset ){
-        PhpModel model = ModelAccess.getAccess().getModel(
-                ModelAccess.getModelOrigin( fObject ));
-        if ( model == null ){
-            return;
-        }
-        SourceElement element = model.findSourceElement(offset);
-        if ( element == null ){
-            return;
-        }
-        String expression = getExpression( element );
-        if ( expression != null ) {
-            sendEvalCommand( expression );
-        }
-    }
-
-    private String getExpression( SourceElement element ) {
-        if ( element == null ){
-            return null;
-        }
-        if ( element instanceof Expression ){
-            return element.getText();
-        }
-        else {
-            return getExpression( element.getParent() );
-        }
-    }*/
-
-    private void sendEvalCommand( String str ){
+    private void sendEvalCommand(String str) {
         DebugSession session = getSession();
-        if ( session == null ){
+        if (session == null) {
             return;
         }
-        EvalCommand command = new EvalCommand( session.getTransactionId() );
-        command.setData( str );
-        command.addPropertyChangeListener( this );
-        session.sendCommandLater(command);
-    }
-    private void sendPropertyGetCommand( String str ){
-        DebugSession session = getSession();
-        if ( session == null ){
-            return;
-        }
-        PropertyGetCommand command = new PropertyGetCommand( session.getTransactionId() );
-        command.setName( str );
-        command.addPropertyChangeListener( this );
+        EvalCommand command = new EvalCommand(session.getTransactionId());
+        command.setData(str);
+        command.addPropertyChangeListener(this);
         session.sendCommandLater(command);
     }
 
-    private String getSelectedText( JEditorPane pane , int offset ){
-        if ((pane != null && pane.getSelectionStart() <= offset) &&
-                (offset <= pane.getSelectionEnd()))
-        {
+    private void sendPropertyGetCommand(String str) {
+        DebugSession session = getSession();
+        if (session == null) {
+            return;
+        }
+        PropertyGetCommand command = new PropertyGetCommand(session.getTransactionId());
+        command.setName(str);
+        command.addPropertyChangeListener(this);
+        session.sendCommandLater(command);
+    }
+
+    private String getSelectedText(JEditorPane pane, int offset) {
+        if ((pane != null && pane.getSelectionStart() <= offset) && (offset <= pane.getSelectionEnd())) {
             return pane.getSelectedText();
         }
         return null;
     }
 
     private DebugSession getSession() {
-        DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager()
-                .getCurrentEngine();
+        DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
         if (currentEngine == null) {
             return null;
         }
-        SessionId id = (SessionId) currentEngine.lookupFirst(null,
-                SessionId.class);
+        SessionId id = (SessionId) currentEngine.lookupFirst(null, SessionId.class);
         if (id == null) {
             return null;
         }
-        DebugSession session = SessionManager.getInstance()
-                .getSession(id);
+        DebugSession session = SessionManager.getInstance().getSession(id);
         return session;
     }
 
-
     private static class CommonTooltip {
         protected static final String NEW_LINE = "\n"; // NOI18N
-
         protected final Property property;
         protected final String type;
         protected final String result;
@@ -458,9 +413,11 @@ public class ToolTipAnnotation extends Annotation
                 builder.append(" "); //NOI18N
             }
         }
+
     }
 
     private static final class NullTooltip extends CommonTooltip {
+
         public NullTooltip(Property property, String type, String result, int spaces) {
             super(property, type, result, spaces);
         }
@@ -469,6 +426,7 @@ public class ToolTipAnnotation extends Annotation
         protected void buildType(StringBuilder builder) {
             builder.append(type);
         }
+
     }
 
     private static final class BooleanTooltip extends CommonTooltip {
@@ -485,15 +443,17 @@ public class ToolTipAnnotation extends Annotation
                 builder.append("false"); // NOI18N
             }
         }
+
     }
 
     private static final class ObjectTooltip extends CommonTooltip {
+
         public ObjectTooltip(Property property, String type, String result, int spaces) {
             super(property, type, result, spaces);
         }
 
         @Override
-         protected void buildType(StringBuilder builder) {
+        protected void buildType(StringBuilder builder) {
             builder.append(property.getClassName());
             builder.append(" "); // NOI18N
             builder.append(type);
@@ -518,9 +478,11 @@ public class ToolTipAnnotation extends Annotation
         public String getChildRight() {
             return ""; // NOI18N
         }
+
     }
 
     private static final class ArrayTooltip extends CommonTooltip {
+
         public ArrayTooltip(Property property, String type, String result, int spaces) {
             super(property, type, result, spaces);
         }
@@ -552,5 +514,7 @@ public class ToolTipAnnotation extends Annotation
         public String getChildRight() {
             return "]"; // NOI18N
         }
+
     }
+
 }

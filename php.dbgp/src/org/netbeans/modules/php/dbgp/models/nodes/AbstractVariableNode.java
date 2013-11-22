@@ -54,55 +54,40 @@ import org.netbeans.modules.php.dbgp.packets.PropertyValueCommand;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.openide.text.Line;
 
-
 /**
  * @author ads
  *
  */
-public abstract class AbstractVariableNode extends AbstractModelNode
-    implements VariableNode
-{
-
-    protected static final String FIELD_ICON =
-        "org/netbeans/modules/debugger/resources/watchesView/Field"; // NOI18N
-
+public abstract class AbstractVariableNode extends AbstractModelNode implements VariableNode {
+    protected static final String FIELD_ICON = "org/netbeans/modules/debugger/resources/watchesView/Field"; // NOI18N
+    private Property myProperty;
 
     /**
-     * <code>property</code> is not authority for this class.
-     * It is used as information.
-     * This class is initialized based on <code>property</code>.
-     * And it could be updated later based on other property .
-     * F.e. one can set  new property via {@link #setProperty(Property)}
-     * but this doesn't mean that all  AbstractVariableNode should be
-     * reinitialized due property change.
-     * AbstractVariableNode provides its own information that updates by
-     * ( basically children ) adding/removing children.
-     * So children in current <code>property</code> and AbstractVariableNode
-     * class could be different.
+     * <code>property</code> is not authority for this class. It is used as
+     * information. This class is initialized based on
+     * <code>property</code>. And it could be updated later based on other
+     * property . F.e. one can set new property via
+     * {@link #setProperty(Property)} but this doesn't mean that all
+     * AbstractVariableNode should be reinitialized due property change.
+     * AbstractVariableNode provides its own information that updates by (
+     * basically children ) adding/removing children. So children in current
+     * <code>property</code> and AbstractVariableNode class could be different.
      */
-    protected AbstractVariableNode( Property property ,
-            AbstractModelNode parent )
-    {
-        super( parent , property.getChildren() );
+    protected AbstractVariableNode(Property property, AbstractModelNode parent) {
+        super(parent, property.getChildren());
         myProperty = property;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.models.VariableNode#getFullName()
-     */
     @Override
     public String getFullName() {
         return getProperty().getFullName();
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.models.VariableNode#getName()
-     */
     @Override
     public String getName() {
         Property property = getProperty();
-        String propertyName = property != null ? property.getName()  : null;
-        if ( getParent() instanceof ArrayVariableNode ) {
+        String propertyName = property != null ? property.getName() : null;
+        if (getParent() instanceof ArrayVariableNode) {
             StringBuilder builder = new StringBuilder("[");
             builder.append(propertyName);
             builder.append("]");
@@ -111,133 +96,100 @@ public abstract class AbstractVariableNode extends AbstractModelNode
         return propertyName;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.api.ModelNode#getChildren(int, int)
-     */
     @Override
-    public ModelNode[] getChildren( int from, int to ) {
+    public ModelNode[] getChildren(int from, int to) {
         List<AbstractVariableNode> subList = getVariables().subList(from, to);
-        return subList.toArray( new ModelNode[ subList.size() ] );
+        return subList.toArray(new ModelNode[subList.size()]);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.api.ModelNode#getChildrenSize()
-     */
     @Override
     public int getChildrenSize() {
         return getVariables().size();
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.api.ModelNode#getIconBase()
-     */
     @Override
     public String getIconBase() {
         AbstractModelNode node = getParent();
-        if ( node instanceof ObjectVariableNode ) {
+        if (node instanceof ObjectVariableNode) {
             return FIELD_ICON;
         }
         return LOCAL_VARIABLE_ICON;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.api.ModelNode#getShortDescription()
-     */
     @Override
     public String getShortDescription() {
-        // TODO Auto-generated method stub
         return null;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.api.ModelNode#getType()
-     */
     @Override
     public String getType() {
         return getProperty().getType();
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.api.ModelNode#getValue()
-     */
     @Override
     public String getValue() throws UnsufficientValueException {
-        return  getProperty().getStringValue();
+        return getProperty().getStringValue();
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.api.ModelNode#isReadOnly()
-     */
     @Override
     public boolean isReadOnly() {
         return false;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.models.VariableNode#findDeclarationLine()
-     */
     @Override
     public Line findDeclarationLine() {
-        // TODO Auto-generated method stub
         return null;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.api.ModelNode#isLeaf()
-     */
     @Override
     public boolean isLeaf() {
         return !getProperty().hasChildren();
     }
 
-    public void setupCommand( PropertyValueCommand valueCommand ) {
-        setupCommand( ( PropertyGetCommand) valueCommand);
-        valueCommand.setMaxDataSize( getProperty().getSize() );
-        // ? valueCommand.setAddress( getProperty().getAddress());
+    public void setupCommand(PropertyValueCommand valueCommand) {
+        setupCommand((PropertyGetCommand) valueCommand);
+        valueCommand.setMaxDataSize(getProperty().getSize());
     }
 
-
-    public void setupCommand( PropertyGetCommand getCommand ) {
-        setupCommand( (PropertyCommand)getCommand);
+    public void setupCommand(PropertyGetCommand getCommand) {
+        setupCommand((PropertyCommand) getCommand);
         String key = getProperty().getKey();
-        if ( key != null ) {
+        if (key != null) {
             getCommand.setKey(key);
         }
     }
 
-    public void setupCommand( PropertySetCommand command ) {
-        setupCommand( (PropertyCommand)command);
-        // ? command.setAddress( getProperty().getAddress());
+    public void setupCommand(PropertySetCommand command) {
+        setupCommand((PropertyCommand) command);
     }
 
-    public void setupFillChildrenCommand( PropertyGetCommand getCommand  ){
-        setupCommand( getCommand );
-        int page = getProperty().getPage() +1;
+    public void setupFillChildrenCommand(PropertyGetCommand getCommand) {
+        setupCommand(getCommand);
+        int page = getProperty().getPage() + 1;
         getCommand.setDataPage(page);
     }
 
-    public boolean isChildrenFilled(){
+    public boolean isChildrenFilled() {
         int pageSize = getProperty().getPageSize();
-        if ( pageSize == 0 ){
+        if (pageSize == 0) {
             return true;
         }
         int childrenSize = getProperty().getChildrenSize();
         int page = getProperty().getPage();
-        return childrenSize <= (page+1)*pageSize;
+        return childrenSize <= (page + 1) * pageSize;
     }
 
     public int getContext() {
         return getRootContext().getIndex();
     }
 
-    protected void setProperty( Property property ) {
+    protected void setProperty(Property property) {
         Property old = getProperty();
-        property.setName( old.getName() );
+        property.setName(old.getName());
         myProperty = property;
     }
 
-    protected abstract void collectUpdates( VariablesModel variablesModel,
-            VariableNode node, Collection<ModelEvent> events );
+    protected abstract void collectUpdates(VariablesModel variablesModel, VariableNode node, Collection<ModelEvent> events);
 
     protected Property getProperty() {
         return myProperty;
@@ -245,7 +197,7 @@ public abstract class AbstractVariableNode extends AbstractModelNode
 
     private ContextNode getRootContext() {
         AbstractModelNode retval = this;
-        while (retval != null && !( retval instanceof ContextNode)) {
+        while (retval != null && !(retval instanceof ContextNode)) {
             retval = retval.getParent();
         }
         return (ContextNode) retval;
@@ -253,9 +205,7 @@ public abstract class AbstractVariableNode extends AbstractModelNode
 
     private void setupCommand(PropertyCommand command) {
         command.setName(getFullName());
-        command.setContext( getContext() );
+        command.setContext(getContext());
     }
-
-    private Property myProperty;
 
 }

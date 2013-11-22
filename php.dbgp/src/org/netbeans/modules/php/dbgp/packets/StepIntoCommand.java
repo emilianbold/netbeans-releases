@@ -43,25 +43,19 @@
  */
 package org.netbeans.modules.php.dbgp.packets;
 
-
 /**
  * @author ads
  *
  */
 public class StepIntoCommand extends DbgpCommand {
+    static final String STEP_INTO = "step_into"; // NOI18N
 
-    static final String STEP_INTO = "step_into";        // NOI18N
-
-    public StepIntoCommand( String transactionId ) {
-        super( STEP_INTO, transactionId);
+    public StepIntoCommand(String transactionId) {
+        super(STEP_INTO, transactionId);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpCommand#needAcknowledgment()
-     */
     @Override
-    public boolean wantAcknowledgment()
-    {
+    public boolean wantAcknowledgment() {
         return true;
     }
 

@@ -55,7 +55,6 @@ import org.netbeans.modules.php.project.api.PhpOptions;
  * @author Radek Matous
  */
 class ProxyClient {
-
     private static final Logger LOGGER = Logger.getLogger(ProxyClient.class.getName());
     private String proxyHost;
     private int proxyPort;
@@ -98,11 +97,11 @@ class ProxyClient {
             }
         } catch (UnknownHostException ex) {
             if (LOGGER.isLoggable(Level.INFO)) {
-                LOGGER.log(Level.INFO, ex.getLocalizedMessage(), ex);//NOI18N
+                LOGGER.log(Level.INFO, ex.getLocalizedMessage(), ex);
             }
         } catch (IOException ex) {
             if (LOGGER.isLoggable(Level.INFO)) {
-                LOGGER.log(Level.INFO, ex.getLocalizedMessage(), ex);//NOI18N
+                LOGGER.log(Level.INFO, ex.getLocalizedMessage(), ex);
             }
         }
         return retval;
@@ -120,27 +119,27 @@ class ProxyClient {
             }
         } catch (UnknownHostException ex) {
             if (LOGGER.isLoggable(Level.INFO)) {
-                LOGGER.log(Level.INFO, ex.getLocalizedMessage(), ex);//NOI18N
+                LOGGER.log(Level.INFO, ex.getLocalizedMessage(), ex);
             }
         } catch (IOException ex) {
             if (LOGGER.isLoggable(Level.INFO)) {
-                LOGGER.log(Level.INFO, ex.getLocalizedMessage(), ex);//NOI18N
+                LOGGER.log(Level.INFO, ex.getLocalizedMessage(), ex);
             }
         }
     }
 
     private static String getProxyInitCommand(int idePort, String ideKey) {
-        return String.format("proxyinit -p %d -k %s -m 0", idePort, ideKey);//NOI18N
+        return String.format("proxyinit -p %d -k %s -m 0", idePort, ideKey); //NOI18N
     }
 
     private static String getProxyStopCommand(String ideKey) {
-        return String.format("proxystop -k %s", ideKey);//NOI18N
+        return String.format("proxystop -k %s", ideKey); //NOI18N
     }
 
     private static void sendCommand(OutputStream outputStream, String command) throws IOException {
         outputStream.write(command.getBytes(Charset.defaultCharset()));
         if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.log(Level.FINE, String.format("send command: %s: ", command));//NOI18N
+            LOGGER.log(Level.FINE, String.format("send command: %s: ", command)); //NOI18N
         }
     }
 
@@ -149,19 +148,20 @@ class ProxyClient {
         int available = 1024;
         byte[] responseBytes = new byte[available];
         int len = 0;
-        for (int nextByte = -1; (nextByte = inputStream.read()) != -1 && len < available; len++) {
+        for (int nextByte; (nextByte = inputStream.read()) != -1 && len < available; len++) {
             responseBytes[len] = (byte) nextByte;
         }
         if (len > 0) {
             retval = new String(responseBytes, 0, len, Charset.defaultCharset());
             if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.log(Level.FINE, String.format("response(%s) is %s: ", command, retval));//NOI18N
+                LOGGER.log(Level.FINE, String.format("response(%s) is %s: ", command, retval)); //NOI18N
             }
         } else {
             if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.log(Level.FINE, String.format("No response after command(\"%s\"): ", command));//NOI18N
+                LOGGER.log(Level.FINE, String.format("No response after command(\"%s\"): ", command)); //NOI18N
             }
         }
         return retval;
     }
+
 }

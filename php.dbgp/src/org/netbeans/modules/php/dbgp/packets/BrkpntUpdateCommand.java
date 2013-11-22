@@ -45,34 +45,30 @@ package org.netbeans.modules.php.dbgp.packets;
 
 import org.netbeans.modules.php.dbgp.packets.BrkpntSetCommand.State;
 
-
-
-
 /**
  * @author ads
  *
  */
 public class BrkpntUpdateCommand extends DbgpCommand {
-
     public static final String UPDATE = "breakpoint_update"; // NOI18N
     static final String ID_ARG = "-d "; // NOI18N
     private static final String STATE_ARG = "-s "; // NOI18N
     private String myId;
     private State state;
 
-    public BrkpntUpdateCommand( String transactionId , String brkpntId ) {
-        super( UPDATE , transactionId);
+    public BrkpntUpdateCommand(String transactionId, String brkpntId) {
+        super(UPDATE, transactionId);
         myId = brkpntId;
     }
 
     public String getBreakpointId() {
         return myId;
     }
-    
+
     public void setState(State state) {
         this.state = state;
     }
-    
+
     @Override
     protected String getArguments() {
         StringBuilder builder = new StringBuilder();

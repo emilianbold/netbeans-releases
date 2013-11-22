@@ -45,106 +45,98 @@ package org.netbeans.modules.php.dbgp.packets;
 
 import org.w3c.dom.Node;
 
-
 /**
  * @author ads
  *
  */
 public class Stack extends Input {
-
-    private static final String INPUT       = "input";         // NOI18N
-
-    private static final String CMDEND      = "cmdend";        // NOI18N
-
-    private static final String CMDBEGIN    = "cmdbegin";      // NOI18N
-
-    private static final String WHERE       = "where";         // NOI18N
+    private static final String INPUT = "input"; // NOI18N
+    private static final String CMDEND = "cmdend"; // NOI18N
+    private static final String CMDBEGIN = "cmdbegin"; // NOI18N
+    private static final String WHERE = "where"; // NOI18N
 
     public enum Type {
         FILE,
         EVAL,
         QUEST;
-        
+
         @Override
-        public String toString()
-        {
-            if ( this != QUEST ){
+        public String toString() {
+            if (this != QUEST) {
                 return super.toString().toLowerCase();
-            }
-            else {
-                return "?";     // NOI18N
+            } else {
+                return "?"; // NOI18N
             }
         }
-        
-        public static Type forString( String str ){
+
+        public static Type forString(String str) {
             Type[] types = Type.values();
             for (Type type : types) {
-                if ( type.toString().equals( str )){
+                if (type.toString().equals(str)) {
                     return type;
                 }
             }
             return null;
         }
+
     }
 
-    Stack( Node node ) {
-        super( node );
+    Stack(Node node) {
+        super(node);
     }
-    
-    public String getCurrentCommandName(){
-        return getAttribute( WHERE );
+
+    public String getCurrentCommandName() {
+        return getAttribute(WHERE);
     }
-    
-    public Position getCurrentInstructionStart(){
-        return getPosition( CMDBEGIN );
+
+    public Position getCurrentInstructionStart() {
+        return getPosition(CMDBEGIN);
     }
-    
-    public Position getCurrentInstructionEnd(){
-        return getPosition( CMDEND );
+
+    public Position getCurrentInstructionEnd() {
+        return getPosition(CMDEND);
     }
-    
-    public Input getInput(){
-        Node node = getChild( INPUT );
-        if ( node == null ){
+
+    public Input getInput() {
+        Node node = getChild(INPUT);
+        if (node == null) {
             return null;
         }
-        return new Input( node );
+        return new Input(node);
     }
-    
-    private Position getPosition( String attrName ){
+
+    private Position getPosition(String attrName) {
         String value = getAttribute(attrName);
-        if ( value == null ){
+        if (value == null) {
             return null;
         }
-        String[] values = value.split(":");
+        String[] values = value.split(":"); //NOI18N
         assert values.length == 2;
-        return new Position( values[0] , values[1] ); 
+        return new Position(values[0], values[1]);
     }
-    
-    public static class Position {
-        
-        private Position( String line , String offset ){
+
+    public static final class Position {
+        private int myLine;
+        private int myOffset;
+
+        private Position(String line, String offset) {
             try {
-                myLine = Integer.parseInt( line );
-                myOffset = Integer.parseInt( offset );
-            }
-            catch( NumberFormatException e ){
+                myLine = Integer.parseInt(line);
+                myOffset = Integer.parseInt(offset);
+            } catch (NumberFormatException e) {
                 myLine = -1;
                 myOffset = -1;
             }
         }
-        
-        public int getLine(){
+
+        public int getLine() {
             return myLine;
         }
-        
-        public int getOffset(){
+
+        public int getOffset() {
             return myOffset;
         }
-        
-        private int myLine;
-        
-        private int myOffset;
+
     }
 
 }
