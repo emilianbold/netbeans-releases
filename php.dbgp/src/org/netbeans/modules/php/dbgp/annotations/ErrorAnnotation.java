@@ -45,25 +45,19 @@ package org.netbeans.modules.php.dbgp.annotations;
 
 import org.openide.text.Annotatable;
 
-
 /**
  * @author ads
  *
  */
 public class ErrorAnnotation extends DebuggerAnnotation {
-    
-    public static final String ERROR_ANNOTATION_TYPE = "PHPError";      // NOI18N
+    public static final String ERROR_ANNOTATION_TYPE = "PHPError"; //NOI18N
 
-    public ErrorAnnotation( Annotatable annotatable , String message ) {
-        super(annotatable, message );
+    public ErrorAnnotation(Annotatable annotatable, String message) {
+        super(annotatable, message);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.annotations.DebuggerAnnotation#getAnnotationType()
-     */
     @Override
-    public String getAnnotationType()
-    {
+    public String getAnnotationType() {
         return ERROR_ANNOTATION_TYPE;
     }
 

@@ -49,28 +49,21 @@ import org.netbeans.spi.debugger.ui.BreakpointAnnotation;
 import org.openide.text.Annotatable;
 import org.openide.util.NbBundle;
 
-
 /**
  * @author ads
  *
  */
 public class BrkpntAnnotation extends BreakpointAnnotation {
-
-    public static final String BREAKPOINT_ANNOTATION_TYPE = "Breakpoint";     // NOI18N
-
-    private static final String BREAKPOINT                = "ANTN_BREAKPOINT";// NOI18N
-
+    public static final String BREAKPOINT_ANNOTATION_TYPE = "Breakpoint"; // NOI18N
+    private static final String BREAKPOINT = "ANTN_BREAKPOINT"; //NOI18N
     private Breakpoint breakpoint;
 
-    public BrkpntAnnotation( Annotatable annotatable, LineBreakpoint breakpoint ) {
+    public BrkpntAnnotation(Annotatable annotatable, LineBreakpoint breakpoint) {
         this.breakpoint = breakpoint;
         breakpoint.refreshValidity();
         attach(annotatable);
     }
 
-    /* (non-Javadoc)
-     * @see org.openide.text.Annotation#getAnnotationType()
-     */
     @Override
     public String getAnnotationType() {
         Breakpoint.VALIDITY validity = breakpoint.getValidity();
@@ -79,12 +72,8 @@ public class BrkpntAnnotation extends BreakpointAnnotation {
                 : BREAKPOINT_ANNOTATION_TYPE + "_broken"; //NOI18N
     }
 
-    /* (non-Javadoc)
-     * @see org.openide.text.Annotation#getShortDescription()
-     */
     @Override
-    public String getShortDescription()
-    {
+    public String getShortDescription() {
         return NbBundle.getMessage(DebuggerAnnotation.class, BREAKPOINT);
     }
 

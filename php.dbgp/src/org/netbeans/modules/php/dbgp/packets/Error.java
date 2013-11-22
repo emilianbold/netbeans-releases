@@ -45,35 +45,28 @@ package org.netbeans.modules.php.dbgp.packets;
 
 import org.w3c.dom.Node;
 
-
 /**
  * @author ads
  *
  */
 public class Error extends BaseMessageChildElement {
-    
-    private static final String CODE        = "code";           // NOI18N
-    
-    private static final String MESSAGE     = "message";        // NOI18N
-    
-    Error( Node node ){
-        super( node );
+    private static final String CODE = "code"; // NOI18N
+    private static final String MESSAGE = "message"; // NOI18N
+
+    Error(Node node) {
+        super(node);
     }
 
-    public int getErrorCode(){
-        return getInt( CODE );
+    public int getErrorCode() {
+        return getInt(CODE);
     }
-    
-    public String getMessage(){
-        Node node = getChild( MESSAGE);
-        if ( node == null ) {
+
+    public String getMessage() {
+        Node node = getChild(MESSAGE);
+        if (node == null) {
             return null;
         }
-        return DbgpMessage.getNodeValue( node );
+        return DbgpMessage.getNodeValue(node);
     }
-    
-    /*
-     * public String getAppError(); ?
-     */
 
 }

@@ -47,19 +47,15 @@ import org.netbeans.modules.php.dbgp.models.VariablesModelFilter.FilterType;
 import org.netbeans.modules.php.dbgp.packets.Property;
 import org.openide.util.NbBundle;
 
-
 /**
  * @author ads
  *
  */
-class ArrayVariableNode extends
-    org.netbeans.modules.php.dbgp.models.VariablesModel.AbstractVariableNode
-{
-
+class ArrayVariableNode extends org.netbeans.modules.php.dbgp.models.VariablesModel.AbstractVariableNode {
     static final String TYPE_ARRAY = "TYPE_Array"; // NOI18N
 
-    ArrayVariableNode( Property property , AbstractModelNode parent ) {
-        super(property , parent );
+    ArrayVariableNode(Property property, AbstractModelNode parent) {
+        super(property, parent);
     }
 
     @Override
@@ -73,8 +69,7 @@ class ArrayVariableNode extends
     }
 
     @Override
-    protected boolean isTypeApplied( Set<FilterType> filters ) {
-        return filters.contains( FilterType.ARRAY );
+    protected boolean isTypeApplied(Set<FilterType> filters) {
+        return filters.contains(FilterType.ARRAY);
     }
-
 }

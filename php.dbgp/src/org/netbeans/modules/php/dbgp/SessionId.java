@@ -58,12 +58,10 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Pair;
 
-
 /**
- * This class is used for session identifying between IDE and Debugger.
- * Session id is based on file requested for debug.
- * It is used for mapping remote files to local files based on
- * session information.
+ * This class is used for session identifying between IDE and Debugger. Session
+ * id is based on file requested for debug. It is used for mapping remote files
+ * to local files based on session information.
  *
  *
  * @author ads, Radek Matous
@@ -83,10 +81,12 @@ public class SessionId {
         sessionFileObject = fileObject;
         sessionProject = project;
     }
+
     public String getId() {
         return id;
     }
-    public Project getProject(){
+
+    public Project getProject() {
         return sessionProject;
     }
 
@@ -103,26 +103,28 @@ public class SessionId {
             s.notifyConnectionFinished();
         }
     }
+
     public synchronized boolean isInitialized(boolean waitForInitialization) {
-        boolean isInitialized =  uriMapper != null;
+        boolean isInitialized = uriMapper != null;
         while (!isInitialized && waitForInitialization) {
             try {
                 wait();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
-            isInitialized =  uriMapper != null;
+            isInitialized = uriMapper != null;
         }
         return isInitialized;
     }
+
     /**
-     * Converts file in project directory to URI in document
-     * root of web server (local or remote because both local|remote debugging
-     * is supported now)
+     * Converts file in project directory to URI in document root of web server
+     * (local or remote because both local|remote debugging is supported now).
+     *
      * @param localFile
      * @return uri URI in document root of web server
      */
-    public String toWebServerURI( FileObject localFile ) {
+    public String toWebServerURI(FileObject localFile) {
         if (uriMapper != null) {
             File file = FileUtil.toFile(localFile);
             assert file != null;
@@ -133,7 +135,8 @@ public class SessionId {
         }
         return null;
     }
-    public FileObject toSourceFile( String possibleUri ){
+
+    public FileObject toSourceFile(String possibleUri) {
         FileObject result = null;
         if (uriMapper != null) {
             try {
@@ -147,10 +150,12 @@ public class SessionId {
         }
         return result;
     }
+
     private FileObject getSourceRoot() {
         final FileObject[] sourceObjects = getSourceObjects(getProject());
         return (sourceObjects != null && sourceObjects.length > 0) ? sourceObjects[0] : null;
     }
+
     private static FileObject[] getSourceObjects(Project phpProject) {
         SourceGroup[] groups = getSourceGroups(phpProject);
         FileObject[] fileObjects = new FileObject[groups.length];
@@ -159,12 +164,15 @@ public class SessionId {
         }
         return fileObjects;
     }
+
     private static SourceGroup[] getSourceGroups(Project phpProject) {
         Sources sources = ProjectUtils.getSources(phpProject);
-        SourceGroup[] groups = sources.getSourceGroups(SOURCES_TYPE_PHP);//NOI18N
+        SourceGroup[] groups = sources.getSourceGroups(SOURCES_TYPE_PHP);
         return groups;
     }
+
     private String getSessionPrefix() {
         return PhpOptions.getInstance().getDebuggerSessionId();
     }
+
 }

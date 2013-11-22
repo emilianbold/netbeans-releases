@@ -43,26 +43,20 @@
  */
 package org.netbeans.modules.php.dbgp.packets;
 
-
 /**
  * @author ads
  *
  */
 public class StepOutCommand extends DbgpCommand {
+    static final String STEP_OUT = "step_out"; // NOI18N
 
-    static final String STEP_OUT = "step_out";              // NOI18N
-
-    public StepOutCommand( String transactionId ) {
-        super( STEP_OUT, transactionId);
+    public StepOutCommand(String transactionId) {
+        super(STEP_OUT, transactionId);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpCommand#needAcknowledgment()
-     */
     @Override
-    public boolean wantAcknowledgment()
-    {
+    public boolean wantAcknowledgment() {
         return true;
     }
-    
+
 }
