@@ -272,10 +272,6 @@ public final class LocalTask extends AbstractLocalTask {
         LocalRepository.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run () {
-                if (hasUnsavedAttributes() || !isMarkedNewUnread()) {
-                    save();
-                    getTaskController().modelStateChanged(hasUnsavedChanges());
-                }
                 editorClosed();
             }
         });
