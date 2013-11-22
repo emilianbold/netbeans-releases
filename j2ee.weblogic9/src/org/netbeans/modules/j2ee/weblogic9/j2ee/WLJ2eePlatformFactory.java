@@ -657,17 +657,16 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                     "LIBRARY_NAME"));
             
             // add the required jars to the library
-                List<URL> list = new ArrayList<URL>();
-                list.addAll(getWLSClassPath(getServerHome(), getMiddlewareHome(), this));
+            List<URL> list = new ArrayList<URL>();
+            list.addAll(getWLSClassPath(getServerHome(), getMiddlewareHome(), this));
 
-                library.setContent(J2eeLibraryTypeProvider.
-                        VOLUME_TYPE_CLASSPATH, list);
-                File j2eeDoc = InstalledFileLocator.getDefault().locate(J2EE_API_DOC, null, false);
-                if (j2eeDoc != null) {
-                    list = new ArrayList();
-                    addFileToList(list, j2eeDoc);
-                    library.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, list);
-                }
+            library.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, list);
+            File j2eeDoc = InstalledFileLocator.getDefault().locate(J2EE_API_DOC, null, false);
+            if (j2eeDoc != null) {
+                list = new ArrayList();
+                addFileToList(list, j2eeDoc);
+                library.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, list);
+            }
             
             synchronized (this) {
                 libraries = new LibraryImplementation[1];
