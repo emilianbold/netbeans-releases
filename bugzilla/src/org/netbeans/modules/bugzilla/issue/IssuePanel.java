@@ -380,7 +380,7 @@ public class IssuePanel extends javax.swing.JPanel {
                     enableMap.put(cancelButton, isModified || isDirty);
                 }
                 if (!initializingNewTask) {
-                    issue.fireChanged();
+                    issue.fireChangeEvent();
                 }
             }
         });
@@ -3441,7 +3441,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         boolean fire = !unsavedFields.isEmpty();
         unsavedFields.clear();
         if(fire) {
-            issue.fireChanged();
+            issue.fireChangeEvent();
         }        
     }
     
@@ -3449,7 +3449,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         boolean fire = unsavedFields.isEmpty();
         unsavedFields.add(fieldName);
         if(fire) {
-            issue.fireChanged();
+            issue.fireChangeEvent();
         }
     }
     
@@ -3922,7 +3922,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
 
             @Override
             protected boolean storeValue () {
-                issue.setTaskScheduleDate(scheduleDatePicker.getScheduleDate(), false, true);
+                issue.setTaskScheduleDate(scheduleDatePicker.getScheduleDate(), false);
                 return true;
             }
         });

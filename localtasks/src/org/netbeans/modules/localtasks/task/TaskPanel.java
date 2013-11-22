@@ -901,7 +901,7 @@ final class TaskPanel extends javax.swing.JPanel {
                 }
                 
                 if (dirty) {
-                    task.fireChanged();
+                    task.fireChangeEvent();
                 } 
             }
         });
@@ -1003,7 +1003,7 @@ final class TaskPanel extends javax.swing.JPanel {
 
             @Override
             protected boolean storeValue () {
-                task.setTaskScheduleDate(scheduleDatePicker.getScheduleDate(), false, true);
+                task.setTaskScheduleDate(scheduleDatePicker.getScheduleDate(), false);
                 return true;
             }
         });
@@ -1425,7 +1425,7 @@ final class TaskPanel extends javax.swing.JPanel {
         public boolean add (String value) {
             boolean added = super.add(value);
             if (added) {
-                task.fireChanged();
+                task.fireChangeEvent();
             }
             return added;
         }
@@ -1434,7 +1434,7 @@ final class TaskPanel extends javax.swing.JPanel {
         public boolean remove (Object o) {
             boolean removed = super.remove(o);
             if (removed && isEmpty()) {
-                task.fireChanged();
+                task.fireChangeEvent();
             }
             return removed;
         }
@@ -1444,7 +1444,7 @@ final class TaskPanel extends javax.swing.JPanel {
             boolean fire = !isEmpty();
             super.clear();
             if (fire) {
-                task.fireChanged();
+                task.fireChangeEvent();
             }
         }
         

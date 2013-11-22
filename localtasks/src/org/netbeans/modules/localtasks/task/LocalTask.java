@@ -42,8 +42,6 @@
 package org.netbeans.modules.localtasks.task;
 
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -64,11 +62,9 @@ import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.localtasks.LocalRepository;
 import org.netbeans.modules.localtasks.util.FileUtils;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
 import org.netbeans.modules.bugtracking.commons.AttachmentsPanel;
 import org.netbeans.modules.bugtracking.commons.AttachmentsPanel.AttachmentInfo;
-import org.netbeans.modules.bugtracking.spi.IssueScheduleProvider;
 import org.netbeans.modules.mylyn.util.NbTask;
 import org.netbeans.modules.mylyn.util.NbTaskDataModel;
 import org.netbeans.modules.mylyn.util.localtasks.AbstractLocalTask;
@@ -87,7 +83,6 @@ import org.openide.windows.WindowManager;
 public final class LocalTask extends AbstractLocalTask {
 
     private final NbTask task;
-    private final PropertyChangeSupport support;
     private final LocalRepository repository;
     private TaskController controller;
     private boolean loading;
@@ -102,7 +97,6 @@ public final class LocalTask extends AbstractLocalTask {
         super(task);
         this.task = task;
         this.repository = LocalRepository.getInstance();
-        support = new PropertyChangeSupport(this);
         updateTooltip();
     }
 
@@ -131,17 +125,14 @@ public final class LocalTask extends AbstractLocalTask {
         RP.post(new Runnable() {
             @Override
             public void run () {
-                dataChanged(false);
+                dataChanged();
             }
         });
     }
 
-    private void dataChanged (boolean scheduleChanged) {
+    private void dataChanged () {
         updateTooltip();
         fireDataChanged();
-        if(scheduleChanged) {
-            fireScheduleChanged();
-        }
         if (controller != null) {
             controller.refreshViewData();
         }
@@ -221,14 +212,6 @@ public final class LocalTask extends AbstractLocalTask {
 
     public String getTooltip () {
         return tooltip;
-    }
-
-    public void addPropertyChangeListener (PropertyChangeListener listener) {
-        support.addPropertyChangeListener(listener);
-    }
-
-    public void removePropertyChangeListener (PropertyChangeListener listener) {
-        support.removePropertyChangeListener(listener);
     }
 
     public boolean searchFor (String[] keywords) {
@@ -357,18 +340,6 @@ public final class LocalTask extends AbstractLocalTask {
     private void setValue (NbTaskDataModel model, TaskAttribute ta, String value) {
         ta.setValue(value);
         model.attributeChanged(ta);
-    }
-
-    private void fireDataChanged () {
-        support.firePropertyChange(IssueProvider.EVENT_ISSUE_DATA_CHANGED, null, null);
-    }
-    
-    private void fireScheduleChanged () {
-        support.firePropertyChange(IssueScheduleProvider.EVENT_ISSUE_SCHEDULE_CHANGED, null, null);
-    }
-
-    protected void fireChanged() {
-        support.firePropertyChange(IssueController.PROP_CHANGED, null, null);
     }
  
     private boolean hasUnsavedAttributes () {
@@ -543,17 +514,17 @@ public final class LocalTask extends AbstractLocalTask {
             controller.modelStateChanged(hasUnsavedChanges());
         }
         if (persistChange) {
-            dataChanged(false);
+            dataChanged();
         }
     }
     
-    public void setTaskScheduleDate (IssueScheduleInfo date, boolean persistChange, boolean notifyChange) {
+    public void setTaskScheduleDate (IssueScheduleInfo date, boolean persistChange) {
         super.setScheduleDate(date, persistChange);
         if (controller != null) {
             controller.modelStateChanged(hasUnsavedChanges());
         }
         if (persistChange) {
-            dataChanged(notifyChange);
+            dataChanged();
         }
     }
     
@@ -563,7 +534,7 @@ public final class LocalTask extends AbstractLocalTask {
             controller.modelStateChanged(hasUnsavedChanges());
         }
         if (persistChange) {
-            dataChanged(false);
+            dataChanged();
         }
     }
 
@@ -602,6 +573,10 @@ public final class LocalTask extends AbstractLocalTask {
                 }
             });
         }
+    }
+
+    void fireChangeEvent () {
+        fireChanged();
     }
     
     final static class TaskReference {

@@ -240,7 +240,7 @@ public class Bugzilla {
 
                 @Override
                 public void setSchedule (BugzillaIssue i, IssueScheduleInfo date) {
-                    i.setTaskScheduleDate(date, true, false);
+                    i.setTaskScheduleDate(date, true);
                 }
 
                 @Override

@@ -215,7 +215,7 @@ public class ODCS {
 
                 @Override
                 public void setSchedule (ODCSIssue i, IssueScheduleInfo scheduleInfo) {
-                    i.setTaskScheduleDate(scheduleInfo, true, false);
+                    i.setTaskScheduleDate(scheduleInfo, true);
                 }
 
                 @Override

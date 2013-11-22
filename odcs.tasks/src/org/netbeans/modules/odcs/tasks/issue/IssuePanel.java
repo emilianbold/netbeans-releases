@@ -439,7 +439,7 @@ public class IssuePanel extends javax.swing.JPanel {
                 }
                 
                 if (isDirty) {
-                    issue.fireChanged();
+                    issue.fireChangeEvent();
                 } 
             }
         });
@@ -1574,7 +1574,7 @@ public class IssuePanel extends javax.swing.JPanel {
 
             @Override
             protected boolean storeValue () {
-                issue.setTaskScheduleDate(scheduleDatePicker.getScheduleDate(), false, true);
+                issue.setTaskScheduleDate(scheduleDatePicker.getScheduleDate(), false);
                 return true;
             }
         });
@@ -3621,7 +3621,7 @@ public class IssuePanel extends javax.swing.JPanel {
         public boolean add (String value) {
             boolean added = super.add(value);
             if (added) {
-                issue.fireChanged();
+                issue.fireChangeEvent();
             }
             return added;
         }
@@ -3630,7 +3630,7 @@ public class IssuePanel extends javax.swing.JPanel {
         public boolean remove (Object o) {
             boolean removed = super.remove(o);
             if (removed && isEmpty()) {
-                issue.fireChanged();
+                issue.fireChangeEvent();
             }
             return removed;
         }
@@ -3640,7 +3640,7 @@ public class IssuePanel extends javax.swing.JPanel {
             boolean fire = !isEmpty();
             super.clear();
             if (fire) {
-                issue.fireChanged();
+                issue.fireChangeEvent();
             }
         }
         
