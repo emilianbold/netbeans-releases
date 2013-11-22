@@ -46,38 +46,26 @@ package org.netbeans.modules.php.dbgp.annotations;
 import org.openide.text.Annotatable;
 import org.openide.util.NbBundle;
 
-
 /**
  * @author ads
  *
  */
 public class CurrentLineAnnotation extends DebuggerAnnotation {
+    private static final String CURRENT_LINE = "ANTN_CURRENT_PC"; //NOI18N
+    public static final String CURRENT_LINE_ANNOTATION_TYPE = "CurrentPC"; //NOI18N
 
-    private static final String CURRENT_LINE = "ANTN_CURRENT_PC";            // NOI18N
-    
-    public  static final String CURRENT_LINE_ANNOTATION_TYPE = "CurrentPC";  // NOI18N
-
-    public CurrentLineAnnotation( Annotatable annotatable ) {
+    public CurrentLineAnnotation(Annotatable annotatable) {
         super(annotatable);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.annotations.DebuggerAnnotation#getAnnotationType()
-     */
     @Override
-    public String getAnnotationType()
-    {
+    public String getAnnotationType() {
         return CURRENT_LINE_ANNOTATION_TYPE;
     }
-    
-    /* (non-Javadoc)
-     * @see org.openide.text.Annotation#getShortDescription()
-     */
+
     @Override
-    public String getShortDescription()
-    {
-        return NbBundle.getBundle(DebuggerAnnotation.class).
-            getString(CURRENT_LINE);
+    public String getShortDescription() {
+        return NbBundle.getMessage(CurrentLineAnnotation.class, CURRENT_LINE);
     }
 
 }

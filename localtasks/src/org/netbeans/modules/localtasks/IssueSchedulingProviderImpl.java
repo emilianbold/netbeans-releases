@@ -60,7 +60,7 @@ class IssueSchedulingProviderImpl implements IssueScheduleProvider<LocalTask> {
 
     @Override
     public void setSchedule (LocalTask i, IssueScheduleInfo date) {
-        i.setTaskScheduleDate(date, true, false);
+        i.setTaskScheduleDate(date, true);
     }
 
     @Override

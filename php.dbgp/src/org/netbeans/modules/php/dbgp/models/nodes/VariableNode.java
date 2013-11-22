@@ -44,28 +44,26 @@ package org.netbeans.modules.php.dbgp.models.nodes;
 import org.netbeans.modules.php.dbgp.ModelNode;
 import org.openide.text.Line;
 
-
-
 /**
  * @author ads
  *
  */
 public interface VariableNode extends ModelNode {
-
-    public static final String LOCAL_VARIABLE_ICON =
-        "org/netbeans/modules/debugger/resources/localsView/LocalVariable"; // NOI18N
+    public static final String LOCAL_VARIABLE_ICON = "org/netbeans/modules/debugger/resources/localsView/LocalVariable"; // NOI18N
 
     /**
-     * Differs from {@link #getName()}. Returns full name together with
-     * parent mention. F. e. for variable $arr['key'] string "$arr['key']"
-     * will be returned, for variable $var : "$var".
+     * Differs from {@link #getName()}. Returns full name together with parent
+     * mention. F. e. for variable $arr['key'] string "$arr['key']" will be
+     * returned, for variable $var : "$var".
+     *
      * @return full name of variable
      */
     String getFullName();
 
     /**
-     * Returns only short name of variable.
-     * F.e. for $var : "var", for $arr['key'] : "key".
+     * Returns only short name of variable. F.e. for $var : "var", for
+     * $arr['key'] : "key".
+     *
      * @return short name of variable or memeber.
      */
     @Override

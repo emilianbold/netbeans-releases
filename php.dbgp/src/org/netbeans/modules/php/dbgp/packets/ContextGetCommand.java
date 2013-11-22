@@ -45,65 +45,55 @@ package org.netbeans.modules.php.dbgp.packets;
 
 import org.netbeans.modules.php.dbgp.packets.ContextNamesResponse.Context;
 
-
 /**
  * @author ads
  *
  */
 public class ContextGetCommand extends DbgpCommand {
-    
-    static final String CONTEXT_GET         = "context_get";    // NOI18N
-    
-    private static final String CONTEXT_ARG = "-c ";            // NOI18N
+    static final String CONTEXT_GET = "context_get"; // NOI18N
+    private static final String CONTEXT_ARG = "-c "; // NOI18N
+    private int myDepth;
+    private Context myContext;
 
-    public ContextGetCommand( String transactionId ) {
-        super( CONTEXT_GET , transactionId);
+    public ContextGetCommand(String transactionId) {
+        super(CONTEXT_GET, transactionId);
         myDepth = -1;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpCommand#wantAcknowledgment()
-     */
     @Override
-    public boolean wantAcknowledgment()
-    {
+    public boolean wantAcknowledgment() {
         return true;
     }
-    
-    public void setDepth( int depth ){
+
+    public void setDepth(int depth) {
         myDepth = depth;
     }
-    
+
     @Override
-    protected String getArguments()
-    {
+    protected String getArguments() {
         StringBuilder builder = new StringBuilder();
-        if ( myDepth > -1 ){
-            builder.append( ContextNamesCommand.DEPTH_ARG );
-            builder.append( myDepth );
+        if (myDepth > -1) {
+            builder.append(ContextNamesCommand.DEPTH_ARG);
+            builder.append(myDepth);
         }
-        
+
         if (myContext != null) {
             if (builder.length() != 0) {
                 builder.append(BrkpntSetCommand.SPACE);
             }
-            builder.append( CONTEXT_ARG );
-            builder.append( myContext.getId() );
+            builder.append(CONTEXT_ARG);
+            builder.append(myContext.getId());
         }
-        
+
         return builder.toString();
     }
-    
-    
-    public void setContext( Context context ){
+
+    public void setContext(Context context) {
         myContext = context;
     }
-    
+
     public Context getContext() {
         return myContext;
     }
-    
-    private int myDepth;
 
-    private Context myContext;
 }

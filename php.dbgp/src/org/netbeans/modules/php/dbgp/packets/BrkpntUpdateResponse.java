@@ -46,28 +46,19 @@ package org.netbeans.modules.php.dbgp.packets;
 import org.netbeans.modules.php.dbgp.DebugSession;
 import org.w3c.dom.Node;
 
-
 /**
  * @author ads
  *
  */
 public class BrkpntUpdateResponse extends DbgpResponse {
 
-    BrkpntUpdateResponse( Node node ) {
+    BrkpntUpdateResponse(Node node) {
         super(node);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpMessage#process(org.netbeans.modules.php.dbgp.DebugSession, org.netbeans.modules.php.dbgp.packets.DbgpCommand)
-     */
     @Override
-    public void process( DebugSession session, DbgpCommand command )
-    {
-        if ( !(command instanceof BrkpntUpdateCommand )){
-            return;
-        }
-        // TODO if there any errors : report to user 
-        
+    public void process(DebugSession session, DbgpCommand command) {
+        // TODO if there any errors : report to user
     }
 
 }

@@ -52,14 +52,11 @@ import org.openide.util.Cancellable;
  * @author Radek Matous
  *
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.php.spi.executable.DebugStarter.class)
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.php.spi.executable.DebugStarter.class)
 public class DebuggerImpl implements DebugStarter {
-    final static String SESSION_ID = "netbeans-PHP-DBGP-Session";// NOI18N
-    final static String ENGINE_ID = SESSION_ID + "/" + "PHP-Engine";// NOI18N
+    static final String SESSION_ID = "netbeans-PHP-DBGP-Session"; // NOI18N
+    static final String ENGINE_ID = SESSION_ID + "/" + "PHP-Engine"; // NOI18N
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.api.Debugger#debug()
-     */
     @Override
     public void start(Project project, Callable<Cancellable> run, DebugStarter.Properties properties) {
         SessionManager.getInstance().startNewSession(project, run, properties);
@@ -74,4 +71,5 @@ public class DebuggerImpl implements DebugStarter {
     public boolean isAlreadyRunning() {
         return SessionManager.getInstance().isAlreadyRunning();
     }
+
 }

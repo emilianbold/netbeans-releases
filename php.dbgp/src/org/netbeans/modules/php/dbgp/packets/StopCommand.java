@@ -43,24 +43,20 @@
  */
 package org.netbeans.modules.php.dbgp.packets;
 
-
 /**
  * @author ads
  *
  */
 public class StopCommand extends DbgpCommand {
-    public static final String COMMAND = "stop";      // NOI18N
+    public static final String COMMAND = "stop"; // NOI18N
 
-    public StopCommand( String transactionId ) {
-        super( COMMAND, transactionId);
+    public StopCommand(String transactionId) {
+        super(COMMAND, transactionId);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpCommand#needAcknowledgment()
-     */
     @Override
-    public boolean wantAcknowledgment()
-    {
+    public boolean wantAcknowledgment() {
         return true;
     }
+
 }
