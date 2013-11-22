@@ -45,31 +45,24 @@ package org.netbeans.modules.php.dbgp.packets;
 
 import org.w3c.dom.Node;
 
-
 /**
  * @author ads
  *
  */
 public class Map extends BaseMessageChildElement {
+    private static final String NAME = "name"; // NOI18N
+    private static final String TYPE = "type"; // NOI18N
 
-    private static final String NAME = "name";      // NOI18N
+    Map(Node node) {
+        super(node);
+    }
 
-    private static final String TYPE = "type";      // NOI18N
+    public String getType() {
+        return getAttribute(TYPE);
+    }
 
-    Map( Node node ) {
-        super( node );
+    public String getLanguageType() {
+        return getAttribute(NAME);
     }
-    
-    public String getType(){
-        return getAttribute( TYPE );
-    }
-    
-    public String getLanguageType(){
-        return getAttribute( NAME );
-    }
-    
-    /*
-     * String getSchemaType();
-     */
 
 }

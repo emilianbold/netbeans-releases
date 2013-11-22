@@ -49,23 +49,21 @@ import org.netbeans.modules.php.dbgp.models.VariablesModelFilter.FilterType;
 import org.netbeans.modules.php.dbgp.packets.Property;
 import org.netbeans.modules.php.dbgp.packets.ContextNamesResponse.Context;
 
-
 /**
- * Represent context which contains varaibles
- * ( VariableNodes ).
- * Could be Local, Superglobal,...
+ * Represent context which contains varaibles ( VariableNodes ). Could be Local,
+ * Superglobal,...
+ *
  * @author ads
  *
  */
 public abstract class ContextNode extends AbstractModelNode implements ModelNode {
+    private static final String SUPER_GLOBAL = "Superglobals"; // NOI18N
+    private static final String SUPER_ICON = "org/netbeans/modules/debugger/resources/watchesView/SuperVariable"; // NOI18N
+    private final String myName;
+    private final int myIndex;
 
-    private final static String SUPER_GLOBAL    = "Superglobals";            // NOI18N
-
-    private static final String SUPER_ICON      =
-        "org/netbeans/modules/debugger/resources/watchesView/SuperVariable"; // NOI18N
-
-    protected ContextNode(Context ctx , List<Property> properties) {
-        super( null , properties );
+    protected ContextNode(Context ctx, List<Property> properties) {
+        super(null, properties);
         myName = ctx.getContext();
         myIndex = ctx.getId();
     }
@@ -83,92 +81,66 @@ public abstract class ContextNode extends AbstractModelNode implements ModelNode
         return getVariables().size();
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.models.ModelNode#getChildren(int, int)
-     */
     @Override
-    public ModelNode[] getChildren( int from, int to ) {
+    public ModelNode[] getChildren(int from, int to) {
         List<AbstractVariableNode> subList = getVariables().subList(from, to);
-        return subList.toArray( new ModelNode[ subList.size() ] );
+        return subList.toArray(new ModelNode[subList.size()]);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.models.ModelNode#getChildrenSize()
-     */
     @Override
     public int getChildrenSize() {
         return getVariables().size();
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.models.ModelNode#getIconBase()
-     */
     @Override
     public String getIconBase() {
-        if ( isGlobal() ){
+        if (isGlobal()) {
             return SUPER_ICON;
         }
         return null;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.models.ModelNode#getShortDescription()
-     */
     @Override
     public String getShortDescription() {
-        // TODO Auto-generated method stub
         return null;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.models.ModelNode#getType()
-     */
     @Override
     public String getType() {
         return "";
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.models.ModelNode#getValue()
-     */
     @Override
     public String getValue() {
         return "";
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.models.ModelNode#isReadOnly()
-     */
     @Override
     public boolean isReadOnly() {
         return true;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.api.ModelNode#isLeaf()
-     */
     @Override
     public boolean isLeaf() {
         return getChildrenSize() == 0;
     }
 
-    public boolean equalsTo( ContextNode node ) {
+    public boolean equalsTo(ContextNode node) {
         String name = node.myName;
-        if ( name == null ) {
+        if (name == null) {
             return myName == null;
-        }
-        else {
-            return name.equals( myName );
+        } else {
+            return name.equals(myName);
         }
     }
 
-    public boolean isGlobal(){
+    public boolean isGlobal() {
         return SUPER_GLOBAL.equals(getDbgpName());
     }
 
     @Override
-    protected boolean isTypeApplied( Set<FilterType> set ) {
-        if ( !set.contains(FilterType.SUPERGLOBALS) ) {
+    protected boolean isTypeApplied(Set<FilterType> set) {
+        if (!set.contains(FilterType.SUPERGLOBALS)) {
             return !isGlobal();
         }
         return true;
@@ -177,9 +149,5 @@ public abstract class ContextNode extends AbstractModelNode implements ModelNode
     private String getDbgpName() {
         return myName;
     }
-
-    private final String myName;
-
-    private final int myIndex;
 
 }

@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.dbgp;
 
 import org.netbeans.api.debugger.DebuggerEngine;
@@ -50,9 +49,10 @@ import org.netbeans.api.debugger.Session;
  *
  * @author rmatous
  */
-public class ConversionUtils {
+public final class ConversionUtils {
 
-    private ConversionUtils() {}
+    private ConversionUtils() {
+    }
 
     private static DebugSession toDebugSession(DebuggerEngine debuggerEngine) {
         return (debuggerEngine != null) ? debuggerEngine.lookupFirst(null, DebugSession.class) : null;
@@ -97,4 +97,5 @@ public class ConversionUtils {
         }
         return null;
     }
+
 }

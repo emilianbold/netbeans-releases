@@ -45,37 +45,33 @@ package org.netbeans.modules.php.dbgp.packets;
 
 import org.w3c.dom.Node;
 
-
-
 /**
  * @author ads
  *
  */
 public abstract class DbgpResponse extends DbgpMessage {
+    static final String TRANSACTION_ID = "transaction_id"; // NOI18N
+    static final String COMMAND = "command"; // NOI18N
+    private static final String ERROR = "error "; // NOI18N
 
-    static final String TRANSACTION_ID  = "transaction_id";     // NOI18N
-
-    static final String COMMAND                 = "command";            // NOI18N
-
-    private static final String ERROR           = "error ";             // NOI18N
-
-    DbgpResponse( Node node  ){
-        super( node );
+    DbgpResponse(Node node) {
+        super(node);
     }
 
-    public String getTransactionId(){
-        return getAttribute( getNode(),  TRANSACTION_ID );
+    public String getTransactionId() {
+        return getAttribute(getNode(), TRANSACTION_ID);
     }
 
-    public String getCommandName(){
-        return getAttribute( getNode(),  COMMAND );
+    public String getCommandName() {
+        return getAttribute(getNode(), COMMAND);
     }
 
-    public Error getError(){
-        Node error = getChild(getNode(), ERROR );
-        if ( error == null ) {
+    public Error getError() {
+        Node error = getChild(getNode(), ERROR);
+        if (error == null) {
             return null;
         }
-        return new Error( error );
+        return new Error(error);
     }
+
 }

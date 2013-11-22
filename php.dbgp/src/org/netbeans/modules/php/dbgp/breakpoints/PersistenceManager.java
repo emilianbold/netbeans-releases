@@ -41,13 +41,11 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.php.dbgp.breakpoints;
 
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.List;
-
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -55,23 +53,21 @@ import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.Properties;
 
 /**
- * Listens on DebuggerManager and:
- * - loads all breakpoints & watches on startup
+ * Listens on DebuggerManager and: - loads all breakpoints & watches on startup
  * - listens on all changes of breakpoints and watches (like breakoint / watch
- *     added / removed, or some property change) and saves a new values
+ * added / removed, or some property change) and saves a new values.
  *
  * @author ads
  */
-public class PersistenceManager extends  DebuggerManagerAdapter {
+public class PersistenceManager extends DebuggerManagerAdapter {
     public static final Logger LOGGER = Logger.getLogger(PersistenceManager.class.getName());
-    private static final String DEBUGGER = "debugger";      // NOI18N
-    private static final String PHP_DBGP = "PHP-DBGP";      // NOI18N
+    private static final String DEBUGGER = "debugger"; // NOI18N
+    private static final String PHP_DBGP = "PHP-DBGP"; // NOI18N
 
     @Override
     public Breakpoint[] initBreakpoints() {
-        Properties p = Properties.getDefault().getProperties(DEBUGGER).
-            getProperties(DebuggerManager.PROP_BREAKPOINTS);
-        Breakpoint[] breakpoints = (Breakpoint[]) p.getArray( PHP_DBGP ,new Breakpoint [0]);
+        Properties p = Properties.getDefault().getProperties(DEBUGGER).getProperties(DebuggerManager.PROP_BREAKPOINTS);
+        Breakpoint[] breakpoints = (Breakpoint[]) p.getArray(PHP_DBGP, new Breakpoint[0]);
         List<Breakpoint> validBreakpoints = new ArrayList<>();
         for (Breakpoint breakpoint : breakpoints) {
             if (breakpoint != null) {
@@ -86,7 +82,7 @@ public class PersistenceManager extends  DebuggerManagerAdapter {
 
     @Override
     public String[] getProperties() {
-        return new String [] {
+        return new String[]{
             DebuggerManager.PROP_BREAKPOINTS_INIT,
             DebuggerManager.PROP_BREAKPOINTS,
         };
@@ -94,17 +90,15 @@ public class PersistenceManager extends  DebuggerManagerAdapter {
 
     @Override
     public void breakpointAdded(Breakpoint breakpoint) {
-        Properties properties = Properties.getDefault().getProperties(DEBUGGER).
-            getProperties(DebuggerManager.PROP_BREAKPOINTS);
+        Properties properties = Properties.getDefault().getProperties(DEBUGGER).getProperties(DebuggerManager.PROP_BREAKPOINTS);
         properties.setArray(PHP_DBGP, getBreakpoints());
         breakpoint.addPropertyChangeListener(this);
     }
 
     @Override
     public void breakpointRemoved(Breakpoint breakpoint) {
-        Properties properties = Properties.getDefault().getProperties(DEBUGGER).
-            getProperties(DebuggerManager.PROP_BREAKPOINTS);
-        properties.setArray( PHP_DBGP,getBreakpoints());
+        Properties properties = Properties.getDefault().getProperties(DEBUGGER).getProperties(DebuggerManager.PROP_BREAKPOINTS);
+        properties.setArray(PHP_DBGP, getBreakpoints());
         breakpoint.removePropertyChangeListener(this);
     }
 
@@ -115,21 +109,20 @@ public class PersistenceManager extends  DebuggerManagerAdapter {
          * This notification are got in the case changing this property.
          */
         if (evt.getSource() instanceof Breakpoint) {
-            Properties.getDefault().getProperties(DEBUGGER).
-                getProperties(DebuggerManager.PROP_BREAKPOINTS).setArray(
-                PHP_DBGP,getBreakpoints());
+            Properties.getDefault().getProperties(DEBUGGER).getProperties(DebuggerManager.PROP_BREAKPOINTS).setArray(PHP_DBGP, getBreakpoints());
         }
     }
 
     private Breakpoint[] getBreakpoints() {
         Breakpoint[] bpoints = DebuggerManager.getDebuggerManager().getBreakpoints();
         List<Breakpoint> result = new ArrayList<>();
-        for ( Breakpoint breakpoint : bpoints ) {
+        for (Breakpoint breakpoint : bpoints) {
             // Don't store hidden breakpoints
-            if ( breakpoint instanceof AbstractBreakpoint) {
-                result.add( breakpoint );
+            if (breakpoint instanceof AbstractBreakpoint) {
+                result.add(breakpoint);
             }
         }
-        return result.toArray( new Breakpoint [result.size()] );
+        return result.toArray(new Breakpoint[result.size()]);
     }
+
 }

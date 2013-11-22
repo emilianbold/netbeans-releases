@@ -52,28 +52,32 @@ public enum Reason {
     public boolean isOK() {
         return OK.equals(this);
     }
+
     public boolean isError() {
         return ERROR.equals(this);
     }
+
     public boolean isAborted() {
         return ABORTED.equals(this);
     }
+
     public boolean isException() {
         return EXCPETION.equals(this);
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return super.toString().toLowerCase();
     }
-    
-    static Reason forString( String str ){
+
+    static Reason forString(String str) {
         Reason[] values = Reason.values();
         for (Reason reason : values) {
-            if( reason.toString().equals( str )){
+            if (reason.toString().equals(str)) {
                 return reason;
             }
         }
         return null;
     }
+
 }

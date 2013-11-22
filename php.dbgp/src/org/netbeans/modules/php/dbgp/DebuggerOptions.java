@@ -92,8 +92,7 @@ public class DebuggerOptions {
     }
 
     public boolean isDebugForFirstPageOnly() {
-        return (debugForFirstPageOnly != null) ? debugForFirstPageOnly :
-            getGlobalInstance().isDebugForFirstPageOnly();
+        return (debugForFirstPageOnly != null) ? debugForFirstPageOnly : getGlobalInstance().isDebugForFirstPageOnly();
     }
 
     public boolean showRequestedUrls() {

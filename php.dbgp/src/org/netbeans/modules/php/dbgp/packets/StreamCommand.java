@@ -45,20 +45,18 @@ package org.netbeans.modules.php.dbgp.packets;
 
 import org.netbeans.modules.php.dbgp.packets.DbgpStream.StreamType;
 
-
 /**
  * @author ads
  *
  */
 public class StreamCommand extends DbgpCommand {
-    
-    private static final String OPERATION_ARG   = "-c ";        // NOI18N
-    
+    private static final String OPERATION_ARG = "-c "; // NOI18N
+    private Operation myOperation;
+
     public enum Operation {
         DISABLE(0),
         COPY(1),
         REDIRECT(2);
-
         private int id;
 
         private Operation(int id) {
@@ -69,33 +67,25 @@ public class StreamCommand extends DbgpCommand {
         public String toString() {
             return "" + id;
         }
+
     }
 
-    public StreamCommand( StreamType type, String transactionId ) {
-        super( type.toString(), transactionId);
+    public StreamCommand(StreamType type, String transactionId) {
+        super(type.toString(), transactionId);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpCommand#wantAcknowledgment()
-     */
     @Override
-    public boolean wantAcknowledgment()
-    {
+    public boolean wantAcknowledgment() {
         return true;
     }
-    
-    public void setOperation( Operation operation ){
+
+    public void setOperation(Operation operation) {
         myOperation = operation;
     }
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpCommand#getArguments()
-     */
+
     @Override
-    protected String getArguments()
-    {
+    protected String getArguments() {
         return OPERATION_ARG + myOperation.ordinal();
     }
 
-    private Operation myOperation;
 }
