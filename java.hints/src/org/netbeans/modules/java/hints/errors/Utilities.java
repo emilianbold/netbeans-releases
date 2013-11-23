@@ -957,6 +957,49 @@ public class Utilities {
 
         return null;
     }
+    
+    /**
+     * Finds the top-level block or expression that contains the 'from' path.
+     * The result could be a 
+     * <ul>
+     * <li>BlockTree representing method body
+     * <li>ExpressionTree representing field initializer
+     * <li>BlockTree representing class initializer
+     * <li>ExpressionTree representing lambda expression
+     * <li>BlockTree representing lambda expression
+     * </ul>
+     * @param from start from 
+     * @return nearest enclosing top-level block/expression as defined above.
+     */
+    public static TreePath findTopLevelBlock(TreePath from) {
+        if (from.getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
+            return null;
+        }
+        TreePath save = null;
+        
+        while (from != null) {
+            Tree.Kind k = from.getParentPath().getLeaf().getKind();
+            if (k == Kind.METHOD || k == Kind.LAMBDA_EXPRESSION) {
+                return from;
+            } else if (k == Kind.VARIABLE) {
+                save = from;
+            } else if (TreeUtilities.CLASS_TREE_KINDS.contains(k)) {
+                if (save != null) {
+                    // variable initializer from the previous iteration
+                    return save;
+                }
+                if (from.getLeaf().getKind() == Kind.BLOCK) {
+                    // parent is class, from is block -> initializer
+                    return from;
+                }
+                return null;
+            } else {
+                save = null;
+            }
+            from = from.getParentPath();
+        }
+        return null;
+    }
 
     public static boolean isInConstructor(HintContext ctx) {
         TreePath method = findEnclosingMethodOrConstructor(ctx, ctx.getPath());
@@ -1447,44 +1490,22 @@ public class Utilities {
         return Visibility.PUBLIC;
     }
     
-    public static boolean isVariableShadowedInScope(CharSequence variableName, Scope localScope) {
-        if (localScope == null) {
+    private static final EnumSet VARIABLE_KINDS = EnumSet.of(
+            ElementKind.LOCAL_VARIABLE, ElementKind.ENUM_CONSTANT, ElementKind.FIELD, ElementKind.PARAMETER,
+            ElementKind.RESOURCE_VARIABLE, ElementKind.EXCEPTION_PARAMETER, ElementKind.TYPE_PARAMETER);
+    
+    public static boolean isSymbolUsed(CompilationInfo info, TreePath target, CharSequence variableName, Scope localScope) {
+        SourcePositions[] pos = new SourcePositions[1];
+        Tree t = info.getTreeUtilities().parseExpression(variableName.toString(), pos);
+        TypeMirror tm = info.getTreeUtilities().attributeTree(t, localScope);
+        Element el = info.getTrees().getElement(new TreePath(target, t));
+        if (el == null) {
             return false;
         }
-
-        if (areAnyLocalVariablesShadowed(variableName, localScope)) {
-            return true;
-        }
-
-        if (areEnclosingMethodParamsShadowed(variableName, localScope)) {
-            return true;
-        }
-
-        return false;
+        ElementKind k = el.getKind();
+        return VARIABLE_KINDS.contains(k);
     }
 
-    private static boolean areAnyLocalVariablesShadowed(CharSequence variableName, Scope localScope) {
-        for (Element e : localScope.getLocalElements()) {
-            if (e.getKind() == ElementKind.LOCAL_VARIABLE
-                    && e.getSimpleName().contentEquals(variableName)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static boolean areEnclosingMethodParamsShadowed(CharSequence variableName, Scope localScope) {
-        if (localScope.getEnclosingMethod() != null) {
-            ExecutableElement enclMethod = localScope.getEnclosingMethod();
-            for (VariableElement varElement : enclMethod.getParameters()) {
-                if (varElement.getSimpleName().contentEquals(variableName)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-    
     /**
      * Determines if the element corresponds to never-returning, terminating method.
      * System.exit, Runtime.exit, Runtime.halt are checked. The passed element is

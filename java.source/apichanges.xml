@@ -108,6 +108,22 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="findLabelSpan">
+             <api name="general"/>
+             <summary>Added utility methods to find span of a Label's name in the source.</summary>
+             <version major="0" minor="131"/>
+             <date day="19" month="11" year="2013"/>
+             <author login="ralphbenjamin"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+            <description>
+                Added utility methods to find span of a Label's name in the source.
+                Returns starting and ending offset of the label's name in the source code that was parsed
+                (ie. CompilationInfo.getText()), which may differ from the positions in the source
+                document if it has been already altered.
+            </description>
+             <class package="org.netbeans.api.java.source" name="TreeUtilities"/>
+             <issue number="238560"/>
+        </change>
         <change id="toScopeWithDisabledAccessibilityChecks">
             <api name="general"/>
             <summary>Adding <code>TreeUtilities.toScopeWithDisabledAccessibilityChecks</code> method.</summary>

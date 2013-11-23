@@ -117,7 +117,7 @@ import org.netbeans.modules.mobility.project.deployment.DeploymentPropertiesHand
 import org.netbeans.modules.mobility.project.queries.SourceLevelQueryImpl;
 import org.netbeans.modules.mobility.project.queries.FileBuiltQueryImpl;
 import org.netbeans.modules.mobility.project.queries.FileEncodingQueryImpl;
-import org.netbeans.modules.mobility.project.security.KeyStoreRepository;
+import org.netbeans.modules.j2me.keystore.KeyStoreRepository;
 import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.mobility.deployment.DeploymentPlugin;

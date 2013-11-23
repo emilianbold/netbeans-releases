@@ -59,7 +59,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JPanel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.netbeans.modules.mobility.project.security.KeyStoreRepository;
+import org.netbeans.modules.j2me.keystore.KeyStoreRepository;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;

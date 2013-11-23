@@ -44,6 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -113,6 +114,31 @@ public class NPECheck {
         return null;
     }
     
+    
+    
+    @TriggerPattern("switch ($select) { case $cases$; }")
+    public static ErrorDescription switchExpression(HintContext ctx) {
+        TreePath select = ctx.getVariables().get("$select");
+        TypeMirror m = ctx.getInfo().getTrees().getTypeMirror(select);
+        if (m == null || m.getKind() != TypeKind.DECLARED) {
+            return null;
+        }
+        State r = computeExpressionsState(ctx).get(select.getLeaf());
+        if (r == NULL || r == NULL_HYPOTHETICAL) {
+            String displayName = NbBundle.getMessage(NPECheck.class, "ERR_DereferencingNull");
+            
+            return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
+        }
+
+        if (r == State.POSSIBLE_NULL_REPORT) {
+            String displayName = NbBundle.getMessage(NPECheck.class, "ERR_PossiblyDereferencingNull");
+            
+            return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
+        }
+        return null;
+    }
+    
+    
     @TriggerPattern("$select.$variable")
     public static ErrorDescription memberSelect(HintContext ctx) {
         TreePath select = ctx.getVariables().get("$select");
@@ -131,6 +157,17 @@ public class NPECheck {
         }
         
         return null;
+    }
+    
+    /**
+     * Checks for a possible null dereference - if the path denotes a possibly
+     * null expression.
+     * 
+     */
+    public static boolean isSafeToDereference(CompilationInfo info, TreePath path) {
+        State r = computeExpressionsState(info, null).get(path.getLeaf());
+        // copied from warning issued on redundant != null.
+        return r != null && r.isNotNull();
     }
     
     @TriggerTreeKind(Kind.METHOD_INVOCATION)
@@ -296,6 +333,22 @@ public class NPECheck {
     }
     
     private static final Object KEY_EXPRESSION_STATE = new Object();
+    
+    private static Map<Tree, State> computeExpressionsState(CompilationInfo info, HintContext ctx) {
+        Map<Tree, State> result = (Map<Tree, State>) info.getCachedValue(KEY_EXPRESSION_STATE);
+        
+        if (result != null) {
+            return result;
+        }
+        
+        VisitorImpl v = new VisitorImpl(ctx, info, null);
+        
+        v.scan(info.getCompilationUnit(), null);
+        
+        info.putCachedValue(KEY_EXPRESSION_STATE, result = v.expressionState, CompilationInfo.CacheClearPolicy.ON_TASK_END);
+        
+        return result;
+    }
     //Cancelling:
     private static Map<Tree, State> computeExpressionsState(HintContext ctx) {
         Map<Tree, State> result = (Map<Tree, State>) ctx.getInfo().getCachedValue(KEY_EXPRESSION_STATE);
@@ -353,6 +406,8 @@ public class NPECheck {
         
         private final HintContext ctx;
         private final CompilationInfo info;
+        private final AtomicBoolean cancelFlag;
+        
         private Map<VariableElement, State> variable2State = new HashMap<VariableElement, NPECheck.State>();
         private final Map<Tree, Collection<Map<VariableElement, State>>> resumeBefore = new IdentityHashMap<Tree, Collection<Map<VariableElement, State>>>();
         private final Map<Tree, Collection<Map<VariableElement, State>>> resumeAfter = new IdentityHashMap<Tree, Collection<Map<VariableElement, State>>>();
@@ -362,14 +417,29 @@ public class NPECheck {
         private boolean not;
         private boolean doNotRecord;
 
-        public VisitorImpl(HintContext ctx) {
+        public VisitorImpl(HintContext ctx, CompilationInfo info, AtomicBoolean cancel) {
             this.ctx = ctx;
-            this.info = ctx.getInfo();
+            if (ctx != null) {
+                this.info = ctx.getInfo();
+                this.cancelFlag = null;
+            } else {
+                this.info = info;
+                this.cancelFlag = cancel != null ? cancel : new AtomicBoolean(false);
+            }
+        }
+        
+        public VisitorImpl(HintContext ctx) {
+            this(ctx, null, null);
         }
 
         @Override
         protected boolean isCanceled() {
-            return ctx.isCanceled();
+            if (ctx != null) {
+                return ctx.isCanceled();
+            } else {
+                return cancelFlag.get();
+            }
+                
         }
 
         @Override
@@ -509,7 +579,6 @@ public class NPECheck {
 
         @Override
         public State visitBinary(BinaryTree node, Void p) {
-            boolean subnodesAlreadyProcessed = false;
             Kind kind = node.getKind();
             
             if (not) {
@@ -521,48 +590,47 @@ public class NPECheck {
                 }
             }
             
-            if (kind == Kind.CONDITIONAL_AND) {
-                scan(node.getLeftOperand(), p);
-                scan(node.getRightOperand(), p);
-                
-                subnodesAlreadyProcessed = true;
-            }
-            
-            if (kind == Kind.CONDITIONAL_OR) {
-                HashMap<VariableElement, State> orig = new HashMap<VariableElement, NPECheck.State>(variable2State);
-                
-                scan(node.getLeftOperand(), p);
-                
-                Map<VariableElement, State> afterLeft = variable2State;
-                
-                variable2State = orig;
-                
-                boolean oldNot = not;
-                boolean oldDoNotRecord = doNotRecord;
-                
-                not ^= true;
-                doNotRecord = true;
-                scan(node.getLeftOperand(), p);
-                not = oldNot;
-                doNotRecord = oldDoNotRecord;
-                
-                scan(node.getRightOperand(), p);
-                
-                mergeIntoVariable2State(afterLeft);
-                
-                subnodesAlreadyProcessed = true;
-            }
-            
             State left = null;
             State right = null;
             
-            if (!subnodesAlreadyProcessed) {
-                boolean oldNot = not;
+            switch (kind) {
+                case CONDITIONAL_AND:
+                case AND: case OR: case XOR:
+                    scan(node.getLeftOperand(), p);
+                    scan(node.getRightOperand(), p);
+                    break;
 
-                not = false;
-                left = scan(node.getLeftOperand(), p);
-                right = scan(node.getRightOperand(), p);
-                not = oldNot;
+                case CONDITIONAL_OR: {
+                    HashMap<VariableElement, State> orig = new HashMap<VariableElement, NPECheck.State>(variable2State);
+
+                    scan(node.getLeftOperand(), p);
+
+                    Map<VariableElement, State> afterLeft = variable2State;
+
+                    variable2State = orig;
+
+                    boolean oldNot = not;
+                    boolean oldDoNotRecord = doNotRecord;
+
+                    not ^= true;
+                    doNotRecord = true;
+                    scan(node.getLeftOperand(), p);
+                    not = oldNot;
+                    doNotRecord = oldDoNotRecord;
+
+                    scan(node.getRightOperand(), p);
+
+                    mergeIntoVariable2State(afterLeft);
+                    break;
+                }
+                
+                default: {
+                    boolean oldNot = not;
+                    not = false;
+                    left = scan(node.getLeftOperand(), p);
+                    right = scan(node.getRightOperand(), p);
+                    not = oldNot;
+                }
             }
             
             if (kind == Kind.EQUAL_TO) {
@@ -1145,7 +1213,9 @@ public class NPECheck {
     }
     
     private static boolean isVariableElement(HintContext ctx, Element ve) {
-        return ve != null && (ctx.getPreferences().getBoolean(KEY_ENABLE_FOR_FIELDS, DEF_ENABLE_FOR_FIELDS) ? VARIABLE_ELEMENT_FIELDS : VARIABLE_ELEMENT_NO_FIELDS).contains(ve.getKind());
+        return ve != null && ((ctx != null && ctx.getPreferences().getBoolean(KEY_ENABLE_FOR_FIELDS, DEF_ENABLE_FOR_FIELDS)) ? 
+                VARIABLE_ELEMENT_FIELDS : 
+                VARIABLE_ELEMENT_NO_FIELDS).contains(ve.getKind());
     }
         
     private static final Set<ElementKind> VARIABLE_ELEMENT_NO_FIELDS = EnumSet.of(ElementKind.EXCEPTION_PARAMETER, ElementKind.LOCAL_VARIABLE, ElementKind.PARAMETER);

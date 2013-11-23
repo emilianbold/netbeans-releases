@@ -115,21 +115,25 @@ public abstract class FormattingPanelOperator extends Operator {
                 
     public void restoreDefaultsValues() {        
         restoreMode = true;
-        boolean modified = false;        
-        for (OperatorGetter operatorGetter : this.getAllOperatorGetters()) {
-            if(defaultValues.containsKey(operatorGetter.key())) {
-                modified = true;
-                break;
-            }
-        }
-        if(!modified) return;
         switchToPanel();
         for (OperatorGetter operatorGetter : getAllOperatorGetters()) {
-            restoreDefaultsValues(operatorGetter);            
+            restoreDefaultsValues(operatorGetter);   
+            defaultValues.remove(operatorGetter.key());
+            
         }        
-        new EventTool().waitNoEvent(500);  //Timeout to propagate UI changes correctly
+        new EventTool().waitNoEvent(250);  //Timeout to propagate UI changes correctly
         restoreMode = false;
     }    
+    
+    public static <T extends Enum<T> & OperatorGetter > boolean isModified(Class<T> operatorGetter) {
+        T[] enumConstants = operatorGetter.getEnumConstants();
+        for (T t : enumConstants) {
+            if(defaultValues.containsKey(t.key())) {
+                return true;
+            }
+        }
+        return false;
+    }
     
     public abstract List<OperatorGetter> getAllOperatorGetters();
 

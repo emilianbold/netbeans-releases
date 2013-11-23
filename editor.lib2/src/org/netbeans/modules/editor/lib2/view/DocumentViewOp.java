@@ -108,8 +108,76 @@ public final class DocumentViewOp
     private static final Logger LOG = Logger.getLogger(DocumentViewOp.class.getName());
 
     // Whether use fractional metrics rendering hint
-    private static final boolean useFractionalMetrics = Boolean.getBoolean("org.netbeans.editor.aa.fractional");
+    static final Map<Object, Object> extraRenderingHints = new HashMap<Object, Object>();
+    
+    static final Boolean doubleBuffered;
+    
+    static {
+        String aa = System.getProperty("org.netbeans.editor.aa");
+        if (aa != null) {
+            extraRenderingHints.put(RenderingHints.KEY_ANTIALIASING,
+                    (Boolean.parseBoolean(aa) || "on".equals(aa)) ?
+                            RenderingHints.VALUE_ANTIALIAS_ON :
+                            ("false".equalsIgnoreCase(aa) || "off".equals(aa)) ?
+                                    RenderingHints.VALUE_ANTIALIAS_OFF :
+                                    RenderingHints.VALUE_ANTIALIAS_DEFAULT);
+        }
+    
+        String aaText = System.getProperty("org.netbeans.editor.aa.text");
+        if (aaText != null) {
+            extraRenderingHints.put(RenderingHints.KEY_TEXT_ANTIALIASING,
+                    (Boolean.parseBoolean(aaText) || "on".equals(aaText)) ?
+                            RenderingHints.VALUE_TEXT_ANTIALIAS_ON :
+                            "gasp".equals(aaText) ? RenderingHints.VALUE_TEXT_ANTIALIAS_GASP :
+                            "hbgr".equals(aaText) ? RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HBGR :
+                            "hrgb".equals(aaText) ? RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB :
+                            "vbgr".equals(aaText) ? RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_VBGR :
+                            "vrgb".equals(aaText) ? RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_VRGB :
+                            ("false".equalsIgnoreCase(aaText) || "off".equals(aaText)) ?
+                                    RenderingHints.VALUE_TEXT_ANTIALIAS_OFF :
+                                    RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT);
+        }
 
+        String useFractionalMetrics = System.getProperty("org.netbeans.editor.aa.fractional");
+        if (useFractionalMetrics != null) {
+            extraRenderingHints.put(RenderingHints.KEY_FRACTIONALMETRICS,
+                    (Boolean.parseBoolean(useFractionalMetrics) || "on".equals(useFractionalMetrics)) ?
+                            RenderingHints.VALUE_FRACTIONALMETRICS_ON :
+                            ("false".equalsIgnoreCase(useFractionalMetrics) || "off".equals(useFractionalMetrics)) ?
+                                RenderingHints.VALUE_FRACTIONALMETRICS_OFF :
+                                RenderingHints.VALUE_FRACTIONALMETRICS_DEFAULT);
+        }
+    
+        String rendering = System.getProperty("org.netbeans.editor.aa.rendering");
+        if (rendering != null) {
+            extraRenderingHints.put(RenderingHints.KEY_RENDERING,
+                    ("quality".equals(rendering)) ? RenderingHints.VALUE_RENDER_QUALITY :
+                    ("speed".equals(rendering)) ? RenderingHints.VALUE_RENDER_SPEED :
+                            RenderingHints.VALUE_RENDER_DEFAULT);
+        }
+    
+        String strokeControl = System.getProperty("org.netbeans.editor.aa.stroke");
+        if (strokeControl != null) {
+            extraRenderingHints.put(RenderingHints.KEY_STROKE_CONTROL,
+                    "normalize".equals(strokeControl) ? RenderingHints.VALUE_STROKE_NORMALIZE :
+                    "pure".equals(strokeControl) ? RenderingHints.VALUE_STROKE_PURE :
+                            RenderingHints.VALUE_STROKE_DEFAULT);
+        }
+    
+        String contrast = System.getProperty("org.netbeans.editor.aa.contrast"); // Integer expected
+        if (contrast != null) {
+            try {
+                extraRenderingHints.put(RenderingHints.KEY_TEXT_LCD_CONTRAST,
+                        Integer.parseInt(contrast));
+            } catch (NumberFormatException ex) {
+                // Do not add the key
+            }
+        }
+        
+        String dBuffered = System.getProperty("org.netbeans.editor.double.buffered");
+        doubleBuffered = (dBuffered != null) ? Boolean.parseBoolean(dBuffered) : null;
+    }
+    
     static final char PRINTING_SPACE = '\u00B7';
     static final char PRINTING_TAB = '\u2192';
     static final char PRINTING_TAB_ALTERNATE = '\u00BB';
@@ -231,8 +299,6 @@ public final class DocumentViewOp
 
     Map<?, ?> renderingHints;
     
-    Map<?, ?> extraRenderingHints;
-    
     private int lengthyAtomicEdit; // Long atomic edit being performed
 
     ViewHierarchyImpl viewHierarchyImpl; // Assigned upon setParent()
@@ -263,6 +329,16 @@ public final class DocumentViewOp
     private float extraVirtualHeight;
     
     boolean asTextField;
+    
+    private boolean guideLinesEnable;
+    
+    private int indentLevelSize;
+    
+    private int tabSize;
+    
+    private Color guideLinesColor;
+    
+    private int[] guideLinesCache = { -1, -1, -1};
     
     public DocumentViewOp(DocumentView docView) {
         this.docView = docView;
@@ -506,6 +582,10 @@ public final class DocumentViewOp
         textComponent.addPropertyChangeListener(this);
         viewHierarchyImpl = ViewHierarchyImpl.get(textComponent);
         viewHierarchyImpl.setDocumentView(docView);
+        if (doubleBuffered != null) {
+            textComponent.setDoubleBuffered(doubleBuffered);
+            ViewHierarchyImpl.SETTINGS_LOG.fine("DocumentViewOp.parentViewSet(): Setting doubleBuffered to " + doubleBuffered + "\n");
+        }
         if (ViewHierarchyImpl.REPAINT_LOG.isLoggable(Level.FINER)) {
             DebugRepaintManager.register(textComponent);
         }
@@ -585,7 +665,7 @@ public final class DocumentViewOp
             if (renderingHints != null) {
                 g.addRenderingHints(renderingHints);
             }
-            if (extraRenderingHints != null) {
+            if (extraRenderingHints.size() > 0) {
                 g.addRenderingHints(extraRenderingHints);
             }
             if (paint) {
@@ -826,12 +906,20 @@ public final class DocumentViewOp
         boolean releaseChildren = nonInitialUpdate && 
                 ((nonPrintableCharactersVisible != nonPrintableCharactersVisibleOrig) ||
                  (rowHeightCorrection != lineHeightCorrectionOrig)); 
+        indentLevelSize = prefs.getInt(SimpleValueNames.SPACES_PER_TAB, EditorPreferencesDefaults.defaultSpacesPerTab);
+        tabSize = prefs.getInt(SimpleValueNames.TAB_SIZE, EditorPreferencesDefaults.defaultTabSize);
         if (updateMetrics) {
             updateCharMetrics();
         }
         if (releaseChildren) {
             releaseChildren(false);
         }
+        boolean currentGuideLinesEnable = Boolean.TRUE.equals(prefs.getBoolean("enable.guide.lines", true)); // NOI18N
+        if (nonInitialUpdate && guideLinesEnable != currentGuideLinesEnable) {
+            docView.op.notifyRepaint(visibleRect.getMinX(), visibleRect.getMinY(), visibleRect.getMaxX(), visibleRect.getMaxY());    
+        }
+        guideLinesEnable = currentGuideLinesEnable;
+        
     }
 
     /* private */ void updateFontColorSettings(Lookup.Result<FontColorSettings> result, boolean nonInitialUpdate) {
@@ -841,6 +929,9 @@ public final class DocumentViewOp
         }
         AttributeSet defaultColoringOrig = defaultColoring;
         FontColorSettings fcs = result.allInstances().iterator().next();
+        AttributeSet attribs = fcs.getFontColors(FontColorNames.INDENT_GUIDE_LINES);
+        guideLinesColor = attribs != null ? (Color) attribs.getAttribute(StyleConstants.Foreground) : Color.LIGHT_GRAY;
+        
         AttributeSet newDefaultColoring = fcs.getFontColors(FontColorNames.DEFAULT_COLORING);
         // Attempt to always hold non-null content of "defaultColoring" variable once it became non-null
         if (newDefaultColoring != null) {
@@ -851,12 +942,6 @@ public final class DocumentViewOp
         // Use desktop hints
         renderingHints = (Map<?, ?>) Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints"); //NOI18N
         // Possibly use fractional metrics
-        extraRenderingHints = null;
-        if (useFractionalMetrics) {
-            Map<Object, Object> hints = new HashMap<Object, Object>();
-            hints.put(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-            extraRenderingHints = hints;
-        }
 
         if (asTextField) {
             return;
@@ -1021,6 +1106,30 @@ public final class DocumentViewOp
         JTextComponent textComponent = docView.getTextComponent();
         return textComponent != null && fontRenderContext != null && fontInfos.size() > 0 &&
                 (lengthyAtomicEdit <= 0) && !isAnyStatusBit(INCOMING_MODIFICATION);
+    }
+    
+    public boolean isGuideLinesEnable() {
+        return guideLinesEnable && !asTextField;
+    }
+
+    public int getIndentLevelSize() {
+        return indentLevelSize;
+    }
+    
+    public int getTabSize() {
+        return tabSize;
+    }
+    
+    public Color getGuideLinesColor() {
+        return guideLinesColor;
+    }
+    
+    public void setGuideLinesCache(int cacheAtOffset, int foundAtOffset, int length) {
+        guideLinesCache = new int[] {cacheAtOffset, foundAtOffset, length};
+    }
+    
+    public int[] getGuideLinesCache() {
+        return guideLinesCache;
     }
 
     /**
@@ -1237,6 +1346,13 @@ public final class DocumentViewOp
             }
             if (propName == null || SimpleValueNames.TAB_SIZE.equals(propName)) {
                 releaseChildren = true;
+                Integer tabSizeInteger = (Integer) docView.getDocument().getProperty(SimpleValueNames.TAB_SIZE);
+                tabSize = (tabSizeInteger != null) ? tabSizeInteger : tabSize;
+            }
+            if (propName == null || SimpleValueNames.SPACES_PER_TAB.equals(propName)) {
+                releaseChildren = true;
+                Integer indentLevelInteger = (Integer) docView.getDocument().getProperty(SimpleValueNames.SPACES_PER_TAB);
+                indentLevelSize = (indentLevelInteger != null) ? indentLevelInteger : indentLevelSize;
             }
             if (propName == null || SimpleValueNames.TEXT_LIMIT_WIDTH.equals(propName)) {
                 updateTextLimitLine(docView.getDocument());

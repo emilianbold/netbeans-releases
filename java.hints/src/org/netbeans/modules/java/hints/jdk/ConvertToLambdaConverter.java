@@ -56,20 +56,15 @@ import com.sun.source.util.Trees;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Map;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.ReturnTree;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -241,8 +236,8 @@ public class ConvertToLambdaConverter {
         }
 
         private boolean isNameAlreadyUsed(CharSequence name) {
-            return isVariableShadowed(name)
-                    || originalToNewName.containsValue(name.toString());
+            return originalToNewName.containsValue(name.toString()) ||
+                    shadowsVariable(name);
         }
 
         private CharSequence getUniqueName(CharSequence originalName) {
@@ -265,8 +260,8 @@ public class ConvertToLambdaConverter {
         }
     }
 
-    private boolean isVariableShadowed(CharSequence variableName) {
-        return Utilities.isVariableShadowedInScope(variableName, localScope);
+    private boolean shadowsVariable(CharSequence variableName) {
+        return Utilities.isSymbolUsed(copy, pathToNewClassTree, variableName, localScope);
     }
 
     private Scope getScopeFromTree(TreePath path) {

@@ -132,7 +132,7 @@ public class WrappingOperator extends FormattingPanelOperator {
     public JComboBoxOperator getExtendImplementsKeyWord() {
         if (extendImplementsKeyWord == null) {
             extendImplementsKeyWord = formattingOperator.getComboBoxByLabel("Extends/Implements Keyword:");
-            storeDefaultValue(Settings.EXTENDSKEYWORD);
+            storeDefaultValue(Settings.WRAP_EXTENDSKEYWORD);
         }
         return extendImplementsKeyWord;
     }
@@ -140,7 +140,7 @@ public class WrappingOperator extends FormattingPanelOperator {
     public JComboBoxOperator getExtendsImplementsList() {
         if (extendsImplementsList == null) {
             extendsImplementsList = formattingOperator.getComboBoxByLabel("Extends/Implements List:");
-            storeDefaultValue(Settings.EXTENDSLIST);
+            storeDefaultValue(Settings.WRAP_EXTENDSLIST);
         }
         return extendsImplementsList;
     }
@@ -148,7 +148,7 @@ public class WrappingOperator extends FormattingPanelOperator {
     public JComboBoxOperator getMethodParameters() {
         if (methodParameters == null) {
             methodParameters = formattingOperator.getComboBoxByLabel("Method Parameters");
-            storeDefaultValue(Settings.METHODPARAMETERS);
+            storeDefaultValue(Settings.WRAP_METHODPARAMETERS);
         }
         return methodParameters;
     }
@@ -156,7 +156,7 @@ public class WrappingOperator extends FormattingPanelOperator {
     public JComboBoxOperator getMethodCallArguments() {
         if (methodCallArguments == null) {
             methodCallArguments = formattingOperator.getComboBoxByLabel("Method Call Arguments:");
-            storeDefaultValue(Settings.METHODCALLARGUMENTS);
+            storeDefaultValue(Settings.WRAP_METHODCALLARGUMENTS);
         }
         return methodCallArguments;
     }
@@ -164,7 +164,7 @@ public class WrappingOperator extends FormattingPanelOperator {
     public JComboBoxOperator getAnnotationArguments() {
         if (annotationArguments == null) {
             annotationArguments = formattingOperator.getComboBoxByLabel("Annotation Arguments");
-            storeDefaultValue(Settings.ANNOTATIONARGUMENTS);
+            storeDefaultValue(Settings.WRAP_ANNOTATIONARGUMENTS);
         }
         return annotationArguments;
     }
@@ -172,7 +172,7 @@ public class WrappingOperator extends FormattingPanelOperator {
     public JComboBoxOperator getChainedMethodCalls() {
         if (chainedMethodCalls == null) {
             chainedMethodCalls = formattingOperator.getComboBoxByLabel("Chained Method Calls:");
-            storeDefaultValue(Settings.CHAINEDMETHODCALLS);
+            storeDefaultValue(Settings.WRAP_CHAINEDMETHODCALLS);
         }
         return chainedMethodCalls;
     }
@@ -180,7 +180,7 @@ public class WrappingOperator extends FormattingPanelOperator {
     public JCheckBoxOperator getWrapAfterDot() {
         if (wrapAfterDot == null) {
             wrapAfterDot = formattingOperator.getCheckboxOperatorByLabel("Wrap After Dot In Chained Method Call");
-            storeDefaultValue(Settings.WRAPAFTERDOT);
+            storeDefaultValue(Settings.WRAP_WRAPAFTERDOT);
         }
         return wrapAfterDot;
     }
@@ -188,7 +188,7 @@ public class WrappingOperator extends FormattingPanelOperator {
     public JComboBoxOperator getThrowsKeyword() {
         if (throwsKeyword == null) {
             throwsKeyword = formattingOperator.getComboBoxByLabel("Throws Keyword:");
-            storeDefaultValue(Settings.THROWSKEYWORD);
+            storeDefaultValue(Settings.WRAP_THROWSKEYWORD);
         }
         return throwsKeyword;
     }
@@ -196,7 +196,7 @@ public class WrappingOperator extends FormattingPanelOperator {
     public JComboBoxOperator getThrowsList() {
         if (throwsList == null) {
             throwsList = formattingOperator.getComboBoxByLabel("Throws List:");
-            storeDefaultValue(Settings.THROWSLIST);
+            storeDefaultValue(Settings.WRAP_THROWSLIST);
         }
         return throwsList;
     }
@@ -204,7 +204,7 @@ public class WrappingOperator extends FormattingPanelOperator {
     public JComboBoxOperator getArrayInitializer() {
         if (arrayInitializer == null) {
             arrayInitializer = formattingOperator.getComboBoxByLabel("Array Initializer:");
-            storeDefaultValue(Settings.ARRAYINITIALIZER);
+            storeDefaultValue(Settings.WRAP_ARRAYINITIALIZER);
         }
         return arrayInitializer;
     }
@@ -212,7 +212,7 @@ public class WrappingOperator extends FormattingPanelOperator {
     public JComboBoxOperator getTryResources() {
         if (tryResources == null) {
             tryResources = formattingOperator.getComboBoxByLabel("Try Resources:");
-            storeDefaultValue(Settings.TRYRESOURCES);
+            storeDefaultValue(Settings.WRAP_TRYRESOURCES);
         }
         return tryResources;        
     }
@@ -220,7 +220,7 @@ public class WrappingOperator extends FormattingPanelOperator {
     public JComboBoxOperator getDisjunctiveCatchTypes() {
         if (disjunctiveCatchTypes == null) {
             disjunctiveCatchTypes = formattingOperator.getComboBoxByLabel("Disjunctive Catch Types:");
-            storeDefaultValue(Settings.DISJUNCTIVECATCHTYPES);
+            storeDefaultValue(Settings.WRAP_DISJUNCTIVECATCHTYPES);
         }
         return disjunctiveCatchTypes;
     }
@@ -228,7 +228,7 @@ public class WrappingOperator extends FormattingPanelOperator {
     public JComboBoxOperator getForArgs() {
         if (forArgs == null) {
             forArgs = formattingOperator.getComboBoxByLabel("For:");
-            storeDefaultValue(Settings.FOR);
+            storeDefaultValue(Settings.WRAP_FOR);
         }
         return forArgs;
     }
@@ -236,7 +236,7 @@ public class WrappingOperator extends FormattingPanelOperator {
     public JComboBoxOperator getForStatement() {
         if (forStatement == null) {
             forStatement = formattingOperator.getComboBoxByLabel("For Statement:");
-            storeDefaultValue(Settings.FORSTATEMENT);
+            storeDefaultValue(Settings.WRAP_FORSTATEMENT);
         }
         return forStatement;
     }
@@ -244,7 +244,7 @@ public class WrappingOperator extends FormattingPanelOperator {
     public JComboBoxOperator getIfStatement() {
         if (ifStatement == null) {
             ifStatement = formattingOperator.getComboBoxByLabel("If Statement:");
-            storeDefaultValue(Settings.IFSTATEMENT);
+            storeDefaultValue(Settings.WRAP_IFSTATEMENT);
         }
         return ifStatement;
     }
@@ -252,7 +252,7 @@ public class WrappingOperator extends FormattingPanelOperator {
     public JComboBoxOperator getWhileStatment() {
         if (whileStatment == null) {
             whileStatment = formattingOperator.getComboBoxByLabel("While Statement:");
-            storeDefaultValue(Settings.WHILESTATEMENT);
+            storeDefaultValue(Settings.WRAP_WHILESTATEMENT);
         }
         return whileStatment;
     }
@@ -260,7 +260,7 @@ public class WrappingOperator extends FormattingPanelOperator {
     public JComboBoxOperator getDoWhileStatements() {
         if (doWhileStatements == null) {
             doWhileStatements = formattingOperator.getComboBoxByLabel("Do ... While Statement:");
-            storeDefaultValue(Settings.DOWHILESTATEMENT);
+            storeDefaultValue(Settings.WRAP_DOWHILESTATEMENT);
         }
         return doWhileStatements;
     }
@@ -268,7 +268,7 @@ public class WrappingOperator extends FormattingPanelOperator {
     public JComboBoxOperator getCaseStatements() {
         if (caseStatements == null) {
             caseStatements = formattingOperator.getComboBoxByLabel("Case Statements:");
-            storeDefaultValue(Settings.CASESTATEMENTS);
+            storeDefaultValue(Settings.WRAP_CASESTATEMENTS);
         }
         return caseStatements;
     }
@@ -276,7 +276,7 @@ public class WrappingOperator extends FormattingPanelOperator {
     public JComboBoxOperator getAssertStatement() {
         if (assertStatement == null) {
             assertStatement = formattingOperator.getComboBoxByLabel("Assert:");
-            storeDefaultValue(Settings.ASSERT);
+            storeDefaultValue(Settings.WRAP_ASSERT);
         }
         return assertStatement;
     }
@@ -284,7 +284,7 @@ public class WrappingOperator extends FormattingPanelOperator {
     public JComboBoxOperator getEnumConstants() {
         if (enumConstants == null) {
             enumConstants = formattingOperator.getComboBoxByLabel("Enum Constants:");
-            storeDefaultValue(Settings.ENUMCONSTANTS);
+            storeDefaultValue(Settings.WRAP_ENUMCONSTANTS);
         }
         return enumConstants;
     }
@@ -292,7 +292,7 @@ public class WrappingOperator extends FormattingPanelOperator {
     public JComboBoxOperator getAnnotations() {
         if (annotations == null) {
             annotations = formattingOperator.getComboBoxByLabel("Annotations:");
-            storeDefaultValue(Settings.ANNOTATIONS);
+            storeDefaultValue(Settings.WRAP_ANNOTATIONS);
         }
         return annotations;
     }
@@ -300,7 +300,7 @@ public class WrappingOperator extends FormattingPanelOperator {
     public JComboBoxOperator getBinaryOperators() {
         if (binaryOperators == null) {
             binaryOperators = formattingOperator.getComboBoxByLabel("Binary Operators:");
-            storeDefaultValue(Settings.BINARYOPERATORS);
+            storeDefaultValue(Settings.WRAP_BINARYOPERATORS);
         }
         return binaryOperators;
     }
@@ -308,7 +308,7 @@ public class WrappingOperator extends FormattingPanelOperator {
     public JCheckBoxOperator getWrapAfterBinaryOperators() {
         if (wrapAfterBinaryOperators == null) {
             wrapAfterBinaryOperators = formattingOperator.getCheckboxOperatorByLabel("Wrap After Binary Operators");
-            storeDefaultValue(Settings.WRAPAFTERBINARYOPERATORS);
+            storeDefaultValue(Settings.WRAP_WRAPAFTERBINARYOPERATORS);
         }
         return wrapAfterBinaryOperators;
     }
@@ -316,7 +316,7 @@ public class WrappingOperator extends FormattingPanelOperator {
     public JComboBoxOperator getTernaryOperators() {
         if (ternaryOperators == null) {
             ternaryOperators = formattingOperator.getComboBoxByLabel("Ternary Operators:");
-            storeDefaultValue(Settings.TERNARYOPERATORS);
+            storeDefaultValue(Settings.WRAP_TERNARYOPERATORS);
         }
         return ternaryOperators;
     }
@@ -324,7 +324,7 @@ public class WrappingOperator extends FormattingPanelOperator {
     public JCheckBoxOperator getWrapAfterTernaryOperators() {
         if (wrapAfterTernaryOperators == null) {
             wrapAfterTernaryOperators = formattingOperator.getCheckboxOperatorByLabel("Wrap After Ternary Operators");
-            storeDefaultValue(Settings.WRAPAFTERTERNARYOPERATORS);
+            storeDefaultValue(Settings.WRAP_WRAPAFTERTERNARYOPERATORS);
         }
         return wrapAfterTernaryOperators;
     }
@@ -332,7 +332,7 @@ public class WrappingOperator extends FormattingPanelOperator {
     public JComboBoxOperator getAssignmentOperators() {
         if (assignmentOperators == null) {
             assignmentOperators = formattingOperator.getComboBoxByLabel("Assignment Operators:");
-            storeDefaultValue(Settings.ASSIGNMENTOPERATORS);
+            storeDefaultValue(Settings.WRAP_ASSIGNMENTOPERATORS);
         }
         return assignmentOperators;
     }
@@ -340,7 +340,7 @@ public class WrappingOperator extends FormattingPanelOperator {
     public JCheckBoxOperator getWrapAfterAssignmentOperators() {
         if (wrapAfterAssignmentOperators == null) {
             wrapAfterAssignmentOperators = formattingOperator.getCheckboxOperatorByLabel("Warp After Assignment Operators:");
-            storeDefaultValue(Settings.WRAPAFTERASSIGNMENTOPERATORS);
+            storeDefaultValue(Settings.WRAP_WRAPAFTERASSIGNMENTOPERATORS);
         }
         return wrapAfterAssignmentOperators;
     }
@@ -348,7 +348,7 @@ public class WrappingOperator extends FormattingPanelOperator {
     public JComboBoxOperator getLambdaParameters() {
         if (lambdaParameters == null) {
             lambdaParameters = formattingOperator.getComboBoxByLabel("Lambda Parameters:");
-            storeDefaultValue(Settings.LAMBDAPARAMETERS);
+            storeDefaultValue(Settings.WRAP_LAMBDAPARAMETERS);
         }
         return lambdaParameters;
     }
@@ -356,7 +356,7 @@ public class WrappingOperator extends FormattingPanelOperator {
     public JComboBoxOperator getLambdaArrow() {
         if (lambdaArrow == null) {
             lambdaArrow = formattingOperator.getComboBoxByLabel("Lambda Arrow:");
-            storeDefaultValue(Settings.LAMBDAARROW);
+            storeDefaultValue(Settings.WRAP_LAMBDAARROW);
         }
         return lambdaArrow;
     }
@@ -364,85 +364,85 @@ public class WrappingOperator extends FormattingPanelOperator {
     public JCheckBoxOperator getWrapAfterLambdaArrow() {
         if (wrapAfterLambdaArrow == null) {
             wrapAfterLambdaArrow = formattingOperator.getCheckboxOperatorByLabel("Wrap After Lambda Arrow");
-            storeDefaultValue(Settings.WRAPAFTERLAMBDAARROW);
+            storeDefaultValue(Settings.WRAP_WRAPAFTERLAMBDAARROW);
         }
         return wrapAfterLambdaArrow;
     }
     
 
-    private enum Settings implements OperatorGetter {
+    enum Settings implements OperatorGetter {
 
-        EXTENDSKEYWORD, EXTENDSLIST, METHODPARAMETERS, METHODCALLARGUMENTS, 
-        ANNOTATIONARGUMENTS, CHAINEDMETHODCALLS, WRAPAFTERDOT,
-        THROWSKEYWORD, THROWSLIST, ARRAYINITIALIZER, TRYRESOURCES, DISJUNCTIVECATCHTYPES,
-        FOR, FORSTATEMENT, IFSTATEMENT, WHILESTATEMENT, DOWHILESTATEMENT,
-        CASESTATEMENTS, ASSERT, ENUMCONSTANTS, ANNOTATIONS, BINARYOPERATORS,
-        WRAPAFTERBINARYOPERATORS, TERNARYOPERATORS, WRAPAFTERTERNARYOPERATORS, 
-        ASSIGNMENTOPERATORS, WRAPAFTERASSIGNMENTOPERATORS, LAMBDAPARAMETERS, LAMBDAARROW, WRAPAFTERLAMBDAARROW;
+        WRAP_EXTENDSKEYWORD, WRAP_EXTENDSLIST, WRAP_METHODPARAMETERS, WRAP_METHODCALLARGUMENTS, 
+        WRAP_ANNOTATIONARGUMENTS, WRAP_CHAINEDMETHODCALLS, WRAP_WRAPAFTERDOT,
+        WRAP_THROWSKEYWORD, WRAP_THROWSLIST, WRAP_ARRAYINITIALIZER, WRAP_TRYRESOURCES, WRAP_DISJUNCTIVECATCHTYPES,
+        WRAP_FOR, WRAP_FORSTATEMENT, WRAP_IFSTATEMENT, WRAP_WHILESTATEMENT, WRAP_DOWHILESTATEMENT,
+        WRAP_CASESTATEMENTS, WRAP_ASSERT, WRAP_ENUMCONSTANTS, WRAP_ANNOTATIONS, WRAP_BINARYOPERATORS,
+        WRAP_WRAPAFTERBINARYOPERATORS, WRAP_TERNARYOPERATORS, WRAP_WRAPAFTERTERNARYOPERATORS, 
+        WRAP_ASSIGNMENTOPERATORS, WRAP_WRAPAFTERASSIGNMENTOPERATORS, WRAP_LAMBDAPARAMETERS, WRAP_LAMBDAARROW,WRAP_WRAPAFTERLAMBDAARROW;
 
         @Override
         public Operator getOperator(FormattingPanelOperator fpo) {
             WrappingOperator wo = (WrappingOperator) fpo;
             switch (this) {
-                case EXTENDSKEYWORD:
+                case WRAP_EXTENDSKEYWORD:
                     return wo.getExtendImplementsKeyWord();
-                case EXTENDSLIST:
+                case WRAP_EXTENDSLIST:
                     return wo.getExtendsImplementsList();
-                case METHODPARAMETERS:
+                case WRAP_METHODPARAMETERS:
                     return wo.getMethodParameters();
-                case METHODCALLARGUMENTS:
+                case WRAP_METHODCALLARGUMENTS:
                     return wo.getMethodCallArguments();
-                case ANNOTATIONARGUMENTS:
+                case WRAP_ANNOTATIONARGUMENTS:
                     return wo.getAnnotationArguments();
-                case CHAINEDMETHODCALLS:
+                case WRAP_CHAINEDMETHODCALLS:
                     return wo.getChainedMethodCalls();
-                case WRAPAFTERDOT:
+                case WRAP_WRAPAFTERDOT:
                     return wo.getWrapAfterDot();
-                case THROWSKEYWORD:
+                case WRAP_THROWSKEYWORD:
                     return wo.getThrowsKeyword();
-                case THROWSLIST:
+                case WRAP_THROWSLIST:
                     return wo.getThrowsList();
-                case ARRAYINITIALIZER:
+                case WRAP_ARRAYINITIALIZER:
                     return wo.getArrayInitializer();
-                case TRYRESOURCES:
+                case WRAP_TRYRESOURCES:
                     return wo.getTryResources();
-                case DISJUNCTIVECATCHTYPES:
+                case WRAP_DISJUNCTIVECATCHTYPES:
                     return wo.getDisjunctiveCatchTypes();
-                case FOR:
+                case WRAP_FOR:
                     return wo.getForArgs();
-                case FORSTATEMENT:
+                case WRAP_FORSTATEMENT:
                     return wo.getForStatement();
-                case IFSTATEMENT:
+                case WRAP_IFSTATEMENT:
                     return wo.getIfStatement();
-                case WHILESTATEMENT:
+                case WRAP_WHILESTATEMENT:
                     return wo.getWhileStatment();
-                case DOWHILESTATEMENT:
+                case WRAP_DOWHILESTATEMENT:
                     return wo.getDoWhileStatements();
-                case CASESTATEMENTS:
+                case WRAP_CASESTATEMENTS:
                     return wo.getCaseStatements();
-                case ASSERT:
+                case WRAP_ASSERT:
                     return wo.getAssertStatement();
-                case ENUMCONSTANTS:
+                case WRAP_ENUMCONSTANTS:
                     return wo.getEnumConstants();
-                case ANNOTATIONS:
+                case WRAP_ANNOTATIONS:
                     return wo.getAnnotations();
-                case BINARYOPERATORS:
+                case WRAP_BINARYOPERATORS:
                     return wo.getBinaryOperators();
-                case WRAPAFTERBINARYOPERATORS:
+                case WRAP_WRAPAFTERBINARYOPERATORS:
                     return wo.getWrapAfterBinaryOperators();
-                case TERNARYOPERATORS:
+                case WRAP_TERNARYOPERATORS:
                     return wo.getTernaryOperators();
-                case WRAPAFTERTERNARYOPERATORS:
+                case WRAP_WRAPAFTERTERNARYOPERATORS:
                     return wo.getWrapAfterTernaryOperators();
-                case ASSIGNMENTOPERATORS:
+                case WRAP_ASSIGNMENTOPERATORS:
                     return wo.getAssignmentOperators();
-                case WRAPAFTERASSIGNMENTOPERATORS:
+                case WRAP_WRAPAFTERASSIGNMENTOPERATORS:
                     return wo.getWrapAfterAssignmentOperators();
-                case LAMBDAPARAMETERS:
+                case WRAP_LAMBDAPARAMETERS:
                     return wo.getLambdaParameters();
-                case LAMBDAARROW:
+                case WRAP_LAMBDAARROW:
                     return wo.getLambdaArrow();
-                case WRAPAFTERLAMBDAARROW:
+                case WRAP_WRAPAFTERLAMBDAARROW:
                     break;
                 default:
                     throw new AssertionError(this.name());                                

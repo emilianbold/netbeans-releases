@@ -128,10 +128,11 @@ public class JavaCompletionProvider implements CompletionProvider {
         return new AsyncCompletionTask(query, EditorRegistry.lastFocusedComponent());
     }
     
-    public static List<? extends CompletionItem> query(Source source, int queryType, int offset, int substitutionOffset) throws Exception {
+    public static List<? extends CompletionItem> query(Source source, int queryType, int offset, int substitutionOffset, JavaCompletionItemFactory factory) throws Exception {
         assert source != null;
         assert (queryType & COMPLETION_QUERY_TYPE) != 0;
         final JavaCompletionQuery query = new JavaCompletionQuery(queryType, offset, false);
+        query.javaCompletionItemFactory = factory;
         ParserManager.parse(Collections.singletonList(source), query.getTask());
         if (offset != substitutionOffset) {
             for (JavaCompletionItem jci : query.results) {
@@ -238,6 +239,7 @@ public class JavaCompletionProvider implements CompletionProvider {
         private static final String SKIP_ACCESSIBILITY_CHECK = "org.netbeans.modules.editor.java.JavaCompletionProvider.skipAccessibilityCheck"; //NOI18N
         
         private ArrayList<JavaCompletionItem> results;
+        private JavaCompletionItemFactory javaCompletionItemFactory;
         private byte hasAdditionalItems = 0; //no additional items
         private MethodParamsTipPaintComponent toolTip;
         private CompletionDocumentation documentation;
@@ -639,6 +641,8 @@ public class JavaCompletionProvider implements CompletionProvider {
             if (env == null)
                 return;
             results = new ArrayList<JavaCompletionItem>();
+            if (javaCompletionItemFactory == null)
+                javaCompletionItemFactory = new JavaCompletionItemFactory.DefaultImpl();
             anchorOffset = controller.getSnapshot().getOriginalOffset(env.getOffset());
             TreePath path = env.getPath();
             switch(path.getLeaf().getKind()) {
@@ -997,7 +1001,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         for (TypeMirror ex : exs)
                             if (ex.getKind() == TypeKind.DECLARED && startsWith(env, ((DeclaredType)ex).asElement().getSimpleName().toString()) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(((DeclaredType)ex).asElement()))) {
                                 env.addToExcludes(((DeclaredType)ex).asElement());
-                                results.add(JavaCompletionItem.createTypeItem(controller, (TypeElement)((DeclaredType)ex).asElement(), (DeclaredType)ex, anchorOffset, env.getReferencesCount(), elements.isDeprecated(((DeclaredType)ex).asElement()), false, false, false, true, false, env.getWhiteList()));
+                                results.add(javaCompletionItemFactory.createTypeItem(controller, (TypeElement)((DeclaredType)ex).asElement(), (DeclaredType)ex, anchorOffset, env.getReferencesCount(), elements.isDeprecated(((DeclaredType)ex).asElement()), false, false, false, true, false, env.getWhiteList()));
                             }
                     }
                     TypeElement te = controller.getElements().getTypeElement("java.lang.Throwable"); //NOI18N
@@ -1129,7 +1133,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             for (TypeMirror ex : exs)
                                 if (ex.getKind() == TypeKind.DECLARED && startsWith(env, ((DeclaredType)ex).asElement().getSimpleName().toString()) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(((DeclaredType)ex).asElement()))) {
                                     env.addToExcludes(((DeclaredType)ex).asElement());
-                                    results.add(JavaCompletionItem.createTypeItem(env.getController(), (TypeElement)((DeclaredType)ex).asElement(), (DeclaredType)ex, anchorOffset, env.getReferencesCount(), elements.isDeprecated(((DeclaredType)ex).asElement()), false, false, false, true, false, env.getWhiteList()));
+                                    results.add(javaCompletionItemFactory.createTypeItem(env.getController(), (TypeElement)((DeclaredType)ex).asElement(), (DeclaredType)ex, anchorOffset, env.getReferencesCount(), elements.isDeprecated(((DeclaredType)ex).asElement()), false, false, false, true, false, env.getWhiteList()));
                                 }
                         }
                         TypeElement te = controller.getElements().getTypeElement("java.lang.Throwable"); //NOI18N
@@ -1170,7 +1174,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                     for (TypeMirror ex : exs)
                                         if (ex.getKind() == TypeKind.DECLARED && startsWith(env, ((DeclaredType)ex).asElement().getSimpleName().toString()) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(((DeclaredType)ex).asElement()))) {
                                             env.addToExcludes(((DeclaredType)ex).asElement());
-                                            results.add(JavaCompletionItem.createTypeItem(env.getController(), (TypeElement)((DeclaredType)ex).asElement(), (DeclaredType)ex, anchorOffset, env.getReferencesCount(), elements.isDeprecated(((DeclaredType)ex).asElement()), false, false, false, true, false, env.getWhiteList()));
+                                            results.add(javaCompletionItemFactory.createTypeItem(env.getController(), (TypeElement)((DeclaredType)ex).asElement(), (DeclaredType)ex, anchorOffset, env.getReferencesCount(), elements.isDeprecated(((DeclaredType)ex).asElement()), false, false, false, true, false, env.getWhiteList()));
                                         }
                                 }
                                 te = controller.getElements().getTypeElement("java.lang.Throwable"); //NOI18N
@@ -1291,7 +1295,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             if (smart.getKind() == TypeKind.DECLARED) {
                                 TypeElement elem = (TypeElement)((DeclaredType)smart).asElement();
                                 if (elem.getKind() == ANNOTATION_TYPE && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem)))
-                                    results.add(JavaCompletionItem.createTypeItem(env.getController(), elem, (DeclaredType)smart, anchorOffset, env.getReferencesCount(), elements.isDeprecated(elem), false, false, false, true, false, env.getWhiteList()));
+                                    results.add(javaCompletionItemFactory.createTypeItem(env.getController(), elem, (DeclaredType)smart, anchorOffset, env.getReferencesCount(), elements.isDeprecated(elem), false, false, false, true, false, env.getWhiteList()));
                             }
                         }
                     }
@@ -1325,7 +1329,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             valueElement = null;
                         }
                         if (!names.contains(name) && startsWith(env, name) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)))
-                            results.add(JavaCompletionItem.createAttributeItem(env.getController(), (ExecutableElement)e, (ExecutableType)e.asType(), anchorOffset, elements.isDeprecated(e)));
+                            results.add(javaCompletionItemFactory.createAttributeItem(env.getController(), (ExecutableElement)e, (ExecutableType)e.asType(), anchorOffset, elements.isDeprecated(e)));
                     }
                 }
                 if (valueElement != null && names.isEmpty()) {
@@ -1491,7 +1495,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                                         TypeElement elem = (TypeElement)((DeclaredType)upperBound).asElement();
                                                         if (startsWith(env, elem.getSimpleName().toString()) && withinBounds(env, upperBound, bounds)
                                                                 && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem)))
-                                                            results.add(JavaCompletionItem.createTypeItem(env.getController(), elem, (DeclaredType)upperBound, anchorOffset, env.getReferencesCount(), elements.isDeprecated(elem), false, true, false, true, false, env.getWhiteList()));
+                                                            results.add(javaCompletionItemFactory.createTypeItem(env.getController(), elem, (DeclaredType)upperBound, anchorOffset, env.getReferencesCount(), elements.isDeprecated(elem), false, true, false, true, false, env.getWhiteList()));
                                                         env.addToExcludes(elem);
                                                         upperBound = elem.getSuperclass();
                                                     }
@@ -1499,7 +1503,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                                     for (DeclaredType subtype : getSubtypesOf(env, (DeclaredType)lowerBound)) {
                                                         TypeElement elem = (TypeElement)subtype.asElement();
                                                         if (withinBounds(env, subtype, bounds) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem)))
-                                                            results.add(JavaCompletionItem.createTypeItem(env.getController(), elem, subtype, anchorOffset, env.getReferencesCount(), elements.isDeprecated(elem), false, true, false, true, false, env.getWhiteList()));
+                                                            results.add(javaCompletionItemFactory.createTypeItem(env.getController(), elem, subtype, anchorOffset, env.getReferencesCount(), elements.isDeprecated(elem), false, true, false, true, false, env.getWhiteList()));
                                                         env.addToExcludes(elem);
                                                     }
                                                 }
@@ -1513,7 +1517,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 for (DeclaredType subtype : getSubtypesOf(env, (DeclaredType)lowerBound)) {
                                     TypeElement elem = (TypeElement)subtype.asElement();
                                     if (withinBounds(env, subtype, bounds) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem)))
-                                        results.add(JavaCompletionItem.createTypeItem(env.getController(), elem, subtype, anchorOffset, env.getReferencesCount(), elements.isDeprecated(elem), false, true, false, true, false, env.getWhiteList()));
+                                        results.add(javaCompletionItemFactory.createTypeItem(env.getController(), elem, subtype, anchorOffset, env.getReferencesCount(), elements.isDeprecated(elem), false, true, false, true, false, env.getWhiteList()));
                                     env.addToExcludes(elem);
                                 }
                             }
@@ -1834,7 +1838,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                         Element e = ((DeclaredType)ex).asElement();
                                         if (e.getEnclosingElement() == el && startsWith(env, e.getSimpleName().toString()) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e))) {
                                             env.addToExcludes(e);
-                                            results.add(JavaCompletionItem.createTypeItem(env.getController(), (TypeElement)e, (DeclaredType)ex, anchorOffset, null, elements.isDeprecated(e), insideNew, insideNew || env.isInsideClass(), true, true, false, env.getWhiteList()));
+                                            results.add(javaCompletionItemFactory.createTypeItem(env.getController(), (TypeElement)e, (DeclaredType)ex, anchorOffset, null, elements.isDeprecated(e), insideNew, insideNew || env.isInsideClass(), true, true, false, env.getWhiteList()));
                                         }
                                     }
                             } else {
@@ -1872,7 +1876,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                             Element e = ((DeclaredType)ex).asElement();
                                             if (e.getEnclosingElement() == el && startsWith(env, e.getSimpleName().toString()) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e))) {
                                                 env.addToExcludes(e);
-                                                results.add(JavaCompletionItem.createTypeItem(env.getController(), (TypeElement)e, (DeclaredType)ex, anchorOffset, env.getReferencesCount(), elements.isDeprecated(e), false, env.isInsideClass(), true, true, false, env.getWhiteList()));
+                                                results.add(javaCompletionItemFactory.createTypeItem(env.getController(), (TypeElement)e, (DeclaredType)ex, anchorOffset, env.getReferencesCount(), elements.isDeprecated(e), false, env.isInsideClass(), true, true, false, env.getWhiteList()));
                                             }
                                         }
                                 }
@@ -2028,7 +2032,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                                 for (DeclaredType subtype : getSubtypesOf(env, (DeclaredType)smart)) {
                                                     TypeElement elem = (TypeElement)subtype.asElement();
                                                     if (toExclude != elem && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem)))
-                                                        results.add(JavaCompletionItem.createTypeItem(env.getController(), elem, (DeclaredType)Utilities.resolveCapturedType(controller, subtype), anchorOffset, env.getReferencesCount(), elements.isDeprecated(elem), true, true, false, true, false, env.getWhiteList()));
+                                                        results.add(javaCompletionItemFactory.createTypeItem(env.getController(), elem, (DeclaredType)Utilities.resolveCapturedType(controller, subtype), anchorOffset, env.getReferencesCount(), elements.isDeprecated(elem), true, true, false, true, false, env.getWhiteList()));
                                                     env.addToExcludes(elem);
                                                 }
                                             }
@@ -2040,9 +2044,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                                                     tm = ((ArrayType)tm).getComponentType();
                                                 }
                                                 if (tm.getKind().isPrimitive() && startsWith(env, tm.toString())) {
-                                                    results.add(JavaCompletionItem.createArrayItem(env.getController(), (ArrayType)smart, anchorOffset, env.getReferencesCount(), env.getController().getElements(), env.getWhiteList()));
+                                                    results.add(javaCompletionItemFactory.createArrayItem(env.getController(), (ArrayType)smart, anchorOffset, env.getReferencesCount(), env.getController().getElements(), env.getWhiteList()));
                                                 } else if ((tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.ERROR) && startsWith(env, ((DeclaredType)tm).asElement().getSimpleName().toString())) {
-                                                    results.add(JavaCompletionItem.createArrayItem(env.getController(), (ArrayType)smart, anchorOffset, env.getReferencesCount(), env.getController().getElements(),env.getWhiteList()));
+                                                    results.add(javaCompletionItemFactory.createArrayItem(env.getController(), (ArrayType)smart, anchorOffset, env.getReferencesCount(), env.getController().getElements(),env.getWhiteList()));
                                                 }
                                             } catch (IllegalArgumentException iae) {}
                                         }
@@ -2105,7 +2109,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     for (TypeMirror ex : exs)
                         if (ex.getKind() == TypeKind.DECLARED && startsWith(env, ((DeclaredType)ex).asElement().getSimpleName().toString()) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(((DeclaredType)ex).asElement()))) {
                             env.addToExcludes(((DeclaredType)ex).asElement());
-                            results.add(JavaCompletionItem.createTypeItem(env.getController(), (TypeElement)((DeclaredType)ex).asElement(), (DeclaredType)ex, anchorOffset, env.getReferencesCount(), elements.isDeprecated(((DeclaredType)ex).asElement()), false, false, false, true, false, env.getWhiteList()));
+                            results.add(javaCompletionItemFactory.createTypeItem(env.getController(), (TypeElement)((DeclaredType)ex).asElement(), (DeclaredType)ex, anchorOffset, env.getReferencesCount(), elements.isDeprecated(((DeclaredType)ex).asElement()), false, false, false, true, false, env.getWhiteList()));
                         }
                 }
                 TypeElement te = controller.getElements().getTypeElement("java.lang.Throwable"); //NOI18N
@@ -2139,7 +2143,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         for (TypeMirror ex : exs) {
                             if (ex.getKind() == TypeKind.DECLARED && startsWith(env, ((DeclaredType)ex).asElement().getSimpleName().toString()) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(((DeclaredType)ex).asElement()))) {
                                 env.addToExcludes(((DeclaredType)ex).asElement());
-                                results.add(JavaCompletionItem.createTypeItem(env.getController(), (TypeElement)((DeclaredType)ex).asElement(), (DeclaredType)ex, anchorOffset, env.getReferencesCount(), elements.isDeprecated(((DeclaredType)ex).asElement()), false, false, false, true, false, env.getWhiteList()));
+                                results.add(javaCompletionItemFactory.createTypeItem(env.getController(), (TypeElement)((DeclaredType)ex).asElement(), (DeclaredType)ex, anchorOffset, env.getReferencesCount(), elements.isDeprecated(((DeclaredType)ex).asElement()), false, false, false, true, false, env.getWhiteList()));
                             }
                         }
                     }
@@ -2364,7 +2368,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                     for (DeclaredType subtype : getSubtypesOf(env, (DeclaredType)smart)) {
                                         TypeElement elem = (TypeElement)subtype.asElement();
                                         if (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem))
-                                            results.add(JavaCompletionItem.createTypeItem(env.getController(), elem, subtype, anchorOffset, env.getReferencesCount(), elements.isDeprecated(elem), false, false, false, true, false, env.getWhiteList()));
+                                            results.add(javaCompletionItemFactory.createTypeItem(env.getController(), elem, subtype, anchorOffset, env.getReferencesCount(), elements.isDeprecated(elem), false, false, false, true, false, env.getWhiteList()));
                                         env.addToExcludes(elem);
                                     }
                                 } else if (smart.getKind() == TypeKind.ARRAY) {
@@ -2374,9 +2378,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                                             tm = ((ArrayType)tm).getComponentType();
                                         }
                                         if (tm.getKind().isPrimitive() && startsWith(env, tm.toString())) {
-                                            results.add(JavaCompletionItem.createArrayItem(env.getController(), (ArrayType)smart, anchorOffset, env.getReferencesCount(), env.getController().getElements(),env.getWhiteList()));
+                                            results.add(javaCompletionItemFactory.createArrayItem(env.getController(), (ArrayType)smart, anchorOffset, env.getReferencesCount(), env.getController().getElements(),env.getWhiteList()));
                                         } else if ((tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.ERROR) && startsWith(env, ((DeclaredType)tm).asElement().getSimpleName().toString())) {
-                                            results.add(JavaCompletionItem.createArrayItem(env.getController(), (ArrayType)smart, anchorOffset, env.getReferencesCount(), env.getController().getElements(), env.getWhiteList()));
+                                            results.add(javaCompletionItemFactory.createArrayItem(env.getController(), (ArrayType)smart, anchorOffset, env.getReferencesCount(), env.getController().getElements(), env.getWhiteList()));
                                         }
                                     } catch (IllegalArgumentException iae) {}
                                 }
@@ -2704,7 +2708,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     }
                 };
                 for (String name : Utilities.varNamesSuggestions(tm, varKind, varMods, null, prefix, controller.getTypes(), controller.getElements(), controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), CodeStyle.getDefault(controller.getDocument())))
-                    results.add(JavaCompletionItem.createVariableItem(env.getController(), name, anchorOffset, true, false));
+                    results.add(javaCompletionItemFactory.createVariableItem(env.getController(), name, anchorOffset, true, false));
                 return;
             }
             if (et.getKind() == Tree.Kind.UNION_TYPE) {
@@ -2737,7 +2741,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             };
                             for (String name : Utilities.varNamesSuggestions(tm, varKind, varMods, null, prefix, controller.getTypes(), controller.getElements(),
                                     controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), CodeStyle.getDefault(controller.getDocument())))
-                                results.add(JavaCompletionItem.createVariableItem(env.getController(), name, anchorOffset, true, false));
+                                results.add(javaCompletionItemFactory.createVariableItem(env.getController(), name, anchorOffset, true, false));
                         }
                         VariableElement ve = getFieldOrVar(env, e.getSimpleName().toString());
                         if (ve != null) {
@@ -2766,7 +2770,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             };
                             for (String name : Utilities.varNamesSuggestions(controller.getTypes().getDeclaredType(te), varKind, varMods, null, prefix, controller.getTypes(),
                                     controller.getElements(), controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), CodeStyle.getDefault(controller.getDocument())))
-                                results.add(JavaCompletionItem.createVariableItem(env.getController(), name, anchorOffset, true, false));
+                                results.add(javaCompletionItemFactory.createVariableItem(env.getController(), name, anchorOffset, true, false));
                         }
                         break;
                 }
@@ -2870,7 +2874,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         }
                     };
                     for (String name : Utilities.varNamesSuggestions(tm, varKind, varMods, null, prefix, controller.getTypes(), controller.getElements(), controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), CodeStyle.getDefault(controller.getDocument())))
-                        results.add(JavaCompletionItem.createVariableItem(env.getController(), name, anchorOffset, true, false));
+                        results.add(javaCompletionItemFactory.createVariableItem(env.getController(), name, anchorOffset, true, false));
                     break;
                 case ENUM_CONSTANT:
                 case EXCEPTION_PARAMETER:
@@ -2892,7 +2896,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             if (ts != null && ts.token().id() == JavaTokenId.BREAK) {
                 while (path != null) {
                     if (path.getLeaf().getKind() == Tree.Kind.LABELED_STATEMENT)
-                        results.add(JavaCompletionItem.createVariableItem(env.getController(), ((LabeledStatementTree)path.getLeaf()).getLabel().toString(), anchorOffset, false, false));
+                        results.add(javaCompletionItemFactory.createVariableItem(env.getController(), ((LabeledStatementTree)path.getLeaf()).getLabel().toString(), anchorOffset, false, false));
                     path = path.getParentPath();
                 }
             }
@@ -2926,7 +2930,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             final DeclaredType type = (DeclaredType)st;
                             final TypeElement element = (TypeElement)type.asElement();
                             if (element.getKind() == ANNOTATION_TYPE && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(element)))
-                                results.add(JavaCompletionItem.createAnnotationItem(env.getController(), element, (DeclaredType)type, anchorOffset, env.getReferencesCount(), elements.isDeprecated(element), env.getWhiteList()));
+                                results.add(javaCompletionItemFactory.createAnnotationItem(env.getController(), element, (DeclaredType)type, anchorOffset, env.getReferencesCount(), elements.isDeprecated(element), env.getWhiteList()));
                             if (JAVA_LANG_CLASS.contentEquals(element.getQualifiedName())) {
                                 addTypeDotClassMembers(env, type);
                             }
@@ -2942,7 +2946,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 };
                                 for (Element ee : controller.getElementUtilities().getMembers(type, acceptor)) {
                                     if (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(ee))
-                                        results.add(JavaCompletionItem.createStaticMemberItem(env.getController(), type, ee, asMemberOf(ee, type, types), false, anchorOffset, elements.isDeprecated(ee), false, env.getWhiteList()));
+                                        results.add(javaCompletionItemFactory.createStaticMemberItem(env.getController(), type, ee, asMemberOf(ee, type, types), false, anchorOffset, elements.isDeprecated(ee), false, env.getWhiteList()));
                                 }
                             }
                         }
@@ -2951,9 +2955,9 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
             if (env.getPath().getLeaf().getKind() != Tree.Kind.CASE) {
                 if (Utilities.startsWith(FALSE_KEYWORD, prefix))
-                    results.add(JavaCompletionItem.createKeywordItem(FALSE_KEYWORD, null, anchorOffset, smartType));
+                    results.add(javaCompletionItemFactory.createKeywordItem(FALSE_KEYWORD, null, anchorOffset, smartType));
                 if (Utilities.startsWith(TRUE_KEYWORD, prefix))
-                    results.add(JavaCompletionItem.createKeywordItem(TRUE_KEYWORD, null, anchorOffset, smartType));
+                    results.add(javaCompletionItemFactory.createKeywordItem(TRUE_KEYWORD, null, anchorOffset, smartType));
             }
             final TypeElement enclClass = scope.getEnclosingClass();
             for (Element e : getLocalMembersAndVars(env)) {
@@ -2961,7 +2965,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case FIELD:
                         if (((VariableElement)e).getConstantValue() != null) {
                             TypeMirror tm = asMemberOf(e, enclClass != null ? enclClass.asType() : null, types);
-                            results.add(JavaCompletionItem.createVariableItem(env.getController(), (VariableElement)e, tm, anchorOffset, null, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), isOfSmartType(env, tm, smartTypes), env.assignToVarPos(), env.getWhiteList()));
+                            results.add(javaCompletionItemFactory.createVariableItem(env.getController(), (VariableElement)e, tm, anchorOffset, null, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), isOfSmartType(env, tm, smartTypes), env.assignToVarPos(), env.getWhiteList()));
                         }
                         break;
                     case LOCAL_VARIABLE:
@@ -2970,7 +2974,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case PARAMETER:
                     case ENUM_CONSTANT:
                         if (((VariableElement)e).getConstantValue() != null) {
-                            results.add(JavaCompletionItem.createVariableItem(env.getController(), (VariableElement)e, e.asType(), anchorOffset, null, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), isOfSmartType(env, e.asType(), smartTypes), env.assignToVarPos(), env.getWhiteList()));
+                            results.add(javaCompletionItemFactory.createVariableItem(env.getController(), (VariableElement)e, e.asType(), anchorOffset, null, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), isOfSmartType(env, e.asType(), smartTypes), env.assignToVarPos(), env.getWhiteList()));
                         }
                         break;
                 }
@@ -3013,7 +3017,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 };
                                 for (Element ee : controller.getElementUtilities().getMembers(type, acceptor)) {
                                     if (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(ee))
-                                        results.add(JavaCompletionItem.createStaticMemberItem(env.getController(), type, ee, asMemberOf(ee, type, types), false, anchorOffset, elements.isDeprecated(ee), env.addSemicolon(), env.getWhiteList()));
+                                        results.add(javaCompletionItemFactory.createStaticMemberItem(env.getController(), type, ee, asMemberOf(ee, type, types), false, anchorOffset, elements.isDeprecated(ee), env.addSemicolon(), env.getWhiteList()));
                                 }
                             }
                         }
@@ -3031,20 +3035,20 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case LOCAL_VARIABLE:
                     case RESOURCE_VARIABLE:
                     case PARAMETER:
-                        results.add(JavaCompletionItem.createVariableItem(env.getController(), (VariableElement)e, e.asType(), anchorOffset, null, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), isOfSmartType(env, e.asType(), smartTypes), env.assignToVarPos(), env.getWhiteList()));
+                        results.add(javaCompletionItemFactory.createVariableItem(env.getController(), (VariableElement)e, e.asType(), anchorOffset, null, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), isOfSmartType(env, e.asType(), smartTypes), env.assignToVarPos(), env.getWhiteList()));
                         break;
                     case FIELD:
                         String name = e.getSimpleName().toString();
                         if (THIS_KEYWORD.equals(name) || SUPER_KEYWORD.equals(name)) {
-                            results.add(JavaCompletionItem.createKeywordItem(name, null, anchorOffset, isOfSmartType(env, e.asType(), smartTypes)));
+                            results.add(javaCompletionItemFactory.createKeywordItem(name, null, anchorOffset, isOfSmartType(env, e.asType(), smartTypes)));
                         } else {
                             TypeMirror tm = asMemberOf(e, enclClass != null ? enclClass.asType() : null, types);
-                            results.add(JavaCompletionItem.createVariableItem(env.getController(), (VariableElement)e, tm, anchorOffset, null, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), isOfSmartType(env, tm, smartTypes), env.assignToVarPos(), env.getWhiteList()));
+                            results.add(javaCompletionItemFactory.createVariableItem(env.getController(), (VariableElement)e, tm, anchorOffset, null, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), isOfSmartType(env, tm, smartTypes), env.assignToVarPos(), env.getWhiteList()));
                         }
                         break;
                     case METHOD:
                         ExecutableType et = (ExecutableType)asMemberOf(e, enclClass != null ? enclClass.asType() : null, types);
-                        results.add(JavaCompletionItem.createExecutableItem(env.getController(), (ExecutableElement)e, et, anchorOffset, null, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), false, env.addSemicolon(), isOfSmartType(env, getCorrectedReturnType(env, et, (ExecutableElement)e, enclClass.asType()), smartTypes), env.assignToVarPos(), false, env.getWhiteList()));
+                        results.add(javaCompletionItemFactory.createExecutableItem(env.getController(), (ExecutableElement)e, et, anchorOffset, null, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), false, env.addSemicolon(), isOfSmartType(env, getCorrectedReturnType(env, et, (ExecutableElement)e, enclClass.asType()), smartTypes), env.assignToVarPos(), false, env.getWhiteList()));
                         break;
                 }
             }
@@ -3064,15 +3068,15 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case LOCAL_VARIABLE:
                     case RESOURCE_VARIABLE:
                     case PARAMETER:
-                        results.add(JavaCompletionItem.createVariableItem(env.getController(), (VariableElement)e, e.asType(), anchorOffset, null, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), isOfSmartType(env, e.asType(), smartTypes), env.assignToVarPos(), env.getWhiteList()));
+                        results.add(javaCompletionItemFactory.createVariableItem(env.getController(), (VariableElement)e, e.asType(), anchorOffset, null, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), isOfSmartType(env, e.asType(), smartTypes), env.assignToVarPos(), env.getWhiteList()));
                         break;
                     case FIELD:
                         String name = e.getSimpleName().toString();
                         if (THIS_KEYWORD.equals(name) || SUPER_KEYWORD.equals(name)) {
-                            results.add(JavaCompletionItem.createKeywordItem(name, null, anchorOffset, isOfSmartType(env, e.asType(), smartTypes)));
+                            results.add(javaCompletionItemFactory.createKeywordItem(name, null, anchorOffset, isOfSmartType(env, e.asType(), smartTypes)));
                         } else {
                             TypeMirror tm = asMemberOf(e, enclClass != null ? enclClass.asType() : null, types);
-                            results.add(JavaCompletionItem.createVariableItem(env.getController(), (VariableElement)e, tm, anchorOffset, null, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), isOfSmartType(env, tm, smartTypes), env.assignToVarPos(), env.getWhiteList()));
+                            results.add(javaCompletionItemFactory.createVariableItem(env.getController(), (VariableElement)e, tm, anchorOffset, null, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), isOfSmartType(env, tm, smartTypes), env.assignToVarPos(), env.getWhiteList()));
                         }
                         break;
                 }
@@ -3169,7 +3173,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 for (DeclaredType dt : dts) {
                     if (startsWith(env, dt.asElement().getSimpleName().toString())) {
                         for (Element ee : controller.getElementUtilities().getMembers(dt, acceptor)) {
-                            results.add(JavaCompletionItem.createStaticMemberItem(env.getController(), dt, ee, asMemberOf(ee, dt, types), false, anchorOffset, elements.isDeprecated(ee), env.addSemicolon(), env.getWhiteList()));
+                            results.add(javaCompletionItemFactory.createStaticMemberItem(env.getController(), dt, ee, asMemberOf(ee, dt, types), false, anchorOffset, elements.isDeprecated(ee), env.addSemicolon(), env.getWhiteList()));
                         }
                     }                                    
                 }
@@ -3234,7 +3238,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 List<TypeMirror> chainedTypes = new ArrayList<>(2);
                                 chainedTypes.add(localElementType);
                                 chainedTypes.add(asMemberOf(e, type, types));
-                                results.add(JavaCompletionItem.createChainedMembersItem(env.getController(), chainedElements, chainedTypes, anchorOffset, elements.isDeprecated(localElement) || elements.isDeprecated(e), env.addSemicolon(), env.getWhiteList()));
+                                results.add(javaCompletionItemFactory.createChainedMembersItem(env.getController(), chainedElements, chainedTypes, anchorOffset, elements.isDeprecated(localElement) || elements.isDeprecated(e), env.addSemicolon(), env.getWhiteList()));
                             }
                         }
                     }
@@ -3260,7 +3264,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     if (excludeHandles != null && excludeHandles.contains(symbols.getEnclosingType()) || isAnnonInner(symbols.getEnclosingType()))
                         continue;
                     for (String name : symbols.getSymbols()) {
-                        results.add(LazyJavaCompletionItem.createStaticMemberItem(symbols.getEnclosingType(), name, anchorOffset, env.addSemicolon(), env.getReferencesCount(), controller.getSnapshot().getSource(), env.getWhiteList()));
+                        results.add(javaCompletionItemFactory.createStaticMemberItem(symbols.getEnclosingType(), name, anchorOffset, env.addSemicolon(), env.getReferencesCount(), controller.getSnapshot().getSource(), env.getWhiteList()));
                     }
                 }
             }
@@ -3303,17 +3307,17 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case ENUM_CONSTANT:
                         String name = e.getSimpleName().toString();
                         if (CLASS_KEYWORD.equals(name)) {
-                            results.add(JavaCompletionItem.createKeywordItem(name, null, anchorOffset, false));
+                            results.add(javaCompletionItemFactory.createKeywordItem(name, null, anchorOffset, false));
                         } else {
                             TypeMirror tm = asMemberOf(e, type, types);
-                            results.add(JavaCompletionItem.createVariableItem(env.getController(), (VariableElement)e, tm, anchorOffset, null, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), isOfSmartType(env, tm, smartTypes), env.assignToVarPos(), env.getWhiteList()));
+                            results.add(javaCompletionItemFactory.createVariableItem(env.getController(), (VariableElement)e, tm, anchorOffset, null, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), isOfSmartType(env, tm, smartTypes), env.assignToVarPos(), env.getWhiteList()));
                         }
                         break;
                     case CLASS:
                     case ENUM:
                     case INTERFACE:
                         DeclaredType dt = (DeclaredType)asMemberOf(e, type, types);
-                        results.add(JavaCompletionItem.createTypeItem(env.getController(), (TypeElement)e, dt, anchorOffset, null, elements.isDeprecated(e), false, env.isInsideClass(), true, false, false, env.getWhiteList()));
+                        results.add(javaCompletionItemFactory.createTypeItem(env.getController(), (TypeElement)e, dt, anchorOffset, null, elements.isDeprecated(e), false, env.isInsideClass(), true, false, false, env.getWhiteList()));
                         break;
                 }
             }
@@ -3349,7 +3353,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 switch (e.getKind()) {
                     case METHOD:
                         ExecutableType et = (ExecutableType)asMemberOf(e, type, types);
-                        results.add(JavaCompletionItem.createExecutableItem(env.getController(), (ExecutableElement)e, et, anchorOffset, null, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), false, false, isOfSmartType(env, et, smartTypes), env.assignToVarPos(), true, env.getWhiteList()));
+                        results.add(javaCompletionItemFactory.createExecutableItem(env.getController(), (ExecutableElement)e, et, anchorOffset, null, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), false, false, isOfSmartType(env, et, smartTypes), env.assignToVarPos(), true, env.getWhiteList()));
                         break;
                 }
             }
@@ -3470,36 +3474,36 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case PARAMETER:
                         String name = e.getSimpleName().toString();
                         if (THIS_KEYWORD.equals(name) || CLASS_KEYWORD.equals(name) || SUPER_KEYWORD.equals(name)) {
-                            results.add(JavaCompletionItem.createKeywordItem(name, null, anchorOffset, isOfSmartType(env, e.asType(), smartTypes)));
+                            results.add(javaCompletionItemFactory.createKeywordItem(name, null, anchorOffset, isOfSmartType(env, e.asType(), smartTypes)));
                         } else {
                             TypeMirror tm = asMemberOf(e, type, types);
-                            results.add(JavaCompletionItem.createVariableItem(env.getController(), (VariableElement)e, tm, anchorOffset, autoImport ? env.getReferencesCount() : null, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), isOfSmartType(env, tm, smartTypes), env.assignToVarPos(), env.getWhiteList()));
+                            results.add(javaCompletionItemFactory.createVariableItem(env.getController(), (VariableElement)e, tm, anchorOffset, autoImport ? env.getReferencesCount() : null, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), isOfSmartType(env, tm, smartTypes), env.assignToVarPos(), env.getWhiteList()));
                         }
                         break;
                     case CONSTRUCTOR:
                         ExecutableType et = (ExecutableType)asMemberOf(e, type, types);
-                        results.add(JavaCompletionItem.createExecutableItem(env.getController(), (ExecutableElement)e, et, anchorOffset, autoImport ? env.getReferencesCount() : null, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), inImport, false, isOfSmartType(env, type, smartTypes), env.assignToVarPos(), false, env.getWhiteList()));
+                        results.add(javaCompletionItemFactory.createExecutableItem(env.getController(), (ExecutableElement)e, et, anchorOffset, autoImport ? env.getReferencesCount() : null, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), inImport, false, isOfSmartType(env, type, smartTypes), env.assignToVarPos(), false, env.getWhiteList()));
                         break;
                     case METHOD:
                         et = (ExecutableType)asMemberOf(e, type, types);
-                        results.add(JavaCompletionItem.createExecutableItem(env.getController(), (ExecutableElement)e, et, anchorOffset, autoImport ? env.getReferencesCount() : null, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), inImport, env.addSemicolon(), isOfSmartType(env, getCorrectedReturnType(env, et, (ExecutableElement)e, type), smartTypes), env.assignToVarPos(), false, env.getWhiteList()));
+                        results.add(javaCompletionItemFactory.createExecutableItem(env.getController(), (ExecutableElement)e, et, anchorOffset, autoImport ? env.getReferencesCount() : null, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), inImport, env.addSemicolon(), isOfSmartType(env, getCorrectedReturnType(env, et, (ExecutableElement)e, type), smartTypes), env.assignToVarPos(), false, env.getWhiteList()));
                         break;
                     case CLASS:
                     case ENUM:
                     case INTERFACE:
                     case ANNOTATION_TYPE:
                         DeclaredType dt = (DeclaredType)asMemberOf(e, type, types);
-                        results.add(JavaCompletionItem.createTypeItem(env.getController(), (TypeElement)e, dt, anchorOffset, null, elements.isDeprecated(e), insideNew, insideNew || env.isInsideClass(), true, isOfSmartType(env, dt, smartTypes), autoImport, env.getWhiteList()));
+                        results.add(javaCompletionItemFactory.createTypeItem(env.getController(), (TypeElement)e, dt, anchorOffset, null, elements.isDeprecated(e), insideNew, insideNew || env.isInsideClass(), true, isOfSmartType(env, dt, smartTypes), autoImport, env.getWhiteList()));
                         break;
                 }
             }
             if (!ctorSeen[0] && kinds.contains(CONSTRUCTOR) && elem.getKind().isInterface()) {
-                results.add(JavaCompletionItem.createDefaultConstructorItem((TypeElement)elem, anchorOffset, isOfSmartType(env, type, smartTypes)));
+                results.add(javaCompletionItemFactory.createDefaultConstructorItem((TypeElement)elem, anchorOffset, isOfSmartType(env, type, smartTypes)));
             }
             if (isStatic && elem.getKind().isInterface() && env.getController().getSourceVersion().compareTo(SourceVersion.RELEASE_8) >= 0) {
                 for (TypeMirror iface : enclClass.getInterfaces()) {
                     if (((DeclaredType)iface).asElement() == elem) {
-                        results.add(JavaCompletionItem.createKeywordItem(SUPER_KEYWORD, null, anchorOffset, isOfSmartType(env, type, smartTypes)));
+                        results.add(javaCompletionItemFactory.createKeywordItem(SUPER_KEYWORD, null, anchorOffset, isOfSmartType(env, type, smartTypes)));
                         break;
                     }
                 }
@@ -3530,7 +3534,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             for(Element e : controller.getElementUtilities().getMembers(type, acceptor)) {
                 if (e.getKind() == CONSTRUCTOR) {
                     ExecutableType et = (ExecutableType)asMemberOf(e, type, types);
-                    results.add(JavaCompletionItem.createThisOrSuperConstructorItem(env.getController(), (ExecutableElement)e, et, anchorOffset, elements.isDeprecated(e), name, env.getWhiteList()));
+                    results.add(javaCompletionItemFactory.createThisOrSuperConstructorItem(env.getController(), (ExecutableElement)e, et, anchorOffset, elements.isDeprecated(e), name, env.getWhiteList()));
                 }
             }
         }
@@ -3541,7 +3545,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 if (e.getKind() == ENUM_CONSTANT) {
                     String name = e.getSimpleName().toString();
                     if (startsWith(env, name) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)))
-                        results.add(JavaCompletionItem.createVariableItem(env.getController(), (VariableElement)e, e.asType(), anchorOffset, null, false, elements.isDeprecated(e), false, env.assignToVarPos(), env.getWhiteList()));
+                        results.add(javaCompletionItemFactory.createVariableItem(env.getController(), (VariableElement)e, e.asType(), anchorOffset, null, false, elements.isDeprecated(e), false, env.assignToVarPos(), env.getWhiteList()));
                 }
             }
         }
@@ -3561,7 +3565,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         && trees.isAccessible(scope, (TypeElement)e)
                         && isOfKindAndType(e.asType(), e, kinds, baseType, scope, trees, types)
                         && !Utilities.isExcluded(Utilities.getElementName(e, true))) {
-                            results.add(JavaCompletionItem.createTypeItem(env.getController(), (TypeElement)e, (DeclaredType)e.asType(), anchorOffset, null, elements.isDeprecated(e), insideNew, insideNew || env.isInsideClass(), true, isOfSmartType(env, e.asType(), smartTypes), false, env.getWhiteList()));
+                            results.add(javaCompletionItemFactory.createTypeItem(env.getController(), (TypeElement)e, (DeclaredType)e.asType(), anchorOffset, null, elements.isDeprecated(e), insideNew, insideNew || env.isInsideClass(), true, isOfSmartType(env, e.asType(), smartTypes), false, env.getWhiteList()));
                     }
                 }
             }
@@ -3575,7 +3579,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             String prefix = env.getPrefix() != null ? fqnPrefix + env.getPrefix() : null;
             for (String pkgName : env.getController().getClasspathInfo().getClassIndex().getPackageNames(fqnPrefix, true, EnumSet.allOf(ClassIndex.SearchScope.class)))
                 if (startsWith(env, pkgName, prefix) && !Utilities.isExcluded(pkgName + ".")) //NOI18N
-                    results.add(JavaCompletionItem.createPackageItem(pkgName, anchorOffset, inPkgStmt));
+                    results.add(javaCompletionItemFactory.createPackageItem(pkgName, anchorOffset, inPkgStmt));
         }
         
         private void addTypes(Env env, EnumSet<ElementKind> kinds, DeclaredType baseType) throws IOException {
@@ -3588,7 +3592,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     for(DeclaredType subtype : getSubtypesOf(env, baseType)) {
                         TypeElement elem = (TypeElement)subtype.asElement();
                         if ((excludes == null || !excludes.contains(elem)) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem)) && (!env.isAfterExtends() || !elem.getModifiers().contains(Modifier.FINAL)))
-                            results.add(JavaCompletionItem.createTypeItem(env.getController(), elem, subtype, anchorOffset, env.getReferencesCount(), elements.isDeprecated(elem), env.isInsideNew(), env.isInsideNew() || env.isInsideClass(), false, true, false, env.getWhiteList()));
+                            results.add(javaCompletionItemFactory.createTypeItem(env.getController(), elem, subtype, anchorOffset, env.getReferencesCount(), elements.isDeprecated(elem), env.isInsideNew(), env.isInsideNew() || env.isInsideClass(), false, true, false, env.getWhiteList()));
                     }
                 }
             } else {
@@ -3625,11 +3629,11 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case ENUM:
                     case INTERFACE:
                     case ANNOTATION_TYPE:
-                        results.add(JavaCompletionItem.createTypeItem(env.getController(), (TypeElement)e, (DeclaredType)e.asType(), anchorOffset, null, elements.isDeprecated(e), env.isInsideNew(), env.isInsideNew() || env.isInsideClass(), false, false, false, env.getWhiteList()));
+                        results.add(javaCompletionItemFactory.createTypeItem(env.getController(), (TypeElement)e, (DeclaredType)e.asType(), anchorOffset, null, elements.isDeprecated(e), env.isInsideNew(), env.isInsideNew() || env.isInsideClass(), false, false, false, env.getWhiteList()));
                         env.addToExcludes(e);
                         break;
                     case TYPE_PARAMETER:
-                        results.add(JavaCompletionItem.createTypeParameterItem((TypeParameterElement)e, anchorOffset));
+                        results.add(javaCompletionItemFactory.createTypeParameterItem((TypeParameterElement)e, anchorOffset));
                         break;                        
                 }                
             }
@@ -3644,7 +3648,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 }
             };
             for (TypeElement e : controller.getElementUtilities().getGlobalTypes(acceptor)) {
-                results.add(JavaCompletionItem.createTypeItem(env.getController(), (TypeElement)e, (DeclaredType)e.asType(), anchorOffset, null, elements.isDeprecated(e), env.isInsideNew(), env.isInsideNew() || env.isInsideClass(), false, false, false, env.getWhiteList()));
+                results.add(javaCompletionItemFactory.createTypeItem(env.getController(), (TypeElement)e, (DeclaredType)e.asType(), anchorOffset, null, elements.isDeprecated(e), env.isInsideNew(), env.isInsideNew() || env.isInsideClass(), false, false, false, env.getWhiteList()));
             }
         }
         
@@ -3678,13 +3682,13 @@ public class JavaCompletionProvider implements CompletionProvider {
                             sName = qName.substring(idx + 1);
                             if (sName.length() <= 0 || !startsWith(env, sName, prefix))
                                 break;
-                            results.add(LazyJavaCompletionItem.createTypeItem(name, kinds, anchorOffset, env.getReferencesCount(), controller.getSnapshot().getSource(), env.isInsideNew(), env.isInsideNew() || env.isInsideClass(), env.afterExtends, env.getWhiteList()));
+                            results.add(javaCompletionItemFactory.createTypeItem(name, kinds, anchorOffset, env.getReferencesCount(), controller.getSnapshot().getSource(), env.isInsideNew(), env.isInsideNew() || env.isInsideClass(), env.afterExtends, env.getWhiteList()));
                         }
                         qName = qName.substring(0, idx);
                         doNotRemove.add(qName);
                         ElementHandle<TypeElement> r = removed.remove(qName);
                         if (r != null) {
-                            results.add(LazyJavaCompletionItem.createTypeItem(r, kinds, anchorOffset, env.getReferencesCount(), controller.getSnapshot().getSource(), env.isInsideNew(), env.isInsideNew() || env.isInsideClass(), env.afterExtends, env.getWhiteList()));                        
+                            results.add(javaCompletionItemFactory.createTypeItem(r, kinds, anchorOffset, env.getReferencesCount(), controller.getSnapshot().getSource(), env.isInsideNew(), env.isInsideNew() || env.isInsideClass(), env.afterExtends, env.getWhiteList()));                        
                         }
                     }
                 }                
@@ -3702,7 +3706,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 for(ElementHandle<TypeElement> name : declaredTypes) {
                     if (excludeHandles != null && excludeHandles.contains(name) || isAnnonInner(name))
                         continue;
-                    results.add(LazyJavaCompletionItem.createTypeItem(name, kinds, anchorOffset, env.getReferencesCount(), controller.getSnapshot().getSource(), env.isInsideNew(), env.isInsideNew() || env.isInsideClass(), env.afterExtends, env.getWhiteList()));
+                    results.add(javaCompletionItemFactory.createTypeItem(name, kinds, anchorOffset, env.getReferencesCount(), controller.getSnapshot().getSource(), env.isInsideNew(), env.isInsideNew() || env.isInsideClass(), env.afterExtends, env.getWhiteList()));
                 }
             }
         }
@@ -3916,7 +3920,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     Elements elements = controller.getElements();
                     for (Pair<ExecutableElement, ExecutableType> method : methods)
                         if (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(method.a))
-                            results.add(JavaCompletionItem.createParametersItem(env.getController(), method.a, method.b, anchorOffset, elements.isDeprecated(method.a), types.length, name));
+                            results.add(javaCompletionItemFactory.createParametersItem(env.getController(), method.a, method.b, anchorOffset, elements.isDeprecated(method.a), types.length, name));
                 }
             }
         }
@@ -3948,7 +3952,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 Elements elements = controller.getElements();
                 for (Pair<ExecutableElement, ExecutableType> ctor : ctors)
                     if (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(ctor.a))
-                        results.add(JavaCompletionItem.createParametersItem(env.getController(), ctor.a, ctor.b, anchorOffset, elements.isDeprecated(ctor.a), types.length, null));
+                        results.add(javaCompletionItemFactory.createParametersItem(env.getController(), ctor.a, ctor.b, anchorOffset, elements.isDeprecated(ctor.a), types.length, null));
             }
         }
 
@@ -3974,14 +3978,14 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 env.addToExcludes(typeElement);
                         }
                     }
-                    results.add(JavaCompletionItem.createAttributeValueItem(env.getController(), value, completion.getMessage(), typeElement, anchorOffset, env.getReferencesCount(), env.getWhiteList()));
+                    results.add(javaCompletionItemFactory.createAttributeValueItem(env.getController(), value, completion.getMessage(), typeElement, anchorOffset, env.getReferencesCount(), env.getWhiteList()));
                 }
             }
         }
 
         private void addKeyword(Env env, String kw, String postfix, boolean smartType) {
             if (Utilities.startsWith(kw, env.getPrefix()))
-                results.add(JavaCompletionItem.createKeywordItem(kw, postfix, anchorOffset, smartType));
+                results.add(javaCompletionItemFactory.createKeywordItem(kw, postfix, anchorOffset, smartType));
         }
         
         private void addKeywordsForCU(Env env) {
@@ -4025,7 +4029,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
             for (String kw : kws) {
                 if (Utilities.startsWith(kw, prefix))
-                    results.add(JavaCompletionItem.createKeywordItem(kw, SPACE, anchorOffset, false));
+                    results.add(javaCompletionItemFactory.createKeywordItem(kw, SPACE, anchorOffset, false));
             }
         }
         
@@ -4033,11 +4037,11 @@ public class JavaCompletionProvider implements CompletionProvider {
             String prefix = env.getPrefix();
             for (String kw : CLASS_BODY_KEYWORDS)
                 if (Utilities.startsWith(kw, prefix))
-                    results.add(JavaCompletionItem.createKeywordItem(kw, SPACE, anchorOffset, false));
+                    results.add(javaCompletionItemFactory.createKeywordItem(kw, SPACE, anchorOffset, false));
             if (env.getController().getSourceVersion().compareTo(SourceVersion.RELEASE_8) >= 0
                     && Utilities.startsWith(DEFAULT_KEYWORD, prefix)
                     && Utilities.getPathElementOfKind(Tree.Kind.INTERFACE, env.getPath()) != null) {
-                results.add(JavaCompletionItem.createKeywordItem(DEFAULT_KEYWORD, SPACE, anchorOffset, false));
+                results.add(javaCompletionItemFactory.createKeywordItem(DEFAULT_KEYWORD, SPACE, anchorOffset, false));
             }
             addPrimitiveTypeKeywords(env);
         }
@@ -4046,11 +4050,11 @@ public class JavaCompletionProvider implements CompletionProvider {
             String prefix = env.getPrefix();
             for (String kw : STATEMENT_KEYWORDS) {
                 if (Utilities.startsWith(kw, prefix))
-                    results.add(JavaCompletionItem.createKeywordItem(kw, null, anchorOffset, false));
+                    results.add(javaCompletionItemFactory.createKeywordItem(kw, null, anchorOffset, false));
             }
             for (String kw : BLOCK_KEYWORDS) {
                 if (Utilities.startsWith(kw, prefix))
-                    results.add(JavaCompletionItem.createKeywordItem(kw, SPACE, anchorOffset, false));
+                    results.add(javaCompletionItemFactory.createKeywordItem(kw, SPACE, anchorOffset, false));
             }
             if (Utilities.startsWith(RETURN_KEYWORD, prefix)) {
                 TreePath tp = Utilities.getPathElementOfKind(EnumSet.of(Tree.Kind.METHOD, Tree.Kind.LAMBDA_EXPRESSION), env.getPath());
@@ -4070,7 +4074,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         }
                     }
                 }
-                results.add(JavaCompletionItem.createKeywordItem(RETURN_KEYWORD, postfix, anchorOffset, false));
+                results.add(javaCompletionItemFactory.createKeywordItem(RETURN_KEYWORD, postfix, anchorOffset, false));
             }
             boolean caseAdded = false;
             boolean breakAdded = false;
@@ -4090,13 +4094,13 @@ public class JavaCompletionProvider implements CompletionProvider {
                         if (! caseAdded && (lastCase == null || lastCase.getExpression() != null)) {
                             caseAdded = true;
                             if (Utilities.startsWith(CASE_KEYWORD, prefix))
-                                results.add(JavaCompletionItem.createKeywordItem(CASE_KEYWORD, SPACE, anchorOffset, false));
+                                results.add(javaCompletionItemFactory.createKeywordItem(CASE_KEYWORD, SPACE, anchorOffset, false));
                             if (Utilities.startsWith(DEFAULT_KEYWORD, prefix))
-                                results.add(JavaCompletionItem.createKeywordItem(DEFAULT_KEYWORD, COLON, anchorOffset, false));
+                                results.add(javaCompletionItemFactory.createKeywordItem(DEFAULT_KEYWORD, COLON, anchorOffset, false));
                         }
                         if (!breakAdded && Utilities.startsWith(BREAK_KEYWORD, prefix)) {
                             breakAdded = true;
-                            results.add(JavaCompletionItem.createKeywordItem(BREAK_KEYWORD, withinLabeledStatement(env) ? null : SEMI, anchorOffset, false));
+                            results.add(javaCompletionItemFactory.createKeywordItem(BREAK_KEYWORD, withinLabeledStatement(env) ? null : SEMI, anchorOffset, false));
                         }
                         break;
                     case DO_WHILE_LOOP:
@@ -4105,11 +4109,11 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case WHILE_LOOP:
                         if (! breakAdded && Utilities.startsWith(BREAK_KEYWORD, prefix)) {
                             breakAdded = true;
-                            results.add(JavaCompletionItem.createKeywordItem(BREAK_KEYWORD, withinLabeledStatement(env) ? null : SEMI, anchorOffset, false));
+                            results.add(javaCompletionItemFactory.createKeywordItem(BREAK_KEYWORD, withinLabeledStatement(env) ? null : SEMI, anchorOffset, false));
                         }
                         if (!continueAdded && Utilities.startsWith(CONTINUE_KEYWORD, prefix)) {
                             continueAdded = true;
-                            results.add(JavaCompletionItem.createKeywordItem(CONTINUE_KEYWORD, withinLabeledStatement(env) ? null : SEMI, anchorOffset, false));
+                            results.add(javaCompletionItemFactory.createKeywordItem(CONTINUE_KEYWORD, withinLabeledStatement(env) ? null : SEMI, anchorOffset, false));
                         }
                         break;
                 }
@@ -4121,11 +4125,11 @@ public class JavaCompletionProvider implements CompletionProvider {
             String prefix = env.getPrefix();
             for (String kw : STATEMENT_KEYWORDS) {
                 if (Utilities.startsWith(kw, prefix))
-                    results.add(JavaCompletionItem.createKeywordItem(kw, null, anchorOffset, false));
+                    results.add(javaCompletionItemFactory.createKeywordItem(kw, null, anchorOffset, false));
             }
             for (String kw : STATEMENT_SPACE_KEYWORDS) {
                 if (Utilities.startsWith(kw, prefix))
-                    results.add(JavaCompletionItem.createKeywordItem(kw, SPACE, anchorOffset, false));
+                    results.add(javaCompletionItemFactory.createKeywordItem(kw, SPACE, anchorOffset, false));
             }
             if (Utilities.startsWith(RETURN_KEYWORD, prefix)) {
                 TreePath tp = Utilities.getPathElementOfKind(EnumSet.of(Tree.Kind.METHOD, Tree.Kind.LAMBDA_EXPRESSION), env.getPath());
@@ -4145,7 +4149,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         }
                     }
                 }
-                results.add(JavaCompletionItem.createKeywordItem(RETURN_KEYWORD, postfix, anchorOffset, false));
+                results.add(javaCompletionItemFactory.createKeywordItem(RETURN_KEYWORD, postfix, anchorOffset, false));
             }
             TreePath tp = env.getPath();
             while (tp != null) {
@@ -4155,10 +4159,10 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case FOR_LOOP:
                     case WHILE_LOOP:
                         if (Utilities.startsWith(CONTINUE_KEYWORD, prefix))
-                            results.add(JavaCompletionItem.createKeywordItem(CONTINUE_KEYWORD, SEMI, anchorOffset, false));
+                            results.add(javaCompletionItemFactory.createKeywordItem(CONTINUE_KEYWORD, SEMI, anchorOffset, false));
                     case SWITCH:
                         if (Utilities.startsWith(BREAK_KEYWORD, prefix))
-                            results.add(JavaCompletionItem.createKeywordItem(BREAK_KEYWORD, SEMI, anchorOffset, false));
+                            results.add(javaCompletionItemFactory.createKeywordItem(BREAK_KEYWORD, SEMI, anchorOffset, false));
                         break;
                 }
                 tp = tp.getParentPath();
@@ -4180,20 +4184,20 @@ public class JavaCompletionProvider implements CompletionProvider {
                 }
             }
             if (Utilities.startsWith(FALSE_KEYWORD, prefix))
-                results.add(JavaCompletionItem.createKeywordItem(FALSE_KEYWORD, null, anchorOffset, smartType));
+                results.add(javaCompletionItemFactory.createKeywordItem(FALSE_KEYWORD, null, anchorOffset, smartType));
             if (Utilities.startsWith(TRUE_KEYWORD, prefix))
-                results.add(JavaCompletionItem.createKeywordItem(TRUE_KEYWORD, null, anchorOffset, smartType));
+                results.add(javaCompletionItemFactory.createKeywordItem(TRUE_KEYWORD, null, anchorOffset, smartType));
             if (Utilities.startsWith(NULL_KEYWORD, prefix))
-                results.add(JavaCompletionItem.createKeywordItem(NULL_KEYWORD, null, anchorOffset, false));
+                results.add(javaCompletionItemFactory.createKeywordItem(NULL_KEYWORD, null, anchorOffset, false));
             if (Utilities.startsWith(NEW_KEYWORD, prefix))
-                results.add(JavaCompletionItem.createKeywordItem(NEW_KEYWORD, SPACE, anchorOffset, false));
+                results.add(javaCompletionItemFactory.createKeywordItem(NEW_KEYWORD, SPACE, anchorOffset, false));
         }
 
         private void addPrimitiveTypeKeywords(Env env) {
             String prefix = env.getPrefix();
             for (String kw : PRIM_KEYWORDS) {
                 if (Utilities.startsWith(kw, prefix))
-                    results.add(JavaCompletionItem.createKeywordItem(kw, null, anchorOffset, false));
+                    results.add(javaCompletionItemFactory.createKeywordItem(kw, null, anchorOffset, false));
             }
         }
         
@@ -4212,7 +4216,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             kws.add(ENUM_KEYWORD);
             for (String kw : kws) {
                 if (Utilities.startsWith(kw, prefix))
-                    results.add(JavaCompletionItem.createKeywordItem(kw, SPACE, anchorOffset, false));
+                    results.add(javaCompletionItemFactory.createKeywordItem(kw, SPACE, anchorOffset, false));
             }
         }
         
@@ -4266,11 +4270,11 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
             for (String kw : kws) {
                 if (Utilities.startsWith(kw, prefix))
-                    results.add(JavaCompletionItem.createKeywordItem(kw, SPACE, anchorOffset, false));
+                    results.add(javaCompletionItemFactory.createKeywordItem(kw, SPACE, anchorOffset, false));
             }
             for (String kw : PRIM_KEYWORDS) {
                 if (Utilities.startsWith(kw, prefix))
-                    results.add(JavaCompletionItem.createKeywordItem(kw, SPACE, anchorOffset, false));
+                    results.add(javaCompletionItemFactory.createKeywordItem(kw, SPACE, anchorOffset, false));
             }
         }
         
@@ -4318,7 +4322,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     if (startsWith(env, ee.getSimpleName().toString())) {
                         TypeMirror tm = asMemberOf(ee, clsType, types);
                         if (tm.getKind() == TypeKind.EXECUTABLE)
-                            results.add(JavaCompletionItem.createOverrideMethodItem(env.getController(), ee, (ExecutableType)tm, anchorOffset, true, env.getWhiteList()));
+                            results.add(javaCompletionItemFactory.createOverrideMethodItem(env.getController(), ee, (ExecutableType)tm, anchorOffset, true, env.getWhiteList()));
                     }
                 }
             }
@@ -4327,7 +4331,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     if (startsWith(env, ee.getSimpleName().toString())) {
                         TypeMirror tm = asMemberOf(ee, clsType, types);
                         if (tm.getKind() == TypeKind.EXECUTABLE)
-                            results.add(JavaCompletionItem.createOverrideMethodItem(env.getController(), ee, (ExecutableType)tm, anchorOffset, false, env.getWhiteList()));
+                            results.add(javaCompletionItemFactory.createOverrideMethodItem(env.getController(), ee, (ExecutableType)tm, anchorOffset, false, env.getWhiteList()));
                     }
                 }
             }
@@ -4353,10 +4357,10 @@ public class JavaCompletionProvider implements CompletionProvider {
                         String setterName = CodeStyleUtils.computeSetterName(name, isStatic, codeStyle);
                         String getterName = CodeStyleUtils.computeGetterName(name, Utilities.isBoolean(variableElement.asType()), isStatic, codeStyle);
                         if ((prefix == null || startsWith(env, getterName)) && !GeneratorUtils.hasGetter(controller, te, variableElement, methods, codeStyle)) {
-                            results.add(JavaCompletionItem.createGetterSetterMethodItem(env.getController(), variableElement, asMemberOf(variableElement, clsType, types), anchorOffset, getterName, false));
+                            results.add(javaCompletionItemFactory.createGetterSetterMethodItem(env.getController(), variableElement, asMemberOf(variableElement, clsType, types), anchorOffset, getterName, false));
                         }
                         if ((prefix == null || startsWith(env, setterName)) && !(variableElement.getModifiers().contains(Modifier.FINAL) || GeneratorUtils.hasSetter(controller, te, variableElement, methods, codeStyle))) {
-                            results.add(JavaCompletionItem.createGetterSetterMethodItem(env.getController(), variableElement, asMemberOf(variableElement, clsType, types), anchorOffset, setterName, true));
+                            results.add(javaCompletionItemFactory.createGetterSetterMethodItem(env.getController(), variableElement, asMemberOf(variableElement, clsType, types), anchorOffset, setterName, true));
                         }
                     }
                 }
@@ -4436,14 +4440,14 @@ public class JavaCompletionProvider implements CompletionProvider {
                     }
                 }
                 if (dctor2generate != null) {
-                    results.add(JavaCompletionItem.createInitializeAllConstructorItem(env.getController(), true, uninitializedFinalFields, dctor2generate.getKind() == CONSTRUCTOR ? (ExecutableElement)dctor2generate : null, te, anchorOffset));
+                    results.add(javaCompletionItemFactory.createInitializeAllConstructorItem(env.getController(), true, uninitializedFinalFields, dctor2generate.getKind() == CONSTRUCTOR ? (ExecutableElement)dctor2generate : null, te, anchorOffset));
                 }
                 for (Map.Entry<ExecutableElement, boolean[]> entry : ctors2generate.entrySet()) {
                     if (entry.getValue()[0]) {
-                        results.add(JavaCompletionItem.createInitializeAllConstructorItem(env.getController(), false, uninitializedFinalFields, entry.getKey(), te, anchorOffset));
+                        results.add(javaCompletionItemFactory.createInitializeAllConstructorItem(env.getController(), false, uninitializedFinalFields, entry.getKey(), te, anchorOffset));
                     }
                     if (entry.getValue()[1]) {
-                        results.add(JavaCompletionItem.createInitializeAllConstructorItem(env.getController(), false, uninitializedFields, entry.getKey(), te, anchorOffset));
+                        results.add(javaCompletionItemFactory.createInitializeAllConstructorItem(env.getController(), false, uninitializedFields, entry.getKey(), te, anchorOffset));
                     }
                 }
             }
