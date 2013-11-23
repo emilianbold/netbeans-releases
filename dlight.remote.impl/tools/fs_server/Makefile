@@ -80,10 +80,6 @@ LF_Linux-x86_64   = $(LF_COMMON)
 CFLAGS=$(CF_$(CONF))
 LDFLAGS=$(LF_$(CONF)) -lpthread
 
-parfait: all
-	@echo Processing parfait output. This can take a while...
-	@parfait --enable=all $(OBJ_DIRS)/*.bc
-
 all: $(EXEC)
 	@$(LINE) =
 	@(cd `dirname $(EXEC)`; echo "`pwd`/`basename $(EXEC)`"); echo
@@ -92,6 +88,10 @@ all: $(EXEC)
 	@FILE=`(ls /bin/file || ls /usr/bin/file) 2>/dev/null`; \
 	   if [ -n "$${FILE}" ]; then $${FILE} ${EXEC} | sed "s#$(EXEC):.##"; fi
 	@$(LINE) =
+
+parfait: all
+	@echo Processing parfait output. This can take a while...
+	@parfait --enable=all $(OBJ_DIRS)/*.bc
 
 include $(ROOT_DIR)/make/Makefile.$(MAKEFILE)
 
