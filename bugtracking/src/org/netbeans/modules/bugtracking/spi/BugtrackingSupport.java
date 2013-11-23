@@ -79,7 +79,7 @@ public final class BugtrackingSupport<R, Q, I> {
     }
     
     /**
-     * Factory method to create a {@link Repository} instance configured with the given providers.
+     * Factory method to create a {@link Repository} instance.
      * 
      * @param r a implementation specific repository instance
      * 
@@ -97,7 +97,7 @@ public final class BugtrackingSupport<R, Q, I> {
     }
     
     /**
-     * Factory method to create a {@link Repository} instance configured with the given providers.
+     * Factory method to create a {@link Repository} instance configured with optional providers.
      * 
      * @param r a implementation specific repository instance
      * @param issueStatusProvider an {@link IssueStatusProvider} to provide status information 

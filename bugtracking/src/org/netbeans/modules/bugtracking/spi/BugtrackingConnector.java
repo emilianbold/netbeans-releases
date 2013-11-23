@@ -72,21 +72,37 @@ import org.netbeans.modules.bugtracking.api.Repository;
 public interface BugtrackingConnector {
 
     /**
-     * Creates a {@link Repository} instance.
+     * Called to create a new repository instance based on already existing data. 
+     * 
+     * <p>
+     * See {@link BugtrackingSupport#createRepository(java.lang.Object)} 
+     * on how to obtain a {@link Repository} from your repository representation. 
+     * </p>
      * 
      * @param info repository information based on which the repository should be created
      * 
      * @return a {@link Repository} instance.
      * @see BugtrackingSupport
+     * @see BugtrackingSupport#createRepository(java.lang.Object) 
+     * @see BugtrackingSupport#createRepository(java.lang.Object, org.netbeans.modules.bugtracking.spi.IssueStatusProvider, org.netbeans.modules.bugtracking.spi.IssueScheduleProvider, org.netbeans.modules.bugtracking.spi.IssuePriorityProvider, org.netbeans.modules.bugtracking.spi.IssueFinder) 
+     * 
      * @since 1.85
      */
     public Repository createRepository(RepositoryInfo info);  
     
     /**
-     * Creates a new repository instance. 
+     * Called to create a new repository instance. 
+     * 
+     * <p>
+     * See {@link BugtrackingSupport#createRepository(java.lang.Object)} 
+     * on how to obtain a {@link Repository} from your repository representation. 
+     * </p>
      * 
      * @return the created repository
      * @see BugtrackingSupport
+     * @see BugtrackingSupport#createRepository(java.lang.Object) 
+     * @see BugtrackingSupport#createRepository(java.lang.Object, org.netbeans.modules.bugtracking.spi.IssueStatusProvider, org.netbeans.modules.bugtracking.spi.IssueScheduleProvider, org.netbeans.modules.bugtracking.spi.IssuePriorityProvider, org.netbeans.modules.bugtracking.spi.IssueFinder) 
+     * 
      * @since 1.85
      */
     public Repository createRepository();

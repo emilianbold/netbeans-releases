@@ -81,7 +81,7 @@ public final class Query {
     }
 
     /**
-     * Returns this Queries display name. 
+     * Returns the display name of this Query. 
      * 
      * @return display name
      * @since 1.85

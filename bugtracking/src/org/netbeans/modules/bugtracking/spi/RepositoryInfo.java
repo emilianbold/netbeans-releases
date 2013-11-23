@@ -161,7 +161,7 @@ public final class RepositoryInfo {
     }
 
     /**
-     * Returns this repositories unique ID.
+     * Returns this repository's unique ID.
      * 
      * @return id
      * @since 1.85
@@ -181,7 +181,7 @@ public final class RepositoryInfo {
     }
     
     /**
-     * Returns the remote repositories url.
+     * Returns the remote url of this repository.
      * 
      * @return url
      * @since 1.85
@@ -219,7 +219,7 @@ public final class RepositoryInfo {
     }
 
     /**
-     * Returns the repositories username.
+     * Returns the username of this repository.
      * 
      * @return username
      * @since 1.85
