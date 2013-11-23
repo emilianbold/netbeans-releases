@@ -1435,22 +1435,25 @@ public final class CsmProjectContentResolver {
             }
         }
         // handle all nested and inlined namespaces
-        for (it = ns.getNestedNamespaces().iterator(); it.hasNext();) {
-            CsmNamespace nestedNs = (CsmNamespace) it.next();
-            
-            boolean goDeeper = (searchNestedUnnamedNamespaces && nestedNs.getName().length() == 0) || nestedNs.isInline();
-            
-            // we need nested namespaces only if they do not modify qualified path (they names are empty) or they are inlined
-            if (goDeeper) {
-            // TODO: consider when we add nested namespaces
-//        if (nestedNs.getName().length() != 0) {
-//            if (need namespaces &&
-//                    matchName(nestedNs.getName(), strPrefix, match)) {
-//                res.add(nestedNs);
-//            }
-//        }
-                res.addAll(getNamespaceMembers(nestedNs, kinds, strPrefix, match, handledNS, true, returnUnnamedInNestedNs));
-            }
+        
+        if (searchNestedUnnamedNamespaces || ns.hasInlined()) {
+          for (it = ns.getNestedNamespaces().iterator(); it.hasNext();) {
+              CsmNamespace nestedNs = (CsmNamespace) it.next();
+
+              boolean goDeeper = (searchNestedUnnamedNamespaces && nestedNs.getName().length() == 0) || nestedNs.isInline();
+
+              // we need nested namespaces only if they do not modify qualified path (they names are empty) or they are inlined
+              if (goDeeper) {
+              // TODO: consider when we add nested namespaces
+  //        if (nestedNs.getName().length() != 0) {
+  //            if (need namespaces &&
+  //                    matchName(nestedNs.getName(), strPrefix, match)) {
+  //                res.add(nestedNs);
+  //            }
+  //        }
+                  res.addAll(getNamespaceMembers(nestedNs, kinds, strPrefix, match, handledNS, true, returnUnnamedInNestedNs));
+              }
+          }
         }
         
         // handle all parent namespaces
