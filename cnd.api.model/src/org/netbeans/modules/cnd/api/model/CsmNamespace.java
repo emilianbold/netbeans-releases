@@ -79,6 +79,11 @@ public interface CsmNamespace extends CsmQualifiedNamedElement, CsmScope {
      */
     boolean isInline();
     
+    /**
+     * returns true if this namespace has inlined namespaces
+     */
+    boolean hasInlined();
+    
     /** the project where the namespace (or it's particular part) is defined */
     CsmProject getProject();
 }
