@@ -108,6 +108,10 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     
     private final boolean global;
     
+    private int inlineDefinitionsCounter = 0;
+    
+    private int inlineNamespacesCounter = 0;
+    
     /** Constructor used for global namespace */
     private NamespaceImpl(ProjectBase project, boolean fake) {
         this.name = GLOBAL;
@@ -359,13 +363,12 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
 
     @Override
     public boolean isInline() {
-        Collection<CsmNamespaceDefinition> definitions = getDefinitions();
-        for (CsmNamespaceDefinition def : definitions)  {
-            if (def.isInline()) {
-                return true;
-            }
-        }
-        return false;
+        return inlineDefinitionsCounter > 0;
+    }
+
+    @Override
+    public boolean hasInlined() {
+        return inlineNamespacesCounter > 0;
     }
 
     @Override
@@ -383,6 +386,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         CsmUID<CsmNamespace> nestedNsUid = RepositoryUtils.put((CsmNamespace)nsp);
         assert nestedNsUid != null;
         nestedNamespaces.put(nsp.getQualifiedName(), nestedNsUid);
+        inlineNamespacesCounter += nsp.isInline() ? 1 : 0;
         RepositoryUtils.put(this);
     }
     
@@ -406,6 +410,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
                 unnamedNrs.remove(Integer.valueOf(0));
             }
         }
+        inlineNamespacesCounter -= nsp.isInline() ? 1 : 0;
         RepositoryUtils.put(this);
     }
 
@@ -551,6 +556,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
             nsDefinitionsLock.writeLock().lock();
             add = nsDefinitions.isEmpty();
             nsDefinitions.put(getSortKey(def), definitionUid);
+            inlineDefinitionsCounter += def.isInline() ? 1 : 0;
         } finally {
             nsDefinitionsLock.writeLock().unlock();
         }
@@ -599,6 +605,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
             nsDefinitionsLock.writeLock().lock();
             definitionUid = nsDefinitions.remove(getSortKey(def));
             remove =  nsDefinitions.isEmpty();
+            inlineDefinitionsCounter -= def.isInline() ? 1 : 0;
         } finally {
             nsDefinitionsLock.writeLock().unlock();
         }
@@ -725,6 +732,8 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
             nsDefinitionsLock.readLock().unlock();
         }
         theFactory.writeUIDCollection(this.unnamedDeclarations, output, true);
+        output.writeInt(inlineDefinitionsCounter);
+        output.writeInt(inlineNamespacesCounter);
     }
     
     public NamespaceImpl(RepositoryDataInput input) throws IOException {
@@ -765,6 +774,8 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
             unnamedDeclarations = Collections.synchronizedSet(new HashSet<CsmUID<CsmOffsetableDeclaration>>(collSize));
         }
         theFactory.readUIDCollection(this.unnamedDeclarations, input, collSize);
+        inlineDefinitionsCounter = input.readInt();
+        inlineNamespacesCounter = input.readInt();
     }
 
     private static FileNameSortedKey getSortKey(CsmNamespaceDefinition def) {
