@@ -368,6 +368,11 @@ abstract public class CsmCompletion {
         public boolean isInline() {
             return wrapped.isInline();
         }
+
+        @Override
+        public boolean hasInlined() {
+            return wrapped.hasInlined();
+        }
         
         @Override
         public CsmProject getProject() {
