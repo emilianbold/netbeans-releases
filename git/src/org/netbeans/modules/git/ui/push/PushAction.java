@@ -75,7 +75,9 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.ui.actions.ActionProgress;
 import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
+import org.netbeans.modules.git.ui.fetch.PullFromUpstreamAction;
 import org.netbeans.modules.git.ui.output.OutputLogger;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.utils.GitUtils;
@@ -92,6 +94,7 @@ import org.openide.awt.ActionRegistration;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor.Task;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
@@ -103,6 +106,13 @@ import org.openide.util.RequestProcessor.Task;
 public class PushAction extends SingleRepositoryAction {
     
     private static final String ICON_RESOURCE = "org/netbeans/modules/git/resources/icons/push-setting.png"; //NOI18N
+    private static final Set<GitRefUpdateResult> UPDATED_STATUSES = new HashSet<>(Arrays.asList(
+            GitRefUpdateResult.FAST_FORWARD,
+            GitRefUpdateResult.FORCED,
+            GitRefUpdateResult.NEW,
+            GitRefUpdateResult.OK,
+            GitRefUpdateResult.RENAMED
+    ));
     
     public PushAction () {
         super(ICON_RESOURCE);
@@ -159,7 +169,7 @@ public class PushAction extends SingleRepositoryAction {
     
     public Task push (File repository, String target, Collection<PushMapping> pushMappins,
             List<String> fetchRefSpecs, String remoteNameToUpdate) {
-        return push(repository, target, pushMappins, fetchRefSpecs, remoteNameToUpdate, Collections.singleton(repository));
+        return push(repository, target, pushMappins, fetchRefSpecs, remoteNameToUpdate, Collections.singleton(repository), false);
     }
     
     @NbBundle.Messages({
@@ -185,11 +195,25 @@ public class PushAction extends SingleRepositoryAction {
         "MSG_PushAction.push.submodules.text=Repository {0} references a local commit in submodules.\n"
                 + "Submodule changes have not yet been pushed and this will probably result in an inconsistent state.\n\n"
                 + "Do you really want to continue pushing before the changes in submodules are made public?",
-        "LBL_PushAction.push.submodules.title=Referenced Commit Not Pushed"
+        "LBL_PushAction.push.submodules.title=Referenced Commit Not Pushed",
+        "MSG_PushAction.report.errors=There were errors during the push.\nOpen output to see more details.",
+        "MSG_PushAction.report.conflicts=Remote repository contains commits unmerged into the local branch.\n"
+                + "Open output to see more information.",
+        "MSG_PushAction.report.conflicts.allowPull=Remote repository contains commits unmerged into the local branch.\n"
+                + "Do you want to pull the remote changes first?",
+        "CTL_PushAction.report.outputButton.text=&Open Output",
+        "CTL_PushAction.report.outputButton.desc=Opens output with more information",
+        "CTL_PushAction.report.pullButton.text=&Pull Changes",
+        "CTL_PushAction.report.pullButton.desc=Fetch and merge remote changes.",
+        "LBL_PushAction.report.error.title=Git Push Failed",
+        "MSG_PushAction.pullingChanges=Waiting for pull to finish",
+        "LBL_PushAction.pullingChanges.finished=Remote Changes Pulled",
+        "MSG_PushAction.pullingChanges.finished=Remote changes were pulled and synchronized with the local branch.\n"
+                + "Do you want to continue pushing?"
     })
     Task push (final File repository, final String target, final Collection<PushMapping> pushMappins,
             final List<String> fetchRefSpecs, final String remoteNameToUpdate,
-            final Set<File> toPushRepositories) {
+            final Set<File> toPushRepositories, final boolean allowSync) {
         GitProgressSupport supp = new GitProgressSupport() {
             @Override
             protected void perform () {
@@ -249,38 +273,43 @@ public class PushAction extends SingleRepositoryAction {
                     }
                     
                     // push
-                    setProgress(Bundle.MSG_PushAction_pushing());
-                    GitPushResult result = client.push(target, pushRefSpecs, fetchRefSpecs, getProgressMonitor());
-                    reportRemoteConflicts(result.getRemoteRepositoryUpdates());
-                    logUpdates(getRepositoryRoot(), result.getRemoteRepositoryUpdates(),
-                            "MSG_PushAction.updates.remoteUpdates", true); //NOI18N
-                    logUpdates(getRepositoryRoot(), result.getLocalRepositoryUpdates(),
-                            "MSG_PushAction.updates.localUpdates", false); //NOI18N
-                    if (remoteNameToUpdate != null && !newBranches.isEmpty()) {
-                        for (Map.Entry<String, GitTransportUpdate> e : result.getLocalRepositoryUpdates().entrySet()) {
-                            if (e.getValue().getResult() == GitRefUpdateResult.NEW) {
-                                String localRefName = e.getValue().getLocalName();
-                                for (String localBranchName : newBranches) {
-                                    if (localRefName.equals(remoteNameToUpdate + "/" + localBranchName)) {
-                                        GitBranch localBranch = localBranches.get(localBranchName);
-                                        if (localBranch != null && localBranch.getTrackedBranch() == null) {
-                                            // update tracking here
-                                            LOG.log(Level.FINE, "Update tracking for {0} <-> {1}",
-                                                    new Object[] { localRefName, localBranchName });
-                                            GitBranch b = client.updateTracking(localBranchName, localRefName, getProgressMonitor());
-                                            logTrackingUpdate(b);
+                    boolean cont = true;
+                    while (cont && !isCanceled()) {
+                        setProgress(Bundle.MSG_PushAction_pushing());
+                        GitPushResult result = client.push(target, pushRefSpecs, fetchRefSpecs, getProgressMonitor());
+                        logUpdates(getRepositoryRoot(), result.getRemoteRepositoryUpdates(),
+                                "MSG_PushAction.updates.remoteUpdates", true); //NOI18N
+                        logUpdates(getRepositoryRoot(), result.getLocalRepositoryUpdates(),
+                                "MSG_PushAction.updates.localUpdates", false); //NOI18N
+                        cont = reportRemoteConflicts(result.getRemoteRepositoryUpdates());
+                        if (!cont) {
+                            if (remoteNameToUpdate != null && !newBranches.isEmpty()) {
+                                for (Map.Entry<String, GitTransportUpdate> e : result.getLocalRepositoryUpdates().entrySet()) {
+                                    if (e.getValue().getResult() == GitRefUpdateResult.NEW) {
+                                        String localRefName = e.getValue().getLocalName();
+                                        for (String localBranchName : newBranches) {
+                                            if (localRefName.equals(remoteNameToUpdate + "/" + localBranchName)) {
+                                                GitBranch localBranch = localBranches.get(localBranchName);
+                                                if (localBranch != null && localBranch.getTrackedBranch() == null) {
+                                                    // update tracking here
+                                                    LOG.log(Level.FINE, "Update tracking for {0} <-> {1}",
+                                                            new Object[] { localRefName, localBranchName });
+                                                    GitBranch b = client.updateTracking(localBranchName, localRefName, getProgressMonitor());
+                                                    logTrackingUpdate(b);
+                                                }
+                                            }
                                         }
                                     }
                                 }
                             }
+                            if (isCanceled()) {
+                                return;
+                            }
+                            // after-push hooks
+                            setProgress(NbBundle.getMessage(PushAction.class, "MSG_PushAction.finalizing")); //NOI18N
+                            afterPush(hooks, result.getRemoteRepositoryUpdates());
                         }
                     }
-                    if (isCanceled()) {
-                        return;
-                    }
-                    // after-push hooks
-                    setProgress(NbBundle.getMessage(PushAction.class, "MSG_PushAction.finalizing")); //NOI18N
-                    afterPush(hooks, result.getRemoteRepositoryUpdates());
                 } catch (GitException ex) {
                     GitClientExceptionHandler.notifyException(ex, true);
                 }
@@ -307,12 +336,14 @@ public class PushAction extends SingleRepositoryAction {
                             } else {
                                 logger.outputLine(Bundle.MSG_PushAction_updates_updateBranch(update.getLocalName(),
                                         update.getOldObjectId(), update.getNewObjectId(), update.getResult()));
-                                if (remote) {
-                                    LogUtils.logBranchUpdateReview(repository, update.getRemoteName(),
-                                            update.getOldObjectId(), update.getNewObjectId(), logger);
-                                } else {
-                                    LogUtils.logBranchUpdateReview(repository, update.getLocalName(),
-                                            update.getOldObjectId(), update.getNewObjectId(), logger);
+                                if (UPDATED_STATUSES.contains(update.getResult())) {
+                                    if (remote) {
+                                        LogUtils.logBranchUpdateReview(repository, update.getRemoteName(),
+                                                update.getOldObjectId(), update.getNewObjectId(), logger);
+                                    } else {
+                                        LogUtils.logBranchUpdateReview(repository, update.getLocalName(),
+                                                update.getOldObjectId(), update.getNewObjectId(), logger);
+                                    }
                                 }
                             }
                         } else {
@@ -479,9 +510,10 @@ public class PushAction extends SingleRepositoryAction {
                 return list;
             }
 
-            private void reportRemoteConflicts (Map<String, GitTransportUpdate> updates) {
-                List<GitTransportUpdate> errors = new LinkedList<GitTransportUpdate>();
-                List<GitTransportUpdate> conflicts = new LinkedList<GitTransportUpdate>();
+            private boolean reportRemoteConflicts (Map<String, GitTransportUpdate> updates) {
+                boolean retry = false;
+                List<GitTransportUpdate> errors = new LinkedList<>();
+                List<GitTransportUpdate> conflicts = new LinkedList<>();
                 for (Map.Entry<String, GitTransportUpdate> e : updates.entrySet()) {
                     GitTransportUpdate update = e.getValue();
                     switch (update.getResult()){
@@ -497,20 +529,41 @@ public class PushAction extends SingleRepositoryAction {
                 }
                 String message = null;
                 if (!errors.isEmpty()) {
-                    message = NbBundle.getMessage(PushAction.class, "MSG_PushAction.report.errors"); //NOI18N
+                    message = Bundle.MSG_PushAction_report_errors();
                 } else if (!conflicts.isEmpty()) {
-                    message = NbBundle.getMessage(PushAction.class, "MSG_PushAction.report.conflicts"); //NOI18N
+                    message = allowSync
+                            ? Bundle.MSG_PushAction_report_conflicts_allowPull()
+                            : Bundle.MSG_PushAction_report_conflicts();
                 }
                 if (message != null) {
                     JButton outputBtn = new JButton();
-                    Mnemonics.setLocalizedText(outputBtn, NbBundle.getMessage(PushAction.class, "CTL_PushAction.report.outputButton.text")); //NOI18N
-                    outputBtn.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PushAction.class, "CTL_PushAction.report.outputButton.desc")); //NOI18N
-                    Object o = DialogDisplayer.getDefault().notify(new NotifyDescriptor(message, NbBundle.getMessage(PushAction.class, "LBL_PushAction.report.error.title"), //NOI18N
-                            NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.ERROR_MESSAGE, new Object[] { outputBtn, NotifyDescriptor.CANCEL_OPTION }, outputBtn));
+                    Mnemonics.setLocalizedText(outputBtn, Bundle.CTL_PushAction_report_outputButton_text());
+                    outputBtn.getAccessibleContext().setAccessibleDescription(Bundle.CTL_PushAction_report_outputButton_desc());
+                    JButton pullBtn = new JButton();
+                    Mnemonics.setLocalizedText(pullBtn, Bundle.CTL_PushAction_report_pullButton_text());
+                    pullBtn.getAccessibleContext().setAccessibleDescription(Bundle.CTL_PushAction_report_pullButton_desc());
+                    Object o = DialogDisplayer.getDefault().notify(new NotifyDescriptor(message, Bundle.LBL_PushAction_report_error_title(),
+                            NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.ERROR_MESSAGE,
+                            allowSync ? new Object[] { pullBtn, outputBtn, NotifyDescriptor.CANCEL_OPTION }
+                                    : new Object[] { outputBtn, NotifyDescriptor.CANCEL_OPTION },
+                            allowSync ? pullBtn : outputBtn));
                     if (o == outputBtn) {
                         getLogger().getOpenOutputAction().actionPerformed(new ActionEvent(PushAction.this, ActionEvent.ACTION_PERFORMED, null));
+                    } else if (o == pullBtn) {
+                        setProgress(Bundle.MSG_PushAction_pullingChanges());
+                        ActionProgress result = SystemAction.get(PullFromUpstreamAction.class).pull(repository);
+                        if (result != null) {
+                            result.getActionTask().waitFinished();
+                            if (result.isFinishedSuccess()) {
+                                retry = NotifyDescriptor.YES_OPTION == DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
+                                        Bundle.MSG_PushAction_pullingChanges_finished(),
+                                        Bundle.LBL_PushAction_pullingChanges_finished(),
+                                        NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE));
+                            }
+                        }
                     }
                 }
+                return retry;
             }
             
             private boolean isPushingCurrentBranch (PushMapping b, File repository) {

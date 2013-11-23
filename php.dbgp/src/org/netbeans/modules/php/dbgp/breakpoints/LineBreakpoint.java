@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.php.dbgp.breakpoints;
 
 import java.util.logging.Logger;
@@ -67,22 +66,24 @@ import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.util.WeakListeners;
 
-
 /**
  *
  * @author ads
  */
 public class LineBreakpoint extends AbstractBreakpoint {
     private static final Logger LOGGER = Logger.getLogger(LineBreakpoint.class.getName());
+    private Line myLine;
+    private FileRemoveListener myListener;
+    private FileChangeListener myWeakListener;
+    private String myFileUrl;
 
     public LineBreakpoint(Line line) {
         myLine = line;
         myListener = new FileRemoveListener();
         FileObject fileObject = line.getLookup().lookup(FileObject.class);
-        if( fileObject != null ){
-            myWeakListener = WeakListeners.create(
-                    FileChangeListener.class, myListener, fileObject);
-            fileObject.addFileChangeListener( myWeakListener );
+        if (fileObject != null) {
+            myWeakListener = WeakListeners.create(FileChangeListener.class, myListener, fileObject);
+            fileObject.addFileChangeListener(myWeakListener);
             myFileUrl = fileObject.toURL().toString();
         } else {
             myFileUrl = ""; //NOI18N
@@ -107,7 +108,6 @@ public class LineBreakpoint extends AbstractBreakpoint {
                 final int startOffset = lineElem.getStartOffset();
                 final int endOffset = lineElem.getEndOffset();
                 document.render(new Runnable() {
-
                     @Override
                     public void run() {
                         TokenHierarchy th = TokenHierarchy.get(document);
@@ -123,8 +123,7 @@ public class LineBreakpoint extends AbstractBreakpoint {
                                         || id == PHPTokenId.PHP_LINE_COMMENT
                                         || id == PHPTokenId.PHP_COMMENT_START
                                         || id == PHPTokenId.PHP_COMMENT_END
-                                        || id == PHPTokenId.PHP_COMMENT
-                                        ) {
+                                        || id == PHPTokenId.PHP_COMMENT) {
                                     break;
                                 }
 
@@ -158,57 +157,46 @@ public class LineBreakpoint extends AbstractBreakpoint {
     }
 
     @Override
-    public boolean isSessionRelated( DebugSession session ){
+    public boolean isSessionRelated(DebugSession session) {
         SessionId id = session != null ? session.getSessionId() : null;
-        if ( id == null ){
+        if (id == null) {
             return false;
         }
         Project project = id.getProject();
-        if ( project == null ){
+        if (project == null) {
             return false;
         }
         return true;
     }
 
     @Override
-    public void removed(){
+    public void removed() {
         FileObject fileObject = getLine().getLookup().lookup(FileObject.class);
-        if( fileObject != null ){
-            fileObject.removeFileChangeListener( myWeakListener );
+        if (fileObject != null) {
+            fileObject.removeFileChangeListener(myWeakListener);
         }
     }
 
     private Project getProject() {
         Line line = getLine();
-        if ( line == null ){
+        if (line == null) {
             return null;
         }
         FileObject fileObject = line.getLookup().lookup(FileObject.class);
-        if ( fileObject == null ){
+        if (fileObject == null) {
             return null;
         }
-        return FileOwnerQuery.getOwner( fileObject );
+        return FileOwnerQuery.getOwner(fileObject);
     }
 
     private class FileRemoveListener extends FileChangeAdapter {
 
-        /* (non-Javadoc)
-         * @see org.openide.filesystems.FileChangeListener#fileDeleted(org.openide.filesystems.FileEvent)
-         */
         @Override
-        public void fileDeleted( FileEvent arg0 ) {
+        public void fileDeleted(FileEvent arg0) {
             DebuggerManager.getDebuggerManager().removeBreakpoint(
                     LineBreakpoint.this);
         }
 
     }
-
-    private Line myLine;
-
-    private FileRemoveListener myListener;
-
-    private FileChangeListener myWeakListener;
-
-    private String myFileUrl;
 
 }

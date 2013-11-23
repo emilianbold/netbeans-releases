@@ -164,7 +164,7 @@ public class NBRepositorySupport extends BugzillaRepository {
                 password, 
                 null);
         BugzillaRepository repo = new BugzillaRepository(info); 
-        if(checkLogin != checkLogin(repo)) {
+        if(checkLogin && !checkLogin(repo)) {
             return null;
         }
         bugzillaRepository = repo;

@@ -110,16 +110,17 @@ final class NBMNativeMWI {
             File main = new File(context.getProjectDirectory(), "src" + File.separator + "main");
             File src = new File(main, "java");
             src.mkdirs();
-            if (context.getPackageName() != null) {
-                String path = context.getPackageName().replace(".", File.separator);
+            final String packageName = context.getPackageName();
+            if (packageName != null) {
+                String path = packageName.replace(".", File.separator);
                 new File(src, path).mkdirs();
             }
             src = new File(main,  "nbm");
             src.mkdirs();
             EditableManifest mf = new EditableManifest();
             mf.setAttribute("Manifest-Version", "1.0", null);
-            if (context.getPackageName() != null) {
-                String path = context.getPackageName().replace(".", "/") + "/Bundle.properties";
+            if (packageName != null) {
+                String path = packageName.replace(".", "/") + "/Bundle.properties";
                 mf.setAttribute("OpenIDE-Module-Localizing-Bundle", path, null);
                 BufferedOutputStream bos = null;
                 try {
@@ -135,8 +136,8 @@ final class NBMNativeMWI {
             
             src = new File(main, "resources");
             src.mkdirs();
-            if (context.getPackageName() != null) {
-                String path = context.getPackageName().replace(".", File.separator);
+            if (packageName != null) {
+                String path = packageName.replace(".", File.separator);
                 File res = new File(src, path);
                 res.mkdirs();
                 OutputStream bos = null;
@@ -208,7 +209,7 @@ final class NBMNativeMWI {
                 }
                 if (addRepository) {
                     Repository repo = model.getFactory().createRepository();
-                    repo.setId(isSnapshot ? "netbeans-snapshot" : "netbeans");
+                    repo.setId(isSnapshot ? MavenNbModuleImpl.NETBEANS_SNAPSHOT_REPO_ID : MavenNbModuleImpl.NETBEANS_REPO_ID);
                     repo.setName("Repository hosting NetBeans modules");
                     repo.setUrl(repoUrl);
                     if (isSnapshot) {
@@ -231,7 +232,7 @@ final class NBMNativeMWI {
                 if (parent != null) {
                     if (parent.getDependencies() != null) {
                         for (Dependency dep : parent.getDependencies()) {
-                            if ("org.netbeans.api".equals(dep.getGroupId()) && "org-netbeans-api-annotations-common".equals(dep.getArtifactId())) {
+                            if (MavenNbModuleImpl.NETBEANSAPI_GROUPID.equals(dep.getGroupId()) && "org-netbeans-api-annotations-common".equals(dep.getArtifactId())) {
                                 addDependency = false;
                                 if (dep.getVersion() != null) {
                                     existingVersion = dep.getVersion();
@@ -242,7 +243,7 @@ final class NBMNativeMWI {
                     }
                     if (parent.getDependencyManagement() != null && parent.getDependencyManagement().getDependencies() != null) {
                         for (Dependency dep : parent.getDependencyManagement().getDependencies()) {
-                            if ("org.netbeans.api".equals(dep.getGroupId()) && "org-netbeans-api-annotations-common".equals(dep.getArtifactId())) {
+                            if (MavenNbModuleImpl.NETBEANSAPI_GROUPID.equals(dep.getGroupId()) && "org-netbeans-api-annotations-common".equals(dep.getArtifactId())) {
                                 if (dep.getVersion() != null) {
                                     managedVersion = dep.getVersion();
                                     break;
@@ -259,7 +260,7 @@ final class NBMNativeMWI {
                 }
                 if (addDependency) {
                     org.netbeans.modules.maven.model.pom.Dependency d = model.getFactory().createDependency();
-                    d.setGroupId("org.netbeans.api");
+                    d.setGroupId(MavenNbModuleImpl.NETBEANSAPI_GROUPID);
                     d.setArtifactId("org-netbeans-api-annotations-common");
                     String version = netbeansDependencyVersion;
                     if (!version.equals(managedVersion)) {
@@ -274,14 +275,14 @@ final class NBMNativeMWI {
                 //nbm-maven-plugin
                 boolean addPlugin = true;
                 String managedPVersion = null;
-                String pVersion = "3.11.1";
+                String pVersion = MavenNbModuleImpl.LATEST_NBM_PLUGIN_VERSION;
 //                boolean useOsgiDepsSet = false;
                 if (parent != null) {
                     //TODO do we want to support the case when the plugin is defined in parent pom with inherited=true?
                     PluginManagement pm = parent.getPluginManagement();
                     if (pm != null) {
                         for (org.apache.maven.model.Plugin p : pm.getPlugins()) {
-                            if ("org.codehaus.mojo".equals(p.getGroupId()) && "nbm-maven-plugin".equals(p.getArtifactId())) {
+                            if (MavenNbModuleImpl.GROUPID_MOJO.equals(p.getGroupId()) && MavenNbModuleImpl.NBM_PLUGIN.equals(p.getArtifactId())) {
                                 managedPVersion = p.getVersion();
 //                                Xpp3Dom conf = (Xpp3Dom) p.getConfiguration();
 //                                if (conf != null) {
@@ -298,8 +299,8 @@ final class NBMNativeMWI {
                 }
                 if (addPlugin) {
                     Plugin p = model.getFactory().createPlugin();
-                    p.setGroupId("org.codehaus.mojo");
-                    p.setArtifactId("nbm-maven-plugin");
+                    p.setGroupId(MavenNbModuleImpl.GROUPID_MOJO);
+                    p.setArtifactId(MavenNbModuleImpl.NBM_PLUGIN);
                     if (managedPVersion == null) {
                         p.setVersion(pVersion);
                     }

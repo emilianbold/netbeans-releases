@@ -46,7 +46,6 @@ import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -59,6 +58,8 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.javascript2.debug.breakpoints.JSBreakpointStatus;
+import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
 import org.netbeans.modules.web.javascript.debugger.breakpoints.DOMNode.PathNotFoundException;
 import org.netbeans.modules.web.javascript.debugger.browser.ProjectContext;
 import org.netbeans.modules.web.webkit.debugging.api.BreakpointException;
@@ -81,16 +82,16 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
     
     private static final Logger LOG = Logger.getLogger(WebKitBreakpointManager.class.getName());
     protected final Debugger d;
-    private final AbstractBreakpoint ab;
+    private final Breakpoint b;
     private static final RequestProcessor rp = new RequestProcessor(WebKitBreakpointManager.class);
 
-    protected WebKitBreakpointManager(Debugger d, AbstractBreakpoint ab) {
+    protected WebKitBreakpointManager(Debugger d, Breakpoint b) {
         this.d = d;
-        this.ab = ab;
-        ab.addPropertyChangeListener(this);
+        this.b = b;
+        b.addPropertyChangeListener(this);
     }
     
-    public static WebKitBreakpointManager create(Debugger d, ProjectContext pc, LineBreakpoint lb) {
+    public static WebKitBreakpointManager create(Debugger d, ProjectContext pc, JSLineBreakpoint lb) {
         return new WebKitLineBreakpointManager(d, pc, lb);
     }
     
@@ -107,7 +108,7 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
     }
     
     public boolean canAdd() {
-        return ab.isEnabled();
+        return b.isEnabled();
     }
     
     public abstract void add();
@@ -116,7 +117,7 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
 
     public void destroy() {
         remove();
-        ab.removePropertyChangeListener(this);
+        b.removePropertyChangeListener(this);
     }
 
     @Override
@@ -148,7 +149,7 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
     private static final class WebKitLineBreakpointManager extends WebKitBreakpointManager 
         implements Debugger.Listener, ChangeListener {
         
-        private final LineBreakpoint lb;
+        private final JSLineBreakpoint lb;
         private org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b;
         private final Object brkptLock = new Object();
         private final AtomicBoolean lineChanged = new AtomicBoolean(false);
@@ -156,7 +157,7 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
         private final ThreadLocal<Boolean> ignoreLineUpdate = new ThreadLocal<Boolean>();
         private ProjectContext pc;
         
-        public WebKitLineBreakpointManager(Debugger d, ProjectContext pc, LineBreakpoint lb) {
+        public WebKitLineBreakpointManager(Debugger d, ProjectContext pc, JSLineBreakpoint lb) {
             super(d, lb);
             this.lb = lb;
             this.pc = pc;
@@ -172,13 +173,13 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
             }
             URL curl = d.getConnectionURL();
             if (curl != null) {
-                String url = lb.getURLString(pc.getProject(), curl);
+                String url = LineBreakpointUtils.getURLString(lb, pc.getProject(), curl);
                 url = reformatFileURL(url);
                 org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint br = null;
                 try {
                     br = d.addLineBreakpoint(url, lb.getLine().getLineNumber(), 0);
                 } catch (BreakpointException bex) {
-                    lb.setInvalid(bex.getLocalizedMessage());
+                    JSBreakpointStatus.setInvalid(lb, bex.getLocalizedMessage());
                 }
                 if (br != null) {
                     br.addPropertyChangeListener(this);
@@ -202,9 +203,9 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                         } finally {
                             ignoreLineUpdate.remove();
                         }
-                        lb.setValid(Bundle.MSG_BRKP_Resolved());
+                        JSBreakpointStatus.setValid(lb, Bundle.MSG_BRKP_Resolved());
                     } else {
-                        lb.setInvalid(Bundle.MSG_BRKP_Unresolved());
+                        JSBreakpointStatus.setInvalid(lb, Bundle.MSG_BRKP_Unresolved());
                     }
                     synchronized (brkptLock) {
                         b = br;
@@ -231,7 +232,7 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
             synchronized (brkptLock) {
                 b = null;
             }
-            lb.resetValidity();
+            JSBreakpointStatus.resetValidity(lb);
         }
         
         private void resubmit() {
@@ -243,14 +244,14 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                 d.removeLineBreakpoint(brkpt);
                 URL curl = d.getConnectionURL();
                 if (curl != null) {
-                    String url = lb.getURLString(pc.getProject(), curl);
+                    String url = LineBreakpointUtils.getURLString(lb, pc.getProject(), curl);
                     url = reformatFileURL(url);
                     resubmitting.set(false);
                     try {
                         brkpt = d.addLineBreakpoint(url, lb.getLine().getLineNumber(), 0);
                     } catch (BreakpointException bex) {
                         brkpt = null;
-                        lb.setInvalid(bex.getLocalizedMessage());
+                        JSBreakpointStatus.setInvalid(lb, bex.getLocalizedMessage());
                     }
                     synchronized (brkptLock) {
                         b = brkpt;
@@ -294,14 +295,14 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
         @Override
         public void propertyChange(PropertyChangeEvent event) {
             String propertyName = event.getPropertyName();
-            if (LineBreakpoint.PROP_LINE.equals(propertyName)) {
+            if (JSLineBreakpoint.PROP_LINE.equals(propertyName)) {
                 Boolean ignore = ignoreLineUpdate.get();
                 if (ignore != null && ignore.booleanValue()) {
                     return ;
                 }
                 resubmit();
-            } else if (LineBreakpoint.PROP_LINE_NUMBER.equals(propertyName) ||
-                       LineBreakpoint.PROP_FILE.equals(propertyName)) {
+            } else if (JSLineBreakpoint.PROP_LINE_NUMBER.equals(propertyName) ||
+                       JSLineBreakpoint.PROP_FILE.equals(propertyName)) {
                 lineChanged.set(true);
             } else if (org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint.PROP_LOCATION.equals(propertyName)) {
                 org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint brkpt;
@@ -332,9 +333,9 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                     ignoreLineUpdate.remove();
                 }
                 if (lineNumber >= 0) {
-                    lb.setValid(Bundle.MSG_BRKP_Resolved());
+                    JSBreakpointStatus.setValid(lb, Bundle.MSG_BRKP_Resolved());
                 } else {
-                    lb.setInvalid(Bundle.MSG_BRKP_Unresolved());
+                    JSBreakpointStatus.setInvalid(lb, Bundle.MSG_BRKP_Unresolved());
                 }
             } else {
                 super.propertyChange(event);
@@ -358,18 +359,18 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
      * @param lb
      * @param lineNumber
      */
-    private static List<Breakpoint> checkDuplicateBreakpoints(LineBreakpoint lb, long lineNumber) {
+    private static List<Breakpoint> checkDuplicateBreakpoints(JSLineBreakpoint lb, long lineNumber) {
         FileObject fo = lb.getLine().getLookup().lookup(FileObject.class);
         if (fo == null) {
             return null;
         }
         List<Breakpoint> breakpointsToRemove = null;
         for (Breakpoint b : DebuggerManager.getDebuggerManager().getBreakpoints()) {
-            if (b instanceof LineBreakpoint) {
+            if (b instanceof JSLineBreakpoint) {
                 if (b == lb) {
                     continue;
                 }
-                LineBreakpoint tlb = (LineBreakpoint) b;
+                JSLineBreakpoint tlb = (JSLineBreakpoint) b;
                 Line tl = tlb.getLine();
                 if (tl == null) {
                     continue;
@@ -412,7 +413,7 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
      * @return <code>true</code> when the breakpoints equals, <code>false</code>
      * otherwise.
      */
-    private static boolean compareBreakpointProperties(LineBreakpoint lb1, LineBreakpoint lb2) {
+    private static boolean compareBreakpointProperties(JSLineBreakpoint lb1, JSLineBreakpoint lb2) {
         String gn1 = lb1.getGroupName();
         String gn2 = lb2.getGroupName();
         if (gn1 != null && !gn1.equals(gn2) || gn1 == null && gn2 != null ||

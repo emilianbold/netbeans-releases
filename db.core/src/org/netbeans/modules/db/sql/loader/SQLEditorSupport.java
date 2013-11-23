@@ -85,9 +85,9 @@ import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
 import org.openide.util.*;
+import org.openide.util.lookup.Lookups;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.windows.CloneableTopComponent;
-import org.openide.windows.IOContainer;
 import org.openide.xml.XMLUtil;
 
 /** 
@@ -174,8 +174,13 @@ public class SQLEditorSupport extends DataEditorSupport
     
     @Override
     protected Pane createPane() {
-        Pane pane = (CloneableEditorSupport.Pane) MultiViews.createCloneableMultiView(
+        Pane pane;
+        if(getDataObject().getPrimaryFile().toURL().toExternalForm().startsWith("nbfs://")) {
+            pane = new SQLCloneableEditor(Lookups.fixed(this, getDataObject()));
+        } else {
+            pane = (CloneableEditorSupport.Pane) MultiViews.createCloneableMultiView(
                 SQLDataLoader.SQL_MIME_TYPE, getDataObject());
+        }
         return pane;
     }
     

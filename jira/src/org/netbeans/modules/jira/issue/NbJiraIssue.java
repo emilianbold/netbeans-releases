@@ -56,7 +56,6 @@ import com.atlassian.connector.eclipse.internal.jira.core.model.User;
 import com.atlassian.connector.eclipse.internal.jira.core.model.Version;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -77,7 +76,6 @@ import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeListener;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.tasks.core.data.FileTaskAttachmentSource;
 import org.eclipse.mylyn.tasks.core.IRepositoryPerson;
@@ -91,7 +89,6 @@ import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskOperation;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.jira.Jira;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
@@ -115,7 +112,6 @@ import org.netbeans.modules.mylyn.util.commands.SubmitTaskCommand;
 import org.netbeans.modules.mylyn.util.commands.SynchronizeTasksCommand;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -175,7 +171,6 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
      * Field was changed both locally and in repository
      */
     static final int FIELD_STATUS_CONFLICT = FIELD_STATUS_MODIFIED | FIELD_STATUS_OUTGOING;
-    private final PropertyChangeSupport support;
     
     private String recentChanges = "";
     private String tooltip = "";
@@ -294,6 +289,10 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
         if (controller != null) {
             controller.modelStateChanged(true, hasLocalEdits());
         }
+    }
+
+    void fireChangeEvent () {
+        fireChanged();
     }
     
     public void setTaskDueDate (final Date date, final boolean persistChange) {
@@ -474,32 +473,8 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
     public NbJiraIssue (NbTask task, JiraRepository repo) {
         super(task);
         this.repository = repo;
-        this.support = new PropertyChangeSupport(this);
         updateRecentChanges();
         updateTooltip();
-    }
-
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        support.addPropertyChangeListener(listener);
-    }
-
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        support.removePropertyChangeListener(listener);
-    }
-    
-    /**
-     * Notify listeners on this issue that its data were changed
-     */
-    protected void fireDataChanged() {
-        support.firePropertyChange(IssueProvider.EVENT_ISSUE_DATA_CHANGED, null, null);
-    }
-    
-    private void fireStatusChanged() {
-        support.firePropertyChange(IssueStatusProvider.EVENT_STATUS_CHANGED, null, null);
-    }
-    
-    protected void fireChanged() {
-        support.firePropertyChange(IssueController.PROP_CHANGED, null, null);
     }
  
     void opened() {

@@ -71,7 +71,7 @@ public final class Issue {
          */
         INCOMING_MODIFIED,
         /**
-         * The Issue is new on client and haven't been submited yet.
+         * The Issue is new on client and has not been submited yet.
          * @since 1.85
          */
         OUTGOING_NEW,
@@ -125,7 +125,7 @@ public final class Issue {
     }
 
     /**
-     * Returns the tooltip text describing the issue.
+     * Returns the tooltip text describing this Issue.
      * 
      * @return the tooltip
      * @since 1.85
@@ -155,7 +155,7 @@ public final class Issue {
     }
 
     /**
-     * Refresh the issues state from the remote repository.
+     * Refresh the state of this Issue from the remote repository.
      * <p>
      * Please <b>note</b> that this method might block for a longer time. Do not 
      * execute in AWT. 
@@ -169,7 +169,7 @@ public final class Issue {
     }
 
     /**
-     * Returns the issues display name. Typicaly this should be the issue id and summary.
+     * Returns the display name of this Issue. Typically this should be the issue id and summary.
      * 
      * @return display name
      * @since 1.85
@@ -200,9 +200,9 @@ public final class Issue {
     }
 
     /**
-     * Returns this Issues summary
+     * Returns the summary of this Issue.
      * 
-     * @return this Issues summary
+     * @return summary
      * @since 1.85
      */
     public String getSummary() {
@@ -220,7 +220,7 @@ public final class Issue {
     }
     
     /**
-     * Determines this Issue status. Note that a particular bugtracking 
+     * Determines the status of this Issue. Note that a particular bugtracking 
      * implementation doesn't have to necessarily handle all status values.
      * 
      * @return status
@@ -262,7 +262,7 @@ public final class Issue {
     }
     
     /**
-     * Attaches a file to the issue. The changes are 
+     * Attaches a file to this issue. The changes are 
      * expected to be immediately propagated to the remote repository. 
      * 
      * <p>
@@ -281,7 +281,7 @@ public final class Issue {
     }
     
     /**
-     * Adds a comment to the Issue and closes it eventually. The changes are 
+     * Adds a comment to this Issue and closes it eventually. The changes are 
      * expected to be immediately propagated to the remote repository. 
      * 
      * <p>

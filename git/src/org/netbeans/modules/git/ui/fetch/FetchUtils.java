@@ -42,8 +42,12 @@
 package org.netbeans.modules.git.ui.fetch;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.libs.git.GitBranch;
+import org.netbeans.libs.git.GitRefUpdateResult;
 import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitTransportUpdate;
 import org.netbeans.libs.git.GitTransportUpdate.Type;
@@ -58,6 +62,15 @@ import org.openide.util.NbBundle.Messages;
  * @author ondra
  */
 final class FetchUtils {
+    
+    private static final Set<GitRefUpdateResult> UPDATED_STATUSES = new HashSet<>(Arrays.asList(
+            GitRefUpdateResult.FAST_FORWARD,
+            GitRefUpdateResult.FORCED,
+            GitRefUpdateResult.NEW,
+            GitRefUpdateResult.OK,
+            GitRefUpdateResult.RENAMED
+    ));
+
     @Messages({
         "MSG_GetRemoteChangesAction.updates.noChange=No update",
         "# {0} - branch name",
@@ -75,14 +88,16 @@ final class FetchUtils {
         } else {
             for (Map.Entry<String, GitTransportUpdate> e : updates.entrySet()) {
                 GitTransportUpdate update = e.getValue();
-                if (update.getType() == Type.BRANCH) {
-                    logger.outputLine(Bundle.MSG_GetRemoteChangesAction_updates_updateBranch(update.getLocalName(), update.getOldObjectId(), update.getNewObjectId(), update.getResult()));
-                    String oldId = update.getOldObjectId();
-                    String newId = update.getNewObjectId();
-                    String branchName = update.getLocalName();
-                    LogUtils.logBranchUpdateReview(repository, branchName, oldId, newId, logger);
-                } else {
-                    logger.outputLine(Bundle.MSG_GetRemoteChangesAction_updates_updateTag(update.getLocalName(), update.getResult()));
+                if (UPDATED_STATUSES.contains(update.getResult())) {
+                    if (update.getType() == Type.BRANCH) {
+                        logger.outputLine(Bundle.MSG_GetRemoteChangesAction_updates_updateBranch(update.getLocalName(), update.getOldObjectId(), update.getNewObjectId(), update.getResult()));
+                        String oldId = update.getOldObjectId();
+                        String newId = update.getNewObjectId();
+                        String branchName = update.getLocalName();
+                        LogUtils.logBranchUpdateReview(repository, branchName, oldId, newId, logger);
+                    } else {
+                        logger.outputLine(Bundle.MSG_GetRemoteChangesAction_updates_updateTag(update.getLocalName(), update.getResult()));
+                    }
                 }
             }
         }

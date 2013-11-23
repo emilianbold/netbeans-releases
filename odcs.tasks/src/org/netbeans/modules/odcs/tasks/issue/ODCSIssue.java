@@ -50,8 +50,6 @@ import com.tasktop.c2c.server.tasks.domain.TaskSeverity;
 import com.tasktop.c2c.server.tasks.domain.TaskStatus;
 import org.netbeans.modules.bugtracking.commons.AttachmentsPanel;
 import java.awt.EventQueue;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.OutputStream;
 import java.net.URL;
@@ -77,8 +75,6 @@ import org.eclipse.mylyn.tasks.core.data.TaskOperation;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.IssueController;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
 import org.netbeans.modules.mylyn.util.AbstractNbTaskWrapper;
@@ -104,7 +100,6 @@ import org.openide.util.NbBundle.Messages;
 public class ODCSIssue extends AbstractNbTaskWrapper {
 
     private final ODCSRepository repository;
-    private final PropertyChangeSupport support;
 
     private ODCSIssueController controller;
     
@@ -146,7 +141,6 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
     public ODCSIssue(NbTask task, ODCSRepository repo) {
         super(task);
         this.repository = repo;
-        support = new PropertyChangeSupport(this);
         updateRecentChanges();
         updateTooltip();
     }
@@ -767,14 +761,6 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
     public String getParentId() {
         return getRepositoryFieldValue(IssueField.PARENT);
     }
-    
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        support.addPropertyChangeListener(listener);
-    }
-
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        support.removePropertyChangeListener(listener);
-    }
 
     public ODCSRepository getRepository() {
         return repository;
@@ -1175,21 +1161,6 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
         }
         return null;
     }
-
-    /**
-     * Notify listeners on this issue that its data were changed
-     */
-    private void fireDataChanged() {
-        support.firePropertyChange(IssueProvider.EVENT_ISSUE_DATA_CHANGED, null, null);
-    }
-    
-    private void fireStatusChanged() {
-        support.firePropertyChange(IssueStatusProvider.EVENT_STATUS_CHANGED, null, null);
-    }
-
-    protected void fireChanged() {
-        support.firePropertyChange(IssueController.PROP_CHANGED, null, null);
-    }
  
     private boolean refresh(boolean afterSubmitRefresh) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
@@ -1283,6 +1254,10 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
 
     List<AttachmentsPanel.AttachmentInfo> getUnsubmittedAttachments () {
         return getNewAttachments();
+    }
+
+    void fireChangeEvent () {
+        fireChanged();
     }
 
     class Comment {

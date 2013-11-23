@@ -45,25 +45,19 @@ package org.netbeans.modules.php.dbgp.annotations;
 
 import org.openide.text.Annotatable;
 
-
 /**
  * @author ads
  *
  */
 public class NoticeAnnotation extends DebuggerAnnotation {
-    
-    public static final String NOTICE_ANNOTATION_TYPE = "PHPNotice";        // NOI18N
+    public static final String NOTICE_ANNOTATION_TYPE = "PHPNotice"; //NOI18N
 
-    public NoticeAnnotation( Annotatable annotatable, String message ) {
-        super(annotatable , message );
+    public NoticeAnnotation(Annotatable annotatable, String message) {
+        super(annotatable, message);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.annotations.DebuggerAnnotation#getAnnotationType()
-     */
     @Override
-    public String getAnnotationType()
-    {
+    public String getAnnotationType() {
         return NOTICE_ANNOTATION_TYPE;
     }
 

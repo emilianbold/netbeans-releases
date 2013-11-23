@@ -300,7 +300,7 @@ public class GroupsManager {
         //TODO restore recent view list
         
         getPreferences().put(SEL_GROUP, group.getName());
-
+        
         return true;
     }
 

@@ -43,8 +43,6 @@
 package org.netbeans.modules.bugzilla.issue;
 
 import java.awt.EventQueue;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.OutputStream;
 import java.net.URL;
@@ -62,7 +60,6 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import javax.swing.JTable;
-import javax.swing.event.ChangeListener;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaAttribute;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaOperation;
@@ -77,11 +74,9 @@ import org.eclipse.mylyn.tasks.core.data.TaskOperation;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.IssueController;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
 import org.netbeans.modules.team.spi.OwnerInfo;
-import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.commons.AttachmentsPanel;
 import org.netbeans.modules.bugtracking.commons.NBBugzillaUtils;
 import org.netbeans.modules.bugtracking.commons.UIUtils;
@@ -107,7 +102,6 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.modules.Places;
 import org.openide.util.NbBundle;
 import static org.netbeans.modules.bugzilla.issue.Bundle.*;
-import org.openide.util.ChangeSupport;
 
 /**
  *
@@ -175,7 +169,6 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
 
     private Map<String, TaskOperation> availableOperations;
 
-    private final PropertyChangeSupport support;
     private String recentChanges = "";
     private String tooltip = "";
 
@@ -187,28 +180,8 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
     public BugzillaIssue (NbTask task, BugzillaRepository repo) {
         super(task);
         this.repository = repo;
-        support = new PropertyChangeSupport(this);
         updateRecentChanges();
         updateTooltip();
-    }
-
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        support.addPropertyChangeListener(listener);
-    }
-
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        support.removePropertyChangeListener(listener);
-    }
-
-    /**
-     * Notify listeners on this issue that its data were changed
-     */
-    protected void fireDataChanged() {
-        support.firePropertyChange(IssueProvider.EVENT_ISSUE_DATA_CHANGED, null, null);
-    }
-
-    void fireChanged() {
-        support.firePropertyChange(IssueController.PROP_CHANGED, null, null);
     }
 
     @Override
@@ -224,10 +197,6 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
 
     void delete () {
         deleteTask();
-    }
-    
-    private void fireStatusChanged() {
-        support.firePropertyChange(IssueStatusProvider.EVENT_STATUS_CHANGED, null, null);
     }
 
     public void opened() {
@@ -1688,7 +1657,7 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         });
     }
 
-    private void dataChanged() {
+    private void dataChanged () {
         if (node != null) {
             node.fireDataChanged();
         }
@@ -1705,6 +1674,10 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         if (syncStateChanged) {
             fireStatusChanged();
         }
+    }
+
+    void fireChangeEvent () {
+        fireChanged();
     }
     
 }

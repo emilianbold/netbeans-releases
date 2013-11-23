@@ -46,41 +46,35 @@ package org.netbeans.modules.php.dbgp.packets;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-
 import org.netbeans.modules.php.dbgp.DebugSession;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
 
 /**
  * @author ads
  *
  */
 public class ContextNamesResponse extends DbgpResponse {
+    static final String CONTEXT = "context"; // NOI18N
+    private static final String NAME = "name"; // NOI18N
+    private static final String ID = "id"; // NOI18N
 
-    static final String CONTEXT                 = "context";        // NOI18N
-
-    private static final String NAME            = "name";           // NOI18N
-
-    private static final String ID              = "id";             // NOI18N
-
-    ContextNamesResponse( Node node ) {
+    ContextNamesResponse(Node node) {
         super(node);
     }
 
-    Collection<Context> getContexts(){
+    Collection<Context> getContexts() {
         List<Context> result = new LinkedList<>();
         NodeList list = getNode().getChildNodes();
-        for( int i = 0 ; i<list.getLength(); i++ ){
-            Node node = list.item( i );
-            if ( CONTEXT.equals( node.getNodeName()) ){
-                String name = getAttribute(node, NAME );
-                String idString = getAttribute(node,  ID );
+        for (int i = 0; i < list.getLength(); i++) {
+            Node node = list.item(i);
+            if (CONTEXT.equals(node.getNodeName())) {
+                String name = getAttribute(node, NAME);
+                String idString = getAttribute(node, ID);
                 try {
-                    int id = Integer.parseInt( idString );
-                    result.add( new Context( name , id ) );
-                }
-                catch ( NumberFormatException e ){
+                    int id = Integer.parseInt(idString);
+                    result.add(new Context(name, id));
+                } catch (NumberFormatException e) {
                     assert false;
                     continue;
                 }
@@ -89,22 +83,17 @@ public class ContextNamesResponse extends DbgpResponse {
         return result;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpMessage#process(org.netbeans.modules.php.dbgp.DebugSession, org.netbeans.modules.php.dbgp.packets.DbgpCommand)
-     */
     @Override
-    public void process( DebugSession session, DbgpCommand command )
-    {
-        if ( !( command instanceof ContextNamesCommand )) {
+    public void process(DebugSession session, DbgpCommand command) {
+        if (!(command instanceof ContextNamesCommand)) {
             return;
         }
-        ContextNamesCommand namesCommand = (ContextNamesCommand)command;
+        ContextNamesCommand namesCommand = (ContextNamesCommand) command;
         int depth = namesCommand.getDepth();
-        for( Context context : getContexts() ) {
-            ContextGetCommand getCommand = new ContextGetCommand(
-                    session.getTransactionId());
+        for (Context context : getContexts()) {
+            ContextGetCommand getCommand = new ContextGetCommand(session.getTransactionId());
             getCommand.setContext(context);
-            if ( depth != -1 ){
+            if (depth != -1) {
                 getCommand.setDepth(depth);
             }
             session.sendCommandLater(getCommand);
@@ -112,28 +101,29 @@ public class ContextNamesResponse extends DbgpResponse {
     }
 
     /**
-     * This is holder class for context name and its id that
-     * is returned by ContextNamesResponse.
+     * This is holder class for context name and its id that is returned by
+     * ContextNamesResponse.
+     *
      * @author ads
      *
      */
-    public static class Context {
+    public static final class Context {
+        private String myContext;
+        private int myId;
 
-        private Context( String contextName , int id ){
+        private Context(String contextName, int id) {
             myContext = contextName;
             myId = id;
         }
 
-        public String getContext(){
+        public String getContext() {
             return myContext;
         }
 
-        public int getId(){
+        public int getId() {
             return myId;
         }
 
-        private String myContext;
-
-        private int myId;
     }
+
 }

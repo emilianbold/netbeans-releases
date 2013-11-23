@@ -42,6 +42,8 @@
 package org.netbeans.modules.mylyn.util;
 
 import java.awt.EventQueue;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
@@ -61,6 +63,9 @@ import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.commons.AttachmentsPanel;
+import org.netbeans.modules.bugtracking.spi.IssueController;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.IssueScheduleProvider;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
@@ -89,6 +94,7 @@ public abstract class AbstractNbTaskWrapper {
     private final TaskListenerImpl taskListener;
     private Reference<TaskData> repositoryDataRef;
     private final RequestProcessor.Task repositoryTaskDataLoaderTask;
+    private final PropertyChangeSupport support;
     
     /** PRIVATE TASK ATTRIBUTES **/
     private String privateNotes;
@@ -102,6 +108,7 @@ public abstract class AbstractNbTaskWrapper {
     public AbstractNbTaskWrapper (NbTask task) {
         this.task = task;
         this.repositoryDataRef = new SoftReference<TaskData>(null);
+        support = new PropertyChangeSupport(this);
         repositoryTaskDataLoaderTask = RP.create(new Runnable() {
             @Override
             public void run () {
@@ -144,6 +151,14 @@ public abstract class AbstractNbTaskWrapper {
             }
         }
         return changes;
+    }
+
+    public final void addPropertyChangeListener (PropertyChangeListener listener) {
+        support.addPropertyChangeListener(listener);
+    }
+
+    public final void removePropertyChangeListener (PropertyChangeListener listener) {
+        support.removePropertyChangeListener(listener);
     }
 
     protected final TaskData getRepositoryTaskData () {
@@ -671,14 +686,21 @@ public abstract class AbstractNbTaskWrapper {
             privateNotes = null;
             modified = true;
         }
+        boolean fireScheduleEvent = false;
         if (persistEstimate()) {
             modified = true;
+            fireScheduleEvent = true;
         }
         if (persistDueDate()) {
             modified = true;
+            fireScheduleEvent = true;
         }
         if (persistScheduleDate()) {
             modified = true;
+            fireScheduleEvent = true;
+        }
+        if (fireScheduleEvent) {
+            fireScheduleChanged();
         }
         return modified;
     }
@@ -752,6 +774,22 @@ public abstract class AbstractNbTaskWrapper {
             return formatDate(schedule.getStartDate());
         }
         return formateDate(schedule.getStartDate(), schedule.getEndDate());
+    }
+
+    protected final void fireChanged () {
+        support.firePropertyChange(IssueController.PROP_CHANGED, null, null);
+    }
+
+    protected final void fireDataChanged () {
+        support.firePropertyChange(IssueProvider.EVENT_ISSUE_DATA_CHANGED, null, null);
+    }
+
+    protected final void fireScheduleChanged () {
+        support.firePropertyChange(IssueScheduleProvider.EVENT_ISSUE_SCHEDULE_CHANGED, null, null);
+    }
+
+    protected final void fireStatusChanged () {
+        support.firePropertyChange(IssueStatusProvider.EVENT_STATUS_CHANGED, null, null);
     }
 
     private String formatDate (Calendar date) {

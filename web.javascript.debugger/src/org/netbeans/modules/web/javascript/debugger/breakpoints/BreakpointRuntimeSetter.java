@@ -55,6 +55,7 @@ import org.netbeans.api.debugger.LazyActionsManagerListener;
 import org.netbeans.api.debugger.LazyDebuggerManagerListener;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.Watch;
+import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
 import org.netbeans.modules.web.javascript.debugger.browser.ProjectContext;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
@@ -77,8 +78,8 @@ public class BreakpointRuntimeSetter extends LazyActionsManagerListener
     private final Debugger d;
     private final WebKitDebugging wd;
     private final ProjectContext pc;
-    private final Map<AbstractBreakpoint, WebKitBreakpointManager> breakpointImpls =
-            new HashMap<AbstractBreakpoint, WebKitBreakpointManager>();
+    private final Map<Breakpoint, WebKitBreakpointManager> breakpointImpls =
+            new HashMap<Breakpoint, WebKitBreakpointManager>();
     
     public BreakpointRuntimeSetter(ContextProvider lookupProvider) {
         d = lookupProvider.lookupFirst(null, Debugger.class);
@@ -93,6 +94,14 @@ public class BreakpointRuntimeSetter extends LazyActionsManagerListener
         List<WebKitBreakpointManager> toAdd = new ArrayList<WebKitBreakpointManager>();
         synchronized (breakpointImpls) {
             for (Breakpoint breakpoint : breakpoints) {
+                if (breakpoint instanceof JSLineBreakpoint) {
+                    JSLineBreakpoint lb = (JSLineBreakpoint) breakpoint;
+                    if (!breakpointImpls.containsKey(lb)) {
+                        WebKitBreakpointManager bm = createWebKitBreakpointManager(lb);
+                        breakpointImpls.put(lb, bm);
+                        toAdd.add(bm);
+                    }
+                }
                 if (breakpoint instanceof AbstractBreakpoint) {
                     AbstractBreakpoint ab = (AbstractBreakpoint) breakpoint;
                     if (!breakpointImpls.containsKey(ab)) {
@@ -110,10 +119,11 @@ public class BreakpointRuntimeSetter extends LazyActionsManagerListener
         }
     }
     
+    private WebKitBreakpointManager createWebKitBreakpointManager(JSLineBreakpoint lb) {
+        return WebKitBreakpointManager.create(d, pc, lb);
+    }
+    
     private WebKitBreakpointManager createWebKitBreakpointManager(AbstractBreakpoint ab) {
-        if (ab instanceof LineBreakpoint) {
-            return WebKitBreakpointManager.create(d, pc, (LineBreakpoint) ab);
-        }
         if (ab instanceof DOMBreakpoint) {
             return WebKitBreakpointManager.create(wd, pc, (DOMBreakpoint) ab);
         }

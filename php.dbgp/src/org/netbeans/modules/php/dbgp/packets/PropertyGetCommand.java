@@ -46,65 +46,55 @@ package org.netbeans.modules.php.dbgp.packets;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
-
 /**
  * @author ads
  *
  */
 public class PropertyGetCommand extends PropertyCommand {
-
-    private static final String KEY_ARG     = "-k ";                 // NOI18N
+    private static final String KEY_ARG = "-k "; // NOI18N
     private final PropertyChangeSupport changeSupport;
-    
-    static final String PROPERTY_GET        = "property_get";        // NOI18N
+    static final String PROPERTY_GET = "property_get"; // NOI18N
+    private String myKey;
 
-    public PropertyGetCommand( String transactionId ) {
-        this( PROPERTY_GET, transactionId);
-
+    public PropertyGetCommand(String transactionId) {
+        this(PROPERTY_GET, transactionId);
     }
-    
-    protected PropertyGetCommand( String command , String transactionId ){
-        super( command, transactionId);
+
+    protected PropertyGetCommand(String command, String transactionId) {
+        super(command, transactionId);
         changeSupport = new PropertyChangeSupport(this);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpCommand#wantAcknowledgment()
-     */
     @Override
-    public boolean wantAcknowledgment()
-    {
+    public boolean wantAcknowledgment() {
         return true;
     }
-    
-    public void setKey( String key ){
+
+    public void setKey(String key) {
         myKey = key;
     }
-    
+
     @Override
-    protected String getArguments()
-    {
-        StringBuilder builder = new StringBuilder( super.getArguments() );
-        if ( myKey != null ){
-            builder.append( BrkpntSetCommand.SPACE );
-            builder.append( KEY_ARG );
-            builder.append( myKey );
+    protected String getArguments() {
+        StringBuilder builder = new StringBuilder(super.getArguments());
+        if (myKey != null) {
+            builder.append(BrkpntSetCommand.SPACE);
+            builder.append(KEY_ARG);
+            builder.append(myKey);
         }
-        return builder.toString();         
+        return builder.toString();
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         changeSupport.addPropertyChangeListener(listener);
     }
 
-
-    public void removePropertyChangeListener( PropertyChangeListener listener ){
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
         changeSupport.removePropertyChangeListener(listener);
     }
 
-    void firePropertyChangeEvent(String propertyName, Object propertyValue ){
+    void firePropertyChangeEvent(String propertyName, Object propertyValue) {
         changeSupport.firePropertyChange(propertyName, null, propertyValue);
     }
 
-    private String myKey;
 }

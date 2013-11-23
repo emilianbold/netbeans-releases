@@ -931,8 +931,6 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             RevisionPicker picker = new RevisionPicker(GitUtils.getRootFile(context), new File[0]);
             if (picker.open()) {
                 Revision selectedRevision = picker.getRevision();
-                selectedRevision = new Revision(selectedRevision.getRevision(), selectedRevision.getRevision(),
-                        selectedRevision.getShortMessage());
                 addToModel(selectedRevision, cmbDiffTree);
             }
         }
@@ -943,7 +941,8 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
         DefaultComboBoxModel model = (DefaultComboBoxModel) cmbDiffTree.getModel();
         for (int i = 0; i < model.getSize(); ++i) {
             final Object item = model.getElementAt(i);
-            if (item instanceof Revision && ((Revision) item).getCommitId().equals(newItem.getCommitId())) {
+            if (item instanceof Revision && ((Revision) item).getCommitId().equals(newItem.getCommitId())
+                    && ((Revision) item).getRevision().equals(newItem.getRevision())) {
                 EventQueue.invokeLater(new Runnable() {
                     @Override
                     public void run () {

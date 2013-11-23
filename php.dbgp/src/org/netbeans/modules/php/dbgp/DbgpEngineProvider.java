@@ -47,54 +47,39 @@ import org.netbeans.api.debugger.DebuggerEngine.Destructor;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 
-
 /**
  * @author ads
  *
  */
 public class DbgpEngineProvider extends DebuggerEngineProvider {
-    private static final String PHP = "php";            // NOI18N
+    private static final String PHP = "php"; // NOI18N
     private Destructor myDestructor;
 
-    
-    public DbgpEngineProvider (ContextProvider contextProvider) {}
+    public DbgpEngineProvider(ContextProvider contextProvider) {
+    }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.debugger.DebuggerEngineProvider#getEngineTypeID()
-     */
     @Override
     public String getEngineTypeID() {
         return DebuggerImpl.ENGINE_ID;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.debugger.DebuggerEngineProvider#getLanguages()
-     */
     @Override
-    public String[] getLanguages()
-    {
-        return new String[] { PHP };
+    public String[] getLanguages() {
+        return new String[]{PHP};
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.debugger.DebuggerEngineProvider#getServices()
-     */
     @Override
-    public Object[] getServices()
-    {
-        return new Object[ ] { SessionManager.getInstance() };
+    public Object[] getServices() {
+        return new Object[]{SessionManager.getInstance()};
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.debugger.DebuggerEngineProvider#setDestructor(org.netbeans.api.debugger.DebuggerEngine.Destructor)
-     */
     @Override
-    public void setDestructor( Destructor destructor )
-    {
-        myDestructor = destructor; 
+    public void setDestructor(Destructor destructor) {
+        myDestructor = destructor;
     }
-    
+
     public Destructor getDestructor() {
         return myDestructor;
-    }    
+    }
+
 }

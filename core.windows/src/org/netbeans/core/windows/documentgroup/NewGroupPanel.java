@@ -114,6 +114,7 @@ class NewGroupPanel extends javax.swing.JPanel {
             }
             String name = txtName.getText().trim();
             GroupsManager.getDefault().addGroup( name );
+            GroupsMenuAction.refreshMenu();
         }
     }
     

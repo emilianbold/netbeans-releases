@@ -129,7 +129,7 @@ public final class Repository {
     }
 
     /**
-     * Returns this repositories url.
+     * Returns the remote url of this repository.
      * 
      * @return url
      * @since 1.85
@@ -209,7 +209,7 @@ public final class Repository {
     }
 
     /**
-     * Returns the issue with the given id or null in case such doesn't exist.
+     * Returns the issues with the given id-s or an empty array in case none found.
      * 
      * <p>
      * Please <b>note</b> that this method might block for a longer time. Do not 

@@ -90,7 +90,6 @@ public abstract class ODCSQuery {
     private ODCSQueryController controller;
 
     private final List<QueryNotifyListener> notifyListeners = new ArrayList<QueryNotifyListener>();
-    private final PropertyChangeSupport support = new PropertyChangeSupport(this);;
     private String name;
     private long lastRefresh;
     
@@ -200,13 +199,23 @@ public abstract class ODCSQuery {
         }
     }
 
-    protected void fireNotifyData(ODCSIssue issue) {
+    protected void fireNotifyDataAdded(ODCSIssue issue) {
         QueryNotifyListener[] list;
         synchronized(notifyListeners) {
             list = notifyListeners.toArray(new QueryNotifyListener[notifyListeners.size()]);
         }
         for (QueryNotifyListener l : list) {
-            l.notifyData(issue);
+            l.notifyDataAdded(issue);
+        }
+    }
+    
+    protected void fireNotifyDataRemoved(ODCSIssue issue) {
+        QueryNotifyListener[] list;
+        synchronized(notifyListeners) {
+            list = notifyListeners.toArray(new QueryNotifyListener[notifyListeners.size()]);
+        }
+        for (QueryNotifyListener l : list) {
+            l.notifyDataRemoved(issue);
         }
     }
 
@@ -240,18 +249,6 @@ public abstract class ODCSQuery {
         }
         return controller;
     }
-
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        support.addPropertyChangeListener(listener);
-    }
-    
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        support.removePropertyChangeListener(listener);
-    }
-
-    private void fireQueryIssuesChanged() {
-        support.firePropertyChange(QueryProvider.EVENT_QUERY_REFRESHED, null, null);
-    }  
 
     public void refresh() {
         refreshIntern(false);
@@ -325,7 +322,6 @@ public abstract class ODCSQuery {
             r.run();
         } finally {
             fireFinished();
-            fireQueryIssuesChanged();
             lastRefresh = System.currentTimeMillis();
         }
     }
@@ -372,8 +368,11 @@ public abstract class ODCSQuery {
             synchronized(ISSUES_LOCK) {
                 ids.remove(task.getTaskId());
             }
-            // when issue table or task dashboard is able to handle removals
-            // fire an event from here
+            ODCSIssue issue = repository.getIssueForTask(task);
+            if (issue != null) {
+                issues.add(task.getTaskId());
+                fireNotifyDataRemoved(issue); 
+            }
         }
 
         @Override
@@ -383,7 +382,7 @@ public abstract class ODCSQuery {
                 ODCSIssue issue = repository.getIssueForTask(task);
                 if (issue != null) {
                     issues.add(task.getTaskId());
-                    fireNotifyData(issue); // XXX - !!! triggers getIssues()
+                    fireNotifyDataAdded(issue); // XXX - !!! triggers getIssues()
                 }
             }
         }

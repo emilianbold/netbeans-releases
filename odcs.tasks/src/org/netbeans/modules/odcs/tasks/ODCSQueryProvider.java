@@ -94,26 +94,16 @@ public class ODCSQueryProvider implements QueryProvider<ODCSQuery, ODCSIssue> {
     }
     
     @Override
-    public Collection<ODCSIssue> getIssues(ODCSQuery q) {
-        return q.getIssues();
+    public void setIssueContainer(ODCSQuery q, IssueContainer<ODCSIssue> c) {
+        q.getController().setIssueContainer(c);
     }
-
+    
     @Override
     public void refresh(ODCSQuery q) {
         if(q.getRepository().needsAndHasNoLogin(q)) {
             return;
         }
         q.getController().refresh(true);
-    }
-
-    @Override
-    public void removePropertyChangeListener(ODCSQuery q, PropertyChangeListener listener) {
-        q.removePropertyChangeListener(listener);
-    }
-
-    @Override
-    public void addPropertyChangeListener(ODCSQuery q, PropertyChangeListener listener) {
-        q.addPropertyChangeListener(listener);
     }
 
 }

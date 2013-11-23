@@ -54,7 +54,8 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 
-@NbBundle.Messages({"DOMBreakpointTypeName=DOM"})
+@NbBundle.Messages({"JavaScriptBreakpointTypeCategory=JavaScript",
+                    "DOMBreakpointTypeName=DOM"})
 @BreakpointType.Registration(displayName="#DOMBreakpointTypeName")
 public class DOMBreakpointType extends BreakpointType {
     

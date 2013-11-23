@@ -43,25 +43,19 @@
  */
 package org.netbeans.modules.php.dbgp.packets;
 
-
 /**
  * @author ads
  *
  */
 public class BreakCommand extends DbgpCommand {
+    static final String BREAK = "break"; // NOI18N
 
-    static final String BREAK = "break";            // NOI18N
-
-    public BreakCommand( String transactionId ) {
-        super( BREAK, transactionId);
+    public BreakCommand(String transactionId) {
+        super(BREAK, transactionId);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpCommand#wantAcknowledgment()
-     */
     @Override
-    public boolean wantAcknowledgment()
-    {
+    public boolean wantAcknowledgment() {
         return true;
     }
 

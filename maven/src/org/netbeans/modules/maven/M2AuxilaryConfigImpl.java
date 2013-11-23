@@ -204,7 +204,8 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
             }
             final FileObject config = projectDirectory.getFileObject(CONFIG_FILE_NAME);
             if (config != null) {
-                if (config.lastModified().after(timeStamp)) {
+                Date lastMod = config.lastModified();
+                if (lastMod.after(timeStamp)) {
                     // we need to re-read the config file..
                     try {
                         Document doc = loadConfig(config);
@@ -230,7 +231,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                         //thrown from XmlUtil.findElement when more than 1 equal elements are present.
                         LOG.log(Level.INFO, iae.getMessage(), iae);
                     } finally {
-                        timeStamp = config.lastModified();
+                        timeStamp = lastMod;
                     }
                     return null;
                 } else {

@@ -144,10 +144,10 @@ made subject to such option by the copyright holder.
         <mkdir dir="${jnlp.signjar.keystore}/../"/>
         <echo message="Going to create default keystore in ${jnlp.signjar.keystore}"/>
         <genkey validity="365"
-            alias="${jnlp.signjar.alias}"
-            keystore="${jnlp.signjar.keystore}"
-            storepass="${jnlp.signjar.password}"
-            dname="${jnlp.signjar.vendor}"
+                alias="${jnlp.signjar.alias}"
+                keystore="${jnlp.signjar.keystore}"
+                storepass="${jnlp.signjar.password}"
+                dname="${jnlp.signjar.vendor}"
         />
     </target>
 
@@ -166,6 +166,7 @@ made subject to such option by the copyright holder.
 
         <!-- See #70477 for why there is no verify=true here: -->
         <makejnlp 
+            appname="${app.name}"
             alias="${jnlp.signjar.alias}" 
             keystore="${jnlp.signjar.keystore}" 
             storepass="${jnlp.signjar.password}"
@@ -206,7 +207,7 @@ made subject to such option by the copyright holder.
             description="Build JNLP files and signed JARs for all modules in the suite."
     >
         <available file="${nbjdk.home}/sample/jnlp/servlet/jnlp-servlet.jar" property="jnlp.servlet.jar" 
-               value="${nbjdk.home}/sample/jnlp/servlet/jnlp-servlet.jar"
+                   value="${nbjdk.home}/sample/jnlp/servlet/jnlp-servlet.jar"
         />
         <property name="jnlp.servlet.jar" location="${harness.dir}/jnlp/jnlp-servlet.jar"/>
         <fail message="Cannot find -Djnlp.servlet.jar pointing to ${jnlp.servlet.jar}">
@@ -293,13 +294,12 @@ made subject to such option by the copyright holder.
 
         <antcall target="copy-branding"/>
         
-        <signjar 
-            alias="${jnlp.signjar.alias}" 
-            keystore="${jnlp.signjar.keystore}" 
-            storepass="${jnlp.signjar.password}" 
-            jar="${harness.dir}/jnlp/jnlp-launcher.jar"
-            signedjar="${jnlp.dest.dir}/startup.jar" 
-        />
+        <jnlpupdatemanifeststartup appname="${app.name}"
+                                   alias="${jnlp.signjar.alias}" 
+                                   keystore="${jnlp.signjar.keystore}" 
+                                   storepass="${jnlp.signjar.password}"
+                                   jar="${harness.dir}/jnlp/jnlp-launcher.jar"
+                                   destjar="${jnlp.dest.dir}/startup.jar"/>
         
         <pathconvert pathsep="${line.separator}" property="jnlp.branding.jars">
             <path>
@@ -353,8 +353,8 @@ made subject to such option by the copyright holder.
         </copy>
         <echo>Your JNLP file is generated at ${jnlp.dest.dir}/master.jnlp</echo>
         <!-- The following line will not fail if the branding.jnlp
-             is not present, e.g. when the main file was generated using
-             harness from 5.x days. -->
+        is not present, e.g. when the main file was generated using
+        harness from 5.x days. -->
         <copy file="branding.jnlp" tofile="${jnlp.dest.dir}/branding.jnlp" failonerror="false">
             <filterchain>
                 <replacestring from="$${jnlp.branding.jars}" to="${jnlp.branding.jars}"/>
@@ -372,15 +372,14 @@ made subject to such option by the copyright holder.
     </target>
     
     <target name="sign-branding-jars" unless="unsign-the-jars" depends="copy-branding-jars">
-        <signjar
+        <jnlpupdatemanifestbranding appname="${app.name}"
             alias="${jnlp.signjar.alias}" 
             keystore="${jnlp.signjar.keystore}" 
-            storepass="${jnlp.signjar.password}" 
-        >
+            storepass="${jnlp.signjar.password}">
             <fileset dir="${jnlp.dest.dir}/branding">
                 <include name="*_${branding.token}.jar"/>
             </fileset>
-        </signjar>
+        </jnlpupdatemanifestbranding>
     </target>
 
     <target name="copy-branding" depends="copy-branding-jars, sign-branding-jars"/>

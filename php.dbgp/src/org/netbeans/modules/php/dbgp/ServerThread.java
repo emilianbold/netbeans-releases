@@ -60,7 +60,6 @@ import org.openide.util.NbBundle;
 class ServerThread extends SingleThread {
     private static final int TIMEOUT = 10000;
     private static final String PORT_OCCUPIED = "MSG_PortOccupied"; // NOI18N
-
     private int myPort;
     private ServerSocket myServer;
     private AtomicBoolean isStopped;
@@ -70,7 +69,6 @@ class ServerThread extends SingleThread {
         isStopped = new AtomicBoolean(false);
     }
 
-
     @Override
     public void run() {
         isStopped = new AtomicBoolean(false);
@@ -78,7 +76,7 @@ class ServerThread extends SingleThread {
         ProxyClient proxy = null;
         if (debugSession != null && createServerSocket(debugSession)) {
             proxy = ProxyClient.getInstance(debugSession.getOptions());
-            if (proxy != null)  {
+            if (proxy != null) {
                 proxy.register();
             }
             debugSession.startBackend();
@@ -118,6 +116,7 @@ class ServerThread extends SingleThread {
     private void log(Throwable exception) {
         log(exception, Level.FINE);
     }
+
     private void log(Throwable exception, Level level) {
         Logger.getLogger(ServerThread.class.getName()).log(level, null, exception);
     }
@@ -125,7 +124,8 @@ class ServerThread extends SingleThread {
     private boolean createServerSocket(DebugSession debugSession) {
         synchronized (ServerThread.class) {
             try {
-                myServer = new ServerSocket(myPort = debugSession.getOptions().getPort());
+                myPort = debugSession.getOptions().getPort();
+                myServer = new ServerSocket(myPort);
                 myServer.setSoTimeout(TIMEOUT);
                 myServer.setReuseAddress(true);
             } catch (IOException e) {
@@ -168,4 +168,5 @@ class ServerThread extends SingleThread {
     private boolean isStopped() {
         return isStopped.get();
     }
+
 }

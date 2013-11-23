@@ -118,8 +118,8 @@ public class JiraIssueNode extends IssueNode<NbJiraIssue> {
             if(p == null) {
                 return 1;
             }
-            String id = getIssueData().getID();
-            String pid = p.getIssueData().getID();
+            String id = getIssueData().getKey();
+            String pid = p.getIssueData().getKey();
             int idx = id.lastIndexOf("-");      // NOI18N
             int pidx = pid.lastIndexOf("-");    // NOI18N
 

@@ -54,7 +54,7 @@ public class SchedulingPickerTest {
     
     @Test
     public void testSetInfo () {
-        SchedulingPicker picker = new SchedulingPicker();
+        SchedulePicker picker = new SchedulePicker();
         Date date = new Date();
         int interval = 7;
         IssueScheduleInfo info = new IssueScheduleInfo(date, interval);
@@ -70,7 +70,7 @@ public class SchedulingPickerTest {
 
     @Test
     public void testGetComponent () {
-        SchedulingPicker picker = new SchedulingPicker();
+        SchedulePicker picker = new SchedulePicker();
         
         Assert.assertNotNull(picker.getComponent());
     }

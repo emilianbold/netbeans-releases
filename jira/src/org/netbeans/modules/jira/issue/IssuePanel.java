@@ -134,7 +134,7 @@ import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.commons.LinkButton;
 import org.netbeans.modules.team.spi.RepositoryUserRenderer;
 import org.netbeans.modules.bugtracking.commons.UIUtils;
-import org.netbeans.modules.bugtracking.spi.SchedulingPicker;
+import org.netbeans.modules.bugtracking.spi.SchedulePicker;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.issue.NbJiraIssue.IssueField;
@@ -153,7 +153,6 @@ import org.netbeans.modules.spellchecker.api.Spellchecker;
 import org.netbeans.modules.team.ide.spi.IDEServices;
 import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.openide.awt.HtmlBrowser;
-import org.openide.util.ChangeSupport;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -213,7 +212,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private static final String ATTRIBUTE_SCHEDULE_DATE = "nb.schedule.date"; //NOI18N
     private final IDEServices.DatePickerComponent privateDueDatePicker;
     private final IDEServices.DatePickerComponent dueDatePicker;
-    private final SchedulingPicker scheduleDatePicker;
+    private final SchedulePicker scheduleDatePicker;
     private static final NumberFormatter estimateFormatter = new NumberFormatter(new java.text.DecimalFormat("#0")) {
 
         @Override
@@ -280,7 +279,7 @@ public class IssuePanel extends javax.swing.JPanel {
         
         GroupLayout layout = (GroupLayout) privateSectionPanel.getLayout();
         privateDueDatePicker = UIUtils.createDatePickerComponent();
-        scheduleDatePicker = new SchedulingPicker();
+        scheduleDatePicker = new SchedulePicker();
         layout.replace(privateDummyDueDateField, privateDueDatePicker.getComponent());
         privateDueDateLabel.setLabelFor(privateDueDatePicker.getComponent());
         layout.replace(dummyScheduleDateField, scheduleDatePicker.getComponent());
@@ -2668,6 +2667,7 @@ public class IssuePanel extends javax.swing.JPanel {
                 Bundle.LBL_IssuePanel_deleteTask_title(), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
             return;
         }
+        discardUnsavedChanges();
         Container tc = SwingUtilities.getAncestorOfClass(TopComponent.class, this);
         if (tc instanceof TopComponent) {
             ((TopComponent) tc).close();
@@ -3787,7 +3787,7 @@ public class IssuePanel extends javax.swing.JPanel {
         public boolean add (String value) {
             boolean added = super.add(value);
             if (added) {
-                issue.fireChanged();
+                issue.fireChangeEvent();
             }
             return added;
         }
@@ -3796,7 +3796,7 @@ public class IssuePanel extends javax.swing.JPanel {
         public boolean remove (Object o) {
             boolean removed = super.remove(o);
             if (removed && isEmpty()) {
-                issue.fireChanged();
+                issue.fireChangeEvent();
             }
             return removed;
         }
@@ -3806,7 +3806,7 @@ public class IssuePanel extends javax.swing.JPanel {
             boolean fire = !isEmpty();
             super.clear();
             if (fire) {
-                issue.fireChanged();
+                issue.fireChangeEvent();
             }
         }
         

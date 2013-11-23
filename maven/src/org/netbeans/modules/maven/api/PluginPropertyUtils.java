@@ -175,9 +175,6 @@ public class PluginPropertyUtils {
      * tries to figure out if the property of the given plugin is customized in
      * the current project and returns it's value if so, otherwise null
      *
-     * @param parameter the name of the plugin parameter to look for
-     * @param expressionProperty expression property that once defined (and
-     * plugin configuration is omited) is used. only value, no ${}
      * @since 2.70
      */
     public static <T> T getPluginPropertyBuildable(@NonNull Project prj, @NonNull String groupId, @NonNull String artifactId, 
@@ -185,6 +182,17 @@ public class PluginPropertyUtils {
         NbMavenProjectImpl project = prj instanceof NbMavenProjectImpl ? (NbMavenProjectImpl)prj : prj.getLookup().lookup(NbMavenProjectImpl.class);
         assert project != null : "Requires a maven project instance"; //NOI18N
         return getPluginPropertyImpl(project.getOriginalMavenProject(), createEvaluator(project), groupId, artifactId, builder, goal, null);
+    }
+    
+    /**
+     * tries to figure out if the property of the given plugin is customized in
+     * the current project and returns it's value if so, otherwise null
+     *
+     * @since 2.102
+     */
+    public static <T> T getPluginPropertyBuildable(@NonNull MavenProject prj, @NonNull String groupId, @NonNull String artifactId, 
+            @NullAllowed String goal, @NonNull ConfigurationBuilder<T> builder) {
+        return getPluginPropertyImpl(prj, createEvaluator(prj), groupId, artifactId, builder, goal, null);
     }
 
     /**

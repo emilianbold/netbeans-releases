@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -44,10 +44,10 @@
 
 package org.netbeans.modules.autoupdate.ui.wizards;
 
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.SwingUtilities;
@@ -68,7 +68,6 @@ public class LicenseApprovalPanel extends javax.swing.JPanel {
     /** Creates new form LicenseApprovalPanel */
     public LicenseApprovalPanel (InstallUnitWizardModel model, boolean isApproved) {
         initComponents ();
-        taTitle.setBackground( new Color( 0, 0, 0, 0 ) );
         cbAccept.setSelected (isApproved);
         if (model != null) {
             writeLicenses(model);
@@ -110,7 +109,7 @@ public class LicenseApprovalPanel extends javax.swing.JPanel {
                 }
 
                 if (! OperationType.UPDATE.equals(model.getOperation()) || ! Utilities.isLicenseIdApproved(el.getLicenseId())) {
-                    Logger.getLogger(LicenseApprovalPanel.class.getName()).fine(el + "[" + el.getLicenseId() + "] hasn't been accepted yet.");
+                    Logger.getLogger(LicenseApprovalPanel.class.getName()).log(Level.FINE, "{0}[{1}] hasn''t been accepted yet.", new Object[]{el, el.getLicenseId()});
                     license4plugins.add(el);
                 }
             }
@@ -129,19 +128,12 @@ public class LicenseApprovalPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        taTitle = new javax.swing.JTextArea();
         cbAccept = new javax.swing.JCheckBox();
         cbPlugins = new javax.swing.JComboBox();
         spLicense = new javax.swing.JScrollPane();
         taLicense = new javax.swing.JTextArea();
         lbPlugins = new javax.swing.JLabel();
-
-        taTitle.setEditable(false);
-        taTitle.setLineWrap(true);
-        taTitle.setText(org.openide.util.NbBundle.getMessage(LicenseApprovalPanel.class, "LicenseApprovalPanel_taTitle_Text")); // NOI18N
-        taTitle.setWrapStyleWord(true);
-        taTitle.setBorder(javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4));
-        taTitle.setOpaque(false);
+        tpTitle = new javax.swing.JTextPane();
 
         org.openide.awt.Mnemonics.setLocalizedText(cbAccept, org.openide.util.NbBundle.getMessage(LicenseApprovalPanel.class, "LicenseApprovalPanel.cbAccept.text")); // NOI18N
         cbAccept.addActionListener(new java.awt.event.ActionListener() {
@@ -169,14 +161,20 @@ public class LicenseApprovalPanel extends javax.swing.JPanel {
         lbPlugins.setLabelFor(cbPlugins);
         org.openide.awt.Mnemonics.setLocalizedText(lbPlugins, org.openide.util.NbBundle.getMessage(LicenseApprovalPanel.class, "LicenseApprovalPanel.lbPlugins.text")); // NOI18N
 
+        tpTitle.setEditable(false);
+        tpTitle.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        tpTitle.setText(org.openide.util.NbBundle.getMessage(LicenseApprovalPanel.class, "LicenseApprovalPanel_taTitle_Text")); // NOI18N
+        tpTitle.setOpaque(false);
+        tpTitle.setRequestFocusEnabled(false);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(taTitle)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(tpTitle, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(lbPlugins)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -188,7 +186,8 @@ public class LicenseApprovalPanel extends javax.swing.JPanel {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(taTitle, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap()
+                .addComponent(tpTitle, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(cbPlugins)
@@ -235,7 +234,7 @@ public class LicenseApprovalPanel extends javax.swing.JPanel {
     private javax.swing.JLabel lbPlugins;
     private javax.swing.JScrollPane spLicense;
     private javax.swing.JTextArea taLicense;
-    private javax.swing.JTextArea taTitle;
+    private javax.swing.JTextPane tpTitle;
     // End of variables declaration//GEN-END:variables
 
 	private void writeLicenses(InstallUnitWizardModel model) {

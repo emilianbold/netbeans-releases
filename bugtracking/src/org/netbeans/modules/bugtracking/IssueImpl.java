@@ -79,16 +79,17 @@ public final class IssueImpl<R, I> {
         this.issueProvider = issueProvider;
         this.data = data;
         this.repo = repo;
-        
-        issueProvider.addPropertyChangeListener(data, new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                if(IssueProvider.EVENT_ISSUE_DATA_CHANGED.equals(evt.getPropertyName())) {
-                    handleScheduling();
+        if (hasSchedule()) {
+            issueProvider.addPropertyChangeListener(data, new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (IssueScheduleProvider.EVENT_ISSUE_SCHEDULE_CHANGED.equals(evt.getPropertyName())) {
+                        handleScheduling();
+                    }
                 }
-            }
-        });
-        handleScheduling();
+            });
+            handleScheduling();
+        }
     }
 
     public synchronized Issue getIssue() {
@@ -278,6 +279,7 @@ public final class IssueImpl<R, I> {
         assert isp != null : "do no call .setSchedule() if .hasSchedule() is false"; // NOI18N
         if(isp != null) {
             isp.setSchedule(data, info);
+            handleScheduling();
         }
     }
 
