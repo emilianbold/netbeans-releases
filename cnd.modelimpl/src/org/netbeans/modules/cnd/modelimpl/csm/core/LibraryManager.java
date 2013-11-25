@@ -203,7 +203,7 @@ public final class LibraryManager {
             }
             return res;
         }
-        final String folder = resolvedPath.getFolder().toString(); // always normalized
+        final CharSequence folder = resolvedPath.getFolder(); // always normalized
         antiLoop.clear();
         res = searchInProjectRoots(baseProject, resolvedPath.getFileSystem(), getPathToFolder(folder, absPath), antiLoop);
         if (res != null) {
@@ -389,7 +389,7 @@ public final class LibraryManager {
         return candidate;
     }
 
-    private LibProjectImpl getLibrary(ProjectImpl project, FileSystem fs, String folder) {
+    private LibProjectImpl getLibrary(ProjectImpl project, FileSystem fs, CharSequence folder) {
         CsmUID<CsmProject> projectUid = project.getUID();
         LibraryKey libraryKey = new LibraryKey(fs, folder);
         LibraryEntry entry = librariesEntries.get(libraryKey);
