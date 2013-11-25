@@ -270,10 +270,11 @@ public final class FoldHierarchyTransactionImpl {
             committed = true;
             execution.clearActiveTransaction();
 
+            int so = Math.max(0, affectedStartOffset);
             execution.createAndFireFoldHierarchyEvent(
                 removedFolds, addedFolds, stateChanges,
-                affectedStartOffset, affectedEndOffset
-            );
+                so, 
+                Math.max(affectedEndOffset, so));
         } else {
             committed = true;
             execution.clearActiveTransaction();
