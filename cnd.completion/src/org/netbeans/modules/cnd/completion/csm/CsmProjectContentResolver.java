@@ -1436,8 +1436,11 @@ public final class CsmProjectContentResolver {
         }
         // handle all nested and inlined namespaces
         
-        if (searchNestedUnnamedNamespaces || ns.hasInlined()) {
-          for (it = ns.getNestedNamespaces().iterator(); it.hasNext();) {
+        // Note that nested namespaces contain inlined namespaces
+        Collection<CsmNamespace> namespacesToSearchIn = searchNestedUnnamedNamespaces ? ns.getNestedNamespaces() : ns.getInlinedNamespaces();
+        
+        if (!namespacesToSearchIn.isEmpty()) {
+          for (it = namespacesToSearchIn.iterator(); it.hasNext();) {
               CsmNamespace nestedNs = (CsmNamespace) it.next();
 
               boolean goDeeper = (searchNestedUnnamedNamespaces && nestedNs.getName().length() == 0) || nestedNs.isInline();

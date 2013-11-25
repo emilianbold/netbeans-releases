@@ -265,7 +265,7 @@ public final class UsingResolverImpl extends CsmUsingResolver implements CsmProg
     }
 
     /**
-     * Finds all namespaces visible in given namespace through "using" directives.
+     * Finds all namespaces visible in given namespace (unnamed, inlined or through "using" directives).
      *
      * @param namespace  namespace of interest
      * @return unmodifiable collection of namespaces visible in given namespace though "using" directives
@@ -275,7 +275,7 @@ public final class UsingResolverImpl extends CsmUsingResolver implements CsmProg
         List<CsmNamespace> res = new ArrayList<CsmNamespace>();
         if (!namespace.isGlobal()) {
             for (CsmNamespace ns : namespace.getNestedNamespaces()) {
-                if (ns.getName().length() == 0) {
+                if (ns.getName().length() == 0 || ns.isInline()) {
                     res.add(ns);
                 }
             }
@@ -283,7 +283,7 @@ public final class UsingResolverImpl extends CsmUsingResolver implements CsmProg
         res.addAll(extractNamespaces(findUsingDirectives(namespace), startPrj));
         return res;
     }
-
+    
     /**
      * Finds namespace in project and it's libraries
      *
