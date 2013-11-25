@@ -105,17 +105,20 @@ final class TextLayoutUtils {
             // Compute pixel bounds (with frc being null - means use textLayout's frc; and with default bounds)
             Rectangle pixelBounds = textLayout.getPixelBounds(null, 0, 0);
             width = (float) pixelBounds.getMaxX();
+            // On Mac OS X with retina displays the TL.getPixelBounds() give incorrect results. Luckily
+            // TL.getAdvance() gives a correct result in that case.
+            // Therefore use a minimum of both values (on all platforms).
+            float tlAdvance = textLayout.getAdvance();
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.fine("TLUtils.getWidth(\"" + CharSequenceUtilities.debugText(textLayoutText) + // NOI18N
-                        "\"): Using TL.getPixelBounds().getMaxX()=" + width + // NOI18N
+                        "\"): Using minimum of TL.getPixelBounds().getMaxX()=" + width + // NOI18N
+                        " or TL.getAdvance()=" + tlAdvance +
                         textLayoutDump(textLayout) +
                         '\n');
             }
+            width = Math.min(width, tlAdvance);
         }
-//        width = textLayout.getPixelBounds(null, 0f, 0f).getMaxX();
-//        width = Math.abs(textLayout.getAdvance());
         
-        //
         // For RTL text the hit-info of the first char is above the hit-info of ending char.
         // However textLayout.isLeftToRight() returns true in case of mixture of LTR and RTL text
         // in a single textLayout.
