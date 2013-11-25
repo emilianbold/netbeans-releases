@@ -55,6 +55,7 @@ import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.html.lexer.HTMLTokenId;
@@ -119,6 +120,9 @@ public class TplDataObject extends MultiDataObject implements CookieSet.Factory 
 
     public static final String DEFAULT_CHARSET_NAME = Charset.defaultCharset().name();
 
+    // @GuardedBy("this")
+    private Integer showEncodingWarnings;
+
     public TplDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
         CookieSet set = getCookieSet();
@@ -179,6 +183,17 @@ public class TplDataObject extends MultiDataObject implements CookieSet.Factory 
             tplEditorSupport = new TplEditorSupport(this);
         }
         return tplEditorSupport;
+    }
+
+    /*package*/ synchronized void setShowEncodingWarnings(Integer value) {
+        showEncodingWarnings = value;
+    }
+
+    /*package*/ synchronized Integer getShowEncodingWarnings() {
+        if (showEncodingWarnings == null) {
+            return null;
+        }
+        return showEncodingWarnings;
     }
 
     // Package accessibility for TplEditorSupport:
