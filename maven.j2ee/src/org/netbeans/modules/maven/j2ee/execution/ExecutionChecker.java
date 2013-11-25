@@ -59,7 +59,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import static org.netbeans.modules.maven.j2ee.execution.Bundle.*;
-import org.openide.util.Exceptions;
 
 
 @ProjectServiceProvider(
@@ -134,7 +133,8 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
                 }
             }
         } catch (InstanceRemovedException ex) {
-            Exceptions.printStackTrace(ex);
+            // If the instance was removed in the meantime, server is not set correctly
+            return false;
         }
         return true;
     }

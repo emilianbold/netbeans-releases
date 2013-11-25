@@ -97,31 +97,42 @@ public class GrailsActionProvider implements ActionProvider {
     @Override
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
         final GrailsPlatform runtime = GrailsPlatform.getDefault();
-        if (!runtime.isConfigured()) {
+
+        // If the runtime is not configured and we are performing anything except delete show warning
+        if (!runtime.isConfigured() && !COMMAND_DELETE.equals(command)) {
             ConfigurationSupport.showConfigurationWarning(runtime);
             return;
         }
-
-        if (COMMAND_RUN.equals(command)) {
-            LifecycleManager.getDefault().saveAll();
-            executeRunAction();
-        } else if (COMMAND_DEBUG.equals(command)) {
-            LifecycleManager.getDefault().saveAll();
-            executeRunAction(true);
-        } else if (COMMAND_GRAILS_SHELL.equals(command)) {
-            executeSimpleAction("shell"); // NOI18N
-        } else if (COMMAND_TEST.equals(command)) {
-            executeSimpleAction("test-app"); // NOI18N
-        } else if (COMMAND_CLEAN.equals(command)) {
-            executeSimpleAction("clean"); // NOI18N
-        } else if (COMMAND_COMPILE.equals(command)) {
-            executeSimpleAction("compile"); // NOI18N
-        } else if (COMMAND_UPGRADE.equals(command)) {
-            executeSimpleAction("upgrade"); // NOI18N
-        } else if (COMMAND_DELETE.equals(command)) {
-            DefaultProjectOperations.performDefaultDeleteOperation(project);
-        } else if (COMMAND_BUILD.equals(command)) {
-            executeSimpleAction("war"); // NOI18N
+        switch (command) {
+            case COMMAND_RUN:
+                LifecycleManager.getDefault().saveAll();
+                executeRunAction();
+                break;
+            case COMMAND_DEBUG:
+                LifecycleManager.getDefault().saveAll();
+                executeRunAction(true);
+                break;
+            case COMMAND_GRAILS_SHELL:
+                executeSimpleAction("shell"); // NOI18N
+                break;
+            case COMMAND_TEST:
+                executeSimpleAction("test-app"); // NOI18N
+                break;
+            case COMMAND_CLEAN:
+                executeSimpleAction("clean"); // NOI18N
+                break;
+            case COMMAND_COMPILE:
+                executeSimpleAction("compile"); // NOI18N
+                break;
+            case COMMAND_UPGRADE:
+                executeSimpleAction("upgrade"); // NOI18N
+                break;
+            case COMMAND_DELETE:
+                DefaultProjectOperations.performDefaultDeleteOperation(project);
+                break;
+            case COMMAND_BUILD:
+                executeSimpleAction("war"); // NOI18N
+                break;
         }
     }
 

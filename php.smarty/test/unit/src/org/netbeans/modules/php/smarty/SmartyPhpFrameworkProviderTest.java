@@ -85,17 +85,9 @@ public class SmartyPhpFrameworkProviderTest extends NbTestCase {
         assert phpModule != null : "PHP module must exist!";
 
         FileUtil.createData(phpModule.getProjectDirectory(), "template.tpl");
-
-        // preheat isInPhpModule() job
-        SmartyPhpFrameworkProvider.getInstance().isInPhpModule(phpModule);
-        Future<?> future = SmartyPhpFrameworkProvider.RP.submit(new Runnable() {
-            @Override
-            public void run() {
-                //NOOP
-            }
-        });
-        future.get(5, TimeUnit.SECONDS);
-
+        assertFalse(SmartyPhpFrameworkProvider.getInstance().isInPhpModule(phpModule));
+        
+        phpModule.getPreferences(SmartyPhpFrameworkProvider.class, true).putBoolean(SmartyPhpFrameworkProvider.PROP_SMARTY_AVAILABLE, true);
         assertTrue(SmartyPhpFrameworkProvider.getInstance().isInPhpModule(phpModule));
     }
 

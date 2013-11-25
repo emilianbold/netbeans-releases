@@ -71,7 +71,7 @@ public final class UiUtils {
      */
     public static final String OPTIONS_PATH = "org-netbeans-modules-php-project-ui-options-PHPOptionsCategory"; // NOI18N
     public static final String FRAMEWORKS_AND_TOOLS_SUB_PATH = "FrameworksAndTools"; // NOI18N
-    public static final String FRAMEWORKS_AND_TOOLS_OPTIONS_PATH = OPTIONS_PATH+"/"+FRAMEWORKS_AND_TOOLS_SUB_PATH; // NOI18N
+    public static final String FRAMEWORKS_AND_TOOLS_OPTIONS_PATH = OPTIONS_PATH + "/" + FRAMEWORKS_AND_TOOLS_SUB_PATH; // NOI18N
     /**
      * SFS path where all the PHP customizer panels can be found.
      */
@@ -250,20 +250,38 @@ public final class UiUtils {
     @Target({ElementType.TYPE, ElementType.METHOD})
     @Retention(RetentionPolicy.SOURCE)
     public @interface PhpOptionsPanelRegistration {
+
+        /**
+         * Panel identifier.
+         * @return panel identifier
+         */
         String id();
-        /** Label shown on the tab. You may use {@code #key} syntax. */
+
+        /**
+         * Label shown on the tab. You may use {@code #key} syntax.
+         * @return tab label
+         */
         String displayName();
+
         /**
          * Optional keywords (separated by commas) for use with Quick Search (must also specify {@link #keywordsCategory}).
          * You may use {@code #key} syntax.
+         * @return optional keywords (separated by commas)
          */
-        String keywords() default "";
-        /** Keyword category for use with Quick Search (must also specify {@link #keywords}). */
-        String keywordsCategory() default "";
+        String keywords() default ""; // NOI18N
+
+        /**
+         * Keyword category for use with Quick Search (must also specify {@link #keywords}).
+         * @return keyword category for use with Quick Search
+         */
+        String keywordsCategory() default ""; // NOI18N
+
         /**
          * Position relative to sibling subpanels.
-         * Accepted only for non-default {@link #location} (Miscellaneous panel is sorted alphabetically).
+         * @return position relative to sibling subpanels
          */
         int position() default Integer.MAX_VALUE;
+
     }
+
 }
