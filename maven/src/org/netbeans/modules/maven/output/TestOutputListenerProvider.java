@@ -101,7 +101,7 @@ public class TestOutputListenerProvider implements OutputProcessor {
     
     /** Creates a new instance of TestOutputListenerProvider */
     public TestOutputListenerProvider() {
-        failSeparatePattern = Pattern.compile("(?:\\[surefire\\] )?Tests run.*[<]* FAILURE[!]*[\\s]*", Pattern.DOTALL); //NOI18N
+        failSeparatePattern = Pattern.compile("(?:\\[surefire\\] )?Tests run.*[<]* FAILURE[!]*(.*)", Pattern.DOTALL); //NOI18N
         failWindowsPattern1 = Pattern.compile("(?:\\[surefire\\] )?Tests run.*", Pattern.DOTALL); //NOI18N
         failWindowsPattern2 = Pattern.compile(".*[<]* FAILURE [!]*.*", Pattern.DOTALL); //NOI18N
         runningPattern = Pattern.compile("(?:\\[surefire\\] )?Running (.*)", Pattern.DOTALL); //NOI18N

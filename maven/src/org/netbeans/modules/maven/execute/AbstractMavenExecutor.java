@@ -198,7 +198,6 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer<Abstract
             @Override public void run() {
                 tabContext.rerun.setEnabled(false);
                 tabContext.rerunDebug.setEnabled(false);
-                tabContext.overview.setEnabled(false);
                 tabContext.overview.setRoot(null);
                 tabContext.resume.setFinder(null);
                 tabContext.stop.setEnabled(true);
@@ -216,10 +215,7 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer<Abstract
                 tabContext.rerun.setEnabled(true);
                 tabContext.rerunDebug.setEnabled(true);
                 tabContext.resume.setFinder(resumeFromFinder);
-                if (root != null) {
-                    tabContext.overview.setEnabled(true);
-                    tabContext.overview.setRoot(root);
-                }
+                tabContext.overview.setRoot(root);
                 tabContext.stop.setEnabled(false);
             }
         });
@@ -454,10 +450,14 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer<Abstract
         ShowOverviewAction() {
             super(LBL_ShowOverviewAction(), ImageUtilities.loadImageIcon("org/netbeans/modules/maven/execute/ui/buildplangoals.png", true));
             putValue(Action.SHORT_DESCRIPTION, LBL_ShowOverviewAction());
+            setEnabled(false);
         }
 
         @Override 
         public void actionPerformed(ActionEvent e) {
+            if (root == null) {
+                return; //#238704 not clear when this would happen for an enabled action.
+            }
             ShowExecutionPanel panel = new ShowExecutionPanel();
             panel.setTreeToDisplay(root, executor != null ? executor.config : null);
             DialogDescriptor dd = new DialogDescriptor(panel, "Build execution overview");
@@ -481,8 +481,18 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer<Abstract
             });
         }
 
-        private void setRoot(ExecutionEventObject.Tree root) {
+        private void setRoot(final ExecutionEventObject.Tree root) {
             this.root = root;
+            if (SwingUtilities.isEventDispatchThread()) {
+                setEnabled(root != null);
+            } else {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        setEnabled(root != null);
+                    }
+                });
+            }
         }
         
     }

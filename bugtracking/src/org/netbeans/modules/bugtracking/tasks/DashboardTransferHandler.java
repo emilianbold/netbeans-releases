@@ -96,7 +96,7 @@ public class DashboardTransferHandler extends TransferHandler {
     }
 
     /**
-     * We support both copy and move actions.
+     * We support copy
      */
     @Override
     public int getSourceActions(JComponent c) {

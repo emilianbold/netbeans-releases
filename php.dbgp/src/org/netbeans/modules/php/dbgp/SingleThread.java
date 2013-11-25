@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.dbgp;
 
 import java.util.concurrent.ExecutionException;
@@ -68,9 +67,8 @@ public abstract class SingleThread extends ThreadPoolExecutor implements Runnabl
             @Override
             public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
                 super.rejectedExecution(r, e);
-                Logger.getLogger(getClass().getName()).info("rejectedExecution");//NOI18N
+                Logger.getLogger(getClass().getName()).info("rejectedExecution"); //NOI18N
             }
-
         });
     }
 
@@ -85,29 +83,30 @@ public abstract class SingleThread extends ThreadPoolExecutor implements Runnabl
             }
         };
     }
+
     public Object getSync() {
         return sync;
     }
 
-    public final  FutureTask invokeLater() {
-        synchronized(sync) {
+    public final FutureTask invokeLater() {
+        synchronized (sync) {
             task = new FutureTask(this, null);
             execute(task);
             return task;
         }
     }
 
-    public final  void invokeAndWait() throws InterruptedException, ExecutionException {
-        synchronized(sync) {
+    public final void invokeAndWait() throws InterruptedException, ExecutionException {
+        synchronized (sync) {
             task = new FutureTask(this, null);
             execute(task);
             task.get();
         }
     }
 
-    protected final  void waitFinished() {
-        synchronized(sync) {
-            if (task != null) {                
+    protected final void waitFinished() {
+        synchronized (sync) {
+            if (task != null) {
                 try {
                     task.get(5000, TimeUnit.MILLISECONDS);
                 } catch (InterruptedException ex) {
@@ -124,4 +123,5 @@ public abstract class SingleThread extends ThreadPoolExecutor implements Runnabl
 
     @Override
     public abstract boolean cancel();
+
 }

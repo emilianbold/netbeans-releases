@@ -43,51 +43,40 @@
  */
 package org.netbeans.modules.php.dbgp.packets;
 
-
-
 /**
  * @author ads
  *
  */
 public class ContextNamesCommand extends DbgpCommand {
+    static final String CONTEXT_NAMES = "context_names"; // NOI18N
+    static final String DEPTH_ARG = "-d "; // NOI18N
+    private int myDepth;
 
-    static final String CONTEXT_NAMES    = "context_names";      // NOI18N
-    
-    static final String DEPTH_ARG        = "-d ";                // NOI18N
-
-    public ContextNamesCommand( String transactionId ) {
-        super( CONTEXT_NAMES,  transactionId);
+    public ContextNamesCommand(String transactionId) {
+        super(CONTEXT_NAMES, transactionId);
         myDepth = -1;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpCommand#wantAcknowledgment()
-     */
     @Override
-    public boolean wantAcknowledgment()
-    {
+    public boolean wantAcknowledgment() {
         return true;
     }
-    
-    public void setDepth( int depth ){
+
+    public void setDepth(int depth) {
         myDepth = depth;
     }
-    
-    public int getDepth(){
+
+    public int getDepth() {
         return myDepth;
     }
 
     @Override
-    protected String getArguments()
-    {
-        if ( myDepth > -1 ){
-            return DEPTH_ARG+ myDepth;
-        }
-        else {
+    protected String getArguments() {
+        if (myDepth > -1) {
+            return DEPTH_ARG + myDepth;
+        } else {
             return "";
         }
     }
-    
-    private int myDepth;
-    
+
 }

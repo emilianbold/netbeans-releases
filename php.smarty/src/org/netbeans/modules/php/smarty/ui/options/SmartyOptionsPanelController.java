@@ -54,9 +54,8 @@ import org.openide.util.Lookup;
 /**
  * @author Martin Fousek
  */
-@OptionsPanelController.SubRegistration(
-    location=UiUtils.OPTIONS_PATH,
-    id=SmartyFramework.OPTIONS_SUB_PATH,
+@UiUtils.PhpOptionsPanelRegistration(
+    id=SmartyFramework.OPTIONS_ID,
     displayName="#LBL_PHPSmartyOptionsName",
     position=400
 )

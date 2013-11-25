@@ -51,32 +51,26 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.php.dbgp.SessionManager;
 import org.netbeans.spi.debugger.ContextProvider;
 
-
 /**
  * @author ads
  *
  */
 public class KillActionProvider extends AbstractActionProvider {
-    public KillActionProvider( ContextProvider contextProvider ) {
+
+    public KillActionProvider(ContextProvider contextProvider) {
         super(contextProvider);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.debugger.ActionsProviderSupport#doAction(java.lang.Object)
-     */
     @Override
-    public void doAction( Object action ) {
-        Session session = ( Session )getContextProvider().lookupFirst( null , 
-                Session.class );
+    public void doAction(Object action) {
+        Session session = (Session) getContextProvider().lookupFirst(null, Session.class);
         SessionManager.getInstance().stopSession(session);
-        setEnabled( false );
+        setEnabled(false);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.debugger.ActionsProvider#getActions()
-     */
     @Override
     public Set getActions() {
-        return Collections.singleton( ActionsManager.ACTION_KILL );
-    }    
+        return Collections.singleton(ActionsManager.ACTION_KILL);
+    }
+
 }

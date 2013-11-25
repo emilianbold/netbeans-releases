@@ -62,19 +62,17 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
 
-
 /**
  * @author ads
  *
  */
-public class Utils {
+public final class Utils {
     //keep synchronized with PHPOptionsCategory.PATH_IN_LAYER
     public static final String PATH_IN_LAYER = "org-netbeans-modules-php-project-ui-options-PHPOptionsCategory/Debugger"; //NOI18N
-    final static String  MIME_TYPE = "text/x-php5"; //NOI18N
+    static final String MIME_TYPE = "text/x-php5"; //NOI18N
     private static LineFactory lineFactory = new LineFactory();
 
-    private Utils(){
-        // avoid inst-ion
+    private Utils() {
     }
 
     public static void setLineFactory(LineFactory lineFactory) {
@@ -91,86 +89,71 @@ public class Utils {
         return EditorContextDispatcher.getDefault().getCurrentLine();
     }
 
-    public static BrkpntSetCommand getCommand( DebugSession session, SessionId id,
-            AbstractBreakpoint breakpoint )
-    {
-        if ( !breakpoint.isSessionRelated(session) ){
+    public static BrkpntSetCommand getCommand(DebugSession session, SessionId id, AbstractBreakpoint breakpoint) {
+        if (!breakpoint.isSessionRelated(session)) {
             return null;
         }
-
         BrkpntSetCommand command = null;
         if (breakpoint instanceof LineBreakpoint) {
             LineBreakpoint lineBreakpoint = (LineBreakpoint) breakpoint;
-            command = BrkpntCommandBuilder.buildLineBreakpoint(id, session
-                    .getTransactionId(), lineBreakpoint);
-
-        }
-        else if ( breakpoint instanceof FunctionBreakpoint ){
+            command = BrkpntCommandBuilder.buildLineBreakpoint(id, session.getTransactionId(), lineBreakpoint);
+        } else if (breakpoint instanceof FunctionBreakpoint) {
             FunctionBreakpoint functionBreakpoint = (FunctionBreakpoint) breakpoint;
             Type type = functionBreakpoint.getType();
-            if ( type == Type.CALL ){
-                command = BrkpntCommandBuilder.buildCallBreakpoint(
-                        session.getTransactionId(), functionBreakpoint );
-            }
-            else if( type == Type.RETURN ){
-                command = BrkpntCommandBuilder.buildReturnBreakpoint(
-                        session.getTransactionId(), functionBreakpoint );
-            }
-            else {
+            if (type == Type.CALL) {
+                command = BrkpntCommandBuilder.buildCallBreakpoint(session.getTransactionId(), functionBreakpoint);
+            } else if (type == Type.RETURN) {
+                command = BrkpntCommandBuilder.buildReturnBreakpoint(session.getTransactionId(), functionBreakpoint);
+            } else {
                 assert false;
             }
         }
-
         if (!breakpoint.isEnabled()) {
             command.setState(State.DISABLED);
         }
-
         return command;
     }
 
-    public static AbstractBreakpoint getBreakpoint( String id ) {
-        Breakpoint[] breakpoints = DebuggerManager.getDebuggerManager()
-                .getBreakpoints();
+    public static AbstractBreakpoint getBreakpoint(String id) {
+        Breakpoint[] breakpoints = DebuggerManager.getDebuggerManager().getBreakpoints();
         for (Breakpoint breakpoint : breakpoints) {
             if (!(breakpoint instanceof AbstractBreakpoint)) {
                 continue;
             }
             AbstractBreakpoint bkpnt = (AbstractBreakpoint) breakpoint;
             String bkpntId = bkpnt.getBreakpointId();
-            if ( id.equals( bkpntId )){
+            if (id.equals(bkpntId)) {
                 return bkpnt;
             }
         }
         return null;
     }
 
-    public static void cleanBreakpoint( DebugSession session ,
-            String breakpointId )
-    {
-        BrkpntRemoveCommand removeCommand = new BrkpntRemoveCommand(
-                session.getTransactionId() , breakpointId );
-        session.sendCommandLater( removeCommand );
+    public static void cleanBreakpoint(DebugSession session, String breakpointId) {
+        BrkpntRemoveCommand removeCommand = new BrkpntRemoveCommand(session.getTransactionId(), breakpointId);
+        session.sendCommandLater(removeCommand);
     }
 
     public static boolean isPhpFile(FileObject fileObject) {
         if (fileObject == null) {
             return false;
-        }
-        else {
+        } else {
             String mimeType = fileObject.getMIMEType();
             return MIME_TYPE.equals(mimeType);
         }
     }
 
     /**
-     * NB : <code>line</code> is 1-based debugger DBGP line.
-     * It differs from editor line !
+     * NB :
+     * <code>line</code> is 1-based debugger DBGP line. It differs from editor
+     * line !
+     *
      * @param line 1-based line in file
-     * @param remoteFileName  remote file name
+     * @param remoteFileName remote file name
      * @param id current debugger session id
      * @return
      */
-    public static Line getLine( int line, String remoteFileName , SessionId id) {
+    public static Line getLine(int line, String remoteFileName, SessionId id) {
         return lineFactory.getLine(line, remoteFileName, id);
     }
 
@@ -180,7 +163,6 @@ public class Utils {
             if (dataObject == null) {
                 return null;
             }
-
             LineCookie lineCookie = (LineCookie) dataObject.getLookup().lookup(LineCookie.class);
             if (lineCookie == null) {
                 return null;
@@ -190,12 +172,13 @@ public class Utils {
                 return null;
             }
             try {
-                return set.getCurrent(line-1);
+                return set.getCurrent(line - 1);
             } catch (IndexOutOfBoundsException | IllegalArgumentException e) {
-                Logger.getLogger( Utils.class.getName()).log(Level.FINE, e.getMessage(), e);
+                Logger.getLogger(Utils.class.getName()).log(Level.FINE, e.getMessage(), e);
             }
             return null;
         }
+
     }
 
     public static void openPhpOptionsDialog() {

@@ -50,8 +50,6 @@ import java.util.Map;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.DelegatingConnector;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
-import org.netbeans.modules.bugtracking.TestKit;
-import static org.netbeans.modules.bugtracking.api.APITestKit.getAPIRepo;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.spi.BugtrackingSupport;
@@ -102,10 +100,10 @@ public class APITestConnector implements BugtrackingConnector {
 
     @Override
     public Repository createRepository(RepositoryInfo info) {
-        APITestRepository  apiRepo = apiRepos.get(info.getId());
+        APITestRepository  apiRepo = apiRepos.get(info.getID());
         if (apiRepo == null) {
             apiRepo = createAPIRepo(getInfo());
-            apiRepos.put(info.getId(), apiRepo);
+            apiRepos.put(info.getID(), apiRepo);
         }
         return factory.createRepository(apiRepo);
     }
@@ -155,23 +153,8 @@ public class APITestConnector implements BugtrackingConnector {
         }
 
         @Override
-        public Collection<APITestIssue> getIssues(APITestQuery q) {
-            return q.getIssues();
-        }
-
-        @Override
         public void refresh(APITestQuery q) {
             q.refresh();
-        }
-
-        @Override
-        public void removePropertyChangeListener(APITestQuery q, PropertyChangeListener listener) {
-            q.removePropertyChangeListener(listener);
-        }
-
-        @Override
-        public void addPropertyChangeListener(APITestQuery q, PropertyChangeListener listener) {
-            q.addPropertyChangeListener(listener);
         }
 
         @Override
@@ -187,6 +170,11 @@ public class APITestConnector implements BugtrackingConnector {
         @Override
         public boolean canRemove(APITestQuery q) {
             return q.canRemove();
+        }
+
+        @Override
+        public void setIssueContainer(APITestQuery q, IssueContainer<APITestIssue> c) {
+            q.setIssueContainer(c);
         }
 
     }

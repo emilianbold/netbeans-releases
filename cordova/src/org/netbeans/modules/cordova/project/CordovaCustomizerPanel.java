@@ -356,18 +356,30 @@ public class CordovaCustomizerPanel extends javax.swing.JPanel implements Action
     }
 
     public void setVisibility() {
-        boolean platformsReady = CordovaPlatform.getDefault().isReady();
-        boolean isCordovaProject = CordovaPlatform.isCordovaProject(project);
-        
-        createConfigs.setVisible(!isCordovaProject && platformsReady);
-        createConfigsLabel.setVisible(!isCordovaProject && platformsReady);
-        jTabbedPane1.setVisible(isCordovaProject && platformsReady);
-        mobilePlatformsSetup.setVisible(isCordovaProject && platformsReady);
+        Runnable run = new Runnable() {
 
-        cordovaPanel.update();
-        if (config!=null)
-            cordovaPanel.load(config);
-        validate();
+            @Override
+            public void run() {
+                boolean platformsReady = CordovaPlatform.getDefault().isReady();
+                boolean isCordovaProject = CordovaPlatform.isCordovaProject(project);
+
+                createConfigs.setVisible(!isCordovaProject && platformsReady);
+                createConfigsLabel.setVisible(!isCordovaProject && platformsReady);
+                jTabbedPane1.setVisible(isCordovaProject && platformsReady);
+                mobilePlatformsSetup.setVisible(isCordovaProject && platformsReady);
+
+                cordovaPanel.update();
+                if (config != null) {
+                    cordovaPanel.load(config);
+                }
+                validate();
+            }
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            run.run();
+        } else {
+            SwingUtilities.invokeLater(run);
+        }
     }
 
     @Override

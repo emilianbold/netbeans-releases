@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.bugtracking.tasks.dashboard;
 
 import java.beans.PropertyChangeEvent;
@@ -48,12 +47,14 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.tasks.Category;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions;
 import org.netbeans.modules.team.commons.treelist.TreeListNode;
 import org.openide.util.ImageUtilities;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 public class UnsubmittedCategoryNode extends CategoryNode implements Submitable {
@@ -61,9 +62,10 @@ public class UnsubmittedCategoryNode extends CategoryNode implements Submitable 
     private final RepositoryImpl repository;
     private final PropertyChangeListener unsubmittedListener;
     private static final ImageIcon UNSUBMITTED_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/category_unsubmitted.png", true);
+    private final RequestProcessor REQUEST_PROCESSOR = RequestProcessor.getDefault(); // NOI18N
 
-    public UnsubmittedCategoryNode(Category category, RepositoryImpl repository, boolean refresh) {
-        super(category, refresh);
+    public UnsubmittedCategoryNode(Category category, RepositoryImpl repository) {
+        super(category, false);
         this.repository = repository;
         this.unsubmittedListener = new UnsubmittedCategoryListener();
         repository.addPropertyChangeListener(WeakListeners.propertyChange(unsubmittedListener, repository));
@@ -104,9 +106,22 @@ public class UnsubmittedCategoryNode extends CategoryNode implements Submitable 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(RepositoryImpl.EVENT_UNSUBMITTED_ISSUES_CHANGED)) {
-                UnsubmittedCategoryNode.this.updateContent();
-                DashboardViewer.getInstance().updateCategoryNode(UnsubmittedCategoryNode.this);
+                if (SwingUtilities.isEventDispatchThread()) {
+                    REQUEST_PROCESSOR.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            updateCatNode();
+                        }
+                    });
+                } else {
+                    updateCatNode();
+                }
             }
+        }
+
+        private void updateCatNode() {
+            UnsubmittedCategoryNode.this.updateContent();
+            DashboardViewer.getInstance().updateCategoryNode(UnsubmittedCategoryNode.this);
         }
     }
 }

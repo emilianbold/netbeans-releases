@@ -49,10 +49,6 @@ import org.apache.maven.execution.ExecutionEvent;
 import org.json.simple.JSONObject;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.maven.execute.cmd.ExecMojo;
-import org.netbeans.modules.maven.execute.cmd.ExecProject;
-import org.netbeans.modules.maven.execute.cmd.ExecSession;
 import org.openide.windows.FoldHandle;
 import org.openide.windows.IOFolding;
 import org.openide.windows.IOPosition;
@@ -199,7 +195,7 @@ public class ExecutionEventObject {
             if (parentProject != null) {
                 //in forked environment..
                 assert parentProject.foldHandle != null;
-                this.foldHandle = parentProject.foldHandle.startFold(true);
+                this.foldHandle = parentProject.foldHandle.silentStartFold(true);
                 return;
             }
             
@@ -212,7 +208,7 @@ public class ExecutionEventObject {
                     parentProject.startFold(io);
                 }
                 assert parentProject.foldHandle != null;
-                this.foldHandle = parentProject.foldHandle.startFold(true);
+                this.foldHandle = parentProject.foldHandle.silentStartFold(true);
             }
         }
 
@@ -224,7 +220,7 @@ public class ExecutionEventObject {
             if (foldHandle != null) {
                 finishInnerOutputFold();
                 if (!foldHandle.isFinished()) {
-                    foldHandle.finish();
+                    foldHandle.silentFinish();
                 }
 //                foldHandle = null;
             }
@@ -237,10 +233,10 @@ public class ExecutionEventObject {
          */
         public void startInnerOutputFold(InputOutput io) {
             if (innerOutputFoldHandle != null && !innerOutputFoldHandle.isFinished()) {
-                innerOutputFoldHandle.finish();
+                innerOutputFoldHandle.silentFinish();
             }
             if (foldHandle != null) {
-                innerOutputFoldHandle = foldHandle.startFold(true);
+                innerOutputFoldHandle = foldHandle.silentStartFold(true);
             } else {
                 innerOutputFoldHandle = IOFolding.startFold(io, true);
             }
@@ -252,7 +248,7 @@ public class ExecutionEventObject {
         public void finishInnerOutputFold() {
             if (innerOutputFoldHandle != null) {
                 if (!innerOutputFoldHandle.isFinished()) {
-                    innerOutputFoldHandle.finish();
+                    innerOutputFoldHandle.silentFinish();
                 }
                 innerOutputFoldHandle = null;
             }

@@ -1120,10 +1120,7 @@ abstract public class CsmCompletionQuery {
             boolean onlyVisible = visible.get();
             // type is not visible until check
             visible.set(false);
-            boolean _const = false;
-            for (int i = 0; i < item.getTokenCount() - 1; i++) {
-                _const |= item.getTokenText(i).equals("const"); // NOI18N
-            }
+            boolean _const = checkQualifier(item, CppTokenId.CONST);
             List<CsmObject> visibleObject = new ArrayList<CsmObject>();
             List<CsmObject> td = new ArrayList<CsmObject>();
             AtomicBoolean hasClassifier = new AtomicBoolean(false);
@@ -2070,7 +2067,9 @@ abstract public class CsmCompletionQuery {
                     if (resolve(item.getTokenOffset(0), operatorPrefix, false)) {
                         res = compResolver.getResult();
                     }
-                    res.addResulItemsToCol(mtdList);
+                    if (res != null) {
+                        res.addResulItemsToCol(mtdList);
+                    }
                     result = new CsmCompletionResult(component, getBaseDocument(), res, operatorPrefix, item, endOffset, 0, 0, isProjectBeeingParsed(), contextElement, instantiateTypes); // NOI18N
                     lastType = null;
                     switch (item.getTokenID(0)) {
@@ -2745,6 +2744,25 @@ abstract public class CsmCompletionQuery {
             return cont;
         }
 
+        private boolean checkQualifier(CsmCompletionExpression exp, CppTokenId qualifier) {
+            // start and end are set to default values for CsmCompletionExpression.TYPE
+            int start = 0;
+            int end = exp.getTokenCount() - 1;
+            
+            if (exp.getExpID() == CsmCompletionExpression.VARIABLE) {
+                // TODO: maybe it is better to have VARIABLE tokens in the same sequence as in TYPE.
+                start = 1;
+                end = exp.getTokenCount();
+            }
+            
+            for (int i = start; i < end; i++) {
+                if (qualifier.equals(exp.getTokenID(i))) {
+                  return true;
+                }
+            }
+            return false;
+        }        
+        
         private CsmObject createInstantiation(CsmTemplate template, CsmCompletionExpression exp, List<CsmType> typeList) {
             if (exp != null || !typeList.isEmpty()) {
                 CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();

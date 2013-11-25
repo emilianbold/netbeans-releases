@@ -67,7 +67,7 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
-import org.netbeans.modules.maven.j2ee.ExecutionChecker;
+import org.netbeans.modules.maven.j2ee.execution.ExecutionChecker;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.modules.maven.j2ee.OneTimeDeployment;
 import org.netbeans.modules.maven.j2ee.SessionContent;
@@ -203,6 +203,7 @@ public class SelectAppServerPanel extends javax.swing.JPanel {
         MavenProjectSupport.changeServer(project, true);
 
         // refresh all subprojects
+        //TODO replace with DependencyProjectProvider or ProjectContainerProvider
         SubprojectProvider spp = targetPrj.getLookup().lookup(SubprojectProvider.class);
         //mkleint: we are assuming complete result (transitive projects included)
         //that's ok as far as the current maven impl goes afaik, but not according to the

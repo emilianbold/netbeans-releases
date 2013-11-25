@@ -1117,7 +1117,7 @@ final public class PersistenceHandler implements PersistenceObserver {
         return true;
     }
 
-    private static Rectangle computeBounds(boolean centeredHorizontaly, boolean centeredVerticaly,
+    public static Rectangle computeBounds(boolean centeredHorizontaly, boolean centeredVerticaly,
     int x, int y, int width, int height, float relativeX, float relativeY, float relativeWidth, float relativeHeight) {
         Rectangle bounds;
         if(width > 0 && height > 0) {

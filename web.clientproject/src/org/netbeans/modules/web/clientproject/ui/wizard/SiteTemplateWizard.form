@@ -29,7 +29,8 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
                       <Component id="onlineTemplateDescriptionLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
+                      <Component id="clearCacheLabel" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Component id="archiveTemplatePanel" alignment="1" max="32767" attributes="0"/>
                   <Component id="onlineTemplateScrollPane" alignment="0" max="32767" attributes="0"/>
@@ -59,9 +60,12 @@
               <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
               <Component id="onlineTemplateRadioButton" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="onlineTemplateScrollPane" pref="76" max="32767" attributes="0"/>
+              <Component id="onlineTemplateScrollPane" min="-2" pref="67" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="onlineTemplateDescriptionLabel" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="onlineTemplateDescriptionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="clearCacheLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="onlineTemplateDescriptionScrollPane" min="-2" pref="76" max="-2" attributes="0"/>
           </Group>
@@ -134,6 +138,15 @@
           <ResourceString bundle="org/netbeans/modules/web/clientproject/ui/wizard/Bundle.properties" key="SiteTemplateWizard.onlineTemplateDescriptionLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="clearCacheLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="CLEAR CACHE" noResource="true"/>
+      </Properties>
+      <Events>
+        <EventHandler event="mouseEntered" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="clearCacheLabelMouseEntered"/>
+        <EventHandler event="mousePressed" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="clearCacheLabelMousePressed"/>
+      </Events>
     </Component>
     <Container class="javax.swing.JScrollPane" name="onlineTemplateDescriptionScrollPane">
       <AuxValues>

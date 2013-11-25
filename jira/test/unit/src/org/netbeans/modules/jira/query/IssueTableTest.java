@@ -48,15 +48,12 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 import junit.framework.Test;
-import org.netbeans.modules.bugtracking.spi.IssueController;
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.jira.*;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.IssuetableTestFactory;
 import org.netbeans.modules.jira.repository.JiraRepository;
-import org.netbeans.modules.jira.util.JiraUtils;
 
 /**
  *

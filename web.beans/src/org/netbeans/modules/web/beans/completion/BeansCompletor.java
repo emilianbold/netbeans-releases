@@ -43,32 +43,41 @@ package org.netbeans.modules.web.beans.completion;
 
 import java.io.IOException;
 import java.util.*;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeElement;
 import javax.swing.text.Document;
+import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
-import org.w3c.dom.Node;
 
 /**
- * Various completor for code completing XML tags and attributes in Hibername
- * configuration and mapping file
- *
- * @author Dongmei Cao
+ * Various completor for code completing XML tags and attributes 
+ * 
  */
 public abstract class BeansCompletor {
 
-
-    
     private int anchorOffset = -1;
 
+    public enum TAG {
+
+        CLASS, STEREOTYPE
+    };
+
+    TAG tag;
+
     public abstract List<BeansCompletionItem> doCompletion(CompletionContext context);
+
+    BeansCompletor(TAG tag) {
+        this.tag = tag;
+    }
 
     protected void setAnchorOffset(int anchorOffset) {
         this.anchorOffset = anchorOffset;
@@ -81,11 +90,15 @@ public abstract class BeansCompletor {
     /**
      * A completor for completing class tag
      */
-    public static class EntityClassCompletor extends BeansCompletor {
+    public static class JavaClassesCompletor extends BeansCompletor {
+
+        JavaClassesCompletor(TAG tag) {
+            super(tag);
+        }
 
         @Override
         public List<BeansCompletionItem> doCompletion(final CompletionContext context) {
-            final List<BeansCompletionItem> results = new ArrayList<BeansCompletionItem>();
+            final List<BeansCompletionItem> results = new ArrayList<>();
             try {
                 Document doc = context.getDocument();
                 final String typedChars = context.getTypedPrefix();
@@ -110,31 +123,41 @@ public abstract class BeansCompletor {
                 @Override
                 public void run(CompilationController cc) throws Exception {
                     cc.toPhase(Phase.ELEMENTS_RESOLVED);
-                    Project project = FileOwnerQuery.getOwner(fo);
-//                    EntityClassScopeProvider provider = (EntityClassScopeProvider) project.getLookup().lookup(EntityClassScopeProvider.class);
-//                    EntityClassScope ecs = null;
-//                    Entity[] entities = null;
-//                    if (provider != null) {
-//                        ecs = provider.findEntityClassScope(fo);
-//                    }
-//                    if (ecs != null) {
-//                        entities = ecs.getEntityMappingsModel(false).runReadAction(new MetadataModelAction<EntityMappingsMetadata, Entity[]>() {
-//
-//                            @Override
-//                            public Entity[] run(EntityMappingsMetadata metadata) throws Exception {
-//                                return metadata.getRoot().getEntity();
-//                            }
-//                        });
-//                    }
-//                    // add classes 
-//                    if(entities != null) {
-//                        for (Entity entity : entities) {
-//                            if (typedPrefix.length() == 0 || entity.getClass2().toLowerCase().startsWith(typedPrefix.toLowerCase()) || entity.getName().toLowerCase().startsWith(typedPrefix.toLowerCase())) {
-//                                BeansCompletionItem item = BeansCompletionItem.createAttribValueItem(substitutionOffset, entity.getClass2());
-//                                results.add(item);
-//                            }
-//                        }
-//                    }
+                    Set<ElementHandle<TypeElement>> declaredTypes = null;
+                    declaredTypes = cc.getClasspathInfo().getClassIndex().getDeclaredTypes(typedPrefix, ClassIndex.NameKind.PREFIX, Collections.singleton(ClassIndex.SearchScope.SOURCE));//to have dependencies: EnumSet.allOf(ClassIndex.SearchScope.class)
+
+                    // add classes 
+                    if (declaredTypes != null && declaredTypes.size() > 0) {
+                        for (ElementHandle<TypeElement> cl : declaredTypes) {
+                            ElementKind kind = cl.getKind();
+                            switch (tag) {
+                                case CLASS: {
+
+                                    if (kind == ElementKind.CLASS) {
+                                        TypeElement te = cl.resolve(cc);
+                                        if (isAlternative(te)) {
+
+                                            BeansCompletionItem item = BeansCompletionItem.createBeansTagValueItem(substitutionOffset-typedPrefix.length(), cl.getQualifiedName(), te.getSimpleName().toString());
+                                            results.add(item);
+                                        }
+                                    }
+
+                                }
+                                break;
+                                case STEREOTYPE: {
+                                    if (kind == ElementKind.ANNOTATION_TYPE) {
+                                        TypeElement te = cl.resolve(cc);
+                                        if (isAlternative(te)) {
+
+                                            BeansCompletionItem item = BeansCompletionItem.createBeansTagValueItem(substitutionOffset-typedPrefix.length(), cl.getQualifiedName(), te.getSimpleName().toString());
+                                            results.add(item);
+                                        }
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                    }
                 }
             }, true);
 
@@ -142,32 +165,16 @@ public abstract class BeansCompletor {
         }
     }
 
-    private static String getProviderClass(Node tag) {
-        String name = null;
-        while (tag != null && !"persistence-unit".equals(tag.getNodeName())) {
-            tag = tag.getParentNode();//NOI18N
-        }
-        if (tag != null) {
-            for (Node ch = tag.getFirstChild(); ch != null; ch = ch.getNextSibling()) {
-                if ("provider".equals(ch.getNodeName())) {//NOI18N
-                    name = ch.getFirstChild().getNodeValue();
+    private static boolean isAlternative(TypeElement te) {
+        List<? extends AnnotationMirror> annotationMirrors = te.getAnnotationMirrors();
+        for (AnnotationMirror annotation : annotationMirrors) {
+            if (annotation.getAnnotationType().asElement() instanceof TypeElement) {
+                String typeName = ((TypeElement) annotation.getAnnotationType().asElement()).getQualifiedName().toString();
+                if (AnnotationUtil.ALTERNATVE.equals(typeName)) {
+                    return true;
                 }
             }
         }
-        return name;
-    }
-
-    private static String getPropertyName(Node tag) {
-        String name = null;
-        while (tag != null && !"property".equals(tag.getNodeName())) {
-            tag = tag.getParentNode();//NOI18N
-        }
-        if (tag != null) {
-            Node nmN = tag.getAttributes().getNamedItem("name");//NOI18N
-            if (nmN != null) {
-                name = nmN.getNodeValue();
-            }
-        }
-        return name;
+        return false;
     }
 }

@@ -202,7 +202,7 @@ public final class ModuleActions implements ActionProvider, ExecProject {
         } else if (command.equals(COMMAND_TEST)) {
             return project.supportedTestTypes().contains("unit");
         } else if (command.equals(COMMAND_TEST_SINGLE)) {
-            return findTestSourcesForSources(context) != null || findTestSources(context, true) != null;
+            return findTestSourcesForSources(context) != null || findTestSources(context, true) != null || findTestSourcesForFiles(context) != null;
         } else if (command.equals(COMMAND_DEBUG_TEST_SINGLE)) {
             TestSources testSources = findTestSourcesForSources(context);
             if (testSources == null)
@@ -247,9 +247,13 @@ public final class ModuleActions implements ActionProvider, ExecProject {
     private static final String SUBSTNG = "NGTest.java"; // NOI18N
     
     private FileObject[] findSources(Lookup context) {
+        return findSources(context, false, true);
+    }
+    
+    private FileObject[] findSources(Lookup context, boolean findInPackages, boolean strict) {
         FileObject srcDir = project.getSourceDirectory();
         if (srcDir != null) {
-            FileObject[] files = ActionUtils.findSelectedFiles(context, srcDir, ".java", true); // NOI18N
+            FileObject[] files = ActionUtils.findSelectedFiles(context, srcDir, findInPackages ? null : ".java", strict); // NOI18N
             //System.err.println("findSources: srcDir=" + srcDir + " files=" + (files != null ? java.util.Arrays.asList(files) : null) + " context=" + context);
             return files;
         } else {
@@ -295,6 +299,25 @@ public final class ModuleActions implements ActionProvider, ExecProject {
         }
         return null;
     }
+    
+    @CheckForNull private FileObject[] findTestSourcesFOs(@NonNull Lookup context, boolean allowFolders, boolean strict) {
+        TYPE: for (String testType : project.supportedTestTypes()) {
+            FileObject testSrcDir = project.getTestSourceDirectory(testType);
+            if (testSrcDir != null) {
+                FileObject[] files = ActionUtils.findSelectedFiles(context, testSrcDir, null, strict);
+                if (files != null) {
+                    for (FileObject file : files) {
+                        if (!(file.hasExt("java") || allowFolders && file.isFolder())) {
+                            break TYPE;
+                        }
+                    }
+                    return files;
+                }
+            }
+        }
+        return null;
+    }
+    
     @CheckForNull private TestSources findTestMethodSources(@NonNull Lookup context) {
         SingleMethod meth = context.lookup(SingleMethod.class);
         if (meth != null) {
@@ -328,11 +351,15 @@ public final class ModuleActions implements ActionProvider, ExecProject {
     
     /** Find tests corresponding to selected sources.
      */
-    private TestSources findTestSourcesForSources(Lookup context) {
+    TestSources findTestSourcesForSources(Lookup context) {
         String testType = "unit"; // NOI18N
         FileObject[] sourceFiles = findSources(context);
         if (sourceFiles == null) {
-            return null;
+            // no source file selected. try folders
+            sourceFiles = findSources(context, true, true);
+            if (sourceFiles == null) {
+                return null;
+            }
         }
         FileObject testSrcDir = project.getTestSourceDirectory(testType);
         if (testSrcDir == null) {
@@ -343,13 +370,72 @@ public final class ModuleActions implements ActionProvider, ExecProject {
         if (matches != null) {
             return new TestSources(matches, testType, testSrcDir, null);
         } else {
-	    matches = ActionUtils.regexpMapFiles(sourceFiles, srcDir, SRCDIRJAVA, testSrcDir, SUBSTNG, true);
-	    if (matches != null) {
-		return new TestSources(matches, testType, testSrcDir, null);
-	    } else {
-		return null;
-	    }
+            matches = ActionUtils.regexpMapFiles(sourceFiles, srcDir, SRCDIRJAVA, testSrcDir, SUBSTNG, true);
+            if (matches != null) {
+                return new TestSources(matches, testType, testSrcDir, null);
+            } else {
+                // no test files found. The selected FOs must be folders under source packages
+                ArrayList<FileObject> testFOs = new ArrayList<FileObject>();
+                for (FileObject file : sourceFiles) {
+                    if (file.isFolder()) {
+                        String relativePath = FileUtil.getRelativePath(srcDir, file);
+                        if (relativePath != null && !relativePath.isEmpty()) {
+                            FileObject testFO = FileUtil.toFileObject(new File(FileUtil.toFile(testSrcDir).getPath().concat(File.separator).concat(relativePath)));
+                            if (testFO != null && testFO.getChildren().length != 0) {
+                                testFOs.add(testFO);
+                            }
+                        }
+                    }
+                }
+                if (testFOs.isEmpty()) {
+                    return null;
+                }
+                return new TestSources(testFOs.toArray(new FileObject[testFOs.size()]), testType, testSrcDir, null);
+            }
         }
+    }
+    
+    /** Find tests corresponding to selected files. 
+     * Selected files might be under Source and/or Test Packages
+     */
+    @CheckForNull
+    TestSources findTestSourcesForFiles(Lookup context) {
+        String testType = "unit"; // NOI18N
+        FileObject[] sourcesFOs = findSources(context, false, false);
+        FileObject[] testSourcesFOs = findTestSourcesFOs(context, false, false);
+        HashSet<FileObject> testFiles = new HashSet<FileObject>();
+        FileObject testRoot = project.getTestSourceDirectory(testType);
+        if (testRoot == null) {
+            return null;
+        }
+        if (testSourcesFOs == null) { // no test files were selected
+            return findTestSources(context, true); // return tests which belong to selected source files, if any
+        } else {
+            if (sourcesFOs == null) { // only test files were selected
+                return findTestSources(context, false);
+            } else { // both test and source files were selected, do not return any dublicates
+                testFiles.addAll(Arrays.asList(testSourcesFOs));
+                //Try to find the test under the test roots
+                FileObject srcRoot = project.getSourceDirectory();
+                FileObject[] files2 = ActionUtils.regexpMapFiles(sourcesFOs, srcRoot, SRCDIRJAVA, testRoot, SUBST, true);
+                if (files2 != null) {
+                    for (FileObject fo : files2) {
+                        if (!testFiles.contains(fo)) {
+                            testFiles.add(fo);
+                        }
+                    }
+                }
+                FileObject[] files2NG = ActionUtils.regexpMapFiles(sourcesFOs, srcRoot, SRCDIRJAVA, testRoot, SUBSTNG, true);
+                if (files2NG != null) {
+                    for (FileObject fo : files2NG) {
+                        if (!testFiles.contains(fo)) {
+                            testFiles.add(fo);
+                        }
+                    }
+                }
+            }
+        }
+        return testFiles.isEmpty() ? null : new TestSources(testFiles.toArray(new FileObject[testFiles.size()]), testType, testRoot, null);
     }
     
     @Messages("MSG_no_source=No source to operate on.")
@@ -411,7 +497,9 @@ public final class ModuleActions implements ActionProvider, ExecProject {
                     TestSources testSources = findTestSourcesForSources(context);
                     if (testSources == null) {
                         testSources = findTestSources(context, true);
-
+                        if (testSources == null) {
+                            testSources = findTestSourcesForFiles(context);
+                        }
                     }
                     p.setProperty("continue.after.failing.tests", "true");  //NOI18N
                     targetNames = setupTestSingle(p, testSources);

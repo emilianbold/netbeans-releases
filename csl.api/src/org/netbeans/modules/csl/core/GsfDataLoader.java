@@ -46,8 +46,11 @@ package org.netbeans.modules.csl.core;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.ErrorManager;
@@ -68,7 +71,8 @@ import org.openide.util.NbBundle;
  */
 public class GsfDataLoader extends UniFileLoader {
     boolean initialized;
-
+    Set<String> registeredMimes;
+    
     public GsfDataLoader() {
         super("org.netbeans.modules.csl.core.GsfDataObject");
     }
@@ -81,19 +85,53 @@ public class GsfDataLoader extends UniFileLoader {
 
     final void initExtensions() {
         ExtensionList list = new ExtensionList();
-
+        Set mimes = new HashSet<String>();
         for (Language language : LanguageRegistry.getInstance()) {
             
             if(language.useCustomEditorKit()) {
                 //do not try to load files which has their own editor support and dataobject
                 continue;
             }
-            
+            mimes.add(language.getMimeType());
             list.addMimeType(language.getMimeType());
         }
         setExtensions(list);
-
+        registeredMimes = mimes;
         initialized = true;
+    }
+
+    /**
+     * In addition to mimetype list, checks base mime type if the mime is compound.
+     * This is a workaround for loaders implementation do not currently support compound MIME types.
+     * See defect #
+     * 
+     * @param fo file object to recognize 
+     * @return primary file / null
+     */
+    @Override
+    protected FileObject findPrimaryFile(FileObject fo) {
+        FileObject pf = super.findPrimaryFile(fo);
+        if (pf != null) {
+            return pf;
+        }
+        String mime = fo.getMIMEType();
+        int slash = -1;
+        int l = mime.length();
+        for (int i = 0; i < l; i++) {
+            char c = mime.charAt(i);
+            if (c == '/') { // NOI18N
+                slash = i;
+            } else if (c == '+') { // NOI18N
+                if (slash == -1) {
+                    return null;
+                }
+                String baseMime = mime.substring(0, slash + 1) + mime.substring(i + 1);
+                if (registeredMimes.contains(baseMime)) {
+                    return fo;
+                }
+            }
+        }
+        return null;
     }
 
     @Override

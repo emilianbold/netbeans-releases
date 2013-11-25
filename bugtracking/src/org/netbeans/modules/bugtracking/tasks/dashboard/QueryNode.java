@@ -48,6 +48,7 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 import javax.swing.*;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.QueryImpl;
@@ -58,6 +59,7 @@ import org.netbeans.modules.bugtracking.settings.DashboardSettings;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.team.commons.treelist.TreeLabel;
 import org.netbeans.modules.team.commons.treelist.TreeListNode;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -77,15 +79,30 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
 
     private static final ImageIcon QUERY_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/query.png", true);
 
-    public QueryNode(QueryImpl query, TreeListNode parent, boolean refresh) {
-        super(refresh, true, parent, query.getDisplayName(), QUERY_ICON);
+    public QueryNode(QueryImpl query, TreeListNode parent) {
+        super(!query.wasRefreshed(), true, parent, query.getDisplayName(), QUERY_ICON);
         this.query = query;
         queryListener = new QueryListener();
     }
 
     @Override
     void refreshTaskContainer() {
+        // we want to make sure, that this method blocks until finnish was notified (see queryListener).
+        // so if possible, acquire a lock, so that the .acquire after query.refresh()
+        // blocks until the finnish event .releases
+        s.tryAcquire();
+        
         query.refresh();
+        
+        try {
+            // just block until query finished is notified and
+            // we retrieve the issues then
+            s.acquire();
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } finally {
+            s.release();
+        }        
     }
 
     @Override
@@ -259,17 +276,25 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
         return DashboardSettings.getInstance().isTasksLimitQuery();
     }
 
+    private final Semaphore s = new Semaphore(1);
     private class QueryListener implements PropertyChangeListener {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName().equals(QueryImpl.EVENT_QUERY_REFRESHED)) {
+            if (evt.getPropertyName().equals(QueryImpl.EVENT_QUERY_STARTED)) {
+                if(!isRefresh() && s.tryAcquire()) {
+                    // not yet refreshing
+                    // and not blocked => query not running - invoke via refresh content
+                    refreshContent();
+                }
+            } else if (evt.getPropertyName().equals(QueryImpl.EVENT_QUERY_FINISHED)) {
+                s.release();
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
                         updateContent();
                     }
-                });
+                });                
             }
         }
     }

@@ -64,8 +64,10 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import static org.netbeans.api.java.lexer.JavaTokenId.*;
+import org.netbeans.api.java.source.DocTreePathHandle;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ElementUtilities;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
@@ -78,15 +80,17 @@ import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
  */
 public class RenameTransformer extends RefactoringVisitor {
 
-    private Set<ElementHandle<ExecutableElement>> allMethods;
-    private TreePathHandle handle;
-    private String newName;
-    private boolean renameInComments;
-    private RenameRefactoring refactoring;
+    private final Set<ElementHandle<ExecutableElement>> allMethods;
+    private final TreePathHandle handle;
+    private final DocTreePathHandle docHandle;
+    private final String newName;
+    private final boolean renameInComments;
+    private final RenameRefactoring refactoring;
 
-    public RenameTransformer(TreePathHandle handle, RenameRefactoring refactoring, Set<ElementHandle<ExecutableElement>> am, boolean renameInComments) {
+    public RenameTransformer(TreePathHandle handle, DocTreePathHandle docHandle, RenameRefactoring refactoring, Set<ElementHandle<ExecutableElement>> am, boolean renameInComments) {
         super(true);
         this.handle = handle;
+        this.docHandle = docHandle;
         this.refactoring = refactoring;
         this.newName = refactoring.getNewName();
         this.allMethods = am;
@@ -94,7 +98,17 @@ public class RenameTransformer extends RefactoringVisitor {
     }
 
     @Override
+    public Tree scan(Tree tree, Element p) {
+        if(p == null && handle == null) {
+            p = docHandle != null? ((DocTrees)workingCopy.getTrees()).getElement(docHandle.resolve(workingCopy))
+                                                       : handle.resolveElement(workingCopy);
+        }
+        return super.scan(tree, p);
+    }
+
+    @Override
     public Tree visitCompilationUnit(CompilationUnitTree node, Element p) {
+        GeneratorUtilities.get(workingCopy).importComments(node, node);
         if (!renameInComments) {
             return super.visitCompilationUnit(node, p);
         }
@@ -139,7 +153,7 @@ public class RenameTransformer extends RefactoringVisitor {
 
     @Override
     public Tree visitLabeledStatement(LabeledStatementTree tree, Element p) {
-        if(handle.getKind() == Tree.Kind.LABELED_STATEMENT && tree == handle.resolve(workingCopy).getLeaf()) {
+        if(handle != null && handle.getKind() == Tree.Kind.LABELED_STATEMENT && tree == handle.resolve(workingCopy).getLeaf()) {
             LabeledStatementTree newTree = make.LabeledStatement(newName, tree.getStatement());
             rewrite(tree, newTree);
         }
@@ -148,7 +162,7 @@ public class RenameTransformer extends RefactoringVisitor {
 
     @Override
     public Tree visitContinue(ContinueTree tree, Element p) {
-        if(handle.getKind() == Tree.Kind.LABELED_STATEMENT) {
+        if(handle != null && handle.getKind() == Tree.Kind.LABELED_STATEMENT) {
             StatementTree target = workingCopy.getTreeUtilities().getBreakContinueTarget(getCurrentPath());
             if(target == handle.resolve(workingCopy).getLeaf()) {
                 ContinueTree newTree = make.Continue(newName);
@@ -160,7 +174,7 @@ public class RenameTransformer extends RefactoringVisitor {
 
     @Override
     public Tree visitBreak(BreakTree tree, Element p) {
-        if(handle.getKind() == Tree.Kind.LABELED_STATEMENT) {
+        if(handle != null && handle.getKind() == Tree.Kind.LABELED_STATEMENT) {
             StatementTree target = workingCopy.getTreeUtilities().getBreakContinueTarget(getCurrentPath());
             if(target == handle.resolve(workingCopy).getLeaf()) {
                 BreakTree newTree = make.Break(newName);
@@ -185,7 +199,7 @@ public class RenameTransformer extends RefactoringVisitor {
     }
     
     private void renameUsageIfMatch(final TreePath path, Tree tree, Element elementToFind) {
-        if (workingCopy.getTreeUtilities().isSynthetic(path) || handle.getKind() == Tree.Kind.LABELED_STATEMENT) {
+        if (workingCopy.getTreeUtilities().isSynthetic(path) || (handle != null && handle.getKind() == Tree.Kind.LABELED_STATEMENT)) {
             return;
         }
         TreePath elementPath = path;
@@ -362,7 +376,7 @@ public class RenameTransformer extends RefactoringVisitor {
     }
     
     private void renameDeclIfMatch(TreePath path, Tree tree, Element elementToFind) {
-        if (workingCopy.getTreeUtilities().isSynthetic(path) || handle.getKind() == Tree.Kind.LABELED_STATEMENT) {
+        if (workingCopy.getTreeUtilities().isSynthetic(path) || (handle != null && handle.getKind() == Tree.Kind.LABELED_STATEMENT)) {
             return;
         }
         Element el = workingCopy.getTrees().getElement(path);

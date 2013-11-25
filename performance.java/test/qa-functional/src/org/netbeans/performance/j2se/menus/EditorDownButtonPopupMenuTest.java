@@ -41,85 +41,92 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se.menus;
 
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.modules.performance.utilities.CommonUtilities;
-import org.netbeans.performance.j2se.setup.J2SESetup;
-
+import junit.framework.Test;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jemmy.ComponentSearcher;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2se.setup.J2SESetup;
 
 /**
- * Test List Of The Recent Opened Windows popup menu on Editor Window down button if 10 files opened
- * @author  juhrik@netbeans.org, mmirilovic@netbeans.org
+ * Test List Of The Recent Opened Windows popup menu on Editor Window down
+ * button if 10 files opened
+ *
+ * @author juhrik@netbeans.org, mmirilovic@netbeans.org
  */
 public class EditorDownButtonPopupMenuTest extends PerformanceTestCase {
 
-    /** Test of popup menu on Editor's 'Down Button' */
+    /**
+     * Test of popup menu on Editor's 'Down Button'
+     *
+     * @param testName test name
+     */
     public EditorDownButtonPopupMenuTest(String testName) {
         super(testName);
         expectedTime = UI_RESPONSE;
-        WAIT_AFTER_OPEN=200;
+        WAIT_AFTER_OPEN = 200;
     }
-    
-    /** Test of popup menu on Editor's 'Down Button' */
+
+    /**
+     * Test of popup menu on Editor's 'Down Button'
+     *
+     * @param testName test name
+     * @param performanceDataName data name
+     */
     public EditorDownButtonPopupMenuTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = UI_RESPONSE;
-        WAIT_AFTER_OPEN=200;
+        WAIT_AFTER_OPEN = 200;
     }
-    
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(EditorDownButtonPopupMenuTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(J2SESetup.class, "testCloseMemoryToolbar", "testOpenFoldersProject")
+                .addTest(EditorDownButtonPopupMenuTest.class)
+                .suite();
     }
-    
-    public void testEditorDownButtonPopupMenu(){
+
+    public void testEditorDownButtonPopupMenu() {
         doMeasurement();
     }
-    
+
     @Override
-    public void initialize(){
+    public void initialize() {
         CommonUtilities.openFiles("PerformanceTestFoldersData", getTenSelectedFiles());
     }
-    
-    public void prepare(){
+
+    @Override
+    public void prepare() {
     }
-    
-    public ComponentOperator open(){
+
+    @Override
+    public ComponentOperator open() {
         EditorWindowOperator.btDown().clickForPopup();
         ComponentOperator popupComponent = new ComponentOperator(EditorWindowOperator.btDown().getContainer(ComponentSearcher.getTrueChooser("org.netbeans.core.windows.view.ui.RecentViewListDlg")));
         return popupComponent;
-  }
-    
+    }
+
     @Override
-    public void shutdown(){
+    public void shutdown() {
         EditorWindowOperator.closeDiscard();
     }
-    
-    private static String[][] getTenSelectedFiles(){
+
+    private static String[][] getTenSelectedFiles() {
         String[][] files_path = {
-            {"folders.javaFolder100","AboutDialogTest.java"},
-            {"folders.javaFolder100","AttachDialogTest.java"},
-            {"folders.javaFolder100","CreateTestsDialogTest.java"},
-            {"folders.javaFolder100","DeleteFileDialogTest.java"},
-            {"folders.javaFolder100","FilesWindowTest.java"},
-            {"folders.javaFolder50","ServerManagerTest.java"},
-            {"folders.javaFolder50","RuntimeWindowTest.java"},
-            {"folders.javaFolder50","PluginManagerTest.java"},
-            {"folders.javaFolder50","OptionsTest.java"},
-            {"folders.javaFolder50","ProfilerWindowsTest.java"},
-            {"folders.javaFolder50","NewFileDialogTest.java"}
+            {"folders.javaFolder50", "SampleJavaClass000.java"},
+            {"folders.javaFolder50", "SampleJavaClass001.java"},
+            {"folders.javaFolder50", "SampleJavaClass002.java"},
+            {"folders.javaFolder50", "SampleJavaClass003.java"},
+            {"folders.javaFolder50", "SampleJavaClass004.java"},
+            {"folders.javaFolder50", "SampleJavaClass005.java"},
+            {"folders.javaFolder50", "SampleJavaClass006.java"},
+            {"folders.javaFolder50", "SampleJavaClass007.java"},
+            {"folders.javaFolder50", "SampleJavaClass008.java"},
+            {"folders.javaFolder50", "SampleJavaClass009.java"}
         };
         return files_path;
     }
-    
 }

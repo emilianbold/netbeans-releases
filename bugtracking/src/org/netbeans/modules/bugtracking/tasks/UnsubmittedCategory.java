@@ -71,4 +71,9 @@ public class UnsubmittedCategory extends Category {
         return new ArrayList<IssueImpl>(repository.getUnsubmittedIssues());
     }
 
+    @Override
+    public int sortIndex() {
+        return 900;
+    }
+
 }

@@ -61,12 +61,18 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ArrayTypeTree;
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.ConditionalExpressionTree;
+import com.sun.source.tree.DoWhileLoopTree;
+import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -79,10 +85,15 @@ import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.Scope;
+import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.SwitchTree;
+import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.WhileLoopTree;
+import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import java.io.IOException;
@@ -946,6 +957,49 @@ public class Utilities {
 
         return null;
     }
+    
+    /**
+     * Finds the top-level block or expression that contains the 'from' path.
+     * The result could be a 
+     * <ul>
+     * <li>BlockTree representing method body
+     * <li>ExpressionTree representing field initializer
+     * <li>BlockTree representing class initializer
+     * <li>ExpressionTree representing lambda expression
+     * <li>BlockTree representing lambda expression
+     * </ul>
+     * @param from start from 
+     * @return nearest enclosing top-level block/expression as defined above.
+     */
+    public static TreePath findTopLevelBlock(TreePath from) {
+        if (from.getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
+            return null;
+        }
+        TreePath save = null;
+        
+        while (from != null) {
+            Tree.Kind k = from.getParentPath().getLeaf().getKind();
+            if (k == Kind.METHOD || k == Kind.LAMBDA_EXPRESSION) {
+                return from;
+            } else if (k == Kind.VARIABLE) {
+                save = from;
+            } else if (TreeUtilities.CLASS_TREE_KINDS.contains(k)) {
+                if (save != null) {
+                    // variable initializer from the previous iteration
+                    return save;
+                }
+                if (from.getLeaf().getKind() == Kind.BLOCK) {
+                    // parent is class, from is block -> initializer
+                    return from;
+                }
+                return null;
+            } else {
+                save = null;
+            }
+            from = from.getParentPath();
+        }
+        return null;
+    }
 
     public static boolean isInConstructor(HintContext ctx) {
         TreePath method = findEnclosingMethodOrConstructor(ctx, ctx.getPath());
@@ -1145,9 +1199,28 @@ public class Utilities {
         }
 
         @Override
+        public Boolean scan(TreePath path, Void p) {
+            seenTrees.add(path.getLeaf());
+            return super.scan(path, p);
+        }
+
+        @Override
         public Boolean scan(Tree tree, Void p) {
             seenTrees.add(tree);
             return super.scan(tree, p);
+        }
+
+        /**
+         * Hardcoded check for System.exit(), Runtime.exit and Runtime.halt which also terminates the processing. 
+         * TODO: some configuration (project-level ?) could add also different exit methods.
+         */
+        @Override
+        public Boolean visitMethodInvocation(MethodInvocationTree node, Void p) {
+            Element el = info.getTrees().getElement(getCurrentPath());
+            if (isSystemExit(info, el)) {
+                return true;
+            }
+            return super.visitMethodInvocation(node, p);
         }
 
         @Override
@@ -1417,41 +1490,300 @@ public class Utilities {
         return Visibility.PUBLIC;
     }
     
-    public static boolean isVariableShadowedInScope(CharSequence variableName, Scope localScope) {
-        if (localScope == null) {
+    private static final EnumSet VARIABLE_KINDS = EnumSet.of(
+            ElementKind.LOCAL_VARIABLE, ElementKind.ENUM_CONSTANT, ElementKind.FIELD, ElementKind.PARAMETER,
+            ElementKind.RESOURCE_VARIABLE, ElementKind.EXCEPTION_PARAMETER, ElementKind.TYPE_PARAMETER);
+    
+    public static boolean isSymbolUsed(CompilationInfo info, TreePath target, CharSequence variableName, Scope localScope) {
+        SourcePositions[] pos = new SourcePositions[1];
+        Tree t = info.getTreeUtilities().parseExpression(variableName.toString(), pos);
+        TypeMirror tm = info.getTreeUtilities().attributeTree(t, localScope);
+        Element el = info.getTrees().getElement(new TreePath(target, t));
+        if (el == null) {
             return false;
         }
-
-        if (areAnyLocalVariablesShadowed(variableName, localScope)) {
-            return true;
-        }
-
-        if (areEnclosingMethodParamsShadowed(variableName, localScope)) {
-            return true;
-        }
-
-        return false;
+        ElementKind k = el.getKind();
+        return VARIABLE_KINDS.contains(k);
     }
 
-    private static boolean areAnyLocalVariablesShadowed(CharSequence variableName, Scope localScope) {
-        for (Element e : localScope.getLocalElements()) {
-            if (e.getKind() == ElementKind.LOCAL_VARIABLE
-                    && e.getSimpleName().contentEquals(variableName)) {
+    /**
+     * Determines if the element corresponds to never-returning, terminating method.
+     * System.exit, Runtime.exit, Runtime.halt are checked. The passed element is
+     * usually a result of {@code CompilationInfo.getTrees().getElement(path)}.
+     * 
+     * @param info context
+     * @param e element to check
+     * @return true, if the element corrresponds to a VM-exiting method
+     */
+    public static boolean isSystemExit(CompilationInfo info, Element e) {
+        if (e == null || e.getKind() != ElementKind.METHOD) {
+            return false;
+        }
+        ExecutableElement ee = (ExecutableElement)e;
+        Name n = ee.getSimpleName();
+        if (n.contentEquals("exit") || n.contentEquals("halt")) { // NOI18N
+            TypeElement tel = info.getElementUtilities().enclosingTypeElement(e);
+            if (tel == null) {
+                return false;
+            }
+            Name ofqn = tel.getQualifiedName();
+            if (ofqn.contentEquals("java.lang.System") || ofqn.contentEquals("java.lang.Runtime")) { // NOI18N
                 return true;
             }
         }
         return false;
     }
 
-    private static boolean areEnclosingMethodParamsShadowed(CharSequence variableName, Scope localScope) {
-        if (localScope.getEnclosingMethod() != null) {
-            ExecutableElement enclMethod = localScope.getEnclosingMethod();
-            for (VariableElement varElement : enclMethod.getParameters()) {
-                if (varElement.getSimpleName().contentEquals(variableName)) {
-                    return true;
+    private static final Set<String> PRIMITIVE_NAMES = new HashSet<String>(7);
+    
+    static {
+        PRIMITIVE_NAMES.add("java.lang.Integer"); // NOI18N
+        PRIMITIVE_NAMES.add("java.lang.Character"); // NOI18N
+        PRIMITIVE_NAMES.add("java.lang.Long"); // NOI18N
+        PRIMITIVE_NAMES.add("java.lang.Byte"); // NOI18N
+        PRIMITIVE_NAMES.add("java.lang.Short"); // NOI18N
+        PRIMITIVE_NAMES.add("java.lang.Boolean"); // NOI18N
+        PRIMITIVE_NAMES.add("java.lang.Float"); // NOI18N
+        PRIMITIVE_NAMES.add("java.lang.Double"); // NOI18N
+    }
+
+    public static TypeKind getPrimitiveKind(CompilationInfo ci, TypeMirror tm) {
+        if (tm == null) {
+            return null;
+        }
+        if (tm.getKind().isPrimitive()) {
+            return tm.getKind();
+        } else if (isPrimitiveWrapperType(tm)) {
+            return ci.getTypes().unboxedType(tm).getKind();
+        } 
+        return null;
+    }
+    
+    public static TypeMirror unboxIfNecessary(CompilationInfo ci, TypeMirror tm) {
+        if (isPrimitiveWrapperType(tm)) {
+            return ci.getTypes().unboxedType(tm);
+        } else {
+            return tm;
+        }
+    }
+    
+    public static boolean isPrimitiveWrapperType(TypeMirror tm) {
+        if (tm == null || tm.getKind() != TypeKind.DECLARED) { 
+            return false;
+        }
+        Element el = ((DeclaredType)tm).asElement();
+        if (el == null || el.getKind() != ElementKind.CLASS) {
+            return false;
+        }
+        String s = ((TypeElement)el).getQualifiedName().toString();
+        return PRIMITIVE_NAMES.contains(s); // NOI18N
+    }
+    
+    /**
+     * Attempts to resolve a method or a constructor call with an altered argument tree.
+     * 
+     * @param ci the context
+     * @param invPath path to the method invocation node
+     * @param origPath path to the Tree within method's arguments which should be replaced
+     * @param valPath the replacement tree
+     * @return 
+     */
+    public static boolean checkAlternativeInvocation(CompilationInfo ci, TreePath invPath, 
+            TreePath origPath,
+            TreePath valPath, String customPrefix) {
+        Tree l = invPath.getLeaf();
+        Tree sel;
+        
+        if (l.getKind() == Tree.Kind.NEW_CLASS) {
+            NewClassTree nct = (NewClassTree)invPath.getLeaf();
+            sel = nct.getIdentifier();
+        } else if (l.getKind() == Tree.Kind.METHOD_INVOCATION) {
+            MethodInvocationTree mit = (MethodInvocationTree)invPath.getLeaf();
+            sel = mit.getMethodSelect();
+        } else {
+            return false;
+        }
+        
+        return resolveAlternativeInvocation(ci, invPath, 
+                origPath, sel, valPath, customPrefix);
+    }
+    
+    private static Tree getInvocationIdentifier(Tree inv) {
+        if (inv.getKind() == Tree.Kind.METHOD_INVOCATION) {
+            return ((MethodInvocationTree)inv).getMethodSelect();
+        } else if (inv.getKind() == Tree.Kind.NEW_CLASS) {
+            return ((NewClassTree)inv).getIdentifier();
+        } else {
+            return null;
+        }
+    }
+    
+    private static boolean resolveAlternativeInvocation(
+            CompilationInfo ci, TreePath invPath, 
+            TreePath origPath,
+            Tree sel, TreePath valPath, String customPrefix) {
+        CharSequence source = ci.getSnapshot().getText();
+        Element e = ci.getTrees().getElement(invPath);
+        if (!(e instanceof ExecutableElement)) {
+            return false;
+        }
+        SourcePositions sp = ci.getTrees().getSourcePositions();
+        
+        int invOffset = (int)sp.getEndPosition(ci.getCompilationUnit(), sel) - 1;
+        int origExpStart = (int)sp.getStartPosition(ci.getCompilationUnit(), 
+                origPath.getLeaf());
+        int origExpEnd = (int)sp.getEndPosition(ci.getCompilationUnit(), 
+                origPath.getLeaf());
+        
+        TreePath exp = invPath;
+        boolean statement = false;
+        
+        // try to minimize the parsed content: find the nearest expression that breaks the type inference,
+        // typically break if the method is contained within a condition of a switch/if/loop.
+        out: do {
+            boolean breakPrev = false;
+            TreePath previousPath = exp;
+            Tree previous = exp.getLeaf();
+            exp = exp.getParentPath();
+            Tree t = exp.getLeaf();
+            Class c = t.getKind().asInterface();
+            if (c == CompoundAssignmentTree.class ||
+                c == AssignmentTree.class) {
+                break;
+            }
+            switch (t.getKind()) {
+                case CONDITIONAL_EXPRESSION: {
+                    // if the tree is the condition part, then we're done and the result is a boolean.
+                    ConditionalExpressionTree ctree = (ConditionalExpressionTree)t;
+                    if (ctree.getCondition() == previous) {
+                        breakPrev = true;
+                    }
+                    break;
+                }
+                case DO_WHILE_LOOP: {
+                    DoWhileLoopTree dlp = (DoWhileLoopTree)t;
+                    if (dlp.getCondition() == previous) {
+                        breakPrev = true;
+                    }
+                    break;
+                }
+                case FOR_LOOP: {
+                    ForLoopTree flp =(ForLoopTree)t;
+                    if (previous == flp.getCondition()) {
+                        breakPrev = true;
+                    }
+                    break;
+                }
+                    
+                case ENHANCED_FOR_LOOP: {
+                    EnhancedForLoopTree eflp = (EnhancedForLoopTree)t;
+                    if (previous == eflp.getExpression()) {
+                        breakPrev = true;
+                    }
+                    break;
+                }
+                case SWITCH: {
+                    SwitchTree st = (SwitchTree)t;
+                    if (previous == st.getExpression()) {
+                        breakPrev = true;
+                    }
+                    break;
+                }
+                case SYNCHRONIZED: {
+                    SynchronizedTree st = (SynchronizedTree)t;
+                    if (previous == st.getExpression()) {
+                        breakPrev = true;
+                    }
+                    break;
+                }
+                case WHILE_LOOP: {
+                    WhileLoopTree wlt = (WhileLoopTree)t;
+                    if (previous == wlt.getCondition()) {
+                        breakPrev = true;
+                    }
+                    break;
+                }
+                case IF: {
+                    IfTree it = (IfTree)t;
+                    if (previous == it.getCondition()) {
+                        breakPrev = true;
+                    }
+                    break;
                 }
             }
+            if (breakPrev) {
+                exp = previousPath;
+                break;
+            }
+            if (StatementTree.class.isAssignableFrom(c)) {
+                statement = true;
+                break;
+            }
+        } while (exp.getParentPath()!= null);
+        TreePath stPath = exp;
+        if (!statement) {
+            while (stPath != null && !(stPath.getLeaf() instanceof StatementTree)) {
+                stPath = stPath.getParentPath();
+            }
         }
-        return false;
+        if (stPath == null) {
+            return false;
+        }
+        
+        int baseIndex = (int)sp.getStartPosition(ci.getCompilationUnit(), exp.getLeaf());
+        StringBuilder sb = new StringBuilder();
+        sb.append(source.subSequence(
+                baseIndex,
+                origExpStart));
+        // instead of the boxing expression, append only the value expression, in parenthesis
+        sb.append("("); // NOI18N
+        if (customPrefix != null) {
+            sb.append(customPrefix);
+        }
+        sb.append(source.subSequence(
+                (int)sp.getStartPosition(ci.getCompilationUnit(), valPath.getLeaf()),
+                (int)sp.getEndPosition(ci.getCompilationUnit(), valPath.getLeaf()))).
+            append(")"); // NOI18N
+        
+        sb.append(source.subSequence(
+                origExpEnd,
+                (int)sp.getEndPosition(ci.getCompilationUnit(), exp.getLeaf())));
+        
+        SourcePositions[] nsp = new SourcePositions[1];
+        Tree t;
+        if (statement) {
+            sb.append(";"); // NOI18N
+            t = ci.getTreeUtilities().parseStatement(sb.toString(), nsp);
+        } else {
+            t = ci.getTreeUtilities().parseExpression(sb.toString(), nsp);
+        }
+        
+        Scope s = ci.getTreeUtilities().scopeFor((int)sp.getStartPosition(ci.getCompilationUnit(), exp.getLeaf()) - 1);
+        ci.getTreeUtilities().attributeTree(t, s);
+        
+        TreePath newPath = new TreePath(exp.getParentPath(), t);
+        // path for the method invocation within the newly formed expression or statement.
+        // the +1 ensures that we are inside the method invocation subtree (method has >= 1 char as ident)
+        TreePath newInvPath = ci.getTreeUtilities().pathFor(newPath, invOffset - baseIndex + 1, nsp[0]);
+        while (newInvPath != null && 
+            newInvPath.getLeaf().getKind() != Tree.Kind.METHOD_INVOCATION &&
+            newInvPath.getLeaf().getKind() != Tree.Kind.NEW_CLASS) {
+            newInvPath = newInvPath.getParentPath();
+        }
+        if (newInvPath == null) {
+            return false;
+        }
+        
+        TreePath orig = new TreePath(invPath, getInvocationIdentifier(invPath.getLeaf()));
+        TreePath alt = new TreePath(newInvPath, getInvocationIdentifier(newInvPath.getLeaf()));
+        
+        TypeMirror origType = ci.getTrees().getTypeMirror(orig);
+        TypeMirror altType = ci.getTrees().getTypeMirror(alt);
+        return altType != null &&  ci.getTypes().isSameType(altType, origType);
+//        
+//        Element me = ci.getTrees().getElement(newInvPath);
+//        return me != null && (me.getKind() == ElementKind.CONSTRUCTOR || me.getKind() == ElementKind.METHOD) ?
+//                (ExecutableElement)me : null;
     }
+    
 }

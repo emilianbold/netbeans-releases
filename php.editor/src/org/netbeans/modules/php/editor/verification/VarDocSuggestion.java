@@ -75,7 +75,7 @@ import org.openide.util.NbBundle.Messages;
  */
 public class VarDocSuggestion extends SuggestionRule {
     private static final Logger LOGGER = Logger.getLogger(VarDocSuggestion.class.getName());
-    private static ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
+    private static final ScheduledExecutorService SERVICE = Executors.newSingleThreadScheduledExecutor();
 
     @Override
     public String getId() {
@@ -129,15 +129,14 @@ public class VarDocSuggestion extends SuggestionRule {
                     }
                 }
             } catch (BadLocationException ex) {
-                LOGGER.log(Level.WARNING, null, ex);
+                LOGGER.log(Level.FINE, null, ex);
             }
         }
     }
 
     private class Fix implements HintFix {
-
-        private RuleContext context;
-        private VariableName vName;
+        private final RuleContext context;
+        private final VariableName vName;
 
         Fix(RuleContext context, VariableName vName) {
             this.context = context;
@@ -205,7 +204,7 @@ public class VarDocSuggestion extends SuggestionRule {
         }
 
         private void scheduleShowingCompletion() {
-            service.schedule(new Runnable() {
+            SERVICE.schedule(new Runnable() {
 
                 @Override
                 public void run() {

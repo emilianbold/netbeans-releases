@@ -49,39 +49,30 @@ import org.netbeans.modules.php.dbgp.DebugSession;
 import org.netbeans.modules.php.dbgp.packets.RunCommand;
 import org.netbeans.spi.debugger.ContextProvider;
 
-
 /**
  * @author ads
  *
  */
 public class ContinueActionProvider extends AbstractActionProvider {
 
-    public ContinueActionProvider( ContextProvider contextProvider ) {
+    public ContinueActionProvider(ContextProvider contextProvider) {
         super(contextProvider);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.debugger.ActionsProviderSupport#doAction(java.lang.Object)
-     */
     @Override
-    public void doAction( Object action )
-    {
+    public void doAction(Object action) {
         DebugSession session = getSession();
-        if ( session == null ){
+        if (session == null) {
             return;
         }
         hideSuspendAnnotations();
-        RunCommand command = new RunCommand( session.getTransactionId());
+        RunCommand command = new RunCommand(session.getTransactionId());
         session.sendCommandLater(command);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.debugger.ActionsProvider#getActions()
-     */
     @Override
-    public Set getActions()
-    {
-        return Collections.singleton( ActionsManager.ACTION_CONTINUE);
+    public Set getActions() {
+        return Collections.singleton(ActionsManager.ACTION_CONTINUE);
     }
 
 }

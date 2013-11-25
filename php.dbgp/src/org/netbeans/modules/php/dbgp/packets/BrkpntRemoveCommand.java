@@ -43,46 +43,38 @@
  */
 package org.netbeans.modules.php.dbgp.packets;
 
-
 /**
  * @author ads
  *
  */
 public class BrkpntRemoveCommand extends DbgpCommand {
+    public static final String REMOVE = "breakpoint_remove"; // NOI18N
+    private String myId;
 
-    public static final String REMOVE      = "breakpoint_remove";      // NOI18N
-
-    public BrkpntRemoveCommand( String transactionId , String breakpointId ) {
-        super( REMOVE , transactionId);
+    public BrkpntRemoveCommand(String transactionId, String breakpointId) {
+        super(REMOVE, transactionId);
         myId = breakpointId;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpCommand#wantAcknowledgment()
-     */
     @Override
-    public boolean wantAcknowledgment()
-    {
+    public boolean wantAcknowledgment() {
         return true;
     }
-    
-    public void setId(String id){
+
+    public void setId(String id) {
         myId = id;
     }
-    
+
     @Override
-    protected String getArguments()
-    {
-        StringBuilder builder = new StringBuilder( );
-        builder.append( BrkpntUpdateCommand.ID_ARG );
-        builder.append( getBreakpointId() );
+    protected String getArguments() {
+        StringBuilder builder = new StringBuilder();
+        builder.append(BrkpntUpdateCommand.ID_ARG);
+        builder.append(getBreakpointId());
         return builder.toString();
     }
-    
+
     private String getBreakpointId() {
         return myId;
     }
-    
-    private String myId;
 
 }

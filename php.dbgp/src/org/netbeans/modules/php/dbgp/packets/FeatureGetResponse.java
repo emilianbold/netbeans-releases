@@ -46,47 +46,41 @@ package org.netbeans.modules.php.dbgp.packets;
 import org.netbeans.modules.php.dbgp.DebugSession;
 import org.w3c.dom.Node;
 
-
 /**
  * @author ads
  *
  */
 public class FeatureGetResponse extends FeatureSetResponse {
-    
-    private static final String SUPPORTED       = "supported";         // NOI18N
+    private static final String SUPPORTED = "supported"; // NOI18N
 
-    FeatureGetResponse( Node node ) {
+    FeatureGetResponse(Node node) {
         super(node);
     }
-    
+
     /**
-     * This method does NOT mean that the feature is supported, 
-     * this is encoded in the text child of the response tag. 
-     * The 'supported' attribute informs whether the feature with 
-     * 'feature_name' is supported by feature_get in the engine, 
-     * or when the command with name 'feature_get' is supported by the engine.
+     * This method does NOT mean that the feature is supported, this is encoded
+     * in the text child of the response tag. The 'supported' attribute informs
+     * whether the feature with 'feature_name' is supported by feature_get in
+     * the engine, or when the command with name 'feature_get' is supported by
+     * the engine.
+     *
      * @return
      */
-    public boolean isSupportedFeatureName(){
-        String value = getAttribute( getNode() , SUPPORTED ); 
+    public boolean isSupportedFeatureName() {
+        String value = getAttribute(getNode(), SUPPORTED);
         try {
-            return Integer.parseInt( value ) > 0;
-        }
-        catch ( NumberFormatException e ){
+            return Integer.parseInt(value) > 0;
+        } catch (NumberFormatException e) {
             return false;
         }
     }
-    
-    public String getDetails(){
-        return getNodeValue( getNode() );
+
+    public String getDetails() {
+        return getNodeValue(getNode());
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpMessage#process(org.netbeans.modules.php.dbgp.DebugSession, org.netbeans.modules.php.dbgp.packets.DbgpCommand)
-     */
     @Override
-    public void process( DebugSession session, DbgpCommand command )
-    {
+    public void process(DebugSession session, DbgpCommand command) {
     }
-    
+
 }

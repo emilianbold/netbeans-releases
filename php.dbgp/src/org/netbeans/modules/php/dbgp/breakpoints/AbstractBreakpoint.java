@@ -46,46 +46,40 @@ package org.netbeans.modules.php.dbgp.breakpoints;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.modules.php.dbgp.DebugSession;
 
-
 /**
  * @author ads
  *
  */
 public abstract class AbstractBreakpoint extends Breakpoint {
-    
+    private String myId;
+    private boolean isEnabled;
+
     protected AbstractBreakpoint() {
         isEnabled = true;
     }
-    
-    public abstract boolean isSessionRelated( DebugSession session );
-    
+
+    public abstract boolean isSessionRelated(DebugSession session);
+
     /*
      * Method is called from debugger manager listener when breakpoint is removed.
      * It is allowed to provide clear actions.
      * This method should be implemented in sublasses if needed.
      */
-    public void removed(){
+    public void removed() {
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.api.debugger.Breakpoint#disable()
-     */
     @Override
     public void disable() {
-        if(!isEnabled) {
+        if (!isEnabled) {
             return;
         }
-
         isEnabled = false;
         firePropertyChange(PROP_ENABLED, Boolean.TRUE, Boolean.FALSE);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.api.debugger.Breakpoint#enable()
-     */
     @Override
     public void enable() {
-        if(isEnabled) {
+        if (isEnabled) {
             return;
         }
 
@@ -93,28 +87,21 @@ public abstract class AbstractBreakpoint extends Breakpoint {
         firePropertyChange(PROP_ENABLED, Boolean.FALSE, Boolean.TRUE);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.api.debugger.Breakpoint#isEnabled()
-     */
     @Override
     public boolean isEnabled() {
         return isEnabled;
     }
-    
+
     public int isTemp() {
         return 0;
     }
-    
-    public void setBreakpointId( String id ) {
-        myId = id ;
+
+    public void setBreakpointId(String id) {
+        myId = id;
     }
-    
+
     public String getBreakpointId() {
         return myId;
     }
-    
-    private String myId;
-    
-    private boolean isEnabled;
 
 }

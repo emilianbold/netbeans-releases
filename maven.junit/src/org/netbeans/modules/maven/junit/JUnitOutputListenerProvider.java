@@ -106,6 +106,8 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
     
     private static final Logger LOG = Logger.getLogger(JUnitOutputListenerProvider.class.getName());
     private final RunConfig config;
+    private boolean surefireRunningInParallel = false;
+    private ArrayList<String> runningTestClasses;
     
     public JUnitOutputListenerProvider(RunConfig config) {
         runningPattern = Pattern.compile("(?:\\[surefire\\] )?Running (.*)", Pattern.DOTALL); //NOI18N
@@ -114,8 +116,45 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
         this.config = config;
         usedNames = new HashSet<String>();
         startTimeStamp = System.currentTimeMillis();
+        runningTestClasses = new ArrayList<String>();
+        surefireRunningInParallel = isSurefireRunningInParallel();
     }
-
+    
+    private boolean isSurefireRunningInParallel() {
+        // http://maven.apache.org/surefire/maven-surefire-plugin/test-mojo.html
+        // http://maven.apache.org/surefire/maven-surefire-plugin/examples/fork-options-and-parallel-execution.html
+        String parallel = PluginPropertyUtils.getPluginProperty(config.getMavenProject(),
+                Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_SUREFIRE, "parallel", "test", "parallel"); //NOI18N
+        if (parallel != null) {
+            return true;
+        }
+        String forkMode = PluginPropertyUtils.getPluginProperty(config.getMavenProject(),
+                Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_SUREFIRE, "forkMode", "test", "forkMode"); //NOI18N
+        if ("perthread".equals(forkMode)) {
+            String threadCount = PluginPropertyUtils.getPluginProperty(config.getMavenProject(),
+                Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_SUREFIRE, "threadCount", "test", "threadCount");
+            if (threadCount != null) {
+                if (Integer.parseInt(threadCount) > 1) {
+                    return true;
+                }
+            }
+        }
+        String forkCount = PluginPropertyUtils.getPluginProperty(config.getMavenProject(),
+                Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_SUREFIRE, "forkCount", "test", "forkCount");
+        if (forkCount != null) {
+            int index = forkCount.indexOf("C");
+            int cpuCores = 1;
+            if (index != -1) {
+                forkCount = forkCount.substring(0, index);
+                cpuCores = Runtime.getRuntime().availableProcessors();
+            }
+            int forks = Integer.parseInt(forkCount);
+            if (forks * cpuCores > 1) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     public @Override String[] getRegisteredOutputSequences() {
         return new String[] {
@@ -147,9 +186,17 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
         match = runningPattern.matcher(line);
         if (match.matches()) {
             if (runningTestClass != null && outputDir != null) {
-                generateTest();
+                if(!surefireRunningInParallel) {
+                    // tests are running sequentially, so update Test Results Window
+                    generateTest();
+                }
             }
             runningTestClass = match.group(1);
+            if (surefireRunningInParallel) {
+                // tests are running in parallel, so keep track of the tests that are running
+                // and update Test Results Window when all are finished
+                runningTestClasses.add(runningTestClass);
+            }
         }
     }
 
@@ -333,12 +380,23 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
             return;
         }
         if (runningTestClass != null && outputDir != null) {
-            generateTest();
+            if(surefireRunningInParallel) {
+                // tests are running in parallel, so now that all are finished 
+                // and the result files are created update Test Results Window
+                for(String testClass : runningTestClasses) {
+                    runningTestClass = testClass;
+                    generateTest();
+                }
+            } else {
+                generateTest();
+            }
         }
         Manager.getInstance().sessionFinished(session);
         runningTestClass = null;
         outputDir = null;
         session = null;
+        surefireRunningInParallel = false;
+        runningTestClasses = null;
     }
 
     private static final Pattern COMPARISON_PATTERN = Pattern.compile(".*expected:<(.*)> but was:<(.*)>$"); //NOI18N

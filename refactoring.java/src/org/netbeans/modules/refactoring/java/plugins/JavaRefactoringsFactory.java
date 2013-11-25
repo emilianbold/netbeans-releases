@@ -47,6 +47,7 @@ package org.netbeans.modules.refactoring.java.plugins;
 import java.util.Collection;
 import javax.lang.model.element.ElementKind;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.api.java.source.DocTreePathHandle;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.*;
@@ -75,12 +76,13 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
         FileObject file = look.lookup(FileObject.class);
         NonRecursiveFolder folder = look.lookup(NonRecursiveFolder.class);
         TreePathHandle handle = look.lookup(TreePathHandle.class);
+        DocTreePathHandle docHandle = look.lookup(DocTreePathHandle.class);
         if (refactoring instanceof WhereUsedQuery) {
             if (handle!=null) {
                 return new JavaWhereUsedQueryPlugin((WhereUsedQuery) refactoring);
             }
         } else if (refactoring instanceof RenameRefactoring) {
-            if (handle!=null || ((file!=null) && RefactoringUtils.isJavaFile(file))) {
+            if (handle!=null || docHandle!=null || ((file!=null) && RefactoringUtils.isJavaFile(file))) {
                 //rename java file, class, method etc..
                 return new RenameRefactoringPlugin((RenameRefactoring)refactoring);
             } else if (file!=null && JavaRefactoringUtils.isOnSourceClasspath(file) && file.isFolder()) {

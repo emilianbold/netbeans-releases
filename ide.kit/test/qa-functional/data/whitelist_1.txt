@@ -6561,4 +6561,7 @@ org.openide.nodes.LazyNode
 org.openide.nodes.LazyNode$SwitchChildren
 org.openide.windows.RetainLocation
 org.openide.windows.TopComponent$Description
-
+org.openide.awt.CloseButtonFactory
+org.openide.util.Pair
+org.netbeans.modules.deadlock.detector.Detector
+org.netbeans.modules.deadlock.detector.Installer

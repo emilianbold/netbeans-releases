@@ -581,7 +581,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
     // used from IntroduceExpressionBasedMethodFix, IntroduceMethodFix
     static boolean needsStaticRelativeTo(CompilationInfo info, TreePath targetClass, TreePath occurrence) {
-        while (targetClass.getLeaf() != occurrence.getLeaf() && occurrence != null) {
+        while (occurrence != null && targetClass.getLeaf() != occurrence.getLeaf()) {
             switch (occurrence.getLeaf().getKind()) {
                 case METHOD:
                     if (((MethodTree) occurrence.getLeaf()).getModifiers().getFlags().contains(Modifier.STATIC)) {
@@ -858,7 +858,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         String message = NbBundle.getMessage(IntroduceHint.class, "MSG_DuplicateMethodPiece");
 
         NotifyDescriptor nd = new NotifyDescriptor.Confirmation(message, title, NotifyDescriptor.YES_NO_OPTION);
-
+        
         return DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.YES_OPTION;
     }
 

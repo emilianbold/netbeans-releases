@@ -1,0 +1,3 @@
+# j2me/keystore
+read global
+j2me/keystore/antsrc/**/Bundle*.properties

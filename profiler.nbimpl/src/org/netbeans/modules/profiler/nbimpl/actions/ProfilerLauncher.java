@@ -41,10 +41,8 @@
  */
 package org.netbeans.modules.profiler.nbimpl.actions;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -52,6 +50,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.ProfilerLogger;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.lib.profiler.common.SessionSettings;
+import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
 import org.netbeans.lib.profiler.global.CommonConstants;
 import org.netbeans.lib.profiler.global.Platform;
 import org.netbeans.modules.profiler.HeapDumpWatch;
@@ -60,14 +59,14 @@ import org.netbeans.modules.profiler.api.JavaPlatform;
 import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.netbeans.modules.profiler.api.ProfilerIDESettings;
 import org.netbeans.modules.profiler.api.project.ProjectProfilingSupport;
-import org.netbeans.modules.profiler.api.project.ProjectStorage;
 import org.netbeans.modules.profiler.nbimpl.NetBeansProfiler;
+import org.netbeans.modules.profiler.nbimpl.providers.JavaPlatformManagerImpl;
+import org.netbeans.modules.profiler.spi.JavaPlatformProvider;
 import org.netbeans.modules.profiler.utils.IDEUtils;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -377,47 +376,81 @@ public class ProfilerLauncher {
     }
     
     private static void setupAgentEnv(JavaPlatform platform, SessionSettings ss, ProfilerIDESettings gps, ProfilingSettings pSettings, Project project, Map<String, String> props) {
+        final boolean remote = isRemotePlatform(platform);
         String javaVersion = platform.getPlatformJDKVersion();
-        if (javaVersion.equals(CommonConstants.JDK_15_STRING)) {
+        String agentArgs;        
+        if (remote) {
+            String platformString = IntegrationUtils.getPlatformByOSAndArch(
+                    Platform.getOperatingSystem(platform.getSystemProperties().get("os.name")),                 //NOI18N
+                    Platform.getSystemArchitecture(platform.getSystemProperties().get("sun.arch.data.model")),   //NOI18N
+                    platform.getSystemProperties().get("os.arch"),   //NOI18N
+                    platform.getProperties().get("platform.jvm.target")   //NOI18N
+                    );
+            String platformVersion = IntegrationUtils.getJavaPlatformFromJavaVersionString(platform.getPlatformJDKVersion());
+            final String prefix = getRemotePlatformWorkDirectory(platform)+project.getProjectDirectory().getName()+"/dist/remotepack";   //NOI18N
+            agentArgs = IntegrationUtils.getRemoteProfilerAgentCommandLineArgsWithoutQuotes(
+                prefix, platformString, platformVersion, ss.getPortNo());
+            
+        } else {
+            if (javaVersion.equals(CommonConstants.JDK_15_STRING)) {
             // JDK 1.5 used
-            props.put(
-                AGENT_ARGS, 
-                IDEUtils.getAntProfilerStartArgument15(ss.getPortNo(), ss.getSystemArchitecture())
-            );
-
-            if (platform.getPlatformJDKMinor() >= 7) {
+                agentArgs = IDEUtils.getAntProfilerStartArgument15(ss.getPortNo(), ss.getSystemArchitecture());
+                if (platform.getPlatformJDKMinor() >= 7) {
+                    activateOOMProtection(gps, props, project);
+                } else {
+                    ProfilerLogger.log("Profiler.OutOfMemoryDetection: Disabled. Not supported JVM. Use at least 1.4.2_12 or 1.5.0_07"); // NOI18N
+                }
+            } else if (javaVersion.equals(CommonConstants.JDK_16_STRING)) {
+                // JDK 1.6 used
+                agentArgs = IDEUtils.getAntProfilerStartArgument16(ss.getPortNo(), ss.getSystemArchitecture());
+                activateOOMProtection(gps, props, project);
+            } else if (javaVersion.equals(CommonConstants.JDK_17_STRING)) {
+                agentArgs = IDEUtils.getAntProfilerStartArgument17(ss.getPortNo(), ss.getSystemArchitecture());
+                activateOOMProtection(gps, props, project);
+            } else if (javaVersion.equals(CommonConstants.JDK_18_STRING)) {
+                agentArgs =  IDEUtils.getAntProfilerStartArgument18(ss.getPortNo(), ss.getSystemArchitecture());
                 activateOOMProtection(gps, props, project);
             } else {
-                ProfilerLogger.log("Profiler.OutOfMemoryDetection: Disabled. Not supported JVM. Use at least 1.4.2_12 or 1.5.0_07"); // NOI18N
+                throw new IllegalArgumentException("Unsupported JDK " + javaVersion); // NOI18N
             }
-        } else if (javaVersion.equals(CommonConstants.JDK_16_STRING)) {
-            // JDK 1.6 used
-            props.put(
-                AGENT_ARGS,
-                IDEUtils.getAntProfilerStartArgument16(ss.getPortNo(), ss.getSystemArchitecture())
-            );
-            activateOOMProtection(gps, props, project);
-        } else if (javaVersion.equals(CommonConstants.JDK_17_STRING)) {
-            props.put(
-                AGENT_ARGS,
-                IDEUtils.getAntProfilerStartArgument17(ss.getPortNo(), ss.getSystemArchitecture())
-            );
-            activateOOMProtection(gps, props, project);
-        } else if (javaVersion.equals(CommonConstants.JDK_18_STRING)) {
-            props.put(
-                AGENT_ARGS,
-                IDEUtils.getAntProfilerStartArgument18(ss.getPortNo(), ss.getSystemArchitecture())
-            );
-            activateOOMProtection(gps, props, project);
-        } else {
-            throw new IllegalArgumentException("Unsupported JDK " + javaVersion); // NOI18N
         }
+        assert agentArgs != null;
+        props.put(AGENT_ARGS, agentArgs);
 
         if (Platform.isLinux() && javaVersion.equals(CommonConstants.JDK_16_STRING)) {
             activateLinuxPosixThreadTime(pSettings, props);
         }
         
         props.put("profiler.info.project.dir", project.getProjectDirectory().getPath());
+    }
+
+    private static boolean isRemotePlatform(final JavaPlatform platform) {
+        JavaPlatformManagerImpl impl = Lookup.getDefault().lookup(JavaPlatformManagerImpl.class);
+        if (impl == null) {
+            LOG.warning("No instance of JavaPlatformManagerImpl found in Lookup");  //NOI18N
+            return false;
+        }
+        for (JavaPlatformProvider jpp : impl.getPlatforms(JavaPlatformManagerImpl.REMOTE_J2SE)) {
+            if (platform.getPlatformId() != null && platform.getPlatformId().equals(jpp.getPlatformId())) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private static String getRemotePlatformWorkDirectory(final JavaPlatform platform) {
+        JavaPlatformManagerImpl impl = Lookup.getDefault().lookup(JavaPlatformManagerImpl.class);
+        for (JavaPlatformProvider jpp : impl.getPlatforms(JavaPlatformManagerImpl.REMOTE_J2SE)) {
+            if (platform.getPlatformId() != null && platform.getPlatformId().equals(jpp.getPlatformId())) {
+                org.netbeans.api.java.platform.JavaPlatform platformDelegate =
+                        impl.getPlatformDelegate(jpp);
+                if (platformDelegate == null) {
+                    return null;
+                }
+                return platformDelegate.getProperties().get("platform.work.folder");   //NOI18N
+            }
+        }
+        return null;
     }
     
     private static void activateLinuxPosixThreadTime(ProfilingSettings ps, Map<String, String> props) {

@@ -71,8 +71,12 @@ import org.netbeans.modules.bugtracking.tasks.filter.AppliedFilters;
 import org.netbeans.modules.bugtracking.tasks.filter.DashboardFilter;
 import org.netbeans.modules.bugtracking.tasks.Category;
 import org.netbeans.modules.bugtracking.settings.DashboardSettings;
+import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
+import org.netbeans.modules.bugtracking.tasks.DashboardTopComponent;
 import org.netbeans.modules.bugtracking.tasks.DashboardUtils;
+import org.netbeans.modules.bugtracking.tasks.NotificationManager;
 import org.netbeans.modules.bugtracking.tasks.RecentCategory;
+import org.netbeans.modules.bugtracking.tasks.ScheduleCategory;
 import org.netbeans.modules.bugtracking.tasks.UnsubmittedCategory;
 import org.netbeans.modules.bugtracking.tasks.filter.UnsubmittedCategoryFilter;
 import org.netbeans.modules.team.commons.treelist.ColorManager;
@@ -135,6 +139,8 @@ public final class DashboardViewer implements PropertyChangeListener {
     public static final Logger LOG = Logger.getLogger(DashboardViewer.class.getName());
     private final ModelListener modelListener;
     private final UnsubmittedCategoryFilter unsubmittedCategoryFilter;
+    private ScheduleCategoryNode todayCategoryNode;
+    private ScheduleCategoryNode thisWeekCategoryNode;
 
     private DashboardViewer() {
         expandedNodes = new HashSet<TreeListNode>();
@@ -280,13 +286,26 @@ public final class DashboardViewer implements PropertyChangeListener {
             for (QueryNode queryNode : queryNodes) {
                 if (queryNode.getQuery().equals(query)) {
                     select(Arrays.asList(queryNode));
-                    if(expand) {
+                    if (expand) {
                         queryNode.setExpanded(true);
                     }
                     return;
                 }
             }
         }
+    }
+
+    public void showTodayCategory() {
+        if (!isCategoryInFilter(todayCategoryNode)) {
+            DashboardTopComponent.findInstance().showTodayCategory();
+        } else {
+            selectTodayCategory();
+        }
+    }
+
+    public void selectTodayCategory() {
+        treeList.setSelectedValue(todayCategoryNode, true);
+        todayCategoryNode.setExpanded(true);
     }
 
     private static class Holder {
@@ -604,7 +623,7 @@ public final class DashboardViewer implements PropertyChangeListener {
         if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.YES_OPTION) {
             List<TaskNode> finished = new ArrayList<TaskNode>();
             for (CategoryNode categoryNode : categoryNodes) {
-                if (!categoryNode.isOpened()) {
+                if (!categoryNode.isOpened() || !categoryNode.getCategory().persist()) {
                     continue;
                 }
                 for (TaskNode taskNode : categoryNode.getTaskNodes()) {
@@ -674,7 +693,7 @@ public final class DashboardViewer implements PropertyChangeListener {
                 addRepositoryToModel(newNode);
             }
             storeClosedRepositories();
-            
+
             REQUEST_PROCESSOR.post(new Runnable() {
                 @Override
                 public void run() {
@@ -776,6 +795,13 @@ public final class DashboardViewer implements PropertyChangeListener {
         return manageRemoveFilter(refresh, taskFilter.expandNodes());
     }
 
+    public int updateCategoryFilter(DashboardFilter<CategoryNode> filter) {
+        if (filter != null) {
+            appliedCategoryFilters.removeFilter(filter);
+        }
+        return applyCategoryFilter(filter, true);
+    }
+
     public int applyCategoryFilter(DashboardFilter<CategoryNode> categoryFilter, boolean refresh) {
         appliedCategoryFilters.addFilter(categoryFilter);
         return manageApplyFilter(refresh);
@@ -864,7 +890,10 @@ public final class DashboardViewer implements PropertyChangeListener {
                         titleRepositoryNode.setProgressVisible(false);
                         loadCategories();
                         titleCategoryNode.setProgressVisible(false);
-                        DashboardRefresher.getInstance().setupDashboardRefresh();
+                        DashboardRefresher refresher = DashboardRefresher.getInstance();
+                        refresher.setupDashboardRefresh();
+                        refresher.setupScheduleRefresh();
+                        NotificationManager.getInstance().showNotifications();
                         return null;
                     }
                 };
@@ -907,6 +936,7 @@ public final class DashboardViewer implements PropertyChangeListener {
                     catNodes.add(new ClosedCategoryNode(new Category(categoryEntry.getCategoryName())));
                 }
             }
+            catNodes.addAll(loadScheduledCategories());
             catNodes.add(getRecentCategoryNode());
             catNodes.addAll(loadUnsubmitedCategories());
 
@@ -920,8 +950,44 @@ public final class DashboardViewer implements PropertyChangeListener {
     private CategoryNode getRecentCategoryNode() {
         Category recentCategory = new RecentCategory();
         RecentCategoryNode recentCategoryNode = new RecentCategoryNode(recentCategory);
-        recentCategoryNode.updateContent();
         return recentCategoryNode;
+    }
+
+    private List<CategoryNode> loadScheduledCategories() {
+        List<CategoryNode> catNodes = new ArrayList<CategoryNode>();
+
+        ScheduleCategory todayCat = new ScheduleCategory(
+                NbBundle.getMessage(DashboardViewer.class, "LBL_Today"),
+                DashboardUtils.getToday(), 1
+        );
+        todayCategoryNode = new ScheduleCategoryNode(todayCat);
+        catNodes.add(todayCategoryNode);
+
+        ScheduleCategory thisWeekCat = new ScheduleCategory(
+                NbBundle.getMessage(DashboardViewer.class, "LBL_ThisWeek"),
+                DashboardUtils.getThisWeek(), 2
+        );
+        thisWeekCategoryNode = new ScheduleCategoryNode(thisWeekCat);
+        catNodes.add(thisWeekCategoryNode);
+
+        ScheduleCategory allCat = new ScheduleCategory(
+                NbBundle.getMessage(DashboardViewer.class, "LBL_All"),
+                DashboardUtils.getAll(), 10
+        );
+        ScheduleCategoryNode all = new ScheduleCategoryNode(allCat);
+        catNodes.add(all);
+
+        return catNodes;
+    }
+
+    public void updateScheduleCategories() {
+        ScheduleCategory today = (ScheduleCategory) todayCategoryNode.getCategory();
+        today.setScheduleInfo(DashboardUtils.getToday());
+        todayCategoryNode.updateContent();
+
+        ScheduleCategory thisWeek = (ScheduleCategory) thisWeekCategoryNode.getCategory();
+        thisWeek.setScheduleInfo(DashboardUtils.getThisWeek());
+        thisWeekCategoryNode.updateContent();
     }
 
     private List<CategoryNode> loadUnsubmitedCategories() {
@@ -969,7 +1035,8 @@ public final class DashboardViewer implements PropertyChangeListener {
 
     private UnsubmittedCategoryNode createUnsubmittedCategoryNode(RepositoryImpl repository) {
         Category unsubmittedCategory = new UnsubmittedCategory(repository);
-        UnsubmittedCategoryNode unsubmittedCategoryNode = new UnsubmittedCategoryNode(unsubmittedCategory, repository, false);
+        UnsubmittedCategoryNode unsubmittedCategoryNode = new UnsubmittedCategoryNode(unsubmittedCategory, repository);
+        //update to have nodes updated for filtering
         unsubmittedCategoryNode.updateContent();
         return unsubmittedCategoryNode;
     }

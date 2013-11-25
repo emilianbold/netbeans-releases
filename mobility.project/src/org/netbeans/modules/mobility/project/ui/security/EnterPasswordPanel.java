@@ -51,7 +51,7 @@ package org.netbeans.modules.mobility.project.ui.security;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import org.netbeans.modules.mobility.project.security.KeyStoreRepository;
+import org.netbeans.modules.j2me.keystore.KeyStoreRepository;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
