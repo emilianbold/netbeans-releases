@@ -520,7 +520,10 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="${basedir}/dmg/Resources/${background.name}" 
               tofile="${mpkg.file}/Contents/Resources/background.tif"/>  
         <copy file="${license.file}" 
-              tofile="${mpkg.file}/Contents/Resources/License.txt" failonerror="false"/>                         
+              tofile="${mpkg.file}/Contents/Resources/License.txt" failonerror="false"/>
+        <copy file="${basedir}/dmg/Resources/postflight" 
+              failonerror="true" todir="${mpkg.file}/Contents/Resources" verbose="Final POSTFLIGHT copied."/>
+        <chmod file="${mpkg.file}/Contents/Resources/postflight" perm="ugo+x"/>
                          
         <ant target="prepare-lproj-dirs"/>
         
