@@ -53,6 +53,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenu;
@@ -113,6 +114,8 @@ import org.openide.util.RequestProcessor;
 public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, ArtifactGraphEdge> implements Runnable {
     
     private static final RequestProcessor RP = new RequestProcessor(DependencyGraphScene.class);
+    private static final Logger LOG = Logger.getLogger(DependencyGraphScene.class.getName());
+    
     private LayerWidget mainLayer;
     private final LayerWidget connectionLayer;
     private ArtifactGraphNode rootNode;
@@ -893,6 +896,10 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         private void fixDependency (FixVersionConflictPanel.FixDescription fixContent) {
             if (!model.startTransaction()) {
                 return;
+            }
+            if (model.getProject() == null) {
+                LOG.warning("#238748 we got a graph, but the model turned invalid for some reason. if you have steps to reproduce, please reopen the issue.");
+                return; //#238748 not clear under which circumstances we get a graph but invalid model
             }
             try {
                 if (fixContent.isSet && fixContent.version2Set != null) {
