@@ -101,13 +101,6 @@ public abstract class KenaiIssueAccessor {
         public abstract String getID();
 
         /**
-         * Returns the project this issue belongs to
-         *
-         * @return
-         */
-        public abstract KenaiProject getProject();
-
-        /**
          * Returns the issues short display name
          *
          * @return
@@ -120,14 +113,6 @@ public abstract class KenaiIssueAccessor {
          * @return
          */
         public abstract String getDisplayName();
-
-        /**
-         * Determines whether this issues TopComponent is opened
-         *
-         * @return
-         * @see TopComponent#isOpened() 
-         */
-        public abstract boolean isOpened();
 
         /**
          * Determines whether this issues TopComponent is showing on screen.

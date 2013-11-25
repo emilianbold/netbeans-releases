@@ -86,7 +86,7 @@ public class KnockoutModelTest extends ModelTestBase {
     }
 
     public void testKnockout() throws Exception {
-        String file = "testfiles/model/knockout-3.0.0beta.debug.js";
+        String file = "testfiles/model/knockout-3.0.0.debug.js";
         if (!new File(getDataDir(), file).canRead()) {
             return;
         }
@@ -150,13 +150,6 @@ public class KnockoutModelTest extends ModelTestBase {
             }
         };
         model.writeObject(p, ko, true);
-//        model.writeModel(new Model.Printer() {
-//
-//            @Override
-//            public void println(String str) {
-//                sw.append(str).append("\n");
-//            }
-//        });
         assertDescriptionMatches(fo, sw.toString(), false, ".model", true);
     }
 

@@ -50,17 +50,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.team.ide.spi.IDEServices;
 import org.netbeans.modules.team.ide.spi.ProjectServices;
-import org.netbeans.modules.bugtracking.team.spi.TeamAccessor;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.team.spi.RecentIssue;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -94,8 +92,7 @@ public final class BugtrackingManager implements LookupListener {
      */
     private Lookup.Result<BugtrackingConnector> connectorsLookup;
 
-    private Map<String, List<RecentIssue>> recentIssues;
-    private TeamAccessor[] teamAccessors;
+    private List<IssueImpl> recentIssues;
 
     private IDEServices ideServices;
     private ProjectServices projectServices;
@@ -132,13 +129,14 @@ public final class BugtrackingManager implements LookupListener {
 
     public List<IssueImpl> getRecentIssues(RepositoryImpl repo) {
         assert repo != null;
-        List<RecentIssue> l = getRecentIssues().get(repo.getId());
-        if(l == null) {
-            return Collections.EMPTY_LIST;
-        }
+        List<IssueImpl> l = getRecentIssues();
         List<IssueImpl> ret = new ArrayList<IssueImpl>(l.size());
-        for (RecentIssue recentIssue : l) {
-            ret.add(APIAccessor.IMPL.getImpl(recentIssue.getIssue()));
+        for (IssueImpl recentIssue : l) {
+            if(repo.getId().equals(recentIssue.getRepositoryImpl().getId()) && 
+               repo.getConnectorId().equals(recentIssue.getRepositoryImpl().getConnectorId())) 
+            {
+                ret.add(recentIssue);
+            }
         }
         return ret;
     }
@@ -148,48 +146,32 @@ public final class BugtrackingManager implements LookupListener {
         if (issue.getID() == null) {
             return;
         }
-        List<RecentIssue> l = getRecentIssues().get(repo.getId());
-        if(l == null) {
-            l = new LinkedList<RecentIssue>();
-            getRecentIssues().put(repo.getId(), l);
-        }
-        for (RecentIssue i : l) {
+        List<IssueImpl> l = getRecentIssues();
+        for (IssueImpl i : l) {
             if(i.getIssue().getID().equals(issue.getID())) {
                 l.remove(i);
                 break;
             }
         }
-        l.add(0, new RecentIssue(issue.getIssue(), System.currentTimeMillis()));
+        l.add(0, issue);
         if(LOG.isLoggable(Level.FINE)) {
-            SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");   // NOI18N
-            for (RecentIssue ri : l) {
                 LOG.log(
                         Level.FINE,
-                        "recent issue: [{0}, {1}, {2}]",                        // NOI18N
+                        "recent issue: [{0}, {1}]",                        // NOI18N
                         new Object[]{
-                            APIAccessor.IMPL.getImpl(ri.getIssue()).getRepositoryImpl().getDisplayName(),
-                            ri.getIssue().getID(),
-                            f.format(new Date(ri.getTimestamp()))});                                                   // NOI18N
-            }
+                            issue.getRepositoryImpl().getDisplayName(),
+                            issue.getID()});                                                   // NOI18N
         }
         fireRecentIssuesChanged();
     }
 
-    public Map<String, List<RecentIssue>> getAllRecentIssues() {
-        return Collections.unmodifiableMap(getRecentIssues());
+    public List<IssueImpl> getAllRecentIssues() {
+        return Collections.unmodifiableList(getRecentIssues());
     }
 
-    public TeamAccessor[] getTeamAccessors() {
-        if (teamAccessors == null) {
-            Collection<? extends TeamAccessor> coll = Lookup.getDefault().lookupAll(TeamAccessor.class);
-            teamAccessors = coll.toArray(new TeamAccessor[coll.size()]);
-        }
-        return teamAccessors;
-    }
-
-    private Map<String, List<RecentIssue>> getRecentIssues() {
+    private List<IssueImpl> getRecentIssues() {
         if(recentIssues == null) {
-            recentIssues = new HashMap<String, List<RecentIssue>>();
+            recentIssues = new LinkedList<IssueImpl>();
         }
         return recentIssues;
     }
@@ -252,5 +234,5 @@ public final class BugtrackingManager implements LookupListener {
     private void fireRecentIssuesChanged() {
         support.firePropertyChange(PROP_RECENT_ISSUES_CHANGED, null, null);
     }
-    
+
 }

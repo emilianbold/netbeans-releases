@@ -368,6 +368,10 @@ public final class DashboardTopComponent extends TopComponent {
         return filterPanel.getFilterText();
     }
 
+    public void showTodayCategory(){
+        filterPanel.showTodayCategory();
+    }
+
     void writeProperties(java.util.Properties p) {
         // better to version settings since initial version as advocated at
         // http://wiki.apidesign.org/wiki/PropertyFiles

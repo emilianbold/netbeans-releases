@@ -280,7 +280,7 @@ public class CompletionTestBase extends NbTestCase {
         if (textToInsertLength > 0)
             doc.insertString(caretPos, textToInsert, null);
         Source s = Source.create(doc);
-        List<? extends CompletionItem> items = JavaCompletionProvider.query(s, CompletionProvider.COMPLETION_QUERY_TYPE, caretPos + textToInsertLength, caretPos + textToInsertLength);
+        List<? extends CompletionItem> items = JavaCompletionProvider.query(s, CompletionProvider.COMPLETION_QUERY_TYPE, caretPos + textToInsertLength, caretPos + textToInsertLength, null);
         Collections.sort(items, CompletionItemComparator.BY_PRIORITY);
         
         File output = new File(getWorkDir(), getName() + ".out");

@@ -78,7 +78,6 @@ import org.netbeans.modules.java.editor.imports.ClipboardHandler;
 import org.netbeans.modules.java.editor.imports.FastImportAction;
 import org.netbeans.modules.java.editor.imports.JavaFixAllImports;
 import org.netbeans.modules.java.editor.overridden.GoToSuperTypeAction;
-import org.netbeans.modules.java.editor.rename.InstantRenameAction;
 import org.netbeans.modules.java.editor.semantic.GoToMarkOccurrencesAction;
 import org.netbeans.spi.editor.typinghooks.DeletedTextInterceptor;
 import org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor;
@@ -253,7 +252,6 @@ public class JavaKit extends NbEditorKit {
             new PrefixMakerAction(makeIsAction, "is", getSetIsPrefixes), // NOI18N
             new ToggleCommentAction("//"), // NOI18N
             new JavaGenerateFoldPopupAction(), // NO_KEYBINDING in super
-            new InstantRenameAction(),
             new InsertSemicolonAction(true),
             new InsertSemicolonAction(false),
             new SelectCodeElementAction(selectNextElementAction, true),

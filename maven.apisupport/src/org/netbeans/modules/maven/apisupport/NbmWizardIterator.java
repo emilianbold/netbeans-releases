@@ -53,6 +53,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.apache.maven.project.MavenProject;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.validation.adapters.WizardDescriptorAdapter;
@@ -75,6 +76,7 @@ import org.openide.filesystems.FileUtil;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.openide.util.NbBundle.Messages;
 import static org.netbeans.modules.maven.apisupport.Bundle.*;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 
 public class NbmWizardIterator implements WizardDescriptor.BackgroundInstantiatingIterator<WizardDescriptor> {
@@ -148,19 +150,13 @@ public class NbmWizardIterator implements WizardDescriptor.BackgroundInstantiati
             File projFile = FileUtil.normalizeFile((File) wiz.getProperty(CommonProjectActions.PROJECT_PARENT_FOLDER)); // NOI18N
             String version = (String) wiz.getProperty(NB_VERSION);
             Map<String,String> additional = version != null ? Collections.singletonMap("netbeansVersion", version) : null; // NOI18N
+            
+            if (archetype == NB_MODULE_ARCH) {
+                NBMNativeMWI.instantiate(vi, projFile, version, Boolean.TRUE.equals(wiz.getProperty(OSGIDEPENDENCIES)), null);
+                
+            } else {
+            
             ArchetypeWizards.createFromArchetype(projFile, vi, archetype, additional, true);
-            if (nbm_artifactId != null && projFile.exists()) {
-                //NOW we have the nbm-Platform or nbm suite template
-                //create the nbm module
-                ProjectInfo nbm = new ProjectInfo(vi.groupId, nbm_artifactId, vi.version, vi.packageName);
-                File nbm_folder = FileUtil.normalizeFile(new File(projFile, nbm_artifactId));
-                ArchetypeWizards.createFromArchetype(nbm_folder, nbm, NB_MODULE_ARCH, additional, false);
-                trimInheritedFromNbmProject(nbm_folder);
-                if (archetype == NB_APP_ARCH) {
-                    File appDir = new File(projFile, "application"); //NOI18N
-                    addModuleToApplication(appDir, new ProjectInfo("${project.groupId}", nbm.artifactId, "${project.version}", nbm.packageName), null); // NOI18N
-                }
-            }
             List<ModelOperation<POMModel>> opers = new ArrayList<ModelOperation<POMModel>>();
             if (Boolean.TRUE.equals(wiz.getProperty(OSGIDEPENDENCIES))) {
                 //now we have the nbm-archetype (or the netbeans platform one).
@@ -183,7 +179,25 @@ public class NbmWizardIterator implements WizardDescriptor.BackgroundInstantiati
                         }
                     }
                 }
-            }           
+            }
+            
+            if (nbm_artifactId != null && projFile.exists()) {
+                //NOW we have the nbm-Platform or nbm suite template
+                //create the nbm module
+                
+                //a bit of a hack, the archetype + modified parent project has not reloaded yet properly
+                Project p = ProjectManager.getDefault().findProject(FileUtil.toFileObject(projFile));
+                MavenProject mp = p.getLookup().lookup(NbMavenProject.class).loadAlternateMavenProject(EmbedderFactory.getProjectEmbedder(), Collections.<String>emptyList(), null);
+                
+                ProjectInfo nbm = new ProjectInfo(vi.groupId, nbm_artifactId, vi.version, vi.packageName);
+                File nbm_folder = FileUtil.normalizeFile(new File(projFile, nbm_artifactId));
+                NBMNativeMWI.instantiate(nbm, nbm_folder, version, Boolean.TRUE.equals(wiz.getProperty(OSGIDEPENDENCIES)), mp);
+                if (archetype == NB_APP_ARCH) {
+                    File appDir = new File(projFile, "application"); //NOI18N
+                    addModuleToApplication(appDir, new ProjectInfo("${project.groupId}", nbm.artifactId, "${project.version}", nbm.packageName), null); // NOI18N
+                }
+            }
+            }
             
             //TODO what is this supposed to do?
             Set<FileObject> projects = ArchetypeWizards.openProjects(projFile, new File(projFile, "application"));
@@ -313,19 +327,6 @@ public class NbmWizardIterator implements WizardDescriptor.BackgroundInstantiati
                 };
    }
 
-    private static void trimInheritedFromNbmProject(File projFile) throws IOException {
-        FileObject prjDir = FileUtil.toFileObject(projFile);
-        if (prjDir != null) {
-            FileObject pom = prjDir.getFileObject("pom.xml");
-            if (pom != null) {
-                ModelOperation<POMModel> op = new TrimInheritedFromNbmProject();
-                Utilities.performPOMModelOperations(pom, Collections.singletonList(op));
-            }
-        }
-        //TODO report inability to create? or if the file doesn't exist, it was already
-        //reported?
-   }
-
     private static void addModuleToApplication(File file, ProjectInfo nbm, Object object) {
         FileObject appPrjFO = FileUtil.toFileObject(FileUtil.normalizeFile(file));
         if (appPrjFO == null) {
@@ -334,55 +335,6 @@ public class NbmWizardIterator implements WizardDescriptor.BackgroundInstantiati
         List<ModelOperation<POMModel>> operations = new ArrayList<ModelOperation<POMModel>>();
         operations.add(ArchetypeWizards.addDependencyOperation(nbm, null));
         Utilities.performPOMModelOperations(appPrjFO.getFileObject("pom.xml"), operations);
-    }
-
-    //we need to remove all useless config from the the child project (everyting already
-    //defined the parent)
-    private static class TrimInheritedFromNbmProject implements ModelOperation<POMModel> {
-
-        @Override
-        public void performOperation(POMModel model) {
-            org.netbeans.modules.maven.model.pom.Project p = model.getProject();
-            p.setGroupId(null);
-            p.setVersion(null);
-            List<Repository> reps = p.getRepositories();
-            if (reps != null) {
-                for (Repository r : reps) {
-                    p.removeRepository(r);
-                }
-            }
-            List<Repository> pr = p.getPluginRepositories();
-            if (pr != null) {
-                for (Repository r : pr) {
-                    p.removePluginRepository(r);
-                }
-            }
-            Build b = p.getBuild();
-            if (b != null) {
-                Plugin pl = b.findPluginById(MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN);
-                if (pl != null) {
-                    pl.setConfiguration(null);
-                    pl.setVersion(null);
-                }
-                pl = b.findPluginById(Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER);
-                if (pl != null) {
-                    b.removePlugin(pl);
-                }
-                pl = b.findPluginById(Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_JAR);
-                if (pl != null) {
-                    pl.setVersion(null);
-                }
-            }
-            List<Dependency> deps = p.getDependencies();
-            if (deps != null) {
-                for (Dependency d : deps) {
-                    if (d.getGroupId().startsWith("org.netbeans")) {
-                        d.setVersion("${netbeans.version}");
-                    }
-                }
-            }
-        }
-
     }
 
 }

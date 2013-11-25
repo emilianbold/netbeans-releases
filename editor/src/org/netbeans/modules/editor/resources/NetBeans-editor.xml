@@ -55,6 +55,7 @@ made subject to such option by the copyright holder.
     <fontcolor name="highlight-search" foreColor="black" bgColor="ffFFB442"/>
     <fontcolor name="inc-search" foreColor="black" bgColor="ffFFB442"/> <!-- ffff9900 -->
     <fontcolor name="line-number" foreColor="black" bgColor="ffe9e8e2"/>
+    <fontcolor name="indent-guide-lines" foreColor="d3d3d3"/>
     <fontcolor name="selection" bgColor="ffB0C5E3"/>
     <fontcolor name="status-bar"/>
     <fontcolor name="status-bar-bold" foreColor="red"/>

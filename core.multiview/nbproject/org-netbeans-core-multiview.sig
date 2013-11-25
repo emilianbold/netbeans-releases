@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.32.1
+#Version 1.36.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -215,6 +215,7 @@ meth public final org.openide.text.PositionRef createPositionRef(int,javax.swing
 meth public final void addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public final void removePropertyChangeListener(java.beans.PropertyChangeListener)
 meth public java.io.InputStream getInputStream() throws java.io.IOException
+meth public java.lang.String toString()
 meth public javax.swing.JEditorPane[] getOpenedPanes()
 meth public javax.swing.text.StyledDocument getDocument()
 meth public javax.swing.text.StyledDocument openDocument() throws java.io.IOException
@@ -230,8 +231,8 @@ meth public void removeChangeListener(javax.swing.event.ChangeListener)
 meth public void saveDocument() throws java.io.IOException
 meth public void setMIMEType(java.lang.String)
 supr org.openide.windows.CloneableOpenSupport
-hfds DOCUMENT_LOADING,DOCUMENT_NO,DOCUMENT_READY,DOCUMENT_RELOADING,ERR,LOCAL_CLOSE_DOCUMENT,LOCAL_LOAD_TASK,LOCK_NOTIFY_MODIFIED,LOCK_PRINTING,LOCK_STRONG_REF,PROP_PANE,RP,alreadyModified,annotationsLoaded,counterGetDocument,counterOpenAtImpl,counterOpenDocument,counterPrepareDocument,doc,docFilter,documentReloading,documentStatus,inUserQuestionExceptionHandler,isStrongSet,kit,lastReusable,lastSaveTime,lastSelected,lineSet,lineSetWHM,listener,listeners,lookup,mimeType,positionManager,prepareDocumentRuntimeException,prepareTask,printing,propertyChangeSupport,reloadDialogOpened,reloadDocumentFireDocumentChangeClose,reloadDocumentFireDocumentChangeOpen,undoRedo,warnedClasses
-hcls DelegateIOExc,DocFilter,Listener,PlainEditorKit,StrongRef
+hfds ERR,LOCAL_CLOSE_DOCUMENT,LOCK_PRINTING,PROP_PANE,alreadyModified,annotationsLoaded,checkModificationLock,docFilter,inUserQuestionExceptionHandler,kit,lastReusable,lastSaveTime,lastSelected,lineSet,lineSetWHM,listener,listeners,listeningOnEnv,lookup,mimeType,openClose,positionManager,preventModification,printing,propertyChangeSupport,reloadDialogOpened,undoRedo,warnedClasses
+hcls DocFilter,Listener,PlainEditorKit
 
 CLSS public abstract interface static org.openide.text.CloneableEditorSupport$Pane
  outer org.openide.text.CloneableEditorSupport

@@ -50,120 +50,76 @@ import org.netbeans.modules.php.dbgp.packets.BrkpntSetCommand.Types;
 import org.openide.filesystems.FileObject;
 import org.openide.text.Line;
 
-
 /**
  * @author ads
  *
  */
-public class BrkpntCommandBuilder {
-
+public final class BrkpntCommandBuilder {
     private BrkpntCommandBuilder() {
-        // avoid inst-n
     }
-        
-    public static BrkpntSetCommand buildLineBreakpoint( SessionId id , 
-            String transactionId, FileObject localFile, int lineNumber ) 
-    {
-        BrkpntSetCommand command = new BrkpntSetCommand( transactionId );
+
+    public static BrkpntSetCommand buildLineBreakpoint(SessionId id, String transactionId, FileObject localFile, int lineNumber) {
+        BrkpntSetCommand command = new BrkpntSetCommand(transactionId);
         String uri = id.toWebServerURI(localFile);
-        if ( uri == null ) {
+        if (uri == null) {
             return null;
         }
-        command.setType( Types.LINE );
-        command.setFile( uri );
+        command.setType(Types.LINE);
+        command.setFile(uri);
         command.setLineNumber(lineNumber);
         return command;
     }
-    
-    public static BrkpntSetCommand buildLineBreakpoint( SessionId id ,
-            String transactionId, LineBreakpoint  breakpoint ) 
-    {
+
+    public static BrkpntSetCommand buildLineBreakpoint(SessionId id, String transactionId, LineBreakpoint breakpoint) {
         Line line = breakpoint.getLine();
         FileObject fileObject = line.getLookup().lookup(FileObject.class);
-        
-        BrkpntSetCommand command =  buildLineBreakpoint(id, transactionId, 
-                fileObject , line.getLineNumber() );
-        if (command != null) command.setBreakpoint( breakpoint );
+        BrkpntSetCommand command = buildLineBreakpoint(id, transactionId, fileObject, line.getLineNumber());
+        if (command != null) {
+            command.setBreakpoint(breakpoint);
+        }
         return command;
     }
-    
-    public static BrkpntSetCommand buildCallBreakpoint( String transactionId, 
-            String funcName ) 
-    {
-        BrkpntSetCommand command = new BrkpntSetCommand( transactionId );
-        command.setType( Types.CALL );
-        command.setFunction( funcName );
-        return command;
-    }
-    
 
-    public static BrkpntSetCommand buildCallBreakpoint( String transactionId,
-            FunctionBreakpoint functionBreakpoint )
-    {
+    public static BrkpntSetCommand buildCallBreakpoint(String transactionId, String funcName) {
+        BrkpntSetCommand command = new BrkpntSetCommand(transactionId);
+        command.setType(Types.CALL);
+        command.setFunction(funcName);
+        return command;
+    }
+
+    public static BrkpntSetCommand buildCallBreakpoint(String transactionId, FunctionBreakpoint functionBreakpoint) {
         String func = functionBreakpoint.getFunction();
         BrkpntSetCommand command = buildCallBreakpoint(transactionId, func);
-        command.setBreakpoint( functionBreakpoint );
+        command.setBreakpoint(functionBreakpoint);
         return command;
     }
-    
-    public static BrkpntSetCommand buildReturnBreakpoint( String transactionId, 
-            String funcName ) 
-    {
-        BrkpntSetCommand command = new BrkpntSetCommand( transactionId );
-        command.setType( Types.RETURN );
-        command.setFunction( funcName );
+
+    public static BrkpntSetCommand buildReturnBreakpoint(String transactionId, String funcName) {
+        BrkpntSetCommand command = new BrkpntSetCommand(transactionId);
+        command.setType(Types.RETURN);
+        command.setFunction(funcName);
         return command;
     }
-    
-    public static BrkpntSetCommand buildReturnBreakpoint( String transactionId,
-            FunctionBreakpoint functionBreakpoint )
-    {
+
+    public static BrkpntSetCommand buildReturnBreakpoint(String transactionId, FunctionBreakpoint functionBreakpoint) {
         String func = functionBreakpoint.getFunction();
         BrkpntSetCommand command = buildReturnBreakpoint(transactionId, func);
-        command.setBreakpoint( functionBreakpoint );
-        return command;
-    }
-    
-    public static BrkpntSetCommand buildExceptionBreakpoint( String transactionId, 
-            String excName ) 
-    {
-        BrkpntSetCommand command = new BrkpntSetCommand( transactionId );
-        command.setType( Types.EXCEPTION );
-        command.setException( excName );
+        command.setBreakpoint(functionBreakpoint);
         return command;
     }
 
-    public static BrkpntSetCommand buildConditionalBreakpoint(  
-            String transactionId, String expression ) 
-    {
-        BrkpntSetCommand command = new BrkpntSetCommand( transactionId );
-        command.setType( Types.WATCH );
-        command.setExpression( expression );
-        return command;
-    }
-    /*
-       public static BrkpntSetCommand buildLineBreakpoint( SessionId id ,
-            String transactionId, String localFileName , int lineNumber )
-    {
-        BrkpntSetCommand command = new BrkpntSetCommand( transactionId );
-        String uri = id.getFileUriByLocal(localFileName);
-        if ( uri == null ) {
-            return null;
-        }
-        command.setType( Types.LINE );
-        command.setFile( uri );
-        command.setLineNumber(lineNumber);
+    public static BrkpntSetCommand buildExceptionBreakpoint(String transactionId, String excName) {
+        BrkpntSetCommand command = new BrkpntSetCommand(transactionId);
+        command.setType(Types.EXCEPTION);
+        command.setException(excName);
         return command;
     }
 
-    public static BrkpntSetCommand buildConditionalBreakpoint( SessionId id ,
-            String transactionId, String localFileName , String expression )
-    {
-        BrkpntSetCommand command = new BrkpntSetCommand( transactionId );
-        command.setType( Types.CONDITIONAL );
-        String uri = id.getFileUriByLocal(localFileName);
-        command.setFile( uri );
-        command.setExpression( expression );
+    public static BrkpntSetCommand buildConditionalBreakpoint(String transactionId, String expression) {
+        BrkpntSetCommand command = new BrkpntSetCommand(transactionId);
+        command.setType(Types.WATCH);
+        command.setExpression(expression);
         return command;
-    }*/
+    }
+
 }

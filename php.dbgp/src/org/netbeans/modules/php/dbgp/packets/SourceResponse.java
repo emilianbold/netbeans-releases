@@ -46,31 +46,26 @@ package org.netbeans.modules.php.dbgp.packets;
 import org.netbeans.modules.php.dbgp.DebugSession;
 import org.w3c.dom.Node;
 
-
 /**
  * @author ads
  *
  */
 class SourceResponse extends DbgpResponse {
 
-    SourceResponse( Node node ) {
+    SourceResponse(Node node) {
         super(node);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpMessage#process(org.netbeans.modules.php.dbgp.DebugSession, org.netbeans.modules.php.dbgp.packets.DbgpCommand)
-     */
     @Override
-    public void process( DebugSession session, DbgpCommand command )
-    {
+    public void process(DebugSession session, DbgpCommand command) {
     }
-    
-    public boolean isSusccess(){
-        return getBoolean(getNode() , PropertySetResponse.SUCCESS );
+
+    public boolean isSusccess() {
+        return getBoolean(getNode(), PropertySetResponse.SUCCESS);
     }
-    
-    public String getSourceCode(){
-        return getNodeValue( getNode() );
+
+    public String getSourceCode() {
+        return getNodeValue(getNode());
     }
 
 }

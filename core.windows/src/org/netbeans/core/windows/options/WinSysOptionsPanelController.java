@@ -57,7 +57,8 @@ import org.openide.util.Lookup;
     displayName="#AdvancedOption_DisplayName_WinSys",
     id="Windows",
     keywords="#KW_WindowOptions",
-    keywordsCategory="Advanced/Windows"
+    keywordsCategory="Appearance/Windows",
+    location = "Appearance"
 //    toolTip="#AdvancedOption_Tooltip_WinSys"
 )
 public class WinSysOptionsPanelController extends OptionsPanelController {
@@ -128,18 +129,6 @@ public class WinSysOptionsPanelController extends OptionsPanelController {
             panel = new WinSysPanel(this);
         }
         return panel;
-    }
-
-    @Override
-    protected void setCurrentSubcategory( String subpath ) {
-        if( "LaF".equals( subpath ) ) { //NOI18N
-            SwingUtilities.invokeLater( new Runnable() {
-                @Override
-                public void run() {
-                    getPanel().selectDarkLookAndFeel();
-                }
-            });
-        }
     }
 
     protected void changed() {

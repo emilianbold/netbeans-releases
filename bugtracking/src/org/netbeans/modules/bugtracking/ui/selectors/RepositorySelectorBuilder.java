@@ -89,6 +89,7 @@ import static javax.swing.LayoutStyle.ComponentPlacement.UNRELATED;
 import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.DelegatingConnector;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.openide.util.ImageUtilities;
 
 /**
  * Allows the user to select an existing connection to a bug-tracking repository
@@ -767,6 +768,7 @@ public final class RepositorySelectorBuilder implements ItemListener,
                 String connectorName = ((NewRepositoryInfo) value).connector
                                        .getDisplayName();
                 text = newConnectionFormat.format(new Object[] {connectorName});
+                icon = ((NewRepositoryInfo) value).connector.getIcon();
             } else {
                 assert false;
                 text = "???";                                           //NOI18N

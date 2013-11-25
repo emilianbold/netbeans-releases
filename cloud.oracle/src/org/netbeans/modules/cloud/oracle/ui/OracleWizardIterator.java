@@ -102,7 +102,7 @@ public class OracleWizardIterator implements WizardDescriptor.AsynchronousInstan
         String sdk = (String)wizard.getProperty(OracleWizardPanel.SDK);
         assert sdk != null;
         Collection<WLDomain> localInstances = DomainSupport.getUsableDomainInstances(null);
-        OracleInstance instance = new OracleInstance(name, OracleWizardComponent.getPrefixedUserName(identityDomain, username), pwd, adminURL, dataCenter,
+        OracleInstance instance = new OracleInstance(name, username, pwd, adminURL, dataCenter,
                 identityDomain, javaServiceName, dbServiceName,
                 localInstances.isEmpty() ? null : localInstances.iterator().next().getUrl(), sdk);
         OracleInstanceManager.getDefault().add(instance);

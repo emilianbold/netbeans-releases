@@ -43,46 +43,35 @@
  */
 package org.netbeans.modules.php.dbgp.packets;
 
-
-
 /**
  * @author ads
  *
  */
 public class FeatureSetCommand extends FeatureGetCommand {
+    static final String FEATURE_SET = "feature_set"; // NOI18N
+    private static final String VALUE_ARG = "-v "; // NOI18N
+    private String myValue;
 
-    static final String         FEATURE_SET = "feature_set";        // NOI18N
-    
-    private static final String VALUE_ARG   = "-v ";                // NOI18N
-
-    public FeatureSetCommand( String transactionId ) {
-        super( FEATURE_SET, transactionId);
+    public FeatureSetCommand(String transactionId) {
+        super(FEATURE_SET, transactionId);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpCommand#wantAcknowledgment()
-     */
     @Override
-    public boolean wantAcknowledgment()
-    {
+    public boolean wantAcknowledgment() {
         return true;
     }
 
-    public void setValue( String value ){
+    public void setValue(String value) {
         myValue = value;
     }
-    
+
     @Override
-    protected String getArguments()
-    {
-        StringBuilder builder = new StringBuilder( super.getArguments() );
-        
-        builder.append( BrkpntSetCommand.SPACE );
-        builder.append( VALUE_ARG );
-        builder.append( myValue );
-        
+    protected String getArguments() {
+        StringBuilder builder = new StringBuilder(super.getArguments());
+        builder.append(BrkpntSetCommand.SPACE);
+        builder.append(VALUE_ARG);
+        builder.append(myValue);
         return builder.toString();
     }
-    
-    private String myValue;
+
 }

@@ -73,6 +73,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.queries.CollocationQuery;
+import org.netbeans.spi.project.ProjectContainerProvider;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -718,15 +719,29 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                 return;
             }
             Set<? extends Project> subprojects = cache.get(p);
+            boolean recurse = true;
             if (subprojects == null) {
-                SubprojectProvider spp = p.getLookup().lookup(SubprojectProvider.class);
-                if (spp != null) {
+                ProjectContainerProvider pcp = p.getLookup().lookup(ProjectContainerProvider.class);
+                if (pcp != null) {
+                    ProjectContainerProvider.Result res = pcp.getContainedProjects();
+                    if (res.isRecursive()) {
+                        recurse = false;
+                    }
                     if (cancel) {
                         return;
                     }
-                    subprojects = spp.getSubprojects();
+                    subprojects = res.getProjects();
                 } else {
-                    subprojects = Collections.emptySet();
+                    SubprojectProvider spp = p.getLookup().lookup(SubprojectProvider.class);
+                    if (spp != null) {
+                        if (cancel) {
+                            return;
+                        }
+                        subprojects = spp.getSubprojects();
+                        
+                    } else {
+                        subprojects = Collections.emptySet();
+                    }
                 }
                 cache.put(p, subprojects);
             }
@@ -736,10 +751,11 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                 }
                 if ( !result.contains( sp ) ) {
                     result.add( sp );
-
-                    //#70029: only add sp's subprojects if sp is not already in result,
-                    //to prevent StackOverflow caused by misconfigured projects:
-                    addSubprojects(sp, result, cache);
+                    if (recurse) {
+                        //#70029: only add sp's subprojects if sp is not already in result,
+                        //to prevent StackOverflow caused by misconfigured projects:
+                        addSubprojects(sp, result, cache);
+                    }
                 }
             }
 

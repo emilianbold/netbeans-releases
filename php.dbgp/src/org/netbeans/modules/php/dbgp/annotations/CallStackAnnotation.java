@@ -44,38 +44,26 @@ package org.netbeans.modules.php.dbgp.annotations;
 import org.openide.text.Annotatable;
 import org.openide.util.NbBundle;
 
-
 /**
  * @author ads
  *
  */
 public class CallStackAnnotation extends DebuggerAnnotation {
+    static final String CALL_STACK_ANNOTATION_TYPE = "CallSite";  //NOI18N
+    private static final String CALL_STACK_LINE = "ANTN_CALLSITE"; //NOI18N
 
-    static final String CALL_STACK_ANNOTATION_TYPE = "CallSite";  // NOI18N
-
-    private static final String CALL_STACK_LINE     = "ANTN_CALLSITE";
-
-    public CallStackAnnotation( Annotatable annotatable ) {
+    public CallStackAnnotation(Annotatable annotatable) {
         super(annotatable);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.annotations.DebuggerAnnotation#getAnnotationType()
-     */
     @Override
-    public String getAnnotationType()
-    {
+    public String getAnnotationType() {
         return CALL_STACK_ANNOTATION_TYPE;
     }
 
-    /* (non-Javadoc)
-     * @see org.openide.text.Annotation#getShortDescription()
-     */
     @Override
-    public String getShortDescription()
-    {
-        return NbBundle.getBundle(DebuggerAnnotation.class).
-            getString( CALL_STACK_LINE );
+    public String getShortDescription() {
+        return NbBundle.getMessage(CallStackAnnotation.class, CALL_STACK_LINE);
     }
 
 }

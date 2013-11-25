@@ -179,6 +179,16 @@ public class CLIStatus implements ISVNStatus {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
+    public String getMovedFromAbspath () {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public String getMovedToAbspath () {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
     private class UnversionedInfo implements ISVNInfo {
         private final File file;
         public UnversionedInfo(String path) {

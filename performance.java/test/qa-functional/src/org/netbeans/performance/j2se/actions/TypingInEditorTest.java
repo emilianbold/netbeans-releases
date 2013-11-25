@@ -41,33 +41,31 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se.actions;
 
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.j2se.setup.J2SESetup;
-
+import java.awt.AWTException;
+import java.awt.Robot;
+import java.awt.event.KeyEvent;
+import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.EditorWindowOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestSuite;
-
-import java.awt.event.KeyEvent;
-import java.awt.Robot;
-import java.awt.AWTException;
+import org.netbeans.modules.performance.guitracker.ActionTracker;
+import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2se.setup.J2SESetup;
 
 /**
  * Test of typing in opened source editor.
  *
- * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
+ * @author anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
 public class TypingInEditorTest extends PerformanceTestCase {
-    
+
     private EditorOperator editorOperator;
     protected String fileName;
     protected int caretPositionX, caretPositionY;
@@ -76,36 +74,46 @@ public class TypingInEditorTest extends PerformanceTestCase {
     Robot r;
     private int keyCode = KeyEvent.VK_SPACE;
     private int repeatTimes = 1;
-    
-    /** Creates a new instance of TypingInEditor */
+
+    /**
+     * Creates a new instance of TypingInEditor
+     *
+     * @param testName test name
+     */
     public TypingInEditorTest(String testName) {
         super(testName);
         WAIT_AFTER_OPEN = 200;
     }
-    
-    /** Creates a new instance of TypingInEditor */
+
+    /**
+     * Creates a new instance of TypingInEditor
+     *
+     * @param testName test name
+     * @param performanceDataName data name
+     */
     public TypingInEditorTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         WAIT_AFTER_OPEN = 200;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(TypingInEditorTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(J2SESetup.class, "testCloseMemoryToolbar", "testOpenDataProject")
+                .addTest(TypingInEditorTest.class)
+                .suite();
     }
 
     public void testTxtEditor() {
+        expectedTime = 100;
         fileName = "textfile.txt";
         caretPositionX = 9;
         caretPositionY = 1;
         fileToBeOpened = new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|" + fileName);
         doMeasurement();
     }
-    
+
     public void testTxtEditor10() {
+        expectedTime = 100;
         fileName = "textfile.txt";
         repeatTimes = 10;
         caretPositionX = 9;
@@ -116,6 +124,7 @@ public class TypingInEditorTest extends PerformanceTestCase {
     }
 
     public void testJavaEditor() {
+        expectedTime = 100;
         fileName = "Main.java";
         caretPositionX = 9;
         caretPositionY = 1;
@@ -124,6 +133,7 @@ public class TypingInEditorTest extends PerformanceTestCase {
     }
 
     public void testJavaEditor10() {
+        expectedTime = 100;
         repeatTimes = 10;
         fileName = "Main.java";
         caretPositionX = 9;
@@ -134,6 +144,7 @@ public class TypingInEditorTest extends PerformanceTestCase {
     }
 
     public void testJavaEditor10Enter() {
+        expectedTime = 200;
         keyCode = KeyEvent.VK_ENTER;
         repeatTimes = 10;
         fileName = "Main.java";
@@ -147,37 +158,42 @@ public class TypingInEditorTest extends PerformanceTestCase {
 
     @Override
     public void initialize() {
-        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
+        repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);
         new OpenAction().performAPI(fileToBeOpened);
-        editorOperator = EditorWindowOperator.getEditor(fileName);
-        editorOperator.setCaretPosition(caretPositionX,caretPositionY);
+        editorOperator = new EditorOperator(fileName);
+        editorOperator.setCaretPosition(caretPositionX, caretPositionY);
     }
-    
+
+    @Override
     public void prepare() {
-        epo=new JEditorPaneOperator(editorOperator);     
         try {
-             r = new Robot();
-//             r.setAutoDelay(10);
-        } catch (AWTException e) {};
+            r = new Robot();
+        } catch (AWTException e) {
+            fail(e);
+        }
     }
-    
-    public ComponentOperator open(){
-        //epo.pressKey(KeyEvent.VK_A);//typeKey('a'/*KeyEvent.VK_A*/);
+
+    @Override
+    public ComponentOperator open() {
+        // measure typing events and do not take into account repaint events
+        // in editor afterwards because they are asynchronous
+        MY_START_EVENT = ActionTracker.TRACK_OPEN_BEFORE_TRACE_MESSAGE;
+        MY_END_EVENT = ActionTracker.TRACK_KEY_RELEASE;
         for (int i = 0; i < repeatTimes; i++) {
             r.keyPress(keyCode);
             r.keyRelease(keyCode);
         }
         return null;
     }
-    
+
     @Override
     public void close() {
     }
-    
+
     @Override
     public void shutdown() {
         repaintManager().resetRegionFilters();
         editorOperator.closeDiscard();
+        new ProjectsTabOperator().collapseAll();
     }
-
 }

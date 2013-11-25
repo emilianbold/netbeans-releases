@@ -1,5 +1,8 @@
-(function () { // generated function for scope SettingsController
-SettingsController();
+(function () {
+$scope = SettingsController.$scope;
+SettingsController
+with ($scope) { 
 greet();
-var name;
+name;
+}
 });

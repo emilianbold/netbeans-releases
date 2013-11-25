@@ -43,13 +43,11 @@
  */
 package org.netbeans.modules.php.dbgp.packets;
 
-
 /**
  * @author ads
  *
  */
 public class FeatureGetCommand extends DbgpCommand {
-
     public enum Feature {
         LANGUAGE_SUPPORTS_THREADS,
         LANGUAGE_NAME,
@@ -67,70 +65,58 @@ public class FeatureGetCommand extends DbgpCommand {
         SUPPORTS_POSTMORTEM,
         SHOW_HIDDEN,
         NOTIFY_OK,
-        
         /*
          * additional commands that could be supported
          */
-        BREAK,          // at the time of writing ( protocol version 2.0.0 ) this command is NOT supported
-        EVAL,           // at the time of writing ( protocol version 2.0.0 ) this command is supported
-        EXPR,           // at the time of writing ( protocol version 2.0.0 ) this command is NOT supported
-        EXEC;           // at the time of writing ( protocol version 2.0.0 ) this command is NOT supported
-        
-        
+        BREAK, // at the time of writing ( protocol version 2.0.0 ) this command is NOT supported
+        EVAL, // at the time of writing ( protocol version 2.0.0 ) this command is supported
+        EXPR, // at the time of writing ( protocol version 2.0.0 ) this command is NOT supported
+        EXEC; // at the time of writing ( protocol version 2.0.0 ) this command is NOT supported
+
         @Override
-        public String toString()
-        {
+        public String toString() {
             return super.toString().toLowerCase();
         }
-        
-        public Feature forString( String str ){
+
+        public Feature forString(String str) {
             Feature[] features = Feature.values();
             for (Feature feature : features) {
-                if ( str.equals( feature.toString() )){
+                if (str.equals(feature.toString())) {
                     return feature;
                 }
             }
             return null;
         }
+
+    }
+    static final String FEATURE_GET = "feature_get"; // NOI18N
+    private static final String NAME_ARG = "-n "; // NOI18N
+    private String myName;
+
+    public FeatureGetCommand(String transactionId) {
+        this(FEATURE_GET, transactionId);
     }
 
-    static final String FEATURE_GET         = "feature_get";        // NOI18N
-    
-    private static final String NAME_ARG    = "-n ";                // NOI18N
+    protected FeatureGetCommand(String command, String transactionId) {
+        super(command, transactionId);
+    }
 
-    public FeatureGetCommand( String transactionId ) {
-        this( FEATURE_GET, transactionId);
-    }
-    
-    protected FeatureGetCommand( String command, String transactionId ) {
-        super( command, transactionId);
-    }
-    
-    public void setFeature( Feature feature ){
+    public void setFeature(Feature feature) {
         myName = feature.toString();
     }
-    
-    public void setFeature( String name ){
+
+    public void setFeature(String name) {
         myName = name;
     }
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpCommand#getArguments()
-     */
+
     @Override
-    protected String getArguments()
-    {
+    protected String getArguments() {
         return NAME_ARG + myName;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpCommand#wantAcknowledgment()
-     */
     @Override
-    public boolean wantAcknowledgment()
-    {
+    public boolean wantAcknowledgment() {
         return true;
     }
 
-    private String myName;
 }

@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.62.1
+#Version 1.69.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -24,6 +24,7 @@ supr java.lang.Object
 hfds name,ordinal
 
 CLSS public java.lang.Exception
+cons protected init(java.lang.String,java.lang.Throwable,boolean,boolean)
 cons public init()
 cons public init(java.lang.String)
 cons public init(java.lang.String,java.lang.Throwable)
@@ -46,11 +47,14 @@ meth public int hashCode()
 meth public java.lang.String toString()
 
 CLSS public java.lang.Throwable
+cons protected init(java.lang.String,java.lang.Throwable,boolean,boolean)
 cons public init()
 cons public init(java.lang.String)
 cons public init(java.lang.String,java.lang.Throwable)
 cons public init(java.lang.Throwable)
 intf java.io.Serializable
+meth public final java.lang.Throwable[] getSuppressed()
+meth public final void addSuppressed(java.lang.Throwable)
 meth public java.lang.StackTraceElement[] getStackTrace()
 meth public java.lang.String getLocalizedMessage()
 meth public java.lang.String getMessage()
@@ -63,7 +67,8 @@ meth public void printStackTrace(java.io.PrintStream)
 meth public void printStackTrace(java.io.PrintWriter)
 meth public void setStackTrace(java.lang.StackTraceElement[])
 supr java.lang.Object
-hfds backtrace,cause,detailMessage,serialVersionUID,stackTrace
+hfds CAUSE_CAPTION,EMPTY_THROWABLE_ARRAY,NULL_CAUSE_MESSAGE,SELF_SUPPRESSION_MESSAGE,SUPPRESSED_CAPTION,SUPPRESSED_SENTINEL,UNASSIGNED_STACK,backtrace,cause,detailMessage,serialVersionUID,stackTrace,suppressedExceptions
+hcls PrintStreamOrWriter,SentinelHolder,WrappedPrintStream,WrappedPrintWriter
 
 CLSS public abstract interface java.lang.annotation.Annotation
 meth public abstract boolean equals(java.lang.Object)
@@ -287,10 +292,12 @@ fld public final static java.lang.Class<? extends org.netbeans.modules.parsing.s
 fld public final static java.lang.Class<? extends org.netbeans.modules.parsing.spi.Scheduler> EDITOR_SENSITIVE_TASK_SCHEDULER
 fld public final static java.lang.Class<? extends org.netbeans.modules.parsing.spi.Scheduler> SELECTED_NODES_SENSITIVE_TASK_SCHEDULER
 meth protected abstract org.netbeans.modules.parsing.spi.SchedulerEvent createSchedulerEvent(org.netbeans.modules.parsing.spi.SourceModificationEvent)
+meth protected final org.netbeans.modules.parsing.api.Source getSource()
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
 meth protected final void schedule(org.netbeans.modules.parsing.api.Source,org.netbeans.modules.parsing.spi.SchedulerEvent)
 meth protected final void schedule(org.netbeans.modules.parsing.spi.SchedulerEvent)
 supr java.lang.Object
-hfds reparseDelay,requestProcessor,source,task
+hfds LOG,listener,reparseDelay,requestProcessor,source,task,wlistener
 hcls Accessor
 
 CLSS public org.netbeans.modules.parsing.spi.SchedulerEvent
@@ -504,14 +511,20 @@ hfds LOG,context,spiFactory,spiIndex
 
 CLSS public final org.netbeans.modules.parsing.spi.indexing.support.QuerySupport
 innr public final static !enum Kind
+innr public final static Query
 meth public !varargs java.util.Collection<? extends org.netbeans.modules.parsing.spi.indexing.support.IndexResult> query(java.lang.String,java.lang.String,org.netbeans.modules.parsing.spi.indexing.support.QuerySupport$Kind,java.lang.String[]) throws java.io.IOException
 meth public !varargs static org.netbeans.modules.parsing.spi.indexing.support.QuerySupport forRoots(java.lang.String,int,java.net.URL[]) throws java.io.IOException
 meth public !varargs static org.netbeans.modules.parsing.spi.indexing.support.QuerySupport forRoots(java.lang.String,int,org.openide.filesystems.FileObject[]) throws java.io.IOException
+meth public org.netbeans.modules.parsing.spi.indexing.support.QuerySupport$Query$Factory getQueryFactory()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public static java.util.Collection<org.openide.filesystems.FileObject> findDependentRoots(org.openide.filesystems.FileObject,boolean)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public static java.util.Collection<org.openide.filesystems.FileObject> findRoots(org.netbeans.api.project.Project,java.util.Collection<java.lang.String>,java.util.Collection<java.lang.String>,java.util.Collection<java.lang.String>)
 meth public static java.util.Collection<org.openide.filesystems.FileObject> findRoots(org.openide.filesystems.FileObject,java.util.Collection<java.lang.String>,java.util.Collection<java.lang.String>,java.util.Collection<java.lang.String>)
 supr java.lang.Object
 hfds LOG,indexerQuery,roots
-hcls IndexerQuery
+hcls DocumentToResultConvertor,IndexerQuery
 
 CLSS public final static !enum org.netbeans.modules.parsing.spi.indexing.support.QuerySupport$Kind
  outer org.netbeans.modules.parsing.spi.indexing.support.QuerySupport
@@ -525,4 +538,31 @@ fld public final static org.netbeans.modules.parsing.spi.indexing.support.QueryS
 meth public static org.netbeans.modules.parsing.spi.indexing.support.QuerySupport$Kind valueOf(java.lang.String)
 meth public static org.netbeans.modules.parsing.spi.indexing.support.QuerySupport$Kind[] values()
 supr java.lang.Enum<org.netbeans.modules.parsing.spi.indexing.support.QuerySupport$Kind>
+
+CLSS public final static org.netbeans.modules.parsing.spi.indexing.support.QuerySupport$Query
+ outer org.netbeans.modules.parsing.spi.indexing.support.QuerySupport
+innr public final static Factory
+meth public !varargs java.util.Collection<? extends org.netbeans.modules.parsing.spi.indexing.support.IndexResult> execute(java.lang.String[]) throws java.io.IOException
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NullAllowed()
+meth public java.lang.String toString()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+supr java.lang.Object
+hfds qs,queryImpl
+
+CLSS public final static org.netbeans.modules.parsing.spi.indexing.support.QuerySupport$Query$Factory
+ outer org.netbeans.modules.parsing.spi.indexing.support.QuerySupport$Query
+meth public !varargs org.netbeans.modules.parsing.spi.indexing.support.QuerySupport$Query and(org.netbeans.modules.parsing.spi.indexing.support.QuerySupport$Query[])
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public !varargs org.netbeans.modules.parsing.spi.indexing.support.QuerySupport$Query or(org.netbeans.modules.parsing.spi.indexing.support.QuerySupport$Query[])
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public org.netbeans.modules.parsing.spi.indexing.support.QuerySupport$Query field(java.lang.String,java.lang.String,org.netbeans.modules.parsing.spi.indexing.support.QuerySupport$Kind)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NonNull()
+supr java.lang.Object
+hfds qs
 

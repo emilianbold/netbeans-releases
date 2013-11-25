@@ -172,7 +172,15 @@ public class JavaTypeDescription extends TypeDescriptor {
 
     @Override
     public FileObject getFileObject() {
-        return cacheItem.getRoot();
+        final FileObject root = cacheItem.getRoot();
+        final String relativePath = getRelativePath(
+            handle.getBinaryName(),
+            cacheItem.getClassIndex(),
+            cacheItem.isBinary(),
+            cacheItem.getRootURI());
+        return root == null ?
+            null :
+            root.getFileObject(relativePath);
     }
 
     @Override
@@ -182,36 +190,15 @@ public class JavaTypeDescription extends TypeDescriptor {
             final URI uri = cacheItem.getRootURI();
             assert uri != null : "Root null for created entry";    //NOI18N
             try {
-                final File rootFile = Utilities.toFile(uri);                
-                final String binaryName = handle.getBinaryName();
-                String relativePath;
-                final ClassIndexImpl ci = cacheItem.getClassIndex();
-                if (ci == null) {
-                    LOG.log (
-                        Level.WARNING,
-                        "No ClassIndex for {0} in {1}", //NOI18N
-                        new Object[]{
-                            binaryName,
-                            uri});
-                    relativePath = null;
-                } else {
-                    relativePath = ci.getSourceName(binaryName);
-                }
-                if (relativePath == null) {
-                    relativePath = binaryName;
-                    int lastDot = relativePath.lastIndexOf('.');    //NOI18N
-                    int csIndex = relativePath.indexOf('$', lastDot);     //NOI18N
-                    if (csIndex > 0 && csIndex < relativePath.length()-1) {
-                        relativePath = binaryName.substring(0, csIndex);
-                    }
-                    relativePath = String.format(
-                        "%s.%s",    //NOI18N
-                        FileObjects.convertPackage2Folder(relativePath, File.separatorChar),
-                        FileObjects.JAVA);
-                }
+                final File rootFile = Utilities.toFile(uri);                                
+                String relativePath = getRelativePath(
+                    handle.getBinaryName(),
+                    cacheItem.getClassIndex(),
+                    cacheItem.isBinary(),
+                    uri);
                 path = new File(rootFile,relativePath).getAbsolutePath();
-            } catch (IllegalArgumentException | IOException | InterruptedException e) {
-                path = FileUtil.getFileDisplayName(getFileObject());
+            } catch (IllegalArgumentException e) {
+                path = FileUtil.getFileDisplayName(cacheItem.getRoot());
             }
             cachedPath = path;
         }
@@ -321,5 +308,47 @@ public class JavaTypeDescription extends TypeDescriptor {
                         
         }
         icon = Icons.getElementIcon (handle.getKind(), null);
+    }
+
+    private static String getRelativePath(
+        @NonNull final String binaryName,
+        @NullAllowed final ClassIndexImpl ci,
+        final boolean isBinary,
+        @NullAllowed final URI root) {
+        String relativePath = null;
+        if (ci == null) {
+            LOG.log (
+                Level.WARNING,
+                "No ClassIndex for {0} in {1}", //NOI18N
+                new Object[]{
+                    binaryName,
+                    root});
+        } else {
+            try {
+                relativePath = ci.getSourceName(binaryName);
+            } catch (IOException | InterruptedException ex) {
+                LOG.log (
+                    Level.WARNING,
+                    "Broken ClassIndex for {0} in {1}", //NOI18N
+                    new Object[]{
+                        binaryName,
+                        root});
+            }
+        }
+        if (relativePath == null) {
+            relativePath = binaryName;
+            int lastDot = relativePath.lastIndexOf('.');    //NOI18N
+            int csIndex = relativePath.indexOf('$', lastDot);     //NOI18N
+            if (csIndex > 0 && csIndex < relativePath.length()-1) {
+                relativePath = binaryName.substring(0, csIndex);
+            }
+            relativePath = String.format(
+                "%s.%s",    //NOI18N
+                FileObjects.convertPackage2Folder(relativePath, File.separatorChar),
+                isBinary ?
+                   FileObjects.CLASS :
+                   FileObjects.JAVA);
+        }
+        return relativePath;
     }
 }

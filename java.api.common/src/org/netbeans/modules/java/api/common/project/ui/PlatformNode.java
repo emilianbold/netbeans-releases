@@ -212,8 +212,11 @@ class PlatformNode extends AbstractNode implements ChangeListener {
      * @param platformPropName the name of ant property holding the platform name
      *
      */
-    public static PlatformNode create (PropertyEvaluator eval, String platformPropName, String platformType, ClassPathSupport cs) {
-        PlatformProvider pp = new PlatformProvider (eval, platformPropName, platformType);
+    public static PlatformNode create (
+            @NonNull final PropertyEvaluator eval,
+            @NonNull final Pair<Pair<String,String>, ClassPath> boot,
+            @NonNull final ClassPathSupport cs) {
+        PlatformProvider pp = new PlatformProvider (eval, boot);
         return new PlatformNode (pp, cs);
     }
 
@@ -239,13 +242,11 @@ class PlatformNode extends AbstractNode implements ChangeListener {
         }
 
         private List<SourceGroup> getKeys () {
-            final Pair<String,JavaPlatform> platHolder = ((PlatformNode)this.getNode()).pp.getPlatform();;
-            if (platHolder == null || platHolder.second() == null) {
+            final FileObject[] roots = ((PlatformNode)this.getNode()).pp.getBootstrapLibraries();
+            if (roots.length == 0) {
                 return Collections.<SourceGroup>emptyList();
             }
-            //Todo: Should listen on returned classpath, but now the bootstrap libraries are read only
-            FileObject[] roots = platHolder.second().getBootstrapLibraries().getRoots();
-            List<SourceGroup> result = new ArrayList<SourceGroup>(roots.length);
+            final List<SourceGroup> result = new ArrayList<>(roots.length);
             for (int i = 0; i < roots.length; i++) {
                     FileObject file;
                     Icon icon;
@@ -292,22 +293,23 @@ class PlatformNode extends AbstractNode implements ChangeListener {
         }
     }
 
-    private static class PlatformProvider implements PropertyChangeListener {
+    private static final class PlatformProvider implements PropertyChangeListener {
 
         private static final Pair<String,JavaPlatform> BUSY = Pair.<String,JavaPlatform>of(null,null);
         private static final RequestProcessor RP = new RequestProcessor(PlatformProvider.class);
         
         private final PropertyEvaluator evaluator;
-        private final String platformPropName;
-        private final String platformType;
+        private final Pair<Pair<String,String>, ClassPath> boot;
         private final AtomicReference<Pair<String,JavaPlatform>> platformCache = new AtomicReference<Pair<String,JavaPlatform>>();
         private final ChangeSupport changeSupport = new ChangeSupport(this);
         
-        public PlatformProvider (PropertyEvaluator evaluator, String platformPropName, String platformType) {
+        public PlatformProvider (PropertyEvaluator evaluator, Pair<Pair<String,String>, ClassPath> boot) {
             this.evaluator = evaluator;
-            this.platformPropName = platformPropName;
-            this.platformType = platformType;
+            this.boot = boot;
             this.evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this,evaluator));
+            if (this.boot.second() != null) {
+                this.boot.second().addPropertyChangeListener(WeakListeners.propertyChange(this, this.boot.second()));
+            }
         }
                 
         @CheckForNull
@@ -316,8 +318,8 @@ class PlatformNode extends AbstractNode implements ChangeListener {
                 RP.execute(new Runnable() {
                     @Override
                     public void run() {
-                        final String platformId = evaluator.getProperty(platformPropName);
-                        final JavaPlatform platform = CommonProjectUtils.getActivePlatform (platformId, platformType);
+                        final String platformId = evaluator.getProperty(boot.first().first());
+                        final JavaPlatform platform = CommonProjectUtils.getActivePlatform (platformId, boot.first().second());
                         platformCache.set(Pair.<String,JavaPlatform>of(platformId, platform));
                         changeSupport.fireChange ();
                     }
@@ -325,6 +327,19 @@ class PlatformNode extends AbstractNode implements ChangeListener {
             }
             Pair<String,JavaPlatform> res = platformCache.get();
             return res == BUSY ? null : res;
+        }
+
+        @NonNull
+        public FileObject[] getBootstrapLibraries() {
+            final Pair<String, JavaPlatform> jp = getPlatform();
+            if (jp == null || jp.second() == null) {
+                return new FileObject[0];
+            }
+            ClassPath cp = boot.second();
+            if (cp == null) {
+                cp = jp.second().getBootstrapLibraries();
+            }
+            return cp.getRoots();
         }
         
         public void addChangeListener (ChangeListener l) {
@@ -337,7 +352,9 @@ class PlatformNode extends AbstractNode implements ChangeListener {
         
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (platformPropName.equals (evt.getPropertyName())) {
+            final String propName = evt.getPropertyName();
+            if (boot.first().first().equals (propName) ||
+                ClassPath.PROP_ROOTS.equals(propName)) {
                 platformCache.set(null);
                 getPlatform();
             }

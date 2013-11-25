@@ -116,7 +116,8 @@ public class ConfigurationsManager {
             jdk7.enable("org.netbeans.modules.java.hints.jdk.ConvertToStringSwitch");
             jdk7.enable("org.netbeans.modules.java.hints.jdk.ConvertToARM");
             jdk7.enable("org.netbeans.modules.java.hints.jdk.JoinCatches");
-            jdk7.enable("org.netbeans.modules.java.hints.jdk.UseSpecificCatch");
+            // #215546 - requires user inspection
+            // jdk7.enable("org.netbeans.modules.java.hints.jdk.UseSpecificCatch");
             //jdk7.enable("java.util.Objects");
         }
         if (configurationsVersion < 1 && !configurationExists("organizeImports")) {

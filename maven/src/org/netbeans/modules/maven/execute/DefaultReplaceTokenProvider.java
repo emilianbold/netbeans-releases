@@ -43,6 +43,7 @@
 package org.netbeans.modules.maven.execute;
 
 import java.io.File;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -60,6 +61,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.classpath.MavenSourcesImpl;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
@@ -75,6 +77,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -170,7 +173,7 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
                     assert rel != null;
                     String pkg = rel.replace('/', '.');
                     if (!pkg.isEmpty()) {
-                        packClassname.append(pkg).append('.');
+                        packClassname.append(pkg).append(".**."); // test everything under this package recusively
                     }
                     packClassname.append("*");
                     if (ActionProvider.COMMAND_TEST_SINGLE.equals(actionName) || ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(actionName)) {
@@ -222,6 +225,16 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
                     }
                 }
             }
+        } else {
+            // not all of the selected files are under one source root, so maybe they were
+            // selected from both source and test packages and "Test Files" action was invoked on them?
+            if (ActionProvider.COMMAND_TEST_SINGLE.equals(actionName)) {
+                HashSet<String> test = new HashSet<String>();
+                addSelectedFiles(false, fos, test);
+                addSelectedFiles(true, fos, test);
+                String files2test = test.toString().replace(" ", "");
+                packClassname.append(files2test.substring(1, files2test.length() - 1));
+            }
         }
         if (packClassname.length() > 0) { //#213671
             replaceMap.put(PACK_CLASSNAME, packClassname.toString());
@@ -248,6 +261,27 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
             replaceMap.put(CLASSPATHSCOPE,"runtime"); //NOI18N
         }
         return replaceMap;
+    }
+
+    private void addSelectedFiles(boolean testRoots, FileObject[] candidates, HashSet<String> test) {
+        NbMavenProjectImpl prj = project.getLookup().lookup(NbMavenProjectImpl.class);
+        if (prj != null) {
+            URI[] roots = prj.getSourceRoots(testRoots);
+            for (URI uri : roots) {
+                FileObject root = FileUtil.toFileObject(Utilities.toFile(uri));
+                for (FileObject candidate : candidates) {
+                    String relativePath = FileUtil.getRelativePath(root, candidate);
+                    if (relativePath != null) {
+                        if (testRoots) {
+                            relativePath = relativePath.replace(".java", "").replace('/', '.'); //NOI18N
+                        } else {
+                            relativePath = relativePath.replace(".java", "Test").replace('/', '.'); //NOI18N
+                        }
+                        test.add(relativePath);
+                    }
+                }
+            }
+        }
     }
 
     /** Finds the one source group, if any, which contains all of the listed files. */

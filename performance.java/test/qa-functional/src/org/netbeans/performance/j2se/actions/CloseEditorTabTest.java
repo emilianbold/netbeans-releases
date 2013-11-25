@@ -41,122 +41,117 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se.actions;
 
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.j2se.setup.J2SESetup;
-
+import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.CloseViewAction;
+import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
+import static org.netbeans.junit.NbModuleSuite.emptyConfiguration;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2se.setup.J2SESetup;
 
 /**
  * Test Closing Editor tab.
  *
- * @author  mmirilovic@netbeans.org
+ * @author mmirilovic@netbeans.org
  */
 public class CloseEditorTabTest extends PerformanceTestCase {
-    
-    /** Menu item name that opens the editor */
-    public static String menuItem;
-    protected static String OPEN;
-    /** Nodes represent files to be opened */
+
+    /**
+     * Nodes represent files to be opened
+     */
     private static Node[] openFileNodes;
-    
-    
+
     /**
      * Creates a new instance of CloseEditorTab
+     *
      * @param testName the name of the test
      */
     public CloseEditorTabTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
-        menuItem = OPEN;
     }
-    
+
     /**
      * Creates a new instance of CloseEditorTab
+     *
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
      */
     public CloseEditorTabTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
-        menuItem = OPEN;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(CloseEditorTabTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(J2SESetup.class, "testCloseMemoryToolbar", "testOpenFoldersProject")
+                .addTest(CloseEditorTabTest.class)
+                .suite();
     }
 
-    public void testCloseEditorTab(){
+    public void testCloseEditorTab() {
         doMeasurement();
-    }    
-    
+    }
+
     @Override
-    public void initialize(){
-        OPEN = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");
+    public void initialize() {
         EditorOperator.closeDiscardAll();
         prepareFiles();
     }
-    
+
     @Override
-    public void shutdown(){
+    public void shutdown() {
+        new ProjectsTabOperator().getProjectRootNode("PerformanceTestFoldersData").collapse();
         EditorOperator.closeDiscardAll();
     }
-    
-    public void prepare(){
+
+    @Override
+    public void prepare() {
         new OpenAction().performAPI(openFileNodes);
     }
-    
-    public ComponentOperator open(){
-        new CloseViewAction().performMenu(new EditorOperator("OptionsTest.java"));
+
+    @Override
+    public ComponentOperator open() {
+        new CloseViewAction().performMenu(new EditorOperator("SampleJavaClass000.java"));
         return null;
     }
-    
-    public void close(){
+
+    @Override
+    public void close() {
         EditorOperator.closeDiscardAll();
     }
-    
+
     /**
-     * Prepare ten selected file from  project
+     * Prepare ten selected file from project
      */
-    protected void prepareFiles(){
+    protected void prepareFiles() {
         String[][] files_path = getTenSelectedFiles();
-        
         openFileNodes = new Node[files_path.length];
         SourcePackagesNode sourcePackagesNode = new SourcePackagesNode("PerformanceTestFoldersData");
-        
-        for(int i=0; i<files_path.length; i++) {
+        for (int i = 0; i < files_path.length; i++) {
             openFileNodes[i] = new Node(sourcePackagesNode, files_path[i][0] + '|' + files_path[i][1]);
         }
     }
-    
-    private static String[][] getTenSelectedFiles(){
+
+    private static String[][] getTenSelectedFiles() {
         String[][] files_path = {
-            {"folders.javaFolder100","AboutDialogTest.java"},
-            {"folders.javaFolder100","AttachDialogTest.java"},
-            {"folders.javaFolder100","CreateTestsDialogTest.java"},
-            {"folders.javaFolder100","DeleteFileDialogTest.java"},
-            {"folders.javaFolder100","FilesWindowTest.java"},
-            {"folders.javaFolder50","ServerManagerTest.java"},
-            {"folders.javaFolder50","RuntimeWindowTest.java"},
-            {"folders.javaFolder50","PluginManagerTest.java"},
-            {"folders.javaFolder50","OptionsTest.java"},
-            {"folders.javaFolder50","ProfilerWindowsTest.java"},
-            {"folders.javaFolder50","NewFileDialogTest.java"}
+            {"folders.javaFolder50", "SampleJavaClass000.java"},
+            {"folders.javaFolder50", "SampleJavaClass001.java"},
+            {"folders.javaFolder50", "SampleJavaClass002.java"},
+            {"folders.javaFolder50", "SampleJavaClass003.java"},
+            {"folders.javaFolder50", "SampleJavaClass004.java"},
+            {"folders.javaFolder50", "SampleJavaClass005.java"},
+            {"folders.javaFolder50", "SampleJavaClass006.java"},
+            {"folders.javaFolder50", "SampleJavaClass007.java"},
+            {"folders.javaFolder50", "SampleJavaClass008.java"},
+            {"folders.javaFolder50", "SampleJavaClass009.java"}
         };
         return files_path;
     }
-    
 }

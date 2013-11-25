@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.27.1
+#Version 1.31.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -41,9 +41,23 @@ CLSS public abstract interface !annotation java.lang.annotation.Target
 intf java.lang.annotation.Annotation
 meth public abstract java.lang.annotation.ElementType[] value()
 
+CLSS public final org.netbeans.spi.editor.bracesmatching.BraceContext
+meth public javax.swing.text.Position getEnd()
+meth public javax.swing.text.Position getStart()
+meth public org.netbeans.spi.editor.bracesmatching.BraceContext createRelated(javax.swing.text.Position,javax.swing.text.Position)
+meth public org.netbeans.spi.editor.bracesmatching.BraceContext getRelated()
+meth public static org.netbeans.spi.editor.bracesmatching.BraceContext create(javax.swing.text.Position,javax.swing.text.Position)
+supr java.lang.Object
+hfds end,related,start
+
 CLSS public abstract interface org.netbeans.spi.editor.bracesmatching.BracesMatcher
+innr public abstract interface static ContextLocator
 meth public abstract int[] findMatches() throws java.lang.InterruptedException,javax.swing.text.BadLocationException
 meth public abstract int[] findOrigin() throws java.lang.InterruptedException,javax.swing.text.BadLocationException
+
+CLSS public abstract interface static org.netbeans.spi.editor.bracesmatching.BracesMatcher$ContextLocator
+ outer org.netbeans.spi.editor.bracesmatching.BracesMatcher
+meth public abstract org.netbeans.spi.editor.bracesmatching.BraceContext findContext(int)
 
 CLSS public abstract interface org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory
  anno 0 org.netbeans.spi.editor.mimelookup.MimeLocation(java.lang.Class<? extends org.netbeans.spi.editor.mimelookup.InstanceProvider> instanceProviderClass=class org.netbeans.spi.editor.mimelookup.InstanceProvider, java.lang.String subfolderName="BracesMatchers")

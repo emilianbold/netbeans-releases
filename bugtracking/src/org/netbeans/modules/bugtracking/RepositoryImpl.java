@@ -50,11 +50,11 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static org.netbeans.modules.bugtracking.BugtrackingOwnerSupport.ContextType.SELECTED_FILE_AND_ALL_PROJECTS;
-import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.team.spi.TeamProject;
-import org.netbeans.modules.bugtracking.team.spi.TeamRepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.*;
+import org.netbeans.modules.team.spi.NBRepositoryProvider;
+import org.netbeans.modules.team.spi.OwnerInfo;
+import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
 
 
 /**
@@ -87,7 +87,7 @@ public final class RepositoryImpl<R, Q, I> {
     private final IssueProvider<I> issueProvider;
     private final QueryProvider<Q, I> queryProvider;
     private final IssueStatusProvider<R, I> issueStatusProvider;    
-    private final IssueSchedulingProvider<I> issueSchedulingProvider;    
+    private final IssueScheduleProvider<I> issueSchedulingProvider;    
     private final IssuePriorityProvider<I> issuePriorityProvider;
     private final R r;
 
@@ -103,7 +103,7 @@ public final class RepositoryImpl<R, Q, I> {
             QueryProvider<Q, I> queryProvider, 
             IssueProvider<I> issueProvider, 
             IssueStatusProvider<R, I> issueStatusProvider, 
-            IssueSchedulingProvider<I> issueSchedulingProvider,
+            IssueScheduleProvider<I> issueSchedulingProvider,
             IssuePriorityProvider<I> issuePriorityProvider,
             IssueFinder issueFinder) 
     {
@@ -201,7 +201,7 @@ public final class RepositoryImpl<R, Q, I> {
      * @return
      */
     public String getId() { // XXX API its either Id or ID
-        return getInfo().getId();
+        return getInfo().getID();
     }
 
     public RepositoryInfo getInfo() {
@@ -292,7 +292,7 @@ public final class RepositoryImpl<R, Q, I> {
         return issueStatusProvider;
     }
     
-    IssueSchedulingProvider<I> getSchedulingProvider() {
+    IssueScheduleProvider<I> getSchedulingProvider() {
         return issueSchedulingProvider;
     }
     
@@ -320,6 +320,20 @@ public final class RepositoryImpl<R, Q, I> {
             icon = IssuePrioritySupport.getDefaultIcon();
         }
         return icon;
+    }
+    
+    public void setIssueContext(I i, OwnerInfo info) {
+        assert repositoryProvider instanceof NBRepositoryProvider;
+        if(repositoryProvider instanceof NBRepositoryProvider) {
+            ((NBRepositoryProvider<Q, I>)repositoryProvider).setIssueOwnerInfo(i, info);
+        }
+    }
+    
+    public void setQueryContext(Q q, OwnerInfo info) {
+        assert repositoryProvider instanceof NBRepositoryProvider;
+        if(repositoryProvider instanceof NBRepositoryProvider) {
+            ((NBRepositoryProvider<Q, I>)repositoryProvider).setQueryOwnerInfo(q, info);
+        }
     }
     
     /**
@@ -409,26 +423,10 @@ public final class RepositoryImpl<R, Q, I> {
         }
     }
 
-    public Query getAllIssuesQuery() {
-        assert TeamRepositoryProvider.class.isAssignableFrom(repositoryProvider.getClass());
-        Q q = ((TeamRepositoryProvider<R, Q, I>) repositoryProvider).getAllIssuesQuery(r);
-        QueryImpl queryImpl = getQuery(q);
-        return queryImpl != null ? queryImpl.getQuery() : null;
+    public boolean isTeamRepository() {
+        return getInfo().getValue(TeamBugtrackingConnector.TEAM_PROJECT_NAME) != null;
     }
 
-    public Query getMyIssuesQuery() {
-        assert TeamRepositoryProvider.class.isAssignableFrom(repositoryProvider.getClass());
-        Q q = ((TeamRepositoryProvider<R, Q, I>) repositoryProvider).getMyIssuesQuery(r);
-        QueryImpl queryImpl = getQuery(q);
-        return queryImpl != null ? queryImpl.getQuery() : null;
-    }
-
-    public TeamProject getTeamProject() {
-        return repositoryProvider instanceof TeamRepositoryProvider ?
-                    ((TeamRepositoryProvider<R, Q, I>)repositoryProvider).getTeamProject(r) :
-                    null;
-    }
-    
     public boolean isMutable() {
         DelegatingConnector dc = BugtrackingManager.getInstance().getConnector(getConnectorId());
         assert dc != null;
@@ -481,6 +479,11 @@ public final class RepositoryImpl<R, Q, I> {
     private void setLooseAssociation() {
         BugtrackingOwnerSupport.getInstance().setLooseAssociation(SELECTED_FILE_AND_ALL_PROJECTS, this);
     }
-    
+
+    private int fakeIdCounter = 0;
+    String getNextFakeIssueID() {
+        return getConnectorId() + "<=>" + getId() + "<=>" + (--fakeIdCounter);
+    }
+
 }
 

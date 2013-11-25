@@ -51,6 +51,7 @@ made subject to such option by the copyright holder.
     <volume>
         <type>classpath</type>
         <resource>jar:nbinst://org.netbeans.modules.mobility.antext/modules/org-netbeans-modules-mobility-antext.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.j2me.common.ant/modules/org-netbeans-modules-j2me-common-ant.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.classfile/modules/org-netbeans-modules-classfile.jar!/</resource>
     </volume>
 </library>

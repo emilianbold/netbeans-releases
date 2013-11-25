@@ -57,17 +57,17 @@ import org.openide.util.Cancellable;
 /**
  * @author Radek Matous
  */
-public class SessionManager  {
-    private static final String ID = "netbeans-PHP-DBGP-DebugInfo";// NOI18N
-    private static final ServerThread serverThread;
+public class SessionManager {
+    private static final String ID = "netbeans-PHP-DBGP-DebugInfo"; //NOI18N
+    private static final ServerThread SERVER_THREAD;
     private static final SessionManager INSTANCE = new SessionManager();
 
-    public static SessionManager getInstance(){
+    public static SessionManager getInstance() {
         return INSTANCE;
     }
 
     static {
-        serverThread = new ServerThread();
+        SERVER_THREAD = new ServerThread();
     }
 
     public void startNewSession(Project project, Callable<Cancellable> run, DebugStarter.Properties properties) {
@@ -103,7 +103,7 @@ public class SessionManager  {
         }
     }
 
-    synchronized  Session startSession(SessionId id, DebuggerOptions options, Callable<Cancellable> backendLauncher) {
+    synchronized Session startSession(SessionId id, DebuggerOptions options, Callable<Cancellable> backendLauncher) {
         DebugSession dbgSession = new DebugSession(options, new BackendLauncher(backendLauncher));
         DebuggerInfo dInfo = DebuggerInfo.create(ID, new Object[]{id, dbgSession});
         DebuggerManager.getDebuggerManager().startDebugging(dInfo);
@@ -115,7 +115,7 @@ public class SessionManager  {
         }
         Session session = dbgSession.getSession();
         if (session != null) {
-            serverThread.invokeLater();
+            SERVER_THREAD.invokeLater();
         }
         return session;
     }
@@ -134,8 +134,7 @@ public class SessionManager  {
         String[] languages = session.getSupportedLanguages();
         for (String language : languages) {
             DebuggerEngine engine = session.getEngineForLanguage(language);
-            ((DbgpEngineProvider) engine.lookupFirst(null,
-                    DebuggerEngineProvider.class)).getDestructor().killEngine();
+            ((DbgpEngineProvider) engine.lookupFirst(null, DebuggerEngineProvider.class)).getDestructor().killEngine();
         }
         SessionManager.closeServerThread(session);
     }
@@ -154,14 +153,13 @@ public class SessionManager  {
         return null;
     }
 
-    public List<DebugSession> findSessionsById(SessionId id){
+    public List<DebugSession> findSessionsById(SessionId id) {
         return Collections.singletonList(getSession(id));
     }
 
-    public DebugSession getSession(SessionId id){
+    public DebugSession getSession(SessionId id) {
         return (id != null) ? ConversionUtils.toDebugSession(id) : null;
     }
-
 
     public static void closeServerThread(Session session) {
         Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
@@ -175,15 +173,15 @@ public class SessionManager  {
             }
         }
         if (last) {
-            serverThread.cancel();
+            SERVER_THREAD.cancel();
         }
     }
 
     private Session getPhpSession() {
         DebuggerManager manager = DebuggerManager.getDebuggerManager();
         Session currentSession = manager.getCurrentSession();
-        Session retval = currentSession != null ? getPhpSession(new Session[] {currentSession}) : null;
-        return  retval != null ? retval : getPhpSession(manager.getSessions());
+        Session retval = currentSession != null ? getPhpSession(new Session[]{currentSession}) : null;
+        return retval != null ? retval : getPhpSession(manager.getSessions());
     }
 
     private Session getPhpSession(Session[] sessions) {
@@ -198,4 +196,5 @@ public class SessionManager  {
         }
         return null;
     }
+
 }

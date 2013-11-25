@@ -65,6 +65,8 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectType;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
+import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
+import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
@@ -162,6 +164,17 @@ public final class ClientSideProjectUtilities {
         projectProperties.setConfigFolder(config);
         projectProperties.setSelectedBrowser(project.getProjectWebBrowser().getId());
         projectProperties.save();
+    }
+
+    public static void setJsTestingProvider(@NonNull Project project, @NonNull String jsTestingProviderIdentifier) {
+        assert project != null;
+        assert jsTestingProviderIdentifier != null;
+        JsTestingProvider testingProvider = JsTestingProviders.getDefault().findJsTestingProvider(jsTestingProviderIdentifier);
+        if (testingProvider == null) {
+            LOGGER.log(Level.WARNING, "JS testing provider {0} was not found", jsTestingProviderIdentifier);
+        } else {
+            JsTestingProviders.getDefault().setJsTestingProvider(project, testingProvider);
+        }
     }
 
     private static void ensureDirectoryExists(File folder) throws IOException {

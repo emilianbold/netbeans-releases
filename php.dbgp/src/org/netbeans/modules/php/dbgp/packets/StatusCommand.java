@@ -43,25 +43,19 @@
  */
 package org.netbeans.modules.php.dbgp.packets;
 
-
 /**
  * @author ads
  *
  */
 public class StatusCommand extends DbgpCommand {
+    static final String STATUS = "status"; // NOI18N
 
-    static final String STATUS = "status";      // NOI18N
-
-    public StatusCommand(  String transactionId ) {
-        super( STATUS, transactionId);
+    public StatusCommand(String transactionId) {
+        super(STATUS, transactionId);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpCommand#needAcknowledgment()
-     */
     @Override
-    public boolean wantAcknowledgment()
-    {
+    public boolean wantAcknowledgment() {
         return true;
     }
 

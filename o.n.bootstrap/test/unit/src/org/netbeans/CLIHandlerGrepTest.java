@@ -252,6 +252,14 @@ public class CLIHandlerGrepTest extends NbTestCase {
 
         private synchronized void notifyResult(String msg) {
             LOG.log(Level.INFO, "notifyResult: {0}", msg);
+            while (out != null) {
+                LOG.log(Level.INFO, "some previous result {0} exists, waiting", out);
+                try {
+                    wait();
+                } catch (InterruptedException ex) {
+                    LOG.log(Level.INFO, null, ex);
+                }
+            }
             assertNull("No previous result yet, new: " + msg + " old: " + out, out);
             out = msg;
             notifyAll();
@@ -263,12 +271,13 @@ public class CLIHandlerGrepTest extends NbTestCase {
                 try {
                     wait();
                 } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
+                    LOG.log(Level.INFO, null, ex);
                 }
             }
             LOG.info("assertResult for " + msg + " and " + out);
-            assertEquals("Expecting result", msg, out);
+            assertEquals("Expecting result", msg.trim(), out.trim());
             out = null;
+            notifyAll();
         }
 
         

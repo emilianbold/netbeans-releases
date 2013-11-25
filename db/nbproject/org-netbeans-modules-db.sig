@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.51.1
+#Version 1.58.1
 
 CLSS public java.beans.FeatureDescriptor
 cons public init()
@@ -10,6 +10,7 @@ meth public java.lang.Object getValue(java.lang.String)
 meth public java.lang.String getDisplayName()
 meth public java.lang.String getName()
 meth public java.lang.String getShortDescription()
+meth public java.lang.String toString()
 meth public java.util.Enumeration<java.lang.String> attributeNames()
 meth public void setDisplayName(java.lang.String)
 meth public void setExpert(boolean)
@@ -19,11 +20,12 @@ meth public void setPreferred(boolean)
 meth public void setShortDescription(java.lang.String)
 meth public void setValue(java.lang.String,java.lang.Object)
 supr java.lang.Object
-hfds classRef,displayName,expert,hidden,name,preferred,shortDescription,table
+hfds TRANSIENT,classRef,displayName,expert,hidden,name,preferred,shortDescription,table
 
 CLSS public abstract interface java.io.Serializable
 
 CLSS public java.lang.Exception
+cons protected init(java.lang.String,java.lang.Throwable,boolean,boolean)
 cons public init()
 cons public init(java.lang.String)
 cons public init(java.lang.String,java.lang.Throwable)
@@ -46,11 +48,14 @@ meth public int hashCode()
 meth public java.lang.String toString()
 
 CLSS public java.lang.Throwable
+cons protected init(java.lang.String,java.lang.Throwable,boolean,boolean)
 cons public init()
 cons public init(java.lang.String)
 cons public init(java.lang.String,java.lang.Throwable)
 cons public init(java.lang.Throwable)
 intf java.io.Serializable
+meth public final java.lang.Throwable[] getSuppressed()
+meth public final void addSuppressed(java.lang.Throwable)
 meth public java.lang.StackTraceElement[] getStackTrace()
 meth public java.lang.String getLocalizedMessage()
 meth public java.lang.String getMessage()
@@ -63,7 +68,8 @@ meth public void printStackTrace(java.io.PrintStream)
 meth public void printStackTrace(java.io.PrintWriter)
 meth public void setStackTrace(java.lang.StackTraceElement[])
 supr java.lang.Object
-hfds backtrace,cause,detailMessage,serialVersionUID,stackTrace
+hfds CAUSE_CAPTION,EMPTY_THROWABLE_ARRAY,NULL_CAUSE_MESSAGE,SELF_SUPPRESSION_MESSAGE,SUPPRESSED_CAPTION,SUPPRESSED_SENTINEL,UNASSIGNED_STACK,backtrace,cause,detailMessage,serialVersionUID,stackTrace,suppressedExceptions
+hcls PrintStreamOrWriter,SentinelHolder,WrappedPrintStream,WrappedPrintWriter
 
 CLSS public abstract interface java.util.EventListener
 
@@ -95,6 +101,7 @@ supr java.lang.Object
 hfds DEFAULT,LOGGER
 
 CLSS public final org.netbeans.api.db.explorer.DatabaseConnection
+meth public boolean isUseScrollableCursors()
 meth public java.lang.String getDatabaseURL()
 meth public java.lang.String getDisplayName()
 meth public java.lang.String getDriverClass()
@@ -105,9 +112,12 @@ meth public java.lang.String getUser()
 meth public java.lang.String toString()
 meth public java.sql.Connection getJDBCConnection()
 meth public java.sql.Connection getJDBCConnection(boolean)
+meth public java.util.Properties getConnectionProperties()
 meth public org.netbeans.api.db.explorer.JDBCDriver getJDBCDriver()
 meth public static org.netbeans.api.db.explorer.DatabaseConnection create(org.netbeans.api.db.explorer.JDBCDriver,java.lang.String,java.lang.String,java.lang.String,java.lang.String,boolean)
 meth public static org.netbeans.api.db.explorer.DatabaseConnection create(org.netbeans.api.db.explorer.JDBCDriver,java.lang.String,java.lang.String,java.lang.String,java.lang.String,boolean,java.lang.String)
+meth public static org.netbeans.api.db.explorer.DatabaseConnection create(org.netbeans.api.db.explorer.JDBCDriver,java.lang.String,java.lang.String,java.lang.String,java.lang.String,boolean,java.lang.String,java.util.Properties)
+meth public void setUseScrollableCursors(boolean)
 supr java.lang.Object
 hfds delegate
 
@@ -166,6 +176,8 @@ supr java.lang.Object
 hfds dbconn,jdbcDriver,viewName
 
 CLSS public final org.netbeans.api.db.explorer.JDBCDriver
+meth public boolean equals(java.lang.Object)
+meth public int hashCode()
 meth public java.lang.String getClassName()
 meth public java.lang.String getDisplayName()
 meth public java.lang.String getName()
@@ -477,7 +489,7 @@ meth public void setName(java.lang.String)
 meth public void setShortDescription(java.lang.String)
 supr java.beans.FeatureDescriptor
 hfds INIT_LOCK,LOCK,TEMPL_COOKIE,err,hierarchy,listeners,lookups,parent,warnedBadProperties
-hcls LookupEventList
+hcls LookupEventList,PropertyEditorRef
 
 CLSS public final org.openide.util.HelpCtx
 cons public init(java.lang.Class<?>)

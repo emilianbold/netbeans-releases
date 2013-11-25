@@ -59,7 +59,8 @@ import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
-import org.netbeans.modules.bugtracking.util.LogUtils;
+import org.netbeans.modules.bugtracking.commons.LogUtils;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.netbeans.modules.bugzilla.commands.ValidateCommand;
@@ -137,7 +138,7 @@ public class BugzillaRepositoryController implements RepositoryController, Docum
 
     private boolean validate() {
         if(validateError) {
-            BugzillaUtil.runInAWT(new Runnable() {
+            UIUtils.runInAWT(new Runnable() {
                 @Override
                 public void run() {            
                     panel.setValidateEnabled(true);
@@ -244,7 +245,7 @@ public class BugzillaRepositoryController implements RepositoryController, Docum
             }
             @Override
             void execute() {
-                BugzillaUtil.runInAWT(new Runnable() {
+                UIUtils.runInAWT(new Runnable() {
                     @Override
                     public void run() {
                         RepositoryInfo info = repository.getInfo();
@@ -392,7 +393,7 @@ public class BugzillaRepositoryController implements RepositoryController, Docum
 
         @Override
         final public void run() {
-            BugzillaUtil.runInAWT(new Runnable() {
+            UIUtils.runInAWT(new Runnable() {
                 @Override
                 public void run() {
                     preRun();
@@ -401,7 +402,7 @@ public class BugzillaRepositoryController implements RepositoryController, Docum
             try {
                 execute();
             } finally {
-                BugzillaUtil.runInAWT(new Runnable() {
+                UIUtils.runInAWT(new Runnable() {
                     @Override
                     public void run() {                
                         postRun();

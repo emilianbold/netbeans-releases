@@ -60,7 +60,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.plaf.basic.BasicTreeUI;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
-import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.bugzilla.query.QueryParameter.ParameterValueCellRenderer;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 
@@ -171,7 +171,7 @@ public class QueryPanel extends javax.swing.JPanel {
     }
 
     void setQueryRunning(final boolean running) {
-        BugzillaUtil.runInAWT(new Runnable() {
+        UIUtils.runInAWT(new Runnable() {
             @Override
             public void run() {
                 modifyButton.setEnabled(!running);
@@ -1199,7 +1199,7 @@ public class QueryPanel extends javax.swing.JPanel {
     final javax.swing.JList changedList = new javax.swing.JList();
     final javax.swing.JTextField changedToTextField = new javax.swing.JTextField();
     private javax.swing.JLabel changedWhereLabel;
-    public final org.netbeans.modules.bugtracking.util.LinkButton cloneQueryButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+    public final org.netbeans.modules.bugtracking.commons.LinkButton cloneQueryButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
     final javax.swing.JComboBox commentComboBox = new javax.swing.JComboBox();
     final javax.swing.JLabel commentLabel = new javax.swing.JLabel();
     final javax.swing.JTextField commentTextField = new javax.swing.JTextField();
@@ -1229,7 +1229,7 @@ public class QueryPanel extends javax.swing.JPanel {
     final javax.swing.JTextField keywordsTextField = new javax.swing.JTextField();
     final javax.swing.JLabel lastRefreshDateLabel = new javax.swing.JLabel();
     private javax.swing.JLabel lastRefreshLabel;
-    public final org.netbeans.modules.bugtracking.util.LinkButton modifyButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+    public final org.netbeans.modules.bugtracking.commons.LinkButton modifyButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
     final javax.swing.JLabel nameLabel = new javax.swing.JLabel();
     final javax.swing.JTextField newValueTextField = new javax.swing.JTextField();
     private javax.swing.JLabel noContentLabel;
@@ -1244,18 +1244,18 @@ public class QueryPanel extends javax.swing.JPanel {
     final javax.swing.JList productList = new javax.swing.JList();
     final javax.swing.JScrollPane productScrollPane = new javax.swing.JScrollPane();
     private javax.swing.JPanel queryHeaderPanel;
-    final org.netbeans.modules.bugtracking.util.LinkButton refreshButton = new org.netbeans.modules.bugtracking.util.LinkButton();
-    final org.netbeans.modules.bugtracking.util.LinkButton refreshConfigurationButton = new org.netbeans.modules.bugtracking.util.LinkButton();
-    public final org.netbeans.modules.bugtracking.util.LinkButton removeButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+    final org.netbeans.modules.bugtracking.commons.LinkButton refreshButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
+    final org.netbeans.modules.bugtracking.commons.LinkButton refreshConfigurationButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
+    public final org.netbeans.modules.bugtracking.commons.LinkButton removeButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
     final javax.swing.JCheckBox reporterCheckBox = new javax.swing.JCheckBox();
     final javax.swing.JLabel resolutionLabel = new javax.swing.JLabel();
     final javax.swing.JList resolutionList = new javax.swing.JList();
     final javax.swing.JScrollPane resolutionScrollPane = new HackedScrollPane();
-    final org.netbeans.modules.bugtracking.util.LinkButton saveButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+    final org.netbeans.modules.bugtracking.commons.LinkButton saveButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
     final javax.swing.JButton saveChangesButton = new javax.swing.JButton();
     final javax.swing.JButton searchButton = new javax.swing.JButton();
     final javax.swing.JPanel searchPanel = new javax.swing.JPanel();
-    final org.netbeans.modules.bugtracking.util.LinkButton seenButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+    final org.netbeans.modules.bugtracking.commons.LinkButton seenButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
     private javax.swing.JLabel separatorLabel1;
     private javax.swing.JLabel separatorLabel2;
     private javax.swing.JLabel separatorLabel3;
@@ -1277,11 +1277,11 @@ public class QueryPanel extends javax.swing.JPanel {
     final javax.swing.JScrollPane tmScrollPane = new HackedScrollPane();
     final javax.swing.JPanel urlPanel = new javax.swing.JPanel();
     final javax.swing.JTextField urlTextField = new javax.swing.JTextField();
-    final org.netbeans.modules.bugtracking.util.LinkButton urlToggleButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+    final org.netbeans.modules.bugtracking.commons.LinkButton urlToggleButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
     final javax.swing.JLabel versionLabel = new javax.swing.JLabel();
     final javax.swing.JList versionList = new javax.swing.JList();
     final javax.swing.JScrollPane versionScrollPane = new HackedScrollPane();
-    final org.netbeans.modules.bugtracking.util.LinkButton webButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+    final org.netbeans.modules.bugtracking.commons.LinkButton webButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
     final javax.swing.JComboBox whiteboardComboBox = new javax.swing.JComboBox();
     final javax.swing.JLabel whiteboardLabel = new javax.swing.JLabel();
     final javax.swing.JTextField whiteboardTextField = new javax.swing.JTextField();
@@ -1293,7 +1293,7 @@ public class QueryPanel extends javax.swing.JPanel {
      */
     void enableFields(final boolean enable) {
         
-        BugzillaUtil.runInAWT(new Runnable() {
+        UIUtils.runInAWT(new Runnable() {
             @Override
             public void run() {
                 summaryLabel.setEnabled(enable);
@@ -1331,7 +1331,7 @@ public class QueryPanel extends javax.swing.JPanel {
     }
 
     void switchQueryFields(final boolean showAdvanced) {
-        BugzillaUtil.runInAWT(new Runnable() {
+        UIUtils.runInAWT(new Runnable() {
             @Override
             public void run() {
                 byDetails.setVisible(showAdvanced);
@@ -1350,7 +1350,7 @@ public class QueryPanel extends javax.swing.JPanel {
     }
 
     void showError(final String text) {
-        BugzillaUtil.runInAWT(new Runnable() {
+        UIUtils.runInAWT(new Runnable() {
             @Override
             public void run() {
                 noContentPanel.setVisible(true);
@@ -1365,7 +1365,7 @@ public class QueryPanel extends javax.swing.JPanel {
     }
 
     void showSearchingProgress(final boolean on, final String text) {
-        BugzillaUtil.runInAWT(new Runnable() {
+        UIUtils.runInAWT(new Runnable() {
             public void run() {
                 noContentPanel.setVisible(on);
                 tableSummaryLabel.setVisible(!on);
@@ -1379,7 +1379,7 @@ public class QueryPanel extends javax.swing.JPanel {
     }
 
     void showRetrievingProgress(final boolean on, final String text, final boolean searchPanelVisible) {
-        BugzillaUtil.runInAWT(new Runnable() {
+        UIUtils.runInAWT(new Runnable() {
             @Override
             public void run() {
                 noContentPanel.setVisible(on);
@@ -1400,7 +1400,7 @@ public class QueryPanel extends javax.swing.JPanel {
     }
 
     void setModifyVisible(final boolean b) {
-        BugzillaUtil.runInAWT(new Runnable() {
+        UIUtils.runInAWT(new Runnable() {
             @Override
             public void run() {
                 searchPanel.setVisible(b);
@@ -1422,7 +1422,7 @@ public class QueryPanel extends javax.swing.JPanel {
     }
 
     void setSaved(final String name, final String lastRefresh) {
-        BugzillaUtil.runInAWT(new Runnable() {
+        UIUtils.runInAWT(new Runnable() {
             @Override
             public void run() {
                 searchPanel.setVisible(false);
@@ -1439,7 +1439,7 @@ public class QueryPanel extends javax.swing.JPanel {
     }
 
     void setLastRefresh(final String lastRefresh) {
-        BugzillaUtil.runInAWT(new Runnable() {
+        UIUtils.runInAWT(new Runnable() {
             @Override
             public void run() {
                 lastRefreshDateLabel.setText(lastRefresh);
@@ -1448,7 +1448,7 @@ public class QueryPanel extends javax.swing.JPanel {
     }
 
     void setNBFieldsVisible(final boolean visible) {
-        BugzillaUtil.runInAWT(new Runnable() {
+        UIUtils.runInAWT(new Runnable() {
             @Override
             public void run() {
                 whiteboardLabel.setVisible(visible);

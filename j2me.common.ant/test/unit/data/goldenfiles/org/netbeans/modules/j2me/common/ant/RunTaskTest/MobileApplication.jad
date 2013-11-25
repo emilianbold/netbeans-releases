@@ -1,0 +1,8 @@
+MIDlet-1: Midlet, , hello.Midlet
+MIDlet-Jar-Size: 1073
+MIDlet-Jar-URL: MobileApplication.jar
+MIDlet-Name: MobileApplication
+MIDlet-Vendor: Vendor
+MIDlet-Version: 1.0
+MicroEdition-Configuration: CLDC-1.0
+MicroEdition-Profile: MIDP-1.0

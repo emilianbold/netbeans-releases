@@ -49,57 +49,46 @@ import org.netbeans.modules.php.dbgp.SessionManager;
 import org.netbeans.modules.php.dbgp.models.WatchesModel;
 import org.w3c.dom.Node;
 
-
 /**
  * @author ads
  *
  */
 public class EvalResponse extends DbgpResponse {
-
-    EvalResponse( Node node ) {
+    EvalResponse(Node node) {
         super(node);
     }
 
-    public boolean isSuccess(){
-        return getBoolean( getNode(), PropertySetResponse.SUCCESS );
+    public boolean isSuccess() {
+        return getBoolean(getNode(), PropertySetResponse.SUCCESS);
     }
-    
-    public Property getProperty(){
-        Node node = getChild( getNode(), Property.PROPERTY );
-        if ( node == null ){
+
+    public Property getProperty() {
+        Node node = getChild(getNode(), Property.PROPERTY);
+        if (node == null) {
             return null;
-        }
-        else {
-            return new Property( node );
+        } else {
+            return new Property(node);
         }
     }
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpMessage#process(org.netbeans.modules.php.dbgp.DebugSession, org.netbeans.modules.php.dbgp.packets.DbgpCommand)
-     */
+
     @Override
-    public void process( DebugSession session, DbgpCommand command )
-    {
-        if ( !( command instanceof EvalCommand )){
+    public void process(DebugSession session, DbgpCommand command) {
+        if (!(command instanceof EvalCommand)) {
             return;
         }
-        EvalCommand eval = (EvalCommand)command;
+        EvalCommand eval = (EvalCommand) command;
         String expression = eval.getData();
-        
-        DebugSession currentSession = SessionManager.getInstance().
-            getSession( session.getSessionId());
-        if ( currentSession == session ){
+        DebugSession currentSession = SessionManager.getInstance().getSession(session.getSessionId());
+        if (currentSession == session) {
             // perform view update only if response appears in current session
             IDESessionBridge bridge = session.getBridge();
             if (bridge != null) {
                 WatchesModel watchesModel = bridge.getWatchesModel();
                 if (watchesModel != null) {
-                    watchesModel.updateExpressionValue(
-                        expression, getProperty() );
+                    watchesModel.updateExpressionValue(expression, getProperty());
                 }
             }
-            
-            eval.firePropertyChangeEvent( expression, getProperty() );
+            eval.firePropertyChangeEvent(expression, getProperty());
         }
     }
 

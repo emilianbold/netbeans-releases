@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.performance.utilities;
 
+import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.modules.performance.guitracker.ActionTracker;
 
 import org.netbeans.jellytools.nodes.Node;
@@ -91,6 +92,7 @@ public abstract class ValidatePopupMenuOnNodes extends PerformanceTestCase {
      */
     @Override
     public void prepare() {
+        MainWindowOperator.getDefault().pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
         dataObjectNode.select();
     }
 

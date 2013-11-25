@@ -105,7 +105,11 @@ public class CreateTestMethodsHint {
         }
 
         ClassPath cp = info.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.SOURCE);
-        FileObject root = cp.findOwnerRoot(info.getFileObject());
+        FileObject fileObject = info.getFileObject();
+        if(!fileObject.isValid()) { //File is probably deleted
+            return null;
+        }
+        FileObject root = cp.findOwnerRoot(fileObject);
         if (root == null) { //File not part of any project
             return null;
         }
@@ -114,7 +118,7 @@ public class CreateTestMethodsHint {
         DataObject dataObject;
 	Node activeNode = null;
 	try {
-	    dataObject = DataObject.find(info.getFileObject());
+	    dataObject = DataObject.find(fileObject);
 	    activeNode = dataObject.getNodeDelegate();
 	} catch (DataObjectNotFoundException ex) {
 	    Exceptions.printStackTrace(ex);

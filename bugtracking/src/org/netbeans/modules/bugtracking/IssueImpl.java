@@ -42,22 +42,20 @@
 package org.netbeans.modules.bugtracking;
 
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import static java.lang.Character.isSpaceChar;
 import java.util.Date;
 import org.netbeans.modules.bugtracking.api.Issue;
-import org.netbeans.modules.bugtracking.team.spi.TeamIssueProvider;
-import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
+import org.netbeans.modules.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.IssueController;
-import org.netbeans.modules.bugtracking.spi.IssuePriorityInfo;
-import org.netbeans.modules.bugtracking.spi.IssuePriorityProvider;
 import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
-import org.netbeans.modules.bugtracking.spi.IssueSchedulingProvider;
+import org.netbeans.modules.bugtracking.spi.IssueScheduleProvider;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
+import org.netbeans.modules.bugtracking.tasks.TaskSchedulingManager;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
-import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -75,11 +73,23 @@ public final class IssueImpl<R, I> {
     private final RepositoryImpl<R, ?, I> repo;
     private final IssueProvider<I> issueProvider;
     private final I data;
+    private String fakeId;
 
     IssueImpl(RepositoryImpl<R, ?, I> repo, IssueProvider<I> issueProvider, I data) {
         this.issueProvider = issueProvider;
         this.data = data;
         this.repo = repo;
+        if (hasSchedule()) {
+            issueProvider.addPropertyChangeListener(data, new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (IssueScheduleProvider.EVENT_ISSUE_SCHEDULE_CHANGED.equals(evt.getPropertyName())) {
+                        handleScheduling();
+                    }
+                }
+            });
+            handleScheduling();
+        }
     }
 
     public synchronized Issue getIssue() {
@@ -140,7 +150,16 @@ public final class IssueImpl<R, I> {
     }
 
     public String getID() {
-        return issueProvider.getID(data);
+        String id = issueProvider.getID(data);
+        if(id == null) {
+            synchronized(repo) {
+                if(fakeId == null) {
+                    fakeId = repo.getNextFakeIssueID();
+                }
+                return fakeId;
+            }
+        }
+        return id;
     }
     public String getSummary() {
         return issueProvider.getSummary(data);
@@ -182,10 +201,7 @@ public final class IssueImpl<R, I> {
     }
 
     public void setContext(OwnerInfo info) {
-        assert issueProvider instanceof TeamIssueProvider;
-        if(issueProvider instanceof TeamIssueProvider) {
-            ((TeamIssueProvider<I>)issueProvider).setOwnerInfo(data, info);
-        }
+        repo.setIssueContext(data, info);
     }
 
     public IssueController getController() {
@@ -245,13 +261,13 @@ public final class IssueImpl<R, I> {
     }
 
     public boolean hasSchedule() {
-        IssueSchedulingProvider<I> isp = repo.getSchedulingProvider();
+        IssueScheduleProvider<I> isp = repo.getSchedulingProvider();
         return isp != null;
     }
     
     
     public void setDueDate(Date date) {
-        IssueSchedulingProvider<I> isp = repo.getSchedulingProvider();
+        IssueScheduleProvider<I> isp = repo.getSchedulingProvider();
         assert isp != null : "do no call .setDueDate() if .hasSchedule() is false"; // NOI18N
         if(isp != null) {
             isp.setDueDate(data, date);
@@ -259,15 +275,16 @@ public final class IssueImpl<R, I> {
     }
 
     public void setSchedule(IssueScheduleInfo info) {
-        IssueSchedulingProvider<I> isp = repo.getSchedulingProvider();
+        IssueScheduleProvider<I> isp = repo.getSchedulingProvider();
         assert isp != null : "do no call .setSchedule() if .hasSchedule() is false"; // NOI18N
         if(isp != null) {
             isp.setSchedule(data, info);
+            handleScheduling();
         }
     }
 
     public void setEstimate(int hours) {
-        IssueSchedulingProvider<I> isp = repo.getSchedulingProvider();
+        IssueScheduleProvider<I> isp = repo.getSchedulingProvider();
         assert isp != null : "do no call .setEstimate() if .hasSchedule() is false"; // NOI18N
         if(isp != null) {
             isp.setEstimate(data, hours);
@@ -275,17 +292,17 @@ public final class IssueImpl<R, I> {
     }
 
     public Date getDueDate() {
-        IssueSchedulingProvider<I> isp = repo.getSchedulingProvider();
+        IssueScheduleProvider<I> isp = repo.getSchedulingProvider();
         return isp != null ? isp.getDueDate(data) : null;
     }
 
     public IssueScheduleInfo getSchedule() {
-        IssueSchedulingProvider<I> isp = repo.getSchedulingProvider();
+        IssueScheduleProvider<I> isp = repo.getSchedulingProvider();
         return isp != null ? isp.getSchedule(data) : null;
     }
 
     public int getEstimate() {
-        IssueSchedulingProvider<I> isp = repo.getSchedulingProvider();
+        IssueScheduleProvider<I> isp = repo.getSchedulingProvider();
         return isp != null ? isp.getEstimate(data) : null;
     }
     
@@ -299,6 +316,10 @@ public final class IssueImpl<R, I> {
     
     public Image getPriorityIcon() {
         return repo.getPriorityIcon(data);
+    }
+
+    private void handleScheduling () {
+        TaskSchedulingManager.getInstance().handleTask(IssueImpl.this);
     }
     
 }

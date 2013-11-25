@@ -47,99 +47,77 @@ import java.io.UnsupportedEncodingException;
 
 import sun.misc.BASE64Encoder;
 
-
 /**
  * @author ads
  *
  */
 public class PropertySetCommand extends PropertyCommand {
-    
-    static final String PROPERTY_SET        = "property_set";      // NOI18N
-    
-    private static final String TYPE_ARG    = "-t ";               // NOI18N
+    static final String PROPERTY_SET = "property_set"; // NOI18N
+    private static final String TYPE_ARG = "-t "; // NOI18N
+    static final String ADDRESS_ARG = "-a "; // NOI18N
+    private static final String LENGTH_ARG = "-l "; // NOI18N
+    private String myDataType;
+    private int myPropAddress;
+    private String myData;
 
-    static final String         ADDRESS_ARG = "-a ";               // NOI18N
-    
-    private static final String LENGTH_ARG  = "-l ";               // NOI18N   
-
-    public PropertySetCommand( String transactionId ) {
+    public PropertySetCommand(String transactionId) {
         super(PROPERTY_SET, transactionId);
-        myPropAddress  = -1;
+        myPropAddress = -1;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpCommand#wantAcknowledgment()
-     */
     @Override
-    public boolean wantAcknowledgment()
-    {
+    public boolean wantAcknowledgment() {
         return true;
     }
-    
-    public void setDataType( String type ){
+
+    public void setDataType(String type) {
         myDataType = type;
     }
-    
-    public void setAddress( int address ){
+
+    public void setAddress(int address) {
         myPropAddress = address;
     }
-    
-    public void setData( String data ){
+
+    public void setData(String data) {
         myData = data;
     }
-    
+
     @Override
-    public String getName(){
+    public String getName() {
         return super.getName();
     }
-    
+
     @Override
-    protected String getData()
-    {
+    protected String getData() {
         return myData;
     }
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.PropertyCommand#getArguments()
-     */
+
     @Override
-    protected String getArguments()
-    {
-        StringBuilder builder = new StringBuilder( super.getArguments() );
-        if ( myDataType != null ){
-            builder.append( BrkpntSetCommand.SPACE );
-            builder.append( TYPE_ARG );
-            builder.append( myDataType );
+    protected String getArguments() {
+        StringBuilder builder = new StringBuilder(super.getArguments());
+        if (myDataType != null) {
+            builder.append(BrkpntSetCommand.SPACE);
+            builder.append(TYPE_ARG);
+            builder.append(myDataType);
         }
-        
-        if ( myPropAddress != -1 ){
-            builder.append( BrkpntSetCommand.SPACE );
-            builder.append( ADDRESS_ARG );
-            builder.append( myPropAddress );
+        if (myPropAddress != -1) {
+            builder.append(BrkpntSetCommand.SPACE);
+            builder.append(ADDRESS_ARG);
+            builder.append(myPropAddress);
         }
-        
-        if ( getData() != null && getData().length() > 0){
+        if (getData() != null && getData().length() > 0) {
             try {
                 BASE64Encoder encoder = new BASE64Encoder();
-                int size = encoder.encode( getData().getBytes( 
-                        DbgpMessage.ISO_CHARSET) ).length();
-                //int size = myData.getBytes( DbgpMessage.ISO_CHARSET ).length;
-                builder.append( BrkpntSetCommand.SPACE );
-                builder.append( LENGTH_ARG );
-                builder.append( size );
-            }
-            catch (UnsupportedEncodingException e) {
+                int size = encoder.encode(getData().getBytes(DbgpMessage.ISO_CHARSET)).length();
+                builder.append(BrkpntSetCommand.SPACE);
+                builder.append(LENGTH_ARG);
+                builder.append(size);
+            } catch (UnsupportedEncodingException e) {
                 assert false;
             }
         }
-        
+
         return builder.toString();
     }
 
-    private String myDataType;
-    
-    private int myPropAddress;
-    
-    private String myData;
-    
 }
