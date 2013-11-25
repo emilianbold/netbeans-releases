@@ -967,6 +967,10 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue223057.js", "a.url = contain^er.name;", true); 
     }
     
+    public void testIssue238693_01() throws Exception {
+        checkOccurrences("testfiles/model/issue238693.js", "this.lo^gger.printLevel = 1; // here is this purple as variable", true); 
+    }
+    
    private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
