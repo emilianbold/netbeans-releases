@@ -262,5 +262,10 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         performTest("bug238413.cpp", 14, 13, "bug238413.cpp", 6, 15);
         
         performTest("bug238413.cpp", 29, 23, "bug238413.cpp", 21, 15);
+        
+        performTest("bug238413.cpp", 47, 15, "bug238413.cpp", 36, 19);
+        performTest("bug238413.cpp", 49, 15, "bug238413.cpp", 36, 19);
+        performTest("bug238413.cpp", 50, 12, "bug238413.cpp", 41, 15);
+        performTest("bug238413.cpp", 55, 13, "bug238413.cpp", 45, 7);
     }
 }
