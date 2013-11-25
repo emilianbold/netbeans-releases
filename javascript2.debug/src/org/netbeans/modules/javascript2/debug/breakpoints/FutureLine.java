@@ -40,7 +40,7 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda.js.breakpoints;
+package org.netbeans.modules.javascript2.debug.breakpoints;
 
 import java.net.URL;
 import org.openide.text.Line;
