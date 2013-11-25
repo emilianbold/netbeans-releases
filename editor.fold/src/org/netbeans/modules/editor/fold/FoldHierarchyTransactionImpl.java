@@ -178,7 +178,7 @@ public final class FoldHierarchyTransactionImpl {
     
     public FoldHierarchyTransactionImpl(FoldHierarchyExecution execution) {
         this.execution = execution;
-        this.affectedStartOffset = Integer.MAX_VALUE;
+        this.affectedStartOffset = -1;
         this.affectedEndOffset = -1;
         
         this.transaction = SpiPackageAccessor.get().createFoldHierarchyTransaction(this);
@@ -1249,8 +1249,10 @@ public final class FoldHierarchyTransactionImpl {
      * Extend affectedStartOffset in downward direction.
      */
     private void updateAffectedStartOffset(int offset) {
-        if (offset < affectedStartOffset) {
-            affectedStartOffset = offset;
+        if (offset >= 0 && (affectedStartOffset == -1 || offset < affectedStartOffset)) {
+            if (affectedEndOffset < 0 || offset <= affectedEndOffset) {
+                affectedStartOffset = offset;
+            }
         }
     }
             
@@ -1258,7 +1260,7 @@ public final class FoldHierarchyTransactionImpl {
      * Extend affectedEndOffset in upward direction.
      */
     private void updateAffectedEndOffset(int offset) {
-        if (offset > affectedEndOffset) {
+        if (offset >= 0 && offset > affectedEndOffset && offset >= affectedStartOffset) {
             affectedEndOffset = offset;
         }
     }
