@@ -112,33 +112,6 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
         return TplDataLoader.MIME_TYPE.equals(FileUtil.getMIMEType(fo, TplDataLoader.MIME_TYPE));
     }
 
-    /**
-     * Try to locate (find) a TPL files in source directory.
-     * Currently, it searches source dir and its subdirs.
-     * @return {@code false} if not found
-     */
-    public static boolean locatedTplFiles(FileObject fo, int maxDepth, int actualDepth) {
-        if (fo == null || !fo.isValid()) {
-            return false;
-        }
-
-        while (actualDepth <= maxDepth) {
-            for (FileObject child : fo.getChildren()) {
-                if (!child.isFolder()) {
-                    if (hasSmartyTemplateExtension(child)) {
-                        return true;
-                    }
-                } else if (child.isFolder() && actualDepth < maxDepth) {
-                    if (locatedTplFiles(child, maxDepth, actualDepth + 1)) {
-                        return true;
-                    }
-                }
-            }
-            actualDepth++;
-        }
-        return false;
-    }
-
     public static FileObject locate(PhpModule phpModule, String relativePath, boolean subdirs) {
         FileObject sourceDirectory = phpModule.getSourceDirectory();
         if (sourceDirectory == null) {
@@ -163,27 +136,10 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
     public boolean isInPhpModule(final PhpModule phpModule) {
         final Preferences preferences = phpModule.getPreferences(SmartyPhpFrameworkProvider.class, true);
 
-        // TODO - can be removed one release after NB71
-        SmartyOptions.updateSmartyScanningDepthProperty();
+        // TODO - could be removed one release after NB71
         updateSmartyAvailableProperty(preferences);
 
-        if (preferences.getBoolean(PROP_SMARTY_AVAILABLE, false)) {
-            return true;
-        }
-
-        RP.post(new Runnable() {
-            @Override
-            public void run() {
-                FileObject sourceDirectory = phpModule.getSourceDirectory();
-                int scanningDepth = SmartyFramework.getDepthOfScanningForTpl();
-                LOGGER.log(Level.FINEST, "Locating for Smarty templates in depth={0}", scanningDepth);
-                if (locatedTplFiles(sourceDirectory, scanningDepth, 0)) {
-                    preferences.putBoolean(PROP_SMARTY_AVAILABLE, true);
-                    phpModule.notifyPropertyChanged(new PropertyChangeEvent(SmartyPhpFrameworkProvider.this, PhpModule.PROPERTY_FRAMEWORKS, null, null));
-                }
-            }
-        });
-        return false;
+        return preferences.getBoolean(PROP_SMARTY_AVAILABLE, false);
     }
 
     /**

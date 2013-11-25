@@ -69,10 +69,6 @@ public class SmartyFramework {
      */
     private static String delimiterDefaultClose = SmartyOptions.getInstance().getDefaultCloseDelimiter();
     /**
-     * Depth of scanning for TPL templates in PHP project.
-     */
-    private static int depthOfScanningForTpl = -1;
-    /**
      * Version of SMARTY templates.
      */
     private static Version smartyVersion = Version.SMARTY3;
@@ -109,13 +105,6 @@ public class SmartyFramework {
         }
     }
 
-    public static int getDepthOfScanningForTpl() {
-        if (depthOfScanningForTpl == -1) {
-            depthOfScanningForTpl = SmartyOptions.getInstance().getScanningDepth();
-        }
-        return depthOfScanningForTpl;
-    }
-
     public static String getDelimiterDefaultOpen() {
         return delimiterDefaultOpen;
     }
@@ -130,10 +119,6 @@ public class SmartyFramework {
 
     public static void setDelimiterDefaultOpen(String delimiterDefaultOpen) {
         SmartyFramework.delimiterDefaultOpen = delimiterDefaultOpen;
-    }
-
-    public static void setDepthOfScanningForTpl(int depthOfScanningForTpl) {
-        SmartyFramework.depthOfScanningForTpl = depthOfScanningForTpl;
     }
 
     public static void setSmartyVersion(Version version) {
