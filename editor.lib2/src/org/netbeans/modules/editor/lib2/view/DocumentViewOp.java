@@ -74,6 +74,7 @@ import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
+import javax.swing.RepaintManager;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -583,8 +584,17 @@ public final class DocumentViewOp
         viewHierarchyImpl = ViewHierarchyImpl.get(textComponent);
         viewHierarchyImpl.setDocumentView(docView);
         if (doubleBuffered != null) {
+            // Following code has no real effect since parents (all JPanel instances)
+            // will use buffer of parent components (even if all parents are set to false).
             textComponent.setDoubleBuffered(doubleBuffered);
-            ViewHierarchyImpl.SETTINGS_LOG.fine("DocumentViewOp.parentViewSet(): Setting doubleBuffered to " + doubleBuffered + "\n");
+            // Turn on/off double-buffering in repaint manager. Since the current implementation
+            // uses a shared RM instance for the whole system this will affect painting
+            // for the whole application.
+            RepaintManager rm = RepaintManager.currentManager(textComponent);
+            boolean doubleBufferingOrig = rm.isDoubleBufferingEnabled();
+            ViewHierarchyImpl.SETTINGS_LOG.fine("RepaintManager.setDoubleBuffered() from " + // NOI18N
+                    doubleBufferingOrig + " to " + doubleBuffered + "\n");
+            rm.setDoubleBufferingEnabled(doubleBuffered);
         }
         if (ViewHierarchyImpl.REPAINT_LOG.isLoggable(Level.FINER)) {
             DebugRepaintManager.register(textComponent);
