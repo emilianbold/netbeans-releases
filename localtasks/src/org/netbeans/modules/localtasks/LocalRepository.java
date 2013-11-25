@@ -144,7 +144,7 @@ public final class LocalRepository {
         return Collections.<LocalQuery>singletonList(LocalQuery.getInstance());
     }
 
-    TaskRepository getTaskRepository () {
+    public TaskRepository getTaskRepository () {
         if (taskRepository == null) {
             taskRepository = MylynSupport.getInstance().getLocalTaskRepository();
         }
