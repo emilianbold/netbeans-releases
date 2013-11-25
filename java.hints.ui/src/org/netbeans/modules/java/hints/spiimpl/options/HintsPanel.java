@@ -101,6 +101,7 @@ import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
+import javax.swing.undo.UndoManager;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.analysis.spi.Analyzer.CustomizerContext;
 import org.netbeans.modules.java.hints.analysis.AnalyzerImpl;
@@ -803,6 +804,12 @@ public final class HintsPanel extends javax.swing.JPanel   {
             });
             wasModified = DataObject.getRegistry().getModifiedSet().contains(dob);
             scriptTextArea.setDocument(doc);
+            // Currently CloneableEditorSupport.getUndoRedo() UM is attached
+            // but it would not be found by UndoAction (active TC's one would be used)
+            // so assign a fresh new UM.
+            UndoManager um = new UndoManager();
+            doc.addUndoableEditListener(um); // Note: now two UMs listen on single doc
+            doc.putProperty(UndoManager.class, um);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
