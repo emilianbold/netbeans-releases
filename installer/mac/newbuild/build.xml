@@ -521,9 +521,10 @@ Microsystems, Inc. All Rights Reserved.
               tofile="${mpkg.file}/Contents/Resources/background.tif"/>  
         <copy file="${license.file}" 
               tofile="${mpkg.file}/Contents/Resources/License.txt" failonerror="false"/>
+        <echo message="XXX: Copying ${basedir}/dmg/Resources/postflight to ${mpkg.file}/Contents/Resources ..."/>                    
         <copy file="${basedir}/dmg/Resources/postflight" 
-              failonerror="true" todir="${mpkg.file}/Contents/Resources" verbose="Final POSTFLIGHT copied."/>
-        <chmod file="${mpkg.file}/Contents/Resources/postflight" perm="ugo+x"/>
+              failonerror="true" tofile="${mpkg.file}/Contents/Resources/postflight" verbose="XXX: Final POSTFLIGHT copied."/>
+        <chmod file="${mpkg.file}/Contents/Resources/postflight" perm="ugo+x" verbose="XXX: Executable flag added."/>
                          
         <ant target="prepare-lproj-dirs"/>
         
