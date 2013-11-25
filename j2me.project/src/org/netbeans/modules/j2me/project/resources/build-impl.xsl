@@ -781,9 +781,24 @@ is divided into following sections:
                 <xsl:attribute name="description">Creates JAD file.</xsl:attribute>
                 <fail unless="dist.jad">Must set dist.jad</fail>
                 <echo file="${{dist.dir}}/${{dist.jad}}" message="${{manifest.midlets}}${{manifest.others}}${{manifest.apipermissions}}${{manifest.pushregistry}}" encoding="UTF-8"/>
+                <antcall inheritall="true" inheritrefs="true" target="-add-optional-attributes"/>
                 <antcall target="-add-configuration" inheritall="true" inheritrefs="true"/>
                 <antcall target="-add-profile" inheritall="true" inheritrefs="true"/>
                 <nb-jad jadfile="${{dist.dir}}/${{dist.jad}}" jarfile="${{dist.jar}}" url="${{dist.jar.file}}" sign="${{sign.enabled}}" keystore="${{sign.keystore}}" keystorepassword="${{sign.keystore.password}}" alias="${{sign.alias}}" aliaspassword="${{sign.alias.password}}" encoding="UTF-8"/>
+            </target>
+
+            <target name="-add-optional-attributes">
+                <xsl:attribute name="depends">-add-apipermissions,-add-pushregistry</xsl:attribute>
+            </target>
+
+            <target name="-add-apipermissions">
+                <xsl:attribute name="if">manifest.apipermissions</xsl:attribute>
+                <echo append="true" encoding="UTF-8" file="${dist.dir}/${dist.jad}" message="${manifest.apipermissions}"/>
+            </target>
+
+            <target name="-add-pushregistry">
+                <xsl:attribute name="if">manifest.pushregistry</xsl:attribute>
+                <echo append="true" encoding="UTF-8" file="${dist.dir}/${dist.jad}" message="${manifest.pushregistry}"/>
             </target>
 
             <target name="-add-configuration" unless="contains.manifest.configuration">
