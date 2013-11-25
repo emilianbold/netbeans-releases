@@ -237,10 +237,7 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
 
     @Override
     public PhpModuleCustomizerExtender createPhpModuleCustomizerExtender(PhpModule phpModule) {
-        if (isInPhpModule(phpModule)) {
-            return new SmartyPhpModuleCustomizerExtender(phpModule);
-        }
-        return null;
+        return new SmartyPhpModuleCustomizerExtender(phpModule);
     }
 
     private static final class SmartyVerificationVisitor extends DefaultVisitor {
