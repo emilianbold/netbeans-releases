@@ -128,6 +128,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         "getMergeInfo", //NOI18N
         "getMergeinfoLog", //NOI18N
         "getProperties", //NOI18N
+        "getPropertiesIncludingInherited", //NOI18N
         "getRevProperties", //NOI18N
         "getRevProperty", //NOI18N
         "getSingleStatus", //NOI18N
