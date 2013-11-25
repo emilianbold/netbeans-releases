@@ -50,8 +50,6 @@ import org.openide.filesystems.FileObject;
  */
 public class SmartyFramework {
 
-    public static final String OPTIONS_ID = "Smarty"; // NOI18N
-    public static final String OPTIONS_SUB_PATH = UiUtils.FRAMEWORKS_AND_TOOLS_SUB_PATH+"/"+OPTIONS_ID; // NOI18N
     public static final String BASE_CLASS_NAME = "Smarty"; // NOI18N
 
     /**
@@ -82,20 +80,6 @@ public class SmartyFramework {
      * Toggle comment option. How to comment inside .tpl files.
      */
     private static ToggleCommentOption toggleCommentOption = ToggleCommentOption.SMARTY;
-
-    /**
-     * @return full IDE options Smarty path
-     */
-    public static String getOptionsPath() {
-        return UiUtils.FRAMEWORKS_AND_TOOLS_OPTIONS_PATH + "/" + getOptionsSubPath(); // NOI18N
-    }
-
-    /**
-     * @return IDE options Smarty subpath
-     */
-    public static String getOptionsSubPath() {
-        return OPTIONS_SUB_PATH;
-    }
 
     /**
      * Gets the close delimiter for the given file. In relation to the owning project and general settings.

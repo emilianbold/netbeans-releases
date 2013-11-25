@@ -54,7 +54,9 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.smarty.SmartyFramework;
+import org.netbeans.modules.php.smarty.ui.options.SmartyOptionsPanelController;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -156,7 +158,7 @@ public class SmartyCustomizerPanel extends JPanel {
 }//GEN-LAST:event_optionsLabelMouseEntered
 
     private void optionsLabelMousePressed(MouseEvent evt) {//GEN-FIRST:event_optionsLabelMousePressed
-        OptionsDisplayer.getDefault().open(SmartyFramework.getOptionsPath());
+        UiUtils.showOptions(SmartyOptionsPanelController.OPTIONS_SUB_PATH);
 }//GEN-LAST:event_optionsLabelMousePressed
 
     public String getCustomCloseDelimiterTextField() {
