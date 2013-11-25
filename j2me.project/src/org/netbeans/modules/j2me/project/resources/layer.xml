@@ -158,7 +158,7 @@ made subject to such option by the copyright holder.
         <folder name="Project">
             <folder name="JavaME">
                 <attr name="displayName" bundlevalue="org.netbeans.modules.j2me.project.resources.Bundle#Templates/Project/JavaME"/>
-                <attr name="position" intvalue="460"/>
+                <attr name="position" intvalue="465"/>
             </folder>
         </folder>
 
