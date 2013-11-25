@@ -42,51 +42,19 @@
 
 package org.netbeans.modules.maven.j2ee.execution;
 
-import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.api.execute.ExecutionContext;
-import org.netbeans.modules.maven.api.execute.RunConfig;
-import org.netbeans.modules.maven.spi.cos.CoSAlternativeExecutorImplementation;
-import org.netbeans.spi.project.ProjectServiceProvider;
-
 /**
- * Implementation of the {@link CoSAlternativeExecutorImplementation} enables to changes the default
- * run/debug/profile behavior and does not force rebuild of application when one of these action is invoked.
- *
- * <p>
- * In combination with CoS/DoS feature this save time that was earlier needed for rebuild
- * application started before actual redeployment.
- *
- * <p>
- * See issue 230565 for some details about why this was needed.
- *
- * <p>
- * This class is <i>immutable</i> and thus <i>thread safe</i>.
+ * Constants related to the execution.
  *
  * @author Martin Janicek <mjanicek@netbeans.org>
- * @since 2.99
  */
-@ProjectServiceProvider(
-    service = {
-        CoSAlternativeExecutorImplementation.class
-    },
-    projectType = {
-        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
-        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB,
-        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT,
-        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR,
-        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_OSGI
-    }
-)
-public class CoSAlternativeExecutorImpl implements CoSAlternativeExecutorImplementation {
+public final class ExecutionConstants {
 
-    @Override
-    public boolean execute(RunConfig config, ExecutionContext executionContext) {
-        Object skipBuild = config.getInternalProperties().get(ExecutionConstants.SKIP_BUILD); //NOI18N
-
-        if (skipBuild instanceof Boolean && (Boolean) skipBuild) {
-            return DeploymentHelper.perform(config, executionContext);
-        }
-        // If the skip.build property is not set, it means we do want to proceed standard execution
-        return false;
+    private ExecutionConstants() {
     }
+
+    /**
+     * Used to skip the build before deployment.
+     */
+    public static final String SKIP_BUILD = "skip.build"; // NOI18N
+
 }
