@@ -45,7 +45,6 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.util.UiUtils;
-import org.netbeans.modules.php.smarty.SmartyFramework;
 import org.netbeans.modules.php.smarty.editor.utlis.LexerUtils;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
@@ -55,12 +54,15 @@ import org.openide.util.Lookup;
  * @author Martin Fousek
  */
 @UiUtils.PhpOptionsPanelRegistration(
-    id=SmartyFramework.OPTIONS_ID,
+    id=SmartyOptionsPanelController.OPTIONS_ID,
     displayName="#LBL_PHPSmartyOptionsName",
     position=400
 )
 public class SmartyOptionsPanelController extends OptionsPanelController implements ChangeListener {
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+
+    public static final String OPTIONS_ID = "Smarty"; //NOI18N
+    public static final String OPTIONS_SUB_PATH = UiUtils.FRAMEWORKS_AND_TOOLS_SUB_PATH + "/" + OPTIONS_ID; //NOI18N
 
     private SmartyOptionsPanel smartyOptionsPanel;
     private volatile boolean changed = false;

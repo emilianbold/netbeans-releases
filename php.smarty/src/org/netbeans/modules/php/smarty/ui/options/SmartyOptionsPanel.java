@@ -99,6 +99,8 @@ public class SmartyOptionsPanel extends JPanel {
     /** Maximum scanning depth which appears in options combo box. */
     private static final int MAX_SCANNING_DEPTH = 3;
 
+    private static final String LINK_QUICK_START = "http://www.smarty.net/quick_install"; //NOI18N
+
     public SmartyOptionsPanel() {
         initComponents();
         initSmartyVersionsComboBox();
@@ -416,7 +418,7 @@ public class SmartyOptionsPanel extends JPanel {
 
     private void learnMoreLabelMousePressed(MouseEvent evt) {//GEN-FIRST:event_learnMoreLabelMousePressed
         try {
-            URL url = new URL("http://www.smarty.net/manual/en/installing.smarty.basic.php"); // NOI18N
+            URL url = new URL(LINK_QUICK_START); // NOI18N
             HtmlBrowser.URLDisplayer.getDefault().showURL(url);
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
