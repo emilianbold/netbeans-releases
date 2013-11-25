@@ -206,16 +206,13 @@ public final class CoreBridgeImpl extends CoreBridge {
                 NodeOp.registerPropertyEditors();
             }
         });
-        
-        // use default ProxySelector if system propery netbeans.full.hack=true
-        if (!Boolean.getBoolean("netbeans.full.hack")) { // NOI18N
-            ProxySelector selector = Lookup.getDefault().lookup(ProxySelector.class);
-            if (selector != null) {
-                // install java.net.ProxySelector
-                ProxySelector.setDefault(selector);
-            }
+
+        ProxySelector selector = Lookup.getDefault().lookup(ProxySelector.class);
+        if (selector != null) {
+            // install java.net.ProxySelector
+            ProxySelector.setDefault(selector);
         }
-        
+
         editorsRegistered = true;
     }
 
