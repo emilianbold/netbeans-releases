@@ -132,7 +132,7 @@ public final class BugtrackingSupport<R, Q, I> {
             // in such a case it also has to be added to the registry 
             // as otherwise it happens only on manul repositoy creation
             RepositoryRegistry registry = RepositoryRegistry.getInstance();
-            if(registry.getRepository(impl.getConnectorId(), impl.getId()) == null) {
+            if(getRepositoryImpl(r) == null) {
                 registry.addRepository(impl);
             }
         }
@@ -236,7 +236,7 @@ public final class BugtrackingSupport<R, Q, I> {
     }
     
     private RepositoryImpl getRepositoryImpl(String connectorId, String repositoryId) {
-        return RepositoryRegistry.getInstance().getRepository(connectorId, repositoryId);
+        return RepositoryRegistry.getInstance().getRepository(connectorId, repositoryId, true);
     }    
     
     private Repository getRepository(R r) {
