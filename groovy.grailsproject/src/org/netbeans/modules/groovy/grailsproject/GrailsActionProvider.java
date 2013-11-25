@@ -97,7 +97,9 @@ public class GrailsActionProvider implements ActionProvider {
     @Override
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
         final GrailsPlatform runtime = GrailsPlatform.getDefault();
-        if (!runtime.isConfigured()) {
+
+        // If the runtime is not configured and we are performing anything except delete show warning
+        if (!runtime.isConfigured() && !COMMAND_DELETE.equals(command)) {
             ConfigurationSupport.showConfigurationWarning(runtime);
             return;
         }
