@@ -41,22 +41,19 @@
  */
 package org.netbeans.modules.php.api.ui.options;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
-import java.util.Enumeration;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.swing.JComponent;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.spi.options.AdvancedOption;
 import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Item;
@@ -64,14 +61,11 @@ import org.openide.util.lookup.Lookups;
 
 /**
  * Options controller for Frameworks and Tools. It aggregates several other
- * options panels registered under FRAMEWORKS_AND_TOOLS_OPTIONS_PATH
- * 
+ * options panels registered under FRAMEWORKS_AND_TOOLS_OPTIONS_PATH.
  * @see UiUtils.PhpOptionsPanelRegistration
- * 
  * @author S. Aubrecht
  * @since 2.35
  */
-
 @OptionsPanelController.SubRegistration(
         id = "FrameworksAndTools",
         location = UiUtils.OPTIONS_PATH,
@@ -80,51 +74,58 @@ import org.openide.util.lookup.Lookups;
 )
 public final class FrameworksOptionsPanelController extends OptionsPanelController {
 
-    static final String FRAMEWORKS_AND_TOOLS_OPTIONS_PATH = "PHP/OptionsDialog/FrameworksAndTools"; //NOI18N
-    
-    private FrameworksPanel panel;
-    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-    private final ArrayList<AdvancedOption> options = new ArrayList<>(20);
+    static final String FRAMEWORKS_AND_TOOLS_OPTIONS_PATH = "PHP/OptionsDialog/FrameworksAndTools"; // NOI18N
+
+    private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+    // GuardedBy("EDT")
     private final Map<String, AdvancedOption> id2option = new HashMap<>(20);
+
+    private volatile FrameworksPanel panel;
+
 
     @Override
     public void update() {
-        if( null != panel )
+        if (panel != null) {
             panel.update();
+        }
     }
 
     @Override
     public void applyChanges() {
-        if( null != panel )
+        if (panel != null) {
             panel.applyChanges();
+        }
     }
 
     @Override
     public void cancel() {
-        if( null != panel )
+        if (panel != null) {
             panel.cancel();
+        }
     }
 
     @Override
     public boolean isValid() {
-        if( null == panel )
+        if (panel == null) {
             return true;
+        }
         return panel.isControllerValid();
     }
 
     @Override
     public boolean isChanged() {
-        if( null == panel )
+        if (panel == null) {
             return false;
+        }
         return panel.isChanged();
     }
 
     @Override
     public HelpCtx getHelpCtx() {
-        if( null == panel )
+        if (panel == null) {
             return null;
+        }
         OptionsPanelController selection = panel.getSelectedController();
-        
         return null == selection ? null : selection.getHelpCtx();
     }
 
@@ -134,57 +135,60 @@ public final class FrameworksOptionsPanelController extends OptionsPanelControll
     }
 
     @Override
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        pcs.addPropertyChangeListener(l);
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
     }
 
     @Override
-    public void removePropertyChangeListener(PropertyChangeListener l) {
-        pcs.removePropertyChangeListener(l);
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(listener);
     }
 
     @Override
     protected void setCurrentSubcategory(String subpath) {
+        EventQueue.isDispatchThread();
         super.setCurrentSubcategory(subpath);
-        if( null != subpath && null != panel) {
+        if (subpath != null
+                && panel != null) {
             subpath = FRAMEWORKS_AND_TOOLS_OPTIONS_PATH + "/" + subpath; //NOI18N
             AdvancedOption option = id2option.get(subpath);
-            if( null != option ) {
-                panel.setSelecteOption( option );
+            if (option != null) {
+                panel.setSelecteOption(option);
             }
         }
     }
 
     private FrameworksPanel getPanel(Lookup lkp) {
-        if( panel == null ) {
-            loadOptions();
-            panel = new FrameworksPanel(this, lkp, options);
+        if (panel == null) {
+            panel = new FrameworksPanel(this, lkp, loadOptions());
         }
         return panel;
     }
-    
-    private void loadOptions() {
+
+    private List<AdvancedOption> loadOptions() {
+        EventQueue.isDispatchThread();
         Lookup lkp = Lookups.forPath(FRAMEWORKS_AND_TOOLS_OPTIONS_PATH);
-        Lookup.Result<AdvancedOption> result = lkp.lookupResult(AdvancedOption.class);
-        for( Item<AdvancedOption> item : result.allItems() ) {
+        Collection<? extends Item<AdvancedOption>> allItems = lkp.lookupResult(AdvancedOption.class).allItems();
+        List<AdvancedOption> options = new ArrayList<>(allItems.size());
+        for (Item<AdvancedOption> item : allItems) {
             AdvancedOption option = item.getInstance();
-            options.add( option );
+            options.add(option);
             id2option.put(item.getId(), option);
         }
+        return options;
     }
-    
-    void fireChange( PropertyChangeEvent pce ) {
-        pcs.firePropertyChange(pce.getPropertyName(), pce.getOldValue(), pce.getNewValue());
+
+    void fireChange(PropertyChangeEvent pce) {
+        propertyChangeSupport.firePropertyChange(pce.getPropertyName(), pce.getOldValue(), pce.getNewValue());
     }
 
     @Override
     public void handleSuccessfulSearch(String searchText, List<String> matchedKeywords) {
-        if( null != panel ) {
-            panel.handleSearch( matchedKeywords );
+        if (panel != null) {
+            panel.handleSearch(matchedKeywords);
         } else {
             super.handleSuccessfulSearch(searchText, matchedKeywords);
         }
     }
-    
-    
+
 }

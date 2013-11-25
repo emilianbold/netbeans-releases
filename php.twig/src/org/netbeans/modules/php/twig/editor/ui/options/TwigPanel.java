@@ -41,15 +41,18 @@
  */
 package org.netbeans.modules.php.twig.editor.ui.options;
 
+import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.twig.editor.actions.ToggleBlockCommentAction;
 import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.NbBundle;
 
+@NbBundle.Messages("TwigPanel.options.keywords.tabTitle=Frameworks & Tools")
 @OptionsPanelController.Keywords(
     keywords = {
         "php", "twig"
     },
-    location = TwigOptionsPanelController.OPTIONS_PATH,
-    tabTitle = "#LBL_TwigOptionsName"
+    location = UiUtils.OPTIONS_PATH,
+    tabTitle = "#TwigPanel.options.keywords.tabTitle"
 )
 final class TwigPanel extends javax.swing.JPanel {
 
