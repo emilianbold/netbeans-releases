@@ -1099,6 +1099,14 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         iterate(repos, new RepoAction() {
             @Override public void run(RepositoryInfo repo, IndexingContext context) throws IOException {
                 String clsname = className.replace(".", "/");
+                    while (!clsname.isEmpty() && (clsname.startsWith("*") || clsname.startsWith("?"))) {
+                        //#238740
+                        clsname = clsname.substring(1);
+                    }
+                    if (clsname.isEmpty()) {
+                        return;
+                    }
+                
                 Query q = setBooleanRewrite(
                         indexer.constructQuery(MAVEN.CLASSNAMES, new StringSearchExpression(clsname.toLowerCase(Locale.ENGLISH))));       
                 IteratorSearchResponse response = repeatedPagedSearch(q, Collections.singletonList(context), MAX_RESULT_COUNT);
