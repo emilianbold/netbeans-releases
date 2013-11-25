@@ -50,18 +50,22 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 public class SmartyPhpModuleCustomizerExtender extends PhpModuleCustomizerExtender {
+
     public static final String CUSTOM_OPEN_DELIMITER = "custom-open-delimiter"; // NOI18N
     public static final String CUSTOM_CLOSE_DELIMITER = "custom-close-delimiter"; // NOI18N
 
     private final PhpModule phpModule;
     private final String customOpenDelimiter;
     private final String customCloseDelimiter;
+    private final boolean originalEnabled;
+
     private SmartyCustomizerPanel component;
 
     SmartyPhpModuleCustomizerExtender(PhpModule phpModule) {
         this.phpModule = phpModule;
         customOpenDelimiter = getCustomOpenDelimiter(phpModule);
         customCloseDelimiter = getCustomCloseDelimiter(phpModule);
+        originalEnabled = SmartyPhpFrameworkProvider.getInstance().isInPhpModule(phpModule);
     }
 
     public static String getCustomOpenDelimiter(PhpModule phpModule) {
@@ -111,21 +115,32 @@ public class SmartyPhpModuleCustomizerExtender extends PhpModuleCustomizerExtend
 
     @Override
     public EnumSet<Change> save(PhpModule phpModule) {
-        if (!getPanel().getCustomOpenDelimiterTextField().equals(customOpenDelimiter) ||
-                !getPanel().getCustomCloseDelimiterTextField().equals(customCloseDelimiter)) {
-            // save project preferences
+        EnumSet<Change> changes = EnumSet.noneOf(Change.class);
+
+        // Smarty support enabled
+        boolean newEnabled = getPanel().isSupportEnabled();
+        if (newEnabled != originalEnabled) {
+            getPreferences().putBoolean(SmartyPhpFrameworkProvider.PROP_SMARTY_AVAILABLE, newEnabled);
+            changes.add(Change.FRAMEWORK_CHANGE);
+        }
+
+        // Custom delimiters
+        if (!getPanel().getCustomOpenDelimiterTextField().equals(customOpenDelimiter)
+                || !getPanel().getCustomCloseDelimiterTextField().equals(customCloseDelimiter)) {
             getPreferences().put(CUSTOM_OPEN_DELIMITER, getPanel().getCustomOpenDelimiterTextField());
             getPreferences().put(CUSTOM_CLOSE_DELIMITER, getPanel().getCustomCloseDelimiterTextField());
 
             // Manual relexing of all opened documents in editor
             LexerUtils.relexerOpenedTpls();
         }
-        return null;
+
+        return changes;
     }
 
     private SmartyCustomizerPanel getPanel() {
         if (component == null) {
             component = new SmartyCustomizerPanel();
+            component.setSupportEnabled(originalEnabled);
             component.setCustomOpenDelimiterText(customOpenDelimiter);
             component.setCustomCloseDelimiterText(customCloseDelimiter);
         }

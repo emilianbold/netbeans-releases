@@ -187,26 +187,26 @@ public class ModelVisitor extends PathNodeVisitor {
             if (lhs instanceof AccessNode) {
                 AccessNode aNode = (AccessNode)lhs;
                 JsObjectImpl property = null;
-                if (aNode.getBase() instanceof IdentNode && "this".equals(((IdentNode)aNode.getBase()).getName())) { //NOI18N
+                List<Identifier> fqName = getName(aNode, parserResult);
+                if (fqName != null && "this".equals(fqName.get(0).getName())) { //NOI18N
                     // a usage of field
                     fieldName = aNode.getProperty().getName();
-                    parent = (JsObjectImpl)resolveThis(parent);
-                    property = (JsObjectImpl)parent.getProperty(fieldName);
-                    if(property == null) {
-                        Identifier identifier = ModelElementFactory.create(parserResult, (IdentNode)aNode.getProperty());
-                        if (identifier != null) {
-                            property = new JsObjectImpl(parent, identifier, identifier.getOffsetRange(), true, parserResult.getSnapshot().getMimeType(), null);
-                            parent.addProperty(fieldName, property);
-                            JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
-                            if (docHolder != null) {
-                                property.setDocumentation(docHolder.getDocumentation(aNode));
-                                property.setDeprecated(docHolder.isDeprecated(aNode));
-                            }
-                        }
-                    }
+                    property = (JsObjectImpl)createJsObject(aNode, parserResult, modelBuilder);
+                    parent = (JsObjectImpl)property.getParent();
+//                    if(property == null) {
+//                        Identifier identifier = ModelElementFactory.create(parserResult, (IdentNode)aNode.getProperty());
+//                        if (identifier != null) {
+//                            property = new JsObjectImpl(parent, identifier, identifier.getOffsetRange(), true, parserResult.getSnapshot().getMimeType(), null);
+//                            parent.addProperty(fieldName, property);
+//                            JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
+//                            if (docHolder != null) {
+//                                property.setDocumentation(docHolder.getDocumentation(aNode));
+//                                property.setDeprecated(docHolder.isDeprecated(aNode));
+//                            }
+//                        }
+//                    }
                 } else {
                     // probably a property of an object
-                    List<Identifier> fqName = getName(aNode, parserResult);
                     if (fqName != null) {
                         property = ModelUtils.getJsObject(modelBuilder, fqName, true);
                         if (property.getParent().getJSKind().isFunction() && !property.getModifiers().contains(Modifier.STATIC)) {
@@ -1501,7 +1501,7 @@ public class ModelVisitor extends PathNodeVisitor {
                         }
                     } else {
                         boolean setDocumentation = false;
-                        if (isPriviliged(accessNode) && getPath().size() > 1 && getPreviousFromPath(2) instanceof ExecuteNode ) {
+                        if (isPriviliged(accessNode) && getPath().size() > 1 && (getPreviousFromPath(2) instanceof ExecuteNode || getPreviousFromPath(1) instanceof ExecuteNode)) {
                             // google style declaration of properties:  this.buildingID;    
                             onLeftSite = true;
                             setDocumentation = true;
