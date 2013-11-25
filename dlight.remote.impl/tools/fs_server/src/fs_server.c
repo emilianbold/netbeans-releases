@@ -38,11 +38,12 @@ static bool clear_persistence = false;
 static bool log_flag = false;
 static bool persistence = false;
 static bool refresh = false;
+static bool refresh_explicit = false;
 static bool statistics = false;
 static int refresh_sleep = 1;
 
 #define FS_SERVER_MAJOR_VERSION 1
-#define FS_SERVER_MINOR_VERSION 10
+#define FS_SERVER_MINOR_VERSION 11
 
 typedef struct fs_entry {
     int /*short?*/ name_len;
@@ -418,6 +419,7 @@ static void response_ls(int request_id, const char* path, bool recursive, bool i
     if (persistence) {
         el = dirtab_get_element(path);
         dirtab_lock(el);
+        dirtab_set_watch_state(el, DE_WSTATE_POLL);
         cache_fp = fopen600(dirtab_get_element_cache_path(el));
         if (cache_fp) {
             escape_strcpy(response_buf.data, path);
@@ -538,6 +540,14 @@ static void response_lstat(int request_id, const char* path) {
     buffer_free(&work_buf);
 }
 
+static void response_add_or_remove_watch(int request_id, const char* path, bool add) {
+    dirtab_element *el = dirtab_get_element(path);
+    dirtab_lock(el);
+    dirtab_set_watch_state(el, add ? DE_WSTATE_POLL : DE_WSTATE_NONE);
+    dirtab_set_state(el, DE_STATE_INITIAL);
+    dirtab_unlock(el);
+}
+
 static void process_request(fs_request* request) {
     switch (request->kind) {
         case FS_REQ_LS:
@@ -551,6 +561,12 @@ static void process_request(fs_request* request) {
             break;
         case FS_REQ_LSTAT:
             response_lstat(request->id, request->path);
+            break;
+        case FS_REQ_ADD_WATCH:
+            response_add_or_remove_watch(request->id, request->path, true);
+            break;
+        case FS_REQ_REMOVE_WATCH:
+            response_add_or_remove_watch(request->id, request->path, false);
             break;
         default:
             report_error("unexpected mode: '%c'\n", request->kind);
@@ -569,6 +585,10 @@ static int entry_comparator(const void *element1, const void *element2) {
 static bool refresh_visitor(const char* path, int index, dirtab_element* el) {
     if (is_prohibited(path)) {
         trace(TRACE_FINE, "refresh manager: skipping %s\n", path);
+        return true;
+    }
+    if (dirtab_get_watch_state(el) != DE_WSTATE_POLL) {
+        trace(TRACE_FINE, "refresh manager: not polling %s\n", path);
         return true;
     }
     trace(TRACE_FINE, "refresh manager: visiting %s\n", path);
@@ -806,6 +826,7 @@ static void usage(char* argv[]) {
             "   -t <nthreads> response processing threads count (default is %d)\n"
             "   -p log responses into persisnence\n"
             "   -r <nsec>  set refresh ON and sets refresh interval in seconds\n"
+            "   -R <i|e>  refresh mode: i - implicit, e - explicit\n"
             "   -v <verbose-level>: print trace messages\n"
             "   -l log all requests into log file\n"
             "   -s statistics: print some statistics output to stderr\n"
@@ -818,8 +839,21 @@ void process_options(int argc, char* argv[]) {
     int opt;
     int new_thread_count, new_refresh_sleep, new_trace_level;
     TraceLevel default_trace_leve = TRACE_INFO;    
-    while ((opt = getopt(argc, argv, "r:pv:t:lsd:c")) != -1) {
+    while ((opt = getopt(argc, argv, "r:pv:t:lsd:cR:")) != -1) {
         switch (opt) {
+            case 'R':
+                if (optarg) {
+                    if (*optarg == 'i') {
+                        refresh_explicit = false;
+                    } else if (*optarg == 'e') {
+                        refresh_explicit = true;
+                    } else {
+                        report_error("incorrect value of -R flag: %s\n", optarg);
+                        usage(argv);
+                        exit(WRONG_ARGUMENT);
+                    }
+                }
+                break;
             case 'd':
                 if (optarg) {
                     dirtab_set_persistence_dir(optarg);
@@ -906,7 +940,7 @@ static void signal_handler(int signal) {
 }
 
 static void startup() {
-    dirtab_init(clear_persistence);
+    dirtab_init(clear_persistence, refresh_explicit ? DE_WSTATE_NONE : DE_WSTATE_POLL);
     const char* basedir = dirtab_get_basedir();
     if (chdir(basedir)) {
         report_error("cannot change current directory to %s: %s\n", basedir, strerror(errno));

@@ -24,6 +24,7 @@ struct dirtab_element {
     char* cache_path;
     pthread_mutex_t mutex;
     dirtab_state state;
+    dirtab_watch_state watch_state;
     char abspath[];
 };
 
@@ -132,6 +133,7 @@ static dirtab_element *new_dirtab_element(const char* path, int index) {
     dirtab_element *el = malloc(size);
     el->index = index;
     el->state = DE_STATE_INITIAL;
+    el->watch_state = DE_WSTATE_NONE;
     strcpy(el->abspath, path);
     el->cache_path = el->abspath + path_len + 1;
     strcpy(el->cache_path, cache);
@@ -148,7 +150,7 @@ static dirtab_element *add_path(const char* path) {
     return el;
 }
 
-static bool load_impl() {
+static bool load_impl(dirtab_watch_state default_watch_state) {
     FILE *f = fopen(dirtab_file_path, "r");
     if (!f) {
         // TODO: should we really report an error? what if this is just 1-st launch?
@@ -188,6 +190,7 @@ static bool load_impl() {
         unescape_strcpy(path, path);
         expand_table_if_needed();
         table.paths[table.size] = new_dirtab_element(path, index);
+        table.paths[table.size]->watch_state = default_watch_state;
         table.size++;
         if (index + 1 > table.next_index) {
             table.next_index = index + 1;
@@ -202,12 +205,12 @@ static bool load_impl() {
     }
 }
 
-static bool load_table() {
+static bool load_table(dirtab_watch_state default_watch_state) {
     if (!file_exists(dirtab_file_path)) {
         return false;
     }
     mutex_lock(&table.mutex);
-    bool result = load_impl();
+    bool result = load_impl(default_watch_state);
     mutex_unlock(&table.mutex);
     return result;    
 }
@@ -306,7 +309,7 @@ static void fill_default_root() {
     strcat(root, "/remotefs");
 }
 
-void dirtab_init(bool clear_persistence) {
+void dirtab_init(bool clear_persistence, dirtab_watch_state default_watch_state) {
 
     root = malloc(PATH_MAX + 1);
     temp_path = malloc(PATH_MAX + 1);
@@ -356,7 +359,7 @@ void dirtab_init(bool clear_persistence) {
     strcat(dirtab_file_path, "/dirtab");
     
     init_table();
-    load_table();
+    load_table(default_watch_state);
 }
 
 void dirtab_free() {
@@ -446,4 +449,14 @@ bool dirtab_is_empty() {
     int size = table.size;
     mutex_unlock(&table.mutex);
     return size == 0;
+}
+
+/** call dirtab_lock() before!  */
+dirtab_watch_state dirtab_get_watch_state(dirtab_element *el) {
+    return el->watch_state;
+}
+
+/** call dirtab_lock() before!  */
+void dirtab_set_watch_state(dirtab_element *el, dirtab_watch_state state) {
+    el->watch_state = state;
 }

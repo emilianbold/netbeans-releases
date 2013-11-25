@@ -23,7 +23,9 @@ enum fs_request_kind {
     FS_REQ_LSTAT = 's',
     FS_REQ_CANCEL = 'c',
     FS_REQ_QUIT = 'q',
-    FS_REQ_SLEEP = 'P'
+    FS_REQ_SLEEP = 'P',
+    FS_REQ_ADD_WATCH = 'W',
+    FS_REQ_REMOVE_WATCH = 'w'
 };
 
 enum fs_response_kind {
