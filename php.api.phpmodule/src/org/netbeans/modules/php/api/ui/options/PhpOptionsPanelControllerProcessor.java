@@ -43,11 +43,10 @@
 package org.netbeans.modules.php.api.ui.options;
 
 import java.lang.annotation.Annotation;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Set;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
@@ -61,55 +60,46 @@ import org.openide.filesystems.annotations.LayerGenerationException;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
- * 
- * @author S. Aubrecht
  * @author S. Aubrecht
  */
-
-@ServiceProvider(service=Processor.class)
+@ServiceProvider(service = Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
+@SupportedAnnotationTypes("org.netbeans.modules.php.api.util.UiUtils.PhpOptionsPanelRegistration")
 public class PhpOptionsPanelControllerProcessor extends LayerGeneratingProcessor {
-
-    @Override
-    public Set<String> getSupportedAnnotationTypes() {
-        return new HashSet<>(Arrays.asList(
-                PhpOptionsPanelRegistration.class.getCanonicalName()
-        ));
-    }
 
     @Override
     protected boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) throws LayerGenerationException {
         if (roundEnv.processingOver()) {
             return false;
         }
-        for (Element e : roundEnv.getElementsAnnotatedWith(PhpOptionsPanelRegistration.class)) {
-            PhpOptionsPanelRegistration r = e.getAnnotation(PhpOptionsPanelRegistration.class);
-            if( r.id().isEmpty() ) {
-                throw new LayerGenerationException("Registration id cannot be empty", e);
+        for (Element element : roundEnv.getElementsAnnotatedWith(PhpOptionsPanelRegistration.class)) {
+            PhpOptionsPanelRegistration registration = element.getAnnotation(PhpOptionsPanelRegistration.class);
+            if (registration.id().isEmpty()) {
+                throw new LayerGenerationException("Registration id cannot be empty", element);
             }
-            File file = layer(e).instanceFile(FrameworksOptionsPanelController.FRAMEWORKS_AND_TOOLS_OPTIONS_PATH, r.id(), r, null).
-                    methodvalue("instanceCreate", AdvancedOption.class.getName(), "createSubCategory").
-                    instanceAttribute("controller", OptionsPanelController.class).
-                    bundlevalue("displayName", r.displayName()).
-                    position(r.position());
-            keywords(e, r.keywords(), r.keywordsCategory(), r, file);
+            File file = layer(element)
+                    .instanceFile(FrameworksOptionsPanelController.FRAMEWORKS_AND_TOOLS_OPTIONS_PATH, registration.id(), registration, null)
+                    .methodvalue("instanceCreate", AdvancedOption.class.getName(), "createSubCategory") // NOI18N
+                    .instanceAttribute("controller", OptionsPanelController.class) // NOI18N
+                    .bundlevalue("displayName", registration.displayName()) // NOI18N
+                    .position(registration.position());
+            keywords(element, registration.keywords(), registration.keywordsCategory(), registration, file);
             file.write();
-            System.err.println("processing: " + r.id());
         }
-        
+
         return true;
     }
-    
-    private void keywords(Element e, String keywords, String keywordsCategory, Annotation r, File file) throws LayerGenerationException {
+
+    private void keywords(Element element, String keywords, String keywordsCategory, Annotation r, File file) throws LayerGenerationException {
         if (keywords.length() > 0) {
             if (keywordsCategory.length() == 0) {
-                throw new LayerGenerationException("Must specify both keywords and keywordsCategory", e, processingEnv, r, "keywordsCategory");
+                throw new LayerGenerationException("Must specify both keywords and keywordsCategory", element, processingEnv, r, "keywordsCategory");
             }
-            file.bundlevalue("keywords", keywords, r, "keywords").bundlevalue("keywordsCategory", keywordsCategory, r, "keywordsCategory");
-        } else {
-            if (keywordsCategory.length() > 0) {
-                throw new LayerGenerationException("Must specify both keywords and keywordsCategory", e, processingEnv, r, "keywords");
-            }
+            file.bundlevalue("keywords", keywords, r, "keywords") // NOI18N
+                    .bundlevalue("keywordsCategory", keywordsCategory, r, "keywordsCategory"); // NOI18N
+        } else if (keywordsCategory.length() > 0) {
+            throw new LayerGenerationException("Must specify both keywords and keywordsCategory", element, processingEnv, r, "keywords");
         }
     }
+
 }
