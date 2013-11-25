@@ -267,7 +267,7 @@ public final class LibraryManager {
         if (CharSequenceUtils.startsWith(path, folder)) {
             while (true) {
                 CharSequence dir = getDirName(path);
-                if (dir == null || folder.equals(dir) || !CharSequenceUtils.startsWith(dir, folder)) {
+                if (dir == null || (CharSequences.comparator().compare(folder, dir) == 0) || !CharSequenceUtils.startsWith(dir, folder)) {
                     break;
                 }
                 res.add(dir);
