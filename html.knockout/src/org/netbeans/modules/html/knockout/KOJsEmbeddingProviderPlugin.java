@@ -126,7 +126,7 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
                     if (usage != null) {
                         KODataBindContext context = usage.getContext();
                         String name = null;
-                        while ((name = usage.getParentTemplateName()) != null) {
+                        while (usage != null && (name = usage.getParentTemplateName()) != null) {
                             usage = templateUsages.get(name);
                             if (usage != null) {
                                 context = KODataBindContext.combine(usage.getContext(), context);
