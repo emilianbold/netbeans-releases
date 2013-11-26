@@ -75,6 +75,15 @@ public class KODataBindContext {
         this.alias = context.alias;
     }
 
+    public static KODataBindContext combine(KODataBindContext parent, KODataBindContext child) {
+        KODataBindContext result = new KODataBindContext(parent);
+        for (ParentContext c : child.parents) {
+            result.push(c.getValue(), c.isInForEach(), c.getAlias());
+        }
+        result.push(child.getData(), child.isInForEach(), child.getAlias());
+        return result;
+    }
+
     public void push(String newData, boolean foreach, String alias) {
         assert !foreach || newData != null;
         assert alias == null || foreach;
