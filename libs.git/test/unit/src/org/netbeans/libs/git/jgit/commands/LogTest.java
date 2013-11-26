@@ -805,6 +805,26 @@ public class LogTest extends AbstractGitTestCase {
         assertNotNull(log[3].getBranches().get("master"));
         assertNotNull(log[3].getBranches().get("newbranch"));
     }
+    
+    public void testShortMessages () throws Exception {
+        File f = new File(workDir, "f");
+        write(f, "init");
+        File[] files = new File[] { f };
+        add(files);
+        GitClient client = getClient(workDir);
+        client.commit(files, "short message", null, null, NULL_PROGRESS_MONITOR);
+        assertEquals("short message", client.log("HEAD", NULL_PROGRESS_MONITOR).getShortMessage());
+        
+        write(f, "m1");
+        add(f);
+        client.commit(files, "short message\n\n\n", null, null, NULL_PROGRESS_MONITOR);
+        assertEquals("short message", client.log("HEAD", NULL_PROGRESS_MONITOR).getShortMessage());
+        
+        write(f, "m1");
+        add(f);
+        client.commit(files, "short message\nbla\nbla\nbla", null, null, NULL_PROGRESS_MONITOR);
+        assertEquals("short message", client.log("HEAD", NULL_PROGRESS_MONITOR).getShortMessage());
+    }
 
     private void assertRevisions (GitRevisionInfo expected, GitRevisionInfo info) throws GitException {
         assertEquals(expected.getRevision(), info.getRevision());

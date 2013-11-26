@@ -50,6 +50,7 @@ import static org.netbeans.jellytools.JellyTestCase.emptyConfiguration;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.web.setup.WebSetup;
@@ -93,8 +94,8 @@ public class TypingInJspEditorTest extends PerformanceTestCase {
     }
 
     private void init() {
-        expectedTime = 1500;
-        WAIT_AFTER_OPEN = 2000;
+        expectedTime = 100;
+        WAIT_AFTER_OPEN = 100;
         line = 10;
     }
 
@@ -115,6 +116,7 @@ public class TypingInJspEditorTest extends PerformanceTestCase {
         new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("TestWebProject"), "Web Pages|" + file));
         editorOperator = new EditorOperator(file);
         editorOperator.setCaretPositionToLine(line);
+        repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);
     }
 
     @Override
@@ -123,7 +125,11 @@ public class TypingInJspEditorTest extends PerformanceTestCase {
 
     @Override
     public ComponentOperator open() {
-        repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);
+        // measure two sub sequent key types (in fact time when first letter appears
+        // in document and it is possible to type another letter)
+        MY_START_EVENT = ActionTracker.TRACK_OPEN_BEFORE_TRACE_MESSAGE;
+        MY_END_EVENT = ActionTracker.TRACK_KEY_RELEASE;
+        editorOperator.typeKey('a');
         editorOperator.typeKey('a');
         return null;
     }
@@ -138,5 +144,6 @@ public class TypingInJspEditorTest extends PerformanceTestCase {
     protected void shutdown() {
         editorOperator.closeDiscard();
         super.shutdown();
+        new ProjectsTabOperator().collapseAll();
     }
 }

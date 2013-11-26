@@ -72,7 +72,6 @@ public class NotificationManager {
     private final TaskSchedulingManager schedulingManager;
     private ScheduleListener scheduleListener;
     private final DashboardViewer dashboardViewer;
-    private final IssueScheduleInfo todayInfo;
     private Notification scheduleNotification = null;
     private final RequestProcessor rp = new RequestProcessor("Tasks Dashboard - Notifications"); // NOI18N
     private List<IssueImpl> oldTasks = Collections.emptyList();
@@ -81,7 +80,6 @@ public class NotificationManager {
     private NotificationManager() {
         this.schedulingManager = TaskSchedulingManager.getInstance();
         this.dashboardViewer = DashboardViewer.getInstance();
-        this.todayInfo = DashboardUtils.getToday();
     }
 
     public static NotificationManager getInstance() {
@@ -100,6 +98,7 @@ public class NotificationManager {
             scheduleNotification.clear();
         }
         removeListener();
+        IssueScheduleInfo todayInfo = DashboardUtils.getToday();
         IssueImpl[] scheduledTasks = schedulingManager.getScheduledTasks(todayInfo, dashboardViewer.getRepositories(true).toArray(new RepositoryImpl[0]));
         addListener();
         List<IssueImpl> tasks = Arrays.asList(scheduledTasks);
@@ -119,7 +118,7 @@ public class NotificationManager {
         scheduleNotification = NotificationDisplayer.getDefault().notify(
                 title, DASHBOARD_ICON, bubblePanel, notificationPanel, priority, NotificationDisplayer.Category.INFO
         );
-        updateTommorow();
+        updateSchedule.schedule(DashboardUtils.getMillisToTomorrow());
     }
 
     private void addListener() {
@@ -152,14 +151,6 @@ public class NotificationManager {
         return lastNotification != null
                 && lastNotification.get(Calendar.YEAR) == todayCalendar.get(Calendar.YEAR)
                 && lastNotification.get(Calendar.DAY_OF_YEAR) == todayCalendar.get(Calendar.DAY_OF_YEAR);
-    }
-
-    private void updateTommorow() {
-        Calendar now = Calendar.getInstance();
-        Calendar tommorow = DashboardUtils.getTodayCalendar();
-        tommorow.add(Calendar.DAY_OF_YEAR, 1);
-        Long millisToTommorow = tommorow.getTimeInMillis() - now.getTimeInMillis();
-        updateSchedule.schedule(millisToTommorow.intValue());
     }
 
     private class SelectTodayCategory extends AbstractAction {

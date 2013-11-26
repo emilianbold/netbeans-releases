@@ -48,6 +48,7 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.MaximizeWindowAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
@@ -84,8 +85,7 @@ public class ExpandNodesProjectsViewTest extends PerformanceTestCase {
      */
     public ExpandNodesProjectsViewTest(String testName) {
         super(testName);
-        expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN = 2000;
+        WAIT_AFTER_OPEN = 100;
     }
 
     /**
@@ -96,8 +96,7 @@ public class ExpandNodesProjectsViewTest extends PerformanceTestCase {
      */
     public ExpandNodesProjectsViewTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN = 2000;
+        WAIT_AFTER_OPEN = 100;
     }
 
     public static Test suite() {
@@ -110,45 +109,49 @@ public class ExpandNodesProjectsViewTest extends PerformanceTestCase {
     public void testExpandProjectNode() {
         project = "PerformanceTestFoldersData";
         pathToFolderNode = "";
+        expectedTime = 100;
         doMeasurement();
     }
 
     public void testExpandSourcePackagesNode() {
         project = "PerformanceTestFoldersData";
         pathToFolderNode = CommonUtilities.SOURCE_PACKAGES;
+        expectedTime = 100;
         doMeasurement();
     }
 
     public void testExpandFolderWith50JavaFiles() {
         project = "PerformanceTestFoldersData";
         pathToFolderNode = CommonUtilities.SOURCE_PACKAGES + "|folders.javaFolder50";
-        expectedTime = 1500;
+        expectedTime = 300;
         doMeasurement();
     }
 
     public void testExpandFolderWith100JavaFiles() {
         project = "PerformanceTestFoldersData";
         pathToFolderNode = CommonUtilities.SOURCE_PACKAGES + "|folders.javaFolder100";
-        expectedTime = 1500;
+        expectedTime = 500;
         doMeasurement();
     }
 
     public void testExpandFolderWith1000JavaFiles() {
         project = "PerformanceTestFoldersData";
         pathToFolderNode = CommonUtilities.SOURCE_PACKAGES + "|folders.javaFolder1000";
-        expectedTime = 1500;
+        expectedTime = 1000;
         doMeasurement();
     }
 
     public void testExpandFolderWith100XmlFiles() {
         project = "PerformanceTestFoldersData";
         pathToFolderNode = CommonUtilities.SOURCE_PACKAGES + "|folders.xmlFolder100";
+        expectedTime = 800;
         doMeasurement();
     }
 
     public void testExpandFolderWith100TxtFiles() {
         project = "PerformanceTestFoldersData";
         pathToFolderNode = CommonUtilities.SOURCE_PACKAGES + "|folders.txtFolder100";
+        expectedTime = 300;
         doMeasurement();
     }
 
@@ -172,6 +175,8 @@ public class ExpandNodesProjectsViewTest extends PerformanceTestCase {
 
     @Override
     public ComponentOperator open() {
+        // wait only for expansion and ignore other repaint events (badging etc.)
+        MY_END_EVENT = ActionTracker.TRACK_OPEN_AFTER_TRACE_MESSAGE;
         nodeToBeExpanded.tree().doExpandPath(nodeToBeExpanded.getTreePath());
         nodeToBeExpanded.expand();
         return null;

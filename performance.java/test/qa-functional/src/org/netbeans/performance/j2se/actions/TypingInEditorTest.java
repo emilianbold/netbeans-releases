@@ -48,6 +48,7 @@ import java.awt.Robot;
 import java.awt.event.KeyEvent;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
@@ -55,7 +56,6 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
-import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.j2se.setup.J2SESetup;
 
@@ -82,7 +82,7 @@ public class TypingInEditorTest extends PerformanceTestCase {
      */
     public TypingInEditorTest(String testName) {
         super(testName);
-        WAIT_AFTER_OPEN = 2000;
+        WAIT_AFTER_OPEN = 200;
     }
 
     /**
@@ -93,7 +93,7 @@ public class TypingInEditorTest extends PerformanceTestCase {
      */
     public TypingInEditorTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        WAIT_AFTER_OPEN = 2000;
+        WAIT_AFTER_OPEN = 200;
     }
 
     public static Test suite() {
@@ -124,7 +124,7 @@ public class TypingInEditorTest extends PerformanceTestCase {
     }
 
     public void testJavaEditor() {
-        expectedTime = 1200;
+        expectedTime = 100;
         fileName = "Main.java";
         caretPositionX = 9;
         caretPositionY = 1;
@@ -133,7 +133,7 @@ public class TypingInEditorTest extends PerformanceTestCase {
     }
 
     public void testJavaEditor10() {
-        expectedTime = 1200;
+        expectedTime = 100;
         repeatTimes = 10;
         fileName = "Main.java";
         caretPositionX = 9;
@@ -144,7 +144,7 @@ public class TypingInEditorTest extends PerformanceTestCase {
     }
 
     public void testJavaEditor10Enter() {
-        expectedTime = 1200;
+        expectedTime = 200;
         keyCode = KeyEvent.VK_ENTER;
         repeatTimes = 10;
         fileName = "Main.java";
@@ -162,7 +162,6 @@ public class TypingInEditorTest extends PerformanceTestCase {
         new OpenAction().performAPI(fileToBeOpened);
         editorOperator = new EditorOperator(fileName);
         editorOperator.setCaretPosition(caretPositionX, caretPositionY);
-        CommonUtilities.setSpellcheckerEnabled(false);
     }
 
     @Override
@@ -176,8 +175,10 @@ public class TypingInEditorTest extends PerformanceTestCase {
 
     @Override
     public ComponentOperator open() {
-        // measure typing and repaint events in editor afterwards
+        // measure typing events and do not take into account repaint events
+        // in editor afterwards because they are asynchronous
         MY_START_EVENT = ActionTracker.TRACK_OPEN_BEFORE_TRACE_MESSAGE;
+        MY_END_EVENT = ActionTracker.TRACK_KEY_RELEASE;
         for (int i = 0; i < repeatTimes; i++) {
             r.keyPress(keyCode);
             r.keyRelease(keyCode);
@@ -193,6 +194,6 @@ public class TypingInEditorTest extends PerformanceTestCase {
     public void shutdown() {
         repaintManager().resetRegionFilters();
         editorOperator.closeDiscard();
-        CommonUtilities.setSpellcheckerEnabled(true);
+        new ProjectsTabOperator().collapseAll();
     }
 }

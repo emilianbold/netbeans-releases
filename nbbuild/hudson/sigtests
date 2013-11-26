@@ -37,9 +37,8 @@ fi
 
 echo SigTest: Generating Golden Files
 ant gen-sigtests || exit 1
-echo SigTest: Generating Golden Files Done
+echo SigTest: Golden Files generated successfully
 
-echo SigTest: Incompatible Changes
-ant check-sigtests-release -Dfail.on.error=false
-echo SigTest: Incompatible Changes Done
-
+echo SigTest: Finding Incompatible Changes
+ant check-sigtests-release -Dfail.on.error=false || exit 1
+echo SigTest: Finding Incompatible Changes finished successfully
