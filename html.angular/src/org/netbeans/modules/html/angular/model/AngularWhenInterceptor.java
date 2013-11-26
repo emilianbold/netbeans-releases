@@ -58,7 +58,7 @@ import org.openide.util.Exceptions;
  * @author Petr Pisl
  */
 @FunctionInterceptor.Registration(priority = 16)
-public class AngulerWhenInterceptor implements FunctionInterceptor {
+public class AngularWhenInterceptor implements FunctionInterceptor {
 
     private final static Pattern PATTERN = Pattern.compile("(.)*\\.when");  //NOI18N
     public final static String TEMPLATE_URL_PROP = "templateUrl";  //NOI18N
