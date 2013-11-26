@@ -56,8 +56,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
@@ -111,6 +109,7 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
         table.getColumnModel().getColumn(2).setPreferredWidth(200);
         table.addMouseListener(new MouseAdapter() {
             @SuppressWarnings("synthetic-access")
+            @Override
 			public void mouseClicked(final MouseEvent e) {
                 if (e.getClickCount() == 2  &&  e.getButton() == MouseEvent.BUTTON1)
                     bEditActionPerformed(null);
@@ -132,7 +131,7 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
         jTextFieldURL.setDocument(uiProperties.DEPLOYMENT_JARURL_MODEL);
         String liblet = uiProperties.getProject().evaluator().getProperty(J2MEProjectProperties.MANIFEST_IS_LIBLET);
         jRadioButtonSuite.setSelected(liblet == null || (liblet != null && liblet.equals(jRadioButtonSuite.getActionCommand())));
-        jRadioButtonLIBlet.setSelected(liblet != null && liblet.equals(jRadioButtonLIBlet.getActionCommand()));
+        jRadioButtonLIBlet.setSelected(liblet != null && liblet.equals(jRadioButtonLIBlet.getActionCommand()));        
         tableModel.initManifestModel(jRadioButtonLIBlet.isSelected());
         
         String[] propertyNames = uiProperties.ATTRIBUTES_PROPERTY_NAMES;
@@ -503,7 +502,6 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
         
         private static final long serialVersionUID = -2195421895353167160L;
 
-        private static final Pattern midpPattern = Pattern.compile("MIDP-([1-3])");
         private final J2MEProjectProperties uiProperties;
         private boolean dataDelegatesWereSet = false;
 
@@ -649,6 +647,10 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
         }
         
         public synchronized void updateItemsFromMaps() {
+            String liblet = uiProperties.getProject().evaluator().getProperty(J2MEProjectProperties.MANIFEST_IS_LIBLET);
+            if (liblet != null && Boolean.valueOf(liblet)) {
+                switchManifestModel(true);
+            }
             items.clear();
             final ArrayList<String> keys = new ArrayList<>(othersMap.keySet());
             keys.addAll(jadMap.keySet());
