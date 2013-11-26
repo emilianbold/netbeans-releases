@@ -60,6 +60,7 @@ import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTError;
 import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
@@ -79,6 +80,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
     private static final Logger LOGGER = Logger.getLogger(GSFPHPParser.class.getName());
     private static final boolean PARSE_BIG_FILES = Boolean.getBoolean("nb.php.parse.big.files"); //NOI18N
     private static final int BIG_FILE_SIZE = Integer.getInteger("nb.php.big.file.size", 5000000); //NOI18N
+    private static final List<String> REGISTERED_PHP_EXTENSIONS = FileUtil.getMIMETypeExtensions(FileUtils.PHP_MIME_TYPE);
     private boolean shortTags = true;
     private boolean aspTags = false;
     private ParserResult result = null;
@@ -111,7 +113,17 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
         long startTime = System.currentTimeMillis();
         FileObject fileObject = snapshot.getSource().getFileObject();
         if (!PARSE_BIG_FILES && fileIsTooBig(fileObject)) {
-            doNotProcessParsing(fileObject, snapshot);
+            createEmptyResult(snapshot);
+            LOGGER.log(
+                    Level.INFO,
+                    "Parsing of big file cancelled. Size: {0} Name: {1}",
+                    new Object[] {fileObject.getSize(), FileUtil.getFileDisplayName(fileObject)});
+        } else if (!isRegisteredPhpFile(fileObject)) {
+            createEmptyResult(snapshot);
+            LOGGER.log(
+                    Level.FINE,
+                    "Skipped file extension: {0}\nRegistered extensions: {1}",
+                    new Object[] {fileObject.getExt(), REGISTERED_PHP_EXTENSIONS.toString()});
         } else {
             processParsing(fileObject, snapshot, event);
         }
@@ -123,13 +135,13 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
         return fileObject != null && fileObject.getSize() > BIG_FILE_SIZE;
     }
 
-    private void doNotProcessParsing(FileObject fileObject, Snapshot snapshot) {
+    private static boolean isRegisteredPhpFile(FileObject fileObject) {
+        return fileObject == null || fileObject.getExt().isEmpty() || REGISTERED_PHP_EXTENSIONS.contains(fileObject.getExt().toLowerCase());
+    }
+
+    private void createEmptyResult(Snapshot snapshot) {
         Program emptyProgram = new Program(0, 0, Collections.<Statement>emptyList(), Collections.<Comment>emptyList());
         result = new PHPParseResult(snapshot, emptyProgram);
-        LOGGER.log(
-                Level.INFO,
-                "Parsing of big file cancelled. Size: {0} Name: {1}",
-                new Object[] {fileObject.getSize(), FileUtil.getFileDisplayName(fileObject)});
     }
 
     private void processParsing(FileObject fileObject, Snapshot snapshot, SourceModificationEvent event) {
