@@ -140,17 +140,7 @@ public final class RepositoryManager {
      */
     public Collection<Repository> getRepositories(String connectorId) {
         LinkedList<Repository> ret = new LinkedList<Repository>();
-        
-        // team repos (not registered by user)
-        Collection<RepositoryImpl> impls = TeamRepositories.getInstance().getRepositories(false, true);
-        for (RepositoryImpl impl : impls) {
-            if(connectorId.equals(impl.getConnectorId())) {
-                ret.add(impl.getRepository());
-            }
-        }
-        
-        // by user registered repos
-        ret.addAll(toRepositories(registry.getRepositories(connectorId)));
+        ret.addAll(toRepositories(registry.getRepositories(connectorId, true)));
         return ret;
     }
     
@@ -163,7 +153,7 @@ public final class RepositoryManager {
      * @since 1.85
      */
     public Repository getRepository(String connectorId, String repositoryId) {
-        RepositoryImpl impl = registry.getRepository(connectorId, repositoryId);
+        RepositoryImpl impl = registry.getRepository(connectorId, repositoryId, true);
         return impl != null ? impl.getRepository() : null;
     }      
     
