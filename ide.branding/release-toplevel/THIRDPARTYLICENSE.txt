@@ -191,14 +191,6 @@ java/modules/ext/spring-3.0/spring-web-3.2.3.RELEASE.jar              Apache-2.0
 java/modules/ext/spring-3.0/spring-webmvc-3.2.3.RELEASE.jar           Apache-2.0
 java/modules/ext/spring-3.0/spring-webmvc-portlet-3.2.3.RELEASE.jar   Apache-2.0
 java/modules/ext/spring/spring-2.5.6.SEC03.jar                        Apache-2.0
-mobility/modules/docs/jmunit-1.2.1-api.zip                            Apache-2.0
-mobility/modules/ext/ant-contrib-1.0b3.jar                            Apache-2.0
-mobility/modules/ext/commons-httpclient-3.0.1.jar                     Apache-2.0
-mobility/modules/ext/jakarta-slide-ant-webdav-2.1.jar                 Apache-2.0
-mobility/modules/ext/jakarta-slide-webdavlib-2.1.jar                  Apache-2.0
-mobility/modules/ext/jdom-1.0.jar                                     Apache-JDOM
-mobility/modules/ext/jmunit4cldc10-1.2.1.jar                          Apache-2.0
-mobility/modules/ext/jmunit4cldc11-1.2.1.jar                          Apache-2.0
 php/docs/phpdocdesc.zip                                               LGPL-2.1
 php/docs/predefined_vars.zip                                          LGPL-2.1
 php/hudson/config.xml                                                 BSD-php-jenkins-template
@@ -207,7 +199,7 @@ php/phpstubs/phpruntime                                               PHP-LICENS
 platform/docs/swing-layout-1.0.4-doc.zip                              LGPL-2.1
 platform/docs/swing-layout-1.0.4-src.zip                              LGPL-2.1
 platform/docs/testng-6.8.1-javadoc.zip                                Apache-2.0
-platform/modules/ext/felix-4.0.2.jar                                  Apache-2.0
+platform/modules/ext/felix-4.2.1.jar                                  Apache-2.0
 platform/modules/ext/jna-3.4.0.jar                                    LGPL-2.1
 platform/modules/ext/nsProxyAutoConfig.js                             LGPL-2.1
 platform/modules/ext/org.eclipse.osgi_3.8.0.v20120529-1548.jar        OSGi-LICENSE
