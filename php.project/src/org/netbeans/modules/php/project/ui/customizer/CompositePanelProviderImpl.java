@@ -44,8 +44,11 @@ package org.netbeans.modules.php.project.ui.customizer;
 
 import java.awt.EventQueue;
 import java.io.File;
+import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -157,7 +160,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
             if (frameworkCategories.isEmpty()) {
                 return null;
             }
-            List<ProjectCustomizer.Category> subcategories = new ArrayList<>(frameworkCategories.keySet());
+            List<ProjectCustomizer.Category> subcategories = sortCategories(frameworkCategories.keySet());
             toReturn = ProjectCustomizer.Category.create(
                     FRAMEWORKS,
                     NbBundle.getMessage(CustomizerProviderImpl.class, "LBL_Config_Frameworks"),
@@ -165,7 +168,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
                     subcategories.toArray(new ProjectCustomizer.Category[subcategories.size()]));
         } else if (TESTING.equals(name)) {
             fillTestingProviderPanels(uiProps, context);
-            List<ProjectCustomizer.Category> subcategories = new ArrayList<>(testingProviderPanels.keySet());
+            List<ProjectCustomizer.Category> subcategories = sortCategories(testingProviderPanels.keySet());
             toReturn = ProjectCustomizer.Category.create(
                     TESTING,
                     Bundle.CompositePanelProviderImpl_category_testing_title(),
@@ -414,6 +417,18 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
             providers.put(panel.getProviderIdentifier(), panel);
         }
         return providers;
+    }
+
+    private static List<ProjectCustomizer.Category> sortCategories(Collection<ProjectCustomizer.Category> categories) {
+        final Collator collator = Collator.getInstance();
+        List<ProjectCustomizer.Category> sortedCategories = new ArrayList<>(categories);
+        Collections.sort(sortedCategories, new Comparator<ProjectCustomizer.Category>() {
+            @Override
+            public int compare(ProjectCustomizer.Category category1, ProjectCustomizer.Category category2) {
+                return collator.compare(category1.getDisplayName(), category2.getDisplayName());
+            }
+        });
+        return sortedCategories;
     }
 
     //~ Inner classes
