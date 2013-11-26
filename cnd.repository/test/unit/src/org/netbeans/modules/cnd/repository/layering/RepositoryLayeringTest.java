@@ -73,6 +73,11 @@ import org.openide.util.lookup.ServiceProvider;
  */
 public class RepositoryLayeringTest extends TraceModelTestBase {
 
+    /**
+     * the version of the persistency mechanism
+     * ATTENTION! Please sync with RepositoryUtils
+     */
+    static final int CURRENT_VERSION_OF_PERSISTENCY = 156;
     private static File[] layerFiles;
     private static final Object layerFilesLock = new Object();
     private File projectRoot = null;
@@ -188,7 +193,7 @@ public class RepositoryLayeringTest extends TraceModelTestBase {
         resetProject();
 
         Repository.shutdown();
-        Repository.startup(155);
+        Repository.startup(CURRENT_VERSION_OF_PERSISTENCY);
         parseCount.set(0);
 
         parseProject(projectRoot, dump2, L1, L2);

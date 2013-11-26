@@ -213,7 +213,7 @@ public class RepositoryRelocationTest extends TraceModelTestBase {
             resetProject();
 
             Repository.shutdown();
-            Repository.startup(155);
+            Repository.startup(RepositoryLayeringTest.CURRENT_VERSION_OF_PERSISTENCY);
 
             parseCount.set(0);
 
