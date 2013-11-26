@@ -701,7 +701,7 @@ static void block_thread_signals() {
 }
 
 static void *refresh_loop(void *data) {    
-    trace(TRACE_INFO, "refresh manager started; sleep interval is %d\n", refresh_sleep);
+    trace(TRACE_INFO, "Refresh manager started; sleep interval is %d\n", refresh_sleep);
     block_thread_signals();
     int pass = 0;
     while (dirtab_is_empty()) { //TODO: replace with notification?
@@ -779,11 +779,11 @@ static void main_loop() {
     char *raw_req_buffer = malloc(buf_size);
     char *req_buffer = malloc(buf_size);
     while(fgets(raw_req_buffer, buf_size, stdin)) {
-        trace(TRACE_INFO, "raw request: %s", raw_req_buffer); // no LF since buffer ends it anyhow 
+        trace(TRACE_INFO, "request: %s", raw_req_buffer); // no LF since buffer ends it anyhow 
         log_print(raw_req_buffer);
         fs_request* request = decode_request(raw_req_buffer, (fs_request*) req_buffer, buf_size);
         if (request) {
-            trace(TRACE_INFO, "decoded request #%d sz=%d kind=%c len=%d path=%s\n", request->id, request->size, request->kind, request->len, request->path);
+            trace(TRACE_FINEST, "decoded request #%d sz=%d kind=%c len=%d path=%s\n", request->id, request->size, request->kind, request->len, request->path);
             if (request->kind == FS_REQ_QUIT) {
                 break;
             }
@@ -947,7 +947,7 @@ static void startup() {
         exit(FAILED_CHDIR);
     }
     if (persistence) {
-        trace(TRACE_INFO, "cache location: %s\n", dirtab_get_basedir());
+        trace(TRACE_INFO, "Cache location: %s\n", dirtab_get_basedir());
     } else {
         trace(TRACE_INFO, "peristence is OFF\n");
     }
@@ -962,7 +962,7 @@ static void startup() {
         blocking_queue_init(&req_queue);
         trace(TRACE_INFO, "Staring %d threads\n", rp_thread_count);        
         for (int i = 0; i < rp_thread_count; i++) {
-            trace(TRACE_INFO, "Starting thread #%d...\n", i);
+            trace(TRACE_FINE, "Starting thread #%d...\n", i);
             thread_num[i] = i;
             pthread_create(&rp_threads[i], NULL, &rp_loop, &thread_num[i]);
         }
