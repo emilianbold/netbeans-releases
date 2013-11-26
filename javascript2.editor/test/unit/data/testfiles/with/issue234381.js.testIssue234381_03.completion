@@ -5,7 +5,7 @@ var z = |test() * times;
 CLASS      MyObject234381                  [PUBLIC]   issue234381.js
 METHOD     test(): Number                  [PROTECTE  issue234381.js
 FIELD      times: Number                   [PUBLIC]   issue234381.js
-VARIABLE   z: With$0.times|_L1@with;With$  [PUBLIC]   issue234381.js
+VARIABLE   z                               [PUBLIC]   issue234381.js
 KEYWORD    break                                      null
 KEYWORD    case                                       null
 KEYWORD    catch                                      null
