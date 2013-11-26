@@ -83,6 +83,14 @@ public class JSVariable {
         return jVars;
     }
     
+    public static JSVariable create(JPDADebugger debugger, LocalVariable lv) {
+        Variable valueInfoDesc = DebuggerSupport.getValueInfoDesc(debugger, lv.getName(), lv, false); // NOI18N
+        if (valueInfoDesc == null) {
+            return null;
+        }
+        return new JSThis(debugger, valueInfoDesc);
+    }
+    
     public String getKey() {
         return key;
     }
