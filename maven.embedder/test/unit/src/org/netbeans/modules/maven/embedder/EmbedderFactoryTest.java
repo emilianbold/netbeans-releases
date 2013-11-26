@@ -195,7 +195,7 @@ public class EmbedderFactoryTest extends NbTestCase {
     public void testCustomProperties() throws Exception {
         Preferences node = NbPreferences.root().node("org/netbeans/modules/maven");
         node.put(EmbedderFactory.PROP_DEFAULT_OPTIONS, "--offline -drep -Dmilos=great -Dme=you ");
-        Map<String, String> props = EmbedderFactory.getCustomSystemProperties();
+        Map<String, String> props = EmbedderFactory.getCustomGlobalUserProperties();
         assertEquals(2, props.size());
         assertEquals("great", props.get("milos"));
         assertEquals("you", props.get("me"));

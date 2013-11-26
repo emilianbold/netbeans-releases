@@ -80,6 +80,35 @@ public final class EmbedderFactory {
     
     //same prop constant in MavenSettings.java
     static final String PROP_DEFAULT_OPTIONS = "defaultOptions"; 
+    private static final Set<String> forbidden = new HashSet<String>();
+    static {
+        forbidden.add("netbeans.logger.console"); //NOI18N
+        forbidden.add("java.util.logging.config.class"); //NOI18N
+        forbidden.add("netbeans.autoupdate.language"); //NOI18N
+        forbidden.add("netbeans.dirs"); //NOI18N
+        forbidden.add("netbeans.home"); //NOI18N
+        forbidden.add("sun.awt.exception.handler"); //NOI18N
+        forbidden.add("org.openide.TopManager.GUI"); //NOI18N
+        forbidden.add("org.openide.major.version"); //NOI18N
+        forbidden.add("netbeans.autoupdate.variant"); //NOI18N
+        forbidden.add("netbeans.dynamic.classpath"); //NOI18N
+        forbidden.add("netbeans.autoupdate.country"); //NOI18N
+        forbidden.add("netbeans.hash.code"); //NOI18N
+        forbidden.add("org.openide.TopManager"); //NOI18N
+        forbidden.add("org.openide.version"); //NOI18N
+        forbidden.add("netbeans.buildnumber"); //NOI18N
+        forbidden.add("javax.xml.parsers.DocumentBuilderFactory"); //NOI18N
+        forbidden.add("javax.xml.parsers.SAXParserFactory"); //NOI18N
+        forbidden.add("rave.build"); //NOI18N
+        forbidden.add("netbeans.accept_license_class"); //NOI18N
+        forbidden.add("rave.version"); //NOI18N
+        forbidden.add("netbeans.autoupdate.version"); //NOI18N
+        forbidden.add("netbeans.importclass"); //NOI18N
+        forbidden.add("netbeans.user"); //NOI18N
+//        forbidden.add("java.class.path");
+//        forbidden.add("https.nonProxyHosts");
+
+    }    
 
     private static final Logger LOG = Logger.getLogger(EmbedderFactory.class.getName());
 
@@ -225,7 +254,7 @@ public final class EmbedderFactory {
     }
     
     
-    static Map<String, String> getCustomSystemProperties() {
+    static Map<String, String> getCustomGlobalUserProperties() {
         //maybe set org.eclipse.aether.ConfigurationProperties.USER_AGENT with netbeans specific value.
         Map<String, String> toRet = new HashMap<String, String>();
         String options = getPreferences().get(PROP_DEFAULT_OPTIONS, "");
@@ -319,10 +348,9 @@ public final class EmbedderFactory {
         DefaultPlexusContainer pc = new DefaultPlexusContainer(dpcreq, new ExtensionModule());
         pc.setLoggerManager(new NbLoggerManager());
 
-        Properties props = new Properties();
-        props.putAll(System.getProperties());
-        props.putAll(getCustomSystemProperties());
-        EmbedderConfiguration configuration = new EmbedderConfiguration(pc, fillEnvVars(props), true, getSettingsXml());
+        Properties userprops = new Properties();
+        userprops.putAll(getCustomGlobalUserProperties());
+        EmbedderConfiguration configuration = new EmbedderConfiguration(pc, cloneStaticProps(), userprops, true, getSettingsXml());
         
         try {
             return new MavenEmbedder(configuration);
@@ -343,6 +371,35 @@ public final class EmbedderFactory {
             rethrowThreadDeath(t2);
         }
     }
+    
+    private static final Properties statics = new Properties();
+
+    static Properties cloneStaticProps() {
+        synchronized (statics) {
+            if (statics.isEmpty()) { // not yet initialized
+                // Now a misnomer, but available to activate profiles only during NB project parse:
+                statics.setProperty("netbeans.execution", "true"); // NOI18N
+                EmbedderFactory.fillEnvVars(statics);
+                statics.putAll(excludeNetBeansProperties(System.getProperties()));
+            }
+            Properties toRet = new Properties();
+            toRet.putAll(statics);
+            return toRet;
+        }
+    }
+    
+    @SuppressWarnings("element-type-mismatch")
+    static Properties excludeNetBeansProperties(Properties props) {
+        Properties toRet = new Properties();
+        for (Map.Entry<Object,Object> entry : props.entrySet()) {
+            if (!forbidden.contains(entry.getKey())) {
+                toRet.put(entry.getKey(), entry.getValue());
+            }
+        }
+        return toRet;
+    }
+    
+   
     
     /**
      * a simple way to tell if projectEmbedder is loaded or not.
@@ -393,10 +450,9 @@ public final class EmbedderFactory {
         DefaultPlexusContainer pc = new DefaultPlexusContainer(dpcreq);
         pc.setLoggerManager(new NbLoggerManager());
 
-        Properties props = new Properties();
-        props.putAll(System.getProperties());
-        props.putAll(getCustomSystemProperties());        
-        EmbedderConfiguration req = new EmbedderConfiguration(pc, fillEnvVars(props), false, getSettingsXml());
+        Properties userprops = new Properties();
+        userprops.putAll(getCustomGlobalUserProperties());
+        EmbedderConfiguration req = new EmbedderConfiguration(pc, cloneStaticProps(), userprops, false, getSettingsXml());
 
 //        //TODO remove explicit activation
 //        req.addActiveProfile("netbeans-public").addActiveProfile("netbeans-private"); //NOI18N
