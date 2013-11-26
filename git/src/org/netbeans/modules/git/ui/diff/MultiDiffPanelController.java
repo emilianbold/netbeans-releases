@@ -1612,6 +1612,13 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             if (value instanceof Revision) {
                 Revision rev = (Revision) value;
                 value = rev.toString(true);
+                tooltip = rev.getFullMessage();
+                if (tooltip != null) {
+                    tooltip = tooltip.replace("\r\n", "\n").replace("\n", "<br>"); //NOI18N
+                    StringBuilder sb = new StringBuilder("<html><p>"); //NOI18N
+                    sb.append(tooltip).append("</p></html>"); //NOI18N
+                    tooltip = sb.toString();
+                }
             } else if (value instanceof String) {
                 value = "<html><i>" + value + "</i></html>"; //NOI18N
                 tooltip = Bundle.MSG_Revision_Select_Tooltip();

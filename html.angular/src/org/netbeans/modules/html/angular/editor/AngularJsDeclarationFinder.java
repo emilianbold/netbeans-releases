@@ -69,7 +69,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.html.angular.index.AngularJsController;
 import org.netbeans.modules.html.angular.index.AngularJsIndex;
-import org.netbeans.modules.html.angular.model.AngulerWhenInterceptor;
+import org.netbeans.modules.html.angular.model.AngularWhenInterceptor;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.spi.DeclarationFinder;
@@ -106,11 +106,11 @@ public class AngularJsDeclarationFinder implements DeclarationFinder {
                 return findControllerLocation(fo, tokenText);
             } else {
                 if (id == JsTokenId.STRING) {
-                    OffsetRange range = isValueOfProperty(AngulerWhenInterceptor.CONTROLLER_PROP, ts, caretOffset);
+                    OffsetRange range = isValueOfProperty(AngularWhenInterceptor.CONTROLLER_PROP, ts, caretOffset);
                     if (range != null) {
                         return findControllerLocation(fo, tokenText);
                     }
-                    range = isValueOfProperty(AngulerWhenInterceptor.TEMPLATE_URL_PROP, ts, caretOffset);
+                    range = isValueOfProperty(AngularWhenInterceptor.TEMPLATE_URL_PROP, ts, caretOffset);
                     if (range != null) {
                         return findFileLocation(fo, tokenText);
                     }
@@ -136,11 +136,11 @@ public class AngularJsDeclarationFinder implements DeclarationFinder {
             if (id == JsTokenId.IDENTIFIER) {
                 return new OffsetRange(ts.offset(), ts.offset() + ts.token().length());
             }
-            OffsetRange range = isValueOfProperty(AngulerWhenInterceptor.CONTROLLER_PROP, ts, caretOffset);
+            OffsetRange range = isValueOfProperty(AngularWhenInterceptor.CONTROLLER_PROP, ts, caretOffset);
             if (range != null) {
                 return range;
             }
-            range = isValueOfProperty(AngulerWhenInterceptor.TEMPLATE_URL_PROP, ts, caretOffset);
+            range = isValueOfProperty(AngularWhenInterceptor.TEMPLATE_URL_PROP, ts, caretOffset);
             if (range != null) {
                 return range;
             }

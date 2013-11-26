@@ -1,6 +1,6 @@
 (function () {
 $scope = SettingsController.$scope;
-SettingsController
+SettingsController;
 with ($scope) { 
 checked;
 button;

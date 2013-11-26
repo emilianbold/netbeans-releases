@@ -42,57 +42,54 @@
 
 package org.netbeans.modules.debugger.jpda.js.breakpoints;
 
+import java.beans.PropertyChangeListener;
 import java.net.URL;
-import org.openide.text.Line;
-import org.openide.util.lookup.Lookups;
+import org.netbeans.modules.debugger.jpda.js.source.Source;
+import org.netbeans.modules.javascript2.debug.JSUtils;
+import org.netbeans.modules.javascript2.debug.breakpoints.JSBreakpointsInfo;
+import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
+import org.openide.filesystems.FileObject;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Martin
  */
-public class FutureLine extends Line {
-    
-    private final URL url;
-    private final int lineNumber;
-    
-    public FutureLine(URL url, int lineNumber) {
-        super(Lookups.fixed());
-        this.url = url;
-        this.lineNumber = lineNumber;
+@ServiceProvider(service = JSBreakpointsInfo.class)
+public class JSBreakpointsInfoImpl implements JSBreakpointsInfo {
+
+    @Override
+    public boolean isDefault() {
+        FileObject mostRecentFile = EditorContextDispatcher.getDefault().getMostRecentFile();
+        if (mostRecentFile == null) {
+            return false;
+        }
+        String mimeType = mostRecentFile.getMIMEType();
+        return JSUtils.JS_MIME_TYPE.equals(mimeType);
     }
 
     @Override
-    public int getLineNumber() {
-        return lineNumber;
-    }
-    
-    public URL getURL() {
-        return url;
+    public boolean isAnnotatable(FileObject fo) {
+        String mimeType = fo.getMIMEType();
+        return JSUtils.JS_MIME_TYPE.equals(mimeType);
     }
 
     @Override
-    public void show(int kind, int column) {
+    public boolean isTransientURL(URL url) {
+        return Source.URL_PROTOCOL.equals(url.getProtocol());
     }
 
     @Override
-    public void setBreakpoint(boolean b) {
+    public boolean areBreakpointsActivated() {
+        return true;
     }
 
     @Override
-    public boolean isBreakpoint() {
-        return false;
+    public void addPropertyChangeListener(PropertyChangeListener l) {
     }
 
     @Override
-    public void markError() {}
-
-    @Override
-    public void unmarkError() {}
-
-    @Override
-    public void markCurrentLine() {}
-
-    @Override
-    public void unmarkCurrentLine() {}
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+    }
     
 }

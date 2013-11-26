@@ -123,5 +123,5 @@ with (ko.$bindings) {
 var $data = pepa;
 }
 with ($data) {
-( );}
+ ;}
 });

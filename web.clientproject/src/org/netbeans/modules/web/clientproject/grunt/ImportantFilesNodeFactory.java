@@ -48,6 +48,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import javax.swing.Icon;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
@@ -245,7 +246,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
      */
     private static final class ImportantFilesChildren extends Children.Keys<String> {
 
-        private List<String> visibleFiles = null;
+        private TreeSet<String> visibleFiles = null;
         private final FileChangeListener fclStrong = new FileChangeAdapter() {
             public @Override
             void fileRenamed(FileRenameEvent fe) {
@@ -269,7 +270,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
          */
         @NbBundle.Messages({
             "LBL_gruntfile.js=Gruntfile",
-            "LBL_package.json=Package.json",
+            "LBL_package.json=package.json",
             "LBL_plugins.properties=Cordova Plugins"
         })
         private static final java.util.Map<String, String> FILES = new LinkedHashMap<>();
@@ -277,6 +278,8 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         static {
             FILES.put("gruntfile.js", Bundle.LBL_gruntfile_js());
             FILES.put("package.json", Bundle.LBL_package_json());
+            FILES.put("Gruntfile.js", Bundle.LBL_gruntfile_js());
+            FILES.put("Package.json", Bundle.LBL_package_json());
             FILES.put("nbproject/plugins.properties", Bundle.LBL_plugins_properties());
         }
 
@@ -369,7 +372,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
 
         private void refreshKeys() {
             Set<FileObject> files = new HashSet<>();
-            List<String> newVisibleFiles = new ArrayList<>();
+            TreeSet<String> newVisibleFiles = new TreeSet<>();
             for (String loc : FILES.keySet()) {
                 String locEval = project.getEvaluator().evaluate(loc);
                 if (locEval == null) {
@@ -378,7 +381,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
                 }
                 FileObject file = project.getProjectHelper().resolveFileObject(locEval);
                 if (file != null) {
-                    newVisibleFiles.add(loc);
+                    newVisibleFiles.add(loc.toLowerCase());
                     files.add(file);
                 }
             }

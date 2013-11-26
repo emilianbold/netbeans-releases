@@ -45,72 +45,118 @@ package org.netbeans.modules.javascript2.debug.breakpoints;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 
 /**
- * Tracking of active breakpoints flag.
- * 
+ *
  * @author Martin
  */
-public final class JSBreakpointsActiveManager {
+public class JSBreakpointsInfoManager {
     
-    private static JSBreakpointsActiveManager INSTANCE;
+    private static JSBreakpointsInfoManager INSTANCE;
     
-    private Collection<? extends JSBreakpointsActiveService> activeServices;
-    private final Object activeServicesLock = new Object();
+    private Collection<? extends JSBreakpointsInfo> infoServices;
+    private final Object infoServicesLock = new Object();
     private final PropertyChangeListener servicePCL = new ServicePropertyChangeListener();
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-    private Boolean lastActive = null;
+    private Boolean lastActivated = null;
     
-    private JSBreakpointsActiveManager() {
-        final Lookup.Result<JSBreakpointsActiveService> lookupResult =
-                Lookup.getDefault().lookupResult(JSBreakpointsActiveService.class);
+    private JSBreakpointsInfoManager() {
+        final Lookup.Result<JSBreakpointsInfo> lookupResult =
+                Lookup.getDefault().lookupResult(JSBreakpointsInfo.class);
         lookupResult.addLookupListener(new LookupListener() {
             @Override
             public void resultChanged(LookupEvent ev) {
-                 initServices(lookupResult.allInstances());
+                 updateServices(lookupResult.allInstances());
             }
         });
         initServices(lookupResult.allInstances());
     }
     
-    public static synchronized JSBreakpointsActiveManager getDefault() {
+    public static synchronized JSBreakpointsInfoManager getDefault() {
         if (INSTANCE == null) {
-            INSTANCE = new JSBreakpointsActiveManager();
+            INSTANCE = new JSBreakpointsInfoManager();
         }
         return INSTANCE;
     }
     
-    private void initServices(Collection<? extends JSBreakpointsActiveService> activeServices) {
-        for (JSBreakpointsActiveService as : activeServices) {
+    private void initServices(Collection<? extends JSBreakpointsInfo> activeServices) {
+        for (JSBreakpointsInfo as : activeServices) {
             as.addPropertyChangeListener(servicePCL);
         }
-        synchronized (activeServicesLock) {
-            this.activeServices = activeServices;
-            lastActive = null;
+        synchronized (infoServicesLock) {
+            this.infoServices = activeServices;
+            lastActivated = null;
         }
-        fireChange();
     }
     
-    public boolean areBreakpointsActive() {
+    private void updateServices(Collection<? extends JSBreakpointsInfo> activeServices) {
+        initServices(activeServices);
+        fireChange(JSBreakpointsInfo.PROP_BREAKPOINTS_ACTIVE);
+    }
+    
+    private Collection<? extends JSBreakpointsInfo> getServices() {
+        List<JSBreakpointsInfo> services;
+        synchronized (infoServicesLock) {
+            services = new ArrayList<>(infoServices);
+        }
+        return services;
+    }
+    
+    public boolean areBreakpointsActivated() {
+        Boolean activated;
+        synchronized (infoServicesLock) {
+            activated = lastActivated;
+        }
         boolean are = true;
-        synchronized (activeServicesLock) {
-            if (lastActive != null) {
-                are = lastActive.booleanValue();
-            } else {
-                for (JSBreakpointsActiveService as : activeServices) {
-                    if (!as.areBreakpointsActive()) {
-                        are = false;
-                        break;
-                    }
+        if (activated != null) {
+            are = activated.booleanValue();
+        } else {
+            for (JSBreakpointsInfo bi : getServices()) {
+                if (!bi.areBreakpointsActivated()) {
+                    are = false;
+                    break;
                 }
-                lastActive = are;
+            }
+            synchronized (infoServicesLock) {
+                lastActivated = are;
             }
         }
         return are;
+    }
+    
+    public boolean isDefault() {
+        for (JSBreakpointsInfo bi : getServices()) {
+            if (bi.isDefault()) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public boolean isAnnotatable(FileObject fo) {
+        for (JSBreakpointsInfo bi : getServices()) {
+            if (bi.isAnnotatable(fo)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public boolean isTransientURL(URL url) {
+        for (JSBreakpointsInfo bi : getServices()) {
+            if (bi.isTransientURL(url)) {
+                return true;
+            }
+        }
+        return false;
     }
     
     public void addPropertyChangeListener(PropertyChangeListener l) {
@@ -121,21 +167,22 @@ public final class JSBreakpointsActiveManager {
         pcs.removePropertyChangeListener(l);
     }
     
-    private void fireChange() {
-        pcs.firePropertyChange(JSBreakpointsActiveService.PROP_BREAKPOINTS_ACTIVE, null, null);
+    private void fireChange(String propertyName) {
+        pcs.firePropertyChange(propertyName, null, null);
     }
     
     private final class ServicePropertyChangeListener implements PropertyChangeListener {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (JSBreakpointsActiveService.PROP_BREAKPOINTS_ACTIVE.equals(evt.getPropertyName())) {
-                synchronized (activeServicesLock) {
-                    lastActive = null;
+            if (JSBreakpointsInfo.PROP_BREAKPOINTS_ACTIVE.equals(evt.getPropertyName())) {
+                synchronized (infoServicesLock) {
+                    lastActivated = null;
                 }
-                fireChange();
+                fireChange(JSBreakpointsInfo.PROP_BREAKPOINTS_ACTIVE);
             }
         }
         
     }
+    
 }

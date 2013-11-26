@@ -368,7 +368,7 @@ final class SourceFS extends AbstractFileSystem {
             if (item != null) {
                 return item.getAttributes();
             } else {
-                return Collections.enumeration(Collections.EMPTY_LIST);
+                return Collections.emptyEnumeration();
             }
         }
 

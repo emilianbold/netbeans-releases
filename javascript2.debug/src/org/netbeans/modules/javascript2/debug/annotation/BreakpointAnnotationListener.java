@@ -44,24 +44,13 @@
 
 package org.netbeans.modules.javascript2.debug.annotation;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.LazyDebuggerManagerListener;
-import org.netbeans.modules.javascript2.debug.breakpoints.JSBreakpointsActiveManager;
-import org.netbeans.modules.javascript2.debug.breakpoints.JSBreakpointsActiveService;
-import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
-import org.openide.text.Annotation;
 import org.openide.text.AnnotationProvider;
 import org.openide.text.Line;
-import org.openide.text.Line.Set;
 import org.openide.util.Lookup;
 
 
@@ -75,93 +64,33 @@ import org.openide.util.Lookup;
 @org.openide.util.lookup.ServiceProvider(service=org.openide.text.AnnotationProvider.class)
 @DebuggerServiceRegistration(types=LazyDebuggerManagerListener.class)
 public class BreakpointAnnotationListener extends DebuggerManagerAdapter
-    implements PropertyChangeListener, AnnotationProvider
+    implements AnnotationProvider
 {
     
-    private final Map<Breakpoint, Annotation> myAnnotations = new HashMap<>();
-    private boolean active = true;
+    private final BreakpointAnnotationManager bam;
     
     public BreakpointAnnotationListener() {
-        JSBreakpointsActiveManager.getDefault().addPropertyChangeListener(this);
-        active = JSBreakpointsActiveManager.getDefault().areBreakpointsActive();
+        bam = BreakpointAnnotationManager.getInstance();
     }
 
     @Override
     public String[] getProperties() {
         return new String[] { DebuggerManager.PROP_BREAKPOINTS }; 
     }
-
+    
+    @Override
+    public void annotate(Line.Set set, Lookup context) {
+        bam.annotate(set, context);
+    }
+    
     @Override
     public void breakpointAdded(Breakpoint breakpoint) {
-        if (! (breakpoint instanceof JSLineBreakpoint)) {
-            return;
-        }
-        addAnnotation(breakpoint);
+        bam.breakpointAdded(breakpoint);
     }
 
     @Override
     public void breakpointRemoved(Breakpoint breakpoint) {
-        if (! (breakpoint instanceof JSLineBreakpoint)) {
-            return;
-        }
-        removeAnnotation(breakpoint);
+        bam.breakpointRemoved(breakpoint);
     }
 
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        String propertyName = evt.getPropertyName();
-        if (Breakpoint.PROP_ENABLED.equals(propertyName) ||
-            JSLineBreakpoint.PROP_LINE.equals(propertyName) ||
-            Breakpoint.PROP_VALIDITY.equals(propertyName)) {
-            
-            Breakpoint b = (Breakpoint) evt.getSource();
-            removeAnnotation(b);
-            addAnnotation(b);
-        } else if (JSBreakpointsActiveService.PROP_BREAKPOINTS_ACTIVE.equals(propertyName)) {
-            boolean a = JSBreakpointsActiveManager.getDefault().areBreakpointsActive();
-            if (a != active) {
-                active = a;
-                refreshAnnotations();
-            }
-        }
-    }
-
-    private void addAnnotation(Breakpoint breakpoint) {
-        Line line = ((JSLineBreakpoint) breakpoint).getLine();
-        Annotation annotation = new LineBreakpointAnnotation(line, (JSLineBreakpoint) breakpoint, active);
-        synchronized (myAnnotations) {
-            myAnnotations.put( breakpoint, annotation );
-        }
-        breakpoint.addPropertyChangeListener(this);
-    }
-
-    private void removeAnnotation(Breakpoint breakpoint) {
-        Annotation annotation;
-        synchronized (myAnnotations) {
-            annotation = myAnnotations.remove(breakpoint);
-        }
-        
-        if (annotation == null) {
-            return;
-        }
-        
-        annotation.detach();
-        breakpoint.removePropertyChangeListener(this);
-    }
-
-    private void refreshAnnotations() {
-        java.util.Set<Breakpoint> annotatedBreakpoints;
-        synchronized (myAnnotations) {
-            annotatedBreakpoints = new HashSet<>(myAnnotations.keySet());
-        }
-        for (Breakpoint b : annotatedBreakpoints) {
-            removeAnnotation(b);
-            addAnnotation(b);
-        }
-    }
-    
-    @Override
-    public void annotate(Set set, Lookup context) {
-        DebuggerManager.getDebuggerManager().getBreakpoints();
-    }
 }
