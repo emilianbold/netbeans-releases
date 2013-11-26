@@ -76,6 +76,7 @@ import jdk.nashorn.internal.ir.ForNode;
 import jdk.nashorn.internal.ir.WithNode;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.javascript2.editor.doc.DocumentationUtils;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
@@ -128,7 +129,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 fileObject, Integer.MAX_VALUE, parserResult.getSnapshot().getMimeType()));
         this.occurrenceBuilder = occurrenceBuilder;
         this.functionStack = new ArrayList<List<FunctionNode>>();
-        this.parserResult = parserResult;
+        this.parserResult = parserResult; 
     }
 
     public JsObject getGlobalObject() {
