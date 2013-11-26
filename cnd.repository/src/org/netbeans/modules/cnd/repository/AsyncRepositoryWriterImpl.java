@@ -64,8 +64,9 @@ import org.openide.util.RequestProcessor;
  */
 public final class AsyncRepositoryWriterImpl implements AsyncRepositoryWriter {
 
-    private static final int ncounters = 0x200;
-    private static final int mcounters = ncounters - 1;
+    private static final int ncounters = 0x80;
+    private static final int bits = 32;
+    private static final int mcounters = ncounters * bits - 1;
     //private static final int lBound = 10000;
     //private static final int hBound = 70000;
     private final RequestProcessor RP = new RequestProcessor("Repository Writing Thread", 1); // NOI18N
@@ -75,7 +76,7 @@ public final class AsyncRepositoryWriterImpl implements AsyncRepositoryWriter {
     private final Condition mapIsEmpty = lock.newCondition();
     private final Condition mapIsNotEmpty = lock.newCondition();
     private final Condition writerDone = lock.newCondition();
-    private final byte[] counters = new byte[ncounters];
+    private final int[] counters = new int[ncounters];
     private final AtomicBoolean flush = new AtomicBoolean(false);
     private boolean doneFlag;
     private final RemoveKeySupport removeKeySupport;
@@ -90,6 +91,8 @@ public final class AsyncRepositoryWriterImpl implements AsyncRepositoryWriter {
         boolean largeObject = key.getBehavior().equals(Key.Behavior.LargeAndMutable);
 
         int idx = key.hashCode() & mcounters;
+        int idx1 = idx / bits;
+        int idx2 = idx % bits;
 
         lock.lock();
         try {
@@ -103,7 +106,7 @@ public final class AsyncRepositoryWriterImpl implements AsyncRepositoryWriter {
                 map_small.remove(key);
                 map_small.put(key, value);
             }
-            counters[idx] = 1;
+            counters[idx1] |= 1 << idx2;
             mapIsNotEmpty.signalAll();
         } finally {
             lock.unlock();
@@ -156,6 +159,7 @@ public final class AsyncRepositoryWriterImpl implements AsyncRepositoryWriter {
             }
         } finally {
             lock.unlock();
+            flush.set(false);
         }
     }
 
@@ -202,6 +206,8 @@ public final class AsyncRepositoryWriterImpl implements AsyncRepositoryWriter {
             Key key;
             Persistent value = null;
             int idx = -1;
+            int idx1 = -1;
+            int idx2 = -1;
             boolean largeObject = false;
             boolean draining = false;
             int workSize = map_large.size() + map_small.size();
@@ -250,8 +256,10 @@ public final class AsyncRepositoryWriterImpl implements AsyncRepositoryWriter {
                         Map.Entry<Key, Persistent> entry = it.next();
                         key = entry.getKey();
                         idx = key.hashCode() & mcounters;
-                        if (counters[idx] == 1) {
-                            counters[idx] = 0;
+                        idx1 = idx / bits;
+                        idx2 = idx % bits;
+                        if ((counters[idx1] & (1<<idx2)) != 0) {
+                            counters[idx1] &= ~(1<<idx2);
                             key = null;
                             continue;
                         }
@@ -265,8 +273,10 @@ public final class AsyncRepositoryWriterImpl implements AsyncRepositoryWriter {
                             Map.Entry<Key, Persistent> entry = it.next();
                             key = entry.getKey();
                             idx = key.hashCode() & mcounters;
-                            if (counters[idx] == 1) {
-                                counters[idx] = 0;
+                            idx1 = idx / bits;
+                            idx2 = idx % bits;
+                            if ((counters[idx1] & (1<<idx2)) != 0) {
+                                counters[idx1] &= ~(1<<idx2);
                                 key = null;
                                 continue;
                             }
@@ -286,7 +296,7 @@ public final class AsyncRepositoryWriterImpl implements AsyncRepositoryWriter {
 
                     lock.lock();
                     try {
-                        if (counters[idx] == 0) {
+                        if ((counters[idx1] & (1<<idx2)) == 0) {
                             if (largeObject) {
                                 map_large.remove(key);
                             } else {
