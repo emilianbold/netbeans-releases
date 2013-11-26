@@ -400,7 +400,9 @@ public class JavaFixUtilities {
         protected void performRewrite(TransformationContext ctx) {
             final WorkingCopy wc = ctx.getWorkingCopy();
             TreePath tp = ctx.getPath();
-            tp = new TreePath(tp.getParentPath(), GeneratorUtilities.get(wc).importComments(tp.getLeaf(), tp.getCompilationUnit()));
+            
+            final GeneratorUtilities gen = GeneratorUtilities.get(wc);
+            tp = new TreePath(tp.getParentPath(), gen.importComments(tp.getLeaf(), tp.getCompilationUnit()));
             final Map<String, TreePath> parameters = new HashMap<String, TreePath>();
 
             for (Entry<String, TreePathHandle> e : params.entrySet()) {
@@ -555,6 +557,8 @@ public class JavaFixUtilities {
             }
             
             for (Entry<Tree, Tree> e : rewriteFromTo.entrySet()) {
+                gen.copyComments(e.getKey(), e.getValue(), true);
+                gen.copyComments(e.getKey(), e.getValue(), false);
                 wc.rewrite(e.getKey(), e.getValue());
             }
         }
