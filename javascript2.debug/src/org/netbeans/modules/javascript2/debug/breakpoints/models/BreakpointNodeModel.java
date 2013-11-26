@@ -43,8 +43,9 @@
 package org.netbeans.modules.javascript2.debug.breakpoints.models;
 
 import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.modules.javascript2.debug.JSUtils;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSBreakpointStatus;
-import org.netbeans.modules.javascript2.debug.breakpoints.JSBreakpointsActiveManager;
+import org.netbeans.modules.javascript2.debug.breakpoints.JSBreakpointsInfoManager;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.viewmodel.ModelListener;
@@ -90,10 +91,9 @@ public class BreakpointNodeModel implements NodeModel {
     public String getDisplayName(Object node) throws UnknownTypeException {
         if (node instanceof JSLineBreakpoint) {
             JSLineBreakpoint breakpoint = (JSLineBreakpoint) node;
-            FileObject fileObject = breakpoint.getLine().getLookup().
-                lookup(FileObject.class);
-            return Bundle.LBL_LineBreakpoint_on(fileObject.getNameExt() + ":" + 
-                (breakpoint.getLine().getLineNumber() + 1));
+            String fileName = JSUtils.getFileName(breakpoint);
+            int lineNumber = breakpoint.getLineNumber();
+            return Bundle.LBL_LineBreakpoint_on(fileName + ":" + lineNumber);
         }
         throw new UnknownTypeException(node);
     }
@@ -106,7 +106,7 @@ public class BreakpointNodeModel implements NodeModel {
         JSLineBreakpoint b = (JSLineBreakpoint) node;
         boolean disabled = !b.isEnabled();
         boolean invalid = b.getValidity() == Breakpoint.VALIDITY.INVALID;
-        boolean active = JSBreakpointsActiveManager.getDefault().areBreakpointsActive();
+        boolean active = JSBreakpointsInfoManager.getDefault().areBreakpointsActivated();
         String iconBase;
         if (disabled) {
             if (active) {

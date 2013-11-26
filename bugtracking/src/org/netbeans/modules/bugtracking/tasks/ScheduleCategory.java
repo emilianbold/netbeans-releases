@@ -55,7 +55,7 @@ import org.netbeans.modules.bugtracking.tasks.dashboard.DashboardViewer;
  */
 public class ScheduleCategory extends Category {
 
-    private final IssueScheduleInfo scheduleInfo;
+    private IssueScheduleInfo scheduleInfo;
     private final TaskSchedulingManager schedulingManager;
     private final DashboardViewer dashboardViewer;
     private final int sortIndexAddition;
@@ -82,6 +82,10 @@ public class ScheduleCategory extends Category {
 
     public IssueScheduleInfo getScheduleInfo() {
         return scheduleInfo;
+    }
+
+    public void setScheduleInfo(IssueScheduleInfo scheduleInfo) {
+        this.scheduleInfo = scheduleInfo;
     }
 
     @Override

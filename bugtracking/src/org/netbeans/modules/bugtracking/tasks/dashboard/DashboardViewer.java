@@ -140,6 +140,7 @@ public final class DashboardViewer implements PropertyChangeListener {
     private final ModelListener modelListener;
     private final UnsubmittedCategoryFilter unsubmittedCategoryFilter;
     private ScheduleCategoryNode todayCategoryNode;
+    private ScheduleCategoryNode thisWeekCategoryNode;
 
     private DashboardViewer() {
         expandedNodes = new HashSet<TreeListNode>();
@@ -889,7 +890,9 @@ public final class DashboardViewer implements PropertyChangeListener {
                         titleRepositoryNode.setProgressVisible(false);
                         loadCategories();
                         titleCategoryNode.setProgressVisible(false);
-                        DashboardRefresher.getInstance().setupDashboardRefresh();
+                        DashboardRefresher refresher = DashboardRefresher.getInstance();
+                        refresher.setupDashboardRefresh();
+                        refresher.setupScheduleRefresh();
                         NotificationManager.getInstance().showNotifications();
                         return null;
                     }
@@ -964,8 +967,8 @@ public final class DashboardViewer implements PropertyChangeListener {
                 NbBundle.getMessage(DashboardViewer.class, "LBL_ThisWeek"),
                 DashboardUtils.getThisWeek(), 2
         );
-        ScheduleCategoryNode thisWeek = new ScheduleCategoryNode(thisWeekCat);
-        catNodes.add(thisWeek);
+        thisWeekCategoryNode = new ScheduleCategoryNode(thisWeekCat);
+        catNodes.add(thisWeekCategoryNode);
 
         ScheduleCategory allCat = new ScheduleCategory(
                 NbBundle.getMessage(DashboardViewer.class, "LBL_All"),
@@ -975,6 +978,16 @@ public final class DashboardViewer implements PropertyChangeListener {
         catNodes.add(all);
 
         return catNodes;
+    }
+
+    public void updateScheduleCategories() {
+        ScheduleCategory today = (ScheduleCategory) todayCategoryNode.getCategory();
+        today.setScheduleInfo(DashboardUtils.getToday());
+        todayCategoryNode.updateContent();
+
+        ScheduleCategory thisWeek = (ScheduleCategory) thisWeekCategoryNode.getCategory();
+        thisWeek.setScheduleInfo(DashboardUtils.getThisWeek());
+        thisWeekCategoryNode.updateContent();
     }
 
     private List<CategoryNode> loadUnsubmitedCategories() {

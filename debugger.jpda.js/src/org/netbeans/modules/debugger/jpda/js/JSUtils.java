@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.debugger.jpda.js;
 
-import org.netbeans.modules.debugger.jpda.js.breakpoints.JSBreakpoint;
-import org.netbeans.modules.debugger.jpda.js.breakpoints.JSLineBreakpoint;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.filesystems.FileObject;
 import org.openide.text.Line;
@@ -70,16 +68,6 @@ public class JSUtils {
             return null;
         }
         return EditorContextDispatcher.getDefault().getCurrentLine();
-    }
-    
-    public static String getFileName(JSBreakpoint b) {
-        if (b instanceof JSLineBreakpoint) {
-            FileObject fo = ((JSLineBreakpoint) b).getLine().getLookup().lookup(FileObject.class);
-            if (fo != null) {
-                return fo.getNameExt();
-            }
-        }
-        return null;
     }
     
 }

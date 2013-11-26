@@ -56,10 +56,13 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.modules.performance.guitracker.ActionTracker;
 
 /**
- *
- * @author Administrator
+ * Measure time of typing in editor. In fact it measures time when first letter
+ * appears in document and it is possible to type another letter.
+
+ * @author Jiri Skrivanek
  */
 public class TypingInScriptingEditorTest extends PerformanceTestCase {
 
@@ -93,17 +96,22 @@ public class TypingInScriptingEditorTest extends PerformanceTestCase {
         fileToBeOpened = new Node(getProjectNode(testProject), path);
         new OpenAction().performAPI(fileToBeOpened);
         editorOperator = EditorWindowOperator.getEditor(fileName);
-        waitNoEvent(1000);
+        editorOperator.setCaretPosition(afterTextStartTyping, false);
+        repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);
+        waitNoEvent(500);
     }
 
     @Override
     public void prepare() {
-        editorOperator.setCaretPosition(afterTextStartTyping, false);
-        repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);
     }
 
     @Override
     public ComponentOperator open() {
+        // measure two sub sequent key types (in fact time when first letter appears
+        // in document and it is possible to type another letter)
+        MY_START_EVENT = ActionTracker.TRACK_OPEN_BEFORE_TRACE_MESSAGE;
+        MY_END_EVENT = ActionTracker.TRACK_KEY_RELEASE;
+        editorOperator.typeKey('z');
         editorOperator.typeKey('z');
         return null;
     }
@@ -116,11 +124,15 @@ public class TypingInScriptingEditorTest extends PerformanceTestCase {
     public void shutdown() {
         repaintManager().resetRegionFilters();
         EditorOperator.closeDiscardAll();
+        if (projectsTab != null) {
+            projectsTab.collapseAll();
+        }
     }
 
     protected Node getProjectNode(String projectName) {
         if (projectsTab == null) {
             projectsTab = ScriptingUtilities.invokePTO();
+            projectsTab.collapseAll();
         }
         return projectsTab.getProjectRootNode(projectName);
     }

@@ -53,11 +53,11 @@ import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.debugger.jpda.js.breakpoints.FutureLine;
-import org.netbeans.modules.debugger.jpda.js.breakpoints.JSBreakpoint;
-import org.netbeans.modules.debugger.jpda.js.breakpoints.JSLineBreakpoint;
-import org.netbeans.modules.debugger.jpda.js.breakpoints.io.BreakpointsFromGroup.TestGroupProperties;
 import org.netbeans.modules.debugger.jpda.js.source.Source;
+import org.netbeans.modules.javascript2.debug.breakpoints.FutureLine;
+import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
+import org.netbeans.modules.javascript2.debug.breakpoints.io.BreakpointsFromGroup;
+import org.netbeans.modules.javascript2.debug.breakpoints.io.BreakpointsFromGroup.TestGroupProperties;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
@@ -82,17 +82,19 @@ public class JSBreakpointReader implements Properties.Reader {
     private static final String BP_PROJECT_GROUP = "ProjectGroup";
     private static final String BP_TYPE_GROUP = "TypeGroup";
     
+    private static final String OLD_JS_LINE_BP = "org.netbeans.modules.debugger.jpda.js.breakpoints.JSLineBreakpoint";
+    
     @Override
     public String[] getSupportedClassNames() {
         return new String[] {
-            JSBreakpoint.class.getName (), 
+            OLD_JS_LINE_BP, 
         };
     }
 
     @Override
     public Object read(String className, Properties properties) {
-        JSBreakpoint b = null;
-        if (className.equals(JSLineBreakpoint.class.getName())) {
+        JSLineBreakpoint b = null;
+        if (className.equals(OLD_JS_LINE_BP)) {
             String urlStr = properties.getString (JSLineBreakpoint.PROP_URL, null);
             int lineNumber = properties.getInt (JSLineBreakpoint.PROP_LINE_NUMBER, 1);
             try {
@@ -126,7 +128,7 @@ public class JSBreakpointReader implements Properties.Reader {
         if (b == null) {
             throw new IllegalStateException("Unknown breakpoint type: \""+className+"\"");
         }
-        b.setCondition(properties.getString(JSBreakpoint.PROP_CONDITION, null));
+        b.setCondition(properties.getString(JSLineBreakpoint.PROP_CONDITION, null));
         /*b.setPrintText (
             properties.getString (JSBreakpoint.PROP_PRINT_TEXT, "")
         );*/
@@ -155,34 +157,7 @@ public class JSBreakpointReader implements Properties.Reader {
 
     @Override
     public void write(Object object, Properties properties) {
-        JSBreakpoint b = (JSBreakpoint) object;
-        /*properties.setString (
-            JSBreakpoint.PROP_PRINT_TEXT, 
-            b.getPrintText ()
-        );*/
-        properties.setString (
-            Breakpoint.PROP_GROUP_NAME, 
-            b.getGroupName ()
-        );
-        properties.setBoolean (Breakpoint.PROP_ENABLED, b.isEnabled ());
-        properties.setInt(Breakpoint.PROP_HIT_COUNT_FILTER, b.getHitCountFilter());
-        Breakpoint.HIT_COUNT_FILTERING_STYLE style = b.getHitCountFilteringStyle();
-        properties.setInt(Breakpoint.PROP_HIT_COUNT_FILTER+"_style", style != null ? style.ordinal() : 0); // NOI18N
-        if (b.canHaveDependentBreakpoints()) {
-            Set<Breakpoint> breakpointsToEnable = b.getBreakpointsToEnable();
-            setBreakpointsFromGroup(properties, BREAKPOINTS_TO_ENABLE, breakpointsToEnable);
-            Set<Breakpoint> breakpointsToDisable = b.getBreakpointsToDisable();
-            setBreakpointsFromGroup(properties, BREAKPOINTS_TO_DISABLE, breakpointsToDisable);
-        }
-        
-        properties.setString(JSBreakpoint.PROP_CONDITION, b.getCondition());
-        if (b instanceof JSLineBreakpoint) {
-            JSLineBreakpoint lb = (JSLineBreakpoint) b;
-            URL url = lb.getURL();
-            int line = lb.getLineNumber();
-            properties.setString(JSLineBreakpoint.PROP_URL, url.toExternalForm());
-            properties.setInt(JSLineBreakpoint.PROP_LINE_NUMBER, line);
-        }
+        // org.netbeans.modules.javascript2.debug.breakpoints.io.JSBreakpointReader is used instead.
     }
     
     private static Set<Breakpoint> getBreakpointsFromGroup(Properties properties, String base) {
@@ -220,36 +195,6 @@ public class JSBreakpointReader implements Properties.Reader {
             return new BreakpointsFromGroup(new TestGroupProperties(bpGroup));
         }
         return Collections.emptySet();
-    }
-    
-    private static void setBreakpointsFromGroup(Properties properties, String base, Set<Breakpoint> breakpointsFromGroup) {
-        String customGroup = null;
-        String fileURL = null;
-        String projectURL = null;
-        String type = null;
-        if (breakpointsFromGroup instanceof BreakpointsFromGroup) {
-            BreakpointsFromGroup bfg = (BreakpointsFromGroup) breakpointsFromGroup;
-            customGroup = bfg.getGroupName();
-            TestGroupProperties tgp = bfg.getTestGroupProperties();
-            if (tgp != null) {
-                FileObject fo = tgp.getFileObject();
-                if (fo != null) {
-                    URL url = fo.toURL();
-                    fileURL = url.toExternalForm();
-                }
-                Project project = tgp.getProject();
-                if (project != null) {
-                    fo = project.getProjectDirectory();
-                    URL url = fo.toURL();
-                    projectURL = url.toExternalForm();
-                }
-                type = tgp.getType();
-            }
-        }
-        properties.setString(base + BP_CUSTOM_GROUP, customGroup);
-        properties.setString(base + BP_FILE_GROUP, fileURL);
-        properties.setString(base + BP_PROJECT_GROUP, projectURL);
-        properties.setString(base + BP_TYPE_GROUP, type);
     }
     
 }

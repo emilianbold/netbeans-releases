@@ -53,6 +53,8 @@ import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.javascript2.debug.breakpoints.FutureLine;
+import org.netbeans.modules.javascript2.debug.breakpoints.JSBreakpointsInfoManager;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
 import org.netbeans.modules.javascript2.debug.breakpoints.io.BreakpointsFromGroup.TestGroupProperties;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
@@ -96,7 +98,12 @@ public class JSBreakpointReader implements Properties.Reader {
                 URL url = new URL(urlStr);
                 FileObject fo = URLMapper.findFileObject(url);
                 if (fo == null) {
-                    return null;
+                    if (JSBreakpointsInfoManager.getDefault().isTransientURL(url)) {
+                        Line line = new FutureLine(url, lineNumber - 1);
+                        return new JSLineBreakpoint(line);
+                    } else {
+                        return null;
+                    }
                 }
                 try {
                     DataObject dobj = DataObject.find(fo);
