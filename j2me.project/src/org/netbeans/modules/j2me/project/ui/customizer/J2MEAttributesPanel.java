@@ -51,7 +51,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -137,8 +136,6 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
         jRadioButtonSuite.setSelected(liblet == null || (liblet != null && liblet.equals(jRadioButtonSuite.getActionCommand())));
         jRadioButtonLIBlet.setSelected(liblet != null && liblet.equals(jRadioButtonLIBlet.getActionCommand()));
         tableModel.initManifestModel(jRadioButtonLIBlet.isSelected());
-        
-        jRadioButtonLIBlet.setEnabled(tableModel.getMIDPVersion() == 3);
         
         String[] propertyNames = uiProperties.ATTRIBUTES_PROPERTY_NAMES;
         String values[] = new String[propertyNames.length];
@@ -475,13 +472,7 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
             },
             new String[] {
                 NAME, VENDOR, VERSION
-            },
-            new String[] {
-                NAME, VENDOR, VERSION
-            },
-            new String[] {
-                NAME, VENDOR, VERSION
-            },
+            }
         };
         
         private static final String[][] nonmandatoryProperties = {
@@ -535,14 +526,6 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
                 Matcher m = midpPattern.matcher(midp);
                 midpVersion = m.find() ? Integer.parseInt(m.group(1)) : 2;
             }
-        }
-        
-        public boolean isMIDP2() {
-            return midpVersion == 2;
-        }
-        
-        public int getMIDPVersion() {
-            return midpVersion;
         }
 
         public HashSet<String> getKeys() {
@@ -723,14 +706,14 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
         }
         
         public String[] getMandatory() {
-            return mandatoryProperties[isLIBlet ? 0 : getMIDPVersion()];
+            return mandatoryProperties[isLIBlet ? 0 : 1];
         }
         
         public String[] getNonMandatory() {
             if (additionalAttributes == null){
                 additionalAttributes = loadAdditionalAttributes();
             }
-            return mergeAttributes(nonmandatoryProperties[isLIBlet ? 0 : getMIDPVersion()], additionalAttributes);
+            return mergeAttributes(nonmandatoryProperties[isLIBlet ? 0 : 1], additionalAttributes);
         }
         
         public String[] getAllAttrs() {

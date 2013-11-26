@@ -788,7 +788,7 @@ is divided into following sections:
             </target>
 
             <target name="-add-optional-attributes">
-                <xsl:attribute name="depends">-add-apipermissions,-add-pushregistry</xsl:attribute>
+                <xsl:attribute name="depends">-add-apipermissions,-add-pushregistry,-add-jad-extra</xsl:attribute>
             </target>
 
             <target name="-add-apipermissions">
@@ -799,6 +799,11 @@ is divided into following sections:
             <target name="-add-pushregistry">
                 <xsl:attribute name="if">manifest.pushregistry</xsl:attribute>
                 <echo append="true" encoding="UTF-8" file="${{dist.dir}}/${{dist.jad}}" message="${{manifest.pushregistry}}"/>
+            </target>
+
+            <target name="-add-jad-extra">
+                <xsl:attribute name="if">manifest.jad</xsl:attribute>
+                <echo append="true" encoding="UTF-8" file="${{dist.dir}}/${{dist.jad}}" message="${{manifest.jad}}"/>
             </target>
 
             <target name="-add-configuration" unless="contains.manifest.configuration">
@@ -818,6 +823,10 @@ is divided into following sections:
                 </manifest>
                 <script>
 		<xsl:attribute name="language">javascript</xsl:attribute><![CDATA[
+                function isTrue(prop) {
+                    return prop != null &&
+                    (prop.toLowerCase() == "true" || prop.toLowerCase() == "yes" || prop.toLowerCase() == "on");
+                }
                 function updateManifest(entries) {
                     var src = new String(project.getProperty("tmp.manifest.file"));
                     var srf = new java.io.File(src);
@@ -841,14 +850,18 @@ is divided into following sections:
                         manifest.perform();
                     }
                 }
-                var midlets = new String(project.getProperty("manifest.midlets"));
-                updateManifest(midlets);
+                if (!isTrue(project.getProperty("manifest.is.liblet"))) {
+                    var midlets = new String(project.getProperty("manifest.midlets"));
+                    updateManifest(midlets);
+                }
                 var others = new String(project.getProperty("manifest.others"));
                 updateManifest(others);
                 var apipermissions = new String(project.getProperty("manifest.apipermissions"));
                 updateManifest(apipermissions);
                 var pushregistry = new String(project.getProperty("manifest.pushregistry"));
                 updateManifest(pushregistry);
+                var manifestExtra = new String(project.getProperty("manifest.manifest"));
+                updateManifest(manifestExtra);
                 ]]></script>
             </target>
 
