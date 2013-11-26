@@ -95,6 +95,7 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
 
     private final KOTemplateContext templateContext = new KOTemplateContext();
 
+    private KODataBindContext currentTemplateContext;
 
     public KOJsEmbeddingProviderPlugin() {
         JS_LANGUAGE = Language.find(KOUtils.JAVASCRIPT_MIMETYPE); //NOI18N
@@ -147,10 +148,13 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
         boolean processed = false;
 
         Pair<Boolean, String> templateCheck = templateContext.process(tokenSequence.token());
-//        if (templateCheck != null) {
-//            templateBoundaries.add(new TemplateBoundary(
-//                    templateCheck.second(), embeddings.size(), templateCheck.first()));
-//        }
+        if (templateCheck != null) {
+            if (templateCheck.first()) {
+                currentTemplateContext = new KODataBindContext();
+            } else {
+                currentTemplateContext = null;
+            }
+        }
 
         String tokenText = tokenSequence.token().text().toString();
 
@@ -201,7 +205,9 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
                             dataValue = embedded.token();
                         }
                         if (setTemplate && embedded.token().id() == KODataBindTokenId.VALUE && dataValue == null) {
-                            KODataBindContext templateBindContext = new KODataBindContext(dataBindContext);
+                            KODataBindContext context = currentTemplateContext != null
+                                    ? currentTemplateContext : dataBindContext;
+                            KODataBindContext templateBindContext = new KODataBindContext(context);
                             KOTemplateContext.TemplateDescriptor desc = KOTemplateContext.getTemplateDescriptor(
                                     snapshot, embedded.embedded(JsTokenId.javascriptLanguage()));
                             if (desc != null) {
@@ -210,7 +216,7 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
                                 KODataBindContext current = templateUsages.get(templateName);
                                 if (current == null) {
                                     templateUsages.put(templateName, templateBindContext);
-                                } else if (Objects.equals(current.getOriginal(), dataBindContext)) {
+                                } else if (Objects.equals(current.getOriginal(), context)) {
                                     current.setData(current.getData() + " || " + templateBindContext.getData());
                                 } else {
                                     LOGGER.log(Level.INFO, "Multiple incompatible template usage; storing the last one");
@@ -263,8 +269,12 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
                     }
                     if (setData) {
                         if (dataValue != null) {
-                            // XXX forach alias
-                            dataBindContext.push(dataValue.text().toString().trim(), foreach, null);
+                            if (templateId != null) {
+                                currentTemplateContext.push(dataValue.text().toString().trim(), foreach, null);
+                            } else {
+                                dataBindContext.push(dataValue.text().toString().trim(), foreach, null);
+                            }
+
                         }
                     }
                     if (templateId != null) {
