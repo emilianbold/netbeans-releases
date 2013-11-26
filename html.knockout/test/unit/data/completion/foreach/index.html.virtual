@@ -56,7 +56,7 @@ with (ko.$bindings) {
 var $data = (lidickove)[0];
 }
 with ($data) {
-(  );}
+  ;}
 });
 (function(){
 var $element;
