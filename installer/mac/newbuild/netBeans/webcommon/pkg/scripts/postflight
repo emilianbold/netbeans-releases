@@ -26,7 +26,3 @@ dirname=`dirname "$0"`
 #add Product ID
 "$dirname"/addproduct_id.sh "WEBCOMMON"
 
-#clean receipts
-"$dirname"/clean_receipts.sh "webcommon-$NB_ID" "org.netbeans.ide.webcommon"
-
-

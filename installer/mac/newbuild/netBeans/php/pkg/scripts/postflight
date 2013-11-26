@@ -26,7 +26,3 @@ dirname=`dirname "$0"`
 #add Product ID
 "$dirname"/addproduct_id.sh "PHP"
 
-#clean receipts
-"$dirname"/clean_receipts.sh "php-$NB_ID" "org.netbeans.ide.php"
-
-

@@ -26,7 +26,4 @@ dirname=`dirname "$0"`
 #add Product ID
 "$dirname"/addproduct_id.sh "SOA"
 
-#clean receipts
-"$dirname"/clean_receipts.sh "soa-$NB_ID" "org.netbeans.ide.soa"
-
 

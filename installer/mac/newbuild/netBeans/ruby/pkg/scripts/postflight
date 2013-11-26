@@ -26,7 +26,3 @@ dirname=`dirname "$0"`
 #add Product ID
 "$dirname"/addproduct_id.sh "RUBY"
 
-#clean receipts
-"$dirname"/clean_receipts.sh "ruby-$NB_ID" "org.netbeans.ide.ruby"
-
-

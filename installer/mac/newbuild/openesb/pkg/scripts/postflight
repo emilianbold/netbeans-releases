@@ -41,6 +41,3 @@ glassfish_dir=`pwd`
 
 "$script_dir"/perm.sh
 
-#clean receipts
-"$script_dir"/clean_receipts.sh "openesb-$OPENESB_ID" "openesb"
-

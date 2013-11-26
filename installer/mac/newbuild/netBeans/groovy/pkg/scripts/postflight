@@ -26,6 +26,3 @@ dirname=`dirname "$0"`
 #add Product ID
 "$dirname"/addproduct_id.sh "GROOVY"
 
-#clean receipts
-"$dirname"/clean_receipts.sh "groovy-$NB_ID" "org.netbeans.ide.groovy"
-

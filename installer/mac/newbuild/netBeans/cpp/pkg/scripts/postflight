@@ -25,7 +25,3 @@ dirname=`dirname "$0"`
 
 #add Product ID
 "$dirname"/addproduct_id.sh "CND"
-#"$dirname"/servicetag.sh "nb-cnd" "$2"
-
-#clean receipts
-"$dirname"/clean_receipts.sh "cpp-$NB_ID" "org.netbeans.ide.cpp"

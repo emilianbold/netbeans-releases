@@ -123,9 +123,6 @@ SJSAS_ID="${sjsas.id}"
 
         <copy file="${basedir}/../../commonfiles/unpack200.sh" tofile="${scriptsdir}/unpack200.sh"/>
         <copy file="${basedir}/../../commonfiles/get_current_jdk.sh" tofile="${scriptsdir}/get_current_jdk.sh"/>
-        <copy file="${basedir}/../../commonfiles/clean_receipts.sh" tofile="${scriptsdir}/clean_receipts.sh"/>
-        <!--copy file="${basedir}/servicetag/dist/servicetag.jar"   tofile="${scriptsdir}/servicetag.jar"/-->
-
 
         <copy todir="${scriptsdir}" verbose="yes">
             <fileset dir="${basedir}/pkg/scripts"/>

@@ -264,10 +264,6 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="${basedir}/netBeans/baseide/build/scripts/env.sh" todir="${scriptsdir}"/>
         <copy file="${basedir}/netBeans/baseide/build/scripts/addproduct_id.sh" todir="${scriptsdir}"/>
         <copy file="${basedir}/netBeans/baseide/build/scripts/get_current_jdk.sh" todir="${scriptsdir}"/>
-        <copy file="${basedir}/netBeans/baseide/build/scripts/add_cluster.sh" todir="${scriptsdir}"/>
-        <copy file="${basedir}/netBeans/baseide/build/scripts/clean_receipts.sh" todir="${scriptsdir}"/>
-        <!--copy file="${basedir}/netBeans/baseide/build/scripts/servicetag.sh"    todir="${scriptsdir}"/>
-        <copy file="${basedir}/netBeans/baseide/build/scripts/servicetag.jar"   todir="${scriptsdir}"/-->        
 
         <chmod dir="${scriptsdir}" perm="ugo+x" includes="**/*"/>
         
@@ -521,12 +517,8 @@ Microsystems, Inc. All Rights Reserved.
               tofile="${mpkg.file}/Contents/Resources/background.tif"/>  
         <copy file="${license.file}" 
               tofile="${mpkg.file}/Contents/Resources/License.txt" failonerror="false"/>
-        <echo message="XXX: Copying ${basedir}/dmg/Resources/postflight to ${mpkg.file}/Contents/Resources ..."/>                    
-        <copy file="${basedir}/dmg/Resources/postflight" 
-              failonerror="true" tofile="${mpkg.file}/Contents/Resources/postflight" verbose="XXX: Final POSTFLIGHT copied."/>
-        <chmod file="${mpkg.file}/Contents/Resources/postflight" perm="ugo+x" verbose="XXX: Executable flag added."/>
-                         
-        <ant target="prepare-lproj-dirs"/>
+
+              <ant target="prepare-lproj-dirs"/>
         
         <copy file="dmg/distribution${bundle.type}.dist" tofile="${mpkg.file}/Contents/distribution.dist">                                    
             <filterset>

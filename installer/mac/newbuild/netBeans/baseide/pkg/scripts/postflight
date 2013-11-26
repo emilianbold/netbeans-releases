@@ -27,15 +27,11 @@ jdk_home=`"$dirname"/get_current_jdk.sh`
 
 "$dirname"/unpack200.sh "$NETBEANS_INSTALL_DIR" "$NETBEANS_INSTALL_DIR/Contents/Resources/NetBeans" "$jdk_home"
 
-"$dirname"/add_gf.sh "$NETBEANS_INSTALL_DIR" "$GLASSFISH_INSTALL_DIR"
-
 "$dirname"/add_gfv3.sh "$NETBEANS_INSTALL_DIR" "$GLASSFISH_V3_INSTALL_DIR"
 
 "$dirname"/add_javadb.sh "$NETBEANS_INSTALL_DIR" "$GLASSFISH_V3_INSTALL_DIR/javadb"
 
 "$dirname"/add_tc.sh "$NETBEANS_INSTALL_DIR" "$TOMCAT_INSTALL_DIR"
-
-"$dirname"/add_mysql.sh "$NETBEANS_INSTALL_DIR" "$MYSQL_INSTALL_DIR"
 
 if [ -f "$dirname"/set_jdk_home.sh ]; then
     "$dirname"/set_jdk_home.sh "$NETBEANS_INSTALL_DIR" "$DEFAULT_JDK7_HOME"
@@ -62,14 +58,7 @@ chown root:wheel .
 #add Product ID
 "$dirname"/addproduct_id.sh "NB"
 
-#clean receipts
-"$dirname"/clean_receipts.sh "baseide-$NB_ID" "org.netbeans.ide.baseide"
-
-#create ST for NB
-#"$dirname"/servicetag.sh "nb" "$2"
-
 #Fix for 177872 (alternative: change Auth="None" for GF, but problem with existing root:admin dirs)
 ownership=`ls -nlda ~ | awk ' { print $3 ":admin" } ' 2>/dev/null`
 cd "$NETBEANS_INSTALL_DIR"/Contents/Resources/NetBeans*/"$NB_CLUSTER_DIR"
-#chown -R "$ownership" var servicetag
 chown -R "$ownership" var

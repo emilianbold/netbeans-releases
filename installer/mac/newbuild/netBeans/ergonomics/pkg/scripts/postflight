@@ -23,6 +23,3 @@ dirname=`dirname "$0"`
 
 . "$dirname"/env.sh
 
-#clean receipts
-"$dirname"/clean_receipts.sh "ergonomics-$NB_ID" "org.netbeans.ide.ergonomics"
-

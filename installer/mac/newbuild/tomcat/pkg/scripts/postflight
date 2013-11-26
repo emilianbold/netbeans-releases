@@ -40,7 +40,3 @@ chmod a+w logs
 #add Product ID
 "$script_dir"/addproduct_id.sh "TOMCAT"
 
-
-#clean receipts
-"$script_dir"/clean_receipts.sh "tomcat-$TOMCAT_ID" "apache.tomcat"
-

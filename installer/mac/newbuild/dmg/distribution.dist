@@ -182,7 +182,6 @@ function checkSystemversion() {
 
     <pkg-ref id="ident.pkg.glassfish.v3" version="0.0.0.0.0" installKBytes="@SIZE_GLASSFISHV3@" auth="Root" onConclusion="None">file:./Contents/Packages/glassfish-v3-@GLASSFISHV3_ID@.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.tomcat" version="0.0.0.6.0" installKBytes="@SIZE_TOMCAT@" auth="Root" onConclusion="None">file:./Contents/Packages/tomcat-@TOMCAT_ID@.pkg</pkg-ref>
-    <!--<pkg-ref id="ident.pkg.openesb" version="0.0.0.0.0" installKBytes="@SIZE_OPENESB@" auth="Root" onConclusion="None">file:./Contents/Packages/openesb-@OPENESB_ID@.pkg</pkg-ref>-->
     <pkg-ref id="ident.pkg.baseide" version="0.0.0.0.1" installKBytes="@SIZE_BASEIDE@" auth="Root" onConclusion="None">file:./Contents/Packages/baseide-@NB_ID@.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.javase" version="0.0.0.0.1" installKBytes="@SIZE_JAVASE@" auth="Root" onConclusion="None">file:./Contents/Packages/javase-@NB_ID@.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.webcommon" version="0.0.0.0.1" installKBytes="@SIZE_WEBCOMMON@" auth="Root" onConclusion="None">file:./Contents/Packages/webcommon-@NB_ID@.pkg</pkg-ref>
@@ -190,7 +189,6 @@ function checkSystemversion() {
     <pkg-ref id="ident.pkg.javaee" version="0.0.0.0.1" installKBytes="@SIZE_JAVAEE@" auth="Root" onConclusion="None">file:./Contents/Packages/javaee-@NB_ID@.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.javame" version="0.0.0.0.1" installKBytes="@SIZE_JAVAME@" auth="Root" onConclusion="None">file:./Contents/Packages/javame-@NB_ID@.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.cpp" version="0.0.0.0.1" installKBytes="@SIZE_CPP@" auth="Root" onConclusion="None">file:./Contents/Packages/cpp-@NB_ID@.pkg</pkg-ref>
-    <!--<pkg-ref id="ident.pkg.ruby" version="0.0.0.0.1" installKBytes="@SIZE_RUBY@" auth="Root" onConclusion="None">file:./Contents/Packages/ruby-@NB_ID@.pkg</pkg-ref>-->
     <pkg-ref id="ident.pkg.groovy" version="0.0.0.0.1" installKBytes="@SIZE_GROOVY@" auth="Root" onConclusion="None">file:./Contents/Packages/groovy-@NB_ID@.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.php" version="0.0.0.0.1" installKBytes="@SIZE_PHP@" auth="Root" onConclusion="None">file:./Contents/Packages/php-@NB_ID@.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.ergonomics" version="0.0.0.0.1" installKBytes="@SIZE_ERGONOMICS@" auth="Root" onConclusion="None">file:./Contents/Packages/ergonomics-@NB_ID@.pkg</pkg-ref>

@@ -26,7 +26,4 @@ dirname=`dirname "$0"`
 #add Product ID
 "$dirname"/addproduct_id.sh "JAVA"
 
-#clean receipts
-"$dirname"/clean_receipts.sh "javase-$NB_ID" "org.netbeans.ide.javase"
-
 
