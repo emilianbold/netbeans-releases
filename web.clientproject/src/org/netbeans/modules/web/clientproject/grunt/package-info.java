@@ -40,24 +40,14 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.javascript2.debug.breakpoints;
+@TemplateRegistration(folder = "ClientSide",
+        content = "Gruntfile.js",
+        scriptEngine = "freemarker", 
+        position = 600,
+        displayName = "#Templates.gruntfile.js",
+        description = "gruntdescription.html")
 
-import java.beans.PropertyChangeListener;
+package org.netbeans.modules.web.clientproject.grunt;
 
-/**
- * Service providing notification about active breakpoints.
- * Register the implementation into the default lookup.
- * 
- * @author Martin
- */
-public interface JSBreakpointsActiveService {
-    
-    public static final String PROP_BREAKPOINTS_ACTIVE = "breakpointsActive";   // NOI18N
-    
-    public boolean areBreakpointsActive();
-    
-    public void addPropertyChangeListener(PropertyChangeListener l);
-    
-    public void removePropertyChangeListener(PropertyChangeListener l);
-    
-}
+import org.netbeans.api.templates.TemplateRegistration;
+

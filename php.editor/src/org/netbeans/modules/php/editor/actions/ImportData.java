@@ -151,10 +151,7 @@ public class ImportData {
             if (this.variants != other.variants && (this.variants == null || !this.variants.equals(other.variants))) {
                 return false;
             }
-            if ((this.defaultVariant == null) ? (other.defaultVariant != null) : !this.defaultVariant.equals(other.defaultVariant)) {
-                return false;
-            }
-            return true;
+            return !((this.defaultVariant == null) ? (other.defaultVariant != null) : !this.defaultVariant.equals(other.defaultVariant));
         }
 
     }
@@ -231,10 +228,7 @@ public class ImportData {
                 return false;
             }
             final ItemVariant other = (ItemVariant) obj;
-            if (!Objects.equals(this.name, other.name)) {
-                return false;
-            }
-            return true;
+            return Objects.equals(this.name, other.name);
         }
 
     }

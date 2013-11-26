@@ -67,6 +67,7 @@ import org.netbeans.modules.javascript.karma.exec.KarmaServersListener;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferencesValidator;
 import org.netbeans.modules.javascript.karma.ui.customizer.KarmaCustomizer;
+import org.netbeans.modules.javascript.karma.util.FileUtils;
 import org.netbeans.modules.javascript.karma.util.KarmaUtils;
 import org.netbeans.modules.javascript.karma.util.ValidationResult;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
@@ -353,7 +354,13 @@ public class KarmaChildrenList implements NodeList<Node>, PreferenceChangeListen
         @Override
         public JComponent[] getMenuPresenters() {
             removeAll();
-            List<File> configs = KarmaUtils.findKarmaConfigs(KarmaUtils.getConfigDir(project));
+            // #238803
+            File configDir = KarmaUtils.getConfigDir(project);
+            List<File> configs = KarmaUtils.findKarmaConfigs(configDir);
+            if (configs.isEmpty()) {
+                configs = KarmaUtils.findJsFiles(configDir);
+            }
+            configs = FileUtils.sortFiles(configs);
             if (!configs.isEmpty()) {
                 String activeConfig = KarmaPreferences.getConfig(project);
                 for (final File config : configs) {

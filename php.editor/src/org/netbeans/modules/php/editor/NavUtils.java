@@ -71,7 +71,7 @@ public final class NavUtils {
 
     public static List<ASTNode> underCaret(ParserResult info, final int offset) {
         class Result extends Error {
-            private Stack<ASTNode> result;
+            private final Stack<ASTNode> result;
             public Result(Stack<ASTNode> result) {
                 this.result = result;
             }
@@ -82,7 +82,7 @@ public final class NavUtils {
         }
         try {
             new DefaultVisitor() {
-                private Stack<ASTNode> s = new Stack<>();
+                private final Stack<ASTNode> s = new Stack<>();
                 @Override
                 public void scan(ASTNode node) {
                     if (node == null) {

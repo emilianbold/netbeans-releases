@@ -49,6 +49,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
@@ -163,4 +164,23 @@ public class JSUtils {
         }
         return result;
     }
+    
+    public static String getFileName(JSLineBreakpoint b) {
+        FileObject fo = b.getLine().getLookup().lookup(FileObject.class);
+        if (fo != null) {
+            return fo.getNameExt();
+        } else {
+            URL url = b.getURL();
+            String fileName = url.getPath();
+            int i = fileName.lastIndexOf('/');
+            if (i < 0) {
+                i = fileName.lastIndexOf(File.separatorChar);
+            }
+            if (i >= 0) {
+                fileName = fileName.substring(i + 1);
+            }
+            return fileName;
+        }
+    }
+    
 }

@@ -41,7 +41,10 @@
  */
 package org.netbeans.modules.html.knockout;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.html.lexer.HTMLTokenId;
@@ -260,6 +263,36 @@ public class KOTemplateContext {
 
         public String getAlias() {
             return alias;
+        }
+    }
+
+    public static class TemplateUsage {
+
+        private final KODataBindContext context;
+
+        private final Set<String> parentTemplatesNames = new HashSet<>();
+
+        public TemplateUsage(KODataBindContext context) {
+            this.context = context;
+        }
+
+        public KODataBindContext getContext() {
+            return context;
+        }
+
+        public void addParentTemplateName(String name) {
+            parentTemplatesNames.add(name);
+        }
+
+        public Set<String> getParentTemplatesNames() {
+            return Collections.unmodifiableSet(parentTemplatesNames);
+        }
+
+        public String getParentTemplateName() {
+            if (parentTemplatesNames.isEmpty()) {
+                return null;
+            }
+            return parentTemplatesNames.iterator().next();
         }
     }
 

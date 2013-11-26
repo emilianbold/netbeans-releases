@@ -55,6 +55,9 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.URLMapper;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
 import org.openide.util.WeakListeners;
 
@@ -146,11 +149,32 @@ public class JSLineBreakpoint extends Breakpoint {
     }
     
     public FileObject getFileObject() {
-        return line.getLookup().lookup(FileObject.class);
+        if (line instanceof FutureLine) {
+            URL url = getURL();
+            FileObject fo = URLMapper.findFileObject(url);
+            if (fo != null) {
+                try {
+                    DataObject dobj = DataObject.find(fo);
+                    LineCookie lineCookie = dobj.getLookup().lookup(LineCookie.class);
+                    if (lineCookie == null) {
+                        return null;
+                    }
+                    Line l = lineCookie.getLineSet().getCurrent(getLineNumber() - 1);
+                    setLine(l);
+                } catch (DataObjectNotFoundException ex) {
+                }
+            }
+            return fo;
+        } else {
+            return line.getLookup().lookup(FileObject.class);
+        }
     }
     
     public URL getURL() {
-        return getFileObject().toURL();
+        if (line instanceof FutureLine) {
+            return ((FutureLine) line).getURL();
+        }
+        return line.getLookup().lookup(FileObject.class).toURL();
     }
     
     @Override

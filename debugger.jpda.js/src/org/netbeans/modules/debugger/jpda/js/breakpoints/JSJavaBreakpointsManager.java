@@ -39,80 +39,68 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.debugger.jpda.js.breakpoints;
 
-import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.DebuggerManagerAdapter;
+import org.netbeans.api.debugger.LazyDebuggerManagerListener;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.modules.debugger.jpda.js.JSUtils;
 import org.netbeans.modules.debugger.jpda.js.source.SourceURLMapper;
-import org.openide.cookies.LineCookie;
+import org.netbeans.modules.javascript2.debug.breakpoints.FutureLine;
+import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
 
 /**
- *
+ * Manages creation/removal of Java breakpoints corresponding to JS breakpoints.
+ * 
  * @author Martin
  */
-public class JSLineBreakpoint extends JSBreakpoint {
+@DebuggerServiceRegistration(types=LazyDebuggerManagerListener.class)
+public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
     
-    public static final String PROP_URL = "url";
-    public static final String PROP_LINE_NUMBER = "lineNumber";
-    
-    private Line line;
-    
-    public JSLineBreakpoint(Line line) {
-        this.line = line;
-        LineBreakpoint javaLB = createJavaLB(line);
-        DebuggerManager.getDebuggerManager().addBreakpoint(javaLB);
-        setJavaBreakpoint(javaLB);
+    private final Map<JSLineBreakpoint, LineBreakpoint> breakpoints = new HashMap<>();
+
+    @Override
+    public Breakpoint[] initBreakpoints() {
+        return super.initBreakpoints(); //To change body of generated methods, choose Tools | Templates.
     }
     
-    public Line getLine() {
-        return line;
-    }
-    
-    private void setLine(Line line) {
-        this.line = line;
-    }
-    
-    public int getLineNumber() {
-        return line.getLineNumber() + 1;
-    }
-    
-    public URL getURL() {
-        if (line instanceof FutureLine) {
-            return ((FutureLine) line).getURL();
-        }
-        return line.getLookup().lookup(FileObject.class).toURL();
+    @Override
+    public String[] getProperties() {
+        return new String[] { DebuggerManager.PROP_BREAKPOINTS }; 
     }
 
     @Override
-    protected FileObject getFileObject() {
-        if (line instanceof FutureLine) {
-            URL url = getURL();
-            FileObject fo = URLMapper.findFileObject(url);
-            if (fo != null) {
-                try {
-                    DataObject dobj = DataObject.find(fo);
-                    LineCookie lineCookie = dobj.getLookup().lookup(LineCookie.class);
-                    if (lineCookie == null) {
-                        return null;
-                    }
-                    Line l = lineCookie.getLineSet().getCurrent(getLineNumber() - 1);
-                    setLine(l);
-                } catch (DataObjectNotFoundException ex) {
-                }
-            }
-            return fo;
+    public void breakpointAdded(Breakpoint breakpoint) {
+        if (!(breakpoint instanceof JSLineBreakpoint)) {
+            return ;
         }
-        return line.getLookup().lookup(FileObject.class);
+        Line line = ((JSLineBreakpoint) breakpoint).getLine();
+        LineBreakpoint lb = createJavaLB(line);
+        synchronized (breakpoints) {
+            breakpoints.put((JSLineBreakpoint) breakpoint, lb);
+        }
+        DebuggerManager.getDebuggerManager().addBreakpoint(lb);
+    }
+
+    @Override
+    public void breakpointRemoved(Breakpoint breakpoint) {
+        if (!(breakpoint instanceof JSLineBreakpoint)) {
+            return ;
+        }
+        LineBreakpoint lb;
+        synchronized (breakpoints) {
+            lb = breakpoints.remove((JSLineBreakpoint) breakpoint);
+        }
+        DebuggerManager.getDebuggerManager().removeBreakpoint(lb);
     }
     
     private LineBreakpoint createJavaLB(Line line) {
@@ -140,11 +128,12 @@ public class JSLineBreakpoint extends JSBreakpoint {
         if ("<eval>".equals(name)) {        // NOI18N
             name = "\\^eval\\_";            // NOI18N
         }
-        int lineNo = getLineNumber();
+        int lineNo = line.getLineNumber() + 1;
         LineBreakpoint lb = LineBreakpoint.create("", lineNo);
         lb.setHidden(true);
         lb.setPreferredClassName(JSUtils.NASHORN_SCRIPT + name);
         lb.setSuspend(JPDABreakpoint.SUSPEND_EVENT_THREAD);
         return lb;
     }
+
 }
