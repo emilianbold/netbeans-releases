@@ -39,10 +39,13 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.debugger.jpda.js.breakpoints;
+
+package org.netbeans.modules.javascript2.debug.annotation;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -53,14 +56,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.DebuggerManagerAdapter;
-import org.netbeans.api.debugger.LazyDebuggerManagerListener;
-import org.netbeans.modules.debugger.jpda.js.Context;
-import org.netbeans.modules.debugger.jpda.js.JSUtils;
-import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.netbeans.modules.javascript2.debug.breakpoints.JSBreakpointsInfo;
+import org.netbeans.modules.javascript2.debug.breakpoints.JSBreakpointsInfoManager;
+import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.text.AnnotationProvider;
+import org.openide.text.Annotation;
 import org.openide.text.Line;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -71,62 +72,44 @@ import org.openide.util.WeakSet;
  *
  * @author Martin
  */
-@org.openide.util.lookup.ServiceProvider(service=org.openide.text.AnnotationProvider.class)
-@DebuggerServiceRegistration(types=LazyDebuggerManagerListener.class)
-public class JSBreakpointAnnotationListener extends DebuggerManagerAdapter
-                                            implements AnnotationProvider {
+class BreakpointAnnotationManager implements PropertyChangeListener {
     
-    private static final Logger logger = Logger.getLogger(JSBreakpointAnnotationListener.class.getName());
+    private static Reference<BreakpointAnnotationManager> INSTANCE_REF = new WeakReference<>(null);
     
-    private final Map<JSBreakpoint, Object> breakpointAnnotations = new HashMap<>();
+    static BreakpointAnnotationManager getInstance() {
+        BreakpointAnnotationManager instance;
+        synchronized (BreakpointAnnotationManager.class) {
+            instance = INSTANCE_REF.get();
+            if (instance == null) {
+                instance = new BreakpointAnnotationManager();
+                INSTANCE_REF = new WeakReference<>(instance);
+            }
+        }
+        return instance;
+    }
+    
+    private static final Logger logger = Logger.getLogger(BreakpointAnnotationManager.class.getName());
+    
+    private final Map<JSLineBreakpoint, Annotation> breakpointAnnotations = new HashMap<>();
     private final Set<FileObject> annotatedFiles = new WeakSet<>();
     private Set<PropertyChangeListener> dataObjectListeners;
     private final RequestProcessor annotationProcessor = new RequestProcessor("Annotation Refresh", 1);
-
-    @Override
-    public String[] getProperties() {
-        return new String[] { DebuggerManager.PROP_BREAKPOINTS, DebuggerManager.PROP_DEBUGGER_ENGINES }; 
+    private boolean active = true;
+    
+    private BreakpointAnnotationManager() {
+        JSBreakpointsInfoManager.getDefault().addPropertyChangeListener(
+                WeakListeners.propertyChange(this, JSBreakpointsInfoManager.getDefault()));
+        active = JSBreakpointsInfoManager.getDefault().areBreakpointsActivated();
     }
     
     private static boolean isAnnotateable(Breakpoint breakpoint) {
-        return breakpoint instanceof JSBreakpoint;
+        return breakpoint instanceof JSLineBreakpoint;
     }
     
     private static boolean isAnnotateable(FileObject fo) {
-        return JSUtils.JS_MIME_TYPE.equals(fo.getMIMEType());
+        return JSBreakpointsInfoManager.getDefault().isAnnotatable(fo);
     }
 
-    @Override
-    public void breakpointAdded(Breakpoint breakpoint) {
-        if (!isAnnotateable(breakpoint)) {
-            return;
-        }
-        JSBreakpoint b = (JSBreakpoint) breakpoint;
-        FileObject fo = b.getFileObject();
-        synchronized (breakpointAnnotations) {
-            boolean isFileAnnotated = annotatedFiles.contains(fo);
-            logger.log(Level.FINE, "breakpointAdded({0}), fo = {1}, foID = {2}, annotated = {3}",
-                       new Object[] { breakpoint, fo, System.identityHashCode(fo), isFileAnnotated });
-            //if (isFileAnnotated) {
-                //addAnnotation(b);
-                annotationProcessor.post(new AnnotationRefresh(b, false, true));
-            //}
-        }
-        
-    }
-
-    @Override
-    public void breakpointRemoved(Breakpoint breakpoint) {
-        if (!isAnnotateable(breakpoint)) {
-            return;
-        }
-        JSBreakpoint b = (JSBreakpoint) breakpoint;
-        logger.log(Level.FINE, "breakpointRemoved({0})", breakpoint);
-        annotationProcessor.post(new AnnotationRefresh(b, true, false));
-        //removeAnnotation((JSBreakpoint) breakpoint);
-    }
-    
-    @Override
     public void annotate(Line.Set set, Lookup context) {
         final FileObject fo = context.lookup(FileObject.class);
         if (fo == null || !isAnnotateable(fo)) {
@@ -155,7 +138,7 @@ public class JSBreakpointAnnotationListener extends DebuggerManagerAdapter
             dobj.addPropertyChangeListener(WeakListeners.propertyChange(pchl, dobj));
             synchronized (this) {
                 if (dataObjectListeners == null) {
-                    dataObjectListeners = new HashSet<PropertyChangeListener>();
+                    dataObjectListeners = new HashSet<>();
                 }
                 // Prevent from GC.
                 dataObjectListeners.add(pchl);
@@ -164,7 +147,7 @@ public class JSBreakpointAnnotationListener extends DebuggerManagerAdapter
         annotate(fo);
     }
     
-    public void annotate (final FileObject fo) {
+    private void annotate (final FileObject fo) {
         synchronized (breakpointAnnotations) {
 //            if (annotatedFiles.contains(fo)) {
 //                // Already annotated
@@ -173,70 +156,94 @@ public class JSBreakpointAnnotationListener extends DebuggerManagerAdapter
             //Set<JSBreakpoint> annotatedBreakpoints = breakpointAnnotations.keySet();
             for (Breakpoint breakpoint : DebuggerManager.getDebuggerManager().getBreakpoints()) {
                 if (isAnnotateable(breakpoint)) {
-                    JSBreakpoint b = (JSBreakpoint) breakpoint;
+                    JSLineBreakpoint b = (JSLineBreakpoint) breakpoint;
                     if (fo.equals(b.getFileObject())) {
                         logger.log(Level.FINE, "annotate({0} (ID={1})): b = {2}",
                                    new Object[] { fo, System.identityHashCode(fo), b });
+                        b.addPropertyChangeListener(this);
                         annotationProcessor.post(new AnnotationRefresh(b, false, true));
                     }
-                    /*
-                    int[] lines = getAnnotationLines(b, fo);
-                    if (lines != null && lines.length > 0) {
-                        if (!annotatedBreakpoints.contains(b)) {
-                            b.addPropertyChangeListener (this);
-                            breakpointToAnnotations.put(b, new WeakSet<Annotation>());
-                            if (b instanceof LineBreakpoint) {
-                                LineBreakpoint lb = (LineBreakpoint) b;
-                                LineTranslations.getTranslations().registerForLineUpdates(lb);
-                            }
-                        }
-                        addAnnotationTo(b, fo, lines);
-                    }
-                    */
                 }
             }
             annotatedFiles.add(fo);
             logger.log(Level.FINE, "Annotated files = {0}", annotatedFiles);
         }
-//        if (attachManagerListener) {
-//            attachManagerListener = false;
-//            setCurrentDebugger(DebuggerManager.getDebuggerManager().getCurrentEngine());
-//            DebuggerManager.getDebuggerManager().addDebuggerListener(
-//                    WeakListeners.create(DebuggerManagerListener.class,
-//                                         this,
-//                                         DebuggerManager.getDebuggerManager()));
-//        }
+    }
+    
+    void breakpointAdded(Breakpoint breakpoint) {
+        if (!isAnnotateable(breakpoint)) {
+            return;
+        }
+        JSLineBreakpoint lb = (JSLineBreakpoint) breakpoint;
+        FileObject fo = lb.getFileObject();
+        synchronized (breakpointAnnotations) {
+            boolean isFileAnnotated = annotatedFiles.contains(fo);
+            logger.log(Level.FINE, "breakpointAdded({0}), fo = {1}, foID = {2}, annotated = {3}",
+                       new Object[] { breakpoint, fo, System.identityHashCode(fo), isFileAnnotated });
+            //if (isFileAnnotated) {
+                lb.addPropertyChangeListener(this);
+                annotationProcessor.post(new AnnotationRefresh(lb, false, true));
+            //}
+        }
     }
 
-    private void addAnnotation(JSBreakpoint breakpoint) {
-        Object annotation = Context.annotate(((JSBreakpoint) breakpoint));
-        logger.log(Level.FINE, "Added annotation of {0} : {1}",
-                   new Object[] { breakpoint, annotation });
-        if (annotation != null) {
-            synchronized (breakpointAnnotations) {
-                breakpointAnnotations.put(breakpoint, annotation);
+    void breakpointRemoved(Breakpoint breakpoint) {
+        if (!isAnnotateable(breakpoint)) {
+            return;
+        }
+        JSLineBreakpoint lb = (JSLineBreakpoint) breakpoint;
+        logger.log(Level.FINE, "breakpointRemoved({0})", breakpoint);
+        lb.removePropertyChangeListener(this);
+        annotationProcessor.post(new AnnotationRefresh(lb, true, false));
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        String propertyName = evt.getPropertyName();
+        if (Breakpoint.PROP_ENABLED.equals(propertyName) ||
+            JSLineBreakpoint.PROP_LINE.equals(propertyName) ||
+            Breakpoint.PROP_VALIDITY.equals(propertyName)) {
+            
+            JSLineBreakpoint lb = (JSLineBreakpoint) evt.getSource();
+            removeAnnotation(lb);
+            addAnnotation(lb);
+        } else if (JSBreakpointsInfo.PROP_BREAKPOINTS_ACTIVE.equals(propertyName)) {
+            boolean a = JSBreakpointsInfoManager.getDefault().areBreakpointsActivated();
+            if (a != active) {
+                active = a;
+                annotationProcessor.post(new AnnotationRefresh(null, true, true));
             }
         }
     }
 
-    private void removeAnnotation(JSBreakpoint breakpoint) {
-        Object annotation;
+    private void addAnnotation(JSLineBreakpoint breakpoint) {
+        Line line = breakpoint.getLine();
+        Annotation annotation = new LineBreakpointAnnotation(line, (JSLineBreakpoint) breakpoint, active);
+        logger.log(Level.FINE, "Added annotation of {0} : {1}",
+                   new Object[] { breakpoint, annotation });
+        synchronized (breakpointAnnotations) {
+            breakpointAnnotations.put(breakpoint, annotation);
+        }
+    }
+
+    private void removeAnnotation(Breakpoint breakpoint) {
+        Annotation annotation;
         synchronized (breakpointAnnotations) {
             annotation = breakpointAnnotations.remove(breakpoint);
         }
         if (annotation != null) {
             logger.log(Level.FINE, "Removed annotation of {0} : {1}",
                        new Object[] { breakpoint, annotation });
-            Context.removeAnnotation(annotation);
+            annotation.detach();
         }
     }
     
     private final class AnnotationRefresh implements Runnable {
         
-        private final JSBreakpoint b;
+        private final JSLineBreakpoint b;
         private final boolean remove, add;
         
-        public AnnotationRefresh(JSBreakpoint b, boolean remove, boolean add) {
+        public AnnotationRefresh(JSLineBreakpoint b, boolean remove, boolean add) {
             this.b = b;
             this.remove = remove;
             this.add = add;
@@ -244,19 +251,20 @@ public class JSBreakpointAnnotationListener extends DebuggerManagerAdapter
 
         @Override
         public void run() {
-            synchronized (breakpointAnnotations) {
-                if (b != null) {
-                    refreshAnnotation(b);
-                } else {
-                    List<JSBreakpoint> bpts = new ArrayList<>(breakpointAnnotations.keySet());
-                    for (JSBreakpoint bp : bpts) {
-                        refreshAnnotation(bp);
-                    }
+            if (b != null) {
+                refreshAnnotation(b);
+            } else {
+                List<JSLineBreakpoint> bpts;
+                synchronized (breakpointAnnotations) {
+                    bpts = new ArrayList<>(breakpointAnnotations.keySet());
+                }
+                for (JSLineBreakpoint bp : bpts) {
+                    refreshAnnotation(bp);
                 }
             }
         }
         
-        private void refreshAnnotation(JSBreakpoint b) {
+        private void refreshAnnotation(JSLineBreakpoint b) {
             removeAnnotation(b);
             /*if (remove) {
                 if (!add) {
@@ -273,4 +281,5 @@ public class JSBreakpointAnnotationListener extends DebuggerManagerAdapter
         }
         
     }
-    }
+
+}

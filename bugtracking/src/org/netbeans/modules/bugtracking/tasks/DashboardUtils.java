@@ -543,6 +543,14 @@ public class DashboardUtils {
         return cal;
     }
 
+    public static int getMillisToTomorrow() {
+        Calendar now = Calendar.getInstance();
+        Calendar tomorrow = getTodayCalendar();
+        tomorrow.add(Calendar.DAY_OF_YEAR, 1);
+        Long millisToTomorrow = (tomorrow.getTimeInMillis() - now.getTimeInMillis()) + 60 * 1000; // plus one minute to be sure
+        return millisToTomorrow.intValue();
+    }
+
     public static final class SchedulingMenu {
 
         private final JMenu menu;

@@ -90,13 +90,13 @@ public class NetworkProxyReloader extends ProxySettings.Reloader {
         NetworkProxySettings networkProxySettings = NETWORK_PROXY_RESOLVER.getNetworkProxySettings();
         
         if (!networkProxySettings.isResolved()) {
-            LOGGER.log(Level.WARNING, "System network proxy reloading failed! Trying fallback resolver."); //NOI18N
+            LOGGER.log(Level.INFO, "System network proxy reloading failed! Trying fallback resolver."); //NOI18N
             NetworkProxySettings fallbackNetworkProxySettings = FALLBACK_NETWORK_PROXY_RESOLVER.getNetworkProxySettings();
             if (fallbackNetworkProxySettings.isResolved()) {
                 LOGGER.log(Level.INFO, "System network proxy reloading succeeded. Fallback provider was successful."); //NOI18N
                 networkProxySettings = fallbackNetworkProxySettings;
             } else {
-                LOGGER.log(Level.WARNING, "System network proxy reloading failed! Fallback provider was unsuccessful."); //NOI18N
+                LOGGER.log(Level.INFO, "System network proxy reloading failed! Fallback provider was unsuccessful."); //NOI18N
             }
         } else {
             LOGGER.log(Level.INFO, "System network proxy reloading succeeded."); //NOI18N
@@ -239,7 +239,7 @@ public class NetworkProxyReloader extends ProxySettings.Reloader {
                 }
             }
             
-            LOGGER.log(Level.WARNING, "System network proxy resolver: no suitable found, using fallback."); //NOI18N
+            LOGGER.log(Level.INFO, "System network proxy resolver: no suitable found, using fallback."); //NOI18N
             return new FallbackNetworkProxy();
         } else {
             return NETWORK_PROXY_RESOLVER;

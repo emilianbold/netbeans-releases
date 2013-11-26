@@ -130,7 +130,7 @@ public abstract class OptionsPanelController {
     public abstract void update ();
 
     /**
-     * This method is called when Options Dialog "OK" button is pressed.
+     * This method is called off EDT when Options Dialog "OK" or "Apply" button is pressed.
      */
     public abstract void applyChanges ();
 

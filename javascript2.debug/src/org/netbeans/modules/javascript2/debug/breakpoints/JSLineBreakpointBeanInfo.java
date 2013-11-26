@@ -44,7 +44,7 @@ package org.netbeans.modules.javascript2.debug.breakpoints;
 
 import java.beans.BeanDescriptor;
 import java.beans.SimpleBeanInfo;
-import org.netbeans.modules.javascript2.debug.breakpoints.ui.JSLineBreakpointCustomizerPanel;
+import org.netbeans.modules.javascript2.debug.breakpoints.ui.JSLineBreakpointCustomizer;
 
 /**
  *
@@ -58,7 +58,7 @@ public class JSLineBreakpointBeanInfo extends SimpleBeanInfo {
     public BeanDescriptor getBeanDescriptor() {
         return new BeanDescriptor(
                 JSLineBreakpoint.class,
-                JSLineBreakpointCustomizerPanel.class);
+                JSLineBreakpointCustomizer.class);
     }
     
 }

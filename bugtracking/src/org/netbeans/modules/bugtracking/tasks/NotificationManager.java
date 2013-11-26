@@ -119,7 +119,7 @@ public class NotificationManager {
         scheduleNotification = NotificationDisplayer.getDefault().notify(
                 title, DASHBOARD_ICON, bubblePanel, notificationPanel, priority, NotificationDisplayer.Category.INFO
         );
-        updateTommorow();
+        updateSchedule.schedule(DashboardUtils.getMillisToTomorrow());
     }
 
     private void addListener() {
@@ -152,14 +152,6 @@ public class NotificationManager {
         return lastNotification != null
                 && lastNotification.get(Calendar.YEAR) == todayCalendar.get(Calendar.YEAR)
                 && lastNotification.get(Calendar.DAY_OF_YEAR) == todayCalendar.get(Calendar.DAY_OF_YEAR);
-    }
-
-    private void updateTommorow() {
-        Calendar now = Calendar.getInstance();
-        Calendar tommorow = DashboardUtils.getTodayCalendar();
-        tommorow.add(Calendar.DAY_OF_YEAR, 1);
-        Long millisToTommorow = tommorow.getTimeInMillis() - now.getTimeInMillis();
-        updateSchedule.schedule(millisToTommorow.intValue());
     }
 
     private class SelectTodayCategory extends AbstractAction {

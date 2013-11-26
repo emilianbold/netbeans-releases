@@ -45,23 +45,28 @@ package org.netbeans.modules.web.javascript.debugger.breakpoints;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.net.URL;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.LazyDebuggerManagerListener;
-import org.netbeans.modules.javascript2.debug.breakpoints.JSBreakpointsActiveService;
+import org.netbeans.modules.javascript2.debug.breakpoints.JSBreakpointsInfo;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
+import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Martin
  */
-@ServiceProvider(service = JSBreakpointsActiveService.class)
+@ServiceProvider(service = JSBreakpointsInfo.class)
 @DebuggerServiceRegistration(types=LazyDebuggerManagerListener.class)
 public class WebBreakpointsActiveService extends DebuggerManagerAdapter
-                                         implements JSBreakpointsActiveService {
+                                         implements JSBreakpointsInfo {
 
     private boolean active = true;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
@@ -109,10 +114,35 @@ public class WebBreakpointsActiveService extends DebuggerManagerAdapter
     }
 
     @Override
-    public boolean areBreakpointsActive() {
+    public boolean areBreakpointsActivated() {
         return active;
     }
+    
+    @Override
+    public boolean isDefault() {
+        Node node = Utilities.actionsGlobalContext().lookup(Node.class);
+        if (node != null) {
+            return false;
+        }
+        FileObject mostRecentFile = EditorContextDispatcher.getDefault().getMostRecentFile();
+        if (mostRecentFile == null) {
+            return false;
+        }
+        String mimeType = mostRecentFile.getMIMEType();
+        return "text/javascript".equals(mimeType) || "text/html".equals(mimeType);  // NOI18N
+    }
 
+    @Override
+    public boolean isAnnotatable(FileObject fo) {
+        String mimeType = fo.getMIMEType();
+        return "text/javascript".equals(mimeType) || "text/html".equals(mimeType);  // NOI18N
+    }
+
+    @Override
+    public boolean isTransientURL(URL url) {
+        return false;
+    }
+    
     @Override
     public void addPropertyChangeListener(PropertyChangeListener l) {
         pcs.addPropertyChangeListener(l);
@@ -126,5 +156,5 @@ public class WebBreakpointsActiveService extends DebuggerManagerAdapter
     private void fireChange() {
         pcs.firePropertyChange(PROP_BREAKPOINTS_ACTIVE, null, active);
     }
-    
+
 }
