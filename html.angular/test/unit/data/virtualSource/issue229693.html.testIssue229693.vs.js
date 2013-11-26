@@ -1,6 +1,6 @@
 (function () {
 $scope = list.$scope;
-list
+list;
 with ($scope) { 
 for (var item in items) {
 item.celejmeno();

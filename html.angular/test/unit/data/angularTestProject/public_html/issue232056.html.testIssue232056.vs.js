@@ -1,6 +1,6 @@
 (function () {
 $scope = TestContr.$scope;
-TestContr
+TestContr;
 with ($scope) { 
 val;
 val;

@@ -1,6 +1,6 @@
 (function () {
 $scope = Ctrl.$scope;
-Ctrl
+Ctrl;
 with ($scope) { 
 printAttempt.;
 }
