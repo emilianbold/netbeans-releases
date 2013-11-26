@@ -323,7 +323,7 @@ public class MakeJNLP extends Task {
     private void generateFiles() throws IOException, BuildException {
         Set<String> declaredLocales = new HashSet<String>();
         boolean useAllLocales = false;
-        if("*".equals(includelocales)) {
+        if(includelocales == null || "*".equals(includelocales)) {
             useAllLocales = true;
         } else if ("".equals(includelocales)) {
             useAllLocales = false;
@@ -332,7 +332,7 @@ public class MakeJNLP extends Task {
             while (tokenizer.hasMoreElements()) {
                 declaredLocales.add(tokenizer.nextToken());
             }
-        } 
+        }
         Set<String> indirectFilePaths = new HashSet<String>();
         File tmpFile = null;
         for (FileSet fs : new FileSet[] {indirectJars, indirectFiles}) {
@@ -409,7 +409,7 @@ public class MakeJNLP extends Task {
             File signed = new File(new File(targetFile, dashcnb), jar.getName());
             File jnlp = new File(targetFile, dashcnb + ".jnlp");
             
-            if (isSigned(jar) == null) {
+            if (jar.exists() && isSigned(jar) == null) {
                 try {
                     tmpFile = extendLibraryManifest(getProject(), jar, signed, manifestCodebase, manifestPermissions, appName);
                 } catch (IOException ex) {
@@ -476,7 +476,7 @@ public class MakeJNLP extends Task {
                         File t = new File(new File(targetFile, dashcnb), name);
 
                         File localeTmpFile = null;
-                        if (isSigned(n) == null) {
+                        if (n.exists() && isSigned(n) == null) {
                             try {
                                 localeTmpFile = extendLibraryManifest(getProject(), n, t, manifestCodebase, manifestPermissions, appName);
                             } catch (IOException ex) {
@@ -809,7 +809,7 @@ public class MakeJNLP extends Task {
             }
             File ext = new File(new File(targetFile, dashcnb), s.replace("../", "").replace('/', '-'));
 
-            if (isSigned(e) != null) {
+            if (e.exists() && isSigned(e) != null) {
                 getProject().log(
                     String.format(
                         "Not adding security attributes into library: %s the library is already signed.",
