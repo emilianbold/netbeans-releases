@@ -50,7 +50,7 @@ import org.openide.filesystems.FileObject;
  */
 @org.netbeans.api.annotations.common.SuppressWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class GSFPHPError implements org.netbeans.modules.csl.api.Error.Badging {
-
+    private static final boolean SILENT_ERROR_BADGE =  Boolean.getBoolean("nb.php.silent.error.badge"); //NOI18N
     private final String displayName;
     private final FileObject file;
     private final int startPosition;
@@ -115,6 +115,6 @@ public class GSFPHPError implements org.netbeans.modules.csl.api.Error.Badging {
 
     @Override
     public boolean showExplorerBadge() {
-        return true;
+        return !SILENT_ERROR_BADGE;
     }
 }
