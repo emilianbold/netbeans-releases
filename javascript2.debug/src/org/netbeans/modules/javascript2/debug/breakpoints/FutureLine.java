@@ -39,70 +39,60 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.debugger.jpda.js.breakpoints;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.Collections;
-import java.util.Set;
-import org.netbeans.api.debugger.ActionsManager;
-import org.netbeans.api.debugger.Breakpoint;
-import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.modules.debugger.jpda.js.JSUtils;
-import org.netbeans.spi.debugger.ActionsProvider;
-import org.netbeans.spi.debugger.ActionsProviderSupport;
-import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
+package org.netbeans.modules.javascript2.debug.breakpoints;
+
+import java.net.URL;
 import org.openide.text.Line;
-import org.openide.util.WeakListeners;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author Martin
  */
-@ActionsProvider.Registration(actions={"toggleBreakpoint"},
-        activateForMIMETypes={ JSUtils.JS_MIME_TYPE })
-public class ToggleBreakpointActionProvider extends ActionsProviderSupport
-                                            implements PropertyChangeListener {
+public class FutureLine extends Line {
     
-    public ToggleBreakpointActionProvider() {
-        setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, false);
-        EditorContextDispatcher.getDefault().addPropertyChangeListener(
-                JSUtils.JS_MIME_TYPE,
-                WeakListeners.propertyChange(this, EditorContextDispatcher.getDefault()));
-
+    private final URL url;
+    private final int lineNumber;
+    
+    public FutureLine(URL url, int lineNumber) {
+        super(Lookups.fixed());
+        this.url = url;
+        this.lineNumber = lineNumber;
     }
 
     @Override
-    public void doAction(Object action) {
-        Line line = JSUtils.getCurrentLine();
-        if (line == null) {
-            return ;
-        }
-        DebuggerManager d = DebuggerManager.getDebuggerManager();
-        boolean add = true;
-        for (Breakpoint breakpoint : d.getBreakpoints()) {
-            if (breakpoint instanceof JSLineBreakpoint &&
-                ((JSLineBreakpoint) breakpoint).getLine().equals(line)) {
-                
-                d.removeBreakpoint(breakpoint);
-                add = false;
-                break;
-            }
-        }
-        if (add) {
-            d.addBreakpoint(new JSLineBreakpoint(line));
-        }
+    public int getLineNumber() {
+        return lineNumber;
+    }
+    
+    public URL getURL() {
+        return url;
     }
 
     @Override
-    public Set getActions() {
-        return Collections.singleton(ActionsManager.ACTION_TOGGLE_BREAKPOINT );
+    public void show(int kind, int column) {
     }
 
     @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        boolean enabled = JSUtils.getCurrentLine() != null;
-        setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, enabled);
+    public void setBreakpoint(boolean b) {
     }
+
+    @Override
+    public boolean isBreakpoint() {
+        return false;
+    }
+
+    @Override
+    public void markError() {}
+
+    @Override
+    public void unmarkError() {}
+
+    @Override
+    public void markCurrentLine() {}
+
+    @Override
+    public void unmarkCurrentLine() {}
     
 }

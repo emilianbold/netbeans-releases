@@ -136,6 +136,9 @@ made subject to such option by the copyright holder.
         <property name="jnlp.signjar.alias" value="jnlp"/>
         <property name="jnlp.signjar.password" value="netbeans"/>
         <available property="jnlp.signjar.keystore.exists" file="${jnlp.signjar.keystore}"/>
+        <condition property="jnlp.included.locales.impl" value="${jnlp.included.locales}" else="*">
+            <isset property="jnlp.included.locales"/>
+        </condition>
     </target>
 
     <target name="jnlp-generate-keystore" depends="jnlp-init" unless="jnlp.signjar.keystore.exists">
@@ -167,6 +170,7 @@ made subject to such option by the copyright holder.
         <!-- See #70477 for why there is no verify=true here: -->
         <makejnlp 
             appname="${app.name}"
+            includelocales="${jnlp.included.locales.impl}"
             alias="${jnlp.signjar.alias}" 
             keystore="${jnlp.signjar.keystore}" 
             storepass="${jnlp.signjar.password}"

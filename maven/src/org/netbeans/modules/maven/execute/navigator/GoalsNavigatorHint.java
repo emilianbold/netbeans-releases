@@ -43,7 +43,6 @@
 package org.netbeans.modules.maven.execute.navigator;
 
 import org.netbeans.spi.navigator.NavigatorLookupHint;
-import org.netbeans.spi.project.ProjectServiceProvider;
 
 /**
  *
@@ -54,7 +53,6 @@ public class GoalsNavigatorHint implements NavigatorLookupHint {
 
     @Override
     public String getContentType() {
-        System.out.println("found");
         return "application/maven-project";
     }
     

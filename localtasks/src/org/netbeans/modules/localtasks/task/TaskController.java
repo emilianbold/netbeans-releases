@@ -139,7 +139,7 @@ final class TaskController implements IssueController {
 
     @Override
     public boolean isChanged() {
-        return task.hasUnsavedChanges();
+        return task.hasUnsavedChanges() || task.hasUnsavedAttachments();
     }
     
     void taskDeleted () {

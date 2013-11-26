@@ -251,6 +251,11 @@ public class MakeJNLP extends Task {
 
     private Set<File> jarDirectories;
     
+    private String includelocales;
+    public void setIncludelocales(String includelocales) {
+        this.includelocales = includelocales;
+    }
+    
     /**
      * Signs or copies the given files according to the signJars variable value.
      */
@@ -316,6 +321,18 @@ public class MakeJNLP extends Task {
     }
     
     private void generateFiles() throws IOException, BuildException {
+        Set<String> declaredLocales = new HashSet<String>();
+        boolean useAllLocales = false;
+        if(includelocales == null || "*".equals(includelocales)) {
+            useAllLocales = true;
+        } else if ("".equals(includelocales)) {
+            useAllLocales = false;
+        } else {
+            StringTokenizer tokenizer = new StringTokenizer(includelocales, ",");
+            while (tokenizer.hasMoreElements()) {
+                declaredLocales.add(tokenizer.nextToken());
+            }
+        }
         Set<String> indirectFilePaths = new HashSet<String>();
         File tmpFile = null;
         for (FileSet fs : new FileSet[] {indirectJars, indirectFiles}) {
@@ -392,7 +409,7 @@ public class MakeJNLP extends Task {
             File signed = new File(new File(targetFile, dashcnb), jar.getName());
             File jnlp = new File(targetFile, dashcnb + ".jnlp");
             
-            if (isSigned(jar) == null) {
+            if (jar.exists() && isSigned(jar) == null) {
                 try {
                     tmpFile = extendLibraryManifest(getProject(), jar, signed, manifestCodebase, manifestPermissions, appName);
                 } catch (IOException ex) {
@@ -437,10 +454,13 @@ public class MakeJNLP extends Task {
             
             writeJNLP.write("  </resources>\n");
             
-            {
+            if (useAllLocales || !declaredLocales.isEmpty()){
                 // write down locales
                 for (Map.Entry<String,List<File>> e : localizedFiles.entrySet()) {
                     String locale = e.getKey();
+                    if (!declaredLocales.isEmpty() && !declaredLocales.contains(locale)) {
+                        continue;
+                    }
                     List<File> allFiles = e.getValue();
                     
                     writeJNLP.write("  <resources locale='" + locale + "'>\n");
@@ -455,7 +475,33 @@ public class MakeJNLP extends Task {
                         }
                         File t = new File(new File(targetFile, dashcnb), name);
 
-                        signOrCopy(n, t);
+                        File localeTmpFile = null;
+                        if (n.exists() && isSigned(n) == null) {
+                            try {
+                                localeTmpFile = extendLibraryManifest(getProject(), n, t, manifestCodebase, manifestPermissions, appName);
+                            } catch (IOException ex) {
+                                getProject().log(
+                                "Failed to extend libraries manifests: " + ex.getMessage(), //NOI18N
+                                Project.MSG_WARN);
+                            } catch (ManifestException ex) {
+                                getProject().log(
+                                "Failed to extend libraries manifests: " + ex.getMessage(), //NOI18N
+                                Project.MSG_WARN);
+                            }
+                        } else {
+                            getProject().log(
+                                String.format(
+                                    "Not adding security attributes into locale library: %s the library is already signed.",
+                                    safeRelativePath(getProject().getBaseDir(),t)),
+                                Project.MSG_WARN);
+                        }
+                        if (localeTmpFile != null) {
+                            signOrCopy(localeTmpFile, t);
+                            deleteTmpFile(localeTmpFile);
+                        }
+                        else {
+                            signOrCopy(n, t);
+                        }
                         writeJNLP.write(constructJarHref(n, dashcnb, name));
                     }
 
@@ -763,7 +809,7 @@ public class MakeJNLP extends Task {
             }
             File ext = new File(new File(targetFile, dashcnb), s.replace("../", "").replace('/', '-'));
 
-            if (isSigned(e) != null) {
+            if (e.exists() && isSigned(e) != null) {
                 getProject().log(
                     String.format(
                         "Not adding security attributes into library: %s the library is already signed.",

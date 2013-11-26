@@ -39,61 +39,32 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.debugger.jpda.js.breakpoints;
 
-import org.netbeans.api.debugger.Breakpoint;
-import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.jpda.JPDABreakpoint;
+package org.netbeans.modules.javascript2.debug.breakpoints;
+
+import java.beans.PropertyChangeListener;
+import java.net.URL;
 import org.openide.filesystems.FileObject;
 
 /**
- *
+ * Support information provider for JavaScript breakpoints.
+ * 
  * @author Martin
  */
-public abstract class JSBreakpoint extends Breakpoint {
+public interface JSBreakpointsInfo {
     
-    public static String PROP_CONDITION = "condition";
+    public static final String PROP_BREAKPOINTS_ACTIVE = "breakpointsActive";   // NOI18N
     
-    private JPDABreakpoint javaBreakpoint;
-    private String condition;
-
-    protected final JPDABreakpoint getJavaBreakpoint() {
-        return javaBreakpoint;
-    }
-
-    protected final void setJavaBreakpoint(JPDABreakpoint javaBreakpoint) {
-        this.javaBreakpoint = javaBreakpoint;
-    }
+    public boolean isDefault();
     
-    abstract protected FileObject getFileObject();
+    public boolean isAnnotatable(FileObject fo);
     
-    @Override
-    public final boolean isEnabled() {
-        return javaBreakpoint.isEnabled();
-    }
-
-    @Override
-    public final void disable() {
-        javaBreakpoint.disable();
-    }
-
-    @Override
-    public final void enable() {
-        javaBreakpoint.enable();
-    }
-
-    @Override
-    protected void dispose() {
-        super.dispose();
-        DebuggerManager.getDebuggerManager().removeBreakpoint(javaBreakpoint);
-    }
-
-    public final String getCondition() {
-        return condition;
-    }
-
-    public final void setCondition(String condition) {
-        this.condition = condition;
-    }
+    public boolean isTransientURL(URL url);
+    
+    public boolean areBreakpointsActivated();
+    
+    public void addPropertyChangeListener(PropertyChangeListener l);
+    
+    public void removePropertyChangeListener(PropertyChangeListener l);
     
 }

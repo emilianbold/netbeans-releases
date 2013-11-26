@@ -139,6 +139,13 @@ public class RepositoryRegistry {
                 return repo;
             }
         }
+        // team repos (not registered by user)
+        repos = TeamRepositories.getInstance().getRepositories(false, true);
+        for (RepositoryImpl impl : repos) {
+            if(connectorId.equals(impl.getConnectorId())) {
+                return impl;
+            }
+        }        
         return null;
     }
 
