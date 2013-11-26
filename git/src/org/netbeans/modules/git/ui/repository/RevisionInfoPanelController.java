@@ -122,9 +122,9 @@ public class RevisionInfoPanelController {
         }
         if (revision.equals(info.getRevision())) {
             panel.tbRevisionId.setText(new StringBuilder(info.getRevision()).append(getMergedStatus(revisionMerged)).toString());
-            this.info = new Revision(revision, revision, info.getShortMessage());
+            this.info = new Revision(revision, revision, info.getShortMessage(), info.getFullMessage());
         } else {
-            this.info = new Revision(info.getRevision(), revision, info.getShortMessage());
+            this.info = new Revision(info.getRevision(), revision, info.getShortMessage(), info.getFullMessage());
             if (revision.startsWith(GitUtils.PREFIX_R_HEADS)) { //NOI18N
                 revision = revision.substring(GitUtils.PREFIX_R_HEADS.length());
             } else if (revision.startsWith(GitUtils.PREFIX_R_REMOTES)) { //NOI18N

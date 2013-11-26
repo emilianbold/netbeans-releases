@@ -54,15 +54,17 @@ public class Revision {
     private final String revision;
     private final String name;
     private final String shortMessage;
+    private final String fullMessage;
 
     public Revision (String revision, String name) {
-        this(revision, name, null);
+        this(revision, name, null, null);
     }
     
-    public Revision (String revision, String name, String shortMessage) {
+    public Revision (String revision, String name, String shortMessage, String fullMessage) {
         this.revision = revision;
         this.name = name;
         this.shortMessage = shortMessage;
+        this.fullMessage = fullMessage;
     }
     
     @NbBundle.Messages("LBL_Revision.LOCAL.name=Local Changes")
@@ -136,6 +138,10 @@ public class Revision {
 
     public String getShortMessage () {
         return shortMessage;
+    }
+
+    public String getFullMessage () {
+        return fullMessage;
     }
     
     public static final class BranchReference extends Revision {
