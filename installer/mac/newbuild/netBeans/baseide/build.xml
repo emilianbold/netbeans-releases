@@ -104,15 +104,8 @@ NB_ID="${nb.id}"
 GLASSFISHV3_ID="${glassfish.v3.id}"
 TOMCAT_ID="${tomcat.id}"
 ]]></echo>
-<!--
-SERVICE_TAG_SOURCE="${servicetag.source}"
-OPENESB_ID="${openesb.id}"
-GLASSFISH_ID="${glassfish.id}"
-GLASSFISHV3_SUN_ID="${glassfish.v3.sun.id}"
-SJSAS_ID="${sjsas.id}"
--->
-        
-        <copy file="pkg/Info.plist" filtering="true" tofile="${builddir}/Info.plist">
+
+<copy file="pkg/Info.plist" filtering="true" tofile="${builddir}/Info.plist">
             <filterset>
                 <filter token="APPVERSION" value="${baseide.version}"/> 
                 <filter token="INSTALLDIR" value="${install.dir}"/>
