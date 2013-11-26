@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.test.ModelBasedTestCase;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
 import org.netbeans.modules.cnd.repository.api.FilePath;
 import org.netbeans.modules.cnd.repository.api.Repository;
@@ -213,7 +214,7 @@ public class RepositoryRelocationTest extends TraceModelTestBase {
             resetProject();
 
             Repository.shutdown();
-            Repository.startup(RepositoryLayeringTest.CURRENT_VERSION_OF_PERSISTENCY);
+            Repository.startup(ModelBasedTestCase.getPersistenceVersion());
 
             parseCount.set(0);
 

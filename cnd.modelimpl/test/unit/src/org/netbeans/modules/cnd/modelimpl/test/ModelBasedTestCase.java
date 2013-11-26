@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.source.CndSourceTestUtilities;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
@@ -102,6 +103,10 @@ public class ModelBasedTestCase extends CndBaseTestCase {
         assertEmpty(exceptions);
     }
 
+    public static int getPersistenceVersion() {
+        return RepositoryUtils.getPersistenceVersion();
+    }
+    
     private void assertEmpty(Collection<Throwable> errors) throws Exception {
         // the idea here was to somehow make JUnit infrastructure
         // display all caught exceptions;

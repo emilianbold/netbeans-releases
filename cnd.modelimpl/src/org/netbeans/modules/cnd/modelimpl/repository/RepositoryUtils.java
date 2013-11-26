@@ -76,7 +76,6 @@ public final class RepositoryUtils {
     private static final boolean TRACE_REPOSITORY_ACCESS = TRACE_ARGS || DebugUtils.getBoolean("cnd.modelimpl.trace.repository", false);
     /**
      * the version of the persistency mechanism
-     * ATTENTION! Please sync with RepositoryLayeringTest
      */
     private static final int CURRENT_VERSION_OF_PERSISTENCY = 156;
 
@@ -85,6 +84,10 @@ public final class RepositoryUtils {
 
     /** Creates a new instance of RepositoryUtils */
     private RepositoryUtils() {
+    }
+    
+    public static int getPersistenceVersion() {
+        return CURRENT_VERSION_OF_PERSISTENCY;
     }
     ////////////////////////////////////////////////////////////////////////////
     // repository access wrappers

@@ -53,8 +53,8 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
-import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.test.ModelBasedTestCase;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
 import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.api.UnitDescriptor;
@@ -77,7 +77,6 @@ public class RepositoryLayeringTest extends TraceModelTestBase {
      * the version of the persistency mechanism
      * ATTENTION! Please sync with RepositoryUtils
      */
-    static final int CURRENT_VERSION_OF_PERSISTENCY = 156;
     private static File[] layerFiles;
     private static final Object layerFilesLock = new Object();
     private File projectRoot = null;
@@ -193,7 +192,7 @@ public class RepositoryLayeringTest extends TraceModelTestBase {
         resetProject();
 
         Repository.shutdown();
-        Repository.startup(CURRENT_VERSION_OF_PERSISTENCY);
+        Repository.startup(ModelBasedTestCase.getPersistenceVersion());
         parseCount.set(0);
 
         parseProject(projectRoot, dump2, L1, L2);
