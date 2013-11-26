@@ -270,7 +270,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
          */
         @NbBundle.Messages({
             "LBL_gruntfile.js=Gruntfile",
-            "LBL_package.json=Package.json",
+            "LBL_package.json=package.json",
             "LBL_plugins.properties=Cordova Plugins"
         })
         private static final java.util.Map<String, String> FILES = new LinkedHashMap<>();
