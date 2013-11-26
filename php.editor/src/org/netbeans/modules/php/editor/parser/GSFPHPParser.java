@@ -81,11 +81,11 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
     private static final boolean PARSE_BIG_FILES = Boolean.getBoolean("nb.php.parse.big.files"); //NOI18N
     private static final int BIG_FILE_SIZE = Integer.getInteger("nb.php.big.file.size", 5000000); //NOI18N
     private static final List<String> REGISTERED_PHP_EXTENSIONS = FileUtil.getMIMETypeExtensions(FileUtils.PHP_MIME_TYPE);
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
     private boolean shortTags = true;
     private boolean aspTags = false;
     private ParserResult result = null;
     private boolean projectPropertiesListenerAdded = false;
-    private ChangeSupport changeSupport = new ChangeSupport(this);
 
     @Override
     public Result getResult(Task task) throws ParseException {
@@ -599,7 +599,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
                     context.setSanitizedPart(new SanitizedPartImpl(new OffsetRange(lastPHPToken.left, lastPHPToken.left), Utils.getRepeatingChars('}', count)));
                     return true;
                 }
-                if (token.sym == ASTPHP5Symbols.EOF) {
+                if (token != null && token.sym == ASTPHP5Symbols.EOF) {
                     context.setSanitizedPart(new SanitizedPartImpl(new OffsetRange(token.left, token.left), Utils.getRepeatingChars('}', count)));
                     return true;
                 }
