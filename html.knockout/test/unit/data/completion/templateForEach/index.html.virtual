@@ -40,7 +40,7 @@ with (ko.$bindings) {
 var $data = (people)[0];
 }
 with ($data) {
-( );}
+ ;}
 });
 (function(){
 var $element;

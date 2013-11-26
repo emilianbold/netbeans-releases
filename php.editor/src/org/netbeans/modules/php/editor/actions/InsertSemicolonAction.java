@@ -118,7 +118,7 @@ public abstract class InsertSemicolonAction extends BaseAction {
     @EditorActionRegistration(
         name = CompleteLineNewLine.ACTION_NAME,
         mimeType = FileUtils.PHP_MIME_TYPE,
-        shortDescription="#complete-line-newline"
+        shortDescription = "#complete-line-newline"
     )
     public static class CompleteLineNewLine extends InsertSemicolonAction {
 
@@ -133,7 +133,7 @@ public abstract class InsertSemicolonAction extends BaseAction {
     @EditorActionRegistration(
         name = CompleteLine.ACTION_NAME,
         mimeType = FileUtils.PHP_MIME_TYPE,
-        shortDescription="#complete-line"
+        shortDescription = "#complete-line"
     )
     public static class CompleteLine extends InsertSemicolonAction {
 

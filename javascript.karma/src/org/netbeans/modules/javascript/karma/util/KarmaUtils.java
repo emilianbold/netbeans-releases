@@ -63,6 +63,12 @@ public final class KarmaUtils {
                     && name.endsWith(".conf.js"); // NOI18N
         }
     };
+    private static final FilenameFilter JS_FILES_FILTER = new FilenameFilter() {
+        @Override
+        public boolean accept(File dir, String name) {
+            return name.endsWith(".js"); // NOI18N
+        }
+    };
 
 
     private KarmaUtils() {
@@ -78,6 +84,16 @@ public final class KarmaUtils {
             }
         }
         return FileUtil.toFile(project.getProjectDirectory());
+    }
+
+    public static List<File> findJsFiles(File dir) {
+        assert dir != null;
+        assert dir.isDirectory() : dir;
+        File[] jsFiles = dir.listFiles(JS_FILES_FILTER);
+        if (jsFiles == null) {
+            return Collections.emptyList();
+        }
+        return Arrays.asList(jsFiles);
     }
 
     public static List<File> findKarmaConfigs(File configDir) {

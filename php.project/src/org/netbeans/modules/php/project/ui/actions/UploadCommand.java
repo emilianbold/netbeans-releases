@@ -44,6 +44,7 @@ package org.netbeans.modules.php.project.ui.actions;
 
 import java.io.File;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.api.progress.ProgressHandle;
@@ -74,6 +75,9 @@ import org.openide.windows.InputOutput;
 public class UploadCommand extends RemoteCommand implements Displayable {
     public static final String ID = "upload"; // NOI18N
     public static final String DISPLAY_NAME = NbBundle.getMessage(UploadCommand.class, "LBL_UploadCommand");
+
+    private static final boolean FETCH_ALL_LOCAL_FILES = Boolean.getBoolean("nb.php.remote.localFiles.eager"); // NOI18N
+
 
     public UploadCommand(PhpProject project) {
         super(project);
@@ -127,6 +131,9 @@ public class UploadCommand extends RemoteCommand implements Displayable {
             progressHandle.start();
             forUpload = remoteClient.prepareUpload(sources, filesToUpload);
 
+            // #237253
+            fetchAllFiles(forUpload, sources, filesToUpload);
+
             // manage preselected files - it is just enough to touch the file
             if (preselectedFiles != null && preselectedFiles.length > 0) {
                 File baseLocalDir = FileUtil.toFile(sources);
@@ -156,6 +163,35 @@ public class UploadCommand extends RemoteCommand implements Displayable {
             progressHandle.finish();
         }
         return forUpload;
+    }
+
+    // #237253
+    private void fetchAllFiles(Set<TransferFile> forUpload, FileObject sources, FileObject[] filesToUpload) {
+        if (!FETCH_ALL_LOCAL_FILES) {
+            // not enabled
+            return;
+        }
+        if (filesToUpload.length != 1) {
+            // some files selected for upload
+            return;
+        }
+        if (!filesToUpload[0].equals(sources)) {
+            // not source dir
+            return;
+        }
+        Set<TransferFile> tmp = new HashSet<>();
+        for (TransferFile transferFile : forUpload) {
+            fetchAllFiles(tmp, transferFile);
+        }
+        forUpload.clear();
+        forUpload.addAll(tmp);
+    }
+
+    private void fetchAllFiles(Set<TransferFile> allFiles, TransferFile transferFile) {
+        allFiles.add(transferFile);
+        for (TransferFile child : transferFile.getLocalChildren()) {
+            fetchAllFiles(allFiles, child);
+        }
     }
 
     private void upload(Set<TransferFile> forUpload, FileObject sources, FileObject[] filesToUpload, InputOutput remoteLog, RemoteClient remoteClient) {
@@ -205,4 +241,5 @@ public class UploadCommand extends RemoteCommand implements Displayable {
             }
         }
     }
+
 }
