@@ -130,8 +130,6 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
         uiProperties.DEPLOYMENT_OVERRIDE_JARURL_MODEL.setMnemonic(jCheckBoxOverride.getMnemonic());
         jCheckBoxOverride.setModel(uiProperties.DEPLOYMENT_OVERRIDE_JARURL_MODEL);
         jTextFieldURL.setDocument(uiProperties.DEPLOYMENT_JARURL_MODEL);
-        String platformProfile = uiProperties.getProject().evaluator().getProperty(J2MEProjectProperties.PLATFORM_PROFILE);
-        tableModel.setMIDP(platformProfile);
         String liblet = uiProperties.getProject().evaluator().getProperty(J2MEProjectProperties.MANIFEST_IS_LIBLET);
         jRadioButtonSuite.setSelected(liblet == null || (liblet != null && liblet.equals(jRadioButtonSuite.getActionCommand())));
         jRadioButtonLIBlet.setSelected(liblet != null && liblet.equals(jRadioButtonLIBlet.getActionCommand()));
@@ -427,7 +425,6 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
     static class StorableTableModel extends AbstractTableModel {
         private HashMap<String,String> othersMap, jadMap, manifestMap;
         final private ArrayList<String> items = new ArrayList<>();
-        private int midpVersion = 1;
         private boolean isLIBlet;
 
         private String[] additionalAttributes = null;
@@ -519,13 +516,6 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
 
         public void initManifestModel(boolean isLIBlet) {
             this.isLIBlet = isLIBlet;
-        }
-
-        public void setMIDP(final String midp) {
-            if (midp != null) {
-                Matcher m = midpPattern.matcher(midp);
-                midpVersion = m.find() ? Integer.parseInt(m.group(1)) : 2;
-            }
         }
 
         public HashSet<String> getKeys() {
