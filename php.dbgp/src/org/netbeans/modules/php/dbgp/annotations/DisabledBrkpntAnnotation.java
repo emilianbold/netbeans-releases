@@ -47,40 +47,26 @@ import org.netbeans.modules.php.dbgp.breakpoints.LineBreakpoint;
 import org.openide.text.Annotatable;
 import org.openide.util.NbBundle;
 
-
 /**
  * @author ads
  *
  */
 public class DisabledBrkpntAnnotation extends BrkpntAnnotation {
+    public static final String DISABLED_BREAKPOINT_ANNOTATION_TYPE = "DisabledBreakpoint"; // NOI18N
+    private static final String DISABLED_BREAKPOINT = "ANTN_DISABLED_BREAKPOINT"; // NOI18N
 
-    public static final String DISABLED_BREAKPOINT_ANNOTATION_TYPE
-                                    = "DisabledBreakpoint";         // NOI18N
-
-    private static final String DISABLED_BREAKPOINT
-                                    = "ANTN_DISABLED_BREAKPOINT";   // NOI18N
-
-    public DisabledBrkpntAnnotation( Annotatable annotatable, LineBreakpoint breakpoint ) {
+    public DisabledBrkpntAnnotation(Annotatable annotatable, LineBreakpoint breakpoint) {
         super(annotatable, breakpoint);
     }
 
-    /* (non-Javadoc)
-     * @see org.openide.text.Annotation#getAnnotationType()
-     */
     @Override
-    public String getAnnotationType()
-    {
+    public String getAnnotationType() {
         return DISABLED_BREAKPOINT_ANNOTATION_TYPE;
     }
 
-    /* (non-Javadoc)
-     * @see org.openide.text.Annotation#getShortDescription()
-     */
     @Override
-    public String getShortDescription()
-    {
-        return NbBundle.getBundle(DebuggerAnnotation.class).
-            getString(DISABLED_BREAKPOINT);
+    public String getShortDescription() {
+        return NbBundle.getMessage(DisabledBrkpntAnnotation.class, DISABLED_BREAKPOINT);
     }
 
 }

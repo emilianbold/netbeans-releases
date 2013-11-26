@@ -142,31 +142,6 @@ public class InstallSupportImpl {
                 }
 
                 infos = container.listAll ();
-                List <OperationInfo<?>> newInfos = new ArrayList <OperationInfo<?>>();
-                for(OperationInfo <?> i : infos) {
-                    if(i.getUpdateUnit().getInstalled()!=null &&
-                            i.getUpdateUnit().getInstalled().equals(i.getUpdateElement())   ) {
-                        //internal update, replace by required elements
-                        for(UpdateElement e : i.getRequiredElements()) {
-                            boolean add = true;
-                            for(OperationInfo <?> in : newInfos) {
-                                if(in.getUpdateElement().equals(e)) {
-                                    add = false;
-                                    break;
-                                }
-                            }
-                            if(add) {
-                                OperationContainer<InstallSupport> upd = OperationContainer.createForUpdate();
-                                OperationInfo<?> ii = upd.add(e);
-                                newInfos.add(ii);
-                            }
-                        }
-                    } else {
-                        newInfos.add(i);
-                    }
-                }
-                infos = newInfos;
-                
                 // check write permissions before started download and then sum download size
                 int size = 0;
                 for (OperationInfo info : infos) {
@@ -368,7 +343,6 @@ public class InstallSupportImpl {
                     }
 
                     JarFile jf = new JarFile(dest);
-                    boolean added = false;
                     try {
                        for (JarEntry entry : Collections.list(jf.entries())) {
                             if (ModuleUpdater.AUTOUPDATE_UPDATER_JAR_PATH.equals(entry.toString()) ||
@@ -376,13 +350,10 @@ public class InstallSupportImpl {
                                 LOG.log(Level.FINE, entry.toString() + " is being installed from " + moduleImpl.getCodeName());
                                 updaterFiles.add(new UpdaterInfo(entry, jf, targetCluster));
                                 needsRestart = true;
-                                added = true;
                              }
                          }
                     } finally {
-                        if (jf != null && !added) {
-                            jf.close();
-                        }
+                        jf.close();
                      }
 
 
@@ -705,6 +676,7 @@ public class InstallSupportImpl {
         return res;
     }
     
+    @SuppressWarnings("null")
     private int doDownload (UpdateElementImpl toUpdateImpl, ProgressHandle progress, final int aggregateDownload, final int totalSize) throws OperationException {
         if (cancelled()) {
             LOG.log (Level.INFO, "InstallSupport.doDownload was canceled, returns -1"); // NOI18N
@@ -1045,7 +1017,7 @@ public class InstallSupportImpl {
             LOG.log (Level.INFO, "Writing content of URL " + source + " failed.", ioe);
         } finally {
             try {
-                if (bsrc != null) bsrc.close ();
+                bsrc.close ();
                 if (bdest != null) bdest.flush ();
                 if (bdest != null) bdest.close ();
             } catch (IOException ioe) {

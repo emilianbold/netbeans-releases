@@ -179,7 +179,7 @@ public class TplBracesMatchingTest extends TplTestBase {
         //               01234567890123456789012345678901234567890123456789012345678901234567890
         //               0         1         2         3         4         5         6         7
         BracesMatcher matcher = createMatcher(5, false, 1);
-        assertOrigin(0, 17, matcher);
+        assertAllOrigins(new int[]{0, 17, 0, 2, 15, 17}, matcher);
         assertMatch(5, 5, matcher);
     }
 
@@ -188,7 +188,7 @@ public class TplBracesMatchingTest extends TplTestBase {
         //               01234567890123456789012345678901234567890123456789012345678901234567890
         //               0         1         2         3         4         5         6         7
         BracesMatcher matcher = createMatcher(17, false, 1);
-        assertOrigin(0, 17, matcher);
+        assertAllOrigins(new int[]{0, 17, 0, 2, 15, 17}, matcher);
         assertMatch(17, 17, matcher);
     }
 
@@ -197,7 +197,7 @@ public class TplBracesMatchingTest extends TplTestBase {
         //               01234567890123456789012345678901234567890123456789012345678901234567890
         //               0         1         2         3         4         5         6         7
         BracesMatcher matcher = createMatcher(0, false, 1);
-        assertOrigin(0, 13, matcher);
+        assertAllOrigins(new int[]{0, 13, 0, 2, 11, 13}, matcher);
         assertMatch(0, 0, matcher);
     }
 
@@ -206,7 +206,7 @@ public class TplBracesMatchingTest extends TplTestBase {
         //               01234567890123456789012345678901234567890123456789012345678901234567890
         //               0         1         2         3         4         5         6         7
         BracesMatcher matcher = createMatcher(1, false, 1);
-        assertOrigin(0, 13, matcher);
+        assertAllOrigins(new int[]{0, 13, 0, 2, 11, 13}, matcher);
         assertMatch(1, 1, matcher);
     }
 
@@ -215,7 +215,7 @@ public class TplBracesMatchingTest extends TplTestBase {
         //               01234567890123456789012345678901234567890123456789012345678901234567890
         //               0         1         2         3         4         5         6         7
         BracesMatcher matcher = createMatcher(1, false, 1);
-        assertOrigin(1, 14, matcher);
+        assertAllOrigins(new int[]{1, 14, 1, 3, 12, 14}, matcher);
         assertMatch(1, 1, matcher);
     }
 
@@ -243,6 +243,14 @@ public class TplBracesMatchingTest extends TplTestBase {
         assertNotNull(origin);
         assertEquals("Incorrect origin block start:", expectedStart, origin[0]);
         assertEquals("Incorrect origin block end:", expectedEnd, origin[1]);
+    }
+
+    private void assertAllOrigins(int[] origins, BracesMatcher matcher) throws InterruptedException, BadLocationException {
+        int[] foundOrigin = matcher.findOrigin();
+        assertNotNull(foundOrigin);
+        for (int i = 0; i < foundOrigin.length; i++) {
+            assertEquals("Incorrect origin block:", origins[i], foundOrigin[i]);
+        }
     }
 
     private void assertMatch(int expectedStart, int expectedEnd, BracesMatcher matcher) throws InterruptedException, BadLocationException {

@@ -222,5 +222,25 @@ public final class Utils {
         SPIAccessor.IMPL.setLookupObjects(entry, lookupObjects);
         return entry;
     }
+
+    /**
+     * Some folders are special and versioning should not look for metadata in
+     * them. Folders like /net with automount enabled may take a long time to
+     * answer I/O on their children, so
+     * <code>VCSFileProxy.exists("/net/.git")</code> will freeze until it
+     * timeouts. You should call this method before asking any I/O on children
+     * of this folder you are unsure to actually exist. This does not mean
+     * however that whole subtree should be excluded from version control, only
+     * that you should not look for the metadata directly in this folder.
+     * Returns <code>true</code> if the given folder is among such folders.
+     * 
+     * @param folder a folder to query
+     * @return <code>true</code> if the given folder should be skipped when
+     * searching for metadata.
+     * @since 1.19
+     */
+    public static boolean isForbiddenFolder (VCSFileProxy folder) {
+        return org.netbeans.modules.versioning.core.Utils.isForbiddenFolder(folder);
+    }
     
 }

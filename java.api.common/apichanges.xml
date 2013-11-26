@@ -105,6 +105,51 @@ is the proper place.
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
+        <change id="LibrariesNode-bootcp">
+            <api name="java-api-common"/>
+            <summary>Possibility to override project's bootstrap libraries</summary>
+            <version major="1" minor="68"/>
+            <date day="13" month="11" year="2013"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                   Added possibility to override project's bootstrap libraries.
+                    In case when project's bootstrap libraries differ from <code>JavaPlatform</code>'s bootstrap libraries
+                    the <code>LibrariesNode.Builder.setBootPath</code> method can be used to override the shown platform's libraries.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.project.ui" name="LibrariesNode"/>
+        </change>
+        <change id="ClassPathProviderImpl-bootcp-props">
+            <api name="java-api-common"/>
+            <summary>Possibility to create project's boot classpath based on project properties</summary>
+            <version major="1" minor="67"/>
+            <date day="4" month="11" year="2013"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                   Added possibility to create project's boot classpath based on project properties
+                   rather than project's platform bootstrap libraries.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.classpath" name="ClassPathProviderImpl"/>
+        </change>
+        <change id="BaseActionProvider-mainClass">
+            <api name="java-api-common"/>
+            <summary>Possibility to override main class check and main class selection</summary>
+            <version major="1" minor="66"/>
+            <date day="4" month="11" year="2013"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                   Added possibility to override main class check and main class selection.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.project" name="BaseActionProvider"/>
+        </change>
         <change id="ProjectOperations">
             <api name="java-api-common"/>
             <summary>Added <code>ProjectOperations</code> support for project operations in Ant based project.</summary>
@@ -175,22 +220,6 @@ is the proper place.
                 </p>
             </description>
             <class package="org.netbeans.modules.java.api.common.project" name="ProjectHooks"/>
-        </change>
-        <change id="BaseActionProvider.CustomPlatformCallback">
-            <api name="java-api-common"/>
-            <summary>Added <code>BaseActionProvider.CustomPlatformCallback</code> to allow override active platform lookup.</summary>
-            <version major="1" minor="61"/>
-            <date day="10" month="10" year="2013"/>
-            <author login="tzezula"/>
-            <compatibility addition="yes"/>
-            <description>
-                <p>
-                    Added <code>BaseActionProvider.CustomPlatformCallback</code> to allow project types to override
-                    active project platform lookup. By default the <code>BaseActionProvider</code> uses the <code>ProjectProperties.PLATFORM_ACTIVE</code>
-                    property to search among j2se platforms.
-                </p>
-            </description>
-            <class package="org.netbeans.modules.java.api.common.project" name="BaseActionProvider"/>
         </change>
         <change id="ProjectProperties">
             <api name="java-api-common"/>

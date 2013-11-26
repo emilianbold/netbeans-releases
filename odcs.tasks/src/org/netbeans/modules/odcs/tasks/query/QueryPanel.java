@@ -63,8 +63,7 @@ import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.plaf.basic.BasicTreeUI;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
-import org.netbeans.modules.bugtracking.util.UIUtils;
-import org.netbeans.modules.odcs.tasks.util.ODCSUtil;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 
 /**
  *
@@ -163,7 +162,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 cancelChangesButton.setEnabled(!running);                
             }
         };
-        ODCSUtil.runInAwt(r);
+        UIUtils.runInAWT(r);
     }
 
     /** This method is called from within the constructor to
@@ -1134,7 +1133,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     final javax.swing.JPanel byWorkflowPanel = new javax.swing.JPanel();
     final javax.swing.JButton cancelChangesButton = new javax.swing.JButton();
     final javax.swing.JCheckBox ccCheckBox = new javax.swing.JCheckBox();
-    public final org.netbeans.modules.bugtracking.util.LinkButton cloneQueryButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+    public final org.netbeans.modules.bugtracking.commons.LinkButton cloneQueryButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
     final javax.swing.JCheckBox commenterCheckBox = new javax.swing.JCheckBox();
     final javax.swing.JLabel componentLabel = new javax.swing.JLabel();
     final javax.swing.JList componentList = new javax.swing.JList();
@@ -1144,7 +1143,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     final javax.swing.JTextField endTextField = new javax.swing.JTextField();
     final javax.swing.JComboBox filterComboBox = new javax.swing.JComboBox();
     private javax.swing.JLabel filterLabel;
-    public final org.netbeans.modules.bugtracking.util.LinkButton findIssuesButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+    public final org.netbeans.modules.bugtracking.commons.LinkButton findIssuesButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
     final javax.swing.JButton gotoIssueButton = new javax.swing.JButton();
     final javax.swing.JPanel gotoPanel = new javax.swing.JPanel();
     final javax.swing.JTextField idTextField = new javax.swing.JTextField();
@@ -1171,7 +1170,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     final javax.swing.JList keywordsList = new javax.swing.JList();
     final javax.swing.JLabel lastRefreshDateLabel = new javax.swing.JLabel();
     private javax.swing.JLabel lastRefreshLabel;
-    public final org.netbeans.modules.bugtracking.util.LinkButton modifyButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+    public final org.netbeans.modules.bugtracking.commons.LinkButton modifyButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
     final javax.swing.JLabel nameLabel = new javax.swing.JLabel();
     private javax.swing.JLabel noContentLabel;
     private javax.swing.JPanel noContentPanel;
@@ -1181,20 +1180,20 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     final javax.swing.JLabel productLabel = new javax.swing.JLabel();
     final javax.swing.JList productList = new javax.swing.JList();
     private javax.swing.JPanel queryHeaderPanel;
-    final org.netbeans.modules.bugtracking.util.LinkButton refreshButton = new org.netbeans.modules.bugtracking.util.LinkButton();
-    final org.netbeans.modules.bugtracking.util.LinkButton refreshConfigurationButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+    final org.netbeans.modules.bugtracking.commons.LinkButton refreshButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
+    final org.netbeans.modules.bugtracking.commons.LinkButton refreshConfigurationButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
     final javax.swing.JLabel releaseLabel = new javax.swing.JLabel();
     final javax.swing.JList releaseList = new javax.swing.JList();
-    public final org.netbeans.modules.bugtracking.util.LinkButton removeButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+    public final org.netbeans.modules.bugtracking.commons.LinkButton removeButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
     final javax.swing.JLabel resolutionLabel = new javax.swing.JLabel();
     final javax.swing.JList resolutionList = new javax.swing.JList();
-    final org.netbeans.modules.bugtracking.util.LinkButton saveButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+    final org.netbeans.modules.bugtracking.commons.LinkButton saveButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
     final javax.swing.JButton saveChangesButton = new javax.swing.JButton();
     final javax.swing.JButton searchButton = new javax.swing.JButton();
     final javax.swing.JCheckBox searchByDescriptionCheckBox = new javax.swing.JCheckBox();
     final javax.swing.JCheckBox searchBySummaryCheckBox = new javax.swing.JCheckBox();
     final javax.swing.JPanel searchPanel = new javax.swing.JPanel();
-    final org.netbeans.modules.bugtracking.util.LinkButton seenButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+    final org.netbeans.modules.bugtracking.commons.LinkButton seenButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
     private javax.swing.JLabel separatorLabel1;
     private javax.swing.JLabel separatorLabel3;
     final javax.swing.JLabel severityLabel = new javax.swing.JLabel();
@@ -1213,7 +1212,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     final javax.swing.JLabel userLabel = new javax.swing.JLabel();
     final javax.swing.JList userList = new javax.swing.JList();
     final javax.swing.JScrollPane userScrollPane = new HackedScrollPane();
-    final org.netbeans.modules.bugtracking.util.LinkButton webButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+    final org.netbeans.modules.bugtracking.commons.LinkButton webButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
     // End of variables declaration//GEN-END:variables
 
     /**
@@ -1243,7 +1242,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 refreshConfigurationButton.setEnabled(enable);
             }
         };
-        ODCSUtil.runInAwt(r);
+        UIUtils.runInAWT(r);
     }
 
     void switchQueryFields(final boolean showAdvanced) {
@@ -1256,7 +1255,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 byPeople.setVisible(showAdvanced);
             }
         };
-        ODCSUtil.runInAwt(r);
+        UIUtils.runInAWT(r);
     }
 
     void showError(final String text) {
@@ -1272,7 +1271,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 }
             }
         };
-        ODCSUtil.runInAwt(r);
+        UIUtils.runInAWT(r);
     }
 
     void showSearchingProgress(final boolean on, final String text) {
@@ -1288,7 +1287,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 }
             }
         };
-        ODCSUtil.runInAwt(r);
+        UIUtils.runInAWT(r);
     }
 
     void showRetrievingProgress(final boolean on, final String text, final boolean searchPanelVisible) {
@@ -1306,7 +1305,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 }
             }
         };
-        ODCSUtil.runInAwt(r);
+        UIUtils.runInAWT(r);
     }
 
     void showNoContentPanel(boolean on) {
@@ -1328,7 +1327,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 saveButton.setVisible(!b);
             }
         };
-        ODCSUtil.runInAwt(r);
+        UIUtils.runInAWT(r);
     }
 
     void setSaved(final String name, final String lastRefresh) {
@@ -1345,7 +1344,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 setLastRefresh(lastRefresh);
             }
         };
-        ODCSUtil.runInAwt(r);
+        UIUtils.runInAWT(r);
     }
 
     void setLastRefresh(final String lastRefresh) {
@@ -1354,7 +1353,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 lastRefreshDateLabel.setText(lastRefresh);
             }
         };
-        ODCSUtil.runInAwt(r);
+        UIUtils.runInAWT(r);
     }
 
     void hideModificationFields () {
@@ -1369,7 +1368,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 cloneQueryButton.setEnabled(false);
             }
         };
-        ODCSUtil.runInAwt(r);
+        UIUtils.runInAWT(r);
     }
 
     public void focusGained(FocusEvent e) {

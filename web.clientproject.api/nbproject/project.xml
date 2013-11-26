@@ -33,6 +33,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.gsf.testrunner</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.40</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.html.editor</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -219,6 +228,8 @@
                 <friend>org.netbeans.modules.cordova.platforms</friend>
                 <friend>org.netbeans.modules.cordova.platforms.android</friend>
                 <friend>org.netbeans.modules.cordova.platforms.ios</friend>
+                <friend>org.netbeans.modules.javascript.jstestdriver</friend>
+                <friend>org.netbeans.modules.javascript.karma</friend>
                 <friend>org.netbeans.modules.maven.j2ee</friend>
                 <friend>org.netbeans.modules.php.project</friend>
                 <friend>org.netbeans.modules.platforms.android</friend>
@@ -231,12 +242,14 @@
                 <friend>org.netbeans.modules.web.project</friend>
                 <package>org.netbeans.modules.web.clientproject.api</package>
                 <package>org.netbeans.modules.web.clientproject.api.jslibs</package>
+                <package>org.netbeans.modules.web.clientproject.api.jstesting</package>
                 <package>org.netbeans.modules.web.clientproject.api.network</package>
                 <package>org.netbeans.modules.web.clientproject.api.remotefiles</package>
                 <package>org.netbeans.modules.web.clientproject.api.sites</package>
                 <package>org.netbeans.modules.web.clientproject.api.util</package>
                 <package>org.netbeans.modules.web.clientproject.api.validation</package>
                 <package>org.netbeans.modules.web.clientproject.spi</package>
+                <package>org.netbeans.modules.web.clientproject.spi.jstesting</package>
                 <package>org.netbeans.modules.web.clientproject.spi.platform</package>
             </friend-packages>
         </data>

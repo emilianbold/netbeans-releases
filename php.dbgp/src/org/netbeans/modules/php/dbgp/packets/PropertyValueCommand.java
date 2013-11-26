@@ -43,38 +43,32 @@
  */
 package org.netbeans.modules.php.dbgp.packets;
 
-
 /**
  * @author ads
  *
  */
 public class PropertyValueCommand extends PropertyGetCommand {
+    static final String PROPERTY_VALUE = "property_value"; // NOI18N
+    private int myPropAddress;
 
-    static final String PROPERTY_VALUE = "property_value";      // NOI18N
-
-    public PropertyValueCommand( String transactionId ) {
-        super( PROPERTY_VALUE  , transactionId);
-        myPropAddress  = -1;
+    public PropertyValueCommand(String transactionId) {
+        super(PROPERTY_VALUE, transactionId);
+        myPropAddress = -1;
     }
-    
-    public void setAddress( int address ){
+
+    public void setAddress(int address) {
         myPropAddress = address;
     }
-    
+
     @Override
-    protected String getArguments()
-    {
-        StringBuilder builder = new StringBuilder( super.getArguments() );
-        
-        if ( myPropAddress != -1 ){
-            builder.append( BrkpntSetCommand.SPACE );
-            builder.append( PropertySetCommand.ADDRESS_ARG );
-            builder.append( myPropAddress );
+    protected String getArguments() {
+        StringBuilder builder = new StringBuilder(super.getArguments());
+        if (myPropAddress != -1) {
+            builder.append(BrkpntSetCommand.SPACE);
+            builder.append(PropertySetCommand.ADDRESS_ARG);
+            builder.append(myPropAddress);
         }
-        
         return builder.toString();
     }
-    
-    private int myPropAddress;
 
 }

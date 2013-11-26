@@ -158,13 +158,23 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                 touchProject(openprj);
             }
             //new style Compile on Save
-            checkRunMainClass(config, con);
+            if (!checkRunMainClass(config, con)) {
+                return false;
+            }
             checkRunTest(config, con);
         } 
         return true;
     }
 
-    private void checkRunMainClass(final RunConfig config, ExecutionContext con) {
+    /**
+     * Returns {@code false} if execution should skip standard build phases.
+     *
+     * @param config run configuration
+     * @param con execution context
+     * @return {@code false} if execution should skip standard build phases,
+     *         {@code true} otherwise
+     */
+    private boolean checkRunMainClass(final RunConfig config, ExecutionContext con) {
         final String actionName = config.getActionName();
         //compile on save stuff
         if (RunUtils.isCompileOnSaveEnabled(config)) {
@@ -179,13 +189,13 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                 //check the COS timestamp against critical files (pom.xml)
                 // if changed, don't do COS.
                 if (checkImportantFiles(stamp, config)) {
-                    return;
+                    return true;
                 }
                 //check the COS timestamp against resources etc.
                 //if changed, perform part of the maven build. (or skip COS)
                 for (CompileOnSaveSkipper skipper : Lookup.getDefault().lookupAll(CompileOnSaveSkipper.class)) {
                     if (skipper.skip(config, false, stamp)) {
-                        return;
+                        return true;
                     }
                 }
                 
@@ -193,6 +203,12 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                 if ((javarunnerCheckprops != null && javarunnerCheckprops.containsKey(USE_OLD_COS_EXECUTION)) || config.getProperties().containsKey(USE_OLD_COS_EXECUTION)) {
                     LOG.fine("use.old.cos.execution found, using JavaRunner to execute.");
                 } else {
+                    // #230565
+                    if (CoSAlternativeExecutor.execute(config, con)) {
+                        // If at least on of registered executors was successfull, skip the default CoS execution
+                        return false;
+                    }
+
                     //now attempt to extract
                     if (config instanceof BeanRunConfig) {
                         BeanRunConfig brc = (BeanRunConfig) config;
@@ -217,6 +233,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                 }
             }
         }
+        return true;
     }
 
     private void checkRunTest(final RunConfig config, ExecutionContext con) {

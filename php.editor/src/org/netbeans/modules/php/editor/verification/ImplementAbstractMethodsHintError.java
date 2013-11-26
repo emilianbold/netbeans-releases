@@ -282,8 +282,7 @@ public class ImplementAbstractMethodsHintError extends HintErrorRule {
     }
 
     private static class ImplementAllFix implements HintFix {
-
-        private BaseDocument doc;
+        private final BaseDocument doc;
         private final FixInfo fixInfo;
 
         ImplementAllFix(BaseDocument doc, FixInfo fixInfo) {

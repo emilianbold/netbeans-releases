@@ -54,47 +54,31 @@ import org.netbeans.spi.debugger.ui.BreakpointType;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
-
 /**
  * @author ads
  *
  */
 public class DbgpFunctionBreakpointType extends BreakpointType {
-    
-    private static final String PHP_BREAKPOINT_TYPE    
-                                            = "LBL_PhpType";             // NOI18N
-    private static final String METHOD_TYPE            
-                                            = "LBL_MethodBreakpointType";// NOI18N
+    private static final String PHP_BREAKPOINT_TYPE = "LBL_PhpType"; // NOI18N
+    private static final String METHOD_TYPE = "LBL_MethodBreakpointType"; // NOI18N
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.debugger.ui.BreakpointType#getCategoryDisplayName()
-     */
     @Override
     public String getCategoryDisplayName() {
-        return NbBundle.getMessage( DbgpFunctionBreakpointType.class, 
-              PHP_BREAKPOINT_TYPE  );
+        return NbBundle.getMessage(DbgpFunctionBreakpointType.class,
+                PHP_BREAKPOINT_TYPE);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.debugger.ui.BreakpointType#getCustomizer()
-     */
     @Override
     public JComponent getCustomizer() {
         return new DbgpMethodBreakpointPanel();
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.debugger.ui.BreakpointType#getTypeDisplayName()
-     */
     @Override
     public String getTypeDisplayName() {
-        return NbBundle.getMessage( DbgpFunctionBreakpointType.class, 
+        return NbBundle.getMessage(DbgpFunctionBreakpointType.class,
                 METHOD_TYPE);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.debugger.ui.BreakpointType#isDefault()
-     */
     @Override
     public boolean isDefault() {
         JTextComponent lastFocusedComponent = EditorRegistry.lastFocusedComponent();

@@ -121,6 +121,9 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
     }
 
     private String getNextVariableType() {
+        if (!initParsing()) {
+            return null;
+        }
         final int offset = request.getComponent().getCaretPosition();
         Collection<? extends VariableName> declaredVariables = getDeclaredVariables(offset);
         String varName = getNextVariableName();
@@ -184,7 +187,6 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
         }
         return null;
     }
-
 
     private String getNextVariableName() {
         if (!initParsing()) {
@@ -324,19 +326,21 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
         } catch (TimeoutException ex) {
             LOGGER.log(Level.FINE, "Timeout for getting parser result has been exceed: {0}", TIMEOUT);
         }
-        if (info == null) {
-            return false;
-        }
-        return true;
+        return info != null;
     }
 
     private Collection<? extends VariableName> getDeclaredVariables(final int caretOffset) {
-        Model model = ((PHPParseResult) info).getModel();
-        VariableScope varScope = model.getVariableScope(caretOffset);
-        if (varScope != null) {
-            return varScope.getDeclaredVariables();
+        if (!initParsing()) {
+            return null;
         }
-        return null;
+        synchronized (this) {
+            Model model = ((PHPParseResult) info).getModel();
+            VariableScope varScope = model.getVariableScope(caretOffset);
+            if (varScope != null) {
+                return varScope.getDeclaredVariables();
+            }
+            return null;
+        }
     }
 
     public static final class Factory implements CodeTemplateProcessorFactory {

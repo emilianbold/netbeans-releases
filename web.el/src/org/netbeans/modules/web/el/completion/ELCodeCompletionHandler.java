@@ -402,7 +402,9 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                     completionItem.setSmart(true);
                     completionItem.setAnchorOffset(context.getCaretOffset() - prefix.length());
 
-                    proposals.add(completionItem);
+                    if (!contains(proposals, propertyName)) {
+                        proposals.add(completionItem);
+                    }
                 } else {
                     ELJavaCompletionItem completionItem;
 

@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 3.17.1
+#Version 3.22.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -239,7 +239,6 @@ cons public init()
 meth public org.netbeans.jellytools.SearchResultsOperator find()
 meth public org.netbeans.jemmy.operators.JButtonOperator btFind()
 meth public org.netbeans.jemmy.operators.JCheckBoxOperator cbCase()
-meth public org.netbeans.jemmy.operators.JCheckBoxOperator cbRegExpr()
 meth public org.netbeans.jemmy.operators.JCheckBoxOperator cbWholeWords()
 meth public org.netbeans.jemmy.operators.JTextFieldOperator txtPatterns()
 meth public org.netbeans.jemmy.operators.JTextFieldOperator txtText()
@@ -265,6 +264,7 @@ meth public org.netbeans.jemmy.operators.JTreeOperator treeContents()
 meth public org.netbeans.jemmy.operators.JTreeOperator treeSearch()
 meth public static org.netbeans.jellytools.HelpOperator invoke()
 meth public void back()
+meth public void close()
 meth public void next()
 meth public void pageSetup()
 meth public void print()
@@ -331,6 +331,7 @@ meth public org.netbeans.jemmy.operators.JButtonOperator getToolbarButton(org.ne
 meth public org.netbeans.jemmy.operators.JMenuBarOperator menuBar()
 meth public static org.netbeans.jellytools.MainWindowOperator getDefault()
 meth public void dragNDropToolbar(org.netbeans.jemmy.operators.ContainerOperator,int,int)
+meth public void maximize()
 meth public void pushToolbarPopupMenu(java.lang.String)
 meth public void pushToolbarPopupMenuNoBlock(java.lang.String)
 meth public void setStatusText(java.lang.String)
@@ -375,6 +376,7 @@ meth public org.netbeans.jemmy.operators.JButtonOperator btNo()
 meth public org.netbeans.jemmy.operators.JButtonOperator btOK()
 meth public org.netbeans.jemmy.operators.JButtonOperator btYes()
 meth public void cancel()
+meth public void close()
 meth public void closeByButton()
 meth public void help()
 meth public void no()
@@ -1099,7 +1101,7 @@ cons public init()
 meth public void performAPI()
 meth public void performMenu()
 supr org.netbeans.jellytools.actions.Action
-hfds keystroke,saveAllMenu,systemActionClassname
+hfds keystroke,saveAllMenu
 
 CLSS public org.netbeans.jellytools.actions.SaveAsTemplateAction
 cons public init()
@@ -1343,6 +1345,12 @@ CLSS public org.netbeans.jellytools.modules.debugger.actions.NewBreakpointAction
 cons public init()
 supr org.netbeans.jellytools.actions.ActionNoBlock
 hfds keystroke,mainMenuPath,newBreakpointItem,runItem
+
+CLSS public org.netbeans.jellytools.modules.debugger.actions.PauseAction
+cons public init()
+meth public void performMenu()
+supr org.netbeans.jellytools.actions.Action
+hfds mainMenuPath
 
 CLSS public org.netbeans.jellytools.modules.debugger.actions.RunToCursorAction
 cons public init()

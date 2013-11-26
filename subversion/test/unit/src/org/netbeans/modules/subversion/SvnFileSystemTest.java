@@ -213,13 +213,11 @@ public class SvnFileSystemTest extends FileSystemFactoryHid {
                 
             client.commit(new File[] {getWorkDir()}, "commit", true);
             FileStatusCache cache = Subversion.getInstance().getStatusCache();
-            for (File file : filesToAdd) {
-                cache.refresh(file, null);
-            }
             // block until uptodate
             while(true) {
                 boolean fine = true;
                 for (File file : filesToAdd) {                    
+                    cache.refresh(file, null);
                     FileInformation s = cache.getCachedStatus(file);
                     if(s == null) break; // means uptodate
                     if(s.getStatus() != FileInformation.STATUS_VERSIONED_UPTODATE) {

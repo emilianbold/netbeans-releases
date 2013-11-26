@@ -42,6 +42,8 @@
 package org.netbeans.modules.mylyn.util;
 
 import java.awt.EventQueue;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
@@ -55,11 +57,15 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.mylyn.internal.tasks.core.AbstractTask;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
-import org.netbeans.modules.bugtracking.util.AttachmentsPanel;
+import org.netbeans.modules.bugtracking.commons.AttachmentsPanel;
+import org.netbeans.modules.bugtracking.spi.IssueController;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.IssueScheduleProvider;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
@@ -88,6 +94,7 @@ public abstract class AbstractNbTaskWrapper {
     private final TaskListenerImpl taskListener;
     private Reference<TaskData> repositoryDataRef;
     private final RequestProcessor.Task repositoryTaskDataLoaderTask;
+    private final PropertyChangeSupport support;
     
     /** PRIVATE TASK ATTRIBUTES **/
     private String privateNotes;
@@ -101,6 +108,7 @@ public abstract class AbstractNbTaskWrapper {
     public AbstractNbTaskWrapper (NbTask task) {
         this.task = task;
         this.repositoryDataRef = new SoftReference<TaskData>(null);
+        support = new PropertyChangeSupport(this);
         repositoryTaskDataLoaderTask = RP.create(new Runnable() {
             @Override
             public void run () {
@@ -143,6 +151,14 @@ public abstract class AbstractNbTaskWrapper {
             }
         }
         return changes;
+    }
+
+    public final void addPropertyChangeListener (PropertyChangeListener listener) {
+        support.addPropertyChangeListener(listener);
+    }
+
+    public final void removePropertyChangeListener (PropertyChangeListener listener) {
+        support.removePropertyChangeListener(listener);
     }
 
     protected final TaskData getRepositoryTaskData () {
@@ -243,6 +259,9 @@ public abstract class AbstractNbTaskWrapper {
                 if (readPending) {
                     // make sure remote changes are not lost and still highlighted in the editor
                     setUpToDate(false, false);
+                    if (task.getDelegate() instanceof AbstractTask) {
+                        ((AbstractTask) task.getDelegate()).setMarkReadPending(false);
+                    }
                 }
                 model = task.getTaskDataModel();
                 if (model == null) {
@@ -482,12 +501,15 @@ public abstract class AbstractNbTaskWrapper {
     public final IssueStatusProvider.Status getStatus () {
         switch (getSynchronizationState()) {
             case CONFLICT:
+                return IssueStatusProvider.Status.CONFLICT;
             case INCOMING:
                 return IssueStatusProvider.Status.INCOMING_MODIFIED;
             case INCOMING_NEW:
                 return IssueStatusProvider.Status.INCOMING_NEW;
             case OUTGOING:
+                return IssueStatusProvider.Status.OUTGOING_MODIFIED;
             case OUTGOING_NEW:
+                return IssueStatusProvider.Status.OUTGOING_NEW;
             case SYNCHRONIZED:
                 return IssueStatusProvider.Status.SEEN;
         }
@@ -664,14 +686,21 @@ public abstract class AbstractNbTaskWrapper {
             privateNotes = null;
             modified = true;
         }
+        boolean fireScheduleEvent = false;
         if (persistEstimate()) {
             modified = true;
+            fireScheduleEvent = true;
         }
         if (persistDueDate()) {
             modified = true;
+            fireScheduleEvent = true;
         }
         if (persistScheduleDate()) {
             modified = true;
+            fireScheduleEvent = true;
+        }
+        if (fireScheduleEvent) {
+            fireScheduleChanged();
         }
         return modified;
     }
@@ -740,31 +769,36 @@ public abstract class AbstractNbTaskWrapper {
         if (schedule == null) {
             return "";
         }
+        int interval = schedule.getEndDate().get(Calendar.DAY_OF_YEAR) - schedule.getStartDate().get(Calendar.DAY_OF_YEAR);
+        if (interval == 1) {
+            return formatDate(schedule.getStartDate());
+        }
         return formateDate(schedule.getStartDate(), schedule.getEndDate());
     }
 
+    protected final void fireChanged () {
+        support.firePropertyChange(IssueController.PROP_CHANGED, null, null);
+    }
+
+    protected final void fireDataChanged () {
+        support.firePropertyChange(IssueProvider.EVENT_ISSUE_DATA_CHANGED, null, null);
+    }
+
+    protected final void fireScheduleChanged () {
+        support.firePropertyChange(IssueScheduleProvider.EVENT_ISSUE_SCHEDULE_CHANGED, null, null);
+    }
+
+    protected final void fireStatusChanged () {
+        support.firePropertyChange(IssueStatusProvider.EVENT_STATUS_CHANGED, null, null);
+    }
+
     private String formatDate (Calendar date) {
-        Calendar now = Calendar.getInstance();
-        if (now.get(Calendar.YEAR) == date.get(Calendar.YEAR)) {
-            return DateFormat.getDateInstance(DateFormat.SHORT).format(date.getTime());
-        } else {
-            return DateFormat.getDateInstance(DateFormat.DEFAULT).format(date.getTime());
-        }
+        return DateFormat.getDateInstance(DateFormat.DEFAULT).format(date.getTime());
     }
 
     private String formateDate (Calendar start, Calendar end) {
-        Calendar now = Calendar.getInstance();
-        // one day range
-        if (start.get(Calendar.YEAR) == end.get(Calendar.YEAR) && start.get(Calendar.MONTH) == end.get(Calendar.MONTH) && start.get(Calendar.DAY_OF_MONTH) == end.get(Calendar.DAY_OF_MONTH)) {
-            return formatDate(start);
-        }
-        if (now.get(Calendar.YEAR) == start.get(Calendar.YEAR) && now.get(Calendar.YEAR) == end.get(Calendar.YEAR)) {
-            DateFormat format = DateFormat.getDateInstance(DateFormat.SHORT);
-            return format.format(start.getTime()) + " - " + format.format(end.getTime()); //NOI18N
-        } else {
-            DateFormat format = DateFormat.getDateInstance(DateFormat.DEFAULT);
-            return format.format(start.getTime()) + " - " + format.format(end.getTime()); //NOI18N
-        }
+        DateFormat format = DateFormat.getDateInstance(DateFormat.DEFAULT);
+        return format.format(start.getTime()) + " - " + format.format(end.getTime()); //NOI18N
     }
 
     private class TaskDataListenerImpl implements TaskDataListener {

@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.22.1
+#Version 1.25.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -24,6 +24,7 @@ supr java.lang.Object
 hfds name,ordinal
 
 CLSS public java.lang.Exception
+cons protected init(java.lang.String,java.lang.Throwable,boolean,boolean)
 cons public init()
 cons public init(java.lang.String)
 cons public init(java.lang.String,java.lang.Throwable)
@@ -46,11 +47,14 @@ meth public int hashCode()
 meth public java.lang.String toString()
 
 CLSS public java.lang.Throwable
+cons protected init(java.lang.String,java.lang.Throwable,boolean,boolean)
 cons public init()
 cons public init(java.lang.String)
 cons public init(java.lang.String,java.lang.Throwable)
 cons public init(java.lang.Throwable)
 intf java.io.Serializable
+meth public final java.lang.Throwable[] getSuppressed()
+meth public final void addSuppressed(java.lang.Throwable)
 meth public java.lang.StackTraceElement[] getStackTrace()
 meth public java.lang.String getLocalizedMessage()
 meth public java.lang.String getMessage()
@@ -63,7 +67,8 @@ meth public void printStackTrace(java.io.PrintStream)
 meth public void printStackTrace(java.io.PrintWriter)
 meth public void setStackTrace(java.lang.StackTraceElement[])
 supr java.lang.Object
-hfds backtrace,cause,detailMessage,serialVersionUID,stackTrace
+hfds CAUSE_CAPTION,EMPTY_THROWABLE_ARRAY,NULL_CAUSE_MESSAGE,SELF_SUPPRESSION_MESSAGE,SUPPRESSED_CAPTION,SUPPRESSED_SENTINEL,UNASSIGNED_STACK,backtrace,cause,detailMessage,serialVersionUID,stackTrace,suppressedExceptions
+hcls PrintStreamOrWriter,SentinelHolder,WrappedPrintStream,WrappedPrintWriter
 
 CLSS public abstract interface java.util.EventListener
 
@@ -275,7 +280,7 @@ meth public void addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
 meth public {org.netbeans.modules.xml.xam.AbstractModelFactory%0} createFreshModel(org.netbeans.modules.xml.xam.ModelSource)
 supr java.lang.Object
-hfds SYNCER,cachedModels,factories,propSupport
+hfds LOG,SYNCER,cachedModels,factories,propSupport
 
 CLSS public abstract org.netbeans.modules.xml.xam.AbstractReference<%0 extends org.netbeans.modules.xml.xam.Referenceable>
 cons public init(java.lang.Class<{org.netbeans.modules.xml.xam.AbstractReference%0}>,org.netbeans.modules.xml.xam.AbstractComponent,java.lang.String)
@@ -410,7 +415,7 @@ intf org.openide.util.Lookup$Provider
 meth public boolean isEditable()
 meth public org.openide.util.Lookup getLookup()
 supr java.lang.Object
-hfds editable,lookup
+hfds creation,editable,lookup
 
 CLSS public abstract interface org.netbeans.modules.xml.xam.Nameable<%0 extends org.netbeans.modules.xml.xam.Component>
 intf org.netbeans.modules.xml.xam.Named<{org.netbeans.modules.xml.xam.Nameable%0}>
@@ -554,7 +559,7 @@ meth public void addChildComponent(org.netbeans.modules.xml.xam.Component,org.ne
 meth public void processSyncUnit(org.netbeans.modules.xml.xam.dom.SyncUnit)
 meth public void removeChildComponent(org.netbeans.modules.xml.xam.Component)
 supr org.netbeans.modules.xml.xam.AbstractModel<{org.netbeans.modules.xml.xam.dom.AbstractDocumentModel%0}>
-hfds docListener,elementNames,getAccessLock,needsSync,swingDocument
+hfds accessPrivate,docListener,elementNames,getAccessLock,needsSync,swingDocument
 hcls DocumentChangeListener,WeakDocumentListener
 
 CLSS public abstract org.netbeans.modules.xml.xam.dom.AbstractNamedComponentReference<%0 extends org.netbeans.modules.xml.xam.NamedReferenceable>

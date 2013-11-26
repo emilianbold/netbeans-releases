@@ -2,41 +2,50 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Use Supertype Where Possible Dialog Box</title>
+<title>Safe Delete Dialog Box</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="org.netbeans.modules.refactoring.java.ui.UseSuperTypeRefactoringUI" name="org.netbeans.modules.refactoring.java.ui.UseSuperTypeRefactoringUI"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref361" name="sthref361"></a>
-<h1>Use Supertype Where Possible Dialog Box</h1>
+<p>Beta Draft: 2013-11-25</p>
+<p><a id="org.netbeans.modules.refactoring.java.ui.SafeDeleteUI" name="org.netbeans.modules.refactoring.java.ui.SafeDeleteUI"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref362" name="sthref362"></a>
+<h1>Safe Delete Dialog Box</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to specify options for the <b>Use Supertype Where Possible</b> refactoring command. Use this command to change code that references the selected class (or other type) so that it references a supertype of the selected type. 
+<p>Use to specify options for the <b>Safely Delete</b> refactoring command. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG602">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG608">
 <param name="text" value="<html><u>How?</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
 
-<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<table summary="Descriptions of Safely Delete command options." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t28">Element</th>
-<th align="left" valign="bottom" id="r1c2-t28">Description</th>
+<th align="left" valign="bottom" id="r1c1-t29">Element</th>
+<th align="left" valign="bottom" id="r1c2-t29">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t28" headers="r1c1-t28">
-<p>Supertype to Use</p>
+<td align="left" id="r2c1-t29" headers="r1c1-t29">
+<p>Safely delete</p>
 </td>
-<td align="left" headers="r2c1-t28 r1c2-t28">
-<p>Displays Contains the name of the class to be moved.</p>
-<p>From the drop-down list, choose the supertype that you want the code to be changed to reference.</p>
+<td align="left" headers="r2c1-t29 r1c2-t29">
+<p>Lists the code elements that you have selected for deletion.</p>
+<p>If the code elements do not correspond with the elements that you intend to delete, click <b>Cancel</b>.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t29" headers="r1c1-t29">
+<p>Search in Comments</p>
+</td>
+<td align="left" headers="r3c1-t29 r1c2-t29">
+<p>Warns you if the code element to be deleted appears in a comment.</p>
 </td>
 </tr>
 </tbody>
@@ -44,9 +53,10 @@
 <br />
 <!-- -->
 <hr><p><b>Related Topics</b></p>
+<p>About Refactoring</p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG547">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG547">
 <param name="text" value="<html><u>&quot;Refactoring Java Projects&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">

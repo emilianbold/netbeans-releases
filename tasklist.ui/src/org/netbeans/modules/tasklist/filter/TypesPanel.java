@@ -46,6 +46,7 @@ package org.netbeans.modules.tasklist.filter;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
@@ -87,6 +88,16 @@ final class TypesPanel extends JPanel {
         initComponents();
         
         providers = ScannerDescriptor.getDescriptors();
+
+        List<ScannerDescriptor> toRemove = new ArrayList<ScannerDescriptor>();
+        for (ScannerDescriptor scannerDescriptor : providers) {
+            if (scannerDescriptor.getDisplayName() == null || scannerDescriptor.getDisplayName().isEmpty()) {
+                filter.setEnabled(scannerDescriptor.getType(), false);
+                toRemove.add(scannerDescriptor);
+            }
+        }
+        providers.removeAll(toRemove);
+
         providerState = new boolean[providers.size()];
         String[] names = new String[providers.size()];
         for( int i=0; i<names.length; i++ ) {

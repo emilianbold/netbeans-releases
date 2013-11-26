@@ -53,6 +53,7 @@ import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.PopupMenuEvent;
@@ -312,15 +313,20 @@ public class ConfigurationsComboModel extends AbstractListModel implements Combo
                 setSelectedItem(getElementAt(0));
                 return;
             }
-            JComboBox combo = (JComboBox) ae.getSource();
+            final JComboBox combo = (JComboBox) ae.getSource();
             combo.setSelectedItem(lastSelected);
-            if (JOptionPane.showConfirmDialog(combo, 
-            Bundle.MSG_ReallyDeleteConfig(lastSelected),
-            Bundle.DeleteConfigTitle(),
-            JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                ConfigurationsManager.getDefault().remove(lastSelected);
-                setSelectedItem(getElementAt(0));
-            }
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    if (JOptionPane.showConfirmDialog(combo, 
+                    Bundle.MSG_ReallyDeleteConfig(lastSelected),
+                    Bundle.DeleteConfigTitle(),
+                    JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                        ConfigurationsManager.getDefault().remove(lastSelected);
+                        setSelectedItem(getElementAt(0));
+                    }
+                }
+            });
         }
 
         @Override

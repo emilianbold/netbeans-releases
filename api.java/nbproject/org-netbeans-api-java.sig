@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.43.1
+#Version 1.49.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -9,6 +9,7 @@ meth public abstract int compareTo({java.lang.Comparable%0})
 CLSS public abstract interface !annotation java.lang.Deprecated
  anno 0 java.lang.annotation.Documented()
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[CONSTRUCTOR, FIELD, LOCAL_VARIABLE, METHOD, PACKAGE, PARAMETER, TYPE])
 intf java.lang.annotation.Annotation
 
 CLSS public abstract java.lang.Enum<%0 extends java.lang.Enum<{java.lang.Enum%0}>>
@@ -282,18 +283,41 @@ meth public abstract void attachmentSucceeded()
 
 CLSS public org.netbeans.api.java.queries.SourceLevelQuery
 innr public final static Result
+innr public static !enum Profile
 meth public static java.lang.String getSourceLevel(org.openide.filesystems.FileObject)
 meth public static org.netbeans.api.java.queries.SourceLevelQuery$Result getSourceLevel2(org.openide.filesystems.FileObject)
  anno 0 org.netbeans.api.annotations.common.NonNull()
  anno 1 org.netbeans.api.annotations.common.NonNull()
 supr java.lang.Object
-hfds LOGGER,SOURCE_LEVEL,SYNONYM,implementations,implementations2
+hfds JDK8,LOGGER,SOURCE_LEVEL,SYNONYM,implementations,implementations2
+
+CLSS public static !enum org.netbeans.api.java.queries.SourceLevelQuery$Profile
+ outer org.netbeans.api.java.queries.SourceLevelQuery
+fld public final static org.netbeans.api.java.queries.SourceLevelQuery$Profile COMPACT1
+fld public final static org.netbeans.api.java.queries.SourceLevelQuery$Profile COMPACT2
+fld public final static org.netbeans.api.java.queries.SourceLevelQuery$Profile COMPACT3
+fld public final static org.netbeans.api.java.queries.SourceLevelQuery$Profile DEFAULT
+meth public boolean isSupportedIn(java.lang.String)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public java.lang.String getDisplayName()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public java.lang.String getName()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public static org.netbeans.api.java.queries.SourceLevelQuery$Profile forName(java.lang.String)
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+ anno 1 org.netbeans.api.annotations.common.NullAllowed()
+meth public static org.netbeans.api.java.queries.SourceLevelQuery$Profile valueOf(java.lang.String)
+meth public static org.netbeans.api.java.queries.SourceLevelQuery$Profile[] values()
+supr java.lang.Enum<org.netbeans.api.java.queries.SourceLevelQuery$Profile>
+hfds displayName,name,profilesByName,supportedFrom
 
 CLSS public final static org.netbeans.api.java.queries.SourceLevelQuery$Result
  outer org.netbeans.api.java.queries.SourceLevelQuery
 meth public boolean supportsChanges()
 meth public java.lang.String getSourceLevel()
  anno 0 org.netbeans.api.annotations.common.CheckForNull()
+meth public org.netbeans.api.java.queries.SourceLevelQuery$Profile getProfile()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
 meth public void addChangeListener(javax.swing.event.ChangeListener)
  anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public void removeChangeListener(javax.swing.event.ChangeListener)
@@ -398,10 +422,26 @@ intf org.netbeans.api.java.queries.SourceForBinaryQuery$Result
 meth public abstract boolean preferSources()
 
 CLSS public abstract interface org.netbeans.spi.java.queries.SourceJavadocAttacherImplementation
+innr public abstract interface static Definer
 meth public abstract boolean attachJavadoc(java.net.URL,org.netbeans.api.java.queries.SourceJavadocAttacher$AttachmentListener) throws java.io.IOException
  anno 1 org.netbeans.api.annotations.common.NonNull()
  anno 2 org.netbeans.api.annotations.common.NonNull()
 meth public abstract boolean attachSources(java.net.URL,org.netbeans.api.java.queries.SourceJavadocAttacher$AttachmentListener) throws java.io.IOException
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+
+CLSS public abstract interface static org.netbeans.spi.java.queries.SourceJavadocAttacherImplementation$Definer
+ outer org.netbeans.spi.java.queries.SourceJavadocAttacherImplementation
+meth public abstract java.lang.String getDescription()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public abstract java.lang.String getDisplayName()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public abstract java.util.List<? extends java.net.URL> getJavadoc(java.net.URL,java.util.concurrent.Callable<java.lang.Boolean>)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+meth public abstract java.util.List<? extends java.net.URL> getSources(java.net.URL,java.util.concurrent.Callable<java.lang.Boolean>)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
  anno 1 org.netbeans.api.annotations.common.NonNull()
  anno 2 org.netbeans.api.annotations.common.NonNull()
 
@@ -411,6 +451,7 @@ meth public abstract java.lang.String getSourceLevel(org.openide.filesystems.Fil
 
 CLSS public abstract interface org.netbeans.spi.java.queries.SourceLevelQueryImplementation2
 innr public abstract interface static Result
+innr public abstract interface static Result2
 meth public abstract org.netbeans.spi.java.queries.SourceLevelQueryImplementation2$Result getSourceLevel(org.openide.filesystems.FileObject)
 
 CLSS public abstract interface static org.netbeans.spi.java.queries.SourceLevelQueryImplementation2$Result
@@ -421,6 +462,12 @@ meth public abstract void addChangeListener(javax.swing.event.ChangeListener)
  anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public abstract void removeChangeListener(javax.swing.event.ChangeListener)
  anno 1 org.netbeans.api.annotations.common.NonNull()
+
+CLSS public abstract interface static org.netbeans.spi.java.queries.SourceLevelQueryImplementation2$Result2
+ outer org.netbeans.spi.java.queries.SourceLevelQueryImplementation2
+intf org.netbeans.spi.java.queries.SourceLevelQueryImplementation2$Result
+meth public abstract org.netbeans.api.java.queries.SourceLevelQuery$Profile getProfile()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
 
 CLSS public abstract interface org.netbeans.spi.java.queries.UnitTestForSourceQueryImplementation
 meth public abstract java.net.URL findSource(org.openide.filesystems.FileObject)

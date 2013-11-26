@@ -57,6 +57,8 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.profiler.api.JavaPlatform;
 import org.netbeans.modules.profiler.api.java.JavaProfilerSource;
@@ -117,7 +119,10 @@ public class J2SEProjectProfilingSupportProvider extends JavaProjectProfilingSup
     @Override
     public JavaPlatform resolveProjectJavaPlatform() {
         PropertyEvaluator props = getProjectProperties(getProject());
-        String platformName = props.getProperty("platform.active"); // NOI18N
+        String platformName = props.getProperty("platform.runtime");    //NOI18N
+        if (platformName == null || platformName.isEmpty()) {
+            platformName = props.getProperty("platform.active"); // NOI18N
+        }
 
         if (platformName == null) {
             return null; // not provided for some reason
@@ -244,7 +249,24 @@ public class J2SEProjectProfilingSupportProvider extends JavaProjectProfilingSup
         String jvmArgs = pp.getProperty("run.jvmargs"); // NOI18N
         ss.setJVMArgs((jvmArgs != null) ? jvmArgs : ""); // NOI18N
         
+        String host;
+        
+        if ((host=getRemotePlatformHost(getProjectJavaPlatform())) != null) {
+            ss.setRemoteHost(host);
+        }
+        
         super.setupProjectSessionSettings(ss);
+    }
+    
+    private static String getRemotePlatformHost(JavaPlatform platform) {
+        for (org.netbeans.api.java.platform.JavaPlatform jp : JavaPlatformManager.getDefault().getPlatforms(
+                null,
+                new Specification("j2se-remote", null))) {  //NOI18N
+            if (platform.getPlatformId().equals(jp.getProperties().get("platform.ant.name"))) { //NOI18N
+                return jp.getProperties().get("platform.host"); //NOI18N
+            }
+        }
+        return null;
     }
 
     @Override

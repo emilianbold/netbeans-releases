@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.maven.j2ee;
 
+import org.netbeans.modules.maven.j2ee.execution.ExecutionChecker;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.prefs.PreferenceChangeEvent;

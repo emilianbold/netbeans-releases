@@ -59,133 +59,116 @@ import org.netbeans.modules.php.dbgp.packets.BrkpntSetCommand;
 import org.netbeans.modules.php.dbgp.packets.BrkpntSetCommand.State;
 import org.netbeans.modules.php.dbgp.packets.BrkpntUpdateCommand;
 
-
 /**
- * Responsible for setting breakpoints while debugging.
- * ( Otherwise breakpoints are used that was set before debugger start ).
+ * Responsible for setting breakpoints while debugging. ( Otherwise breakpoints
+ * are used that was set before debugger start ).
+ *
  * @author ads
  *
  */
-public class BreakpointRuntimeSetter extends DebuggerManagerAdapter  {
+public class BreakpointRuntimeSetter extends DebuggerManagerAdapter {
 
-    /* (non-Javadoc)
-     * @see org.netbeans.api.debugger.LazyDebuggerManagerListener#getProperties()
-     */
     @Override
     public String[] getProperties() {
-        return new String[] { DebuggerManager.PROP_BREAKPOINTS };
+        return new String[]{DebuggerManager.PROP_BREAKPOINTS};
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.api.debugger.DebuggerManagerListener#breakpointAdded(org.netbeans.api.debugger.Breakpoint)
-     */
     @Override
-    public void breakpointAdded( Breakpoint breakpoint ) {
+    public void breakpointAdded(Breakpoint breakpoint) {
         breakpoint.addPropertyChangeListener(Breakpoint.PROP_ENABLED, this);
         performCommand(breakpoint, Lazy.SET_COMMAND);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.api.debugger.DebuggerManagerListener#breakpointRemoved(org.netbeans.api.debugger.Breakpoint)
-     */
     @Override
-    public void breakpointRemoved( Breakpoint breakpoint ) {
+    public void breakpointRemoved(Breakpoint breakpoint) {
         breakpoint.removePropertyChangeListener(Breakpoint.PROP_ENABLED, this);
-        performCommand(breakpoint, Lazy.REMOVE_COMMAND );
+        performCommand(breakpoint, Lazy.REMOVE_COMMAND);
     }
 
-    /* (non-Javadoc)
-     * @see java.beans.PropertyChangeListener#propertyChange(java.beans.PropertyChangeEvent)
-     */
     @Override
-    public void propertyChange( PropertyChangeEvent event ) {
+    public void propertyChange(PropertyChangeEvent event) {
         if (!Breakpoint.PROP_ENABLED.equals(event.getPropertyName())) {
             return;
         }
         Object source = event.getSource();
-        performCommand( (Breakpoint)source, Lazy.UPDATE_COMMAND );
+        performCommand((Breakpoint) source, Lazy.UPDATE_COMMAND);
     }
 
-    private void performCommand( Breakpoint breakpoint , Command command ) {
-        if (! (breakpoint instanceof AbstractBreakpoint)) {
+    private void performCommand(Breakpoint breakpoint, Command command) {
+        if (!(breakpoint instanceof AbstractBreakpoint)) {
             return;
         }
         AbstractBreakpoint bpoint = (AbstractBreakpoint) breakpoint;
         Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
         for (Session sess : sessions) {
-            SessionId id = (SessionId)sess.lookupFirst( null , SessionId.class );
-            if ( id == null ){
+            SessionId id = (SessionId) sess.lookupFirst(null, SessionId.class);
+            if (id == null) {
                 continue;
             }
             SessionManager sessionManager = SessionManager.getInstance();
-            Collection<DebugSession> collection =
-                sessionManager.findSessionsById(id);
+            Collection<DebugSession> collection = sessionManager.findSessionsById(id);
             for (DebugSession debugSession : collection) {
                 command.perform(bpoint, id, debugSession);
             }
         }
     }
 
-    private static interface Command {
-        void perform( AbstractBreakpoint breakpoint , SessionId id ,
-                DebugSession session );
+    private interface Command {
+
+        void perform(AbstractBreakpoint breakpoint, SessionId id, DebugSession session);
+
     }
 
     private static class SetBreakpointCommand implements Command {
-
         @Override
-        public void perform( AbstractBreakpoint breakpoint, SessionId id,
-                DebugSession session )
-        {
+        public void perform(AbstractBreakpoint breakpoint, SessionId id, DebugSession session) {
             if (session != null) {
-                BrkpntSetCommand command = Utils.getCommand( session, id,
-                        breakpoint);
-                if ( command != null ){
+                BrkpntSetCommand command = Utils.getCommand(session, id, breakpoint);
+                if (command != null) {
                     session.sendCommandLater(command);
                 }
             }
         }
+
     }
 
     private static class RemoveBreakpointCommand implements Command {
 
         @Override
-        public void perform( AbstractBreakpoint breakpoint, SessionId id,
-                DebugSession session )
-        {
-            if ( !breakpoint.isSessionRelated( session ) ){
+        public void perform(AbstractBreakpoint breakpoint, SessionId id, DebugSession session) {
+            if (!breakpoint.isSessionRelated(session)) {
                 return;
             }
-            BrkpntRemoveCommand command = new BrkpntRemoveCommand(
-                    session.getTransactionId() , breakpoint.getBreakpointId() );
+            BrkpntRemoveCommand command = new BrkpntRemoveCommand(session.getTransactionId(), breakpoint.getBreakpointId());
             session.sendCommandLater(command);
         }
+
     }
 
     private static class UpdateBreakpointCommand implements Command {
-
         private static final Logger LOGGER = Logger.getLogger(UpdateBreakpointCommand.class.getName());
 
         @Override
-        public void perform( AbstractBreakpoint breakpoint, SessionId id,
-                DebugSession session )
-        {
+        public void perform(AbstractBreakpoint breakpoint, SessionId id,
+                DebugSession session) {
             if (session != null && breakpoint != null) {
-                BrkpntUpdateCommand command = new BrkpntUpdateCommand(
-                        session.getTransactionId() , breakpoint.getBreakpointId() );
-                State state = breakpoint.isEnabled() ? State.ENABLED :State.DISABLED;
-                command.setState( state );
+                BrkpntUpdateCommand command = new BrkpntUpdateCommand(session.getTransactionId(), breakpoint.getBreakpointId());
+                State state = breakpoint.isEnabled() ? State.ENABLED : State.DISABLED;
+                command.setState(state);
                 session.sendCommandLater(command);
             } else {
                 LOGGER.log(Level.FINE, "Session and Breakpoint can't be null! Session: {0} || Breakpoint: {1}", new Object[]{session, breakpoint});
             }
         }
+
     }
 
     private static class Lazy {
-        static final Command SET_COMMAND    = new SetBreakpointCommand();
+
+        static final Command SET_COMMAND = new SetBreakpointCommand();
         static final Command REMOVE_COMMAND = new RemoveBreakpointCommand();
         static final Command UPDATE_COMMAND = new UpdateBreakpointCommand();
+
     }
 
 }

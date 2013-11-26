@@ -65,6 +65,7 @@ import org.netbeans.modules.j2me.cdc.platform.CDCPlatform;
 import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.TemplateWizard;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -223,7 +224,7 @@ public class PlatformInstallPanel extends javax.swing.JPanel {
     }
     
     public static boolean isPlatformInstalled(String platformType) {
-        return JavaPlatformManager.getDefault().getPlatforms(null, new Specification(platformType, null)).length != 0;
+        return JavaPlatformManager.getDefault().getPlatforms(null, new Specification(platformType, new SpecificationVersion("3.0"))).length != 0; //NOI18N
     }
     
     public static class WizardPanel implements TemplateWizard.FinishablePanel, ActionListener {

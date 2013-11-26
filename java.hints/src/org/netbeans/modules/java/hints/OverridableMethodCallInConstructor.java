@@ -137,6 +137,12 @@ public class OverridableMethodCallInConstructor {
 
     private static Fix[] computeFixes(MethodTree mt, Element classElement, HintContext ctx) {
         List<Fix> result = new ArrayList<Fix>();
+        // #238048: none of the following fixes are compatible with abstract methods; we could check if the method is
+        // really overriden in some subclass, but it takes a lot of time; 
+        Set<Modifier> flags = mt.getModifiers().getFlags();
+        if (flags.contains(Modifier.ABSTRACT)) {
+            return result.toArray(new Fix[0]);
+        }
         ClassTree ct = ctx.getInfo().getTrees().getTree((TypeElement)classElement);
         result.add(FixFactory.addModifiersFix(
             ctx.getInfo(),
@@ -147,7 +153,6 @@ public class OverridableMethodCallInConstructor {
             Collections.singleton(Modifier.FINAL),
             NbBundle.getMessage(OverridableMethodCallInConstructor.class,
                 "FIX_MakeClass", "final", ct.getSimpleName())));
-        Set<Modifier> flags = mt.getModifiers().getFlags();
         result.add(FixFactory.addModifiersFix(
             ctx.getInfo(),
             TreePath.getPath(

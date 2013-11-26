@@ -47,29 +47,25 @@ import org.netbeans.modules.php.dbgp.models.VariablesModelFilter.FilterType;
 import org.netbeans.modules.php.dbgp.packets.Property;
 import org.openide.util.NbBundle;
 
-
 /**
  * @author ads
  *
  */
-class NullVariableNode extends
-    org.netbeans.modules.php.dbgp.models.VariablesModel.AbstractVariableNode
-{
+class NullVariableNode extends org.netbeans.modules.php.dbgp.models.VariablesModel.AbstractVariableNode {
+    private static final String TYPE_NULL = "TYPE_Null"; // NOI18N
 
-    private static final String TYPE_NULL = "TYPE_Null";    // NOI18N
-
-    NullVariableNode( Property property, AbstractModelNode parent ) {
+    NullVariableNode(Property property, AbstractModelNode parent) {
         super(property, parent);
     }
 
     @Override
     public String getType() {
-        return NbBundle.getMessage( NullVariableNode.class, TYPE_NULL);
+        return NbBundle.getMessage(NullVariableNode.class, TYPE_NULL);
     }
 
     @Override
-    protected boolean isTypeApplied( Set<FilterType> filters ) {
-        return filters.contains( FilterType.NULL );
+    protected boolean isTypeApplied(Set<FilterType> filters) {
+        return filters.contains(FilterType.NULL);
     }
 
 }

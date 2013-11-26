@@ -133,10 +133,9 @@ public class AddUseImportSuggestion extends SuggestionRule {
     }
 
     private class CheckVisitor extends DefaultTreePathVisitor {
-
-        private BaseDocument doc;
-        private PHPRuleContext context;
-        private Collection<Hint> hints = new ArrayList<>();
+        private final BaseDocument doc;
+        private final PHPRuleContext context;
+        private final Collection<Hint> hints = new ArrayList<>();
         private final OffsetRange lineBounds;
 
         CheckVisitor(PHPRuleContext context, BaseDocument doc, OffsetRange lineBounds) {
@@ -266,10 +265,9 @@ public class AddUseImportSuggestion extends SuggestionRule {
     }
 
     static class AddImportFix implements HintFix {
-
-        private BaseDocument doc;
-        private NamespaceScope scope;
-        private QualifiedName importName;
+        private final BaseDocument doc;
+        private final NamespaceScope scope;
+        private final QualifiedName importName;
 
         public AddImportFix(BaseDocument doc, NamespaceScope scope, QualifiedName importName) {
             this.doc = doc;
@@ -335,12 +333,11 @@ public class AddUseImportSuggestion extends SuggestionRule {
     }
 
     static class ChangeNameFix implements HintFix {
-
-        private BaseDocument doc;
-        private ASTNode node;
-        private NamespaceScope scope;
-        private QualifiedName newName;
-        private QualifiedName oldName;
+        private final BaseDocument doc;
+        private final ASTNode node;
+        private final NamespaceScope scope;
+        private final QualifiedName newName;
+        private final QualifiedName oldName;
 
         public ChangeNameFix(BaseDocument doc, ASTNode node, NamespaceScope scope,
                 QualifiedName newName, QualifiedName oldName) {

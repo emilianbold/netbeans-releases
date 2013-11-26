@@ -149,9 +149,9 @@ import org.openide.util.CharSequences;
         return name + "[" + getKind() + " " + getStartOffset() + "-" + (getEndOffset() == KeyUtilities.NON_INITIALIZED ? "U" : getEndOffset()) + "] {" + getFileNameSafe() + "; " + getProjectName() + "}"; // NOI18N
     }
 
-    @Override
-    public boolean equals(UnitsConverter unitsConverter, Key object) {
-        if (!super.equals(unitsConverter, object)) {
+        @Override
+    public boolean equals(int thisUnitID, Key object, int objectUnitID) {
+        if (!super.equals(thisUnitID, object, objectUnitID)) {
             return false;
         }
         OffsetableKey other = (OffsetableKey) object;
@@ -165,31 +165,16 @@ import org.openide.util.CharSequences;
     }
 
     @Override
-    public int hashCode(UnitsConverter unitsConverter) {
-        return 59*name.hashCode() + 19*startOffset + super.hashCode(unitsConverter);
+    public int hashCode(int unitID) {
+        return 59*name.hashCode() + 19*startOffset + super.hashCode(unitID);
     }
     
     @Override
     public int hashCode() {
         if (hashCode == 0) {
-            hashCode = 59*name.hashCode() + 19*startOffset + super.hashCode();
+            hashCode = hashCode(getUnitId());
         }
         return hashCode;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (!super.equals(obj)) {
-            return false;
-        }
-        OffsetableKey other = (OffsetableKey) obj;
-        assert CharSequences.isCompact(name);
-        assert CharSequences.isCompact(other.name);
-        return this.startOffset == other.startOffset &&
-                ((this.endOffset == other.endOffset) || 
-                 (this.endOffset == KeyUtilities.NON_INITIALIZED || other.endOffset == KeyUtilities.NON_INITIALIZED)) &&
-                this.getHandler() == other.getHandler() &&
-                this.name.equals(other.name);
     }
 
     @Override

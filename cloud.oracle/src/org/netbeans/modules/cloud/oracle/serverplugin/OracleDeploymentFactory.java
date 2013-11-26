@@ -87,7 +87,8 @@ public class OracleDeploymentFactory implements DeploymentFactory {
         if (instance != null) {
             try {
                 am = OracleInstance.createApplicationManager(
-                        props.getProperty(IP_ADMIN_URL), 
+                        props.getProperty(IP_ADMIN_URL),
+                        instance.getIdentityDomain(),
                         instance.getUser(),
                         instance.getPassword(),
                         CloudSDKHelper.getSDKFolder());

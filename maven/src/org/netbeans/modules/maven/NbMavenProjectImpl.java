@@ -266,11 +266,12 @@ public final class NbMavenProjectImpl implements Project {
             req.setPom(projectFile);
             req.setNoSnapshotUpdates(true);
             req.setUpdateSnapshots(false);
-            Properties props = MavenProjectCache.createSystemPropsForProjectLoading(null);
+            //#238800 important to merge, not replace
             if (properties != null) {
-                props.putAll(properties);
+                Properties uprops = req.getUserProperties();
+                uprops.putAll(properties);
+                req.setUserProperties(uprops);
             }
-            req.setUserProperties(props);
             //MEVENIDE-634 i'm wondering if this fixes the issue
             req.setInteractiveMode(false);
             req.setOffline(true);
@@ -318,8 +319,11 @@ public final class NbMavenProjectImpl implements Project {
         req.setInteractiveMode(false);
         req.setRecursive(false);
         req.setOffline(true);
-        req.setUserProperties(MavenProjectCache.createSystemPropsForProjectLoading(active.getProperties()));
-
+        //#238800 important to merge, not replace
+        Properties uprops = req.getUserProperties();
+        uprops.putAll(MavenProjectCache.createUserPropsForProjectLoading(active.getProperties()));
+        req.setUserProperties(uprops);
+        
         ProjectBuildingRequest request = req.getProjectBuildingRequest();
         request.setRemoteRepositories(project.getRemoteArtifactRepositories());
         DefaultMaven maven = (DefaultMaven) embedder.lookupComponent(Maven.class);
@@ -350,13 +354,16 @@ public final class NbMavenProjectImpl implements Project {
     //#172952 for property expression resolution we need this to include
     // the properties of the platform to properly resolve stuff like com.sun.boot.class.path
     public Map<? extends String,? extends String> createSystemPropsForPropertyExpressions() {
-        Map<String,String> props = NbCollections.checkedMapByCopy(MavenProjectCache.cloneStaticProps(), String.class, String.class, true);
+        Map<String,String> props = NbCollections.checkedMapByCopy(EmbedderFactory.getProjectEmbedder().getSystemProperties(), String.class, String.class, true);
         ActiveJ2SEPlatformProvider platformProvider = getLookup().lookup(ActiveJ2SEPlatformProvider.class);
         if (platformProvider != null) { // may be null inside PackagingProvider
             props.putAll(platformProvider.getJavaPlatform().getSystemProperties());
-        }
-        props.putAll(configProvider.getActiveConfiguration().getProperties());
+        }       
         return props;
+    }
+    
+    public  Map<? extends String,? extends String> createUserPropsForPropertyExpressions() {
+         return NbCollections.checkedMapByCopy(configProvider.getActiveConfiguration().getProperties(), String.class, String.class, true);
     }
 
     /**
@@ -425,17 +432,6 @@ public final class NbMavenProjectImpl implements Project {
             }
             final MavenExecutionResult res = MavenProjectCache.getExecutionResult(newproject);
             final MavenProject np = newproject;
-            ProblemReporterImpl.RP.post(new Runnable() {
-                //#217286 doArtifactChecks can call FileOwnerQuery and attempt to aquire the project mutex. but we are under synchronization here..
-                @Override
-                public void run() {
-                    if (res != null && res.hasExceptions()) { //res is null when there is no pom in the project folder.
-                        problemReporter.reportExceptions(res);
-                    } else {
-                        problemReporter.doArtifactChecks(np);
-                    }
-                }
-            });
         } finally {
             if (LOG.isLoggable(Level.FINE) && SwingUtilities.isEventDispatchThread()) {
                 LOG.log(Level.FINE, "Project " + getProjectDirectory().getPath() + " loaded in AWT event dispatching thread!", new RuntimeException());

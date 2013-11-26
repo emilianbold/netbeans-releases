@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.php.dbgp.breakpoints;
 
 import java.beans.PropertyChangeEvent;
@@ -59,27 +58,25 @@ import org.openide.text.Line;
 import org.openide.text.Line.Set;
 import org.openide.util.Lookup;
 
-
 /**
  * Listens on {@org.netbeans.api.debugger.DebuggerManager} on
- * {@link org.netbeans.api.debugger.DebuggerManager#PROP_BREAKPOINTS}
- * property and annotates Debugger line breakpoints in NetBeans editor.
+ * {@link org.netbeans.api.debugger.DebuggerManager#PROP_BREAKPOINTS} property
+ * and annotates Debugger line breakpoints in NetBeans editor.
  *
  * @author ads
  */
-@org.openide.util.lookup.ServiceProvider(service=org.openide.text.AnnotationProvider.class)
-public class BreakpointAnnotationListener extends DebuggerManagerAdapter
-    implements PropertyChangeListener, AnnotationProvider
-{
+@org.openide.util.lookup.ServiceProvider(service = org.openide.text.AnnotationProvider.class)
+public class BreakpointAnnotationListener extends DebuggerManagerAdapter implements PropertyChangeListener, AnnotationProvider {
+    private Map<Breakpoint, Annotation> myAnnotations = new HashMap<>();
 
     @Override
     public String[] getProperties() {
-        return new String[] { DebuggerManager.PROP_BREAKPOINTS };
+        return new String[]{DebuggerManager.PROP_BREAKPOINTS};
     }
 
     @Override
     public void breakpointAdded(Breakpoint breakpoint) {
-        if (! (breakpoint instanceof LineBreakpoint)) {
+        if (!(breakpoint instanceof LineBreakpoint)) {
             return;
         }
         addAnnotation(breakpoint);
@@ -87,7 +84,7 @@ public class BreakpointAnnotationListener extends DebuggerManagerAdapter
 
     @Override
     public void breakpointRemoved(Breakpoint breakpoint) {
-        if (! (breakpoint instanceof LineBreakpoint)) {
+        if (!(breakpoint instanceof LineBreakpoint)) {
             return;
         }
         removeAnnotation(breakpoint);
@@ -105,29 +102,25 @@ public class BreakpointAnnotationListener extends DebuggerManagerAdapter
     private void addAnnotation(Breakpoint breakpoint) {
         LineBreakpoint lineBreakpoint = (LineBreakpoint) breakpoint;
         Line line = lineBreakpoint.getLine();
-        Annotation annotation = breakpoint.isEnabled() ?
-                new BrkpntAnnotation( line, lineBreakpoint )
-                : new DisabledBrkpntAnnotation(  line, lineBreakpoint );
-        myAnnotations.put( breakpoint, annotation );
+        Annotation annotation = breakpoint.isEnabled()
+                ? new BrkpntAnnotation(line, lineBreakpoint)
+                : new DisabledBrkpntAnnotation(line, lineBreakpoint);
+        myAnnotations.put(breakpoint, annotation);
         breakpoint.addPropertyChangeListener(Breakpoint.PROP_ENABLED, this);
     }
 
     private void removeAnnotation(Breakpoint breakpoint) {
-        Annotation annotation =
-            myAnnotations.remove(breakpoint);
-
+        Annotation annotation = myAnnotations.remove(breakpoint);
         if (annotation == null) {
             return;
         }
-
         annotation.detach();
         breakpoint.removePropertyChangeListener(Breakpoint.PROP_ENABLED, this);
     }
-
-    private Map<Breakpoint, Annotation> myAnnotations = new HashMap<>();
 
     @Override
     public void annotate(Set set, Lookup context) {
         DebuggerManager.getDebuggerManager().getBreakpoints();
     }
+
 }

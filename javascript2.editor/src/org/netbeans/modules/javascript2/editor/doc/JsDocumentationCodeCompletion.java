@@ -66,13 +66,19 @@ public class JsDocumentationCodeCompletion {
     private static final String TAG_PREFIX = "@"; //NOI18N
 
     public static void complete(JsCompletionItem.CompletionRequest request, List<CompletionProposal> resultList) {
-        // should handle every doc tool
-        if (request.prefix.startsWith(TAG_PREFIX)) {
-            completeAnnotation(request, resultList);
+        int originalOffset = request.info.getSnapshot().getOriginalOffset(request.anchor);
+        if (request.prefix != null && request.prefix.startsWith(TAG_PREFIX)) {
+            completeAnnotation(request, resultList, originalOffset);
+        } else {
+            CharSequence text = request.info.getSnapshot().getText();
+            if (TAG_PREFIX.charAt(0) == text.charAt(request.anchor - 1)) {
+                request.prefix = request.prefix == null ? TAG_PREFIX : TAG_PREFIX + request.prefix;
+                completeAnnotation(request, resultList, originalOffset - 1);
+            }
         }
     }
 
-    private static void completeAnnotation(JsCompletionItem.CompletionRequest request, List<CompletionProposal> resultList) {
+    private static void completeAnnotation(JsCompletionItem.CompletionRequest request, List<CompletionProposal> resultList, int anchor) {
         JsDocumentationProvider documentationProvider = JsDocumentationSupport.getDocumentationProvider(request.result);
 
         // XXX - list of annotations could differ per context as in PHP (i.e. for type, method, field, ...)
@@ -81,7 +87,7 @@ public class JsDocumentationCodeCompletion {
             orderingBase++;
             for (AnnotationCompletionTag tag : provider.getAnnotations()) {
                 if (tag.getName().startsWith(request.prefix)) {
-                    resultList.add(new JsDocumentationCodeCompletionItem(request.result.getSnapshot().getOriginalOffset(request.anchor), tag, provider.getName(), orderingBase));
+                    resultList.add(new JsDocumentationCodeCompletionItem(anchor, tag, provider.getName(), orderingBase));
                 }
             }
         }

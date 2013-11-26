@@ -103,6 +103,7 @@ public abstract class Module extends ModuleInfo {
     protected ClassLoader classloader;
 
     private ModuleData data;
+    private NbInstrumentation instr;
     
     private static Method findResources;
     private static final Object DATA_LOCK = new Object();
@@ -609,6 +610,14 @@ public abstract class Module extends ModuleInfo {
     
     boolean isNetigsoImpl() {
         return false;
+    }
+
+    final void assignInstrumentation(NbInstrumentation agent) {
+        instr = agent;
+    }
+
+    void unregisterInstrumentation() {
+        NbInstrumentation.unregisterAgent(instr);
     }
 
     /** Struct representing a package exported from a module.

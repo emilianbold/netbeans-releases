@@ -53,14 +53,13 @@ import org.netbeans.modules.mercurial.HgModuleConfig;
 
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
-import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.openide.util.NbBundle;
 import static org.netbeans.modules.mercurial.options.Bundle.*;
 import org.netbeans.spi.options.OptionsPanelController;
 
 @OptionsPanelController.Keywords(keywords={"hg", "mercurial", "#MercurialPanel.kw1", "#MercurialPanel.kw2", "#MercurialPanel.kw3"},
-        location=OptionsDisplayer.ADVANCED, tabTitle="#CTL_OptionsPanel.title")
+        location="Team", tabTitle="#CTL_OptionsPanel.title")
 @NbBundle.Messages({
     "CTL_OptionsPanel.title=Versioning",
     "MercurialPanel.kw1=status labels",

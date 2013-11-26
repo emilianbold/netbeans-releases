@@ -48,7 +48,9 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.modules.bugtracking.tasks.dashboard.DashboardViewer;
 import org.netbeans.modules.bugtracking.tasks.filter.OpenedCategorizedTaskFilter;
 import org.netbeans.modules.bugtracking.settings.DashboardSettings;
+import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions.SortDialogAction;
+import org.netbeans.modules.bugtracking.tasks.filter.ScheduleCategoryFilter;
 import org.netbeans.modules.team.commons.treelist.ColorManager;
 import org.netbeans.modules.team.commons.treelist.TreeLabel;
 import org.openide.util.ImageUtilities;
@@ -70,14 +72,21 @@ public class FilterPanel extends javax.swing.JPanel {
     private final JButton btnSort;
     //private final JButton btnGroup;
     private final OpenedCategorizedTaskFilter openedTaskFilter;
+    private final ScheduleCategoryFilter scheduleCategoryFilter;
     private final DashboardToolbar toolBar;
     private final RequestProcessor REQUEST_PROCESSOR;
+
+    private final String TODAY_SETTING_ID = "scheduleToday";
+    private final String THIS_WEEK_SETTING_ID = "scheduleThisWeek";
+    private final String ALL_SETTING_ID = "scheduleAll";
+    private ShowScheduleAction showTodayAction;
 
     public FilterPanel() {
         REQUEST_PROCESSOR = DashboardViewer.getInstance().getRequestProcessor();
         BACKGROUND_COLOR = ColorManager.getDefault().getExpandableRootBackground();
         FOREGROUND_COLOR = ColorManager.getDefault().getExpandableRootForeground();
         openedTaskFilter = new OpenedCategorizedTaskFilter();
+        scheduleCategoryFilter = new ScheduleCategoryFilter();
         initComponents();
         setBackground(BACKGROUND_COLOR);
         final JLabel iconLabel = new JLabel(ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/find.png", true)); //NOI18N
@@ -125,7 +134,7 @@ public class FilterPanel extends javax.swing.JPanel {
         add(new JLabel(), new GridBagConstraints(5, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 
         toolBar = new DashboardToolbar();
-        
+
         btnSort = new JButton(new SortDialogAction());
         btnSort.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/sort.png", true)); //NOI18N
         btnSort.setToolTipText(NbBundle.getMessage(FilterPanel.class, "LBL_SortTooltip")); //NOI18N
@@ -143,19 +152,6 @@ public class FilterPanel extends javax.swing.JPanel {
             }
         });
         toolBar.addButton(btnFilter);
-
-//        btnGroup = new JButton(ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/groups.png", true)); //NOI18N
-//        btnGroup.setToolTipText(NbBundle.getMessage(FilterPanel.class, "LBL_FilterTooltip")); //NOI18N
-//        final JPopupMenu groupPopup = createFilterPopup();
-//        btnGroup.addMouseListener(new MouseAdapter() {
-//            @Override
-//            public void mouseClicked(MouseEvent e) {
-//                if (btnGroup.isEnabled()) {
-//                    groupPopup.show(e.getComponent(), btnGroup.getX(), btnGroup.getY() + btnGroup.getHeight());
-//                }
-//            }
-//        });
-//        toolBar.addButton(btnGroup);
         add(toolBar, new GridBagConstraints(6, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
     }
 
@@ -176,6 +172,11 @@ public class FilterPanel extends javax.swing.JPanel {
             lblCount.setVisible(true);
         }
         lblCount.setText("(" + hits + " " + NbBundle.getMessage(FilterPanel.class, "LBL_Matches") + ")"); //NOI18N
+    }
+
+    public void showTodayCategory() {
+        showTodayAction.menuItem.setSelected(true);
+        showTodayAction.actionPerformed(null);
     }
 
     @Override
@@ -240,50 +241,61 @@ public class FilterPanel extends javax.swing.JPanel {
         popup.add(chbShowFinished);
 
         //<editor-fold defaultstate="collapsed" desc="schedule filters section">
-        /*
         popup.addSeparator();
-        final ButtonGroup groupDue = new ButtonGroup();
-        JRadioButtonMenuItem rbAllDue = new JRadioButtonMenuItem(new AbstractAction(NbBundle.getMessage(FilterPanel.class, "LBL_DueAll")) { //NOI18N
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //TODO due dates
-                new DummyAction().actionPerformed(e);
-            }
-        });
-        rbAllDue.setSelected(true);
-        groupDue.add(rbAllDue);
-        popup.add(rbAllDue);
 
-        JRadioButtonMenuItem rbTodayDue = new JRadioButtonMenuItem(new AbstractAction(NbBundle.getMessage(FilterPanel.class, "LBL_DueToday")) { //NOI18N
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //TODO due dates
-                new DummyAction().actionPerformed(e);
-            }
-        });
-        groupDue.add(rbTodayDue);
-        popup.add(rbTodayDue);
+        JCheckBoxMenuItem chbToday = new JCheckBoxMenuItem();
+        IssueScheduleInfo todayInfo = DashboardUtils.getToday();
+        showTodayAction = new ShowScheduleAction(
+                NbBundle.getMessage(FilterPanel.class, "LBL_ScheduleToday"),
+                TODAY_SETTING_ID, todayInfo,
+                chbToday
+        ) {
 
-        JRadioButtonMenuItem rbWeekDue = new JRadioButtonMenuItem(new AbstractAction(NbBundle.getMessage(FilterPanel.class, "LBL_DueWeek")) { //NOI18N
             @Override
-            public void actionPerformed(ActionEvent e) {
-                //TODO due dates
-                new DummyAction().actionPerformed(e);
+            public void afterUpdate() {
+                DashboardViewer.getInstance().selectTodayCategory();
             }
-        });
-        groupDue.add(rbWeekDue);
-        popup.add(rbWeekDue);
 
-        JRadioButtonMenuItem rbMonthDue = new JRadioButtonMenuItem(new AbstractAction(NbBundle.getMessage(FilterPanel.class, "LBL_DueMonth")) { //NOI18N
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //TODO due dates
-                new DummyAction().actionPerformed(e);
-            }
-        });
-        groupDue.add(rbMonthDue);
-        popup.add(rbMonthDue);
-        */
+        };
+        chbToday.setAction(showTodayAction);
+        boolean showTodaySchedule = DashboardSettings.getInstance().showSchedule(TODAY_SETTING_ID);
+        chbToday.setSelected(showTodaySchedule);
+        if (showTodaySchedule) {
+            scheduleCategoryFilter.addInfo(todayInfo);
+        }
+        popup.add(chbToday);
+
+        JCheckBoxMenuItem chbThisWeek = new JCheckBoxMenuItem();
+        IssueScheduleInfo thisWeekInfo = DashboardUtils.getThisWeek();
+        AbstractAction showThisWeekAction = new ShowScheduleAction(
+                NbBundle.getMessage(FilterPanel.class, "LBL_ScheduleThisWeek"),
+                THIS_WEEK_SETTING_ID, thisWeekInfo,
+                chbThisWeek
+        );
+        chbThisWeek.setAction(showThisWeekAction);
+        boolean showThisWeekSchedule = DashboardSettings.getInstance().showSchedule(THIS_WEEK_SETTING_ID);
+        chbThisWeek.setSelected(showThisWeekSchedule);
+        if (showThisWeekSchedule) {
+            scheduleCategoryFilter.addInfo(thisWeekInfo);
+        }
+        popup.add(chbThisWeek);
+
+        JCheckBoxMenuItem chbAll = new JCheckBoxMenuItem();
+        IssueScheduleInfo allInfo = DashboardUtils.getAll();
+        AbstractAction showAllAction = new ShowScheduleAction(
+                NbBundle.getMessage(FilterPanel.class, "LBL_ScheduleAll"),
+                ALL_SETTING_ID, allInfo,
+                chbAll
+        );
+        chbAll.setAction(showAllAction);
+        boolean showAllSchedule = DashboardSettings.getInstance().showSchedule(ALL_SETTING_ID);
+        chbAll.setSelected(showAllSchedule);
+        if (showAllSchedule) {
+            scheduleCategoryFilter.addInfo(allInfo);
+        }
+        popup.add(chbAll);
+
+        DashboardViewer.getInstance().applyCategoryFilter(scheduleCategoryFilter, false);
         //</editor-fold>
         return popup;
     }
@@ -307,4 +319,45 @@ public class FilterPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
+
+    private class ShowScheduleAction extends AbstractAction {
+
+        private final IssueScheduleInfo scheduleInfo;
+        private final JMenuItem menuItem;
+        private final String settingId;
+
+        public ShowScheduleAction(String name, String settingId, IssueScheduleInfo scheduleInfo, JMenuItem menuItem) {
+            super(name);
+            this.settingId = settingId;
+            this.scheduleInfo = scheduleInfo;
+            this.menuItem = menuItem;
+        }
+
+        //NOI18N
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            REQUEST_PROCESSOR.post(new Runnable() {
+                @Override
+                public void run() {
+                    boolean selected = menuItem.isSelected();
+                    if (selected) {
+                        scheduleCategoryFilter.addInfo(scheduleInfo);
+                        int hits = DashboardViewer.getInstance().removeTaskFilter(openedTaskFilter, true);
+                        manageHitCount(hits);
+                    } else {
+                        scheduleCategoryFilter.removeInfo(scheduleInfo);
+                        int hits = DashboardViewer.getInstance().applyTaskFilter(openedTaskFilter, true);
+                        manageHitCount(hits);
+                    }
+                    DashboardViewer.getInstance().updateCategoryFilter(scheduleCategoryFilter);
+                    DashboardSettings.getInstance().updateShowSchedule(settingId, selected);
+                    afterUpdate();
+                }
+            });
+        }
+
+        public void afterUpdate() {
+
+        }
+    }
 }

@@ -48,6 +48,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.odcs.tasks.ODCS;
+import org.netbeans.modules.odcs.tasks.ODCSConnector;
 import org.netbeans.modules.odcs.tasks.util.ODCSUtil;
 import org.openide.nodes.Node.Property;
 
@@ -64,7 +65,12 @@ public class ODCSIssueNode extends IssueNode<ODCSIssue> {
     }
     
     public ODCSIssueNode(ODCSIssue issue) {
-        super(ODCSUtil.getRepository(issue.getRepository()), issue, ODCS.getInstance().getChangesProvider());
+        super(ODCSConnector.ID,
+              issue.getRepository().getID(),
+              issue, 
+              ODCS.getInstance().getIssueProvider(),
+              ODCS.getInstance().getStatusProvider(),
+              ODCS.getInstance().getChangesProvider());
     }
 
     ODCSIssue getODCSIssue() {
@@ -104,12 +110,12 @@ public class ODCSIssueNode extends IssueNode<ODCSIssue> {
             return getODCSIssue().getID();
         }
         @Override
-        public int compareTo(IssueProperty p) {
+        public int compareTo( IssueNode<ODCSIssue>.IssueProperty<String> p) {
             if(p == null) {
                 return 1;
             }
-            Integer i1 = Integer.parseInt(getIssue().getID());
-            Integer i2 = Integer.parseInt(p.getIssue().getID());
+            Integer i1 = Integer.parseInt(getIssueData().getID());
+            Integer i2 = Integer.parseInt(p.getIssueData().getID());
             return i1.compareTo(i2);
         }
     }
