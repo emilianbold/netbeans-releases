@@ -1245,4 +1245,52 @@ public class ConvertToARMTest extends NbTestCase {
                 .run(ConvertToARM.class)
                 .assertWarnings("6:27-6:30:verifier:TXT_ConvertToARM");
     }
+    
+    /**
+     * All comments except possibly for the removed .close(); statement
+     * should be somehow preserved, although they might be moved around.
+     * 
+     * @throws Exception 
+     */
+    public void testPreserveComments228141() throws Exception {
+        String s =
+            HintTest.create()
+                .input("package test;\n" +
+                       "import java.io.*;\n" +
+                       "public class Test {\n" +
+                        "    public void arm2() throws Exception {\n" +
+                        "         System.err.println(\"start\");\n" +
+                        "\n" +         
+                        "        // c1\n" +
+                        "        InputStream in = new FileInputStream(\"boo\"); // c2\n" +
+                        "        // c3\n" +
+                        "        try { // c4\n" +
+                        "            // c5\n" +
+                        "            in.read(); // c6\n" +
+                        "            // c7\n" +
+                        "        } catch (Exception e) { // c8\n" +
+                        "            // c12\n" +
+                        "            System.err.println(\"ex\"); // c9\n" +
+                        "            // c10\n" +
+                        "        } finally { \n" +
+                        "            in.close();\n" +
+                        "            // c11\n" +
+                        "            System.err.println(\"fin\"); // c12\n" +
+                        "            // c13\n" +
+                        "        } // c14\n" +
+                        "        // c15\n" +
+                        "        System.err.println(\"done\");\n" +
+                        "   }\n" +
+                        "}\n")
+                .sourceLevel("1.7")
+                .run(ConvertToARM.class)
+                .findWarning("7:20-7:22:verifier:TXT_ConvertToARM").applyFix().getOutput();
+        
+        for (int i = 1 ; i < 15; i++) {
+            String comment = "// c" + i + "\n";
+            if (!s.contains(comment)) {
+                fail("Comment #" + i + " is missing");
+            }
+        }
+    }
 }
