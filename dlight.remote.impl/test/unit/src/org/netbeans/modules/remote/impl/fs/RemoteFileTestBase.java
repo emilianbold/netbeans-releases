@@ -76,6 +76,7 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
         System.setProperty("socket.connection.timeout", "30000");
         System.setProperty("remote.throw.assertions", "true");
         System.setProperty("remote.user.password.keep_in_memory", "true");
+        System.setProperty("remote.fs_server.cleanup", "true");
         TestLogHandler.attach(RemoteLogger.getInstance());
         new DirectoryReaderFS.Starter().run();
     }

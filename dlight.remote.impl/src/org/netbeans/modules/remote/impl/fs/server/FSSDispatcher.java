@@ -101,6 +101,7 @@ import org.openide.util.RequestProcessor;
     private static final String USER_DEFINED_SERVER_PATH = System.getProperty("remote.fs_server.path");
     public static final int REFRESH_INTERVAL = Integer.getInteger("remote.fs_server.refresh", 2); // NOI18N
     public static final int VERBOSE = Integer.getInteger("remote.fs_server.verbose", 0); // NOI18N
+    public static final boolean CLEANUP = Boolean.getBoolean("remote.fs_server.cleanup"); // NOI18N
     public static final boolean LOG = Boolean.getBoolean("remote.fs_server.log");
 
     // Actually this RP should have only 2 tasks: one reads error, another stdout;
@@ -530,6 +531,9 @@ import org.openide.util.RequestProcessor;
             }
             if (LOG) {
                 args.add("-l"); // NOI18N
+            }
+            if (CLEANUP) {
+                args.add("-c"); // NOI18N
             }
             processBuilder.setArguments(args.toArray(new String[args.size()]));
             process = processBuilder.call();
