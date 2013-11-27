@@ -1,3 +1,15 @@
+package org.netbeans.modules.javascript2.jquery.model;
+
+import java.beans.PropertyChangeEvent;
+import java.util.Collection;
+import java.util.regex.Pattern;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
+import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.spi.model.FunctionArgument;
+import org.netbeans.modules.javascript2.editor.spi.model.FunctionInterceptor;
+import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
+
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -39,33 +51,34 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.jquery;
-
-import java.io.IOException;
-import org.netbeans.modules.javascript2.editor.JsTestBase;
-import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Petr Pisl
  */
-public class JQueryStructureTest extends JsTestBase {
-    
-    public JQueryStructureTest(String testName) {
-        super(testName);
-    }
-    
+@FunctionInterceptor.Registration(priority = 50)
+public class jQueryExtendInterceptor implements FunctionInterceptor {
+
+    private final static Pattern PATTERN = Pattern.compile("(\\$|jQuery)\\.extend");  //NOI18N
+
     @Override
-    protected void assertDescriptionMatches(FileObject fileObject,
-            String description, boolean includeTestName, String ext, boolean goldenFileInTestFileDir) throws IOException {
-        super.assertDescriptionMatches(fileObject, description, includeTestName, ext, true);
+    public Pattern getNamePattern() {
+        return PATTERN;
     }
-    
-    public void testIssue238856() throws Exception {
-        checkStructure("testfiles/jquery/issue238856.js");
-    }
-    
-    public void testIssue236722() throws Exception {
-        checkStructure("testfiles/jquery/issue236722.js");
+
+    @Override
+    public void intercept(String name, JsObject globalObject, DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
+        if (args.size() == 1) {
+            FunctionArgument arg = args.iterator().next();
+            if (arg.getKind() == FunctionArgument.Kind.ANONYMOUS_OBJECT) {
+                JsObject possiblePlugin = (JsObject)arg.getValue();
+                if (possiblePlugin.getProperties().size() == 1) {
+                    JsObject parent = globalObject;
+                    JsObject property = possiblePlugin.getProperties().values().iterator().next();
+                    JsObject newObject = factory.newReference(parent, property.getName(), property.getDeclarationName().getOffsetRange(), property, true, null);
+                    parent.addProperty(property.getName(), newObject);
+                }
+            }
+        }
     }
 }
