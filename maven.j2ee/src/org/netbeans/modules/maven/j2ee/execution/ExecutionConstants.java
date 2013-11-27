@@ -39,45 +39,22 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.knockout;
 
-import org.netbeans.modules.javascript2.editor.JsCodeCompletionBase;
+package org.netbeans.modules.maven.j2ee.execution;
 
 /**
+ * Constants related to the execution.
  *
- * @author Petr Pisl
+ * @author Martin Janicek <mjanicek@netbeans.org>
  */
-public class KOCodeCompletionTest extends JsCodeCompletionBase {
+public final class ExecutionConstants {
 
-    public KOCodeCompletionTest(String testName) {
-        super(testName);
-    }
-    
-    public void testForEach() throws Exception {
-        checkCompletion("completion/foreach/index.html", "            <div data-bind=\"text: ^ , css: jmeno == 'pepa' ? 'jouda' :", false);
+    private ExecutionConstants() {
     }
 
-    public void testWith() throws Exception {
-        checkCompletion("completion/with/index.html", "            <div data-bind=\"text: ^\"></div>", false);
-    }
+    /**
+     * Used to skip the build before deployment.
+     */
+    public static final String SKIP_BUILD = "skip.build"; // NOI18N
 
-    public void testIssue231569() throws Exception {
-        checkCompletion("completion/issue231569/index.html", "                <input data-bind='value: userNameToAdd, valueUpdate: \"keyup\", css: { invalid: ^ }' /></input>", false);
-    }
-
-    public void testTemplate() throws Exception {
-        checkCompletion("completion/template/index.html", "            <h3 data-bind=\"text: ^\"></h3>", false);
-    }
-
-    public void testTemplateForEach() throws Exception {
-        checkCompletion("completion/templateForEach/index.html", "    <h3 data-bind=\"text: ^\"></h3>", false);
-    }
-
-    public void testTemplateForEachAlias() throws Exception {
-        checkCompletion("completion/templateForEachAlias/index.html", "    <h3 data-bind=\"text: simple.^ \"></h3>", false);
-    }
-
-    public void testTemplateInner() throws Exception {
-        checkCompletion("completion/templateInner/index.html", "        <strong data-bind=\"text: ^\"></strong>", false);
-    }
 }

@@ -95,8 +95,7 @@ public class PrerequisitesCheckerImpl implements PrerequisitesChecker, LateBound
             alwaysBuild = Boolean.FALSE;
         }
 
-        // If we don't want to build always, set skip.build property
-        config.setInternalProperty("skip.build", !alwaysBuild); //NOI18N
+        config.setInternalProperty(ExecutionConstants.SKIP_BUILD, !alwaysBuild); //NOI18N
 
         String actionName = config.getActionName();
         if (!applicableActions.contains(actionName)) {
