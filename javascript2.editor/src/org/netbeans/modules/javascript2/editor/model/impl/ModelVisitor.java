@@ -665,6 +665,9 @@ public class ModelVisitor extends PathNodeVisitor {
             } else {
                 parent = fncScope;
             }
+            if (parent == null) {
+                parent = fncScope;
+            }
             for (VarNode varNode : functionNode.getDeclarations()) {
                 Identifier varName = new IdentifierImpl(varNode.getName().getName(), new OffsetRange(varNode.getName().getStart(), varNode.getName().getFinish()));
                 OffsetRange range = varNode.getInit() instanceof ObjectNode ? new OffsetRange(varNode.getName().getStart(), ((ObjectNode)varNode.getInit()).getFinish()) 
