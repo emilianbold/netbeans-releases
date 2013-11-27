@@ -122,6 +122,23 @@ public final class DeploymentHelper {
     private DeploymentHelper() {
     }
 
+    public enum DeploymentResult {
+        /**
+         * Deployment was successfully performed.
+         */
+        SUCCESSFUL,
+
+        /**
+         * Deployment was canceled by user.
+         */
+        CANCELED,
+
+        /**
+         * Deployment failed.
+         * This might be because of missing application server etc.
+         */
+        FAILED
+    }
 
     /**
      * Performs deploy based on the given arguments.
@@ -130,7 +147,7 @@ public final class DeploymentHelper {
      * @param executionContext execution context
      * @return {@literal true} if the execution was successful, {@literal false} otherwise
      */
-    public static boolean perform(final RunConfig config, final ExecutionContext executionContext) {
+    public static DeploymentResult perform(final RunConfig config, final ExecutionContext executionContext) {
         final Project project = config.getProject();
 
         if (RunUtils.isCompileOnSaveEnabled(config)) {
@@ -155,7 +172,7 @@ public final class DeploymentHelper {
             err.println();
             err.println();
             err.println("NetBeans: Application Server deployment not available for Maven project '" + ProjectUtils.getInformation(project).getDisplayName() + "'"); // NOI18N
-            return false;
+            return DeploymentResult.FAILED;
         }
 
         String serverInstanceID = null;
@@ -193,12 +210,12 @@ public final class DeploymentHelper {
                             jmp.setServerInstanceID(chosenServer);
                         } else {
                             // User clicked on cancel button --> End the execution
-                            return true;
+                            return DeploymentResult.CANCELED;
                         }
                     }
                 } else {
                     err.println("NetBeans: No suitable Deployment Server is defined for the project or globally."); // NOI18N
-                    return false;
+                    return DeploymentResult.FAILED;
                 }
             }
         }
@@ -271,7 +288,7 @@ public final class DeploymentHelper {
             oneTimeDeployment.reset();
             MavenProjectSupport.changeServer(project, false);
         }
-        return true;
+        return DeploymentResult.SUCCESSFUL;
     }
 
     private static boolean isRedeploy(RunConfig config) {
