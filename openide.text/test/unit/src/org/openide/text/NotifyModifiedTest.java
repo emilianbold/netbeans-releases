@@ -644,8 +644,9 @@ implements CloneableEditorSupport.Env {
         
         // does the reload
         propL.firePropertyChange (PROP_TIME, null, null);
-        // wait till reload is over
-        waitEQ ();
+
+        Thread.sleep(100); // Wait till reload will start processing
+        waitEQ (); // Wait till EDT part of the reload is over
 
         Object newDoc = support.openDocument ();
         assertSame ("Reload does not change the document", newDoc, doc);

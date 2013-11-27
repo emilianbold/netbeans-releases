@@ -780,25 +780,40 @@ is divided into following sections:
             <target name="create-jad">
                 <xsl:attribute name="description">Creates JAD file.</xsl:attribute>
                 <fail unless="dist.jad">Must set dist.jad</fail>
-                <echo file="${{dist.dir}}/${{dist.jad}}" message="${{manifest.midlets}}${{manifest.others}}${{manifest.apipermissions}}${{manifest.pushregistry}}" encoding="UTF-8"/>
+                <echo file="${{dist.dir}}/${{dist.jad}}" message="${{manifest.others}}" encoding="UTF-8"/>
+                <antcall inheritall="true" inheritrefs="true" target="-add-midlets"/>
                 <antcall inheritall="true" inheritrefs="true" target="-add-optional-attributes"/>
                 <antcall target="-add-configuration" inheritall="true" inheritrefs="true"/>
                 <antcall target="-add-profile" inheritall="true" inheritrefs="true"/>
-                <nb-jad jadfile="${{dist.dir}}/${{dist.jad}}" jarfile="${{dist.jar}}" url="${{dist.jar.file}}" sign="${{sign.enabled}}" keystore="${{sign.keystore}}" keystorepassword="${{sign.keystore.password}}" alias="${{sign.alias}}" aliaspassword="${{sign.alias.password}}" encoding="UTF-8"/>
+                <condition property="jad.jarurl" value="${{deployment.jarurl}}">
+                    <istrue value="${{deployment.override.jarurl}}"/>
+                </condition>
+                <property name="jad.jarurl" value="${{dist.jar.file}}"/>
+                <nb-jad jadfile="${{dist.dir}}/${{dist.jad}}" jarfile="${{dist.jar}}" url="${{jad.jarurl}}" sign="${{sign.enabled}}" keystore="${{sign.keystore}}" keystorepassword="${{sign.keystore.password}}" alias="${{sign.alias}}" aliaspassword="${{sign.alias.password}}" encoding="UTF-8"/>
+            </target>
+
+            <target name="-add-midlets">
+                <xsl:attribute name="unless">manifest.is.liblet</xsl:attribute>
+                <echo append="true" encoding="UTF-8" file="${{dist.dir}}/${{dist.jad}}" message="${{manifest.midlets}}"/>
             </target>
 
             <target name="-add-optional-attributes">
-                <xsl:attribute name="depends">-add-apipermissions,-add-pushregistry</xsl:attribute>
+                <xsl:attribute name="depends">-add-apipermissions,-add-pushregistry,-add-jad-extra</xsl:attribute>
             </target>
 
             <target name="-add-apipermissions">
                 <xsl:attribute name="if">manifest.apipermissions</xsl:attribute>
-                <echo append="true" encoding="UTF-8" file="${dist.dir}/${dist.jad}" message="${manifest.apipermissions}"/>
+                <echo append="true" encoding="UTF-8" file="${{dist.dir}}/${{dist.jad}}" message="${{manifest.apipermissions}}"/>
             </target>
 
             <target name="-add-pushregistry">
                 <xsl:attribute name="if">manifest.pushregistry</xsl:attribute>
-                <echo append="true" encoding="UTF-8" file="${dist.dir}/${dist.jad}" message="${manifest.pushregistry}"/>
+                <echo append="true" encoding="UTF-8" file="${{dist.dir}}/${{dist.jad}}" message="${{manifest.pushregistry}}"/>
+            </target>
+
+            <target name="-add-jad-extra">
+                <xsl:attribute name="if">manifest.jad</xsl:attribute>
+                <echo append="true" encoding="UTF-8" file="${{dist.dir}}/${{dist.jad}}" message="${{manifest.jad}}"/>
             </target>
 
             <target name="-add-configuration" unless="contains.manifest.configuration">
@@ -818,6 +833,10 @@ is divided into following sections:
                 </manifest>
                 <script>
 		<xsl:attribute name="language">javascript</xsl:attribute><![CDATA[
+                function isTrue(prop) {
+                    return prop != null &&
+                    (prop.toLowerCase() == "true" || prop.toLowerCase() == "yes" || prop.toLowerCase() == "on");
+                }
                 function updateManifest(entries) {
                     var src = new String(project.getProperty("tmp.manifest.file"));
                     var srf = new java.io.File(src);
@@ -841,14 +860,18 @@ is divided into following sections:
                         manifest.perform();
                     }
                 }
-                var midlets = new String(project.getProperty("manifest.midlets"));
-                updateManifest(midlets);
+                if (!isTrue(project.getProperty("manifest.is.liblet"))) {
+                    var midlets = new String(project.getProperty("manifest.midlets"));
+                    updateManifest(midlets);
+                }
                 var others = new String(project.getProperty("manifest.others"));
                 updateManifest(others);
                 var apipermissions = new String(project.getProperty("manifest.apipermissions"));
                 updateManifest(apipermissions);
                 var pushregistry = new String(project.getProperty("manifest.pushregistry"));
                 updateManifest(pushregistry);
+                var manifestExtra = new String(project.getProperty("manifest.manifest"));
+                updateManifest(manifestExtra);
                 ]]></script>
             </target>
 

@@ -51,6 +51,7 @@ import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
+import javax.swing.JEditorPane;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.HyperlinkEvent;
@@ -145,6 +146,7 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
         styleSheet.addRule("h1 { font-weight: bold; font-size: 100% }");
         hek.setStyleSheet(styleSheet);
         descriptionPanel.setEditorKit(hek);
+        descriptionPanel.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
 
         manager.addPropertyChangeListener(new PropertyChangeListener() {
             @Override public void propertyChange(PropertyChangeEvent evt) {
@@ -199,7 +201,7 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
         jSplitPane1 = new javax.swing.JSplitPane();
         btvHolder = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        descriptionPanel = new javax.swing.JTextPane();
+        descriptionPanel = new javax.swing.JEditorPane();
         jToolBar1 = new javax.swing.JToolBar();
         refreshButton = new javax.swing.JButton();
         previousError = new javax.swing.JButton();
@@ -345,7 +347,7 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel btvHolder;
     private javax.swing.JToggleButton byCategory;
-    private javax.swing.JTextPane descriptionPanel;
+    private javax.swing.JEditorPane descriptionPanel;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JToolBar jToolBar1;
