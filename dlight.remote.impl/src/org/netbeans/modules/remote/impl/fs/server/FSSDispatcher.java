@@ -90,6 +90,7 @@ import org.openide.util.RequestProcessor;
  */
 /*package*/ final class FSSDispatcher implements Disposer<FSSResponse> {
 
+    private static final boolean TRACE = false;
     private static final Map<ExecutionEnvironment, FSSDispatcher> instances = 
             new HashMap<ExecutionEnvironment, FSSDispatcher>();
     private static final Object instanceLock = new Object();
@@ -486,7 +487,9 @@ import org.openide.util.RequestProcessor;
                 try {
                     String line;
                     while ((line = reader.readLine()) != null) {
-                        System.err.printf("%s %s\n", env, line); //NOI18N
+                        if (TRACE) {
+                            System.err.printf("%s %s\n", env, line); //NOI18N
+                        }
                         lastErrorMessage.set(line);
                     }
                 } catch (IOException ex) {
