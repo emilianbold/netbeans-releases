@@ -468,6 +468,12 @@ final class ModuleListParser {
                         File jdk7 = new File(new File(new File(jhm), "lib"), "jfxrt.jar");
                         if (jdk7.exists()) {
                             resultBin = jdk7;
+                        } else {
+                            String nball = (String) properties.get("nb_all");
+                            File external = new File(new File(new File(new File(nball), "libs.javafx"), "external"), "jfxrt.jar");
+                            if (external.exists()) {
+                                resultBin = external;
+                            }
                         }
                     }
                 }
