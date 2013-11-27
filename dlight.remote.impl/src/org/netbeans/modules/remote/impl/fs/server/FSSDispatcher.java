@@ -100,10 +100,9 @@ import org.openide.util.RequestProcessor;
     private final Object responseLock = new Object();
 
     private static final String USER_DEFINED_SERVER_PATH = System.getProperty("remote.fs_server.path");
-    public static final int REFRESH_INTERVAL = Integer.getInteger("remote.fs_server.refresh", 2); // NOI18N
-    public static final int VERBOSE = Integer.getInteger("remote.fs_server.verbose", 0); // NOI18N
-    public static final boolean CLEANUP = Boolean.getBoolean("remote.fs_server.cleanup"); // NOI18N
-    public static final boolean LOG = Boolean.getBoolean("remote.fs_server.log");
+    private static final int REFRESH_INTERVAL = Integer.getInteger("remote.fs_server.refresh", 2); // NOI18N
+    private static final int VERBOSE = Integer.getInteger("remote.fs_server.verbose", 0); // NOI18N
+    private static final boolean LOG = Boolean.getBoolean("remote.fs_server.log");
 
     // Actually this RP should have only 2 tasks: one reads error, another stdout;
     // but in the case of, say, connection failure and reconnect, old task can still be alive,
@@ -127,9 +126,15 @@ import org.openide.util.RequestProcessor;
     private final RequestProcessor refreshRp = new RequestProcessor(getClass().getSimpleName() + "_Refresh"); //NOI18N
     private final RequestProcessor.Task refreshTask = refreshRp.create(new RefreshRunnable());
 
-    public FSSDispatcher(ExecutionEnvironment env) {
+    private volatile boolean cleanupUponStart = false;
+    
+    private FSSDispatcher(ExecutionEnvironment env) {
         this.env = env;
         traceName = "fs_server[" + env + ']'; // NOI18N
+    }
+    
+    public void setCleanupUponStart(boolean cleanup) {
+        cleanupUponStart = cleanup;
     }
     
     private class RefreshRunnable implements Runnable {
@@ -256,6 +261,12 @@ import org.openide.util.RequestProcessor;
                         }
                     }
                 }
+                NativeProcess process = server.getProcess();
+                if (!ProcessUtils.isAlive(process)) {
+                    int rc = process.waitFor();                    
+                    RemoteLogger.fine("fs_server (pid {0} at {1}) exited with rc = {2}", process.getPID(), env, rc);//NOI18N
+                    
+                }
             } catch (IOException ioe) {
                 ioe.printStackTrace(System.err);
             } catch (Throwable thr) { // too wide, but we need to guarantee dispatcher is alive
@@ -298,7 +309,7 @@ import org.openide.util.RequestProcessor;
                 if (!ProcessUtils.isAlive(process)) {
                     try {
                         int rc = process.waitFor();
-                        if (rc != 0) {
+                        if (rc != 0 && rc != -1) { // -1 most likely means just disconnect
                             setInvalid(false);
                         }
                         ExecutionException exception = new ExecutionException(lastErrorMessage.get(), null);
@@ -535,7 +546,7 @@ import org.openide.util.RequestProcessor;
             if (LOG) {
                 args.add("-l"); // NOI18N
             }
-            if (CLEANUP) {
+            if (cleanupUponStart) {
                 args.add("-c"); // NOI18N
             }
             processBuilder.setArguments(args.toArray(new String[args.size()]));

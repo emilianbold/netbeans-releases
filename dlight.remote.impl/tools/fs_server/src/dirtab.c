@@ -393,6 +393,11 @@ dirtab_element *dirtab_get_element(const char* abspath) {
         el = *found;
     } else {
         el = add_path(abspath);
+        if (table.dirty) {
+            if (flush_impl()) {
+                table.dirty = false;
+            }
+        }
     }
 
     mutex_unlock(&table.mutex);

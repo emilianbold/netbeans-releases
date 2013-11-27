@@ -75,8 +75,9 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
         System.setProperty("jsch.connection.timeout", "30000");
         System.setProperty("socket.connection.timeout", "30000");
         System.setProperty("remote.throw.assertions", "true");
-        System.setProperty("remote.user.password.keep_in_memory", "true");
-        System.setProperty("remote.fs_server.cleanup", "true");
+        System.setProperty("remote.user.password.keep_in_memory", "true");        
+        System.setProperty("remote.fs_server.verbose", "1");
+        System.setProperty("remote.fs_server.log", "true");        
         TestLogHandler.attach(RemoteLogger.getInstance());
         new DirectoryReaderFS.Starter().run();
     }
@@ -104,6 +105,7 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
     @Override
     protected void setUp() throws Exception {
         System.err.printf("\n###> setUp    %s\n", getClass().getName() + '.' + getName());
+        DirectoryReaderFS.getInstance(execEnv).testSetCleanupUponStart(true);
         super.setUp();
         setLoggers(true);
         if (execEnv == null) {

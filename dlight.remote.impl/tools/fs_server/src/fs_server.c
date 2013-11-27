@@ -41,9 +41,11 @@ static bool refresh = false;
 static bool refresh_explicit = false;
 static bool statistics = false;
 static int refresh_sleep = 1;
+//static bool shutting_down = false;
 
 #define FS_SERVER_MAJOR_VERSION 1
-#define FS_SERVER_MINOR_VERSION 11
+#define FS_SERVER_MID_VERSION 0
+#define FS_SERVER_MINOR_VERSION 13
 
 typedef struct fs_entry {
     int /*short?*/ name_len;
@@ -939,6 +941,14 @@ static void signal_handler(int signal) {
     shutdown();
 }
 
+//static void sigpipe_handler(int signal) {
+//    log_print("exiting by signal %s (%d)\n", signal_name(signal), signal);
+//////    if (!shutting_down) {
+//////        shutting_down = false;
+//////        shutdown();
+//////    }
+//}
+
 static void startup() {
     dirtab_init(clear_persistence, refresh_explicit ? DE_WSTATE_NONE : DE_WSTATE_POLL);
     const char* basedir = dirtab_get_basedir();
@@ -985,9 +995,14 @@ static void startup() {
     sigaction_wrapper(SIGHUP, &new_sigaction, NULL);
     sigaction_wrapper(SIGQUIT, &new_sigaction, NULL);
     sigaction_wrapper(SIGINT, &new_sigaction, NULL);    
+    
+//    new_sigaction.sa_handler = sigpipe_handler;
+//    new_sigaction.sa_flags = SA_RESTART;
+//    sigemptyset(&new_sigaction.sa_mask);
+//    sigaction_wrapper(SIGPIPE, &new_sigaction, NULL);    
 }
 
-static void shutdown() {    
+static void shutdown() {   
     state_set_proceed(false);
     blocking_queue_shutdown(&req_queue);
     trace(TRACE_INFO, "Max. requests queue size: %d\n", blocking_queue_max_size(&req_queue));
@@ -1011,8 +1026,8 @@ static void shutdown() {
 static void log_header(int argc, char* argv[]) {
     if (log_flag) {
        log_open("log") ;
-       log_print("\n--------------------------------------\nfs_server version %d.%d (%s %s) started on ", 
-               FS_SERVER_MAJOR_VERSION, FS_SERVER_MINOR_VERSION, __DATE__, __TIME__);
+       log_print("\n--------------------------------------\nfs_server version %d.%d.%d (%s %s) started on ", 
+               FS_SERVER_MAJOR_VERSION, FS_SERVER_MID_VERSION, FS_SERVER_MINOR_VERSION, __DATE__, __TIME__);
        time_t t = time(NULL);
        struct tm *tt = localtime(&t);
        if (tt) {
@@ -1031,7 +1046,8 @@ static void log_header(int argc, char* argv[]) {
 
 int main(int argc, char* argv[]) {
     process_options(argc, argv);
-    trace(TRACE_INFO, "Version %d.%d (%s %s)\n", FS_SERVER_MAJOR_VERSION, FS_SERVER_MINOR_VERSION, __DATE__, __TIME__);
+    trace(TRACE_INFO, "Version %d.%d.%d (%s %s)\n", FS_SERVER_MAJOR_VERSION, 
+            FS_SERVER_MID_VERSION, FS_SERVER_MINOR_VERSION, __DATE__, __TIME__);
     startup();
     log_header(argc, argv);
     main_loop();    

@@ -107,7 +107,7 @@ public class DirectoryReaderFS implements DirectoryReader {
 
     private DirectoryReaderFS(ExecutionEnvironment env) {
         this.env = env;
-        this.dispatcher = new FSSDispatcher(env);
+        this.dispatcher = FSSDispatcher.getInstance(env);
     }
     
     public boolean isValid() {
@@ -312,6 +312,10 @@ public class DirectoryReaderFS implements DirectoryReader {
         }
         return result;
     }    
+    
+    public final void testSetCleanupUponStart(boolean cleanup) {
+        dispatcher.setCleanupUponStart(cleanup);
+    }
 
     @OnStop
     public static class Closer implements Runnable {

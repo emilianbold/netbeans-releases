@@ -42,6 +42,7 @@
 package org.netbeans.modules.remote.impl.fs;
 
 import java.io.IOException;
+import java.util.logging.Level;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -49,6 +50,8 @@ import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
+import org.netbeans.modules.remote.impl.RemoteLogger;
+import org.netbeans.modules.remote.impl.fs.server.DirectoryReaderFS;
 import org.netbeans.modules.remote.test.RemoteApiTest;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -77,6 +80,7 @@ public class RefreshTestCase_IZ_210125 extends RemoteFileTestBase {
 
     @ForAllEnvironments
     public void test_iz_210125() throws Exception {
+        RemoteLogger.getInstance().setLevel(Level.FINE);
         String baseDir = null;
         try {
             baseDir = mkTempAndRefreshParent(true);
@@ -89,9 +93,11 @@ public class RefreshTestCase_IZ_210125 extends RemoteFileTestBase {
             RemoteFileSystemManager.getInstance().resetFileSystem(execEnv);
             sleep(100); // just in case
             ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", "rm -rf " + dirPath1);
+            assertTrue("error removing " + dirPath1 + " at " + execEnv, res.isOK());
             char[] passwd = PasswordManager.getInstance().getPassword(execEnv);
             ConnectionManager.getInstance().disconnect(execEnv);
-            sleep(100); // just in case
+            DirectoryReaderFS.getInstance(execEnv).testSetCleanupUponStart(false);
+            //sleep(100); // just in case
             PasswordManager.getInstance().storePassword(execEnv, passwd, false);
             fs = RemoteFileSystemManager.getInstance().getFileSystem(execEnv);
             assertNotNull("Null remote file system", fs);
@@ -102,8 +108,9 @@ public class RefreshTestCase_IZ_210125 extends RemoteFileTestBase {
             dirFO1 = rootFO.getFileObject(dirPath1);
             fileFO1 = rootFO.getFileObject(filePath1);
             if (dirFO1 != null || fileFO1 != null) {
-                // wait 4 sec, ask each half second
-                for (int i = 0; i < 8; i++) {
+                long startedWaiting = System.currentTimeMillis();
+                // wait at most 30 sec, ask each half second                
+                for (int i = 0; i < 60; i++) {
                     sleep(500);
                     //RemoteFileSystemManager.getInstance().getFileSystem(execEnv).getRefreshManager().testWaitLastRefreshFinished();
                     dirFO1 = rootFO.getFileObject(dirPath1);
@@ -111,15 +118,22 @@ public class RefreshTestCase_IZ_210125 extends RemoteFileTestBase {
                     if (dirFO1 == null && fileFO1 == null) {
                         break;
                     }
+                    long dt = System.currentTimeMillis() - startedWaiting;
+                    if (i%10 == 0) {
+                        System.err.printf("Still waiting till %s:%s is refreshed... %d ms passed...\n", execEnv, dirPath1, dt);
+                    }
                 }                
                 assertNull(dirFO1);
                 assertNull(fileFO1);
+                System.err.printf("Waited till %s:%s is refreshed for %d ms\n", 
+                        execEnv, dirPath1, System.currentTimeMillis() - startedWaiting);
             }
         } finally {
             if (baseDir != null) {
                 ProcessUtils.ExitStatus res = ProcessUtils.execute(getTestExecutionEnvironment(), "chmod", "-R", "700", baseDir);
                 removeRemoteDirIfNotNull(baseDir);
             }
+            DirectoryReaderFS.getInstance(execEnv).testSetCleanupUponStart(true);
         }        
     }
     
