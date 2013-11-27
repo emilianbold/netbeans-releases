@@ -75,29 +75,35 @@ public class KODataBindContext {
         this.alias = context.alias;
     }
 
+    // XXX we are intetionaly ignoring root of the child
     public static KODataBindContext combine(KODataBindContext parent, KODataBindContext child) {
         KODataBindContext result = new KODataBindContext(parent);
-        for (ParentContext c : child.parents) {
-            result.push(c.getValue(), c.isInForEach(), c.getAlias());
+        for (int i = 1; i < child.parents.size(); i++) {
+            ParentContext c = child.parents.get(i);
+            result.push(c.getValue(), c.isInForEach(), c.getAlias(), true);
         }
-        result.push(child.getData(), child.isInForEach(), child.getAlias());
+        result.push(child.getData(), child.isInForEach(), child.getAlias(), true);
         return result;
     }
 
     public void push(String newData, boolean foreach, String alias) {
+        push(newData, foreach, alias, false);
+    }
+
+    private void push(String newData, boolean foreach, String alias, boolean noExpansion) {
         assert !foreach || newData != null;
         assert alias == null || foreach;
 
         String replacement = (data == null || data.equals("$root")) ? "ko.$bindings" : data; // NOI18N
         String toAdd = newData.replaceAll("$data", replacement); // NOI18N
 
-        if (foreach) {
+        if (!noExpansion && foreach) {
             toAdd = "(" + toAdd + ")[0]"; // NOI18N
         }
         if (data == null || "$root".equals(data)) { // NOI18N
             parents.add(new ParentContext("ko.$bindings", false, null)); // NOI18N
         } else {
-            parents.add(new ParentContext(data, foreach, alias));
+            parents.add(new ParentContext(this.data, this.inForEach, this.alias));
         }
         this.data = toAdd;
         this.inForEach = foreach;

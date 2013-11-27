@@ -107,6 +107,10 @@ public class KOJsEmbeddingProviderPluginTest extends CslTestBase {
         checkVirtualSource("completion/templateForEachAlias/index.html");
     }
 
+    public void testTemplateInner() throws Exception {
+        checkVirtualSource("completion/templateInner/index.html");
+    }
+
     public void testDoNotCreateKOVirtualSourceForPlainFiles() {
         FileObject index = getTestFile("KOTestProject/public_html/plain.html");
         BaseDocument document = getDocument(index);
