@@ -780,11 +780,21 @@ is divided into following sections:
             <target name="create-jad">
                 <xsl:attribute name="description">Creates JAD file.</xsl:attribute>
                 <fail unless="dist.jad">Must set dist.jad</fail>
-                <echo file="${{dist.dir}}/${{dist.jad}}" message="${{manifest.midlets}}${{manifest.others}}" encoding="UTF-8"/>
+                <echo file="${{dist.dir}}/${{dist.jad}}" message="${{manifest.others}}" encoding="UTF-8"/>
+                <antcall inheritall="true" inheritrefs="true" target="-add-midlets"/>
                 <antcall inheritall="true" inheritrefs="true" target="-add-optional-attributes"/>
                 <antcall target="-add-configuration" inheritall="true" inheritrefs="true"/>
                 <antcall target="-add-profile" inheritall="true" inheritrefs="true"/>
-                <nb-jad jadfile="${{dist.dir}}/${{dist.jad}}" jarfile="${{dist.jar}}" url="${{dist.jar.file}}" sign="${{sign.enabled}}" keystore="${{sign.keystore}}" keystorepassword="${{sign.keystore.password}}" alias="${{sign.alias}}" aliaspassword="${{sign.alias.password}}" encoding="UTF-8"/>
+                <condition property="jad.jarurl" value="${{deployment.jarurl}}">
+                    <istrue value="${{deployment.override.jarurl}}"/>
+                </condition>
+                <property name="jad.jarurl" value="${{dist.jar.file}}"/>
+                <nb-jad jadfile="${{dist.dir}}/${{dist.jad}}" jarfile="${{dist.jar}}" url="${{jad.jarurl}}" sign="${{sign.enabled}}" keystore="${{sign.keystore}}" keystorepassword="${{sign.keystore.password}}" alias="${{sign.alias}}" aliaspassword="${{sign.alias.password}}" encoding="UTF-8"/>
+            </target>
+
+            <target name="-add-midlets">
+                <xsl:attribute name="unless">manifest.is.liblet</xsl:attribute>
+                <echo append="true" encoding="UTF-8" file="${{dist.dir}}/${{dist.jad}}" message="${{manifest.midlets}}"/>
             </target>
 
             <target name="-add-optional-attributes">

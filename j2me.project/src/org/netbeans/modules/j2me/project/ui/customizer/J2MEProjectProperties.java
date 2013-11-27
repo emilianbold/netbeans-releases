@@ -408,7 +408,7 @@ public final class J2MEProjectProperties {
         DEPLOYMENT_JARURL_MODEL = projectGroup.createStringDocument(getEvaluator(), DEPLOYMENT_JARURL);
         if (getEvaluator().getProperty(DEPLOYMENT_JARURL) == null) {
             try {
-                DEPLOYMENT_JARURL_MODEL.insertString(0, "${dist.jar}", null); //NOI18N
+                DEPLOYMENT_JARURL_MODEL.insertString(0, "${dist.jar.file}", null); //NOI18N
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             }
