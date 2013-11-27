@@ -577,8 +577,9 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
             add = nsDefinitions.isEmpty();
             nsDefinitions.put(getSortKey(def), definitionUid);
             inlineDefinitionsCounter += def.isInline() ? 1 : 0;
+            boolean becameInline = (def.isInline() && inlineDefinitionsCounter == 1);
             CsmNamespace parentNs = getParent();
-            if (parentNs instanceof NamespaceImpl && def.isInline() && inlineDefinitionsCounter == 1) {
+            if (parentNs != null && becameInline) {
                 ((NamespaceImpl) parentNs).incInlinedNamespacesCounter();
             }
         } finally {
@@ -630,8 +631,9 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
             definitionUid = nsDefinitions.remove(getSortKey(def));
             remove =  nsDefinitions.isEmpty();
             inlineDefinitionsCounter -= def.isInline() ? 1 : 0;
+            boolean becameNotInline = (def.isInline() && inlineDefinitionsCounter == 0);
             CsmNamespace parentNs = getParent();
-            if (parentNs instanceof NamespaceImpl && def.isInline() && inlineDefinitionsCounter == 1) {
+            if (parentNs != null && becameNotInline) {
                 ((NamespaceImpl) parentNs).decInlinedNamespacesCounter();
             }            
         } finally {
