@@ -56,7 +56,7 @@ import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
  *
  * @author Petr Pisl
  */
-@FunctionInterceptor.Registration(priority = 50)
+@FunctionInterceptor.Registration(priority = 51)
 public class jQueryExtendInterceptor implements FunctionInterceptor {
 
     private final static Pattern PATTERN = Pattern.compile("(\\$|jQuery)\\.extend");  //NOI18N
