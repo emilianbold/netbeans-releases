@@ -164,6 +164,9 @@ public class FixUsesPerformer {
         for (int i = 0; i < selections.size(); i++) {
             List<UsedNamespaceName> usedNamespaceNames = new ArrayList<>();
             ItemVariant baseVariant = selections.get(i);
+            if (!baseVariant.canBeUsed()) {
+                continue;
+            }
             for (int j = i + 1; j < selectionsCopy.size(); j++) {
                 ItemVariant testedVariant = selectionsCopy.get(j);
                 if (baseVariant.equals(testedVariant) && !itemsToRemove.contains(j)) {
