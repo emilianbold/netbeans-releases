@@ -45,6 +45,10 @@
 package org.netbeans;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.attribute.PosixFileAttributeView;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.logging.Level;
 import org.netbeans.junit.*;
 import java.util.*;
@@ -408,7 +412,10 @@ public class CLIHandlerTest extends NbTestCase {
 
     public void testCannotWrite() throws Exception {
         File tmp = new File(System.getProperty("netbeans.user"));
-        tmp.setReadOnly();
+        tmp.mkdirs();
+        if (!makeDirectoryReadOnly(tmp)) {
+            return;
+        }
         try {
             CLIHandler.Args args = new CLIHandler.Args(new String[0], nullInput, nullOutput, nullOutput, System.getProperty("user.dir"));
             Status res = CLIHandler.initialize(args, null, Collections.<CLIHandler>emptyList(), false, false, null);
@@ -417,6 +424,24 @@ public class CLIHandlerTest extends NbTestCase {
         } finally {
             cleanUpReadOnly(tmp);
         }
+    }
+
+    private boolean makeDirectoryReadOnly(File tmp) throws IOException {
+        tmp.setReadOnly();
+        tmp.setWritable(false);
+        File tf;
+        for (int i = 0; ; i++) {
+            tf = new File(tmp, "test" + i + ".txt");
+            if (!tf.exists()) {
+                break;
+            }
+        }
+        tf.createNewFile();
+        if (tf.exists()) {
+            LOG.info("Skipping testCannotWrite, as the directory is still writable!");
+            return false;
+        }
+        return true;
     }
 
     private void cleanUpReadOnly(File tmp) {
