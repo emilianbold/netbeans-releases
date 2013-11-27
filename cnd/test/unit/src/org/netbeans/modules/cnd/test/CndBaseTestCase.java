@@ -152,6 +152,7 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
         logger4.setLevel(Level.SEVERE);
         logger5 = Logger.getLogger("org.netbeans.ui.indexing");
         logger5.setLevel(Level.SEVERE);
+        System.setProperty("RepositoryUpdate.increasedLogLevel", "SEVERE");
         System.setProperty("cnd.mode.unittest", "true");
         System.setProperty("SUNW_NO_UPDATE_NOTIFY", "true");
         List<Class<?>> list = new ArrayList<Class<?>>();
