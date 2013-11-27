@@ -619,6 +619,9 @@ public final class ModificationResult {
             
             do {
                 read = delegate.read(cbuf, off, len);
+                if (read == -1) {
+                    return -1;
+                }
                 j = 0;
 
                 for (int i = off; i < off + read; i++) {

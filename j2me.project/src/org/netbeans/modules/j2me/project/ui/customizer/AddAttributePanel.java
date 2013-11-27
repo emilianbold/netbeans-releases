@@ -94,6 +94,9 @@ public class AddAttributePanel extends javax.swing.JPanel implements ActionListe
         riskyNames = new HashSet<String>();
         riskyNames.add("MicroEdition-Configuration"); // NOI18N
         riskyNames.add("MicroEdition-Profile"); // NOI18N
+        riskyNames.add("MIDlet-Install-Notify"); //NOI18N
+        riskyNames.add("MIDlet-Delete-Notify"); //NOI18N
+        riskyNames.add("MIDlet-Delete-Confirm"); //NOI18N
     }
     
     public void init(final boolean editing, final J2MEAttributesPanel.StorableTableModel tableModel, final HashSet<String> keys, final String key, final String value) {
@@ -101,11 +104,6 @@ public class AddAttributePanel extends javax.swing.JPanel implements ActionListe
         this.editing = editing;
         this.tableModel = tableModel;
         this.allNames = new HashSet<>(Arrays.asList(tableModel.getAllAttrs()));
-        if (!tableModel.isMIDP2()) {
-            riskyNames.add("MIDlet-Install-Notify"); //NOI18N
-            riskyNames.add("MIDlet-Delete-Notify"); //NOI18N
-            riskyNames.add("MIDlet-Delete-Confirm"); //NOI18N
-        }
         originalKey = key;
         jLabel4.setVisible("MIDlet-Version".equals(key) || "LIBlet-Version".equals(key)); //NOI18N
         if (editing) {

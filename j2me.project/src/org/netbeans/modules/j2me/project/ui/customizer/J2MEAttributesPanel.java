@@ -51,14 +51,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
@@ -112,6 +109,7 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
         table.getColumnModel().getColumn(2).setPreferredWidth(200);
         table.addMouseListener(new MouseAdapter() {
             @SuppressWarnings("synthetic-access")
+            @Override
 			public void mouseClicked(final MouseEvent e) {
                 if (e.getClickCount() == 2  &&  e.getButton() == MouseEvent.BUTTON1)
                     bEditActionPerformed(null);
@@ -131,14 +129,10 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
         uiProperties.DEPLOYMENT_OVERRIDE_JARURL_MODEL.setMnemonic(jCheckBoxOverride.getMnemonic());
         jCheckBoxOverride.setModel(uiProperties.DEPLOYMENT_OVERRIDE_JARURL_MODEL);
         jTextFieldURL.setDocument(uiProperties.DEPLOYMENT_JARURL_MODEL);
-        String platformProfile = uiProperties.getProject().evaluator().getProperty(J2MEProjectProperties.PLATFORM_PROFILE);
-        tableModel.setMIDP(platformProfile);
         String liblet = uiProperties.getProject().evaluator().getProperty(J2MEProjectProperties.MANIFEST_IS_LIBLET);
         jRadioButtonSuite.setSelected(liblet == null || (liblet != null && liblet.equals(jRadioButtonSuite.getActionCommand())));
-        jRadioButtonLIBlet.setSelected(liblet != null && liblet.equals(jRadioButtonLIBlet.getActionCommand()));
+        jRadioButtonLIBlet.setSelected(liblet != null && liblet.equals(jRadioButtonLIBlet.getActionCommand()));        
         tableModel.initManifestModel(jRadioButtonLIBlet.isSelected());
-        
-        jRadioButtonLIBlet.setEnabled(tableModel.getMIDPVersion() == 3);
         
         String[] propertyNames = uiProperties.ATTRIBUTES_PROPERTY_NAMES;
         String values[] = new String[propertyNames.length];
@@ -430,7 +424,6 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
     static class StorableTableModel extends AbstractTableModel {
         private HashMap<String,String> othersMap, jadMap, manifestMap;
         final private ArrayList<String> items = new ArrayList<>();
-        private int midpVersion = 1;
         private boolean isLIBlet;
 
         private String[] additionalAttributes = null;
@@ -475,13 +468,7 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
             },
             new String[] {
                 NAME, VENDOR, VERSION
-            },
-            new String[] {
-                NAME, VENDOR, VERSION
-            },
-            new String[] {
-                NAME, VENDOR, VERSION
-            },
+            }
         };
         
         private static final String[][] nonmandatoryProperties = {
@@ -515,7 +502,6 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
         
         private static final long serialVersionUID = -2195421895353167160L;
 
-        private static final Pattern midpPattern = Pattern.compile("MIDP-([1-3])");
         private final J2MEProjectProperties uiProperties;
         private boolean dataDelegatesWereSet = false;
 
@@ -528,21 +514,6 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
 
         public void initManifestModel(boolean isLIBlet) {
             this.isLIBlet = isLIBlet;
-        }
-
-        public void setMIDP(final String midp) {
-            if (midp != null) {
-                Matcher m = midpPattern.matcher(midp);
-                midpVersion = m.find() ? Integer.parseInt(m.group(1)) : 2;
-            }
-        }
-        
-        public boolean isMIDP2() {
-            return midpVersion == 2;
-        }
-        
-        public int getMIDPVersion() {
-            return midpVersion;
         }
 
         public HashSet<String> getKeys() {
@@ -676,6 +647,10 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
         }
         
         public synchronized void updateItemsFromMaps() {
+            String liblet = uiProperties.getProject().evaluator().getProperty(J2MEProjectProperties.MANIFEST_IS_LIBLET);
+            if (liblet != null && Boolean.valueOf(liblet)) {
+                switchManifestModel(true);
+            }
             items.clear();
             final ArrayList<String> keys = new ArrayList<>(othersMap.keySet());
             keys.addAll(jadMap.keySet());
@@ -723,14 +698,14 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
         }
         
         public String[] getMandatory() {
-            return mandatoryProperties[isLIBlet ? 0 : getMIDPVersion()];
+            return mandatoryProperties[isLIBlet ? 0 : 1];
         }
         
         public String[] getNonMandatory() {
             if (additionalAttributes == null){
                 additionalAttributes = loadAdditionalAttributes();
             }
-            return mergeAttributes(nonmandatoryProperties[isLIBlet ? 0 : getMIDPVersion()], additionalAttributes);
+            return mergeAttributes(nonmandatoryProperties[isLIBlet ? 0 : 1], additionalAttributes);
         }
         
         public String[] getAllAttrs() {
