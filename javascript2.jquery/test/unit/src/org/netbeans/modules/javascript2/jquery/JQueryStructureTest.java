@@ -39,14 +39,33 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-@TemplateRegistration(folder = "Html5Tests",
-        content = "karma.conf.js",
-        scriptEngine = "freemarker",
-        position = 100,
-        displayName = "#Templates.karma.template.displayName",
-        description = "KarmaConfDescription.html")
-@NbBundle.Messages("Templates.karma.template.displayName=Karma Configuration File")
-package org.netbeans.modules.javascript.karma.ui.resources;
+package org.netbeans.modules.javascript2.jquery;
 
-import org.netbeans.api.templates.TemplateRegistration;
-import org.openide.util.NbBundle;
+import java.io.IOException;
+import org.netbeans.modules.javascript2.editor.JsTestBase;
+import org.openide.filesystems.FileObject;
+
+/**
+ *
+ * @author Petr Pisl
+ */
+public class JQueryStructureTest extends JsTestBase {
+    
+    public JQueryStructureTest(String testName) {
+        super(testName);
+    }
+    
+    @Override
+    protected void assertDescriptionMatches(FileObject fileObject,
+            String description, boolean includeTestName, String ext, boolean goldenFileInTestFileDir) throws IOException {
+        super.assertDescriptionMatches(fileObject, description, includeTestName, ext, true);
+    }
+    
+    public void testIssue238856() throws Exception {
+        checkStructure("testfiles/jquery/issue238856.js");
+    }
+    
+    public void testIssue236722() throws Exception {
+        checkStructure("testfiles/jquery/issue236722.js");
+    }
+}

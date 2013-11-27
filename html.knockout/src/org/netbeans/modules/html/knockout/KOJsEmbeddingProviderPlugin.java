@@ -454,6 +454,9 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
 
     private static void generateWithHierarchyStart(StringBuilder sb, List<ParentContext> parents) {
         for (ParentContext context : parents) {
+            if (context.getAlias() != null) {
+                sb.append("var ").append(context.getAlias()).append(" = ").append(context.getValue()).append(";\n");
+            }
             sb.append("with (").append(context.getValue()).append(") {\n");
         }
     }
