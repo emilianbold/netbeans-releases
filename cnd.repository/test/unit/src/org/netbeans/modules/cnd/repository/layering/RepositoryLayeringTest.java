@@ -73,10 +73,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 public class RepositoryLayeringTest extends TraceModelTestBase {
 
-    /**
-     * the version of the persistency mechanism
-     * ATTENTION! Please sync with RepositoryUtils
-     */
+    private static final boolean TRACE = false;
     private static File[] layerFiles;
     private static final Object layerFilesLock = new Object();
     private File projectRoot = null;
@@ -166,7 +163,9 @@ public class RepositoryLayeringTest extends TraceModelTestBase {
             if (res) {
                 assertFalse("Errors on in " + err.getAbsolutePath() + "\n" + fileContent, true);
             }
-            RepositoryTestSupport.dumpCsmProject(getCsmProject(), streamOut, true);
+            if (TRACE) {
+                RepositoryTestSupport.dumpCsmProject(getCsmProject(), streamOut, true);
+            }
             streamOut.close();
             streamErr.close();
             err.delete(); // in case of error, don't delete file => delete here, not in finally
