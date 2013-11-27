@@ -76,4 +76,8 @@ public class KOCodeCompletionTest extends JsCodeCompletionBase {
     public void testTemplateForEachAlias() throws Exception {
         checkCompletion("completion/templateForEachAlias/index.html", "    <h3 data-bind=\"text: simple.^ \"></h3>", false);
     }
+
+    public void testTemplateInner() throws Exception {
+        checkCompletion("completion/templateInner/index.html", "        <strong data-bind=\"text: ^\"></strong>", false);
+    }
 }
