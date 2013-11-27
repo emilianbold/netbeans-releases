@@ -67,15 +67,20 @@ import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import static org.netbeans.modules.maven.j2ee.execution.ExecutionChecker.DEV_NULL;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.modules.maven.j2ee.OneTimeDeployment;
+import static org.netbeans.modules.maven.j2ee.execution.Bundle.Choose_server;
 import org.netbeans.modules.maven.j2ee.ui.customizer.impl.CustomizerRunWeb;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.modules.maven.spi.debug.MavenDebugger;
 import org.netbeans.modules.web.browser.spi.URLDisplayerImplementation;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle.Messages;
 import org.openide.windows.OutputWriter;
 
 /**
@@ -123,7 +128,7 @@ public final class DeploymentHelper {
      *
      * @param config configuration
      * @param executionContext execution context
-     * @return {@code true} if the execution was successful, {@code false} otherwise
+     * @return {@literal true} if the execution was successful, {@literal false} otherwise
      */
     public static boolean perform(final RunConfig config, final ExecutionContext executionContext) {
         final Project project = config.getProject();
@@ -173,10 +178,24 @@ public final class DeploymentHelper {
             if (DEV_NULL.equals(serverInstanceID) || serverInstanceID == null) {
                 // No server set within the IDE --> Try to check nbactions.xml for server goals
                 // See issue #237618
-                String actionMappingServer = findActionMappingServer(project, mode);
-                if (actionMappingServer != null) {
-                    serverInstanceID = actionMappingServer;
-                    jmp.setServerInstanceID(serverInstanceID);
+                String[] serverInstances = findActionMappingServer(project, mode);
+                if (serverInstances.length != 0) {
+                    // If only one server instance of searching type is registered, use that one
+                    if (serverInstances.length == 1) {
+                        serverInstanceID = serverInstances[0];
+                        jmp.setServerInstanceID(serverInstanceID);
+
+                    // If there is more than one server of searching type, ask user which one should be used
+                    } else {
+                        String chosenServer = chooseServer(serverInstances);
+                        if (chosenServer != null) {
+                            serverInstanceID = chosenServer;
+                            jmp.setServerInstanceID(chosenServer);
+                        } else {
+                            // User clicked on cancel button --> End the execution
+                            return true;
+                        }
+                    }
                 } else {
                     err.println("NetBeans: No suitable Deployment Server is defined for the project or globally."); // NOI18N
                     return false;
@@ -326,9 +345,9 @@ public final class DeploymentHelper {
      *
      * @param project project
      * @param mode information about deployment mode (Run/Debug/Profile)
-     * @return server instance ID if we have positive guess, {@code null} otherwise
+     * @return server instance ID if we have positive guess, {@literal null} otherwise
      */
-    private static String findActionMappingServer(Project project, Deployment.Mode mode) {
+    private static String[] findActionMappingServer(Project project, Deployment.Mode mode) {
         ProjectConfigurationProvider configProvider = project.getLookup().lookup(ProjectConfigurationProvider.class);
         if (configProvider != null) {
             ProjectConfiguration projectConfig = configProvider.getActiveConfiguration();
@@ -343,11 +362,7 @@ public final class DeploymentHelper {
                         if (goal.startsWith(entry.getKey())) {
                             for (String serverID : Deployment.getDefault().getServerIDs()) {
                                 if (serverID.equals(entry.getValue())) {
-                                    // Just find and pickup the first instance of the searching server
-                                    String[] instanceIDs = Deployment.getDefault().getInstancesOfServer(serverID);
-                                    if (instanceIDs.length > 0) {
-                                        return instanceIDs[0];
-                                    }
+                                    return Deployment.getDefault().getInstancesOfServer(serverID);
                                 }
                             }
                         }
@@ -356,7 +371,7 @@ public final class DeploymentHelper {
             }
         }
 
-        return null;
+        return new String[0];
     }
 
     private static String getActionName(Deployment.Mode mode) {
@@ -366,5 +381,16 @@ public final class DeploymentHelper {
             case PROFILE: return "profile"; // NOI18N
         }
         return "run"; // NOI18N
+    }
+
+    @Messages("Choose_server=Choose server")
+    private static String chooseServer(String[] serverInstances) {
+        ServerInstanceChooserPanel panel = new ServerInstanceChooserPanel(serverInstances);
+        DialogDescriptor dd = new DialogDescriptor(panel, Choose_server());
+        Object result = DialogDisplayer.getDefault().notify(dd);
+        if (result == NotifyDescriptor.OK_OPTION) {
+            return panel.getChosenServerInstance();
+        }
+        return null;
     }
 }
