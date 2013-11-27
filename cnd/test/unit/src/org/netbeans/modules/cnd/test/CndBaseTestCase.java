@@ -114,6 +114,7 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
     private Logger logger2;
     private Logger logger3;
     private Logger logger4;
+    private Logger logger5;
     
     /** Creates a new instance of BaseTestCase */
     public CndBaseTestCase(String testName) {
@@ -149,6 +150,8 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
         logger3.setLevel(Level.OFF);
         logger4 = Logger.getLogger("org.netbeans.modules.settings.RecognizeInstanceObjects");
         logger4.setLevel(Level.SEVERE);
+        logger5 = Logger.getLogger("org.netbeans.ui.indexing");
+        logger5.setLevel(Level.SEVERE);
         System.setProperty("cnd.mode.unittest", "true");
         System.setProperty("SUNW_NO_UPDATE_NOTIFY", "true");
         List<Class<?>> list = new ArrayList<Class<?>>();
