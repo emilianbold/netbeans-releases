@@ -84,7 +84,16 @@ public class CoSAlternativeExecutorImpl implements CoSAlternativeExecutorImpleme
         Object skipBuild = config.getInternalProperties().get(ExecutionConstants.SKIP_BUILD); //NOI18N
 
         if (skipBuild instanceof Boolean && (Boolean) skipBuild) {
-            return DeploymentHelper.perform(config, executionContext);
+            DeploymentHelper.DeploymentResult result = DeploymentHelper.perform(config, executionContext);
+
+            switch (result) {
+                // If the build was successful or canceled, we don't want to proceed standard maven execution
+                case SUCCESSFUL:
+                case CANCELED:
+                    return true;
+                case FAILED:
+                    return false;
+            }
         }
         // If the skip.build property is not set, it means we do want to proceed standard execution
         return false;
