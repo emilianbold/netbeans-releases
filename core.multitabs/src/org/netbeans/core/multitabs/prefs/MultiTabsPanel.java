@@ -77,6 +77,8 @@ final class MultiTabsPanel extends TabsPanel {
 
     @Override
     protected boolean store() {
+        if( null == tabsPanel )
+            return false;
         boolean changed = super.store();
         changed |= tabsPanel.store();
         return changed;
