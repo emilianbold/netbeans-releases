@@ -129,7 +129,28 @@ public final class CommentSetImpl implements Cloneable, CommentSet {
         return list.isEmpty() ? NOPOS : list.get(0).pos();
     }
 
+    /**
+     * Adds a comment. Comment is always appended at the end, except when the comment has been already added
+     * to the comment set at the same relative position. Duplicate additions are ignored.
+     * 
+     * @param positioning relative positioning of the comment in the comment set
+     * @param c the comment instance
+     */
     public void addComment(RelativePosition positioning, Comment c) {
+        addComment(positioning, c, false);
+    }
+        
+    /**
+     * Adds a comment to the appropriate position. Newly created comments are always appended at the end.
+     * If `mergeExisting' is true, copied comments are inserted according to their textual position among other already added comments. Duplicate
+     * comments are ignored. This method is suitable for copying or collecting comments from several statements to 
+     * a common target (mergeExisting = true).
+     * 
+     * @param positioning relative positioning of the comment in the comment set
+     * @param c the comment instance
+     * @param mergeExisting if true, the comment is sorted in. False will always append the comment.
+     */
+    public void addComment(RelativePosition positioning, Comment c, boolean mergeExisting) {
         List<Comment> comments;
         if (commentsMap.containsKey(positioning)) {
             comments = commentsMap.get(positioning);
@@ -137,12 +158,40 @@ public final class CommentSetImpl implements Cloneable, CommentSet {
             comments = new LinkedList<Comment>();
             commentsMap.put(positioning, comments);
         }
-        comments.add(c);
+        // new comments are always added at the end
+        if (c.isNew()) {
+            comments.add(c);
+        } else {
+            int index = 0;
+            int npos = c.pos();
+            for (Comment o : comments) {
+                if (o.isNew()) {
+                    comments.add(c);
+                    return;
+                } else {
+                    int pos = o.pos();
+                    if (pos > npos) {
+                        break;
+                    } else if (pos == npos) {
+                        if (c == o) {
+                            // the same comment is being copied again; ignore.
+                            return;
+                        }
+                    }
+                }
+                index++;
+            }
+            if (mergeExisting) {
+                comments.add(index, c);
+            } else {
+                comments.add(c);
+            }
+        }
     }
 
     public void addComments(RelativePosition positioning, Iterable<? extends Comment> comments) {
         for (Comment c : comments) {
-            addComment(positioning, c);
+            addComment(positioning, c, true);
         }
     }
     
