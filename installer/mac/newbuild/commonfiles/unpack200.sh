@@ -41,7 +41,7 @@
 # Portions Copyrighted 1997-2013 Sun Microsystems, Inc.
 
 unpack_dir=$1
-jdk_home=$1
+jdk_home=$2
 set -e
 
 echo Calling unpack200 in $unpack_dir
