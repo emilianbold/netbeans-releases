@@ -46,6 +46,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,9 +59,11 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedExcept
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
+import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
+import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import static org.netbeans.modules.maven.j2ee.execution.ExecutionChecker.DEV_NULL;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.modules.maven.j2ee.OneTimeDeployment;
@@ -67,6 +71,8 @@ import org.netbeans.modules.maven.j2ee.ui.customizer.impl.CustomizerRunWeb;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.modules.maven.spi.debug.MavenDebugger;
 import org.netbeans.modules.web.browser.spi.URLDisplayerImplementation;
+import org.netbeans.spi.project.ProjectConfiguration;
+import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -88,6 +94,25 @@ public final class DeploymentHelper {
     private static final Logger LOGGER = Logger.getLogger(DeploymentHelper.class.getName());
 
     public static final String CLIENTURLPART = "netbeans.deploy.clientUrlPart"; //NOI18N
+
+    /**
+     * Mapping between Maven goals and Server IDs.
+     *
+     * This allows us to find correct server based on the goal used in nbaction.xml
+     * <p>
+     *
+     * Key = Prefix of the Maven goal. For example all goals from maven tomcat plugin are starting with "tomcat".
+     * <br/><br/>
+     * Value = Server ID used across the IDE. For example name of the Glassfish server in the IDE is "gfv3ee6".
+     */
+    private static final Map<String, String> serverPrefixes = new HashMap<>();
+    static {
+        serverPrefixes.put("glassfish", "gfv3ee6"); // https://maven-glassfish-plugin.java.net/
+        serverPrefixes.put("weblogic", "WebLogic"); // http://mojo.codehaus.org/weblogic-maven-plugin/plugin-info.html
+        serverPrefixes.put("tomcat", "Tomcat"); // http://tomcat.apache.org/maven-plugin-2.0/tomcat7-maven-plugin/plugin-info.html
+        serverPrefixes.put("jboss", "JBoss4"); // http://docs.jboss.org/jbossas/7/plugins/maven/latest/
+    }
+
 
     private DeploymentHelper() {
     }
@@ -136,13 +161,26 @@ public final class DeploymentHelper {
             serverInstanceID = oneTimeDeployment.getServerInstanceId();
         }
 
+        Deployment.Mode mode = Deployment.Mode.RUN;
+        if (debugmode) {
+            mode = Deployment.Mode.DEBUG;
+        } else if (profilemode) {
+            mode = Deployment.Mode.PROFILE;
+        }
+
         if (serverInstanceID == null) {
             serverInstanceID = jmp.getServerInstanceID();
             if (DEV_NULL.equals(serverInstanceID) || serverInstanceID == null) {
-                err.println();
-                err.println();
-                err.println("NetBeans: No suitable Deployment Server is defined for the project or globally."); // NOI18N
-                return false;
+                // No server set within the IDE --> Try to check nbactions.xml for server goals
+                // See issue #237618
+                String actionMappingServer = findActionMappingServer(project, mode);
+                if (actionMappingServer != null) {
+                    serverInstanceID = actionMappingServer;
+                    jmp.setServerInstanceID(serverInstanceID);
+                } else {
+                    err.println("NetBeans: No suitable Deployment Server is defined for the project or globally."); // NOI18N
+                    return false;
+                }
             }
         }
         ServerInstance si = Deployment.getDefault().getServerInstance(serverInstanceID);
@@ -155,14 +193,6 @@ public final class DeploymentHelper {
             out.println("    profile mode: " + profilemode); // NOI18N
             out.println("    debug mode: " + debugmode); // NOI18N
             out.println("    force redeploy: " + redeploy); //NOI18N
-
-
-            Deployment.Mode mode = Deployment.Mode.RUN;
-            if (debugmode) {
-                mode = Deployment.Mode.DEBUG;
-            } else if (profilemode) {
-                mode = Deployment.Mode.PROFILE;
-            }
 
             Callable<Void> debuggerHook = null;
             if (debugmode) {
@@ -283,5 +313,58 @@ public final class DeploymentHelper {
             }
         }
         return check.setLastModified(stamp);
+    }
+
+    /**
+     * Tries to guess server based on the goal's defined in the nbaction.xml file.
+     *
+     * If there is a goal tomcat7:run defined as an action for standard run action,
+     * then we should probably deploy/run application on Tomcat even if the server
+     * is not set for the project.
+     *
+     * See issue #237618 for more details.
+     *
+     * @param project project
+     * @param mode information about deployment mode (Run/Debug/Profile)
+     * @return server instance ID if we have positive guess, {@code null} otherwise
+     */
+    private static String findActionMappingServer(Project project, Deployment.Mode mode) {
+        ProjectConfigurationProvider configProvider = project.getLookup().lookup(ProjectConfigurationProvider.class);
+        if (configProvider != null) {
+            ProjectConfiguration projectConfig = configProvider.getActiveConfiguration();
+            NetbeansActionMapping actionMapping = ModelHandle2.getMapping(getActionName(mode), project, projectConfig);
+
+            if (actionMapping != null) {
+                // Iterates over goals and check if some of them is starting with server prefix.
+                // If it is, then we should try to find such server registered in the IDE and use
+                // it for the deployment.
+                for (String goal : actionMapping.getGoals()) {
+                    for (Map.Entry<String, String> entry : serverPrefixes.entrySet()) {
+                        if (goal.startsWith(entry.getKey())) {
+                            for (String serverID : Deployment.getDefault().getServerIDs()) {
+                                if (serverID.equals(entry.getValue())) {
+                                    // Just find and pickup the first instance of the searching server
+                                    String[] instanceIDs = Deployment.getDefault().getInstancesOfServer(serverID);
+                                    if (instanceIDs.length > 0) {
+                                        return instanceIDs[0];
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static String getActionName(Deployment.Mode mode) {
+        switch (mode) {
+            case RUN: return "run";         // NOI18N
+            case DEBUG: return "debug";     // NOI18N
+            case PROFILE: return "profile"; // NOI18N
+        }
+        return "run"; // NOI18N
     }
 }
