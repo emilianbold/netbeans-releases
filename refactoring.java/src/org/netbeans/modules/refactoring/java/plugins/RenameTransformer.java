@@ -437,10 +437,27 @@ public class RenameTransformer extends RefactoringVisitor {
                     return super.visitText(node, p);
                 }
             }
-            if(node.getBody().contains(getOldSimpleName(p))) {
-                String body = node.getBody().replaceAll(getOldSimpleName(p), newName);
-                TextTree newText = make.Text(body);
-                rewrite(currentDocPath.getTreePath().getLeaf(), node, newText);
+            String originalName = getOldSimpleName(p);
+            if(node.getBody().contains(originalName)) {
+                StringBuilder text = new StringBuilder(node.getBody());
+                for (int index = text.indexOf(originalName); index != -1; index = text.indexOf(originalName, index + 1)) {
+                    if (index > 0 && Character.isJavaIdentifierPart(text.charAt(index - 1))) {
+                        continue;
+                    }
+                    if ((index + originalName.length() < text.length()) && Character.isJavaIdentifierPart(text.charAt(index + originalName.length()))) {
+                        continue;
+                    }
+                    //at least do not rename html start and end tags.
+                    if (text.charAt(index-1) == '<' || text.charAt(index-1) == '/') {
+                        continue;
+                    }
+                    text.delete(index, index + originalName.length());
+                    text.insert(index, newName);
+                }
+                if(!node.getBody().contentEquals(text)) {
+                    TextTree newText = make.Text(text.toString());
+                    rewrite(currentDocPath.getTreePath().getLeaf(), node, newText);
+                }
             }
         }
         return super.visitText(node, p);
