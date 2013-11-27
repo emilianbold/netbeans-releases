@@ -80,9 +80,9 @@ public class CLIHandlerTest extends NbTestCase {
         if (p == null) {
             p = System.getProperty("java.io.tmpdir");
         }
-        String tmp = p;
-        assertNotNull(tmp);
-        System.getProperties().put("netbeans.user", tmp);
+        File tmp = new File(new File(p), "wd");
+        tmp.mkdirs();
+        System.getProperties().put("netbeans.user", tmp.getPath());
         
         File f = new File(tmp, "lock");
         if (f.exists()) {
@@ -415,11 +415,19 @@ public class CLIHandlerTest extends NbTestCase {
 
             assertEquals("CLI evaluation failed with return code of h1", CLIHandler.Status.CANNOT_WRITE, res.getExitCode());
         } finally {
-            tmp.setWritable(true);
-            for (File f : tmp.listFiles()) {
-                f.delete();
+            cleanUpReadOnly(tmp);
+        }
+    }
+
+    private void cleanUpReadOnly(File tmp) {
+        tmp.setWritable(true);
+        for (File f : tmp.listFiles()) {
+            if (!f.delete()) {
+                f.deleteOnExit();
             }
-            assertTrue("Clean up", tmp.delete());
+        }
+        if (!tmp.delete()) {
+            tmp.deleteOnExit();
         }
     }
     public void testCannotWriteLockFile() throws Exception {
@@ -433,8 +441,7 @@ public class CLIHandlerTest extends NbTestCase {
 
             assertEquals("CLI evaluation failed with return code of h1", CLIHandler.Status.CANNOT_WRITE, res.getExitCode());
         } finally {
-            f.setWritable(true);
-            assertTrue("Clean up", f.delete());
+            cleanUpReadOnly(tmp);
         }
     }
     
