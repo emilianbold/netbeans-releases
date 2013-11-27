@@ -3025,6 +3025,9 @@ public class CasualDiff {
                     if (oldIndex != 1) {
                         bounds[0] = tree.pos;
                     }
+                    if(j == 0) {
+                        copyTo(pos, pos = bounds[0]);
+                    }
                     tokenSequence.move(bounds[1]);
                     tokenSequence.movePrevious();
                     if (tokenSequence.token().id() == JavaTokenId.COMMA || tokenSequence.token().id() == JavaTokenId.SEMICOLON) {
@@ -3067,7 +3070,11 @@ public class CasualDiff {
                 }
                 case INSERT: {
                     JCVariableDecl decl = (JCVariableDecl) item.element;
-                    
+                    if(j == 0) {
+                        JCTree tree = oldList.get(oldIndex);
+                        int[] bounds = getBounds(tree);
+                        copyTo(pos, pos = bounds[0]);
+                    }
                     if (oldIndex == 0) {
                         int oldPrec = printer.setPrec(TreeInfo.noPrec);
                         printer.visitVarDef(decl);
@@ -3088,6 +3095,8 @@ public class CasualDiff {
                     int[] bounds = getBounds(item.element);
                     if (j != 0) {
                         bounds[0] = item.element.pos;
+                    } else {
+                        copyTo(pos, pos = bounds[0]);
                     }
                     tokenSequence.move(bounds[0]);
                     if (j != 0 && !skipWhitespaces) {
