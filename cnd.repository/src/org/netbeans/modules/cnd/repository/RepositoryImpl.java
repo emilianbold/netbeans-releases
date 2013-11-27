@@ -214,7 +214,8 @@ public final class RepositoryImpl implements RepositoryImplementation, RemoveKey
     @Override
     public void closeUnit(int unitID, boolean cleanRepository, Set<Integer> requiredUnits) {
         Set<RepositoryCache.Pair<Key, Persistent>> hung = new HashSet<RepositoryCache.Pair<Key, Persistent>>();
-        hung.addAll(getCache(unitID).clearHungObjects());
+        final RepositoryCache cache = getCache(unitID);
+        hung.addAll(cache.clearHungObjects());
         for (RepositoryCache.Pair<Key, Persistent> cachePair : hung) {
             putImpl(cachePair.first, cachePair.second);
         }
@@ -225,6 +226,7 @@ public final class RepositoryImpl implements RepositoryImplementation, RemoveKey
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
         }
+        cache.debugClearSoftRefs();
         storage.close(unitID, cleanRepository, requiredUnits);
     }
 

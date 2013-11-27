@@ -65,6 +65,11 @@ public class CndTokenListTest extends NbTestCase {
     }
 
     @Override
+    protected int timeOut() {
+        return 500000;
+    }
+
+    @Override
     protected void setUp() throws Exception {
         // Set-up testing environment
     }

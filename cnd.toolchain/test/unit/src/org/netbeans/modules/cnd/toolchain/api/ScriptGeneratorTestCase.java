@@ -67,11 +67,6 @@ public class ScriptGeneratorTestCase extends NativeExecutionBaseTestCase {
         super(testName);
     }
 
-    @Override
-    protected int timeOut() {
-        return 500000;
-    }
-
     public void testScript() throws Exception {
         ExecutionEnvironment env = ExecutionEnvironmentFactory.getLocal();
         HostInfo info = HostInfoUtils.getHostInfo(env);

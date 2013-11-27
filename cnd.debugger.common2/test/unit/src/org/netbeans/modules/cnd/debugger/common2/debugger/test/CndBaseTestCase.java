@@ -164,6 +164,10 @@ public abstract class CndBaseTestCase extends NbTestCase {
         System.setProperty("netbeans.user", userDir.getAbsolutePath());
     }
 
+    @Override
+    protected int timeOut() {
+        return 500000;
+    }
 
     @Override
     protected void tearDown() throws Exception {
