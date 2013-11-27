@@ -162,7 +162,8 @@ public final class CodingStandardsFixerReportParser extends DefaultHandler {
     }
 
     private String formatDescription(String description) {
-        return description.replaceAll("\n", "<br>"); // NOI18N
+        description = description.replaceAll("      (.+\n)", "$1"); // NOI18N
+        return String.format("<pre>%s</pre>", description); // NOI18N
     }
 
     private String getCurrentFile(String fileName) {
