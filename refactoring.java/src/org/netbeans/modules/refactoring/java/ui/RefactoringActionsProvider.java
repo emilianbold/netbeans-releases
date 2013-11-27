@@ -121,7 +121,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             InstantRefactoringUI ui = InstantRefactoringUIImpl.create(js, caret);
             
             if (ui != null) {
-                if (ui.getRegions().isEmpty()) {
+                if (ui.getRegions().isEmpty() || ui.getKeyStroke() == null) {
                     doFullRename(lookup);
                 } else {
                     doInstantRename(target, js, caret, ui);
