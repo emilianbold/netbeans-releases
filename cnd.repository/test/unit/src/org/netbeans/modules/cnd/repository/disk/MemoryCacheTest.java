@@ -148,7 +148,7 @@ public class MemoryCacheTest extends NbTestCase {
                     case 0:
                         cache.putIfAbsent(myKey, new MyPersistent(d));
                         if (onlySoft && (i % (50 * K)) == 0) {
-                            cache.debugClearSoftRefs();
+                            cache.clearSoftRefs();
                         }
                         break;
                     case 1:

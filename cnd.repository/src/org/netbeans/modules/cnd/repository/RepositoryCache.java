@@ -339,7 +339,7 @@ public final class RepositoryCache {
         }
     }
     
-    public void debugClearSoftRefs() {
+    public void clearSoftRefs() {
         //cleanWriteHungObjects(null, false);
         processQueue();
         Set<Key> keys;

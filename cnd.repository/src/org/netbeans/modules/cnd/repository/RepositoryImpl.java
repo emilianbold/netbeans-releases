@@ -226,7 +226,7 @@ public final class RepositoryImpl implements RepositoryImplementation, RemoveKey
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
         }
-        cache.debugClearSoftRefs();
+        cache.clearSoftRefs();
         storage.close(unitID, cleanRepository, requiredUnits);
     }
 
