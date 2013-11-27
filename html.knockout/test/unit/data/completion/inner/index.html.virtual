@@ -67,6 +67,7 @@ $parentContext :undefined,
 $root : ko.$bindings,
 },
 $root : ko.$bindings,
+$index : 0,
 };
 var $context = {
 $parentContext :{
@@ -75,6 +76,7 @@ $parentContext :undefined,
 $root : ko.$bindings,
 },
 $root : ko.$bindings,
+$index : 0,
 },
 $root : ko.$bindings,
 };

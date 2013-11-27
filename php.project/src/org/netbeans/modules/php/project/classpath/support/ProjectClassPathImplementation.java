@@ -75,7 +75,7 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
     private final File projectFolder;
     private List<PathResourceImplementation> resources;
     private final PropertyEvaluator evaluator;
-    private AtomicBoolean dirty = new AtomicBoolean();
+    private final AtomicBoolean dirty = new AtomicBoolean();
     private final List<String> propertyNames;
 
     /**

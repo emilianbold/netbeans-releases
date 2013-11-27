@@ -1,3 +1,15 @@
+package org.netbeans.modules.javascript2.jquery.model;
+
+import java.beans.PropertyChangeEvent;
+import java.util.Collection;
+import java.util.regex.Pattern;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
+import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.spi.model.FunctionArgument;
+import org.netbeans.modules.javascript2.editor.spi.model.FunctionInterceptor;
+import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
+
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -39,45 +51,34 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.knockout;
-
-import org.netbeans.modules.javascript2.editor.JsCodeCompletionBase;
 
 /**
  *
  * @author Petr Pisl
  */
-public class KOCodeCompletionTest extends JsCodeCompletionBase {
+@FunctionInterceptor.Registration(priority = 51)
+public class jQueryExtendInterceptor implements FunctionInterceptor {
 
-    public KOCodeCompletionTest(String testName) {
-        super(testName);
-    }
-    
-    public void testForEach() throws Exception {
-        checkCompletion("completion/foreach/index.html", "            <div data-bind=\"text: ^ , css: jmeno == 'pepa' ? 'jouda' :", false);
-    }
+    private final static Pattern PATTERN = Pattern.compile("(\\$|jQuery)\\.extend");  //NOI18N
 
-    public void testWith() throws Exception {
-        checkCompletion("completion/with/index.html", "            <div data-bind=\"text: ^\"></div>", false);
+    @Override
+    public Pattern getNamePattern() {
+        return PATTERN;
     }
 
-    public void testIssue231569() throws Exception {
-        checkCompletion("completion/issue231569/index.html", "                <input data-bind='value: userNameToAdd, valueUpdate: \"keyup\", css: { invalid: ^ }' /></input>", false);
-    }
-
-    public void testTemplate() throws Exception {
-        checkCompletion("completion/template/index.html", "            <h3 data-bind=\"text: ^\"></h3>", false);
-    }
-
-    public void testTemplateForEach() throws Exception {
-        checkCompletion("completion/templateForEach/index.html", "    <h3 data-bind=\"text: ^\"></h3>", false);
-    }
-
-    public void testTemplateForEachAlias() throws Exception {
-        checkCompletion("completion/templateForEachAlias/index.html", "    <h3 data-bind=\"text: simple.^ \"></h3>", false);
-    }
-
-    public void testTemplateInner() throws Exception {
-        checkCompletion("completion/templateInner/index.html", "        <strong data-bind=\"text: ^\"></strong>", false);
+    @Override
+    public void intercept(String name, JsObject globalObject, DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
+        if (args.size() == 1) {
+            FunctionArgument arg = args.iterator().next();
+            if (arg.getKind() == FunctionArgument.Kind.ANONYMOUS_OBJECT) {
+                JsObject possiblePlugin = (JsObject)arg.getValue();
+                if (possiblePlugin.getProperties().size() == 1) {
+                    JsObject parent = globalObject;
+                    JsObject property = possiblePlugin.getProperties().values().iterator().next();
+                    JsObject newObject = factory.newReference(parent, property.getName(), property.getDeclarationName().getOffsetRange(), property, true, null);
+                    parent.addProperty(property.getName(), newObject);
+                }
+            }
+        }
     }
 }

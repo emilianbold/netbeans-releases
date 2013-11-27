@@ -59,13 +59,13 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
 
     private final transient String oldName;
     private final transient ChangeListener parent;
-    
+
     private boolean initialized;
 
     //static so the setting is preserved at least during one ide session
     //TODO store it in settings
     private static boolean renameWithoutRefactoring = false;
-    
+
     /** Creates new form RenamePanelName */
     public RenamePanel(String oldName, ChangeListener parent, String name) {
         setName(name);
@@ -97,11 +97,11 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         //put initialization code here
         initialized = true;
     }
-    
+
     public @Override void requestFocus() {
         nameField.requestFocus();
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -162,8 +162,9 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
 
     private void renameWithoutRefactoringCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_renameWithoutRefactoringCheckBoxActionPerformed
         renameWithoutRefactoring = renameWithoutRefactoringCheckBox.isSelected();
+        parent.stateChanged(null);
     }//GEN-LAST:event_renameWithoutRefactoringCheckBoxActionPerformed
-                                                             
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel label;
     private javax.swing.JTextField nameField;
@@ -173,7 +174,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
     public String getNameValue() {
         return nameField.getText();
     }
-        
+
     public boolean isRenameWithoutRefactoring() {
         return renameWithoutRefactoring;
     }
