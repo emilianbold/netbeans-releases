@@ -25,7 +25,7 @@ jdk_home=`"$dirname"/get_current_jdk.sh`
 
 . "$dirname"/env.sh
 
-"$dirname"/unpack200.sh "$NETBEANS_INSTALL_DIR" "$NETBEANS_INSTALL_DIR/Contents/Resources/NetBeans" "$jdk_home"
+"$dirname"/unpack200.sh "$NETBEANS_INSTALL_DIR/Contents/Resources/NetBeans" "$jdk_home"
 
 "$dirname"/add_gfv3.sh "$NETBEANS_INSTALL_DIR" "$GLASSFISH_V3_INSTALL_DIR"
 

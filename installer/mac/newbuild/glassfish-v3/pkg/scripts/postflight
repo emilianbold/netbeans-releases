@@ -19,13 +19,18 @@
 
 set -e
 
+echo DEBUG: param0: $0
+echo DEBUG: param1: $1
+echo DEBUG: param2: $2
+echo DEBUG: param3: $4
+
 script_dir=`dirname "$0"`
 
 jdk_home=`"$script_dir"/get_current_jdk.sh`
 
 . "$script_dir"/env.sh
 
-"$script_dir"/unpack200.sh "$2" "$2" "$jdk_home"
+"$script_dir"/unpack200.sh "$2" "$jdk_home"
 
 "$script_dir"/add_gfv3.sh "$NETBEANS_INSTALL_DIR" "$2"
 
