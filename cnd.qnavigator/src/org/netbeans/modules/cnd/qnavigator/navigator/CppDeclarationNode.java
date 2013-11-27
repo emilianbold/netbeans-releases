@@ -298,6 +298,10 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
         fireIconChange();
     }
     
+    CharSequence getScopeName() {
+        return scopeName;
+    }
+    
     @Override
     public int compareTo(CppDeclarationNode o) {
         int res = compareToWithoutOffset(o);
