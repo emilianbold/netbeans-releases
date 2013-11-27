@@ -97,6 +97,7 @@ public class VariablesJSTreeModel implements TreeModelFilter {
         List<JSVariable> scopeVars = null;
         Map<String, LocalVariable> localVarsByName = new HashMap<>();
         JSVariable thiz = null;
+        This jthis = null;
         for (int i = 0; i < children.length; i++) {
             Object ch = children[i];
             if (ch instanceof LocalVariable) {
@@ -105,9 +106,7 @@ public class VariablesJSTreeModel implements TreeModelFilter {
                 if (JSUtils.VAR_THIS.equals(name)) {
                     ch = createThisVar(lv);
                     thiz = (JSVariable) ch;
-                    if (ch == null) {
-                        continue;
-                    }
+                    continue;
                 } else if (JSUtils.VAR_SCOPE.equals(name)) {
                     //newChildren.addAll(createScopeVars(lv));
                     scopeVars = createScopeVars(lv);
@@ -116,27 +115,35 @@ public class VariablesJSTreeModel implements TreeModelFilter {
                     continue;
                 }
                 localVarsByName.put(name, lv);
+            } else {
+                if (ch instanceof JPDAClassType ||
+                    ch instanceof ClassVariable) {
+                    continue;
+                }
+                if (ch instanceof This) {
+                    jthis = (This) ch;
+                }
+                newChildren.add(ch);
             }
-            if (ch instanceof JPDAClassType ||
-                ch instanceof ClassVariable) {
-                continue;
-            }
-            newChildren.add(ch);
+        }
+        for (Map.Entry<String, LocalVariable> entry : localVarsByName.entrySet()) {
+            JSVariable jsv = JSVariable.create(debugger, entry.getValue());
+            newChildren.add(0, jsv);
         }
         if (scopeVars != null) {
             Collections.reverse(scopeVars);
+            int index = localVarsByName.size();
             for (JSVariable sv : scopeVars) {
                 String name = sv.getKey();
-                LocalVariable lv = localVarsByName.get(name);
-                if (lv != null) {
-                    newChildren.remove(lv);
+                if (localVarsByName.containsKey(name)) {
+                    continue; // Do not add a scope var (can be a global var) if it's already among local vars
                 }
-                newChildren.add(0, sv);
+                newChildren.add(index, sv);
             }
-            if (thiz != null) {
-                newChildren.remove(thiz);
-                newChildren.add(0, thiz);
-            }
+        }
+        if (thiz != null) {
+            newChildren.remove(jthis);
+            newChildren.add(0, thiz);
         }
         return newChildren.toArray();
     }

@@ -177,7 +177,7 @@
   <!-- "Navigator Window"-->
   <mapID target="f1_working_netbeans043.htm-sthref45" url="f1_working_netbeans043.htm#sthref45" />
   <!-- "Navigator Window"-->
-  <mapID target="NBCSHplain" url="f1_working_netbeans044.htm#NBCSHplain" />
+  <mapID target="text.plain" url="f1_working_netbeans044.htm#text.plain" />
   <!-- "General Editor Window"-->
   <mapID target="f1_working_netbeans044.htm-sthref46" url="f1_working_netbeans044.htm#sthref46" />
   <!-- "General Editor Window"-->
@@ -287,7 +287,7 @@
   <!-- "Legal Notices"-->
   <mapID target="f1_css_editor.htm" url="f1_css_editor.htm" />
   <!-- "Using CSS Source Editor"-->
-  <mapID target="NBCSHcss" url="f1_css_editor001.htm#NBCSHcss" />
+  <mapID target="text.css" url="f1_css_editor001.htm#text.css" />
   <!-- "CSS Source Editor"-->
   <mapID target="f1_css_editor001.htm-sthref78" url="f1_css_editor001.htm#sthref78" />
   <!-- "CSS Source Editor"-->
@@ -2483,7 +2483,7 @@
   <!-- "Web Service Attributes Editor: Quality of Service: Advanced Configuration"-->
   <mapID target="f1_java_ee099.htm-sthref688" url="f1_java_ee099.htm#sthref688" />
   <!-- "Web Service Attributes Editor: Quality of Service: Advanced Configuration"-->
-  <mapID target="NBCSHOBAL" url="f1_java_ee100.htm#NBCSHOBAL" />
+  <mapID target="ID_GLOBAL" url="f1_java_ee100.htm#ID_GLOBAL" />
   <!-- "Web Service Attributes Editor: WSDL Customization: Global Customization"-->
   <mapID target="f1_java_ee100.htm-sthref689" url="f1_java_ee100.htm#sthref689" />
   <!-- "Web Service Attributes Editor: WSDL Customization: Global Customization"-->
@@ -2495,7 +2495,7 @@
   <!-- "Web Service Attributes Editor: WSDL Customization: Port Type Faults"-->
   <mapID target="f1_java_ee102.htm-sthref691" url="f1_java_ee102.htm#sthref691" />
   <!-- "Web Service Attributes Editor: WSDL Customization: Port Type Faults"-->
-  <mapID target="NBCSHNDING" url="f1_java_ee103.htm#NBCSHNDING" />
+  <mapID target="ID_BINDING" url="f1_java_ee103.htm#ID_BINDING" />
   <!-- "Web Service Attributes Editor: WSDL Customization: Bindings"-->
   <mapID target="f1_java_ee103.htm-sthref692" url="f1_java_ee103.htm#sthref692" />
   <!-- "Web Service Attributes Editor: WSDL Customization: Bindings"-->
@@ -2503,7 +2503,7 @@
   <!-- "Web Service Attributes Editor: WSDL Customization: Binding Operations"-->
   <mapID target="f1_java_ee104.htm-sthref693" url="f1_java_ee104.htm#sthref693" />
   <!-- "Web Service Attributes Editor: WSDL Customization: Binding Operations"-->
-  <mapID target="NBCSHRVICE" url="f1_java_ee105.htm#NBCSHRVICE" />
+  <mapID target="ID_SERVICE" url="f1_java_ee105.htm#ID_SERVICE" />
   <!-- "Web Service Attributes Editor: WSDL Customization: Services"-->
   <mapID target="f1_java_ee105.htm-sthref694" url="f1_java_ee105.htm#sthref694" />
   <!-- "Web Service Attributes Editor: WSDL Customization: Services"-->

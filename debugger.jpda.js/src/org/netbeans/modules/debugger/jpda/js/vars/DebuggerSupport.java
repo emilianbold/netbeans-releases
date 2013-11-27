@@ -198,4 +198,15 @@ public final class DebuggerSupport {
         }
     }
     
+    public static String getVarValue(Variable var) {
+        if (var instanceof ObjectVariable) {
+            ObjectVariable ov = (ObjectVariable) var;
+            try {
+                return ov.getToStringValue();
+            } catch (InvalidExpressionException ex) {
+            }
+        }
+        return var.getValue();
+    }
+    
 }

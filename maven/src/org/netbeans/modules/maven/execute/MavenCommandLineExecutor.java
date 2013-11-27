@@ -148,16 +148,29 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
                 ioput.select();
             }
         });
+        actionStatesAtStart();
         ExecutionContext exCon = ActionToGoalUtils.ACCESSOR.createContext(ioput, handle);
         // check the prerequisites
         if (clonedConfig.getProject() != null) {
             Lookup.Result<LateBoundPrerequisitesChecker> result = clonedConfig.getProject().getLookup().lookupResult(LateBoundPrerequisitesChecker.class);
             for (LateBoundPrerequisitesChecker elem : result.allInstances()) {
                 if (!elem.checkRunConfig(clonedConfig, exCon)) {
+                    //#238360 when the check says don't execute, we still need to close the output and mark it for reuse
+                    ioput.getOut().close();
+                    ioput.getErr().close();
+                    actionStatesAtFinish(null, null);
+                    markFreeTab();
+                    //#238360 - end
                     return;
                 }
                 if (clonedConfig.getPreExecution() != null) {
                     if (!elem.checkRunConfig(clonedConfig.getPreExecution(), exCon)) {
+                         //#238360 when the check says don't execute, we still need to close the output and mark it for reuse
+                        ioput.getOut().close();
+                        ioput.getErr().close();
+                        actionStatesAtFinish(null, null);
+                        markFreeTab();
+                        //#238360 - end
                         return;
                     }
                 }
@@ -165,8 +178,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         }
         
 //        final Properties originalProperties = clonedConfig.getProperties();
-
-        actionStatesAtStart();
+        
         handle.start();
         processInitialMessage();
         boolean isMaven3 = !isMaven2();
