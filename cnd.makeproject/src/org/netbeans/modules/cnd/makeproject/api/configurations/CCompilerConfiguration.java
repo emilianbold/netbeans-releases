@@ -344,8 +344,7 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
                     set2.setDisplayName(getString("OtherOptionsTxt"));
                     set2.setShortDescription(getString("OtherOptionsHint"));
                     set2.put(new IntNodeProp(getMTLevel(), getMaster() != null ? false : true, "MultithreadingLevel", getString("MultithreadingLevelTxt"), getString("MultithreadingLevelHint"))); // NOI18N
-                    // The option is not needed anymore as C Standard option is introduced. More information is in Bug 209177.
-                    //set2.put(new IntNodeProp(getStandardsEvolution(), getMaster() != null ? false : true, "StandardsEvolution", getString("StandardsEvolutionTxt"), getString("StandardsEvolutionHint"))); // NOI18N
+                    set2.put(new IntNodeProp(getStandardsEvolution(), getMaster() != null ? false : true, "StandardsEvolution", getString("StandardsEvolutionTxt"), getString("StandardsEvolutionHint"))); // NOI18N
                     set2.put(new IntNodeProp(getLanguageExt(), getMaster() != null ? false : true, "LanguageExtensions", getString("LanguageExtensionsTxt"), getString("LanguageExtensionsHint"))); // NOI18N
                     sheet.put(set2);
                 }
