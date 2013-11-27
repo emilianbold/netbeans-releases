@@ -213,7 +213,7 @@ public class CsmImplementsMethodCompletionProvider implements CompletionProvider
                         Set<CsmClass> classes = new HashSet<CsmClass>();
                         visitDeclarations(classes, csmFile.getDeclarations(), caretOffset);
                         if (isApplicable)  {
-                            if (classes.isEmpty()) {
+                            //if (classes.isEmpty()) {
                                 // probably empty file
                                 // try to find corresponded header
                                 String name = CndPathUtilities.getBaseName(csmFile.getAbsolutePath().toString());
@@ -237,7 +237,7 @@ public class CsmImplementsMethodCompletionProvider implements CompletionProvider
                                 if (bestInterface != null) {
                                     visitClasses(classes, bestInterface.getDeclarations(), caretOffset);
                                 }
-                            }
+                            //}
                             for(CsmClass cls : classes) {
                                 for(CsmMember member : cls.getMembers()) {
                                     if (CsmKindUtilities.isMethodDeclaration(member)) {
