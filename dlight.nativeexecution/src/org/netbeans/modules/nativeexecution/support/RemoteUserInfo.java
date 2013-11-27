@@ -153,13 +153,31 @@ final public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
         int foo;
 
         synchronized (lock) {
-            foo = JOptionPane.showOptionDialog(parent, str,
-                    loc("TITLE_YN_Warning"), // NOI18N
-                    JOptionPane.DEFAULT_OPTION,
-                    JOptionPane.WARNING_MESSAGE, null, options, options[0]);
+            if (RemoteUserInfo.isUnitTestMode() || RemoteUserInfo.isStandalone()) {
+                System.err.println(str+" yes"); // NOI18N
+                foo = 0;
+            } else {
+                foo = JOptionPane.showOptionDialog(parent, str,
+                        loc("TITLE_YN_Warning"), // NOI18N
+                        JOptionPane.DEFAULT_OPTION,
+                        JOptionPane.WARNING_MESSAGE, null, options, options[0]);
+            }
         }
 
         return foo == 0;
+    }
+
+    // copy-paste from CndUtils
+    private static boolean isStandalone() {
+        if ("true".equals(System.getProperty ("cnd.command.line.utility"))) { // NOI18N
+            return true;
+        }
+        return !RemoteUserInfo.class.getClassLoader().getClass().getName().startsWith("org.netbeans."); // NOI18N
+    }
+    
+    // copy-paste from CndUtils
+    private static boolean isUnitTestMode() {
+        return Boolean.getBoolean("cnd.mode.unittest"); // NOI18N
     }
 
     @Override
