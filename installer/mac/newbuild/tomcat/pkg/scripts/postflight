@@ -35,7 +35,7 @@ chmod -R a+r *
 
 chmod a+w logs
 
-"$script_dir"/perm.sh
+"$script_dir"/perm.sh "$2"
 
 #add Product ID
 "$script_dir"/addproduct_id.sh "TOMCAT"

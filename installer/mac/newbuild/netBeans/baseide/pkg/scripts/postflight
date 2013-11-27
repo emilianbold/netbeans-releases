@@ -46,19 +46,12 @@ mkdir -p var
 touch var/license_accepted
 
 #fix for 151681
-cd "$NETBEANS_INSTALL_DIR"
-"$dirname"/perm.sh
+"$dirname"/perm.sh "$NETBEANS_INSTALL_DIR"
 
 #Fix for 151681
 #Go to the /Application/NetBeans folder to change its permissions and ownership
-cd ../
-chmod g+w .
-chown root:wheel .
+chmod g+w "$NETBEANS_INSTALL_DIR"/..
+chown root:wheel "$NETBEANS_INSTALL_DIR"/..
 
 #add Product ID
 "$dirname"/addproduct_id.sh "NB"
-
-#Fix for 177872 (alternative: change Auth="None" for GF, but problem with existing root:admin dirs)
-ownership=`ls -nlda ~ | awk ' { print $3 ":admin" } ' 2>/dev/null`
-cd "$NETBEANS_INSTALL_DIR"/Contents/Resources/NetBeans*/"$NB_CLUSTER_DIR"
-chown -R "$ownership" var
