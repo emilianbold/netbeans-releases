@@ -1023,7 +1023,7 @@ is divided into following sections:
 
             <target name="-nbdebug" description="Start NetBeans debugger" if="netbeans.home">
                 <property name="debug.delay" value="5000"/>
-                <nb-mobility-debug address="${{jpda.port}}" name="${{app.codename}}" delay="${{debug.delay}}" timeout="${{debug.timeout}}" period="2000"/>
+                <nb-mobility-debug address="${{jpda.port}}" name="${{app.codename}}" delay="${{debug.delay}}" timeout="${{debugger.timeout}}" period="2000"/>
             </target>
 
             <xsl:comment>
