@@ -436,7 +436,12 @@ public class CLIHandlerTest extends NbTestCase {
                 break;
             }
         }
-        tf.createNewFile();
+        try {
+            tf.createNewFile();
+        } catch (IOException ex) {
+            // creation failed - OK
+            return true;
+        }
         if (tf.exists()) {
             LOG.info("Skipping testCannotWrite, as the directory is still writable!");
             return false;
