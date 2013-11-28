@@ -68,6 +68,7 @@ public final class IssueImpl<R, I> {
     public static final int SHORT_DISP_NAME_LENGTH = 15;
     
     public static final String EVENT_ISSUE_DATA_CHANGED = IssueProvider.EVENT_ISSUE_DATA_CHANGED;
+    public static final String EVENT_ISSUE_DELETED = IssueProvider.EVENT_ISSUE_DELETED;
 
     private Issue issue;
     private final RepositoryImpl<R, ?, I> repo;
@@ -79,15 +80,17 @@ public final class IssueImpl<R, I> {
         this.issueProvider = issueProvider;
         this.data = data;
         this.repo = repo;
-        if (hasSchedule()) {
-            issueProvider.addPropertyChangeListener(data, new PropertyChangeListener() {
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (IssueScheduleProvider.EVENT_ISSUE_SCHEDULE_CHANGED.equals(evt.getPropertyName())) {
-                        handleScheduling();
-                    }
+        issueProvider.addPropertyChangeListener(data, new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (IssueScheduleProvider.EVENT_ISSUE_SCHEDULE_CHANGED.equals(evt.getPropertyName())) {
+                    handleScheduling();
+                } else if (IssueProvider.EVENT_ISSUE_DELETED.equals(evt.getPropertyName())) {
+                    issueDeleted();
                 }
-            });
+            }
+        });
+        if (hasSchedule()) {
             handleScheduling();
         }
     }
@@ -300,4 +303,8 @@ public final class IssueImpl<R, I> {
         TaskSchedulingManager.getInstance().handleTask(IssueImpl.this);
     }
     
+    private void issueDeleted () {
+        TaskSchedulingManager.getInstance().taskDeleted(IssueImpl.this);
+    }
+
 }

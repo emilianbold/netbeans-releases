@@ -371,7 +371,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
         }
     }
 
-    private final RequestProcessor.Task updateTask = rp.create(new Runnable() {
+    private final RequestProcessor.Task refilterNodes = rp.create(new Runnable() {
         @Override
         public void run() {
             SwingUtilities.invokeLater(new Runnable() {
@@ -384,13 +384,27 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
             });
         }
     });
-    
+
+    private final RequestProcessor.Task updateContent = rp.create(new Runnable() {
+        @Override
+        public void run() {
+            updateContent();
+        }
+    });
+
     private class TaskListener implements PropertyChangeListener {
         @Override
         public void propertyChange(final PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(IssueImpl.EVENT_ISSUE_DATA_CHANGED)
                     || IssueStatusProvider.EVENT_STATUS_CHANGED.equals(evt.getPropertyName())) {
-                updateTask.schedule(1000);
+                refilterNodes.schedule(1000);
+            } else if (IssueImpl.EVENT_ISSUE_DELETED.equals(evt.getPropertyName())) {
+                if (TaskContainerNode.this instanceof CategoryNode) {
+                    CategoryNode cn = (CategoryNode) TaskContainerNode.this;
+                    if (!cn.getCategory().persist()) {
+                        updateContent.schedule(500);
+                    }
+                }
             }
         }
     }
