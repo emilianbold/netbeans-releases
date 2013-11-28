@@ -208,6 +208,7 @@ public abstract class AbstractNbTaskWrapper {
         if (task.isLocal()) {
             task.delete();
             taskDeleted(task);
+            fireDeleted();
         }
     }
 
@@ -790,6 +791,10 @@ public abstract class AbstractNbTaskWrapper {
 
     protected final void fireStatusChanged () {
         support.firePropertyChange(IssueStatusProvider.EVENT_STATUS_CHANGED, null, null);
+    }
+
+    private void fireDeleted () {
+        support.firePropertyChange(IssueProvider.EVENT_ISSUE_DELETED, null, null);
     }
 
     private String formatDate (Calendar date) {

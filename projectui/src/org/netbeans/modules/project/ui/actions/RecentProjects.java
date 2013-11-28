@@ -52,6 +52,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
@@ -107,6 +108,7 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
     private UpdatingMenu subMenu;
     
     private boolean recreate;
+    private static final RequestProcessor RP = new RequestProcessor(RecentProjects.class);
     
     public RecentProjects() {
         super(LBL_RecentProjectsAction_Name());
@@ -167,19 +169,18 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
         ActionListener jmiActionListener = new MenuItemActionListener();
                         
         // Fill menu with items
-
-        for (UnloadedProjectInformation p : projects) {
+        final List<URL> urls = new ArrayList<URL>();
+        for (final UnloadedProjectInformation p : projects) {
                 URL prjDirURL = p.getURL();
-                final FileObject prjDir = URLMapper.findFileObject(prjDirURL);
-                if ( prjDirURL == null || prjDir == null || !prjDir.isValid()) {
-                    continue;
-                }
-                prjDir.removeFileChangeListener(prjDirListener);            
-                prjDir.addFileChangeListener(prjDirListener);
+                urls.add(prjDirURL);
                 JMenuItem jmi = new JMenuItem(p.getDisplayName(), p.getIcon()) {
                     public @Override void menuSelectionChanged(boolean isIncluded) {
                         super.menuSelectionChanged(isIncluded);
                         if (isIncluded) {
+                            final FileObject prjDir = URLMapper.findFileObject(p.getURL());
+                            if ( prjDir == null || !prjDir.isValid()) {
+                                return;
+                            }
                             StatusDisplayer.getDefault().setStatusText(FileUtil.getFileDisplayName(prjDir));
                         }
                     }
@@ -188,7 +189,21 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
                 jmi.putClientProperty( PROJECT_URL_KEY, prjDirURL );
                 jmi.addActionListener( jmiActionListener );
         }
+        RP.post(new Runnable() {
 
+            @Override
+            public void run() {
+                for (URL u : urls) {
+                    final FileObject prjDir = URLMapper.findFileObject(u);
+                    if (prjDir == null || !prjDir.isValid()) {
+                        continue;
+                    }
+                    prjDir.removeFileChangeListener(prjDirListener);
+                    prjDir.addFileChangeListener(prjDirListener);
+                }
+            }
+        });
+        
     }
 
     // Implementation of change listener ---------------------------------------

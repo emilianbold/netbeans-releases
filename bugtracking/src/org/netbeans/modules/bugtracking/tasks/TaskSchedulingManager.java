@@ -88,6 +88,7 @@ public final class TaskSchedulingManager {
     private boolean initializing;
     private static final RequestProcessor RP = new RequestProcessor("TaskSchedulingManager"); //NOI18N
     private final Set<IssueImpl> issuesToHandle;
+    private final Set<IssueImpl> deletedIssues;
     private final Task handleTask;
 
     private TaskSchedulingManager() {
@@ -96,6 +97,7 @@ public final class TaskSchedulingManager {
         scheduledTasks = Collections.synchronizedMap(new WeakHashMap<IssueImpl, IssueScheduleInfo>());
         persistedTasks = new HashMap<String, Set<String>>();
         issuesToHandle = new LinkedHashSet<IssueImpl>();
+        deletedIssues = new LinkedHashSet<IssueImpl>();
         handleTask = RP.create(new HandleTask());
         loadTasks();
         RepositoryRegistry.getInstance().addPropertyChangeListener(new PropertyChangeListener() {
@@ -130,6 +132,21 @@ public final class TaskSchedulingManager {
         boolean schedule;
         synchronized (issuesToHandle) {
             schedule = issuesToHandle.add(task);
+        }
+        if (schedule) {
+            handleTask.schedule(500);
+        }
+    }
+
+    /**
+     * TODO
+     *
+     * @param task task to handle.
+     */
+    public void taskDeleted (IssueImpl task) {
+        boolean schedule;
+        synchronized (deletedIssues) {
+            schedule = deletedIssues.add(task);
         }
         if (schedule) {
             handleTask.schedule(500);
@@ -376,6 +393,19 @@ public final class TaskSchedulingManager {
         return changed;
     }
 
+    private boolean handleDeletedIssue (IssueImpl issue) {
+        boolean changed = false;
+        synchronized (initializedRepositories) {
+            if (scheduledTasks.remove(issue) != null) {
+                changed = true;
+            }
+            if (getRepositoryTasks(issue.getRepositoryImpl().getId()).remove(issue.getID())) {
+                persist();
+            }
+        }
+        return changed;
+    }
+
     private class HandleTask implements Runnable {
 
         @Override
@@ -388,6 +418,13 @@ public final class TaskSchedulingManager {
             boolean changed = false;
             for (IssueImpl issue : issues) {
                 changed |= handleSingleIssue(issue);
+            }
+            synchronized (deletedIssues) {
+                issues = deletedIssues.toArray(new IssueImpl[deletedIssues.size()]);
+                deletedIssues.clear();
+            }
+            for (IssueImpl issue : issues) {
+                changed |= handleDeletedIssue(issue);
             }
             if (changed && !initializing) {
                 fireChange();
