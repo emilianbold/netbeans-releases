@@ -527,7 +527,8 @@ public final class QueryTopComponent extends TopComponent
                     canClose = save();
                 } else if(ret == discard) {
                     canClose = query.getController().discardUnsavedChanges();
-                } if(canClose) {
+                } 
+                if(canClose) {
                     savable.destroy();
                 }
                 return canClose;

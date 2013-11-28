@@ -544,7 +544,8 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                 } 
                 if(canClose) {
                     savable.destroy();
-                }
+                } 
+                return canClose;
             }
         }
         return super.canClose(); 
