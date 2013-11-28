@@ -107,7 +107,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
 
     abstract Icon getIcon();
 
-    //override if you need to adjust node during updateNodes method
+    //override if you need to adjust node during updateContent method
     void adjustTaskNode(TaskNode taskNode) {
     }
 
@@ -243,26 +243,23 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
             }
             
             // remove obsolete
-            Set<String> set = new HashSet<String>(tasks.size());
-            for (IssueImpl task : tasks) {
-                set.add(task.getID());
-            }
+            Set<IssueImpl> set = new HashSet<IssueImpl>(tasks);
             Iterator<TaskNode> it = taskNodes.iterator();
             while(it.hasNext()) {
                 TaskNode n = it.next();
-                if(!set.contains(n.getTask().getID())) {
+                if (!set.contains(n.getTask())) {
                     it.remove();
                 }
             }
             
             // add new ones
-            set = new HashSet<String>(taskNodes.size());
+            set = new HashSet<IssueImpl>(taskNodes.size());
             for (TaskNode n : taskNodes) {
-                set.add(n.getTask().getID());
+                set.add(n.getTask());
             }
             
             for (IssueImpl task : tasks) {
-                if(!set.contains(task.getID())) {
+                if (!set.contains(task)) {
                     TaskNode taskNode = new TaskNode(task, this);
                     adjustTaskNode(taskNode);
                     taskNodes.add(taskNode);
