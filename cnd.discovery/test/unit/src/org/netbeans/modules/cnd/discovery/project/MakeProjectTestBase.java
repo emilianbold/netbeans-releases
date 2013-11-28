@@ -97,13 +97,14 @@ import org.openide.util.Utilities;
  */
 public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends NbTestCase
     protected static final String LOG_POSTFIX = ".discoveryLog";
-    private static final boolean TRACE = true;
+    private static final boolean TRACE = false;
     private Logger logger1;
 
     public MakeProjectTestBase(String name) {
         super(name);
         if (TRACE) {
             System.setProperty("cnd.discovery.trace.projectimport", "true"); // NOI18N
+            System.setProperty("org.netbeans.modules.cnd.test.CndTestIOProvider.traceout","true"); // NOI18N
         }
         //System.setProperty("org.netbeans.modules.cnd.makeproject.api.runprofiles", "true"); // NOI18N
 //        System.setProperty("cnd.modelimpl.assert.notfound", "true");
@@ -464,7 +465,9 @@ public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends
                System.err.println("Not found required tool: "+entry.getKey());
                res =false;
            } else {
-               System.err.println("Found required tool: "+entry.getKey()+"="+entry.getValue());
+              if (TRACE) {
+                   System.err.println("Found required tool: "+entry.getKey()+"="+entry.getValue());
+              }
            }
         }
         return res;
@@ -562,7 +565,9 @@ public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends
             buf.append(' ');
             buf.append(arg);
         }
-        System.err.println(folder+"#"+command+buf.toString());
+        if (TRACE) {
+            System.err.println(folder+"#"+command+buf.toString());
+        }
         NativeProcessBuilder ne = NativeProcessBuilder.newProcessBuilder(ExecutionEnvironmentFactory.getLocal())
         .setWorkingDirectory(folder)
         .setExecutable(command)
@@ -578,7 +583,9 @@ public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends
                 String command = s.substring(0,i);
                 String arguments = s.substring(i+1);
                 command = tools.get(command);
-                System.err.println(createdFolder+"#"+command+" "+arguments);
+                if (TRACE) {
+                    System.err.println(createdFolder+"#"+command+" "+arguments);
+                }
                 //NativeExecutor ne = new NativeExecutor(createdFolder, tools.get(command), arguments, new String[0], command, "run", false, false);
                 NativeProcessBuilder ne = NativeProcessBuilder.newProcessBuilder(ExecutionEnvironmentFactory.getLocal())
                 .setWorkingDirectory(createdFolder)
@@ -602,7 +609,9 @@ public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends
                             if (line == null) {
                                 break;
                             } else {
-                                System.out.println(line);
+                                if (TRACE) {
+                                  System.out.println(line);
+                                }
                             }
                         }
                     } catch (IOException ex) {
