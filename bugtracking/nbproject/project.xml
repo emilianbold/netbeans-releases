@@ -209,6 +209,7 @@
                 <friend>org.netbeans.modules.odcs.tasks</friend>
                 <friend>org.netbeans.modules.odcs.tasks.bridge</friend>
                 <friend>org.netbeans.modules.versioning.kenai</friend>
+                <friend>eu.doppel_helix.netbeans.MantisIntegration</friend>
                 <package>org.netbeans.modules.bugtracking.api</package>
                 <package>org.netbeans.modules.bugtracking.spi</package>
             </friend-packages>

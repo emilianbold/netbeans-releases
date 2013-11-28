@@ -126,6 +126,9 @@ public class TreeList extends JList {
                             al.actionPerformed(new ActionEvent(e.getSource(), e.getID(), e.paramString()));
                         }
                     } else if (null != node && node.isExpandable()) {
+                        if (!node.isLoaded()) {
+                            return;
+                        }
                         node.setExpanded(!node.isExpanded());
                     }
                 }

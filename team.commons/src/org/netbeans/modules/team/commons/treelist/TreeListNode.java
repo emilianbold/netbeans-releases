@@ -340,6 +340,10 @@ public abstract class TreeListNode extends ListNode {
         return getParent().getNestingDepth() + (getParent().getIndentChildren() ? 1 : 0);
     }
 
+    boolean isLoaded() {
+        return true;
+    }
+
     private void startLoadingChildren() {
         childrenLoadingStarted();
         if (null != loader) {

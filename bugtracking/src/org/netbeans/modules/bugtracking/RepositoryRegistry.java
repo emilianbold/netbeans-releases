@@ -114,6 +114,42 @@ public class RepositoryRegistry {
             return new LinkedList<RepositoryImpl>(l);
         }
     }
+    
+/**
+     * Returns all known repositories incl. the Team ones
+     *
+     * @param pingOpenProjects if {@code false}, search only Team projects
+     *                          that are currently open in the Team dashboard;
+     *                          if {@code true}, search also all Team projects
+     *                          currently opened in the IDE
+     * @return repositories
+     */
+    public Collection<RepositoryImpl> getKnownRepositories(boolean pingOpenProjects) {
+        return getKnownRepositories(pingOpenProjects, false);
+    }
+    
+    /**
+     * Returns all known repositories incl. the Team ones
+     *
+     * @param pingOpenProjects if {@code false}, search only Team projects
+     *                          that are currently open in the Team dashboard;
+     *                          if {@code true}, search also all Team projects
+     *                          currently opened in the IDE
+     * @param onlyDashboardOpenProjects
+     * @return repositories
+     */
+    public Collection<RepositoryImpl> getKnownRepositories(boolean pingOpenProjects, boolean onlyDashboardOpenProjects) {
+        Collection<RepositoryImpl> otherRepos = getRepositories();
+        Collection<RepositoryImpl> teamRepos = TeamRepositories.getInstance().getRepositories(pingOpenProjects, onlyDashboardOpenProjects);
+        List<RepositoryImpl> ret = new ArrayList<RepositoryImpl>(teamRepos.size() + otherRepos.size());
+        
+        ret.addAll(otherRepos);
+        ret.addAll(teamRepos);
+        
+        logRepositoryUsage(ret);
+        
+        return ret;
+    }    
 
     /**
      * Returns all repositories for the connector with the given ID
@@ -121,31 +157,35 @@ public class RepositoryRegistry {
      * @param connectorID
      * @return 
      */
-    public Collection<RepositoryImpl> getRepositories(String connectorID) {
+    public Collection<RepositoryImpl> getRepositories(String connectorID, boolean allKnown) {
+        LinkedList<RepositoryImpl> ret = new LinkedList<RepositoryImpl>();
         synchronized(REPOSITORIES_LOCK) {
             final Map<String, RepositoryImpl> m = getStoredRepositories().get(connectorID);
             if(m != null) {
-                return new LinkedList<RepositoryImpl>(m.values());
+                ret.addAll(m.values());
             } else {
                 return Collections.emptyList();
             }
         }
+        if(allKnown) {
+            // team repos (not registered by user)
+            Collection<RepositoryImpl> repos = TeamRepositories.getInstance().getRepositories(false, true);
+            for (RepositoryImpl impl : repos) {
+                if(connectorID.equals(impl.getConnectorId())) {
+                    ret.add(impl);
+                }
+            }
+        }
+        return ret;
     }
 
-    public RepositoryImpl getRepository(String connectorId, String repoId) {
-        Collection<RepositoryImpl> repos = getRepositories(connectorId);
+    public RepositoryImpl getRepository(String connectorId, String repoId, boolean allKnown) {
+        Collection<RepositoryImpl> repos = getRepositories(connectorId, allKnown);
         for (RepositoryImpl repo : repos) {
             if(repo.getId().equals(repoId)) {
                 return repo;
             }
         }
-        // team repos (not registered by user)
-        repos = TeamRepositories.getInstance().getRepositories(false, true);
-        for (RepositoryImpl impl : repos) {
-            if(connectorId.equals(impl.getConnectorId())) {
-                return impl;
-            }
-        }        
         return null;
     }
 
@@ -184,42 +224,6 @@ public class RepositoryRegistry {
             getStoredRepositories().remove(connectorID, repository);
         }
         fireRepositoriesChanged(Arrays.asList(repository), null);
-    }
-    
-    /**
-     * Returns all known repositories incl. the Team ones
-     *
-     * @param pingOpenProjects if {@code false}, search only Team projects
-     *                          that are currently open in the Team dashboard;
-     *                          if {@code true}, search also all Team projects
-     *                          currently opened in the IDE
-     * @return repositories
-     */
-    public Collection<RepositoryImpl> getKnownRepositories(boolean pingOpenProjects) {
-        return getKnownRepositories(pingOpenProjects, false);
-    }
-    
-    /**
-     * Returns all known repositories incl. the Team ones
-     *
-     * @param pingOpenProjects if {@code false}, search only Team projects
-     *                          that are currently open in the Team dashboard;
-     *                          if {@code true}, search also all Team projects
-     *                          currently opened in the IDE
-     * @param onlyDashboardOpenProjects
-     * @return repositories
-     */
-    public Collection<RepositoryImpl> getKnownRepositories(boolean pingOpenProjects, boolean onlyDashboardOpenProjects) {
-        Collection<RepositoryImpl> otherRepos = getRepositories();
-        Collection<RepositoryImpl> teamRepos = TeamRepositories.getInstance().getRepositories(pingOpenProjects, onlyDashboardOpenProjects);
-        List<RepositoryImpl> ret = new ArrayList<RepositoryImpl>(teamRepos.size() + otherRepos.size());
-        
-        ret.addAll(otherRepos);
-        ret.addAll(teamRepos);
-        
-        logRepositoryUsage(ret);
-        
-        return ret;
     }
     
     /**

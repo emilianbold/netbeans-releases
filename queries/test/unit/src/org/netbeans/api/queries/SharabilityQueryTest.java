@@ -151,6 +151,10 @@ public class SharabilityQueryTest extends NbTestCase {
     }
 
     public void testNormalized() throws IOException {
+        if (Utilities.isMac()) {
+            return; //#238760 the test is dubious IMHO as it attempts to test something that only happens when asserts are on.
+            //on top of that SharabilityQuery.getSharability() explicitly doesn't throw when Utilities.isMac(), no point in running on mac
+        }
         File file = new File(home, "../aFile.txt");
         Exception exception = null;
         try {

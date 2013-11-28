@@ -186,6 +186,7 @@ public class GroupsMenuAction extends AbstractAction implements Presenter.Menu {
                         if( selGroup.close() ) {
                             GroupsManager.closeAllDocuments();
                         }
+                        refreshMenu();
                     } finally {
                         wait.uninstall();
                     }

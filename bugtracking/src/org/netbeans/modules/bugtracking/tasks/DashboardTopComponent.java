@@ -116,6 +116,7 @@ public final class DashboardTopComponent extends TopComponent {
     private final Timer dashboardRefreshTime;
     private final DashboardRefresher refresher;
     private final DashboardViewer dashboard;
+    private boolean firstStart = true;
 
     public DashboardTopComponent() {
         initComponents();
@@ -232,14 +233,17 @@ public final class DashboardTopComponent extends TopComponent {
         DashboardSettings.getInstance().addPropertyChangedListener(dashboard);
         TopComponent.getRegistry().addPropertyChangeListener(dashboardSelectionListener);
         refresher.setRefreshEnabled(true);
-        dashboardRefreshTime.restart();
-        //load data after the component is displayed
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                dashboard.loadData();
-            }
-        });
+        refresher.setDashboardBusy(false);
+        if (firstStart) {
+            firstStart = false;
+            //load data after the component is displayed
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    dashboard.loadData();
+                }
+            });
+        }
     }
 
     @Override
@@ -250,7 +254,6 @@ public final class DashboardTopComponent extends TopComponent {
         filterPanel.clear();
         dashboard.clearFilters();
         refresher.setRefreshEnabled(false);
-        dashboardRefreshTime.stop();
         super.componentClosed();
     }
 

@@ -101,22 +101,31 @@ class FCLSupport {
 
     static void dispatchEvent(final FileChangeListener fcl, final FileEvent fe, final Op operation, Collection<Runnable> postNotify) {
         boolean async = fe.isAsynchronous();
-        DispatchEventWrapper dw = new DispatchEventWrapper(fcl, fe, operation);
+        DispatchEventWrapper dw = new DispatchEventWrapperSingle(fcl, fe, operation);
         dw.dispatchEvent(async, postNotify);
     }
     
+    static void dispatchEvent(Collection<FileChangeListener> listeners,
+            final FileEvent fe, final Op operation, Collection<Runnable> postNotify) {
+        boolean async = fe.isAsynchronous();
+        DispatchEventWrapper dw = new DispatchEventWrapperMulti(listeners, fe, operation);
+        dw.dispatchEvent(async, postNotify);
+    }
+
     /** @return true if there is a listener
     */
     synchronized final boolean hasListeners() {
         return listeners != null && listeners.hasListeners();
     }
     
-    private static class DispatchEventWrapper {
-        final FileChangeListener fcl;
+    /**
+     * Wrapper for a file change event and a listener (or a list of listeners).
+     */
+    private static abstract class DispatchEventWrapper {
+
         final FileEvent fe;
         final Op operation;
-        DispatchEventWrapper(final FileChangeListener fcl, final FileEvent fe, final Op operation) {
-            this.fcl =fcl;
+        DispatchEventWrapper(final FileEvent fe, final Op operation) {
             this.fe =fe;
             this.operation =operation;
         }
@@ -125,11 +134,20 @@ class FCLSupport {
                 q.offer(this);
                 task.schedule(300);
             } else {
-                dispatchEventImpl(fcl, fe, operation, postNotify);
+                dispatchAllEventsSync(postNotify);
             }
         }        
         
-        private void dispatchEventImpl(FileChangeListener fcl, FileEvent fe, Op operation, Collection<Runnable> postNotify) {
+        /**
+         * Synchronously dispatch an event or a list of events.
+         *
+         * @param postNotify
+         */
+        protected abstract void dispatchAllEventsSync(
+                Collection<Runnable> postNotify);
+
+        protected final void dispatchEventImpl(FileChangeListener fcl,
+                FileEvent fe, Op operation, Collection<Runnable> postNotify) {
             boolean asserts = false;
             assert asserts = true;
             String origThreadName = null;
@@ -187,6 +205,51 @@ class FCLSupport {
         }
         
     }
+
+    /**
+     * Wrapper for an event and a listener.
+     */
+    private static class DispatchEventWrapperSingle extends DispatchEventWrapper {
+
+        private final FileChangeListener fcl;
+
+        public DispatchEventWrapperSingle(FileChangeListener fcl, FileEvent fe,
+                Op operation) {
+            super(fe, operation);
+            this.fcl = fcl;
+        }
+
+        @Override
+        protected void dispatchAllEventsSync(Collection<Runnable> postNotify) {
+            dispatchEventImpl(fcl, fe, operation, postNotify);
+        }
+    }
+
+    /**
+     * Wrapper for an event and a list of listeners. It's espacially useful if
+     * the list of listeners is shared by multiple wrappers (e.g.
+     * {@link ListenerList#getAllListeners()} returns the same instance if no
+     * listener has been added nor removed since the last call). See #236773.
+     */
+    private static class DispatchEventWrapperMulti extends DispatchEventWrapper {
+
+        private final Collection<FileChangeListener> listeners;
+
+        public DispatchEventWrapperMulti(
+                Collection<FileChangeListener> listeners, FileEvent fe,
+                Op operation) {
+            super(fe, operation);
+            this.listeners = listeners;
+        }
+
+        @Override
+        protected void dispatchAllEventsSync(Collection<Runnable> postNotify) {
+            for (FileChangeListener fcl : listeners) {
+                dispatchEventImpl(fcl, fe, operation, postNotify);
+            }
+        }
+    }
+
     private static final RequestProcessor RP = new RequestProcessor("Async FileEvent dispatcher", 1, false, false); // NOI18N
     private static final Queue<DispatchEventWrapper> q = new ConcurrentLinkedQueue<DispatchEventWrapper>();
     private static final RequestProcessor.Task task = RP.create(new Runnable() {
