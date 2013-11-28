@@ -234,18 +234,8 @@ public class Bugzilla {
             schedulingProvider = new IssueScheduleProvider<BugzillaIssue>() {
 
                 @Override
-                public void setDueDate (BugzillaIssue i, Date date) {
-                    i.setTaskDueDate(date, true);
-                }
-
-                @Override
                 public void setSchedule (BugzillaIssue i, IssueScheduleInfo date) {
                     i.setTaskScheduleDate(date, true);
-                }
-
-                @Override
-                public void setEstimate (BugzillaIssue i, int hours) {
-                    i.setTaskEstimate(hours, true);
                 }
 
                 @Override
@@ -256,11 +246,6 @@ public class Bugzilla {
                 @Override
                 public IssueScheduleInfo getSchedule (BugzillaIssue i) {
                     return i.getPersistentScheduleInfo();
-                }
-
-                @Override
-                public int getEstimate (BugzillaIssue i) {
-                    return i.getPersistentEstimate();
                 }
             };
         }

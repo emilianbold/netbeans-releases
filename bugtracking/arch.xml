@@ -50,6 +50,11 @@
           Provides Bugtracking functionality for other subsystems in the IDE.
       </api>
   </p>
+  
+  <p>
+      For more information on how to start writting s bugtracking plugin for NetBeans see also the 
+      <a href="http://wiki.netbeans.org/BugtrackingCookbook">Bugtracking Cookbook</a>.
+  </p>
  </answer>
 
 

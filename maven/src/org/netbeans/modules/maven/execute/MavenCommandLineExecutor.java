@@ -453,12 +453,19 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             }
             //#151559
             if (javaHome == null) {
-                if (System.getenv("JAVA_HOME") == null) {
+                String envJH = System.getenv("JAVA_HOME");
+                if (envJH != null) {
+                    File f = new File(envJH);
+                    if (!f.exists() || !new File(f, "bin" + File.separator + "java" + (Utilities.isWindows() ? ".exe" : "")).exists()) {
+                        envJH = null; //#233452  ignore non existing JAVA_HOME
+                    }
+                }
+                if (envJH == null) {
                     //NOI18N
                     javaHome = new File(System.getProperty("java.home"));
                     envMap.put("JAVA_HOME", javaHome.getAbsolutePath()); //NOI18N
                 } else {
-                    javaHome = new File(System.getenv("JAVA_HOME"));
+                    javaHome = new File(envJH);
                     envMap.put("JAVA_HOME", javaHome.getAbsolutePath()); //NOI18N
                 }
             }

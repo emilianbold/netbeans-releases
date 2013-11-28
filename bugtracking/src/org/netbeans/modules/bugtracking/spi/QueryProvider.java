@@ -89,15 +89,20 @@ public interface QueryProvider<Q, I> {
     public boolean canRemove(Q q);
     
     /** 
-     * Removes the given query.
+     * Removes the given query. This method may be called on any Query returned 
+     * by {@link RepositoryProvider#getQueries(java.lang.Object)} in case {@link #canRemove(java.lang.Object)}
+     * returns <code>true</code>. After a remove it should not be returned by 
+     * {@link RepositoryProvider#getQueries(java.lang.Object)} anymore.
      * 
      * @param q the particular query instance
+     * @see RepositoryProvider#getQueries(java.lang.Object) 
      * @since 1.85
      */
     public void remove(Q q);
     
     /**
-     * Determines whether it is possible to rename the given Query
+     * Determines whether it is possible to rename the given Query.
+     * 
      * @param q the particular query instance
      * @return <code>true</code> in case it is possible to rename the query, otherwise <code>fasle</code>
      * @since 1.85
@@ -134,8 +139,7 @@ public interface QueryProvider<Q, I> {
     public void refresh(Q q);
 
     /**
-     * Callback for Queries to notify about refreshing progress 
-     * and retrieved Issues
+     * Notifies about refreshing progress and Issues retrieved by an Query.
      * 
      * @param <I> the implementation specific issue type
      * @since 1.85
@@ -183,5 +187,15 @@ public interface QueryProvider<Q, I> {
         public void remove(I... issues) {
             delegate.remove(issues);
         }
+        
+        /**
+         * Remove all Issues.
+         * 
+         * @since 1.85
+         */
+        public void clear() {
+            delegate.clear();
     }
+        
+}
 }

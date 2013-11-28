@@ -59,6 +59,13 @@ public interface IssueProvider<I> {
      * @since 1.85
      */
     public static final String EVENT_ISSUE_DATA_CHANGED = "issue.data_changed"; // NOI18N
+    
+    /**
+     * Issue ceased to exist. The Issue is entirely gone (e.g. deleted in remote repository) 
+     * Fire this to notify e.g. the Tasks Dashboard.
+     * @since 1.85
+     */
+    public static final String EVENT_ISSUE_DELETED = "issue.deleted"; // NOI18N
 
     /**
      * Returns the display name for the given issue. 

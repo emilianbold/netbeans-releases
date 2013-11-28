@@ -434,8 +434,8 @@ public final class RepositoryImpl<R, Q, I> {
     }
     
     public void remove() {
-        repositoryProvider.remove(r);
         RepositoryRegistry.getInstance().removeRepository(this);
+        repositoryProvider.removed(r);
     }
 
     public RepositoryController getController() {

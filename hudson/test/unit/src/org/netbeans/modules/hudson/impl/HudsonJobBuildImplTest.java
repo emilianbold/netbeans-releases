@@ -40,16 +40,26 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking;
+package org.netbeans.modules.hudson.impl;
+
+import org.junit.Test;
+import static org.junit.Assert.*;
+import org.netbeans.modules.hudson.api.Utilities;
 
 /**
  *
- * @author tomas
+ * @author jhavlin
  */
-public interface IssueContainerImpl<I> {
-    public void refreshingStarted();
-    public void refreshingFinished();
-    public void add(I... issue);
-    public void remove(I... issue);
-    public void clear();
+public class HudsonJobBuildImplTest {
+
+    /**
+     * Test for bug 238927.
+     */
+    @Test
+    public void testGetResultNeverReturnsNull() {
+        HudsonJobBuildImpl hjbi = new HudsonJobBuildImpl(null, null, 1, true,
+                null);
+        assertNotNull(hjbi.getResult());
+        assertNotNull(Utilities.getIcon(hjbi));
+    }
 }

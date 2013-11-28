@@ -79,24 +79,6 @@ public final class BugtrackingSupport<R, Q, I> {
     }
     
     /**
-     * Factory method to create a {@link Repository} instance.
-     * 
-     * @param r a implementation specific repository instance
-     * 
-     * @return a {@link Repository} instance
-     * @since 1.85
-     */
-    public Repository createRepository(R r) 
-    {
-        Repository repo = getRepository(r);
-        if(repo != null) {
-            return repo;
-        }
-        RepositoryImpl<R, Q, I> impl = new RepositoryImpl<R, Q, I>(r, repositoryProvider, queryProvider, issueProvider, null, null, null, null);
-        return impl.getRepository();
-    }
-    
-    /**
      * Factory method to create a {@link Repository} instance configured with optional providers.
      * 
      * @param r a implementation specific repository instance

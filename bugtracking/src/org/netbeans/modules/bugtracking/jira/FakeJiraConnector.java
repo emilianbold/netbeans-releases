@@ -96,7 +96,7 @@ public class FakeJiraConnector {
         private BugtrackingSupport<Object, Object, Object> f = new BugtrackingSupport<Object, Object, Object>(new JiraProxyRepositoryProvider(), null, null);
         @Override
         public Repository createRepository() {
-            return f.createRepository(f);
+            return f.createRepository(f, null, null, null, null);
         }
         @Override
         public Repository createRepository(RepositoryInfo info) {
@@ -117,7 +117,7 @@ public class FakeJiraConnector {
             throw new UnsupportedOperationException("Not supported yet.");      // NOI18N
         }
         @Override
-        public void remove(Object r) { }
+        public void removed(Object r) { }
         @Override
         public RepositoryController getController(Object r) {
             return new JiraProxyController();
