@@ -49,8 +49,8 @@ import java.util.Collection;
  * Provides information and functionality related to incoming and outgoing issue changes. 
  * Issue Status information is used by the Tasks Dashboard to e.g.:
  * <ul>
- *  <li>to appropriately render Issue Status annotations (e.g. by coloring)</li>
- *  <li>to list Issues with outgoing changes in a Tasks Dashboard category, submit or discard them, etc.</li>
+ *  <li>appropriately render Issue Status annotations (e.g. by coloring)</li>
+ *  <li>list Issues with outgoing changes in a Tasks Dashboard category, submit or discard them, etc.</li>
  * </ul>
  * 
  * <p>
@@ -85,11 +85,8 @@ import java.util.Collection;
  * </p>
  * 
  * <p>
- * Even though the status is entirely given by the particular implementation, 
- * the 
- * </p>
- * <p>
- * The precedence of Status values is expected to be the following:
+ * Even though the status value is entirely given by the particular implementation, 
+ * the precedence of Status values is expected to be the following:
  * <table border="1" cellpadding="3" cellspacing="0">
  * <tr bgcolor="#ccccff">
  * <td><b>Issue state</b></font></td>
