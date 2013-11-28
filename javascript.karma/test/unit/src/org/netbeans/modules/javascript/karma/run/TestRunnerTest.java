@@ -39,40 +39,44 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep.sass;
 
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.css.prep.util.VersionOutputProcessorFactory;
+package org.netbeans.modules.javascript.karma.run;
 
+import org.junit.Assert;
+import org.junit.Test;
 
-public class SassExecutableTest extends NbTestCase {
+public class TestRunnerTest {
 
-    private static final VersionOutputProcessorFactory VERSION_OUTPUT_PROCESSOR_FACTORY
-            = new VersionOutputProcessorFactory(SassExecutable.VERSION_PATTERN);
-
-    public SassExecutableTest(String name) {
-        super(name);
+    @Test
+    public void testProcessDetailsChrome() {
+        String details = "[\"Expected 3 to equal 1.\\n"
+                + "Error: Expected 3 to equal 1.\\n"
+                + "    at null.<anonymous> (http://localhost:9876/base/test/ngCookies/cookiesSpec.js?1383895872000:33:15)\\n"
+                + "    at Object.invoke (http://localhost:9876/base/src/auto/injector.js?1381907169000:748:28)\\n"
+                + "    at workFn (http://localhost:9876/base/src/ngMock/angular-mocks.js?1381907169000:2082:20)\"]";
+        String[] expected = new String[] {
+            "Expected 3 to equal 1.",
+            "Error: Expected 3 to equal 1.",
+            "at null.<anonymous> (test/ngCookies/cookiesSpec.js:33:15)",
+            "at Object.invoke (src/auto/injector.js:748:28)",
+            "at workFn (src/ngMock/angular-mocks.js:2082:20)",
+        };
+        Assert.assertArrayEquals(expected, TestRunner.processDetails(details));
     }
 
-    public void testParseValidVersions() {
-        assertEquals("3.2.9", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 3.2.9 (Media Mark)"));
-        assertEquals("3.2.9", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("SASS 3.2.9 (Media Mark)"));
-        assertEquals("3.3.0", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 3.3.0 (Media Mark)"));
-        assertEquals("3.3.0", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 3.3.0.alpha.198"));
-        assertEquals("3.2.9", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 3.2.9a (Media Mark)"));
-        assertEquals("3.2.9", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 3.2.9-upd10 (Media Mark)"));
-        assertEquals("3.2.9", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 3.2.9 patch 3 (Media Mark)"));
-        assertEquals("3.2.9", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 3.2.9"));
-        assertEquals("3.2.9.1.25", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 3.2.9.1.25"));
-        assertEquals("3.2.9", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass  3.2.9    (Media Mark)"));
-        assertEquals("1", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 1 (Media Mark)"));
-        assertEquals("1.0", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 1.0 (Media Mark)"));
-        assertEquals("1.0", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 1.0,25 (Media Mark)"));
-    }
-
-    public void testParseInvalidVersions() {
-        assertNull(VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("3.2.9 (Media Mark)"));
-        assertNull(VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass-NG 3.2.9 (Media Mark)"));
+    @Test
+    public void testProcessDetailsFirefox() {
+        String details = "Expected 3 to equal 1.\\n"
+                + "@http://localhost:9876/base/test/ngCookies/cookiesSpec.js?1383895872000:33\\n"
+                + "invoke@http://localhost:9876/base/src/auto/injector.js?1381907169000:748\\n"
+                + "workFn@http://localhost:9876/base/src/ngMock/angular-mocks.js?1381907169000:2082\\n";
+        String[] expected = new String[] {
+            "Expected 3 to equal 1.",
+            "@test/ngCookies/cookiesSpec.js:33",
+            "invoke@src/auto/injector.js:748",
+            "workFn@src/ngMock/angular-mocks.js:2082",
+        };
+        Assert.assertArrayEquals(expected, TestRunner.processDetails(details));
     }
 
 }

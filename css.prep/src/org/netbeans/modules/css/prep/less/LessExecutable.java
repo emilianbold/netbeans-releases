@@ -44,6 +44,7 @@ package org.netbeans.modules.css.prep.less;
 import java.awt.EventQueue;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -57,9 +58,12 @@ import org.netbeans.modules.css.prep.util.ExternalExecutableValidator;
 import org.netbeans.modules.css.prep.util.FileUtils;
 import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
 import org.netbeans.modules.css.prep.util.UiUtils;
+import org.netbeans.modules.css.prep.util.VersionOutputProcessorFactory;
+import org.netbeans.modules.web.common.api.Version;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
 
 /**
  * Class representing <tt>lessc</tt> command line tool.
@@ -72,6 +76,16 @@ public final class LessExecutable {
     public static final String EXECUTABLE_LONG_NAME = EXECUTABLE_NAME + FileUtils.getScriptExtension(true, true);
 
     private static final String DEBUG_PARAM = "--line-numbers=all"; // NOI18N
+    private static final String SOURCEMAP_PARAM = "--source-map"; // NOI18N
+    private static final String VERSION_PARAM = "--version"; // NOI18N
+
+    private static final File TMP_DIR = new File(System.getProperty("java.io.tmpdir")); // NOI18N
+
+    private static final Version MINIMAL_VERSION_WITH_SOURCEMAP = Version.fromDottedNotationWithFallback("1.5.0"); // NOI18N
+    static final String VERSION_PATTERN = "lessc\\s+(\\d+(\\.\\d+)*)"; // NOI18N
+
+    // version of the compiler set in ide options
+    private static volatile Version version;
 
     private final String lessPath;
 
@@ -98,6 +112,40 @@ public final class LessExecutable {
     @NbBundle.Messages("Less.executable.label=LESS executable")
     public static String validate(String path) {
         return ExternalExecutableValidator.validateCommand(path, Bundle.Less_executable_label());
+    }
+
+    public static void resetVersion() {
+        version = null;
+    }
+
+    @CheckForNull
+    private static Version getVersion() {
+        assert !EventQueue.isDispatchThread();
+        if (version != null) {
+            return version;
+        }
+        VersionOutputProcessorFactory versionOutputProcessorFactory = new VersionOutputProcessorFactory(VERSION_PATTERN);
+        try {
+            LessExecutable lessExecutable = getDefault();
+            lessExecutable.getExecutable("Less version", TMP_DIR) // NOI18N
+                    .additionalParameters(Collections.singletonList(VERSION_PARAM))
+                    .runAndWait(getSilentDescriptor(), versionOutputProcessorFactory, "Detecting Less version..."); // NOI18N
+            String detectedVersion = versionOutputProcessorFactory.getVersion();
+            if (detectedVersion != null) {
+                version = Version.fromDottedNotationWithFallback(detectedVersion);
+                return version;
+            }
+        } catch (CancellationException ex) {
+            // cancelled, cannot happen
+            assert false;
+        } catch (ExecutionException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        } catch (InvalidExternalExecutableException ex) {
+            // cannot happen
+            LOGGER.log(Level.WARNING, null, ex);
+            assert false;
+        }
+        return null;
     }
 
     @NbBundle.Messages("Less.compile=LESS (compile)")
@@ -148,12 +196,27 @@ public final class LessExecutable {
                 .postExecution(postTask);
     }
 
+    private static ExecutionDescriptor getSilentDescriptor() {
+        return new ExecutionDescriptor()
+                .inputOutput(InputOutput.NULL)
+                .inputVisible(false)
+                .frontWindow(false)
+                .showProgress(false);
+    }
+
     private List<String> getParameters(File inputFile, File outputFile, List<String> compilerOptions) {
         List<String> params = new ArrayList<>();
         // debug
         boolean debug = CssPrepOptions.getInstance().getLessDebug();
         if (debug) {
-            params.add(DEBUG_PARAM);
+            Version installedVersion = getVersion();
+            if (installedVersion != null
+                    && installedVersion.isAboveOrEqual(MINIMAL_VERSION_WITH_SOURCEMAP)) {
+                params.add(SOURCEMAP_PARAM);
+            } else {
+                // older versions
+                params.add(DEBUG_PARAM);
+            }
         }
         // compiler options
         params.addAll(compilerOptions);
