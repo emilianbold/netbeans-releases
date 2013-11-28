@@ -259,5 +259,6 @@
         <node name="o.n.m.j2ee.ejbverification.BMnotPartOfRBIandLBI"/>
         <node name="o.n.m.j2ee.ejbverification.BeanHasDifferentLBIandRBI"/>
         <node name="o.n.m.j2ee.ejbverification.LocalAnnotatedBeanHasLBI"/>
+        <node name="Help.hint"/>
     </tool>
 </configuration>

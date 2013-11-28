@@ -94,6 +94,13 @@ public final class LayerIndex {
             in = RepositoryImplUtil.getBufferedDataInputStream(indexFile);
             int storedVersion = in.readInt();
             if (storedVersion != persistMechanismVersion) {
+                if (recreateOnFail) {
+                    RepositoryImplUtil.deleteDirectory(cacheDirectoryFile, false);
+                    fileSystems.clear();
+                    units.clear();
+                    dependencies.clear();
+                    return true;
+                }                
                 return false;
             }
             lastModificationTime = in.readLong();
