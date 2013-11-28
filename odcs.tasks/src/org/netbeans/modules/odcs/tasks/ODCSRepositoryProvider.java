@@ -73,7 +73,7 @@ public class ODCSRepositoryProvider implements RepositoryProvider<ODCSRepository
     }
 
     @Override
-    public void remove(ODCSRepository r) {
+    public void removed(ODCSRepository r) {
         r.remove();
     }
 

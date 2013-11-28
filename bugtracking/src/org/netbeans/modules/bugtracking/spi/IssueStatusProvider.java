@@ -221,9 +221,9 @@ public interface IssueStatusProvider<R, I> {
      * </p>
      * 
      * <p>
-     * <b>Note</b> that this method is going to be called only for issue with  {@link IssueStatusProvider.Status} 
-     * being either {@link IssueStatusProvider.Status#INCOMING_NEW} or 
-     * {@link IssueStatusProvider.Status#INCOMING_MODIFIED}.
+     * <b>Note</b> that in case the implementation provides either {@link IssueStatusProvider.Status#INCOMING_NEW} or 
+     * {@link IssueStatusProvider.Status#INCOMING_MODIFIED} status values, this method may be called to either reset those
+     * values to {@link IssueStatusProvider.Status#SEEN} or set to set back the previous INCOMING_XXX status value.
      * </p>
      * 
      * @param i an implementation specific Issue instance

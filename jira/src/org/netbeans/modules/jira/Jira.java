@@ -242,20 +242,9 @@ public class Jira {
     public IssueScheduleProvider<NbJiraIssue> getSchedulingProvider () {
         if(ischp == null) {
             ischp = new IssueScheduleProvider<NbJiraIssue>() {
-
-                @Override
-                public void setDueDate (NbJiraIssue i, Date date) {
-                    i.setTaskDueDate(date, true);
-                }
-
                 @Override
                 public void setSchedule (NbJiraIssue i, IssueScheduleInfo scheduleInfo) {
                     i.setTaskScheduleDate(scheduleInfo, true);
-                }
-
-                @Override
-                public void setEstimate (NbJiraIssue i, int hours) {
-                    i.setTaskEstimate(hours, true);
                 }
 
                 @Override
@@ -266,11 +255,6 @@ public class Jira {
                 @Override
                 public IssueScheduleInfo getSchedule (NbJiraIssue i) {
                     return i.getPersistentScheduleInfo();
-                }
-
-                @Override
-                public int getEstimate (NbJiraIssue i) {
-                    return i.getPersistentEstimate();
                 }
             };
         }

@@ -100,12 +100,13 @@ public interface RepositoryProvider<R, Q, I> {
     public Collection<I> getIssues(R r, String... ids);
 
     /**
-     * Removes this repository from its connector.
+     * Notifies that the given repository was removed. 
+     * Release any bound resources if necessary.
      *
      * @param r an implementation specific repository
      * @since 1.85
      */
-    public void remove(R r);
+    public void removed(R r);
 
     /**
      * Returns the {@link RepositoryController} for this repository.
@@ -162,7 +163,9 @@ public interface RepositoryProvider<R, Q, I> {
      * 
      * @param r an implementation specific repository
      * @return collection of queries
+     * @see QueryProvider#remove(java.lang.Object) 
      * @since 1.85
+     * 
      */
     public Collection<Q> getQueries(R r);
 

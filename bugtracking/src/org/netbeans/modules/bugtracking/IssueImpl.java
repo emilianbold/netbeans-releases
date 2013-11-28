@@ -265,29 +265,12 @@ public final class IssueImpl<R, I> {
         return isp != null;
     }
     
-    
-    public void setDueDate(Date date) {
-        IssueScheduleProvider<I> isp = repo.getSchedulingProvider();
-        assert isp != null : "do no call .setDueDate() if .hasSchedule() is false"; // NOI18N
-        if(isp != null) {
-            isp.setDueDate(data, date);
-        }
-    }
-
     public void setSchedule(IssueScheduleInfo info) {
         IssueScheduleProvider<I> isp = repo.getSchedulingProvider();
         assert isp != null : "do no call .setSchedule() if .hasSchedule() is false"; // NOI18N
         if(isp != null) {
             isp.setSchedule(data, info);
             handleScheduling();
-        }
-    }
-
-    public void setEstimate(int hours) {
-        IssueScheduleProvider<I> isp = repo.getSchedulingProvider();
-        assert isp != null : "do no call .setEstimate() if .hasSchedule() is false"; // NOI18N
-        if(isp != null) {
-            isp.setEstimate(data, hours);
         }
     }
 
@@ -301,11 +284,6 @@ public final class IssueImpl<R, I> {
         return isp != null ? isp.getSchedule(data) : null;
     }
 
-    public int getEstimate() {
-        IssueScheduleProvider<I> isp = repo.getSchedulingProvider();
-        return isp != null ? isp.getEstimate(data) : null;
-    }
-    
     public boolean providesPriority() {
         return repo.getPriorityProvider() != null;
     }
