@@ -39,40 +39,42 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep.sass;
 
+package org.netbeans.modules.css.prep.less;
+
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNull;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.css.prep.util.VersionOutputProcessorFactory;
 
-
-public class SassExecutableTest extends NbTestCase {
+public class LessExecutableTest extends NbTestCase {
 
     private static final VersionOutputProcessorFactory VERSION_OUTPUT_PROCESSOR_FACTORY
-            = new VersionOutputProcessorFactory(SassExecutable.VERSION_PATTERN);
+            = new VersionOutputProcessorFactory(LessExecutable.VERSION_PATTERN);
 
-    public SassExecutableTest(String name) {
+    public LessExecutableTest(String name) {
         super(name);
     }
 
     public void testParseValidVersions() {
-        assertEquals("3.2.9", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 3.2.9 (Media Mark)"));
-        assertEquals("3.2.9", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("SASS 3.2.9 (Media Mark)"));
-        assertEquals("3.3.0", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 3.3.0 (Media Mark)"));
-        assertEquals("3.3.0", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 3.3.0.alpha.198"));
-        assertEquals("3.2.9", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 3.2.9a (Media Mark)"));
-        assertEquals("3.2.9", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 3.2.9-upd10 (Media Mark)"));
-        assertEquals("3.2.9", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 3.2.9 patch 3 (Media Mark)"));
-        assertEquals("3.2.9", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 3.2.9"));
-        assertEquals("3.2.9.1.25", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 3.2.9.1.25"));
-        assertEquals("3.2.9", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass  3.2.9    (Media Mark)"));
-        assertEquals("1", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 1 (Media Mark)"));
-        assertEquals("1.0", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 1.0 (Media Mark)"));
-        assertEquals("1.0", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 1.0,25 (Media Mark)"));
+        assertEquals("1.5.1", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("lessc 1.5.1 (LESS Compiler) [JavaScript]"));
+        assertEquals("1.5.1", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("LESSC 1.5.1 (LESS Compiler) [JavaScript]"));
+        assertEquals("1.6", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("lessc 1.6 (LESS Compiler) [JavaScript]"));
+        assertEquals("1.5.1", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("lessc 1.5.1.alpha.198 (LESS Compiler) [JavaScript]"));
+        assertEquals("1.5.1", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("lessc 1.5.1a (LESS Compiler) [JavaScript]"));
+        assertEquals("1.5.1", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("lessc 1.5.1-upd10 (LESS Compiler) [JavaScript]"));
+        assertEquals("1.5.1", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("lessc 1.5.1 patch 3 (LESS Compiler) [JavaScript]"));
+        assertEquals("1.5.1", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("lessc 1.5.1"));
+        assertEquals("1.5.1.1.25", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("lessc 1.5.1.1.25"));
+        assertEquals("1.5.1", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("lessc          1.5.1              (LESS Compiler) [JavaScript]"));
+        assertEquals("2", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("lessc 2 (LESS Compiler) [JavaScript]"));
+        assertEquals("2.0", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("lessc 2.0 (LESS Compiler) [JavaScript]"));
+        assertEquals("1.5", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("lessc 1.5,1 (LESS Compiler) [JavaScript]"));
     }
 
     public void testParseInvalidVersions() {
-        assertNull(VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("3.2.9 (Media Mark)"));
-        assertNull(VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass-NG 3.2.9 (Media Mark)"));
+        assertNull(VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("1.5.1 (LESS Compiler) [JavaScript]"));
+        assertNull(VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("lessc-NG 1.5.1 (LESS Compiler) [JavaScript]"));
     }
 
 }
