@@ -278,9 +278,9 @@ public final class LocalTask extends AbstractLocalTask {
                         }
                     }
                 }
+                clearUnsavedChanges();
             }
         });
-        clearUnsavedChanges();
         fireChanged();
         if (controller != null) {
             controller.taskDeleted();

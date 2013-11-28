@@ -123,6 +123,7 @@
                 <friend>org.netbeans.modules.jira</friend>
                 <friend>org.netbeans.modules.odcs.tasks</friend>
                 <friend>org.netbeans.modules.localtasks</friend>
+                <friend>eu.doppel_helix.netbeans.MantisIntegration</friend>
                 <package>org.netbeans.modules.bugtracking.issuetable</package>
             </friend-packages>
         </data>
