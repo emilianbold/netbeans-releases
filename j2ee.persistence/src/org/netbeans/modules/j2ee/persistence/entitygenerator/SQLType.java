@@ -112,7 +112,7 @@ class SQLType {
     String getMemberType(ColumnElement element) {
         String memberType = java.io.Serializable.class.getName();
         Class memberTypeClass = null;
-
+        
         if (element.isCharacterType()) {
             memberTypeClass = getClassForCharType(element.getLength(), 
                     element.isNullable());
@@ -289,6 +289,8 @@ class SQLType {
             new SQLType(Types.BINARY, "BINARY",             //NOI18N
                 new Class[] { byte[].class}, false),
             new SQLType(Types.BIT, "BIT",                   //NOI18N
+                new Class[] {Boolean.class, Boolean.TYPE}, true),
+            new SQLType(Types.BOOLEAN, "BOOLEAN",           //NOI18N
                 new Class[] {Boolean.class, Boolean.TYPE}, true),
             new SQLType(Types.VARBINARY, "VARBINARY",       //NOI18N
                 new Class[] {byte[].class}, false),
