@@ -28,9 +28,14 @@
 
 #define MAX_THREAD_COUNT 32
 #define DEFAULT_THREAD_COUNT 4
+
+typedef struct {
+    int no;
+    pthread_t id;    
+} thread_info;
+
 static int rp_thread_count = DEFAULT_THREAD_COUNT;
-static pthread_t rp_threads[MAX_THREAD_COUNT];
-static pthread_t refresh_thread;
+static thread_info rp_threads[MAX_THREAD_COUNT];
 
 static blocking_queue req_queue;
 
@@ -64,7 +69,7 @@ static struct {
     pthread_mutex_t mutex;
     bool proceed;
 } state;
-
+        
 static bool state_get_proceed() {    
     bool proceed;
     mutex_lock(&state.mutex);
@@ -695,7 +700,7 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el) {
 static void block_thread_signals() {
     sigset_t set;
     sigfillset(&set);
-    //sigdelset(&set, SIGPIPE);
+    sigdelset(&set, SIGUSR1);
     int res = pthread_sigmask(SIG_BLOCK, &set, NULL);
     if (res) {
         report_error("error blocking signals for thread: %s\n", strerror(res));
@@ -725,14 +730,14 @@ static void *refresh_loop(void *data) {
 }
 
 static void *rp_loop(void *data) {
-    int thread_num = *((int*) data);
-    trace(TRACE_INFO, "Thread #%d started\n", thread_num);
+    thread_info *ti = (thread_info*) data;
+    trace(TRACE_INFO, "Thread #%d started\n", ti->no);
     block_thread_signals();
     while (true) {
         fs_request* request = blocking_queue_poll(&req_queue);
         if (request) {
             trace(TRACE_INFO, "thread[%d] request #%d sz=%d kind=%c len=%d path=%s\n", 
-                    thread_num, request->id, request->size, request->kind, request->len, request->path);
+                    ti->no, request->id, request->size, request->kind, request->len, request->path);
             process_request(request);
             free(request);
         } else {
@@ -741,7 +746,7 @@ static void *rp_loop(void *data) {
             }
         }
     }
-    trace(TRACE_INFO, "Thread #%d done\n", thread_num);
+    trace(TRACE_INFO, "Thread #%d done\n", ti->no);
     return NULL;
 }
 
@@ -941,6 +946,10 @@ static void signal_handler(int signal) {
     shutdown();
 }
 
+static void signal_empty_handler(int signal) {
+    trace(TRACE_FINE, "got signal %s (%d)\n", signal_name(signal), signal);
+}
+
 //static void sigpipe_handler(int signal) {
 //    log_print("exiting by signal %s (%d)\n", signal_name(signal), signal);
 //////    if (!shutting_down) {
@@ -967,21 +976,21 @@ static void startup() {
         trace(TRACE_INFO, "loaded dirtab\n");
         dirtab_visit(print_visitor);
     }
-    int thread_num[rp_thread_count];
+    int curr_thread = 0;
     if (rp_thread_count > 1) {
         blocking_queue_init(&req_queue);
         trace(TRACE_INFO, "Staring %d threads\n", rp_thread_count);        
-        for (int i = 0; i < rp_thread_count; i++) {
-            trace(TRACE_FINE, "Starting thread #%d...\n", i);
-            thread_num[i] = i;
-            pthread_create(&rp_threads[i], NULL, &rp_loop, &thread_num[i]);
+        for (curr_thread = 0; curr_thread < rp_thread_count; curr_thread++) {
+            trace(TRACE_FINE, "Starting thread #%d...\n", curr_thread);
+            rp_threads[curr_thread].no = curr_thread;
+            pthread_create(&rp_threads[curr_thread].id, NULL, &rp_loop, &rp_threads[curr_thread]);
         }
     } else {
         trace(TRACE_INFO, "Starting in single-thread mode\n");
     }
 
     if (refresh) {
-        pthread_create(&refresh_thread, NULL, &refresh_loop, NULL);
+        pthread_create(&rp_threads[curr_thread].id, NULL, &refresh_loop, &rp_threads[curr_thread]);
     }
     if (atexit(exit_function)) {
         report_error("error setting exit function: %s\n", strerror(errno));
@@ -995,7 +1004,12 @@ static void startup() {
     sigaction_wrapper(SIGHUP, &new_sigaction, NULL);
     sigaction_wrapper(SIGQUIT, &new_sigaction, NULL);
     sigaction_wrapper(SIGINT, &new_sigaction, NULL);    
-    
+        
+    new_sigaction.sa_handler = signal_empty_handler;
+    new_sigaction.sa_flags = SA_RESTART;
+    sigemptyset(&new_sigaction.sa_mask);
+    sigaction_wrapper(SIGUSR1, &new_sigaction, NULL);    
+            
 //    new_sigaction.sa_handler = sigpipe_handler;
 //    new_sigaction.sa_flags = SA_RESTART;
 //    sigemptyset(&new_sigaction.sa_mask);
@@ -1010,9 +1024,16 @@ static void shutdown() {
         fprintf(stderr, "Max. requests queue size: %d\n", blocking_queue_max_size(&req_queue));
     }
     trace(TRACE_INFO, "Shutting down. Joining threads...\n");
+    // NB: we aren't joining refresh thread; it's safe
     for (int i = 0; i < rp_thread_count; i++) {
-        trace(TRACE_INFO, "Shutting down. Joining thread #%i [%ui]\n", i, rp_threads[i]);
-        pthread_join(rp_threads[i], NULL);
+        trace(TRACE_INFO, "Shutting down. Joining thread #%i [%ui]\n", i, rp_threads[i].id);
+        pthread_join(rp_threads[i].id, NULL);
+    }
+    if (refresh) {
+        int refresh_thread_idx = rp_thread_count;
+        pthread_kill(rp_threads[refresh_thread_idx].id, SIGUSR1);
+        trace(TRACE_INFO, "Shutting down. Joining refresh thread #%i [%ui]\n", refresh_thread_idx, rp_threads[refresh_thread_idx].id);
+        pthread_join(rp_threads[refresh_thread_idx].id, NULL);
     }
     
     if (!dirtab_flush()) {
@@ -1045,6 +1066,8 @@ static void log_header(int argc, char* argv[]) {
 }
 
 int main(int argc, char* argv[]) {
+    pthread_t self = pthread_self();
+    trace(TRACE_INFO, "self=%ui\n", (unsigned) self);
     process_options(argc, argv);
     trace(TRACE_INFO, "Version %d.%d.%d (%s %s)\n", FS_SERVER_MAJOR_VERSION, 
             FS_SERVER_MID_VERSION, FS_SERVER_MINOR_VERSION, __DATE__, __TIME__);
