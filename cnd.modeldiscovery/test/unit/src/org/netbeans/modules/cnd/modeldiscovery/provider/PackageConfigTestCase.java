@@ -60,7 +60,7 @@ import org.openide.util.Utilities;
  */
 public class PackageConfigTestCase extends CndBaseTestCase {
 
-    private static final boolean TRACE = true;
+    private static final boolean TRACE = false;
 
     public PackageConfigTestCase(String testName) {
         super(testName);
