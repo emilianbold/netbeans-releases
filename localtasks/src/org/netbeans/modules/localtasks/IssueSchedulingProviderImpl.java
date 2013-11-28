@@ -54,18 +54,8 @@ import org.netbeans.modules.localtasks.task.LocalTask;
 class IssueSchedulingProviderImpl implements IssueScheduleProvider<LocalTask> {
 
     @Override
-    public void setDueDate (LocalTask i, Date date) {
-        i.setTaskDueDate(date, true);
-    }
-
-    @Override
     public void setSchedule (LocalTask i, IssueScheduleInfo date) {
         i.setTaskScheduleDate(date, true);
-    }
-
-    @Override
-    public void setEstimate (LocalTask i, int hours) {
-        i.setTaskEstimate(hours, true);
     }
 
     @Override
@@ -78,9 +68,4 @@ class IssueSchedulingProviderImpl implements IssueScheduleProvider<LocalTask> {
         return i.getPersistentScheduleInfo();
     }
 
-    @Override
-    public int getEstimate (LocalTask i) {
-        return i.getPersistentEstimate();
     }
-    
-}

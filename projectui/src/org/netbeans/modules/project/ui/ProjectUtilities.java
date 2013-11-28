@@ -568,7 +568,7 @@ public class ProjectUtilities {
                 assert false : "MalformedURLException in " + url;
                 continue;
             }
-            if (fo == null) {
+            if (fo == null || !fo.isValid()) { //check for validity because of issue #238488
                 ERR.log(Level.FINE, "Could not find {0}", url);
                 continue;
             }

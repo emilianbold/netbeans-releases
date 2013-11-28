@@ -49,8 +49,8 @@ import java.util.Collection;
  * Provides information and functionality related to incoming and outgoing issue changes. 
  * Issue Status information is used by the Tasks Dashboard to e.g.:
  * <ul>
- *  <li>to appropriately render Issue Status annotations (e.g. by coloring)</li>
- *  <li>to list Issues with outgoing changes in a Tasks Dashboard category, submit or discard them, etc.</li>
+ *  <li>appropriately render Issue Status annotations (e.g. by coloring)</li>
+ *  <li>list Issues with outgoing changes in a Tasks Dashboard category, submit or discard them, etc.</li>
  * </ul>
  * 
  * <p>
@@ -85,11 +85,8 @@ import java.util.Collection;
  * </p>
  * 
  * <p>
- * Even though the status is entirely given by the particular implementation, 
- * the 
- * </p>
- * <p>
- * The precedence of Status values is expected to be the following:
+ * Even though the status value is entirely given by the particular implementation, 
+ * the precedence of Status values is expected to be the following:
  * <table border="1" cellpadding="3" cellspacing="0">
  * <tr bgcolor="#ccccff">
  * <td><b>Issue state</b></font></td>
@@ -221,9 +218,9 @@ public interface IssueStatusProvider<R, I> {
      * </p>
      * 
      * <p>
-     * <b>Note</b> that this method is going to be called only for issue with  {@link IssueStatusProvider.Status} 
-     * being either {@link IssueStatusProvider.Status#INCOMING_NEW} or 
-     * {@link IssueStatusProvider.Status#INCOMING_MODIFIED}.
+     * <b>Note</b> that in case the implementation provides either {@link IssueStatusProvider.Status#INCOMING_NEW} or 
+     * {@link IssueStatusProvider.Status#INCOMING_MODIFIED} status values, this method may be called to either reset those
+     * values to {@link IssueStatusProvider.Status#SEEN} or set to set back the previous INCOMING_XXX status value.
      * </p>
      * 
      * @param i an implementation specific Issue instance

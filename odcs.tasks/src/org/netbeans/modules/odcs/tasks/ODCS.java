@@ -207,20 +207,9 @@ public class ODCS {
     public IssueScheduleProvider<ODCSIssue> getSchedulingProvider () {
         if(ischp == null) {
             ischp = new IssueScheduleProvider<ODCSIssue>() {
-
-                @Override
-                public void setDueDate (ODCSIssue i, Date date) {
-                    i.setTaskDueDate(date, true);
-                }
-
                 @Override
                 public void setSchedule (ODCSIssue i, IssueScheduleInfo scheduleInfo) {
                     i.setTaskScheduleDate(scheduleInfo, true);
-                }
-
-                @Override
-                public void setEstimate (ODCSIssue i, int hours) {
-                    i.setTaskEstimate(hours, true);
                 }
 
                 @Override
@@ -231,11 +220,6 @@ public class ODCS {
                 @Override
                 public IssueScheduleInfo getSchedule (ODCSIssue i) {
                     return i.getPersistentScheduleInfo();
-                }
-
-                @Override
-                public int getEstimate (ODCSIssue i) {
-                    return i.getPersistentEstimate();
                 }
             };
         }

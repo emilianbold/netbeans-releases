@@ -199,6 +199,11 @@ public final class QueryImpl<Q, I>  {
             }
         }
         
+        @Override
+        public void clear() {
+            issueImpls.clear();
+        }
+        
         Collection<IssueImpl> getIssues() {
             return Collections.unmodifiableCollection(issueImpls);
         }

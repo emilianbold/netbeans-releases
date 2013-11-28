@@ -49,6 +49,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Semaphore;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.QueryImpl;
@@ -59,7 +61,6 @@ import org.netbeans.modules.bugtracking.settings.DashboardSettings;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.team.commons.treelist.TreeLabel;
 import org.netbeans.modules.team.commons.treelist.TreeListNode;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -99,7 +100,7 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
             // we retrieve the issues then
             s.acquire();
         } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
+            Logger.getLogger(QueryNode.class.toString()).log(Level.FINE, "Query refresh interrupted: " + ex.getMessage()); //NOI18N
         } finally {
             s.release();
         }        
