@@ -99,10 +99,10 @@ public class RepositoryTestSupport {
             tracer.setTestUniqueName(false);
             tracer.dumpModel(file);
         }
-        dumpCsmProjectContainers(project);
+        dumpCsmProjectContainers(project, printStream);
     }
 
-    public static void dumpCsmProjectContainers(CsmProject project) {
-        ModelImplTest.dumpProjectContainers(System.out, (ProjectBase) project, true);
+    public static void dumpCsmProjectContainers(CsmProject project, PrintStream printStream) {
+        ModelImplTest.dumpProjectContainers(printStream, (ProjectBase) project, true);
     }
 }
