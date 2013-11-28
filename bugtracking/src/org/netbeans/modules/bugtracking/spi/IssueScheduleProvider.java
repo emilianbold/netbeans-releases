@@ -81,18 +81,6 @@ public interface IssueScheduleProvider<I> {
     public static final String EVENT_ISSUE_SCHEDULE_CHANGED = "issue.schedule_changed"; // NOI18N
     
     /**
-     * Sets the date when the Issue is to be finished. 
-     * <p>
-     * Note that this is a different date as for when the Issue is scheduled. 
-     * <p>
-     * 
-     * @param i an implementation specific issue instance
-     * @param date 
-     * @since 1.85
-     */
-    public void setDueDate(I i, Date date);
-
-    /**
      * Sets the schedule info describing the time period for which 
      * the Issue was scheduled to start work on. 
      * <p>
@@ -106,16 +94,7 @@ public interface IssueScheduleProvider<I> {
     public void setSchedule(I i, IssueScheduleInfo scheduleInfo);
 
     /**
-     * Sets the estimate in hours.
-     * 
-     * @param i an implementation specific issue instance
-     * @param hours the Issues estimate
-     * @since 1.85
-     */
-    public void setEstimate(I i, int hours); 
-
-    /**
-     * Returns the due date.
+     * Returns the due date or <code>null</code> if not provided (by the remote repository).
      * 
      * <p>
      * Note that this is a different date as for when the Issue is scheduled. 
@@ -141,14 +120,5 @@ public interface IssueScheduleProvider<I> {
      */
     public IssueScheduleInfo getSchedule(I i);
 
-    /**
-     * Returns the estimate in hours.
-     * 
-     * @param i an implementation specific issue instance
-     * @return the Issues estimate
-     * @since 1.85
-     */
-    public int getEstimate(I i); 
-    
 }
     

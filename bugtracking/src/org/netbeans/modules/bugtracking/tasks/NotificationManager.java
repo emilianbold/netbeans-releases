@@ -164,12 +164,7 @@ public class NotificationManager {
     private final RequestProcessor.Task updateSchedule = rp.create(new Runnable() {
         @Override
         public void run() {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    createScheduleNotification();
-                }
-            });
+            createScheduleNotification();
         }
     });
 

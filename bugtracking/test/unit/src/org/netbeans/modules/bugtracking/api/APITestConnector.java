@@ -105,7 +105,7 @@ public class APITestConnector implements BugtrackingConnector {
             apiRepo = createAPIRepo(getInfo());
             apiRepos.put(info.getID(), apiRepo);
         }
-        return factory.createRepository(apiRepo);
+        return factory.createRepository(apiRepo, null, null, null, null);
     }
 
     @Override
@@ -192,7 +192,7 @@ public class APITestConnector implements BugtrackingConnector {
         }
 
         @Override
-        public void remove(APITestRepository r) {
+        public void removed(APITestRepository r) {
             r.remove();
         }
 

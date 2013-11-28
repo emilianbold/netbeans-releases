@@ -51,4 +51,5 @@ public interface IssueContainerImpl<I> {
     public void refreshingFinished();
     public void add(I... issue);
     public void remove(I... issue);
+    public void clear();
 }

@@ -66,7 +66,7 @@ public class BugzillaRepositoryProvider implements RepositoryProvider<BugzillaRe
     }
 
     @Override
-    public void remove(BugzillaRepository r) {
+    public void removed(BugzillaRepository r) {
         r.remove();
     }
 

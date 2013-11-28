@@ -64,7 +64,7 @@ public class JiraRepositoryProvider implements RepositoryProvider<JiraRepository
     }
 
     @Override
-    public void remove(JiraRepository r) {
+    public void removed(JiraRepository r) {
         r.remove();
     }
 
