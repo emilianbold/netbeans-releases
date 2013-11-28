@@ -66,7 +66,6 @@ public class RefreshTestCase_IZ_210125 extends RemoteFileTestBase {
 
     static {
         System.setProperty("remote.fs_server.verbose", "2");
-        System.setProperty("remote.fs_server.log", "true");
     }
 
     public RefreshTestCase_IZ_210125(String testName) {

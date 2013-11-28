@@ -279,7 +279,7 @@ public class DirectoryReaderFS implements DirectoryReader {
                     int gid = buf.getInt();
                     int mode = buf.getInt();
                     long size = buf.getLong();
-                    long mtime = buf.getLong();
+                    long mtime = buf.getLong() / 1000 * 1000; // to be consistent with jsch sftp
                     String linkTarget = buf.getString();
                     if (linkTarget.isEmpty()) {
                         linkTarget = null;

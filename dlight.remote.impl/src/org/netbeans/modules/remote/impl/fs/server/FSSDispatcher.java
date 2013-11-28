@@ -90,7 +90,7 @@ import org.openide.util.RequestProcessor;
  */
 /*package*/ final class FSSDispatcher implements Disposer<FSSResponse> {
 
-    private static final boolean TRACE = false;
+    private static final boolean SUPPRESS_STDERR = Boolean.parseBoolean(System.getProperty("remote.fs_server.suppress.stderr", "true"));
     private static final Map<ExecutionEnvironment, FSSDispatcher> instances = 
             new HashMap<ExecutionEnvironment, FSSDispatcher>();
     private static final Object instanceLock = new Object();
@@ -498,7 +498,7 @@ import org.openide.util.RequestProcessor;
                 try {
                     String line;
                     while ((line = reader.readLine()) != null) {
-                        if (TRACE) {
+                        if (!SUPPRESS_STDERR) {
                             System.err.printf("%s %s\n", env, line); //NOI18N
                         }
                         lastErrorMessage.set(line);

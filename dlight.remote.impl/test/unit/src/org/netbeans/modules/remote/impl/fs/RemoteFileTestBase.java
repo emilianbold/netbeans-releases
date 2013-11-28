@@ -105,7 +105,9 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
     @Override
     protected void setUp() throws Exception {
         System.err.printf("\n###> setUp    %s\n", getClass().getName() + '.' + getName());
-        DirectoryReaderFS.getInstance(execEnv).testSetCleanupUponStart(true);
+        if (DirectoryReaderFS.getInstance(execEnv) != null) {
+            DirectoryReaderFS.getInstance(execEnv).testSetCleanupUponStart(true);
+        }
         super.setUp();
         setLoggers(true);
         if (execEnv == null) {
