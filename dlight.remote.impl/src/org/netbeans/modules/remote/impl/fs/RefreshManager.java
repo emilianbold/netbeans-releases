@@ -121,7 +121,7 @@ public class RefreshManager {
                     }
                 }                
                 time = System.currentTimeMillis() - time;
-                RemoteLogger.getInstance().log(Level.FINE, "RefreshManager: refreshing {0} directories took {1} ms on {2}", new Object[] {cnt, time, env});
+                RemoteLogger.getInstance().log(Level.FINEST, "RefreshManager: refreshing {0} directories took {1} ms on {2}", new Object[] {cnt, time, env});
             }
         }
     

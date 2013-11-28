@@ -264,7 +264,7 @@ import org.openide.util.RequestProcessor;
                 NativeProcess process = server.getProcess();
                 if (!ProcessUtils.isAlive(process)) {
                     int rc = process.waitFor();                    
-                    RemoteLogger.fine("fs_server (pid {0} at {1}) exited with rc = {2}", process.getPID(), env, rc);//NOI18N
+                    RemoteLogger.finest("fs_server (pid {0} at {1}) exited with rc = {2}", process.getPID(), env, rc);//NOI18N
                     
                 }
             } catch (IOException ioe) {
