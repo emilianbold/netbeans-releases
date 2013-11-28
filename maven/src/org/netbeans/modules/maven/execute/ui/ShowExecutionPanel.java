@@ -428,7 +428,7 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
 
         @Override
         public String getShortDescription() {
-            return "<html>Goal: " + start.goal + "<br/>Phase:" + start.phase + "<br/>Execution Id:" + start.executionId + (end.getErrorMessage() != null ? "<br/>Error<b>" + end.getErrorMessage() + "</b>": "") + "</html>";
+            return "<html>Goal: " + start.goal + "<br/>Phase: " + start.phase + "<br/>Execution Id: " + start.executionId + (end.getErrorMessage() != null ? "<br/>Error: <b>" + end.getErrorMessage() + "</b>": "") + "</html>";
         }
 
         @Override

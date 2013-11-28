@@ -188,6 +188,13 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
         });
     }
 
+    @Override
+    boolean isLoaded() {
+        synchronized (LOCK) {
+            return loaded;
+        }
+    }
+
     private void startLoading() {
         synchronized (LOCK) {
             loaded = false;

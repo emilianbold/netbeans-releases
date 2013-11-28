@@ -86,7 +86,7 @@ public class RepositoryRegistryTest extends NbTestCase {
     public void testEmpty() {
         Collection<RepositoryImpl> repos = RepositoryRegistry.getInstance().getRepositories();
         assertEquals(0, repos.size());
-        repos = RepositoryRegistry.getInstance().getRepositories("fake");
+        repos = RepositoryRegistry.getInstance().getRepositories("fake", true);
         assertEquals(0, repos.size());
     }
     
@@ -112,7 +112,7 @@ public class RepositoryRegistryTest extends NbTestCase {
         Collection<RepositoryImpl> repos = RepositoryRegistry.getInstance().getRepositories();
         assertEquals(1, repos.size());
     
-        repos = RepositoryRegistry.getInstance().getRepositories("fake");
+        repos = RepositoryRegistry.getInstance().getRepositories("fake", true);
         assertEquals(0, repos.size());
     }
     
@@ -129,18 +129,18 @@ public class RepositoryRegistryTest extends NbTestCase {
         RepositoryRegistry.getInstance().addRepository(repo2c2);
         Collection<RepositoryImpl> repos = RepositoryRegistry.getInstance().getRepositories();
         assertEquals(4, repos.size());
-        repos = RepositoryRegistry.getInstance().getRepositories(ID_CONNECTOR1);
+        repos = RepositoryRegistry.getInstance().getRepositories(ID_CONNECTOR1, true);
         assertEquals(2, repos.size());
         assertTrue(repos.contains(repo1c1));
         assertTrue(repos.contains(repo2c1));
         
         // remove
         RepositoryRegistry.getInstance().removeRepository(repo1c1);
-        repos = RepositoryRegistry.getInstance().getRepositories(ID_CONNECTOR1);
+        repos = RepositoryRegistry.getInstance().getRepositories(ID_CONNECTOR1, true);
         assertEquals(1, repos.size());
         assertTrue(repos.contains(repo2c1));
         RepositoryRegistry.getInstance().removeRepository(repo2c1);
-        repos = RepositoryRegistry.getInstance().getRepositories(ID_CONNECTOR1);
+        repos = RepositoryRegistry.getInstance().getRepositories(ID_CONNECTOR1, true);
         assertEquals(0, repos.size());
         
         repos = RepositoryRegistry.getInstance().getRepositories();
@@ -204,7 +204,7 @@ public class RepositoryRegistryTest extends NbTestCase {
         RepositoryInfo info = new RepositoryInfo("repoid", ID_CONNECTOR1, "http://url", null, null, null, null, null, null);
         RepositoryRegistry.getInstance().putRepository(getRepository(new MyRepository(info)));
         
-        Collection<RepositoryImpl> repos = RepositoryRegistry.getInstance().getRepositories(ID_CONNECTOR1);
+        Collection<RepositoryImpl> repos = RepositoryRegistry.getInstance().getRepositories(ID_CONNECTOR1, true);
         assertEquals(1, repos.size());
         RepositoryImpl repo = repos.iterator().next();
         assertEquals("repoid", repo.getId());

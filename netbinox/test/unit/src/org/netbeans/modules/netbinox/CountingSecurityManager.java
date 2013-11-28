@@ -464,6 +464,9 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
             // and does not seem to be preventable
             return false;
         }
+        if (file.endsWith(".dll") && file.contains("writtableArea")) {
+            return false;
+        }
 
         if (containsPath(file, Places.getUserDirectory().getName() + "/.metadata")) {
             return false;

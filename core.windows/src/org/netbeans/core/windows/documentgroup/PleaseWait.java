@@ -77,6 +77,7 @@ class PleaseWait extends JPanel {
     }
     
     public void uninstall() {
+        setVisible(false);
         JFrame frame = (JFrame) WindowManagerImpl.getInstance().getMainWindow();
         frame.setGlassPane( oldGlass );
     }

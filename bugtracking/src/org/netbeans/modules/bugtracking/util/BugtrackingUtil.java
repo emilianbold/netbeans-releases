@@ -173,7 +173,7 @@ public class BugtrackingUtil {
                 TeamBugtrackingConnector teamConnector = (TeamBugtrackingConnector) bugtrackingConnector;
                 if(teamConnector.getType() == TeamBugtrackingConnector.BugtrackingType.BUGZILLA) {
                     String id = teamConnector.findNBRepository(); // ensure repository exists
-                    return RepositoryRegistry.getInstance().getRepository(c.getID(), id);
+                    return RepositoryRegistry.getInstance().getRepository(c.getID(), id, true);
                 }
             }
         }

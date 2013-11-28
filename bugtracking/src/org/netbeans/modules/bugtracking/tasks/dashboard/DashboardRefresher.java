@@ -72,10 +72,7 @@ public class DashboardRefresher {
         refreshDashboard = RP.create(new Runnable() {
             @Override
             public void run() {
-                if (!refreshEnabled) {
-                    return;
-                }
-                if (dashboardBusy) {
+                if (dashboardBusy || !refreshEnabled) {
                     refreshWaiting = true;
                     return;
                 }
