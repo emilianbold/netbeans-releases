@@ -39,40 +39,44 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep.sass;
+package org.netbeans.test.git;
 
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.css.prep.util.VersionOutputProcessorFactory;
+import junit.framework.Test;
+import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.test.git.main.archeology.AnnotationsTest;
+import org.netbeans.test.git.main.commit.CloneTest;
+import org.netbeans.test.git.main.commit.CommitDataTest;
+import org.netbeans.test.git.main.commit.CommitUiTest;
+import org.netbeans.test.git.main.commit.IgnoreTest;
+import org.netbeans.test.git.main.commit.InitializeTest;
+import org.netbeans.test.git.main.delete.DeleteTest;
+import org.netbeans.test.git.utils.gitExistsChecker;
 
+/**
+ *
+ * @author kanakmar
+ */
+public class GitStableTest extends JellyTestCase {
 
-public class SassExecutableTest extends NbTestCase {
-
-    private static final VersionOutputProcessorFactory VERSION_OUTPUT_PROCESSOR_FACTORY
-            = new VersionOutputProcessorFactory(SassExecutable.VERSION_PATTERN);
-
-    public SassExecutableTest(String name) {
-        super(name);
+    public GitStableTest(String testName) {
+        super(testName);
     }
 
-    public void testParseValidVersions() {
-        assertEquals("3.2.9", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 3.2.9 (Media Mark)"));
-        assertEquals("3.2.9", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("SASS 3.2.9 (Media Mark)"));
-        assertEquals("3.3.0", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 3.3.0 (Media Mark)"));
-        assertEquals("3.3.0", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 3.3.0.alpha.198"));
-        assertEquals("3.2.9", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 3.2.9a (Media Mark)"));
-        assertEquals("3.2.9", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 3.2.9-upd10 (Media Mark)"));
-        assertEquals("3.2.9", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 3.2.9 patch 3 (Media Mark)"));
-        assertEquals("3.2.9", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 3.2.9"));
-        assertEquals("3.2.9.1.25", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 3.2.9.1.25"));
-        assertEquals("3.2.9", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass  3.2.9    (Media Mark)"));
-        assertEquals("1", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 1 (Media Mark)"));
-        assertEquals("1.0", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 1.0 (Media Mark)"));
-        assertEquals("1.0", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 1.0,25 (Media Mark)"));
+    public static Test suite() {
+        if (gitExistsChecker.check(false)) {
+            return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
+                    .addTest(AnnotationsTest.class, "testShowAnnotations")
+                    .addTest(CloneTest.class, "testCloneProject")
+                    .addTest(CommitDataTest.class, "testCommitFile", "testRecognizeMimeType")
+                    .addTest(CommitUiTest.class, "testInvokeCloseCommit")
+                    .addTest(DeleteTest.class, "testDeleteRevert", "testDeleteCommit")
+                    .addTest(IgnoreTest.class, "testIgnoreUnignoreFile")
+                    .addTest(InitializeTest.class, "testInitializeAndFirstCommit")
+                    .enableModules(".*")
+                    .clusters(".*"));
+        } else {
+            return NbModuleSuite.create(NbModuleSuite.emptyConfiguration());
+        }
     }
-
-    public void testParseInvalidVersions() {
-        assertNull(VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("3.2.9 (Media Mark)"));
-        assertNull(VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass-NG 3.2.9 (Media Mark)"));
-    }
-
 }

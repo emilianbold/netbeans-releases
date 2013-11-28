@@ -50,19 +50,15 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.input.InputProcessor;
-import org.netbeans.api.extexecution.input.InputProcessors;
-import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.css.prep.options.CssPrepOptions;
 import org.netbeans.modules.css.prep.util.ExternalExecutable;
 import org.netbeans.modules.css.prep.util.ExternalExecutableValidator;
 import org.netbeans.modules.css.prep.util.FileUtils;
 import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
 import org.netbeans.modules.css.prep.util.UiUtils;
+import org.netbeans.modules.css.prep.util.VersionOutputProcessorFactory;
 import org.netbeans.modules.web.common.api.Version;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.Places;
@@ -88,6 +84,7 @@ public final class SassExecutable {
     private static final File TMP_DIR = new File(System.getProperty("java.io.tmpdir")); // NOI18N
 
     private static final Version MINIMAL_VERSION_WITH_SOURCEMAP = Version.fromDottedNotationWithFallback("3.3.0"); // NOI18N
+    static final String VERSION_PATTERN = "Sass\\s+(\\d+(\\.\\d+)*)"; // NOI18N
 
     // version of the compiler set in ide options
     private static volatile Version version;
@@ -129,7 +126,7 @@ public final class SassExecutable {
         if (version != null) {
             return version;
         }
-        VersionOutputProcessorFactory versionOutputProcessorFactory = new VersionOutputProcessorFactory();
+        VersionOutputProcessorFactory versionOutputProcessorFactory = new VersionOutputProcessorFactory(VERSION_PATTERN);
         try {
             SassExecutable sassExecutable = getDefault();
             sassExecutable.getExecutable("Sass version", TMP_DIR) // NOI18N
@@ -233,51 +230,6 @@ public final class SassExecutable {
         // output
         params.add(outputFile.getAbsolutePath());
         return params;
-    }
-
-    //~ Inner classes
-
-    static final class VersionOutputProcessorFactory implements ExecutionDescriptor.InputProcessorFactory {
-
-        // simply catch all numbers and dots only
-        static final Pattern VERSION_PATTERN = Pattern.compile("Sass\\s+(\\d+(\\.\\d+)*)", Pattern.CASE_INSENSITIVE); // NOI18N
-
-        private volatile String version;
-
-
-        @Override
-        public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
-            return InputProcessors.bridge(new LineProcessor() {
-
-                @Override
-                public void processLine(String line) {
-                    assert version == null : version + " :: " + line;
-                    version = parseVersion(line);
-                }
-
-                @Override
-                public void reset() {
-                }
-
-                @Override
-                public void close() {
-                }
-
-            });
-        }
-
-        public String getVersion() {
-            return version;
-        }
-
-        static String parseVersion(String line) {
-            Matcher matcher = VERSION_PATTERN.matcher(line);
-            if (matcher.find()) {
-                return matcher.group(1);
-            }
-            return null;
-        }
-
     }
 
 }
