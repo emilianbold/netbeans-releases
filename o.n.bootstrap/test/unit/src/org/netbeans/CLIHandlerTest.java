@@ -45,6 +45,10 @@
 package org.netbeans;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.attribute.PosixFileAttributeView;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.logging.Level;
 import org.netbeans.junit.*;
 import java.util.*;
@@ -80,9 +84,9 @@ public class CLIHandlerTest extends NbTestCase {
         if (p == null) {
             p = System.getProperty("java.io.tmpdir");
         }
-        String tmp = p;
-        assertNotNull(tmp);
-        System.getProperties().put("netbeans.user", tmp);
+        File tmp = new File(new File(p), "wd");
+        tmp.mkdirs();
+        System.getProperties().put("netbeans.user", tmp.getPath());
         
         File f = new File(tmp, "lock");
         if (f.exists()) {
@@ -408,18 +412,47 @@ public class CLIHandlerTest extends NbTestCase {
 
     public void testCannotWrite() throws Exception {
         File tmp = new File(System.getProperty("netbeans.user"));
-        tmp.setReadOnly();
+        tmp.mkdirs();
+        if (!makeDirectoryReadOnly(tmp)) {
+            return;
+        }
         try {
             CLIHandler.Args args = new CLIHandler.Args(new String[0], nullInput, nullOutput, nullOutput, System.getProperty("user.dir"));
             Status res = CLIHandler.initialize(args, null, Collections.<CLIHandler>emptyList(), false, false, null);
 
             assertEquals("CLI evaluation failed with return code of h1", CLIHandler.Status.CANNOT_WRITE, res.getExitCode());
         } finally {
-            tmp.setWritable(true);
-            for (File f : tmp.listFiles()) {
-                f.delete();
+            cleanUpReadOnly(tmp);
+        }
+    }
+
+    private boolean makeDirectoryReadOnly(File tmp) throws IOException {
+        tmp.setReadOnly();
+        tmp.setWritable(false);
+        File tf;
+        for (int i = 0; ; i++) {
+            tf = new File(tmp, "test" + i + ".txt");
+            if (!tf.exists()) {
+                break;
             }
-            assertTrue("Clean up", tmp.delete());
+        }
+        tf.createNewFile();
+        if (tf.exists()) {
+            LOG.info("Skipping testCannotWrite, as the directory is still writable!");
+            return false;
+        }
+        return true;
+    }
+
+    private void cleanUpReadOnly(File tmp) {
+        tmp.setWritable(true);
+        for (File f : tmp.listFiles()) {
+            if (!f.delete()) {
+                f.deleteOnExit();
+            }
+        }
+        if (!tmp.delete()) {
+            tmp.deleteOnExit();
         }
     }
     public void testCannotWriteLockFile() throws Exception {
@@ -433,8 +466,7 @@ public class CLIHandlerTest extends NbTestCase {
 
             assertEquals("CLI evaluation failed with return code of h1", CLIHandler.Status.CANNOT_WRITE, res.getExitCode());
         } finally {
-            f.setWritable(true);
-            assertTrue("Clean up", f.delete());
+            cleanUpReadOnly(tmp);
         }
     }
     

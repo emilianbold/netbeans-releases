@@ -236,11 +236,6 @@ public final class RequestProcessor implements ScheduledExecutorService {
      */
     private final SortedSet<Item> queue = new TreeSet<Item>();
 
-    /** Number of currently running processors. If there is a new request
-     * and this number is lower that the throughput, new Processor is asked
-     * to carry over the request. */
-    private int running = 0;
-
     /** The maximal number of processors that can perform the requests sent
      * to this RequestProcessors. If 1, all the requests are serialized. */
     private int throughput;
@@ -611,9 +606,7 @@ public final class RequestProcessor implements ScheduledExecutorService {
             if (!wasNull) {
                 prioritizedEnqueue(item);
 
-                if (running < throughput) {
-                    running++;
-
+                if (processors.size() < throughput) {
                     Processor proc = Processor.get();
                     processors.add(proc);
                     proc.setName(name);
@@ -640,8 +633,6 @@ public final class RequestProcessor implements ScheduledExecutorService {
         if (getQueue().isEmpty() || (stopped && !finishAwaitingTasks)) { // no more work in this burst, return him
             processors.remove(worker);
             Processor.put(worker, debug);
-            running--;
-
             return null;
         } else { // we have some work for the worker, pass it
 
