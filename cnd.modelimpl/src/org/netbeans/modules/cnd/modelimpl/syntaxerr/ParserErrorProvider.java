@@ -80,10 +80,19 @@ public class ParserErrorProvider extends CsmErrorProvider {
         Thread currentThread = Thread.currentThread();
         FileImpl file = (FileImpl) request.getFile();
         currentThread.setName("Provider "+getName()+" prosess "+file.getAbsolutePath()); // NOI18N
+        if (request.isCancelled()) {
+            return;
+        }
         ReadOnlyTokenBuffer buffer = file.getErrors(errors);
         if (buffer != null) {
+            if (request.isCancelled()) {
+                return;
+            }
             ParserErrorFilter.getDefault().filter(errors, errorInfos, buffer, request.getFile());
             for (Iterator<CsmErrorInfo> iter = errorInfos.iterator(); iter.hasNext() && ! request.isCancelled(); ) {
+                if (request.isCancelled()) {
+                    return;
+                }
                 response.addError(iter.next());
             }
         }

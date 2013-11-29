@@ -191,9 +191,12 @@ public class IncludeErrorProvider extends CsmErrorProvider {
         CsmFile file = request.getFile();
         Thread currentThread = Thread.currentThread();
         currentThread.setName("Provider "+getName()+" prosess "+file.getAbsolutePath()); // NOI18N
+        if (request.isCancelled()) {
+            return;
+        }
         for(CsmInclude incl : CsmFileInfoQuery.getDefault().getBrokenIncludes(file)) {
             if (request.isCancelled()) {
-                break;
+                return;
             }
             if (incl.getIncludeState() == IncludeState.Recursive) {
                 response.addError(new IncludeErrorInfo(incl));
@@ -201,11 +204,23 @@ public class IncludeErrorProvider extends CsmErrorProvider {
                 response.addError(new IncludeErrorInfo(incl));
             }
         }
+        if (request.isCancelled()) {
+            return;
+        }
         for (CsmErrorDirective error : file.getErrors()) {
+            if (request.isCancelled()) {
+                return;
+            }
             response.addError(new ErrorDirectiveInfo(error));
+        }
+        if (request.isCancelled()) {
+            return;
         }
         Collection<CsmFile> visited = new HashSet<CsmFile>();
         for (CsmInclude incl : file.getIncludes()) {
+            if (request.isCancelled()) {
+                return;
+            }
             CsmFile newFile = incl.getIncludeFile();
             if (newFile != null && hasBrokenIncludes(newFile, visited)) {
                 response.addError(new IncludeWarningInfo(incl));
