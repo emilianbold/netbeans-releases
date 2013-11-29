@@ -42,10 +42,11 @@
 
 package org.netbeans.modules.bugtracking;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
-import java.util.Map;
 import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
@@ -198,6 +199,50 @@ public class RecentIssuesTest extends NbTestCase {
         assertEquals(repo2issue1.getID(), issues.get(6).getID());
     }
 
+    public void testRecentIssueDeleted () throws MalformedURLException, IOException {
+        final RITestRepository riTestRepo = new RITestRepository("test repo");
+        RepositoryImpl repo = getRepository(riTestRepo);
+        RITestIssue riIssue = new RITestIssue(riTestRepo, "1");
+        IssueImpl issue1 = getIssue(repo, riIssue);
+        IssueImpl issue2 = getIssue(repo, new RITestIssue(riTestRepo, "2"));
+
+        // add issue1
+        BugtrackingManager.getInstance().addRecentIssue(repo, issue1);
+
+        // test for repo -> issue is returned
+        List<IssueImpl> issues = (List<IssueImpl>) BugtrackingManager.getInstance().getRecentIssues(repo);
+        assertNotNull(issues);
+        assertEquals(1, issues.size());
+        assertEquals(issue1.getID(), issues.iterator().next().getID());
+        
+        // getAll -> issue1 is returned
+        List<IssueImpl> allIssues = BugtrackingManager.getInstance().getAllRecentIssues();
+        assertNotNull(allIssues);
+        assertEquals(1, allIssues.size());
+        assertTrue(allIssues.get(0).getRepositoryImpl().getId().equals(repo.getId()));
+        assertEquals(issue1.getID(), allIssues.get(0).getID());
+        
+        // add second issue
+        BugtrackingManager.getInstance().addRecentIssue(repo, issue2);
+        
+        // delete issue
+        riIssue.deleted();
+        
+        // test for repo => only the second issue returned
+        issues = (List<IssueImpl>) BugtrackingManager.getInstance().getRecentIssues(repo);
+        assertNotNull(issues);
+        assertEquals(1, allIssues.size());
+        assertTrue(allIssues.get(0).getRepositoryImpl().getId().equals(repo.getId()));
+        assertEquals(issue2.getID(), allIssues.get(0).getID());
+        
+        // getAll -> only the second issue returned
+        allIssues = BugtrackingManager.getInstance().getAllRecentIssues();
+        assertNotNull(allIssues);
+        assertEquals(1, allIssues.size());
+        assertTrue(allIssues.get(0).getRepositoryImpl().getId().equals(repo.getId()));
+        assertEquals(issue2.getID(), allIssues.get(0).getID());
+    }
+
     private void assertRecentIssues(List<IssueImpl> recent, IssueImpl[] issues) {
         assertEquals(recent.size(), issues.length);
         for (int i = 0; i < issues.length; i++) {
@@ -223,9 +268,11 @@ public class RecentIssuesTest extends NbTestCase {
     private class RITestIssue extends TestIssue {
         private final String name;
         private final RITestRepository repository;
+        private final PropertyChangeSupport support;
         public RITestIssue(RITestRepository repository, String name) {
             this.repository = repository;
             this.name = name;
+            this.support = new PropertyChangeSupport(this);
         }
         public String getDisplayName() {
             return name;
@@ -244,6 +291,17 @@ public class RecentIssuesTest extends NbTestCase {
         }
         public String getID() {
             return name;
+        }
+        @Override
+        public void addPropertyChangeListener (PropertyChangeListener listener) {
+            support.addPropertyChangeListener(listener);
+        }
+        @Override
+        public void removePropertyChangeListener (PropertyChangeListener listener) {
+            support.removePropertyChangeListener(listener);
+        }
+        private void deleted () {
+            support.firePropertyChange(IssueProvider.EVENT_ISSUE_DELETED, null, null);
         }
     }
 
