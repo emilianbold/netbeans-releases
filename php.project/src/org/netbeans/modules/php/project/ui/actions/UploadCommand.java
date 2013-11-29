@@ -157,7 +157,7 @@ public class UploadCommand extends RemoteCommand implements Displayable {
                 showDialog = false;
             }
             if (showDialog) {
-                forUpload = TransferFilesChooser.forUpload(forUpload, ProjectSettings.getLastUpload(getProject())).showDialog();
+                forUpload = TransferFilesChooser.forUpload(forUpload, getLastUploadTimestamp()).showDialog();
             }
         } finally {
             progressHandle.finish();
@@ -185,6 +185,14 @@ public class UploadCommand extends RemoteCommand implements Displayable {
         }
         forUpload.clear();
         forUpload.addAll(tmp);
+    }
+
+    private long getLastUploadTimestamp() {
+        if (!FETCH_ALL_LOCAL_FILES) {
+            // using lazy children, do not check anything
+            return 4102441200L; // 2100/1/1 ;)
+        }
+        return ProjectSettings.getLastUpload(getProject());
     }
 
     private void fetchAllFiles(Set<TransferFile> allFiles, TransferFile transferFile) {
