@@ -251,8 +251,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
         return processed;
     }
     
-    private boolean processController(String controllerName) {
-        processTemplate();
+    private boolean processController(String controllerName) {        processTemplate();
         StringBuilder sb = new StringBuilder();
         
         sb.append("(function () {\n$scope = "); //NOI18N
@@ -285,7 +284,9 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
         if (!controllerName.isEmpty()) {
             embeddings.add(snapshot.create(tokenSequence.offset() + 1, controllerName.length(), Constants.JAVASCRIPT_MIMETYPE));
             sb.append(";");
-        }
+        } else {
+            embeddings.add(snapshot.create(tokenSequence.offset() + 1, 0, Constants.JAVASCRIPT_MIMETYPE));
+        } 
         sb.append("\nwith ($scope) { \n");
         embeddings.add(snapshot.create(sb.toString(), Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
         return true;
