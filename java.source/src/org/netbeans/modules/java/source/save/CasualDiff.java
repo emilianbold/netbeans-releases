@@ -2396,8 +2396,11 @@ public class CasualDiff {
             printer.setPrec(old);
         }
         //make sure the ')' is printed:
-        moveFwdToToken(tokenSequence, oldT.params.isEmpty() ? posHint : endPos(oldT.params.last()), JavaTokenId.RPAREN);
-        tokenSequence.moveNext();
+        JavaTokenId id = moveFwdToOneOfTokens(tokenSequence, oldT.params.isEmpty() ? posHint : endPos(oldT.params.last()), LAMBDA_PARAM_END_TOKENS);
+        if (id == JavaTokenId.RPAREN) {
+            tokenSequence.moveNext();
+        }
+        // TODO: if the text is broken so that it ends after the arrow or parens, then what ?
         posHint = tokenSequence.offset();
         if (localPointer < posHint)
             copyTo(localPointer, localPointer = posHint);
@@ -2409,6 +2412,8 @@ public class CasualDiff {
         copyTo(localPointer, bounds[1]);
         return bounds[1];
     }
+    
+    private static final EnumSet<JavaTokenId> LAMBDA_PARAM_END_TOKENS = EnumSet.of(JavaTokenId.RPAREN, JavaTokenId.ARROW);
 
     protected int diffFieldGroup(FieldGroupTree oldT, FieldGroupTree newT, int[] bounds) {
         if (!listsMatch(oldT.getVariables(), newT.getVariables())) {
