@@ -50,6 +50,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.indexing.impl.TextIndexStorageManager;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
@@ -81,11 +82,26 @@ public class RemoteCodeModelTestCase extends RemoteBuildTestBase {
         Logger.getLogger("org.netbeans.modules.editor.settings.storage.Utils").setLevel(Level.SEVERE);
     }
 
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown(); 
+        shutdownModel();
+    }
+    
+    
+    private void shutdownModel() {
+        ModelImpl model = (ModelImpl) CsmModelAccessor.getModel();
+        model.shutdown();
+        ModelSupport.instance().shutdown();
+        TextIndexStorageManager.shutdown();
+        RepositoryTestUtils.deleteDefaultCacheLocation();
+    }    
+
     private void startupModel() {
+        RepositoryTestUtils.deleteDefaultCacheLocation();
         ModelImpl model = (ModelImpl) CsmModelAccessor.getModel();
         model.startup();
-        ModelSupport.instance().startup();
-        RepositoryTestUtils.deleteDefaultCacheLocation();
+        ModelSupport.instance().startup();        
     }
 
     @Override
