@@ -54,6 +54,8 @@ import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 
 /**
@@ -73,22 +75,41 @@ public final class Source {
     private static final String SOURCE_VAR_URL = "url";     // NOI18N
     
     private static final Map<JPDADebugger, Map<String, Source>> knownSources = new WeakHashMap<>();
-    
+
     private final String name;
-    private final URL url;
+    private final String className;
+    private final URL url;          // The original file source
+    private final URL runtimeURL;   // The current content in runtime, or null when equal to 'url'
+    private final int contentLineShift; // Line shift of 'url' content in 'runtimeURL'. Can not be negative.
     private final int hash;
     private final String content;
     
-    private Source(String name, URL url, int hash, String content) {
+    private Source(String name, String className, URL url, boolean compareContent, int hash, String content) {
         this.name = name;
+        this.className = className;
+        URL rURL = null;
+        int lineShift = 0;
         if (url == null || !"file".equalsIgnoreCase(url.getProtocol())) {
             try {
                 url = SourceFilesCache.getDefault().getSourceFile(name, hash, content);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
+        } else if (compareContent) {
+            lineShift = getContentLineShift(url, content);
+            if (lineShift >= 0) {
+                try {
+                    rURL = SourceFilesCache.getDefault().getSourceFile(name, hash, content);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            } else {
+                lineShift = 0;
+            }
         }
         this.url = url;
+        this.runtimeURL = rURL;
+        this.contentLineShift = lineShift;
         this.hash = hash;
         this.content = content;
     }
@@ -143,8 +164,11 @@ public final class Source {
         }
         Object urlObj = fieldURL.createMirrorObject();
         URL url;
+        boolean compareContent = false;
         if (urlObj == null) {
-            url = null;
+            // Check if there's a special URL handler. In that case we have to count with content shifting.
+            url = readURLFromFields(fieldURL);
+            compareContent = true;
         } else {
             url = (URL) urlObj;
         }
@@ -165,7 +189,7 @@ public final class Source {
         if (!name.endsWith(".js") && !name.endsWith(".JS")) {
             name = name + ".js";
         }
-        Source src = new Source(name, url, hash, content);
+        Source src = new Source(name, className, url, compareContent, hash, content);
         synchronized (knownSources) {
             Map<String, Source> dbgSources = knownSources.get(debugger);
             if (dbgSources == null) {
@@ -193,9 +217,21 @@ public final class Source {
     public String getName() {
         return name;
     }
+    
+    public String getClassName() {
+        return className;
+    }
 
     public URL getUrl() {
         return url;
+    }
+    
+    public URL getRuntimeURL() {
+        return runtimeURL;
+    }
+    
+    public int getContentLineShift() {
+        return contentLineShift;
     }
 
     public int getHash() {
@@ -204,6 +240,85 @@ public final class Source {
 
     public String getContent() {
         return content;
+    }
+    
+    private static URL readURLFromFields(Field fieldURL) {
+        if (!(fieldURL instanceof ObjectVariable)) {
+            return null;
+        }
+        ObjectVariable urlObj = (ObjectVariable) fieldURL;
+        Field protocolField = urlObj.getField("protocol");      // NOI18N
+        Field authorityField = urlObj.getField("authority");    // NOI18N
+        Field pathField = urlObj.getField("path");              // NOI18N
+        if (protocolField == null || authorityField == null || pathField == null) {
+            return null;
+        }
+        String protocol = stripQuotes(protocolField.getValue());
+        String authority = stripQuotes(authorityField.getValue());
+        String path = stripQuotes(pathField.getValue());
+        StringBuilder result = new StringBuilder();
+        result.append(protocol);
+        result.append(":");
+        if (authority != null && authority.length() > 0) {
+            result.append("//");
+            result.append(authority);
+        }
+        if (path != null) {
+            result.append(path);
+        }
+        try {
+            return new URL(result.toString());
+        } catch (MalformedURLException ex) {
+            return null;
+        }
+    }
+    
+    private static String stripQuotes(String str) {
+        if ("null".equals(str)) {
+            str = null;
+        }
+        if (str != null && str.startsWith("\"") && str.endsWith("\"")) {
+            str = str.substring(1, str.length() - 1);
+        }
+        return str;
+    }
+
+    /**
+     * 
+     * @param url
+     * @param content
+     * @return a non-negative line shift of content of 'url' in 'content', or -1
+     *         when content of 'url' is not a subset of 'content'.
+     */
+    private static int getContentLineShift(URL url, String content) {
+        String origContent;
+        FileObject fo = URLMapper.findFileObject(url);
+        if (fo != null) {
+            try {
+                origContent = fo.asText();
+            } catch (IOException ex) {
+                return 0;
+            }
+        } else {
+            return 0;
+        }
+        int index = content.indexOf(origContent);
+        if (index < 0) {
+            return -1;
+        }
+        String prep = content.substring(0, index);
+        return countNewLines(prep);
+    }
+
+    private static int countNewLines(String prep) {
+        String nl = "\n";
+        int c = 0;
+        int index = 0;
+        while ((index = prep.indexOf(nl, index)) >= 0) {
+            c++;
+            index++;
+        }
+        return c;
     }
     
 }
