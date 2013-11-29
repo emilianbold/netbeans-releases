@@ -43,22 +43,20 @@
  */
 package org.netbeans.modules.bugtracking;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.team.ide.spi.IDEServices;
 import org.netbeans.modules.team.ide.spi.ProjectServices;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -93,6 +91,7 @@ public final class BugtrackingManager implements LookupListener {
     private Lookup.Result<BugtrackingConnector> connectorsLookup;
 
     private List<IssueImpl> recentIssues;
+    private final Object recentIssuesLock = new Object();
 
     private IDEServices ideServices;
     private ProjectServices projectServices;
@@ -147,13 +146,16 @@ public final class BugtrackingManager implements LookupListener {
             return;
         }
         List<IssueImpl> l = getRecentIssues();
-        for (IssueImpl i : l) {
-            if(i.getIssue().getID().equals(issue.getID())) {
-                l.remove(i);
-                break;
+        synchronized (recentIssuesLock) {
+            for (IssueImpl i : l) {
+                if(i.getIssue().getID().equals(issue.getID())) {
+                    l.remove(i);
+                    break;
+                }
             }
+            l.add(0, issue);
         }
-        l.add(0, issue);
+        issue.addPropertyChangeListener(new IssuePropertyListener(issue));
         if(LOG.isLoggable(Level.FINE)) {
                 LOG.log(
                         Level.FINE,
@@ -233,6 +235,34 @@ public final class BugtrackingManager implements LookupListener {
     
     private void fireRecentIssuesChanged() {
         support.firePropertyChange(PROP_RECENT_ISSUES_CHANGED, null, null);
+    }
+    
+    private void removeRecentIssue (IssueImpl issue) {
+        List<IssueImpl> l = getRecentIssues();
+        boolean changed;
+        synchronized (recentIssuesLock) {
+            changed = l.remove(issue);
+        }
+        if (changed) {
+            fireRecentIssuesChanged();
+        }
+    }
+
+    private static class IssuePropertyListener implements PropertyChangeListener {
+        private final IssueImpl issue;
+
+        public IssuePropertyListener (IssueImpl issue) {
+            this.issue = issue;
+        }
+
+        @Override
+        public void propertyChange (PropertyChangeEvent evt) {
+            if (IssueProvider.EVENT_ISSUE_DELETED.equals(evt.getPropertyName())) {
+                issue.removePropertyChangeListener(this);
+                BugtrackingManager.getInstance().removeRecentIssue(issue);
+            }
+        }
+        
     }
 
 }

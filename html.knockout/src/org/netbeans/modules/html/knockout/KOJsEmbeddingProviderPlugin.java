@@ -217,8 +217,8 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
                             KODataBindContext context = currentTemplateContext != null
                                     ? currentTemplateContext : dataBindContext;
                             KODataBindContext templateBindContext = new KODataBindContext(context);
-                            KOTemplateContext.TemplateDescriptor desc = KOTemplateContext.getTemplateDescriptor(
-                                    snapshot, embedded.embedded(JsTokenId.javascriptLanguage()));
+                            KODataBindDescriptor desc = KODataBindDescriptor.getDataBindDescriptor(
+                                    snapshot, embedded.embedded(JsTokenId.javascriptLanguage()), false);
                             if (desc != null) {
                                 templateBindContext.push(desc.getData(), desc.isIsForEach(), desc.getAlias());
                                 String templateName = desc.getName();
@@ -294,7 +294,13 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
                             if (templateId != null) {
                                 currentTemplateContext.push(dataValue.text().toString().trim(), foreach, null);
                             } else {
-                                dataBindContext.push(dataValue.text().toString().trim(), foreach, null);
+                                KODataBindDescriptor desc = KODataBindDescriptor.getDataBindDescriptor(
+                                        snapshot, embedded.embedded(JsTokenId.javascriptLanguage()), true);
+                                if (desc != null) {
+                                    dataBindContext.push(desc.getData().trim(), foreach, desc.getAlias());
+                                } else {
+                                    dataBindContext.push(dataValue.text().toString().trim(), foreach, null);
+                                }
                             }
 
                         }
