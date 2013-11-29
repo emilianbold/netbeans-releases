@@ -49,7 +49,9 @@ import java.awt.event.ContainerListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
-import java.util.concurrent.Callable;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
@@ -62,6 +64,7 @@ import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.TopComponent;
 
 /**
  *
@@ -69,7 +72,7 @@ import org.openide.util.RequestProcessor;
  */
 public final class HyperlinkSupport {
     
-    private static HyperlinkSupport instance = new HyperlinkSupport();
+    private static final HyperlinkSupport instance = new HyperlinkSupport();
 
     final static String STACKTRACE_ATTRIBUTE = "attribute.stacktrace.link";     // NOI18N
     final static String TYPE_ATTRIBUTE = "attribute.type.link";                 // NOI18N
@@ -77,7 +80,7 @@ public final class HyperlinkSupport {
     public final static String LINK_ATTRIBUTE = "attribute.simple.link";        // NOI18N
     private final MotionListener motionListener;
     private final java.awt.event.MouseListener mouseListener;
-    private RequestProcessor rp = new RequestProcessor("Bugtracking hyperlinks", 50); // NOI18N
+    private final RequestProcessor rp = new RequestProcessor("Bugtracking hyperlinks", 50); // NOI18N
     
     private HyperlinkSupport() { 
         motionListener = new MotionListener();
@@ -92,7 +95,31 @@ public final class HyperlinkSupport {
         public int[] getIssueRefSpans(CharSequence text);
     }
 
+    public interface Link {
+        public void onClick(String linkText);
+    }
+
+    public interface IssueLinker extends Link, IssueRefProvider { }
+        
     public void register(Component c) {
+        registerChildren(c, null);
+    }
+
+    private static final String REGISTER_TASK = "hyperlink.task";
+    public void register(final TopComponent tc, final IssueLinker issueLinker) {
+        tc.removeContainerListener(regListener);
+        tc.addContainerListener(regListener);        
+        RequestProcessor.Task task = rp.create(new Runnable() {
+            @Override
+            public void run() {
+                registerChildren(tc, issueLinker);
+            }
+        });
+        tc.putClientProperty(REGISTER_TASK, task);
+        task.schedule(1000);
+    }
+    
+    private void registerChildren(Component c, IssueLinker issueLinker) {
         if(c instanceof Container) {
             Container container = (Container) c;
             container.removeContainerListener(regListener);
@@ -100,55 +127,35 @@ public final class HyperlinkSupport {
             
             Component[] components = container.getComponents();
             for (Component cmp : components) {
-                if(cmp instanceof JTextPane) {
-                    JTextPane tp = (JTextPane) cmp;
-                    if(tp.isEditable()) {
-                        continue;
-                    }
-                    registerForStacktraces(tp);
-                    registerForTypes(tp);
-                    registerForURLs(tp);
-                } else {
-                    register(cmp);
-                }
+                registerChildren(cmp, issueLinker);
             }
-        }          
+        } if(c instanceof JTextPane) {
+            JTextPane tp = (JTextPane) c;
+            if(!tp.isEditable()) {
+                registerTask.add(tp, issueLinker);
+            }
+        }
     }
         
     private void registerForStacktraces(final JTextPane pane) {
         pane.removeMouseMotionListener(motionListener);
-        rp.post(new Runnable() {
-            @Override
-            public void run() {
-                StackTraceSupport.register(pane);
-                pane.removeMouseMotionListener(motionListener);
-                pane.addMouseMotionListener(motionListener);
-            }
-        });    
+        StackTraceSupport.register(pane);
+        pane.removeMouseMotionListener(motionListener);
+        pane.addMouseMotionListener(motionListener);
     }
     
     private void registerForTypes(final JTextPane pane) {
         pane.removeMouseMotionListener(motionListener);
-        rp.post(new Runnable() {
-            @Override
-            public void run() {
-                FindTypesSupport.getInstance().register(pane);
-                pane.removeMouseMotionListener(motionListener);
-                pane.addMouseMotionListener(motionListener);
-            }
-        });
+        FindTypesSupport.getInstance().register(pane);
+        pane.removeMouseMotionListener(motionListener);
+        pane.addMouseMotionListener(motionListener);
     }
     
     private void registerForURLs(final JTextPane pane) {
         pane.removeMouseMotionListener(motionListener);
-        rp.post(new Runnable() {
-            @Override
-            public void run() {
-                WebUrlHyperlinkSupport.register(pane);
-                pane.removeMouseMotionListener(motionListener);
-                pane.addMouseMotionListener(motionListener);
-            }
-        });    
+        WebUrlHyperlinkSupport.register(pane);
+        pane.removeMouseMotionListener(motionListener);
+        pane.addMouseMotionListener(motionListener);
     }
     
     public void registerLink(final JTextPane pane, final int pos[], final Link link) {
@@ -163,25 +170,20 @@ public final class HyperlinkSupport {
         });    
     }
     
-    public void registerForIssueLinks(final JTextPane pane, final Link issueLink, final IssueRefProvider issueIdProvider) {
+    private void registerForIssueLinks(final JTextPane pane, final Link issueLink, final IssueRefProvider issueIdProvider) {
         pane.removeMouseMotionListener(motionListener);
-        rp.post(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    String text = "";
-                    try {
-                        text = pane.getStyledDocument().getText(0, pane.getStyledDocument().getLength());
-                    } catch (BadLocationException ex) {
-                        Support.LOG.log(Level.INFO, null, ex);
-                    }
-                    registerLinkIntern(pane, issueIdProvider.getIssueRefSpans(text), issueLink);
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-                pane.addMouseMotionListener(motionListener);
+        try {
+            String text = "";
+            try {
+                text = pane.getStyledDocument().getText(0, pane.getStyledDocument().getLength());
+            } catch (BadLocationException ex) {
+                Support.LOG.log(Level.INFO, null, ex);
             }
-        });    
+            registerLinkIntern(pane, issueIdProvider.getIssueRefSpans(text), issueLink);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        pane.addMouseMotionListener(motionListener);
     }
 
     private void registerLinkIntern(final JTextPane pane, final int[] pos, final Link link) {
@@ -245,15 +247,61 @@ public final class HyperlinkSupport {
         }
     };
     
-    public interface Link {
-        public void onClick(String linkText);
-    }
-
     private final ContainerListener regListener = new ContainerListener() {
         @Override
         public void componentAdded(ContainerEvent e) {
-            register((Container)e.getComponent());
+            Component c = e.getChild();
+            while(((c = c.getParent()) != null)) {
+                if(c instanceof TopComponent) {
+                    RequestProcessor.Task t = (RequestProcessor.Task) ((TopComponent)c).getClientProperty(REGISTER_TASK);
+                    if(t != null) {
+                        t.schedule(1000);
+                    } 
+                    break;
+                }
+            }
         }
         @Override public void componentRemoved(ContainerEvent e) { }
     };    
+    
+    private final RegisterTask registerTask = new RegisterTask();
+    private class RegisterTask implements Runnable {
+        private final ConcurrentLinkedQueue<R> toregister = new ConcurrentLinkedQueue<R>();
+        private final RequestProcessor.Task task;
+
+        private RegisterTask() {
+            task = rp.create(this);
+        }
+        
+        void add(JTextPane tp, IssueLinker issueLinker) {
+            toregister.add(new R(tp, issueLinker));
+            task.schedule(300);
+        }
+        
+        @Override
+        public void run() {
+            List<R> rs = new LinkedList<R>();
+            R r;
+            while((r = toregister.poll()) != null) {
+                rs.add(r);
+            }
+            for (R reg : rs) {
+                registerForStacktraces(reg.tp);
+                registerForTypes(reg.tp);
+                registerForURLs(reg.tp);
+                if(reg.issueLinker != null) {
+                    registerForIssueLinks(reg.tp, reg.issueLinker, reg.issueLinker);
+                }
+            }            
+        }
+        
+        private class R {
+            private final JTextPane tp;
+            private final IssueLinker issueLinker;
+            public R(JTextPane tp, IssueLinker issueLinker) {
+                this.tp = tp;
+                this.issueLinker = issueLinker;
+            }
+        }
+    }
 }

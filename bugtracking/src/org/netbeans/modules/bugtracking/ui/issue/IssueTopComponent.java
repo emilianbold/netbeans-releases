@@ -42,17 +42,14 @@
 
 package org.netbeans.modules.bugtracking.ui.issue;
 
+import org.netbeans.modules.bugtracking.commons.UndoRedoSupport;
 import org.netbeans.modules.bugtracking.commons.NBBugzillaUtils;
 import org.netbeans.modules.bugtracking.ui.repository.RepositoryComboRenderer;
 import org.netbeans.modules.bugtracking.ui.repository.RepositoryComboSupport;
 import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Container;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ContainerEvent;
-import java.awt.event.ContainerListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
@@ -70,11 +67,9 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.text.JTextComponent;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import org.netbeans.api.progress.ProgressHandle;
@@ -87,7 +82,6 @@ import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.commons.HyperlinkSupport;
-import org.netbeans.modules.bugtracking.commons.HyperlinkSupport.IssueRefProvider;
 import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.team.spi.OwnerInfo;
@@ -123,6 +117,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     private DelegatingUndoRedoManager delegatingUndoRedoManager;
 
     private final InstanceContent instanceContent = new InstanceContent();
+    private final UndoRedoSupport undoRedoSupport = new UndoRedoSupport();
     
     /**
      * Creates new {@code IssueTopComponent}.
@@ -254,9 +249,8 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     }
 
     private void registerForIssue() {
-        undoRedoListener.register(this, true);
-        HyperlinkSupport.getInstance().register(this);
-        issueLinksListener.register(this);
+        undoRedoSupport.register(this, true);
+        HyperlinkSupport.getInstance().register(this, issueLinker);
     }
 
     /** This method is called from within the constructor to
@@ -505,7 +499,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     public void componentClosed() {
         openIssues.remove(this);
         if(issue != null) {
-            undoRedoListener.register(this, false);
+            undoRedoSupport.register(this, false);
             unregisterListeners();
             getController().closed();
         }
@@ -714,7 +708,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         final List<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
     
         void init() {
-            delegate = UndoRedoSupport.getUndoRedo(issue);
+            delegate = undoRedoSupport.getUndoRedo();
             synchronized(this) {
                 for (ChangeListener l : listeners) {
                     delegate.addChangeListener(l);
@@ -782,78 +776,6 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         }
     }
     
-    private final UndoRedoListener undoRedoListener = new UndoRedoListener();
-    private class UndoRedoListener implements ContainerListener {
-        
-        @Override
-        public void componentAdded(ContainerEvent e) {
-            register((Container)e.getComponent(), true);
-        }
-
-        @Override
-        public void componentRemoved(ContainerEvent e) {
-            register((Container)e.getComponent(), false);
-        }
-        
-        void register(Component c, boolean register) {
-            if(c instanceof Container) {
-                register((Container)c, register, issue != null ? UndoRedoSupport.getSupport(issue) : null);
-            }            
-        }
-        
-        private void register(Component c, boolean register, UndoRedoSupport urs) {
-            if(urs != null && c instanceof JTextComponent) {
-                JTextComponent tx = (JTextComponent) c;
-                if(register) {
-                    urs.register(tx);
-                } else {
-                    urs.unregister(tx);
-                }
-            }
-            if(c instanceof Container) {
-                Container container = (Container) c;
-                container.removeContainerListener(this);
-                if(register) {
-                    container.addContainerListener(this);
-                }
-                Component[] components = container.getComponents();
-                for (Component cmp : components) {
-                    register(cmp, register, urs);
-                }
-            }
-        }
-    }
-    
-    private IssueLinksListener issueLinksListener = new IssueLinksListener();
-    private class IssueLinksListener implements ContainerListener {
-        
-        @Override
-        public void componentAdded(ContainerEvent e) {
-            register((Container)e.getComponent());
-        }
-
-        @Override
-        public void componentRemoved(ContainerEvent e) { }
-        
-        void register(Component c) {
-            if(c instanceof JTextPane) {
-                JTextPane tp = (JTextPane) c;
-                if(!tp.isEditable()) {
-                    HyperlinkSupport.getInstance().registerForIssueLinks(tp, issueLink, issueRefProvider);
-                }
-            }
-            if(c instanceof Container) {
-                Container container = (Container) c;
-                container.removeContainerListener(this);
-                container.addContainerListener(this);
-                Component[] components = container.getComponents();
-                for (Component cmp : components) {
-                    register(cmp);
-                }
-            }
-        }
-    }
-    
     private static class IssueSavable extends AbstractSavable {
         private final IssueTopComponent tc;
         
@@ -897,22 +819,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
 
     }
     
-    private IssueRefProvider issueRefProvider = issueRefProvider = new HyperlinkSupport.IssueRefProvider() {
-        @Override
-        public int[] getIssueRefSpans(CharSequence text) {
-            if(issue == null) {
-                return new int[0];
-            }
-            final RepositoryImpl repo = issue.getRepositoryImpl();
-            IssueFinder ifn = repo.getIssueFinder();
-            if(ifn == null) {
-                return new int[0];
-            }
-            return ifn.getIssueSpans(text);
-        }
-    };
-    
-    HyperlinkSupport.Link issueLink = new HyperlinkSupport.Link() {
+    private final HyperlinkSupport.IssueLinker issueLinker = new HyperlinkSupport.IssueLinker() {
             @Override
             public void onClick(String linkText) {
                 if(issue == null) {
@@ -934,5 +841,18 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                     }
                 });
             }
-        };
+            
+        @Override
+        public int[] getIssueRefSpans(CharSequence text) {
+            if(issue == null) {
+                return new int[0];
+            }
+            final RepositoryImpl repo = issue.getRepositoryImpl();
+            IssueFinder ifn = repo.getIssueFinder();
+            if(ifn == null) {
+                return new int[0];
+            }
+            return ifn.getIssueSpans(text);
+        }            
+    };
 }
