@@ -84,7 +84,7 @@ public class CompositeComponentVisualPanel extends javax.swing.JPanel implements
     private static final Logger LOG = Logger.getLogger(CompositeComponentVisualPanel.class.getName());
     private Project project;
     private SourceGroup[] folders;
-    private WebModule wm;
+    private final WebModule wm;
     private static final String RESOURCES_FOLDER = "resources"; //NOI18N
     private static final String COMPONENT_FOLDER = "ezcomp";    //NOI18N
     private String expectedExtension;
@@ -97,6 +97,7 @@ public class CompositeComponentVisualPanel extends javax.swing.JPanel implements
     public CompositeComponentVisualPanel(Project project, SourceGroup[] folders, String selectedText) {
         this.project = project;
         this.folders = folders;
+        this.wm = WebModule.getWebModule(project.getProjectDirectory());
         initComponents();
         locationCB.setRenderer(CELL_RENDERER);
 
@@ -142,10 +143,6 @@ public class CompositeComponentVisualPanel extends javax.swing.JPanel implements
         });
     }
 
-    WebModule getWebModule() {
-        return wm;
-    }
-
     void initValues(FileObject template, FileObject preselectedFolder, String documentName, boolean fromEditor) {
         assert project != null;
 
@@ -161,11 +158,12 @@ public class CompositeComponentVisualPanel extends javax.swing.JPanel implements
         SourceGroup preselectedGroup = getPreselectedGroup(folders, preselectedFolder);
         // Create OS dependent relative name
         if (preselectedGroup != null) {
+            String componentPath = (wm != null) ? CompositeComponentWizardPanel.getResourceFolderPath(wm) + File.separatorChar + COMPONENT_FOLDER : RESOURCES_FOLDER + File.separatorChar + COMPONENT_FOLDER;
             locationCB.setSelectedItem(preselectedGroup);
-            if (preselectedFolder != null && preselectedFolder.getName().equals(RESOURCES_FOLDER)) {
+            if (preselectedFolder != null && preselectedFolder.getName().endsWith(RESOURCES_FOLDER)) {
                 folderTextField.setText(getRelativeNativeName(preselectedGroup.getRootFolder(), preselectedFolder) + File.separatorChar + COMPONENT_FOLDER);
             } else {
-                folderTextField.setText(RESOURCES_FOLDER + File.separatorChar + COMPONENT_FOLDER);
+                folderTextField.setText(componentPath);
             }
         }
 

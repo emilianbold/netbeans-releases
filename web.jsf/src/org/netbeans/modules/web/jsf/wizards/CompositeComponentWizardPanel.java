@@ -47,12 +47,17 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.dd.api.common.InitParam;
+import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
+import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFUtils;
 import org.netbeans.modules.web.wizards.Utilities;
@@ -71,7 +76,8 @@ import org.openide.util.NbBundle;
  * @author alexeybutenko
  */
 public class CompositeComponentWizardPanel implements WizardDescriptor.Panel, ChangeListener {
-
+    
+    private static final Logger LOG = Logger.getLogger(CompositeComponentWizardPanel.class.getName());
     /**
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
@@ -82,6 +88,7 @@ public class CompositeComponentWizardPanel implements WizardDescriptor.Panel, Ch
     Project project;
     SourceGroup[] folders;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private static final String WEBAPP_RESOURCES_DIRECTORY = "javax.faces.WEBAPP_RESOURCES_DIRECTORY";
     private static final String RESOURCES_FOLDER = "resources"; //NOI18N
     //TODO how to add [,] to the regular expression?
     private static final Pattern INVALID_FILENAME_CHARACTERS = Pattern.compile("[`~!@#$%^&*()=+\\|{};:'\",<>/?]"); // NOI18N
@@ -151,9 +158,10 @@ public class CompositeComponentWizardPanel implements WizardDescriptor.Panel, Ch
 	    return false;
 	}
 
-	if (component.getTargetFolder() == null || !component.getTargetFolder().startsWith(RESOURCES_FOLDER)) {
-	    errorMessage = NbBundle.getMessage(CompositeComponentWizardPanel.class, "ERR_No_resources_folder");//NOI18N
-	} else if (component.getTargetFolder().equals(RESOURCES_FOLDER) || component.getTargetFolder().equals(RESOURCES_FOLDER + File.separatorChar)) {
+    String resourcePath = webModule != null ? getResourceFolderPath(webModule) : RESOURCES_FOLDER;
+	if (component.getTargetFolder() == null || !component.getTargetFolder().startsWith(resourcePath)) {
+	    errorMessage = NbBundle.getMessage(CompositeComponentWizardPanel.class, "ERR_No_resources_folder", resourcePath);//NOI18N
+	} else if (component.getTargetFolder().endsWith(RESOURCES_FOLDER) || component.getTargetFolder().endsWith(RESOURCES_FOLDER + File.separatorChar)) {
 	    errorMessage = NbBundle.getMessage(CompositeComponentWizardPanel.class, "ERR_No_component_folder");//NOI18N
 	}
 
@@ -314,6 +322,27 @@ public class CompositeComponentWizardPanel implements WizardDescriptor.Panel, Ch
     @Override
     public void stateChanged(ChangeEvent e) {
 	changeSupport.fireChange();
+    }
+
+    /*package*/ static String getResourceFolderPath(WebModule wm) {
+        String relPath = RESOURCES_FOLDER;
+        FileObject dd = wm.getDeploymentDescriptor();
+        if (dd != null) {
+            try {
+                WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
+                if (ddRoot != null) {
+                    InitParam[] parameters = ddRoot.getContextParam();
+                    for (InitParam param: parameters) {
+                        if (param.getParamName().contains(WEBAPP_RESOURCES_DIRECTORY)) {
+                            relPath = param.getParamValue().trim();
+                        }
+                    }
+                }
+            } catch (IOException ex) {
+                LOG.log(Level.WARNING, ex.getMessage());
+            }
+        }
+        return relPath;
     }
 }
 
