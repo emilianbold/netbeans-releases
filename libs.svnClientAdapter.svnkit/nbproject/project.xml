@@ -101,11 +101,11 @@ made subject to such option by the copyright holder.
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/svnkit.jar</runtime-relative-path>
-                <binary-origin>external/org.tmatesoft.svnkit_1.8.0.rc1_r10069_v20131105_1500.jar</binary-origin>
+                <binary-origin>external/org.tmatesoft.svnkit_1.8.0.r10086_v20131126_1344.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/sqljet.jar</runtime-relative-path>
-                <binary-origin>external/sqljet-1.1.8-SNAPSHOT_r1300_v20130826_2110.jar</binary-origin>
+                <binary-origin>external/sqljet-1.1.9.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/trilead.ssh2.jar</runtime-relative-path>
