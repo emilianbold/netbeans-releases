@@ -96,17 +96,18 @@ public abstract class IDENativeMavenWizardIterator implements WizardDescriptor.I
     }
     
     @Override
+    @Messages({"PRG_Dir=Creating directory", "PRG_FINISH=Finishing..."})
     public Set<FileObject> instantiate (ProgressHandle handle) throws IOException {
         handle.start();
         try {
-            handle.progress("Creating directory");
+            handle.progress(Bundle.PRG_Dir());
             ProjectInfo vi = new ProjectInfo((String) wiz.getProperty("groupId"), (String) wiz.getProperty("artifactId"), (String) wiz.getProperty("version"), (String) wiz.getProperty("package")); //NOI18N
             String[] splitlog = StringUtils.split(log, ":");
             ArchetypeWizardUtils.logUsage(splitlog[0], splitlog[1], splitlog[2]);
             File projFile = FileUtil.normalizeFile((File) wiz.getProperty(CommonProjectActions.PROJECT_PARENT_FOLDER)); // NOI18N
             CreateProjectBuilder builder = createBuilder(projFile, vi, handle);
             builder.create();
-            handle.progress("Finishing...");
+            handle.progress(Bundle.PRG_FINISH());
             return ArchetypeWizardUtils.openProjects(projFile, null);   
         } finally {
             handle.finish();
