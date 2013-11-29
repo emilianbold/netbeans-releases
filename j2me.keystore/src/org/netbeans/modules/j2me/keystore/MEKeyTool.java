@@ -137,7 +137,13 @@ public class MEKeyTool {
         if (target instanceof J2MEPlatform) {
             return listKeys((J2MEPlatform) target);
         } else {
-            return listKeys((J2MEPlatform.Device) target);
+            final J2MEPlatform.Device device = (J2MEPlatform.Device) target;
+            final String ksPath = keystoreForDevice(device);
+            if (ksPath == null) {
+                return listKeys(device);
+            } else {
+                return listKeysME3(device, ksPath);
+            }
         }
     }
 
@@ -181,10 +187,8 @@ public class MEKeyTool {
         }
     }
 
-    public static KeyDetail[] listKeys(final J2MEPlatform.Device device) {
+    public static KeyDetail[] listKeysME3(final J2MEPlatform.Device device, String ksPath) {
         final String toolString = getMEKeyToolPath(device);
-        String ksPath = keystoreForDevice(device);
-
         if (toolString == null) {
             return null;
         }
@@ -197,8 +201,7 @@ public class MEKeyTool {
                 if (line == null) {
                     break;
                 }
-                if ("".equals(line)) // NOI18N
-                {
+                if ("".equals(line)) { // NOI18N
                     continue;
                 }
                 if (line.startsWith("Key ")) { // NOI18N
@@ -215,6 +218,48 @@ public class MEKeyTool {
                 }
             }
             if (key != null) {
+                list.add(key);
+            }
+            return list.toArray(new KeyDetail[list.size()]);
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    public static KeyDetail[] listKeys(final J2MEPlatform.Device device) {
+        final String toolString = getMEKeyToolPath(device);
+        if (toolString == null) {
+            return null;
+        }
+        try {
+            final BufferedReader br = execute(new String[]{toolString, "-list", "-Xdevice:" + device.getName()}); // NOI18N
+            final ArrayList<KeyDetail> list = new ArrayList<>();
+            KeyDetail key = null;
+            int keyNumber = 0;
+            for (;;) {
+                final String line = br.readLine();
+                if (line == null) {
+                    break;
+                }
+                if ("".equals(line)) { // NOI18N
+                    continue;
+                }
+                if (line.startsWith("Owner")) { // NOI18N
+                    keyNumber++;
+                    key = new KeyDetail(keyNumber);
+                    if (line.contains("valid")) { //NOI18N
+                        int splitIndex = line.indexOf("valid"); //NOI18N
+                        key.addLine(line.substring(0, splitIndex));
+                        key.addLine(line.substring(splitIndex, line.length()));
+                    } else {
+                        key.addLine(line);
+                    }
+                    list.add(key);
+                } else if (key != null) {
+                    key.addLine(line);
+                }
+            }
+            if (key != null && !list.contains(key)) {
                 list.add(key);
             }
             return list.toArray(new KeyDetail[list.size()]);

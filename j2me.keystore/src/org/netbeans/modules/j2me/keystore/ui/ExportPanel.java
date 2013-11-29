@@ -70,6 +70,7 @@ import java.io.IOException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import org.openide.util.Exceptions;
@@ -84,6 +85,7 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
 
     private static final String HELP_ID = "org.netbeans.modules.j2me.keystore.ui.ExportPanel";
     private static final Dimension PREFERRED_SIZE = new Dimension(500, 500);
+    private static final RequestProcessor RP = new RequestProcessor(ExportPanel.class);
 
     private DialogDescriptor dd;
     final private KeyStoreRepository.KeyStoreBean bean;
@@ -92,6 +94,7 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
     String keyString = NbBundle.getMessage(ExportPanel.class, "LBL_Key"); // NOI18N
 
     private ErrorPanel panelError = new ErrorPanel();
+    private final HashMap<J2MEPlatform.Device, Boolean> mapDevice2ME3Platform = new HashMap<>();
 
     /**
      * Creates new form ExportPanel
@@ -141,7 +144,7 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
         cTarget.removeAllItems();
         cTarget.addItem(org.openide.util.NbBundle.getMessage(ExportPanel.class, "MSG_Loading")); // NOI18N
         final Collection<JavaPlatform> javaMEPlatforms = getJavaMEPlatformsWithoutBdj();
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 boolean removedLoading = false;
@@ -150,10 +153,13 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
                         if (platform instanceof J2MEPlatform) {
                             J2MEPlatform.Device[] dev = ((J2MEPlatform) platform).getDevices();
                             for (J2MEPlatform.Device device : dev) {
-                                if (null != MEKeyTool.keystoreForDevice(device)) {
+                                if (!((J2MEPlatform) platform).isMe3Platform() || null != MEKeyTool.keystoreForDevice(device)) {
                                     if (!removedLoading) {
                                         cTarget.removeAllItems();
                                         removedLoading = true;
+                                    }
+                                    synchronized (mapDevice2ME3Platform) {
+                                        mapDevice2ME3Platform.put(device, ((J2MEPlatform) platform).isMe3Platform());
                                     }
                                     cTarget.addItem(device);
                                 } else {
@@ -415,7 +421,12 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
             if (DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(NbBundle.getMessage(ExportPanel.class, "MSG_DeleteKeyConfirmation", Integer.toString(key.getOrder()), name), NbBundle.getMessage(ExportPanel.class, "TITLE_ConfirmKeyDeletion"), NotifyDescriptor.YES_NO_OPTION)) == NotifyDescriptor.YES_OPTION) { // NOI18N
                 try {
                     if (target instanceof J2MEPlatform.Device) {
-                        MEKeyTool.execute(new String[]{keytool, "-delete", "-MEkeystore", MEKeyTool.keystoreForDevice((J2MEPlatform.Device) target).toString(), "-number", Integer.toString(key.getOrder())}); // NOI18N
+                        final String keystore = MEKeyTool.keystoreForDevice((J2MEPlatform.Device) target);
+                        if (keystore != null) {
+                            MEKeyTool.execute(new String[]{keytool, "-delete", "-MEkeystore", keystore, "-number", Integer.toString(key.getOrder())}); // NOI18N
+                        } else {
+                            MEKeyTool.execute(new String[]{keytool, "-delete", "-Xdevice:" + ((J2MEPlatform.Device) target).getName(), "-number", Integer.toString(key.getOrder())}); // NOI18N
+                        }
                     } else {
                         MEKeyTool.execute(new String[]{keytool, "-delete", "-number", Integer.toString(key.getOrder())}); // NOI18N
                     }
@@ -436,36 +447,45 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
             reloadList(target);
             return;
         }
-        final ArrayList<String> domainList = new ArrayList<>();
-        if (target != null) {
-            if (target instanceof J2MEPlatform.Device) {
-                final String[] domains = ((J2MEPlatform.Device) target).getSecurityDomains();
-                if (domains != null) {
-                    for (String domain : domains) {
-                        if (!domainList.contains(domain)) {
-                            domainList.add(domain);
+        synchronized (mapDevice2ME3Platform) {
+            if (target != null
+                    && ((target instanceof J2MEPlatform.Device
+                    && (mapDevice2ME3Platform.get((J2MEPlatform.Device) target) != null && mapDevice2ME3Platform.get((J2MEPlatform.Device) target).booleanValue()))
+                    || (target instanceof J2MEPlatform && ((J2MEPlatform) target).isMe3Platform()))) {
+                // security domains are valid only for ME 3.x, not for ME 8.0+
+                enableSecurityDomains(true);
+                final ArrayList<String> domainList = new ArrayList<>();
+                if (target instanceof J2MEPlatform.Device) {
+                    final String[] domains = ((J2MEPlatform.Device) target).getSecurityDomains();
+                    if (domains != null) {
+                        for (String domain : domains) {
+                            if (!domainList.contains(domain)) {
+                                domainList.add(domain);
+                            }
                         }
                     }
-                }
-            } else {
-                final J2MEPlatform.Device[] devices = ((J2MEPlatform) target).getDevices();
-                if (devices != null) {
-                    for (J2MEPlatform.Device device : devices) {
-                        final String[] domains = device.getSecurityDomains();
-                        if (domains != null) {
-                            for (String domain : domains) {
-                                if (!domainList.contains(domain)) {
-                                    domainList.add(domain);
+                } else {
+                    final J2MEPlatform.Device[] devices = ((J2MEPlatform) target).getDevices();
+                    if (devices != null) {
+                        for (J2MEPlatform.Device device : devices) {
+                            final String[] domains = device.getSecurityDomains();
+                            if (domains != null) {
+                                for (String domain : domains) {
+                                    if (!domainList.contains(domain)) {
+                                        domainList.add(domain);
+                                    }
                                 }
                             }
                         }
                     }
                 }
+                cDomain.removeAllItems();
+                for (int i = 0; i < domainList.size(); i++) {
+                    cDomain.addItem(domainList.get(i));
+                }
+            } else {
+                enableSecurityDomains(false);
             }
-        }
-        cDomain.removeAllItems();
-        for (int i = 0; i < domainList.size(); i++) {
-            cDomain.addItem(domainList.get(i));
         }
         reloadList(target);
     }
@@ -474,7 +494,18 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
         bDelete.setEnabled(false);
         if (target != null && !(target instanceof String)) {
             setListLoading();
-            setList(MEKeyTool.listKeys(target));
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    final MEKeyTool.KeyDetail[] keyList = MEKeyTool.listKeys(target);
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            setList(keyList);
+                        }
+                    });
+                }
+            });
         } else {
             setListNotLoaded();
         }
@@ -525,9 +556,12 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
 
     protected void export() {
         final Object target = cTarget.getSelectedItem();
-        final String domain = (String) cDomain.getSelectedItem();
+        String domain = null;
+        if (cDomain.isVisible()) {
+            domain = (String) cDomain.getSelectedItem();
+        }
         final String keytool = MEKeyTool.getMEKeyToolPath(target);
-        if (target != null && domain != null && keytool != null) {
+        if (target != null && keytool != null) {
             final File keyStoreFile = new File(System.getProperty("user.home", ""), ".keystore"); // NOI18N
             if (keyStoreFile.exists()) {
                 if (DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(NbBundle.getMessage(ExportPanel.class, "MSG_PromptDeleteFile", bean.getKeyStorePath(), keyStoreFile.getAbsolutePath()), NbBundle.getMessage(ExportPanel.class, "MSG_PromptDeleteFileTitle"), NotifyDescriptor.YES_NO_OPTION)) != NotifyDescriptor.YES_OPTION) // NOI18N
@@ -570,9 +604,16 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
 
             try {
                 if (target instanceof J2MEPlatform.Device) {
-                    MEKeyTool.execute(new String[]{keytool, "-import", "-MEkeystore", MEKeyTool.keystoreForDevice((J2MEPlatform.Device) target), "-keystore", bean.getKeyStorePath(), "-storepass", bean.getPassword(), "-alias", alias.getAlias(), "-domain", domain}); // NOI18N
+                    final String keystore = MEKeyTool.keystoreForDevice((J2MEPlatform.Device) target);
+                    if (domain != null && keystore != null) {
+                        MEKeyTool.execute(new String[]{keytool, "-import", "-MEkeystore", keystore, "-keystore", bean.getKeyStorePath(), "-storepass", bean.getPassword(), "-alias", alias.getAlias(), "-domain", domain}); // NOI18N
+                    } else {
+                        MEKeyTool.execute(new String[]{keytool, "-import", "-Xdevice:" + ((J2MEPlatform.Device) target).getName(), "-keystore", bean.getKeyStorePath(), "-storepass", bean.getPassword(), "-alias", alias.getAlias()}); // NOI18N
+                    }
                 } else {
-                    MEKeyTool.execute(new String[]{keytool, "-import", "-storepass", bean.getPassword(), "-alias", alias.getAlias(), "-domain", domain}); // NOI18N
+                    if (domain != null) {
+                        MEKeyTool.execute(new String[]{keytool, "-import", "-storepass", bean.getPassword(), "-alias", alias.getAlias(), "-domain", domain}); // NOI18N
+                    }
                 }
             } catch (IOException e) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(ExportPanel.class, "MSG_ErrorExportingKey"), NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
@@ -601,6 +642,10 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
         return res;
     }
 
+    private void enableSecurityDomains(boolean enable) {
+        lDomain.setVisible(enable);
+        cDomain.setVisible(enable);
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton bDelete;
