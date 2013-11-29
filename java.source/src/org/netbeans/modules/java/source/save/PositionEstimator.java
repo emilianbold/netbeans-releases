@@ -1766,6 +1766,19 @@ public abstract class PositionEstimator {
         return tokenSequence.offset();
     }
     
+    static JavaTokenId moveFwdToOneOfTokens(TokenSequence<JavaTokenId> tokenSequence, 
+            final int pos,
+            EnumSet<JavaTokenId> ids)
+    {
+        tokenSequence.move(pos);
+        tokenSequence.moveNext(); // Assumes the pos is located within input bounds
+        while (!ids.contains(tokenSequence.token().id())) {
+            if (!tokenSequence.moveNext())
+                return null;
+        }
+        return tokenSequence.token().id();
+    }
+
     static int moveBackToToken(TokenSequence<JavaTokenId> tokenSequence, 
             final int pos,
             JavaTokenId id)
