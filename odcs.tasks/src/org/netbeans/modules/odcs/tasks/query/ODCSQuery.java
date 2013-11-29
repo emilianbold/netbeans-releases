@@ -61,10 +61,10 @@ import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
-import org.netbeans.modules.bugtracking.team.spi.TeamProject;
-import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
+import org.netbeans.modules.team.spi.TeamProject;
+import org.netbeans.modules.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
-import org.netbeans.modules.bugtracking.util.LogUtils;
+import org.netbeans.modules.bugtracking.commons.LogUtils;
 import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.mylyn.util.NbTask;
 import org.netbeans.modules.mylyn.util.commands.SynchronizeQueryCommand;
@@ -90,7 +90,6 @@ public abstract class ODCSQuery {
     private ODCSQueryController controller;
 
     private final List<QueryNotifyListener> notifyListeners = new ArrayList<QueryNotifyListener>();
-    private final PropertyChangeSupport support = new PropertyChangeSupport(this);;
     private String name;
     private long lastRefresh;
     
@@ -98,7 +97,6 @@ public abstract class ODCSQuery {
 
     private boolean firstRun = true;
     private ColumnDescriptor[] columnDescriptors;
-    private OwnerInfo info;
     
     private final Object ISSUES_LOCK = new Object();
     private final Set<String> issues = new HashSet<String>();
@@ -141,14 +139,6 @@ public abstract class ODCSQuery {
         return saved;
     }
     
-    public void setOwnerInfo (OwnerInfo info) {
-        this.info = info;
-    }
-
-    public OwnerInfo getOwnerInfo () {
-        return info;
-    }
-
     int getSize() {
         synchronized(ISSUES_LOCK) {
             return issues.size();
@@ -209,13 +199,23 @@ public abstract class ODCSQuery {
         }
     }
 
-    protected void fireNotifyData(ODCSIssue issue) {
+    protected void fireNotifyDataAdded(ODCSIssue issue) {
         QueryNotifyListener[] list;
         synchronized(notifyListeners) {
             list = notifyListeners.toArray(new QueryNotifyListener[notifyListeners.size()]);
         }
         for (QueryNotifyListener l : list) {
-            l.notifyData(issue);
+            l.notifyDataAdded(issue);
+        }
+    }
+    
+    protected void fireNotifyDataRemoved(ODCSIssue issue) {
+        QueryNotifyListener[] list;
+        synchronized(notifyListeners) {
+            list = notifyListeners.toArray(new QueryNotifyListener[notifyListeners.size()]);
+        }
+        for (QueryNotifyListener l : list) {
+            l.notifyDataRemoved(issue);
         }
     }
 
@@ -249,18 +249,6 @@ public abstract class ODCSQuery {
         }
         return controller;
     }
-
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        support.addPropertyChangeListener(listener);
-    }
-    
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        support.removePropertyChangeListener(listener);
-    }
-
-    private void fireQueryIssuesChanged() {
-        support.firePropertyChange(QueryProvider.EVENT_QUERY_REFRESHED, null, null);
-    }  
 
     public void refresh() {
         refreshIntern(false);
@@ -334,7 +322,6 @@ public abstract class ODCSQuery {
             r.run();
         } finally {
             fireFinished();
-            fireQueryIssuesChanged();
             lastRefresh = System.currentTimeMillis();
         }
     }
@@ -381,8 +368,11 @@ public abstract class ODCSQuery {
             synchronized(ISSUES_LOCK) {
                 ids.remove(task.getTaskId());
             }
-            // when issue table or task dashboard is able to handle removals
-            // fire an event from here
+            ODCSIssue issue = repository.getIssueForTask(task);
+            if (issue != null) {
+                issues.add(task.getTaskId());
+                fireNotifyDataRemoved(issue); 
+            }
         }
 
         @Override
@@ -392,7 +382,7 @@ public abstract class ODCSQuery {
                 ODCSIssue issue = repository.getIssueForTask(task);
                 if (issue != null) {
                     issues.add(task.getTaskId());
-                    fireNotifyData(issue); // XXX - !!! triggers getIssues()
+                    fireNotifyDataAdded(issue); // XXX - !!! triggers getIssues()
                 }
             }
         }
@@ -540,7 +530,7 @@ public abstract class ODCSQuery {
         }
 
         private ProjectAndClient getProjectAndClient() {
-            TeamProject kp = getRepository().getLookup().lookup(TeamProject.class);
+            TeamProject kp = getRepository().getTeamProject();
             assert kp != null; // all odcs repositories should come from team support
             if (kp == null) {
                 ODCS.LOG.log(Level.WARNING, "  no project available for query"); // NOI18N

@@ -46,7 +46,6 @@ package org.netbeans.modules.php.dbgp.packets;
  * @author Ondrej Brejla
  */
 public class RequestedUrlEvalCommand extends EvalCommand {
-
     private static final String REQUEST_URI = "(isset($_SERVER['SSL']) ? 'https' : 'http').'://'.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI']"; // NOI18N
     private static final LastUsedTransactionIdHolder LAST_USED_TRANSACTION_ID_HOLDER = LastUsedTransactionIdHolder.getInstance();
 
@@ -65,9 +64,7 @@ public class RequestedUrlEvalCommand extends EvalCommand {
     }
 
     private static final class LastUsedTransactionIdHolder {
-
-        private static LastUsedTransactionIdHolder INSTANCE = new LastUsedTransactionIdHolder();
-
+        private static final LastUsedTransactionIdHolder INSTANCE = new LastUsedTransactionIdHolder();
         private String lastUsedTransactionId;
 
         private LastUsedTransactionIdHolder() {

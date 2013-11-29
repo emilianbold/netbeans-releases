@@ -62,12 +62,15 @@ import org.openide.util.Pair;
 import org.openide.util.Utilities;
 
 /**
- * Converts remote (or also local) URI to local project File an vice versa
+ * Converts remote (or also local) URI to local project File an vice versa.
+ *
  * @author Radek Matous
  */
 abstract class URIMapper {
     private static final Logger LOGGER = Logger.getLogger(URIMapper.class.getName());
+
     abstract File toSourceFile(URI remoteURI);
+
     abstract URI toWebServerURI(File localFile, boolean includeHostPart);
 
     URI toWebServerURI(File localFile) {
@@ -89,15 +92,15 @@ abstract class URIMapper {
             String uriPath = pair.first();
             String filePath = pair.second();
             if (uriPath.length() > 0 && filePath.length() > 0) {
-                if (!uriPath.startsWith("file:")) {//NOI18N
+                if (!uriPath.startsWith("file:")) { //NOI18N
                     if (!uriPath.startsWith("/")) {
-                        uriPath = "file:/" + uriPath;//NOI18N
+                        uriPath = "file:/" + uriPath; //NOI18N
                     } else {
-                        uriPath = "file:" + uriPath;//NOI18N
+                        uriPath = "file:" + uriPath; //NOI18N
                     }
                 }
-                if (!uriPath.endsWith("/")) {//NOI18N
-                    uriPath += "/";//NOI18N
+                if (!uriPath.endsWith("/")) { //NOI18N
+                    uriPath += "/"; //NOI18N
                 }
                 URI remoteURI = URI.create(uriPath);
                 File localFile = new File(filePath);
@@ -120,11 +123,12 @@ abstract class URIMapper {
 
         return mergedMapper;
     }
+
     static URIMapper createDefaultMapper(URI webServerURI, FileObject sourceFileObj, FileObject sourceRoot) {
         if (sourceRoot == null) {
             return null;
         }
-        if (!"file".equals(webServerURI.getScheme())) {//NOI18N
+        if (!"file".equals(webServerURI.getScheme())) { //NOI18N
             return null;
         }
         File webServerFile = Utilities.toFile(webServerURI);
@@ -136,7 +140,11 @@ abstract class URIMapper {
                 //TODO: not sure about this (should be reviewed)
                 sourceFile = new File(sourceFile, webServerFile.getName());
                 if (!sourceFile.exists()) {
-                    LOGGER.log(Level.FINE,"No default path mapping: " + "webServerURI: {0} sourceFile: {1}", new Object[]{webServerURI.toString(), sourceFile.getAbsolutePath()});//NOI18N
+                    LOGGER.log(
+                            Level.FINE,
+                            "No default path mapping: " + "webServerURI: {0} sourceFile: {1}", //NOI18N
+                            new Object[]{webServerURI.toString(),
+                                sourceFile.getAbsolutePath()});
                     return null;
                 }
             }
@@ -154,7 +162,11 @@ abstract class URIMapper {
             }
         }
         //no decision how to map - must exist user's defined mapping
-        LOGGER.log(Level.FINE,"No default path mapping: " + "webServerURI: {0} sourceFile: {1}", new Object[]{webServerURI.toString(), sourceFile.getAbsolutePath()});//NOI18N
+        LOGGER.log(
+                Level.FINE,
+                "No default path mapping: " + "webServerURI: {0} sourceFile: {1}", //NOI18N
+                new Object[]{webServerURI.toString(),
+                    sourceFile.getAbsolutePath()});
         return null;
     }
 
@@ -191,7 +203,6 @@ abstract class URIMapper {
                 }
                 return retval;
             }
-
         };
     }
 
@@ -203,7 +214,7 @@ abstract class URIMapper {
         File baseFile = sourceFile;
         boolean nullRetVal = true;
         List<String> pathFragments = new ArrayList<>();
-        Collections.addAll(pathFragments, webServerURI.getPath().split("/"));//NOI18N
+        Collections.addAll(pathFragments, webServerURI.getPath().split("/")); //NOI18N
         Collections.reverse(pathFragments);
         for (String path : pathFragments) {
             if (baseFile != null && path.equals(baseFile.getName()) && !baseFile.equals(sourceRoot)) {
@@ -220,17 +231,16 @@ abstract class URIMapper {
             return new URI[0];
         }
         assert baseFile.isDirectory();
-        int basePathLen = webServerURI.getPath().length() -
-                (sourceFile.getAbsolutePath().length() - baseFile.getAbsolutePath().length());
+        int basePathLen = webServerURI.getPath().length()
+                - (sourceFile.getAbsolutePath().length() - baseFile.getAbsolutePath().length());
         String basePath = webServerURI.getPath().substring(0, basePathLen);
         URI baseURI = createURI(webServerURI.getScheme(), webServerURI.getHost(),
-               basePath, webServerURI.getFragment(),
+                basePath, webServerURI.getFragment(),
                 true, true);
         return new URI[]{baseURI, Utilities.toURI(baseFile)};
     }
 
     private static class BaseMapper extends URIMapper {
-
         private static final String FILE_SCHEME = "file";
         private URI baseWebServerURI;
         private URI baseSourceURI;
@@ -249,23 +259,23 @@ abstract class URIMapper {
             boolean isLoggable = LOGGER.isLoggable(Level.FINE);
             if (isLoggable) {
                 if (!FILE_SCHEME.equals(baseWebServerURI.getScheme())) {
-                    LOGGER.log(Level.FINE, "Unexpected scheme: {0}", baseWebServerURI.toString());//NOI18N
+                    LOGGER.log(Level.FINE, "Unexpected scheme: {0}", baseWebServerURI.toString()); //NOI18N
                 }
                 if (baseWebServerURI.getPath() == null) {
-                    LOGGER.log(Level.FINE, "URI.getPath() == null: {0}", baseWebServerURI.toString());//NOI18N
+                    LOGGER.log(Level.FINE, "URI.getPath() == null: {0}", baseWebServerURI.toString()); //NOI18N
                 }
                 if (baseWebServerURI.getPath() == null) {
-                    LOGGER.log(Level.FINE, "URI.getPath() == null: {0}", baseWebServerURI.toString());//NOI18N
+                    LOGGER.log(Level.FINE, "URI.getPath() == null: {0}", baseWebServerURI.toString()); //NOI18N
                 } else if (!baseWebServerURI.getPath().endsWith("/")) {
-                    LOGGER.log(Level.FINE, "Not \"/\" at the end of URI.getPath(): {0}", baseWebServerURI.toString());//NOI18N
+                    LOGGER.log(Level.FINE, "Not \"/\" at the end of URI.getPath(): {0}", baseWebServerURI.toString()); //NOI18N
                 }
                 if (!baseWebServerURI.isAbsolute()) {
-                    LOGGER.log(Level.FINE, "URI not absolute: {0}", baseWebServerURI.toString());//NOI18N
+                    LOGGER.log(Level.FINE, "URI not absolute: {0}", baseWebServerURI.toString()); //NOI18N
                 }
             }
             assert FILE_SCHEME.equals(baseWebServerURI.getScheme());
-            assert baseWebServerURI.getPath() != null;//NOI18N
-            assert baseWebServerURI.getPath().endsWith("/") : baseWebServerURI.getPath();//NOI18N
+            assert baseWebServerURI.getPath() != null;
+            assert baseWebServerURI.getPath().endsWith("/") : baseWebServerURI.getPath(); //NOI18N
             assert baseWebServerURI.isAbsolute();
             this.baseSourceURI = Utilities.toURI(baseSourceFolder);
             assert baseSourceURI.isAbsolute();
@@ -304,6 +314,7 @@ abstract class URIMapper {
             }
             return retval;
         }
+
     }
 
     static class MultiMapper extends URIMapper {
@@ -321,7 +332,7 @@ abstract class URIMapper {
 
         @Override
         File toSourceFile(URI remoteURI) {
-            if ("file".equals(remoteURI.getScheme())) {//NOI18N
+            if ("file".equals(remoteURI.getScheme())) { //NOI18N
                 for (URIMapper mapperInstance : mappers) {
                     File sourceFile = mapperInstance.toSourceFile(remoteURI);
                     if (sourceFile != null) {
@@ -342,11 +353,12 @@ abstract class URIMapper {
             }
             return null;
         }
+
     }
 
     private static URI createURI(String scheme, String host, String path, String fragment,
             boolean includeHostPart, boolean pathEndsWithSlash) {
-        if (pathEndsWithSlash && !path.endsWith("/")) {//NOI18N
+        if (pathEndsWithSlash && !path.endsWith("/")) { //NOI18N
             path = path + "/"; //NOI18N
         }
         if (host == null && includeHostPart) {
@@ -363,19 +375,19 @@ abstract class URIMapper {
     private static URI toURI(File webServerBase, boolean includeHostPart) {
         URI webServerBaseURI = Utilities.toURI(webServerBase);
         return createURI(webServerBaseURI.getScheme(), webServerBaseURI.getHost(),
-                webServerBaseURI.getPath(),webServerBaseURI.getFragment(),
+                webServerBaseURI.getPath(), webServerBaseURI.getFragment(),
                 includeHostPart, webServerBase.exists() && webServerBase.isDirectory());
     }
 
-    private static Pair<String, String> encodedPathMappingPair(Pair<String, String> pathMapping)  {
+    private static Pair<String, String> encodedPathMappingPair(Pair<String, String> pathMapping) {
         String resName = pathMapping.first();
-        resName = resName.replace('\\', '/');//NOI18N
-        final String[] elements = resName.split("/"); // NOI18N
+        resName = resName.replace('\\', '/'); //NOI18N
+        final String[] elements = resName.split("/"); //NOI18N
         final StringBuilder sb = new StringBuilder(200);
         for (int i = 0; i < elements.length; i++) {
             String element = elements[i];
             boolean skip = false;
-            if (i == 0 && element.length() == 2 && element.charAt(1) == ':') {//NOI18N
+            if (i == 0 && element.length() == 2 && element.charAt(1) == ':') { //NOI18N
                 skip = true;
             }
             if (!skip) {
@@ -391,7 +403,7 @@ abstract class URIMapper {
                 sb.append('/');
             }
         }
-        return Pair.of(sb.toString(), pathMapping.second());//NOI18N
+        return Pair.of(sb.toString(), pathMapping.second());
     }
 
 }

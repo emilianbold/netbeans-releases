@@ -42,13 +42,10 @@
 
 package org.netbeans.modules.odcs.tasks.issue;
 
-import java.awt.Font;
 import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
-import javax.swing.JScrollPane;
-import javax.swing.UIManager;
 import org.netbeans.modules.bugtracking.spi.IssueController;
-import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.openide.util.HelpCtx;
 
 /**
@@ -56,28 +53,17 @@ import org.openide.util.HelpCtx;
  * @author Tomas Stupka, Jan Stola
  */
 public class ODCSIssueController implements IssueController {
-    private final JComponent component;
     private final IssuePanel panel;
 
     public ODCSIssueController(ODCSIssue issue) {
         panel = new IssuePanel();
         panel.setIssue(issue);
-        JScrollPane scrollPane = new JScrollPane(panel);
-        scrollPane.getViewport().setBackground(panel.getBackground());
-        scrollPane.setBorder(null);
-        Font font = UIManager.getFont("Label.font"); // NOI18N
-        if (font != null) {
-            int size = (int)(font.getSize()*1.5);
-            scrollPane.getHorizontalScrollBar().setUnitIncrement(size);
-            scrollPane.getVerticalScrollBar().setUnitIncrement(size);
-        }
         UIUtils.keepFocusedComponentVisible(panel);
-        component = scrollPane;
     }
 
     @Override
     public JComponent getComponent() {
-        return component;
+        return panel;
     }
 
     @Override
@@ -129,4 +115,9 @@ public class ODCSIssueController implements IssueController {
         panel.getIssue().removePropertyChangeListener(l);
     }
 
+    @Override
+    public boolean isChanged() {
+        return panel.getIssue().hasUnsavedChanges();
+    }
+    
 }

@@ -61,7 +61,7 @@ public final class FunctionArgument {
             
             @Override
             public FunctionArgument createForArray(int order, int offset, JsObject value) {
-                return new FunctionArgument(Kind.ANONYMOUS_OBJECT, order, offset, value);
+                return new FunctionArgument(Kind.ARRAY, order, offset, value);
             }
 
             @Override

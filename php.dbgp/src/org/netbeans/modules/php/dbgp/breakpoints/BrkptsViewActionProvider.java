@@ -52,74 +52,58 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.text.Line;
 import org.openide.util.NbBundle;
 
-
 /**
  * @author ads
  *
  */
 public class BrkptsViewActionProvider implements NodeActionsProviderFilter {
-
-    private static final String GO_TO_SOURCE_LABEL 
-        = "CTL_Breakpoint_GoToSource_Label";            // NOI18N
+    private static final String GO_TO_SOURCE_LABEL = "CTL_Breakpoint_GoToSource_Label"; // NOI18N
 
     @Override
-    public Action[] getActions (NodeActionsProvider original, Object node)
-            throws UnknownTypeException 
-    {
+    public Action[] getActions(NodeActionsProvider original, Object node) throws UnknownTypeException {
         Action[] actions = original.getActions(node);
-        if(node instanceof LineBreakpoint) {
-            Action[] newActions = new Action [actions.length + 2];
-            newActions [0] = GO_TO_SOURCE_ACTION;
-            newActions [1] = null;
-            System.arraycopy (actions, 0, newActions, 2, actions.length);
+        if (node instanceof LineBreakpoint) {
+            Action[] newActions = new Action[actions.length + 2];
+            newActions[0] = GO_TO_SOURCE_ACTION;
+            newActions[1] = null;
+            System.arraycopy(actions, 0, newActions, 2, actions.length);
             actions = newActions;
         }
-
         return actions;
     }
 
     @Override
-    public void performDefaultAction(NodeActionsProvider original, Object node) 
-        throws UnknownTypeException 
-    {
-        if(node instanceof LineBreakpoint) {
+    public void performDefaultAction(NodeActionsProvider original, Object node) throws UnknownTypeException {
+        if (node instanceof LineBreakpoint) {
             goToSource((LineBreakpoint) node);
         } else {
             original.performDefaultAction(node);
         }
     }
 
-    private static void goToSource(LineBreakpoint breakpoint ) {
+    private static void goToSource(LineBreakpoint breakpoint) {
         Line line = breakpoint.getLine();
         if (line != null) {
             line.show(Line.ShowOpenType.REUSE, Line.ShowVisibilityType.FOCUS);
         }
     }
-
     private static final Action GO_TO_SOURCE_ACTION = Models.createAction(
-            NbBundle.getBundle(BrkptsViewActionProvider.class).getString(
-                    GO_TO_SOURCE_LABEL), 
+            NbBundle.getMessage(BrkptsViewActionProvider.class, GO_TO_SOURCE_LABEL),
             new GoToSourcePerformer(),
-            Models.MULTISELECTION_TYPE_EXACTLY_ONE
-        );
+            Models.MULTISELECTION_TYPE_EXACTLY_ONE);
 
     private static class GoToSourcePerformer implements Models.ActionPerformer {
 
-        /* (non-Javadoc)
-         * @see org.netbeans.spi.viewmodel.Models.ActionPerformer#isEnabled(java.lang.Object)
-         */
         @Override
-        public boolean isEnabled( Object arg ) {
+        public boolean isEnabled(Object arg) {
             return true;
         }
 
-        /* (non-Javadoc)
-         * @see org.netbeans.spi.viewmodel.Models.ActionPerformer#perform(java.lang.Object[])
-         */
         @Override
-        public void perform( Object[] nodes ) {
-            goToSource((LineBreakpoint) nodes [0]);            
+        public void perform(Object[] nodes) {
+            goToSource((LineBreakpoint) nodes[0]);
         }
-        
+
     }
+
 }

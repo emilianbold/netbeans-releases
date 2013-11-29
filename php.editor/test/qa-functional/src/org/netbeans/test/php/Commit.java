@@ -309,8 +309,14 @@ public class Commit extends GeneralPHP {
         // Yes I know about StringBuffer :)
         String sRandom = "";
         String sCharset = "abc123[[[[[((((((\"";
+        char previousChar = ' ';
         for (int i = 0; i < 50; i++) {
-            sRandom = sRandom + sCharset.charAt((int) (Math.random() * sCharset.length()));
+            char nextChar = sCharset.charAt((int) (Math.random() * sCharset.length()));
+            // ignore two double quotes in row
+            if (nextChar != '\"' || previousChar != nextChar) {
+                sRandom += nextChar;
+            }
+            previousChar = nextChar;
         }
 
         // Okey, this is hack and should be removed later

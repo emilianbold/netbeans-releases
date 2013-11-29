@@ -49,6 +49,7 @@
  */
 package org.netbeans.mobility.antext;
 
+import org.netbeans.modules.j2me.common.ant.EMapFormat;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;

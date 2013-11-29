@@ -103,6 +103,11 @@ class CleanComboUI extends BasicComboBoxUI {
     protected void installKeyboardActions() {
         super.installKeyboardActions();
 
+        //don't let Aqua UI to handle Enter key event to avoid class cast exception
+        if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) {  //NOI18N
+            comboBox.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "enterPressed"); //NOI18N
+        }
+        
         //Basic UI won't install an action to open the combo on spacebar,
         //so we do it ourselves
         if (!tableUI) {

@@ -46,69 +46,66 @@ package org.netbeans.modules.php.dbgp.breakpoints;
 import org.netbeans.modules.php.dbgp.DebugSession;
 import org.netbeans.modules.php.dbgp.packets.BrkpntSetCommand;
 
-
 /**
- * Represent breakpoint for method call and return types. 
+ * Represent breakpoint for method call and return types.
+ *
  * @author ads
  *
  */
 public class FunctionBreakpoint extends AbstractBreakpoint {
-    
+    private final Type myType;
+    private final String myFunctionName;
+
     public enum Type {
-        CALL( BrkpntSetCommand.Types.CALL ),
+        CALL(BrkpntSetCommand.Types.CALL),
         RETURN(BrkpntSetCommand.Types.RETURN);
-        
-        Type( BrkpntSetCommand.Types type ){
+
+        Type(BrkpntSetCommand.Types type) {
             myType = type;
         }
-        
-        public BrkpntSetCommand.Types getType(){
+
+        public BrkpntSetCommand.Types getType() {
             return myType;
         }
-        
-        public static Type forType( BrkpntSetCommand.Types type ){
+
+        public static Type forType(BrkpntSetCommand.Types type) {
             Type[] types = Type.values();
             for (Type typ : types) {
-                if ( type == typ.getType() ){
+                if (type == typ.getType()) {
                     return typ;
                 }
             }
             return null;
         }
-        
-        public static Type forString( String str ) {
-            for ( Type  type : Type.values()) {
-                if ( type.toString().equals( str )) {
+
+        public static Type forString(String str) {
+            for (Type type : Type.values()) {
+                if (type.toString().equals(str)) {
                     return type;
                 }
             }
             return null;
         }
-        
         private final BrkpntSetCommand.Types myType;
+
     }
-    
-    public FunctionBreakpoint( Type type , String functionName ) 
-    {
+
+    public FunctionBreakpoint(Type type, String functionName) {
         myType = type;
         myFunctionName = functionName;
     }
-    
-    public Type getType(){
+
+    public Type getType() {
         return myType;
     }
-    
-    public String getFunction(){
+
+    public String getFunction() {
         return myFunctionName;
     }
-    
+
     @Override
-    public boolean isSessionRelated( DebugSession session ){
+    public boolean isSessionRelated(DebugSession session) {
         return true;
     }
-    
-    private final Type myType;
-    
-    private final String myFunctionName;
-    
+
 }

@@ -54,31 +54,26 @@ import org.openide.windows.InputOutput;
 import org.w3c.dom.Node;
 import sun.misc.BASE64Decoder;
 
-
 /**
  * @author ads
  *
  */
 public class DbgpStream extends DbgpMessage {
-
-    enum StreamType{
+    public enum StreamType {
         STDOUT,
         STDERR;
 
         @Override
-        public String toString()
-        {
+        public String toString() {
             return super.toString().toLowerCase();
         }
+
     }
 
-    DbgpStream( Node node , StreamType type ) {
+    DbgpStream(Node node, StreamType type) {
         super(node);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpMessage#process(org.netbeans.modules.php.dbgp.DebugSession)
-     */
     @Override
     @NbBundle.Messages("LBL_PhpDebuggerConsole=PHP Debugger Console")
     public void process(DebugSession session, DbgpCommand command) {

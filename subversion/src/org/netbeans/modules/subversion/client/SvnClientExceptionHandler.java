@@ -961,17 +961,23 @@ public class SvnClientExceptionHandler {
         msc.show();
     }
     
+    @NbBundle.Messages({
+        "MSG_Error_TooOldWC=Working copy is too old for the currently used Subversion client.\n"
+            + "You'll need to manually upgrade the working copy."
+    })
     private static String getCustomizedMessage(Exception exception) {
-        String msg = null;
         String exMsg = exception.getMessage();
-        if (isHTTP405(exMsg)) {
+        String msg = exMsg.toLowerCase();
+        if (isHTTP405(msg)) {
             msg = exMsg + "\n\n" + NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error405");                                // NOI18N
-        } else if(isOutOfDate(exMsg) || isMissingOrLocked(exMsg)) {
+        } else if(isOutOfDate(msg) || isMissingOrLocked(msg)) {
             msg = exMsg + "\n\n" + org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_OutOfDate") + "\n"; // NOI18N
-        } else if(isWrongUUID(exMsg)) {
+        } else if(isWrongUUID(msg)) {
             msg = exMsg + "\n\n" + org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_RelocateWrongUUID") + "\n"; // NOI18N
-        } else if (isTooOldWorkingCopy(exMsg) && exMsg.contains("svn upgrade")) { //NOI18N
-            msg = NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_TooOldWC") + "\n\n" + exMsg + "\n"; //NOI18N
+        } else if (isTooOldWorkingCopy(msg) && (msg.contains("svn upgrade")
+                || msg.contains("working copy format of ") && msg.contains("is too old") //NOI18N
+                || msg.contains("needs to be upgraded"))) { //NOI18N
+            msg = Bundle.MSG_Error_TooOldWC() + "\n\n" + exMsg + "\n"; //NOI18N
         }
         return msg;
     }

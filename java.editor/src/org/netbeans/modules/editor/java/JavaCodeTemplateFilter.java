@@ -116,7 +116,7 @@ public class JavaCodeTemplateFilter implements CodeTemplateFilter {
                                                 if (delta == 0 || ts.moveNext() && ts.token().id() == JavaTokenId.WHITESPACE) {
                                                     String selectedText = controller.getText().substring(startOffset, endOffset).trim();
                                                     SourcePositions[] sp = new SourcePositions[1];
-                                                    ExpressionTree expr = tu.parseExpression(selectedText, sp);
+                                                    ExpressionTree expr = selectedText.length() > 0 ? tu.parseExpression(selectedText, sp) : null;
                                                     if (expr != null && expr.getKind() != Tree.Kind.IDENTIFIER && !Utilities.containErrors(expr) && sp[0].getEndPosition(null, expr) >= selectedText.length()) {
                                                         stringCtx = EXPRESSION;
                                                     }

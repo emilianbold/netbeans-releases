@@ -43,17 +43,15 @@
  */
 package org.netbeans.modules.php.dbgp.packets;
 
-
 /**
  * @author ads
  *
  */
 public class ExecCommand extends EvalCommand {
+    static final String EXEC = "exec"; // NOI18N
 
-    static final String EXEC = "exec";      // NOI18N
-
-    public ExecCommand( String transactionId ) {
-        super( EXEC, transactionId);
+    public ExecCommand(String transactionId) {
+        super(EXEC, transactionId);
     }
 
 }

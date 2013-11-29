@@ -63,7 +63,8 @@ public class JiraConfig {
     private static final String QUERY_LAST_REFRESH  = "jira.query_last_refresh";    // NOI18N
     private static final String QUERY_AUTO_REFRESH  = "jira.query_auto_refresh_";   // NOI18N
     private static final String ISSUE_REFRESH_INT   = "jira.issue_refresh";         // NOI18N
-
+    private static final String PREF_SECTION_COLLAPSED = "collapsedSection"; //NOI18N
+    private static final String PREF_TASK = "task."; //NOI18N
     private static final String DELIMITER           = "<=>";                        // NOI18N
     
     private HashMap<String, Icon> priorityIcons;
@@ -143,6 +144,20 @@ public class JiraConfig {
     
     public void putLastQueryRefresh(JiraRepository repository, String queryName, long lastRefresh) {
         getPreferences().putLong(getQueryKey(repository.getID(), queryName) + QUERY_LAST_REFRESH, lastRefresh);
+    }
+    
+    public void setEditorSectionCollapsed (String repositoryId, String taskId, String sectionName, boolean collapsed) {
+        String key = getTaskKey(repositoryId, taskId) + PREF_SECTION_COLLAPSED + sectionName;
+        getPreferences().putBoolean(key, collapsed);
+    }
+
+    public boolean isEditorSectionCollapsed (String repositoryId, String taskId, String sectionName, boolean defaultValue) {
+        String key = getTaskKey(repositoryId, taskId) + PREF_SECTION_COLLAPSED + sectionName;
+        return getPreferences().getBoolean(key, defaultValue);
+    }
+
+    private String getTaskKey (String repositoryId, String taskId) {
+        return PREF_TASK + repositoryId + "." + taskId + ".";
     }
     
     private String getQueryKey(String repositoryID, String queryName) {

@@ -54,7 +54,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.26</specification-version>
+                        <specification-version>1.34</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -201,6 +201,7 @@
             <friend-packages>
                 <friend>org.netbeans.modules.bugtracking.bridge</friend>
                 <friend>org.netbeans.modules.bugtracking.kenai</friend>
+                <friend>org.netbeans.modules.bugtracking.commons</friend>
                 <friend>org.netbeans.modules.bugzilla</friend>
                 <friend>org.netbeans.modules.jira</friend>
                 <friend>org.netbeans.modules.localtasks</friend>
@@ -208,12 +209,9 @@
                 <friend>org.netbeans.modules.odcs.tasks</friend>
                 <friend>org.netbeans.modules.odcs.tasks.bridge</friend>
                 <friend>org.netbeans.modules.versioning.kenai</friend>
+                <friend>eu.doppel_helix.netbeans.MantisIntegration</friend>
                 <package>org.netbeans.modules.bugtracking.api</package>
-                <package>org.netbeans.modules.bugtracking.cache</package>
-                <package>org.netbeans.modules.bugtracking.issuetable</package>
                 <package>org.netbeans.modules.bugtracking.spi</package>
-                <package>org.netbeans.modules.bugtracking.team.spi</package>
-                <package>org.netbeans.modules.bugtracking.util</package>
             </friend-packages>
         </data>
         <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">

@@ -46,20 +46,17 @@ package org.netbeans.modules.php.dbgp.breakpoints;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 
-
 /**
  * @author ads
  *
  */
 public class BreakpointClearService extends DebuggerManagerAdapter {
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.api.debugger.DebuggerManagerAdapter#breakpointRemoved(org.netbeans.api.debugger.Breakpoint)
-     */
+
     @Override
-    public void breakpointRemoved( Breakpoint breakpoint ) {
-        if ( breakpoint instanceof AbstractBreakpoint ){
-            ((AbstractBreakpoint)breakpoint).removed();
+    public void breakpointRemoved(Breakpoint breakpoint) {
+        if (breakpoint instanceof AbstractBreakpoint) {
+            ((AbstractBreakpoint) breakpoint).removed();
         }
     }
+
 }

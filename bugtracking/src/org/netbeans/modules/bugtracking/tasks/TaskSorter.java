@@ -47,6 +47,7 @@ import java.util.Comparator;
 import java.util.List;
 import org.netbeans.modules.bugtracking.settings.DashboardSettings;
 import org.netbeans.modules.bugtracking.spi.IssuePriorityInfo;
+import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
 import org.netbeans.modules.bugtracking.tasks.dashboard.TaskNode;
 import org.openide.util.NbBundle;
 
@@ -154,16 +155,9 @@ public class TaskSorter {
         status.setAsceding(true);
         attributes.add(status);
 
-        TaskAttribute scheduled = new TaskAttribute(SCHEDULED_ID, NbBundle.getMessage(TaskSorter.class, "LBL_ScheduledDisplayName"), new Comparator<TaskNode>() {
-            @Override
-            public int compare(TaskNode tn1, TaskNode tn2) {
-                int scheduleIndex1 = DashboardUtils.getScheduleIndex(tn1.getTask());
-                int scheduleIndex2 = DashboardUtils.getScheduleIndex(tn2.getTask());
-                return Integer.compare(scheduleIndex1, scheduleIndex2);
-            }
-        });
+        TaskAttribute scheduled = new TaskAttribute(SCHEDULED_ID, NbBundle.getMessage(TaskSorter.class, "LBL_ScheduledDisplayName"), new ScheduleComparator());
         scheduled.setRank(3);
-        scheduled.setAsceding(false);
+        scheduled.setAsceding(true);
         attributes.add(scheduled);
 
         TaskAttribute taskId = new TaskAttribute(TASKID_ID, NbBundle.getMessage(TaskSorter.class, "LBL_TaskidDisplayName"), new Comparator<TaskNode>() {
@@ -175,5 +169,19 @@ public class TaskSorter {
         taskId.setRank(4);
         taskId.setAsceding(false);
         attributes.add(taskId);
+    }
+
+    public static Comparator<TaskNode> getScheduleComparator() {
+        return new ScheduleComparator();
+    }
+
+    private static class ScheduleComparator implements Comparator<TaskNode> {
+
+        @Override
+        public int compare(TaskNode tn1, TaskNode tn2) {
+            int scheduleIndex1 = DashboardUtils.getScheduleIndex(tn1.getTask());
+            int scheduleIndex2 = DashboardUtils.getScheduleIndex(tn2.getTask());
+            return -Integer.compare(scheduleIndex1, scheduleIndex2);
+        }
     }
 }

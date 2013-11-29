@@ -59,11 +59,11 @@ import org.netbeans.api.keyring.Keyring;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.bugtracking.team.TeamRepositories;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.util.LogUtils;
-import org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils;
+import org.netbeans.modules.bugtracking.commons.LogUtils;
+import org.netbeans.modules.bugtracking.commons.NBBugzillaUtils;
+import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.openide.util.NbPreferences;
 
 /**
@@ -78,7 +78,7 @@ public class RepositoryRegistry {
      */
     public final static String EVENT_REPOSITORIES_CHANGED = RepositoryManager.EVENT_REPOSITORIES_CHANGED; // NOI18N
     
-    private PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
+    private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
     
     private static final String BUGTRACKING_REPO  = "bugracking.repository_";   // NOI18N
     private static final String DELIMITER         = "<=>";                      // NOI18N    
@@ -114,72 +114,8 @@ public class RepositoryRegistry {
             return new LinkedList<RepositoryImpl>(l);
         }
     }
-
-    /**
-     * Returns all repositories for the connector with the given ID
-     * 
-     * @param connectorID
-     * @return 
-     */
-    public Collection<RepositoryImpl> getRepositories(String connectorID) {
-        synchronized(REPOSITORIES_LOCK) {
-            final Map<String, RepositoryImpl> m = getStoredRepositories().get(connectorID);
-            if(m != null) {
-                return new LinkedList<RepositoryImpl>(m.values());
-            } else {
-                return Collections.emptyList();
-            }
-        }
-    }
-
-    public RepositoryImpl getRepository(String connectorId, String repoId) {
-        Collection<RepositoryImpl> repos = getRepositories(connectorId);
-        for (RepositoryImpl repo : repos) {
-            if(repo.getId().equals(repoId)) {
-                return repo;
-            }
-        }
-        return null;
-    }
-
     
-    /**
-     * Add the given repository
-     * 
-     * @param repository 
-     */
-    public void addRepository(RepositoryImpl repository) {
-        assert repository != null;
-        if(TeamUtil.isFromTeamServer(repository.getRepository()) && !NBBugzillaUtils.isNbRepository(repository.getUrl())) {
-            // we don't store team repositories - XXX  shouldn't be even called
-            return;        
-        }
-        synchronized(REPOSITORIES_LOCK) {
-            getStoredRepositories().put(repository); // cache
-            putRepository(repository); // persist
-
-        }
-        fireRepositoriesChanged(null, Arrays.asList(repository));
-    }    
-
-    /**
-     * Remove the given repository
-     * 
-     * @param repository 
-     */
-    public void removeRepository(RepositoryImpl repository) {
-        synchronized(REPOSITORIES_LOCK) {
-            RepositoryInfo info = repository.getInfo();
-            String connectorID = info.getConnectorId();  
-            // persist remove
-            getPreferences().remove(getRepositoryKey(info)); 
-            // remove from cache
-            getStoredRepositories().remove(connectorID, repository);
-        }
-        fireRepositoriesChanged(Arrays.asList(repository), null);
-    }
-    
-    /**
+/**
      * Returns all known repositories incl. the Team ones
      *
      * @param pingOpenProjects if {@code false}, search only Team projects
@@ -213,6 +149,81 @@ public class RepositoryRegistry {
         logRepositoryUsage(ret);
         
         return ret;
+    }    
+
+    /**
+     * Returns all repositories for the connector with the given ID
+     * 
+     * @param connectorID
+     * @return 
+     */
+    public Collection<RepositoryImpl> getRepositories(String connectorID, boolean allKnown) {
+        LinkedList<RepositoryImpl> ret = new LinkedList<RepositoryImpl>();
+        synchronized(REPOSITORIES_LOCK) {
+            final Map<String, RepositoryImpl> m = getStoredRepositories().get(connectorID);
+            if(m != null) {
+                ret.addAll(m.values());
+            } else {
+                return Collections.emptyList();
+            }
+        }
+        if(allKnown) {
+            // team repos (not registered by user)
+            Collection<RepositoryImpl> repos = TeamRepositories.getInstance().getRepositories(false, true);
+            for (RepositoryImpl impl : repos) {
+                if(connectorID.equals(impl.getConnectorId())) {
+                    ret.add(impl);
+                }
+            }
+        }
+        return ret;
+    }
+
+    public RepositoryImpl getRepository(String connectorId, String repoId, boolean allKnown) {
+        Collection<RepositoryImpl> repos = getRepositories(connectorId, allKnown);
+        for (RepositoryImpl repo : repos) {
+            if(repo.getId().equals(repoId)) {
+                return repo;
+            }
+        }
+        return null;
+    }
+
+    
+    /**
+     * Add the given repository
+     * 
+     * @param repository 
+     */
+    public void addRepository(RepositoryImpl repository) {
+        assert repository != null;
+        if(repository.isTeamRepository() && !NBBugzillaUtils.isNbRepository(repository.getUrl())) {
+            // we don't store team repositories - XXX  shouldn't be even called
+            return;        
+        }
+        synchronized(REPOSITORIES_LOCK) {
+            getStoredRepositories().put(repository); // cache
+            putRepository(repository); // persist
+
+        }
+        fireRepositoriesChanged(null, Arrays.asList(repository));
+    }    
+
+    /**
+     * Remove the given repository
+     * 
+     * @param repository 
+     */
+    public void removeRepository(RepositoryImpl repository) {
+        synchronized(REPOSITORIES_LOCK) {
+            RepositoryInfo info = repository.getInfo();
+            String connectorID = info.getConnectorId();  
+            // persist remove
+            getPreferences().remove(getRepositoryKey(info)); 
+            // remove from cache
+            getStoredRepositories().remove(connectorID, repository);
+        }
+        fireRepositoriesChanged(Arrays.asList(repository), null);
     }
     
     /**
@@ -245,7 +256,7 @@ public class RepositoryRegistry {
     }
 
     private String getRepositoryKey(RepositoryInfo info) {
-        return BUGTRACKING_REPO + info.getConnectorId() + DELIMITER + info.getId();
+        return BUGTRACKING_REPO + info.getConnectorId() + DELIMITER + info.getID();
     }
     
     private RepositoriesMap getStoredRepositories() {
@@ -497,7 +508,7 @@ public class RepositoryRegistry {
         return NbPreferences.root().node("org/netbeans/modules/jira"); // NOI18N
     }
 
-    public static String getBugzillaNBUsername() {
+    private static String getBugzillaNBUsername() {
         String user = getBugzillaPreferences().get(NB_BUGZILLA_USERNAME, ""); // NOI18N
         return user;                         
     }
@@ -510,10 +521,10 @@ public class RepositoryRegistry {
         for (RepositoryImpl repositoryImpl : ret) {
             LogUtils.logRepositoryUsage(repositoryImpl.getConnectorId(), repositoryImpl.getUrl());
             // log team usage
-            if (TeamUtil.isFromTeamServer(repositoryImpl.getRepository())) {
-                TeamUtil.logTeamUsage(repositoryImpl.getUrl(), "ISSUE_TRACKING", LogUtils.getBugtrackingType(repositoryImpl.getConnectorId())); //NOI18N
+            if (repositoryImpl.isTeamRepository()) {
+                TeamAccessorUtils.logTeamUsage(repositoryImpl.getUrl(), "ISSUE_TRACKING", LogUtils.getBugtrackingType(repositoryImpl.getConnectorId())); //NOI18N
             }
         }
     }
-    
+
 }

@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.30.1
+#Version 1.35.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -63,8 +63,15 @@ hfds operation
 hcls ApiAccessor
 
 CLSS public abstract interface org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter
+innr public abstract interface static ContextBasedFactory
 innr public abstract interface static Factory
 meth public abstract boolean accept(org.netbeans.lib.editor.codetemplates.api.CodeTemplate)
+
+CLSS public abstract interface static org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter$ContextBasedFactory
+ outer org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter
+ anno 0 org.netbeans.spi.editor.mimelookup.MimeLocation(java.lang.Class<? extends org.netbeans.spi.editor.mimelookup.InstanceProvider> instanceProviderClass=class org.netbeans.spi.editor.mimelookup.InstanceProvider, java.lang.String subfolderName="CodeTemplateFilterFactories")
+intf org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter$Factory
+meth public abstract java.util.List<java.lang.String> getSupportedContexts()
 
 CLSS public abstract interface static org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter$Factory
  outer org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter

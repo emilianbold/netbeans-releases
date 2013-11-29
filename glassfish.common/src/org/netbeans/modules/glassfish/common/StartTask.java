@@ -69,6 +69,7 @@ import org.glassfish.tools.ide.data.StartupArgs;
 import org.glassfish.tools.ide.data.StartupArgsEntity;
 import org.glassfish.tools.ide.server.FetchLogSimple;
 import org.glassfish.tools.ide.server.ServerTasks;
+import org.glassfish.tools.ide.utils.NetUtils;
 import org.glassfish.tools.ide.utils.ServerUtils;
 import org.netbeans.api.extexecution.startup.StartupExtender;
 import static org.netbeans.modules.glassfish.common.BasicTask.START_TIMEOUT;
@@ -173,7 +174,7 @@ public class StartTask extends BasicTask<TaskState> {
             List<Recognizer> recognizers, VMIntrospector vmi, String[] jvmArgs,
             TaskStateListener... stateListener) {
         super(support.getInstance(), stateListener);
-        List<TaskStateListener> listeners = new ArrayList<TaskStateListener>();
+        List<TaskStateListener> listeners = new ArrayList<>();
         listeners.addAll(Arrays.asList(stateListener));
         listeners.add(new TaskStateListener() {
 
@@ -237,7 +238,8 @@ public class StartTask extends BasicTask<TaskState> {
         // Our server is offline.
         if (GlassFishState.isOffline(instance)) {
             // But administrator port is occupied.
-            if (ServerUtils.isDASRunning(instance)) {
+            if (ServerUtils.isAdminPortListening(
+                    instance, NetUtils.PORT_CHECK_TIMEOUT)) {
                 ResultString version;
                 try {
                     version = CommandVersion.getVersion(instance);
@@ -392,7 +394,7 @@ public class StartTask extends BasicTask<TaskState> {
         if (keyFile.isReset()) {
             String password = AdminKeyFile.randomPassword(
                     AdminKeyFile.RANDOM_PASSWORD_LENGTH);            
-            instance.setPassword(password);
+            instance.setAdminPassword(password);
             keyFile.setPassword(password);
             try {
                 GlassfishInstance.writeInstanceToFile(instance);
@@ -459,12 +461,13 @@ public class StartTask extends BasicTask<TaskState> {
                 return new StateChange(this, result, event,
                         "StartTask.startDAS.alreadyRunning");
             case OFFLINE:
-                if (ServerUtils.isDASRunning(instance)) {
+                if (ServerUtils.isAdminPortListening(
+                        instance, NetUtils.PORT_CHECK_TIMEOUT)) {
                     msgKey = "StartTask.startDAS.adminPortOccupied";
                 } else {
                     final int httpPort = instance.getPort();
                     if (httpPort >= 0 && httpPort <= 65535
-                            && ServerUtils.isRunningLocal(
+                            && NetUtils.isPortListeningLocal(
                             instance.getHost(), httpPort)) {
                         msgKey = "StartTask.startDAS.httpPortOccupied";
                     }
@@ -692,14 +695,14 @@ public class StartTask extends BasicTask<TaskState> {
     }
 
     private StartupArgs createProcessDescriptor() throws ProcessCreationException {
-        List<String> glassfishArgs = new ArrayList<String>(2);
+        List<String> glassfishArgs = new ArrayList<>(2);
         String domainDir = Util.quote(getDomainFolder().getAbsolutePath());
         glassfishArgs.add(ServerUtils.cmdLineArgument(
                 ServerUtils.GF_DOMAIN_ARG, getDomainName()));
         glassfishArgs.add(ServerUtils.cmdLineArgument(
                 ServerUtils.GF_DOMAIN_DIR_ARG, domainDir));
 
-        ArrayList<String> optList = new ArrayList<String>();
+        ArrayList<String> optList = new ArrayList<>();
         // append debug options
         if (GlassfishModule.DEBUG_MODE.equals(instance.getProperty(GlassfishModule.JVM_MODE))) {
             appendDebugOptions(optList);

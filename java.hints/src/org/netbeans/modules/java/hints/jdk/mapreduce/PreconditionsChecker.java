@@ -291,7 +291,9 @@ public class PreconditionsChecker {
         public Tree visitIdentifier(IdentifierTree that, Trees trees) {
 
             TypeMirror type = trees.getTypeMirror(this.getCurrentPath());
-
+            if (type == null /* will work even with error types || type.getKind() == TypeKind.ERROR */) {
+                return super.visitIdentifier(that, trees);
+            }
             if (type.getKind().isPrimitive()) {
                 this.varToType.put(that.getName(), workingCopy.getTypes().boxedClass((PrimitiveType) type).toString());
             } else {

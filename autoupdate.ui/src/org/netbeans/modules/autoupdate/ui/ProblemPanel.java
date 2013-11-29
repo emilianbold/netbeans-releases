@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -44,10 +44,12 @@
 
 package org.netbeans.modules.autoupdate.ui;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.prefs.Preferences;
 import javax.swing.JButton;
+import javax.swing.JTextPane;
 import org.netbeans.api.autoupdate.OperationException;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.options.OptionsDisplayer;
@@ -119,7 +121,7 @@ public class ProblemPanel extends javax.swing.JPanel {
         problem = problemDescription == null ?
             proxy_taTitle_Text() : // NOI18N
             problemDescription;
-        initComponents ();
+        enhancedInitComponents();
         cbShowAgain.setVisible(false);
         taTitle.setText(problem);
         taTitle.setToolTipText (problem);
@@ -144,7 +146,7 @@ public class ProblemPanel extends javax.swing.JPanel {
         problem = problemDescription == null ?
             write_taTitle_Text(culprit.getDisplayName()) : // NOI18N
             problemDescription;
-        initComponents ();
+        enhancedInitComponents();
         cbShowAgain.setVisible(false);
         taTitle.setText(problem);
         taTitle.setToolTipText (problem);
@@ -157,7 +159,7 @@ public class ProblemPanel extends javax.swing.JPanel {
         "install_taMessage_ErrorText=The validation of download plugins cannot be completed, cause: {0}"})
     private void initInstallProblem(OperationException ex) {
         problem = install_taTitle_Text();
-        initComponents ();
+        enhancedInitComponents();
         cbShowAgain.setVisible(false);
         taTitle.setText(problem);
         taTitle.setToolTipText (problem);
@@ -308,4 +310,14 @@ public class ProblemPanel extends javax.swing.JPanel {
     private static Preferences getPreferences() {
         return NbPreferences.forModule(Utilities.class);
     }
+    
+    private void enhancedInitComponents() {
+        initComponents();
+        taTitle.setBackground(new Color(0, 0, 0, 0));
+        taTitle.setOpaque(false);
+        taTitle.putClientProperty(JTextPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
+        tpMessage.setBackground(new Color(0, 0, 0, 0));
+        tpMessage.setOpaque(false);
+        tpMessage.putClientProperty(JTextPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
+}
 }

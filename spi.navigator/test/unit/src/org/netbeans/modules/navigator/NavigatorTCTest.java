@@ -89,6 +89,7 @@ import org.openide.windows.TopComponent;
  *
  * @author Dafe Simonek
  */
+@RandomlyFails
 public class NavigatorTCTest extends NbTestCase {
     
     public NavigatorTCTest(String testName) {

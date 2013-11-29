@@ -41,24 +41,22 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se.actions;
 
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.j2se.setup.J2SESetup;
-
+import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.FavoritesOperator;
+import org.netbeans.jellytools.actions.MaximizeWindowAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2se.setup.J2SESetup;
 
 /**
  * Tests Add to Favorites.
  *
- * @author  mmirilovic@netbeans.org
+ * @author mmirilovic@netbeans.org
  */
 public class AddToFavoritesTest extends PerformanceTestCase {
 
@@ -66,19 +64,20 @@ public class AddToFavoritesTest extends PerformanceTestCase {
     private String fileProject, filePackage, fileName;
     private Node addToFavoritesNode;
     private FavoritesOperator favoritesWindow;
-    
-    
+
     /**
      * Creates a new instance of AddToFavorites
+     *
      * @param testName the name of the test
      */
     public AddToFavoritesTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
-    
+
     /**
      * Creates a new instance of AddToFavorites
+     *
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
      */
@@ -87,27 +86,28 @@ public class AddToFavoritesTest extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(AddToFavoritesTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(J2SESetup.class, "testCloseMemoryToolbar", "testOpenDataProject")
+                .addTest(AddToFavoritesTest.class)
+                .suite();
     }
 
-    public void testAddJavaFile(){
+    public void testAddJavaFile() {
         fileProject = "PerformanceTestData";
         filePackage = "org.netbeans.test.performance";
         fileName = "Main20kB.java";
         doMeasurement();
     }
 
+    @Override
     public void initialize() {
-        ADD_TO_FAVORITES = Bundle.getStringTrimmed("org.openide.actions.Bundle","CTL_Tools") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.favorites.Bundle","ACT_Add"); // Tools|Add to Favorites
-        REMOVE_FROM_FAVORITES = Bundle.getStringTrimmed("org.netbeans.modules.favorites.Bundle","ACT_Remove"); // Remove from Favorites
+        ADD_TO_FAVORITES = Bundle.getStringTrimmed("org.openide.actions.Bundle", "CTL_Tools") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.favorites.Bundle", "ACT_Add"); // Tools|Add to Favorites
+        REMOVE_FROM_FAVORITES = Bundle.getStringTrimmed("org.netbeans.modules.favorites.Bundle", "ACT_Remove"); // Remove from Favorites
     }
 
-    public ComponentOperator open(){
+    @Override
+    public ComponentOperator open() {
         addToFavoritesNode.performMenuAction(ADD_TO_FAVORITES);
         favoritesWindow = new FavoritesOperator();
         return favoritesWindow;
@@ -115,16 +115,16 @@ public class AddToFavoritesTest extends PerformanceTestCase {
 
     @Override
     public void close() {
-        if (favoritesWindow!=null){
-            favoritesWindow.maximize();
-            Node n=new Node(favoritesWindow.tree(), fileName);
+        if (favoritesWindow != null) {
+            new MaximizeWindowAction().performAPI(favoritesWindow);
+            Node n = new Node(favoritesWindow.tree(), fileName);
             n.performPopupAction(REMOVE_FROM_FAVORITES);
             favoritesWindow.close();
         }
     }
-    
+
+    @Override
     public void prepare() {
         addToFavoritesNode = new Node(new SourcePackagesNode(fileProject), filePackage + '|' + fileName);
     }
-    
 }

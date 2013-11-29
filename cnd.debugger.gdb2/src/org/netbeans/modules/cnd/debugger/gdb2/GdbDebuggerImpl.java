@@ -689,39 +689,45 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         postedKill = true;
 
         //termset.finish();
-        if (gdb != null && gdb.connected()) {
-            // see IZ 191508, need to pause before exit
-            // or kill gdb if process pid is unavailable
-            if (getHost().getPlatform() == Platform.Windows_x86 || !pause(true)) {
-                try {
-                    executor.terminate();
+        
+        NativeDebuggerManager.getRequestProcessor().post(new Runnable() {
+            @Override
+            public void run() {
+                if (gdb != null && gdb.connected()) {
+                    // see IZ 191508, need to pause before exit
+                    // or kill gdb if process pid is unavailable
+                    if (getHost().getPlatform() == Platform.Windows_x86 || !pause(true)) {
+                        try {
+                            executor.terminate();
+                            kill();
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                        return;
+                    }
+
+                    // Ask gdb to quit (shutdown)
+                    MICommand cmd = new MiCommandImpl("-gdb-exit") { // NOI18N
+
+                        @Override
+                        protected void onError(MIRecord record) {
+                            finish();
+                        }
+
+                        @Override
+                        protected void onExit(MIRecord record) {
+                            kill();
+                            finish();
+                        }
+                    };
+                    gdb.sendCommand(cmd);
+                } else {
+                    // since there's no gdb connection (e.g. failed to start)
+                    // call kill directly
                     kill();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
                 }
-                return;
             }
-            
-            // Ask gdb to quit (shutdown)
-            MICommand cmd = new MiCommandImpl("-gdb-exit") { // NOI18N
-
-                @Override
-                protected void onError(MIRecord record) {
-                    finish();
-                }
-
-                @Override
-                protected void onExit(MIRecord record) {
-                    kill();
-                    finish();
-                }
-            };
-            gdb.sendCommand(cmd);
-        } else {
-            // since there's no gdb connection (e.g. failed to start)
-            // call kill directly
-            kill();
-        }
+        });
     }
 
     public void shutDown() {
@@ -2295,12 +2301,13 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         final GdbWatch watch = new GdbWatch(GdbDebuggerImpl.this, mcd, expr);
         createMIVar(watch, false);
         
-        final Node node = new VariableNode(watch, new GdbVariableNodeChildren(watch));
+        final Node node = new VariableNode(watch, new GdbVariableNodeChildren(watch, false));
         
         final ActionListener disposeListener = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                MICommand cmd = new DeleteMIVarCommand(watch);
+                MiCommandImpl cmd = new DeleteMIVarCommand(watch);
+                cmd.dontReportError();
                 sendCommandInt(cmd);
             }
         };
@@ -2326,14 +2333,16 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     
     private static final class GdbVariableNodeChildren extends VariableNodeChildren {
 
-        public GdbVariableNodeChildren(Variable v) {
-            super(v);            
-            ((GdbDebuggerImpl) v.getDebugger()).getMIChildren((GdbVariable) v, ((GdbVariable) v).getMIName(), 0);
+        public GdbVariableNodeChildren(Variable v, boolean requestChildren) {
+            super(v);           
+            if (requestChildren) {
+                ((GdbDebuggerImpl) v.getDebugger()).getMIChildren((GdbVariable) v, ((GdbVariable) v).getMIName(), 0);
+            }
         }
 
         @Override
         protected Node[] createNodes(Variable key) {
-            return new Node[]{new VariableNode(key, new GdbVariableNodeChildren(key))};
+            return new Node[]{new VariableNode(key, new GdbVariableNodeChildren(key, true))};
         }
     }
 

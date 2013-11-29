@@ -124,8 +124,9 @@ public class IgnoreAction extends ContextAction {
         return actionStatus == -1 ? UNDEFINED : actionStatus;
     }
     
+    @Override
     protected boolean enable(Node[] nodes) {
-        return getActionStatus(nodes) != UNDEFINED;
+        return isCacheReady() && getActionStatus(nodes) != UNDEFINED;
     }
 
     public void performContextAction(final Node[] nodes) {

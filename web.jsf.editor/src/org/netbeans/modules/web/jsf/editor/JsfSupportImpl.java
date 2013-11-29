@@ -112,16 +112,9 @@ public class JsfSupportImpl implements JsfSupport {
             //web project
             ClassPath sourceCP = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.SOURCE);
             ClassPath compileCP = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.COMPILE);
-            // #217213 - prevent NPE; not sure what's causing it:
-            if (compileCP == null) {
-                LOG.log(Level.INFO, "project ''{0}'' does not have compilation classpath; documentBase={1}", new Object[]{project, webModule.getDocumentBase()});
-                return null;
-            }
             ClassPath executeCP = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.EXECUTE);
-            // #236831 - prevent NPE; not sure what's causing it:
-            if (executeCP == null) {
-                LOG.log(Level.INFO, "project ''{0}'' does not have execution classpath; documentBase={1}", new Object[]{project, webModule.getDocumentBase()});
-                executeCP = ClassPath.EMPTY;
+            if (!validateUpdateClasspaths(project, webModule, sourceCP, compileCP, executeCP)) {
+                return null;
             }
             ClassPath bootCP = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.BOOT);
             
@@ -152,6 +145,25 @@ public class JsfSupportImpl implements JsfSupport {
         
         //no jsf support for this project
         return null;
+    }
+
+    private static boolean validateUpdateClasspaths(Project project, WebModule webModule, ClassPath sourceCP, ClassPath compileCP, ClassPath executeCP) {
+        // #217213 - prevent NPE; not sure what's causing it:
+        if (compileCP == null) {
+            LOG.log(Level.INFO, "project ''{0}'' does not have compilation classpath; documentBase={1}", new Object[]{project, webModule.getDocumentBase()});
+            return false;
+        }
+        // #237991 - prevent NPE; not sure what's causing it:
+        if (sourceCP == null) {
+            LOG.log(Level.INFO, "project ''{0}'' does not have source classpath; documentBase={1}", new Object[]{project, webModule.getDocumentBase()});
+            return false;
+        }
+        // #236831 - prevent NPE; not sure what's causing it:
+        if (executeCP == null) {
+            LOG.log(Level.INFO, "project ''{0}'' does not have execution classpath; documentBase={1}", new Object[]{project, webModule.getDocumentBase()});
+            return false;
+        }
+        return true;
     }
 
     

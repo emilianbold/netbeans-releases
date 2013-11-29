@@ -59,6 +59,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
+import java.util.Collections;
 import java.util.EventListener;
 import java.util.EventObject;
 import java.util.logging.Level;
@@ -387,7 +388,9 @@ abstract class WeakListenerImpl implements java.util.EventListener {
         private static Method equalsMth;
 
         /** Class -> Reference(Constructor) */
-        private static final Map<Class<?>,Reference<Constructor<?>>> constructors = new WeakHashMap<Class<?>,Reference<Constructor<?>>>();
+        private static final Map<Class<?>,Reference<Constructor<?>>> constructors = Collections.synchronizedMap(
+            new WeakHashMap<Class<?>,Reference<Constructor<?>>>()
+        );
 
         /** proxy generated for this listener */
         public final Object proxy;

@@ -57,8 +57,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.ParseException;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -109,9 +107,9 @@ import org.netbeans.modules.bugtracking.issuetable.TableSorter;
 import org.netbeans.modules.localtasks.LocalRepository;
 import org.netbeans.modules.localtasks.task.LocalTask.Attachment;
 import org.netbeans.modules.localtasks.task.LocalTask.TaskReference;
-import org.netbeans.modules.bugtracking.util.AttachmentsPanel;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.netbeans.modules.bugtracking.commons.AttachmentsPanel;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
+import org.netbeans.modules.bugtracking.spi.SchedulePicker;
 import org.netbeans.modules.mylyn.util.NbDateRange;
 import org.netbeans.modules.mylyn.util.localtasks.IssueField;
 import org.netbeans.modules.spellchecker.api.Spellchecker;
@@ -152,7 +150,7 @@ final class TaskPanel extends javax.swing.JPanel {
     private final AttachmentsPanel attachmentsPanel;
     private static final Logger LOG = LocalRepository.LOG;
     private final IDEServices.DatePickerComponent dueDatePicker;
-    private final IDEServices.DatePickerComponent scheduleDatePicker;
+    private final SchedulePicker scheduleDatePicker;
     private static final NumberFormatter estimateFormatter = new NumberFormatter(new java.text.DecimalFormat("#0")) {
 
         @Override
@@ -198,8 +196,8 @@ final class TaskPanel extends javax.swing.JPanel {
         attachmentsSection.setContent(attachmentsPanel);
         
         GroupLayout layout = (GroupLayout) attributesPanel.getLayout();
-        dueDatePicker = BugtrackingUtil.createDatePickerComponent();
-        scheduleDatePicker = BugtrackingUtil.createDatePickerComponent();
+        dueDatePicker = UIUtils.createDatePickerComponent();
+        scheduleDatePicker = new SchedulePicker();
         layout.replace(dummyDueDateField, dueDatePicker.getComponent());
         dueDateLabel.setLabelFor(dueDatePicker.getComponent());
         layout.replace(dummyScheduleDateField, scheduleDatePicker.getComponent());
@@ -237,7 +235,7 @@ final class TaskPanel extends javax.swing.JPanel {
         privateNotesField.setText(task.getPrivateNotes());
         dueDatePicker.setDate(task.getDueDate());
         NbDateRange scheduleDate = task.getScheduleDate();
-        scheduleDatePicker.setDate(scheduleDate == null ? null : scheduleDate.getStartDate().getTime());
+        scheduleDatePicker.setScheduleDate(scheduleDate == null ? null : scheduleDate.toSchedulingInfo());
         estimateField.setValue(task.getEstimate());
 
         boolean finished = task.isFinished();
@@ -312,7 +310,7 @@ final class TaskPanel extends javax.swing.JPanel {
 
         referencesPanel = new javax.swing.JPanel();
         emptyTaskReferencesPanel = new javax.swing.JPanel();
-        btnAddTaskReference = new org.netbeans.modules.bugtracking.util.LinkButton();
+        btnAddTaskReference = new org.netbeans.modules.bugtracking.commons.LinkButton();
         attributesPanel = new javax.swing.JPanel();
         dueDateLabel = new javax.swing.JLabel();
         summaryLabel = new javax.swing.JLabel();
@@ -343,19 +341,19 @@ final class TaskPanel extends javax.swing.JPanel {
         headerPanel = new javax.swing.JPanel();
         headerField = new javax.swing.JTextField();
         jPanel2 = new javax.swing.JPanel();
-        btnCancel = new org.netbeans.modules.bugtracking.util.LinkButton();
+        btnCancel = new org.netbeans.modules.bugtracking.commons.LinkButton();
         separatorDismissLabel = new javax.swing.JLabel();
-        btnDismiss = new org.netbeans.modules.bugtracking.util.LinkButton();
+        btnDismiss = new org.netbeans.modules.bugtracking.commons.LinkButton();
         separatorFinishLabel = new javax.swing.JLabel();
-        btnFinish = new org.netbeans.modules.bugtracking.util.LinkButton();
+        btnFinish = new org.netbeans.modules.bugtracking.commons.LinkButton();
         separatorOpenLabel = new javax.swing.JLabel();
-        btnOpen = new org.netbeans.modules.bugtracking.util.LinkButton();
+        btnOpen = new org.netbeans.modules.bugtracking.commons.LinkButton();
         mainScrollPane = new javax.swing.JScrollPane();
         jPanel1 = new javax.swing.JPanel();
         messagePanel = new javax.swing.JPanel();
-        attributesSection = new org.netbeans.modules.bugtracking.util.CollapsibleSectionPanel();
-        referencesSection = new org.netbeans.modules.bugtracking.util.CollapsibleSectionPanel();
-        attachmentsSection = new org.netbeans.modules.bugtracking.util.CollapsibleSectionPanel();
+        attributesSection = new org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel();
+        referencesSection = new org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel();
+        attachmentsSection = new org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel();
 
         referencesPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
 
@@ -789,14 +787,14 @@ final class TaskPanel extends javax.swing.JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private org.netbeans.modules.bugtracking.util.CollapsibleSectionPanel attachmentsSection;
+    private org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel attachmentsSection;
     private javax.swing.JPanel attributesPanel;
-    private org.netbeans.modules.bugtracking.util.CollapsibleSectionPanel attributesSection;
-    private org.netbeans.modules.bugtracking.util.LinkButton btnAddTaskReference;
-    private org.netbeans.modules.bugtracking.util.LinkButton btnCancel;
-    private org.netbeans.modules.bugtracking.util.LinkButton btnDismiss;
-    private org.netbeans.modules.bugtracking.util.LinkButton btnFinish;
-    private org.netbeans.modules.bugtracking.util.LinkButton btnOpen;
+    private org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel attributesSection;
+    private org.netbeans.modules.bugtracking.commons.LinkButton btnAddTaskReference;
+    private org.netbeans.modules.bugtracking.commons.LinkButton btnCancel;
+    private org.netbeans.modules.bugtracking.commons.LinkButton btnDismiss;
+    private org.netbeans.modules.bugtracking.commons.LinkButton btnFinish;
+    private org.netbeans.modules.bugtracking.commons.LinkButton btnOpen;
     private javax.swing.JLabel dueDateLabel;
     private javax.swing.JTextField dummyDueDateField;
     private javax.swing.JTextField dummyScheduleDateField;
@@ -813,7 +811,7 @@ final class TaskPanel extends javax.swing.JPanel {
     private javax.swing.JLabel notesLabel;
     private javax.swing.JTextArea privateNotesField;
     private javax.swing.JPanel referencesPanel;
-    private org.netbeans.modules.bugtracking.util.CollapsibleSectionPanel referencesSection;
+    private org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel referencesSection;
     private javax.swing.JLabel scheduleDateLabel;
     private javax.swing.JLabel separatorDismissLabel;
     private javax.swing.JLabel separatorFinishLabel;
@@ -903,10 +901,8 @@ final class TaskPanel extends javax.swing.JPanel {
                 }
                 
                 if (dirty) {
-                    task.fireUnsaved();
-                } else {
-                    task.fireSaved();
-                }
+                    task.fireChangeEvent();
+                } 
             }
         });
     }
@@ -993,7 +989,7 @@ final class TaskPanel extends javax.swing.JPanel {
                 return true;
             }
         });
-        dueDatePicker.addChangeListener(new DatePickerListener(dueDatePicker,
+        dueDatePicker.addChangeListener(new DatePickerListener(dueDatePicker.getComponent(),
                 ATTRIBUTE_DUE_DATE, dueDateLabel) {
 
             @Override
@@ -1002,18 +998,12 @@ final class TaskPanel extends javax.swing.JPanel {
                 return true;
             }
         });
-        scheduleDatePicker.addChangeListener(new DatePickerListener(scheduleDatePicker,
+        scheduleDatePicker.addChangeListener(new DatePickerListener(scheduleDatePicker.getComponent(),
                 ATTRIBUTE_SCHEDULE_DATE, scheduleDateLabel) {
 
             @Override
             protected boolean storeValue () {
-                Date date = scheduleDatePicker.getDate();
-                Calendar cal = null;
-                if (date != null) {
-                    cal = Calendar.getInstance();
-                    cal.setTime(date);
-                }
-                task.setTaskScheduleDate(cal == null ? null : new NbDateRange(cal).toSchedulingInfo(), false);
+                task.setTaskScheduleDate(scheduleDatePicker.getScheduleDate(), false);
                 return true;
             }
         });
@@ -1193,6 +1183,14 @@ final class TaskPanel extends javax.swing.JPanel {
             outOfAWT.run();
         }
         return true;
+    }
+
+    void addChangeListener(ChangeListener l) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    void removeChangeListener(ChangeListener l) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     private class SubTaskTableMouseListener extends MouseAdapter {
@@ -1388,10 +1386,10 @@ final class TaskPanel extends javax.swing.JPanel {
     private abstract class DatePickerListener implements ChangeListener {
 
         private final String attributeName;
-        private final IDEServices.DatePickerComponent component;
+        private final JComponent component;
         private final JComponent fieldLabel;
 
-        public DatePickerListener (IDEServices.DatePickerComponent component,
+        public DatePickerListener (JComponent component,
                 String attributeName, JComponent fieldLabel) {
             this.component = component;
             this.attributeName = attributeName;
@@ -1411,7 +1409,7 @@ final class TaskPanel extends javax.swing.JPanel {
         }
         
         public boolean isEnabled () {
-            return component.getComponent().isVisible() && component.getComponent().isEnabled();
+            return component.isVisible() && component.isEnabled();
         }
 
         protected final void updateDecorations () {
@@ -1427,7 +1425,7 @@ final class TaskPanel extends javax.swing.JPanel {
         public boolean add (String value) {
             boolean added = super.add(value);
             if (added) {
-                task.fireUnsaved();
+                task.fireChangeEvent();
             }
             return added;
         }
@@ -1436,7 +1434,7 @@ final class TaskPanel extends javax.swing.JPanel {
         public boolean remove (Object o) {
             boolean removed = super.remove(o);
             if (removed && isEmpty()) {
-                task.fireSaved();
+                task.fireChangeEvent();
             }
             return removed;
         }
@@ -1446,7 +1444,7 @@ final class TaskPanel extends javax.swing.JPanel {
             boolean fire = !isEmpty();
             super.clear();
             if (fire) {
-                task.fireSaved();
+                task.fireChangeEvent();
             }
         }
         

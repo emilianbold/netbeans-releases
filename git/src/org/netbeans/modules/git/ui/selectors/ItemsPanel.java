@@ -88,6 +88,9 @@ public class ItemsPanel extends javax.swing.JPanel {
         btnSelectAll.setToolTipText(org.openide.util.NbBundle.getMessage(ItemsPanel.class, "ItemsPanel.btnSelectAll.TTtext")); // NOI18N
         btnSelectAll.setEnabled(false);
 
+        org.openide.awt.Mnemonics.setLocalizedText(btnAllowDeletes, org.openide.util.NbBundle.getMessage(ItemsPanel.class, "ItemsPanel.btnAllowDeletes.text")); // NOI18N
+        btnAllowDeletes.setToolTipText(org.openide.util.NbBundle.getMessage(ItemsPanel.class, "ItemsPanel.btnAllowDeletes.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -102,7 +105,9 @@ public class ItemsPanel extends javax.swing.JPanel {
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(btnSelectAll)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btnSelectNone)))
+                                .addComponent(btnSelectNone)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btnAllowDeletes)))
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -115,12 +120,15 @@ public class ItemsPanel extends javax.swing.JPanel {
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(btnSelectNone)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(btnSelectNone)
+                        .addComponent(btnAllowDeletes))
                     .addComponent(btnSelectAll))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    final javax.swing.JButton btnAllowDeletes = new javax.swing.JButton();
     javax.swing.JButton btnSelectAll;
     javax.swing.JButton btnSelectNone;
     private javax.swing.JScrollPane jScrollPane1;

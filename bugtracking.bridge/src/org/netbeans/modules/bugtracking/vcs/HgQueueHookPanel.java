@@ -58,6 +58,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.IssueQuickSearch;
 import org.netbeans.modules.versioning.util.VerticallyNonResizingPanel;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -96,7 +97,7 @@ public class HgQueueHookPanel extends VerticallyNonResizingPanel implements Chan
     }
     private FieldValues fieldValues = null;
     
-    public HgQueueHookPanel(File context, boolean link, boolean resolve, boolean commit) {
+    public HgQueueHookPanel(FileObject context, boolean link, boolean resolve, boolean commit) {
         initComponents();
         this.fieldValues = new FieldValues();
 
@@ -235,7 +236,7 @@ public class HgQueueHookPanel extends VerticallyNonResizingPanel implements Chan
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
-    final org.netbeans.modules.bugtracking.util.LinkButton changeFormatButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+    final org.netbeans.modules.bugtracking.commons.LinkButton changeFormatButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
     final javax.swing.JRadioButton commitRadioButton = new javax.swing.JRadioButton();
     private javax.swing.JPanel issuePanel;
     final javax.swing.JCheckBox linkCheckBox = new javax.swing.JCheckBox();

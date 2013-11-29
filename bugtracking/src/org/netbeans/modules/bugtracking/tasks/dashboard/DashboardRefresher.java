@@ -50,6 +50,7 @@ import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.tasks.Category;
 import org.netbeans.modules.bugtracking.settings.DashboardSettings;
+import org.netbeans.modules.bugtracking.tasks.DashboardUtils;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 
@@ -61,6 +62,7 @@ public class DashboardRefresher {
 
     private static final RequestProcessor RP = new RequestProcessor(DashboardRefresher.class.getName());
     private final Task refreshDashboard;
+    private final Task refreshSchedule;
     private static DashboardRefresher instance;
     private boolean refreshEnabled;
     private boolean dashboardBusy = false;
@@ -70,17 +72,25 @@ public class DashboardRefresher {
         refreshDashboard = RP.create(new Runnable() {
             @Override
             public void run() {
-                if (!refreshEnabled) {
-                    return;
-                }
-                if (dashboardBusy) {
+                if (dashboardBusy || !refreshEnabled) {
                     refreshWaiting = true;
                     return;
                 }
                 try {
-                    refresh();
+                    refreshDashboard();
                 } finally {
                     setupDashboardRefresh();
+                }
+            }
+        });
+
+        refreshSchedule = RP.create(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    DashboardViewer.getInstance().updateScheduleCategories();
+                } finally {
+                    setupScheduleRefresh();
                 }
             }
         });
@@ -102,6 +112,11 @@ public class DashboardRefresher {
         scheduleDashboardRefresh();
     }
 
+    public void setupScheduleRefresh() {
+        refreshSchedule.cancel();
+        refreshSchedule.schedule(DashboardUtils.getMillisToTomorrow());
+    }
+
     private void scheduleDashboardRefresh() {
         final DashboardSettings settings = DashboardSettings.getInstance();
         int delay = settings.getAutoSyncValue();
@@ -120,7 +135,7 @@ public class DashboardRefresher {
         }
     }
 
-    private void refresh() {
+    private void refreshDashboard() {
         List<RepositoryImpl> repositories = DashboardViewer.getInstance().getRepositories(false);
         List<Category> categories = DashboardViewer.getInstance().getCategories(false, true);
         List<IssueImpl> changedTasks = new ArrayList<IssueImpl>();
@@ -161,7 +176,7 @@ public class DashboardRefresher {
 
         return changedTask;
     }
-    
+
     private List<TaskContainer> getTaskContainers(Collection<IssueImpl> tasks) {
         List<TaskContainer> containers = new ArrayList<TaskContainer>(tasks.size());
         for (IssueImpl issueImpl : tasks) {
@@ -171,6 +186,7 @@ public class DashboardRefresher {
     }
 
     private static class TaskContainer {
+
         private final String id;
         private final String idRepository;
         private final IssueStatusProvider.Status status;

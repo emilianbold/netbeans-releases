@@ -48,12 +48,18 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -79,12 +85,16 @@ import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Copy;
+import org.apache.tools.ant.taskdefs.Delete;
+import org.apache.tools.ant.taskdefs.ManifestException;
 import org.apache.tools.ant.taskdefs.SignJar;
 import org.apache.tools.ant.taskdefs.Zip;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.ResourceCollection;
 import org.apache.tools.ant.types.ZipFileSet;
 import org.apache.tools.ant.types.resources.FileResource;
+import org.apache.tools.ant.util.FileUtils;
+import org.apache.tools.zip.ZipOutputStream;
 import org.xml.sax.SAXException;
 
 /** Generates JNLP files for signed versions of the module JAR files.
@@ -95,6 +105,12 @@ public class MakeJNLP extends Task {
     /** the files to work on */
     private ResourceCollection files;
     private SignJar signTask;
+
+    private static final String MANIFEST = "META-INF/MANIFEST.MF";  //NOI18N
+    private static final String UTF_8 = "UTF-8";    //NOI18N
+    private static final String ATTR_CODEBASE = "Codebase"; //NOI18N
+    private static final String ATTR_PERMISSIONS = "Permissions";   //NOI18N
+    private static final String ATTR_APPLICATION_NAME = "Application-Name"; //NOI18N
 
     public FileSet createModules()
     throws BuildException {
@@ -136,6 +152,16 @@ public class MakeJNLP extends Task {
     public void setStoreType(String t) {
         getSignTask().setStoretype(t);
     }
+    
+    private String appName;
+
+    public void setAppName(String appName) {
+        this.appName = appName;
+    }
+    
+    private final String manifestPermissions = "all-permissions";
+    
+    private final String manifestCodebase = "*";
     
     private String codebase = "$$codebase";
     public void setCodebase(String s) {
@@ -225,6 +251,11 @@ public class MakeJNLP extends Task {
 
     private Set<File> jarDirectories;
     
+    private String includelocales;
+    public void setIncludelocales(String includelocales) {
+        this.includelocales = includelocales;
+    }
+    
     /**
      * Signs or copies the given files according to the signJars variable value.
      */
@@ -290,7 +321,20 @@ public class MakeJNLP extends Task {
     }
     
     private void generateFiles() throws IOException, BuildException {
+        Set<String> declaredLocales = new HashSet<String>();
+        boolean useAllLocales = false;
+        if(includelocales == null || "*".equals(includelocales)) {
+            useAllLocales = true;
+        } else if ("".equals(includelocales)) {
+            useAllLocales = false;
+        } else {
+            StringTokenizer tokenizer = new StringTokenizer(includelocales, ",");
+            while (tokenizer.hasMoreElements()) {
+                declaredLocales.add(tokenizer.nextToken());
+            }
+        }
         Set<String> indirectFilePaths = new HashSet<String>();
+        File tmpFile = null;
         for (FileSet fs : new FileSet[] {indirectJars, indirectFiles}) {
             if (fs != null) {
                 DirectoryScanner scan = fs.getDirectoryScanner(getProject());
@@ -365,6 +409,27 @@ public class MakeJNLP extends Task {
             File signed = new File(new File(targetFile, dashcnb), jar.getName());
             File jnlp = new File(targetFile, dashcnb + ".jnlp");
             
+            if (jar.exists() && isSigned(jar) == null) {
+                try {
+                    tmpFile = extendLibraryManifest(getProject(), jar, signed, manifestCodebase, manifestPermissions, appName);
+                } catch (IOException ex) {
+                    getProject().log(
+                    "Failed to extend libraries manifests: " + ex.getMessage(), //NOI18N
+                    Project.MSG_WARN);
+                } catch (ManifestException ex) {
+                    getProject().log(
+                    "Failed to extend libraries manifests: " + ex.getMessage(), //NOI18N
+                    Project.MSG_WARN);
+                }
+            } else {
+                getProject().log(
+                    String.format(
+                        "Not adding security attributes into library: %s the library is already signed.",
+                        safeRelativePath(getProject().getBaseDir(),signed)),
+                    Project.MSG_WARN);
+            }
+
+            
             StringWriter writeJNLP = new StringWriter();
             writeJNLP.write("<?xml version='1.0' encoding='UTF-8'?>\n");
             writeJNLP.write("<!DOCTYPE jnlp PUBLIC \"-//Sun Microsystems, Inc//DTD JNLP Descriptor 6.0//EN\" \"http://java.sun.com/dtd/JNLP-6.0.dtd\">\n");
@@ -389,10 +454,13 @@ public class MakeJNLP extends Task {
             
             writeJNLP.write("  </resources>\n");
             
-            {
+            if (useAllLocales || !declaredLocales.isEmpty()){
                 // write down locales
                 for (Map.Entry<String,List<File>> e : localizedFiles.entrySet()) {
                     String locale = e.getKey();
+                    if (!declaredLocales.isEmpty() && !declaredLocales.contains(locale)) {
+                        continue;
+                    }
                     List<File> allFiles = e.getValue();
                     
                     writeJNLP.write("  <resources locale='" + locale + "'>\n");
@@ -407,7 +475,33 @@ public class MakeJNLP extends Task {
                         }
                         File t = new File(new File(targetFile, dashcnb), name);
 
-                        signOrCopy(n, t);
+                        File localeTmpFile = null;
+                        if (n.exists() && isSigned(n) == null) {
+                            try {
+                                localeTmpFile = extendLibraryManifest(getProject(), n, t, manifestCodebase, manifestPermissions, appName);
+                            } catch (IOException ex) {
+                                getProject().log(
+                                "Failed to extend libraries manifests: " + ex.getMessage(), //NOI18N
+                                Project.MSG_WARN);
+                            } catch (ManifestException ex) {
+                                getProject().log(
+                                "Failed to extend libraries manifests: " + ex.getMessage(), //NOI18N
+                                Project.MSG_WARN);
+                            }
+                        } else {
+                            getProject().log(
+                                String.format(
+                                    "Not adding security attributes into locale library: %s the library is already signed.",
+                                    safeRelativePath(getProject().getBaseDir(),t)),
+                                Project.MSG_WARN);
+                        }
+                        if (localeTmpFile != null) {
+                            signOrCopy(localeTmpFile, t);
+                            deleteTmpFile(localeTmpFile);
+                        }
+                        else {
+                            signOrCopy(n, t);
+                        }
                         writeJNLP.write(constructJarHref(n, dashcnb, name));
                     }
 
@@ -424,11 +518,143 @@ public class MakeJNLP extends Task {
             w.write(writeJNLP.toString());
             w.close();
 
-            signOrCopy(jar, signed);
+            if (tmpFile != null) {
+                signOrCopy(tmpFile, signed);
+                deleteTmpFile(tmpFile);
+            }
+            else {
+                signOrCopy(jar, signed);
+            }
             theJar.close();
         }
         
     }
+    
+    private File extendLibraryManifest(
+        final Project prj,
+        final File sourceJar,
+        final File signedJar,
+        final String codebase,
+        final String permissions,
+        final String appName) throws IOException, ManifestException {
+        org.apache.tools.ant.taskdefs.Manifest manifest = null;
+        Copy cp = new Copy();
+        File tmpFile = new File(String.format("%s.tmp", signedJar.getAbsolutePath()));
+        cp.setFile(sourceJar);
+        cp.setTofile(tmpFile);
+        cp.execute();
+        boolean success = false;
+        try {
+            final Map<String,String> extendedAttrs = new HashMap<String,String>();
+            final org.apache.tools.zip.ZipFile zf = new org.apache.tools.zip.ZipFile(sourceJar);
+            try {                
+                final org.apache.tools.zip.ZipEntry manifestEntry = zf.getEntry(MANIFEST);
+                if (manifestEntry != null) {
+                    final Reader in = new InputStreamReader(zf.getInputStream(manifestEntry), Charset.forName(UTF_8));    //NOI18N
+                    try {
+                        manifest = new org.apache.tools.ant.taskdefs.Manifest(in);
+                    } finally {
+                        in.close();
+                    }
+                } else {
+                    manifest = new org.apache.tools.ant.taskdefs.Manifest();
+                }
+                final org.apache.tools.ant.taskdefs.Manifest.Section mainSection = manifest.getMainSection();                
+                String attr = mainSection.getAttributeValue(ATTR_CODEBASE);
+                if (attr == null) {
+                    mainSection.addAttributeAndCheck(new org.apache.tools.ant.taskdefs.Manifest.Attribute(
+                        ATTR_CODEBASE,
+                        codebase));
+                    extendedAttrs.put(ATTR_CODEBASE, codebase);
+                }
+                attr = mainSection.getAttributeValue(ATTR_PERMISSIONS);
+                if (attr == null) {
+                    mainSection.addAttributeAndCheck(new org.apache.tools.ant.taskdefs.Manifest.Attribute(
+                        ATTR_PERMISSIONS,
+                        permissions));
+                    extendedAttrs.put(ATTR_PERMISSIONS, permissions);
+                }
+                attr = mainSection.getAttributeValue(ATTR_APPLICATION_NAME);
+                if (attr == null) {
+                    mainSection.addAttributeAndCheck(new org.apache.tools.ant.taskdefs.Manifest.Attribute(
+                        ATTR_APPLICATION_NAME,
+                        appName));
+                    extendedAttrs.put(ATTR_APPLICATION_NAME, appName);
+                }
+                if (!extendedAttrs.isEmpty()) {
+                    final Enumeration<? extends org.apache.tools.zip.ZipEntry> zent = zf.getEntries();
+                    final ZipOutputStream out = new ZipOutputStream(tmpFile);
+                    try {
+                        while (zent.hasMoreElements()) {
+                            final org.apache.tools.zip.ZipEntry entry = zent.nextElement();
+                            final InputStream in = zf.getInputStream(entry);
+                            try {
+                                out.putNextEntry(entry);
+                                if (MANIFEST.equals(entry.getName())) {
+                                    final PrintWriter manifestOut = new PrintWriter(new OutputStreamWriter(out, Charset.forName(UTF_8)));
+                                    manifest.write(manifestOut);
+                                    manifestOut.flush();
+                                } else {
+                                    copy(in,out);
+                                }
+                            } finally {
+                                in.close();
+                            }
+                        }
+                    } finally {
+                        out.close();
+                    }
+                    success = true;
+                    final StringBuilder message = new StringBuilder("Updating library ").   //NOI18N
+                        append(safeRelativePath(prj.getBaseDir(), tmpFile)).
+                        append(" manifest");    //NOI18N
+                    for (Map.Entry<String,String> e : extendedAttrs.entrySet()) {
+                        message.append(String.format(" %s: %s,", e.getKey(), e.getValue()));
+                    }
+                    message.deleteCharAt(message.length()-1);
+                    prj.log(message.toString(), Project.MSG_VERBOSE);
+                }
+            } finally {
+                zf.close();
+            }
+        } finally {
+            if (!success) {
+                final Delete rm = new Delete();
+                rm.setFile(tmpFile);
+                rm.setQuiet(true);
+                rm.execute();
+                tmpFile = null;
+            }
+        }
+        return tmpFile;
+    }
+    
+    private static void deleteTmpFile(File tmpFile) {
+        final Delete del = new Delete();
+        del.setFile(tmpFile);
+        del.execute();
+    }
+
+    private static void copy(final InputStream in, final OutputStream out) throws IOException {
+        final byte[] BUFFER = new byte[4096];
+        int len;
+        for (;;) {
+            len = in.read(BUFFER);
+            if (len == -1) {
+                return;
+            }
+            out.write(BUFFER, 0, len);
+        }
+    }
+
+    private static String safeRelativePath(File from, File to) {
+        try {
+            return FileUtils.getRelativePath(from, to);
+        } catch (Exception ex) {
+            return to.getAbsolutePath();
+        }
+    }
+
     
     private Map<String,List<File>> verifyExtensions(File f, Manifest mf, String dashcnb, String codebasename, boolean verify, Set<String> indirectFilePaths) throws IOException, BuildException {
         Map<String,List<File>> localizedFiles = new HashMap<String,List<File>>();
@@ -569,6 +795,10 @@ public class MakeJNLP extends Task {
         while(tok.hasMoreElements()) {
             String s = tok.nextToken();
             
+            if (s.contains("${java.home}")) {
+                continue;
+            }
+            
             File e = new File(f.getParentFile(), s);
             if (!e.canRead()) {
                 throw new BuildException("Cannot read extension " + e + " referenced from " + f);
@@ -579,7 +809,12 @@ public class MakeJNLP extends Task {
             }
             File ext = new File(new File(targetFile, dashcnb), s.replace("../", "").replace('/', '-'));
 
-            if (isSigned(e) != null) {
+            if (e.exists() && isSigned(e) != null) {
+                getProject().log(
+                    String.format(
+                        "Not adding security attributes into library: %s the library is already signed.",
+                        safeRelativePath(getProject().getBaseDir(),ext)),
+                    Project.MSG_WARN);
                 Copy copy = (Copy)getProject().createTask("copy");
                 copy.setFile(e);
                 copy.setTofile(ext);
@@ -606,7 +841,24 @@ public class MakeJNLP extends Task {
                 
                 fileWriter.write("    <extension name='" + e.getName().replaceFirst("\\.jar$", "") + "' href='" + extJnlpName + "'/>\n");
             } else {
-                signOrCopy(e, ext);
+                File tmpFile = null;
+                try {
+                    tmpFile = extendLibraryManifest(getProject(), e, ext, manifestCodebase, manifestPermissions, appName);
+                } catch (IOException ex) {
+                    getProject().log(
+                    "Failed to extend libraries manifests: " + ex.getMessage(), //NOI18N
+                    Project.MSG_WARN);
+                } catch (ManifestException ex) {
+                    getProject().log(
+                    "Failed to extend libraries manifests: " + ex.getMessage(), //NOI18N
+                    Project.MSG_WARN);
+                }
+                if (tmpFile != null) {
+                    signOrCopy(tmpFile, ext);
+                    deleteTmpFile(tmpFile);
+                } else {
+                    signOrCopy(e, ext);
+                }
 
                 fileWriter.write(constructJarHref(ext, dashcnb));
             }

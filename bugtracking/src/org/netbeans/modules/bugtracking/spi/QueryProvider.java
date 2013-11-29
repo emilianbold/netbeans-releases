@@ -42,8 +42,7 @@
 
 package org.netbeans.modules.bugtracking.spi;
 
-import java.beans.PropertyChangeListener;
-import java.util.Collection;
+import org.netbeans.modules.bugtracking.IssueContainerImpl;
 
 /**
  * Provides access to a bugtracking query.
@@ -52,94 +51,151 @@ import java.util.Collection;
  * 
  * @param <Q> the implementation specific query type
  * @param <I> the implementation specific issue type
+ * @since 1.85
  */
 public interface QueryProvider<Q, I> {
 
     /**
-     * Fired when a queries list of issue was changed.
-     */
-    public final static String EVENT_QUERY_REFRESHED = "bugtracking.query.refreshed";   // NOI18N
-
-    /**
      * Returns the queries display name
-     * @param q
-     * @return
+     * @param q the particular query instance
+     * @return the display name
+     * @since 1.85
      */
     public String getDisplayName(Q q);
 
     /**
      * Returns the queries tooltip
-     * @param q 
-     * @return
+     * @param q the particular query instance
+     * @return the tooltip
+     * @since 1.85
      */
     public String getTooltip(Q q);
 
     /**
      * Returns the {@link QueryController} for this query
      * @param q the implementation specific query type
-     * @return
+     * @return a controller for the given query
+     * @since 1.85
      */
     public QueryController getController(Q q);
 
     /**
      * Determines whether it is possible to remove the given Query.
      * 
-     * @param q 
-     * @return  
+     * @param q the particular query instance
+     * @return  <code>true</code> in case it is possible to remove the query, otherwise <code>fasle</code>
+     * @since 1.85
      */
     public boolean canRemove(Q q);
     
     /** 
-     * Removes the given query.
+     * Removes the given query. This method may be called on any Query returned 
+     * by {@link RepositoryProvider#getQueries(java.lang.Object)} in case {@link #canRemove(java.lang.Object)}
+     * returns <code>true</code>. After a remove it should not be returned by 
+     * {@link RepositoryProvider#getQueries(java.lang.Object)} anymore.
      * 
-     * @param q 
+     * @param q the particular query instance
+     * @see RepositoryProvider#getQueries(java.lang.Object) 
+     * @since 1.85
      */
     public void remove(Q q);
     
     /**
-     * Determines whether it is possible to rename the given Query
-     * @param q
-     * @return 
+     * Determines whether it is possible to rename the given Query.
+     * 
+     * @param q the particular query instance
+     * @return <code>true</code> in case it is possible to rename the query, otherwise <code>fasle</code>
+     * @since 1.85
      */
     public boolean canRename(Q q);
     
     /**
      * Renames the given query.
      * 
-     * @param q 
-     * @param newName 
+     * @param q the particular query instance
+     * @param newName new name
+     * @since 1.85
      */
     public void rename(Q q, String newName);
     
     /**
-     * Returns all issues from this queries last refresh.
+     * Sets a {@link IssueContainer}. 
      * 
-     * @param q
-     * @return 
+     * @param q the particular query instance
+     * @param c a IssueContainer
      */
-    public Collection<I> getIssues(Q q);
-
-    /**
-     * Refreshes the given query
-     * 
-     * @param query
-     */
-    public void refresh(Q query);
+    void setIssueContainer(Q q, IssueContainer<I> c);
     
     /**
-     * Remove a PropertyChangeListener from the given query.
+     * Refreshes the given query. 
      * 
-     * @param q
-     * @param listener 
+     * <p>
+     * <b>Note</p> that this call is made periodically by the infrastructure. 
+     * <p>
+     * 
+     * @param q the particular query instance
+     * @since 1.85
      */
-    public void removePropertyChangeListener(Q q, PropertyChangeListener listener);
+    public void refresh(Q q);
 
     /**
-     * Add a PropertyChangeListener to the given query.
+     * Notifies about refreshing progress and Issues retrieved by an Query.
      * 
-     * @param q
-     * @param listener 
+     * @param <I> the implementation specific issue type
+     * @since 1.85
      */
-    public void addPropertyChangeListener(Q q, PropertyChangeListener listener);
+    public static final class IssueContainer<I> {
+        private final IssueContainerImpl<I> delegate;
 
+        IssueContainer(IssueContainerImpl<I> delegate) {
+            this.delegate = delegate;
+        }
+        
+        /**
+         * The Query refreshing started.
+         * @since 1.85
+         */
+        public void refreshingStarted() {
+            delegate.refreshingStarted();
+        }
+        
+        /**
+         * The Query refreshing finished.
+         * 
+         * @since 1.85
+         */
+        public void refreshingFinished() {
+            delegate.refreshingFinished();
+        }
+        
+        /**
+         * Add Issues.
+         * 
+         * @param issues a particular issue instances
+         * @since 1.85
+         */
+        public void add(I... issues) {
+            delegate.add(issues);
+        }
+        
+        /**
+         * Remove Issues.
+         * 
+         * @param issues a particular issue instances
+         * @since 1.85
+         */
+        public void remove(I... issues) {
+            delegate.remove(issues);
+        }
+        
+        /**
+         * Remove all Issues.
+         * 
+         * @since 1.85
+         */
+        public void clear() {
+            delegate.clear();
+    }
+        
+}
 }

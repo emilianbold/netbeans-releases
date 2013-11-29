@@ -67,7 +67,7 @@ import org.eclipse.mylyn.internal.tasks.core.sync.SynchronizeTasksJob;
 import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
 import org.eclipse.mylyn.tasks.core.ITask;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
-import org.netbeans.modules.bugtracking.util.LogUtils;
+import org.netbeans.modules.bugtracking.commons.LogUtils;
 import org.netbeans.modules.mylyn.util.BugtrackingCommand;
 import org.netbeans.modules.mylyn.util.CancelableProgressMonitor;
 import org.netbeans.modules.mylyn.util.NbTask;
@@ -118,7 +118,8 @@ public class SynchronizeQueryCommand extends BugtrackingCommand {
         
         final Set<ITask> tasksToSynchronize = Collections.synchronizedSet(new HashSet<ITask>());
         // in the end this will contain tasks removed from the query
-        final Set<ITask> archivedQueryTasks = Collections.synchronizedSet(new HashSet<ITask>());
+        final Set<ITask> pendingToRefreshTasks = Collections.synchronizedSet(new HashSet<ITask>());
+        final Set<ITask> toSync = new HashSet<ITask>();
         ITaskListChangeListener list = new ITaskListChangeListener() {
             @Override
             public void containersChanged (Set<TaskContainerDelta> deltas) {
@@ -127,9 +128,17 @@ public class SynchronizeQueryCommand extends BugtrackingCommand {
                         if (!query.isSynchronizing()) {
                             // if sync ended -> fire event, and collect tasks to refresh
                             tasksToSynchronize.addAll(query.getChildren());
-                            archivedQueryTasks.removeAll(tasksToSynchronize);
-                            Set<ITask> toSync = new HashSet<ITask>(tasksToSynchronize);
-                            toSync.addAll(archivedQueryTasks);
+                            // tasks newly added to the query
+                            Set<ITask> addedTasks = new HashSet<ITask>(tasksToSynchronize);
+                            addedTasks.removeAll(pendingToRefreshTasks);
+                            // split tasks into tasks already present in the query -> tasksToSynchronize
+                            // and tasks either removed or added to the query
+                            tasksToSynchronize.removeAll(addedTasks);
+                            pendingToRefreshTasks.removeAll(tasksToSynchronize);
+                            pendingToRefreshTasks.addAll(addedTasks);
+                            
+                            toSync.addAll(tasksToSynchronize);
+                            toSync.addAll(pendingToRefreshTasks);
                             Collection<NbTask> nbTasks = accessor.toNbTasks(toSync);
                             for (CommandProgressListener cmdList : listeners.toArray(new CommandProgressListener[listeners.size()])) {
                                 cmdList.tasksRefreshStarted(nbTasks);
@@ -139,8 +148,9 @@ public class SynchronizeQueryCommand extends BugtrackingCommand {
                         ITask task = (ITask) delta.getElement();
                         if (delta.getKind() == TaskContainerDelta.Kind.CONTENT && task instanceof AbstractTask
                                 && !((AbstractTask) task).isSynchronizing()) {
-                            if (tasksToSynchronize.remove(task) && !monitor.isCanceled()) {
-                                archivedQueryTasks.remove(task);
+                            pendingToRefreshTasks.remove(task);
+                            tasksToSynchronize.remove(task);
+                            if (toSync.remove(task) && !monitor.isCanceled()) {
                                 // task finished synchronize
                                 for (CommandProgressListener cmdList : listeners.toArray(new CommandProgressListener[listeners.size()])) {
                                     cmdList.taskSynchronized(accessor.toNbTask(task));
@@ -164,9 +174,9 @@ public class SynchronizeQueryCommand extends BugtrackingCommand {
         taskList.addChangeListener(list);
         try {
             query.setSynchronizing(true);
-            archivedQueryTasks.addAll(query.getChildren());
+            pendingToRefreshTasks.addAll(query.getChildren());
             for (CommandProgressListener cmdList : listeners.toArray(new CommandProgressListener[listeners.size()])) {
-                cmdList.queryRefreshStarted(accessor.toNbTasks(archivedQueryTasks));
+                cmdList.queryRefreshStarted(accessor.toNbTasks(pendingToRefreshTasks));
             }
             job.run(monitor);
             status = query.getStatus();
@@ -187,9 +197,9 @@ public class SynchronizeQueryCommand extends BugtrackingCommand {
                     cmdList.taskSynchronized(accessor.toNbTask(task));
                 }
             }
-            // now refresh also tasks removed from the query
-            if (!monitor.isCanceled() && !archivedQueryTasks.isEmpty()) {
-                HashSet<ITask> tasks = new HashSet<ITask>(archivedQueryTasks);
+            // now refresh also tasks not yet refreshed but either removed or added to the query
+            if (!monitor.isCanceled() && !pendingToRefreshTasks.isEmpty()) {
+                HashSet<ITask> tasks = new HashSet<ITask>(pendingToRefreshTasks);
                 SynchronizeTasksJob syncTasksJob = new SynchronizeTasksJob(taskList,
                     taskDataManager,
                     repositoryModel,

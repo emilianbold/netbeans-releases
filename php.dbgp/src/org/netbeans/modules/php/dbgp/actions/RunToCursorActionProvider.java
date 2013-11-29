@@ -43,7 +43,6 @@ package org.netbeans.modules.php.dbgp.actions;
 
 import java.util.Collections;
 import java.util.Set;
-
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.modules.php.dbgp.DebugSession;
 import org.netbeans.modules.php.dbgp.SessionId;
@@ -55,56 +54,47 @@ import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.text.Line;
 
-
 /**
  * @author ads
  *
  */
 public class RunToCursorActionProvider extends AbstractActionProvider {
 
-    public RunToCursorActionProvider( ContextProvider contextProvider ) {
+    public RunToCursorActionProvider(ContextProvider contextProvider) {
         super(contextProvider);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.debugger.ActionsProviderSupport#doAction(java.lang.Object)
-     */
     @Override
-    public void doAction( Object action )
-    {
+    public void doAction(Object action) {
         SessionId id = getSessionId();
-        if ( id ==null ){
+        if (id == null) {
             return;
         }
         hideSuspendAnnotations();
         DebugSession session = getSession();
-        if ( session == null ){
-            return ;
+        if (session == null) {
+            return;
         }
         Line line = Utils.getCurrentLine();
-        if (line == null){
-            return ;
+        if (line == null) {
+            return;
         }
 
         BrkpntSetCommand command = BrkpntCommandBuilder.buildLineBreakpoint(
                 id, session.getTransactionId(),
                 EditorContextDispatcher.getDefault().getCurrentFile(),
-                line.getLineNumber() );
-        command.setTemporary( true );
+                line.getLineNumber());
+        command.setTemporary(true);
         session.sendCommandLater(command);
 
         hideSuspendAnnotations();
-        RunCommand runCommand = new RunCommand( session.getTransactionId());
+        RunCommand runCommand = new RunCommand(session.getTransactionId());
         session.sendCommandLater(runCommand);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.debugger.ActionsProvider#getActions()
-     */
     @Override
-    public Set getActions()
-    {
-        return Collections.singleton( ActionsManager.ACTION_RUN_TO_CURSOR );
+    public Set getActions() {
+        return Collections.singleton(ActionsManager.ACTION_RUN_TO_CURSOR);
     }
 
 }

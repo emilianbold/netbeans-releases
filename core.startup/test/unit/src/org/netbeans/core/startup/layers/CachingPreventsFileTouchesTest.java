@@ -68,19 +68,16 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.Places;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Read access test
  * see details on http://wiki.netbeans.org/FitnessViaWhiteAndBlackList
  */
 public class CachingPreventsFileTouchesTest extends NbTestCase {
-    static {
-        System.setProperty("java.util.logging.config.class", CaptureLog.class.getName());
-    }
     private static final Logger LOG;
     static {
         LOG = Logger.getLogger(CachingPreventsFileTouchesTest.class.getName());
-        CaptureLog.assertCalled();
     }
 
     private static void initCheckReadAccess() throws IOException {
@@ -239,6 +236,7 @@ public class CachingPreventsFileTouchesTest extends NbTestCase {
         fail("Not found " + cnb);
     }
     
+    @ServiceProvider(service = Handler.class)
     public static final class CaptureLog extends Handler {
         private static Logger watchOver = Logger.getLogger("org.netbeans.core.modules");
         private static void assertCalled() {

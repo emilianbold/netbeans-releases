@@ -57,16 +57,16 @@ import org.openide.util.NbBundle;
 /**
  * Doctrine2 IDE options.
  */
-@OptionsPanelController.SubRegistration(
-    location=UiUtils.OPTIONS_PATH,
-    id=Doctrine2OptionsPanelController.OPTIONS_SUBPATH,
+@UiUtils.PhpOptionsPanelRegistration(
+    id=Doctrine2OptionsPanelController.ID,
     displayName="#LBL_PHPDoctrineOptionsName",
 //    toolTip="#LBL_OptionsTooltip"
     position=700
 )
 public class Doctrine2OptionsPanelController extends OptionsPanelController implements ChangeListener {
 
-    public static final String OPTIONS_SUBPATH = "Doctrine2"; // NOI18N
+    static final String ID = "Doctrine2"; // NOI18N
+    public static final String OPTIONS_SUBPATH = UiUtils.FRAMEWORKS_AND_TOOLS_SUB_PATH+"/"+ID; // NOI18N
 
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 

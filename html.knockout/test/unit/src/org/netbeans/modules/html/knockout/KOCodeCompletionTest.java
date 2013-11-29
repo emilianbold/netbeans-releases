@@ -41,17 +41,7 @@
  */
 package org.netbeans.modules.html.knockout;
 
-import java.io.File;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.javascript2.editor.JsCodeCompletionBase;
-import static org.netbeans.modules.javascript2.editor.JsTestBase.JS_SOURCE_ID;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -73,5 +63,21 @@ public class KOCodeCompletionTest extends JsCodeCompletionBase {
 
     public void testIssue231569() throws Exception {
         checkCompletion("completion/issue231569/index.html", "                <input data-bind='value: userNameToAdd, valueUpdate: \"keyup\", css: { invalid: ^ }' /></input>", false);
+    }
+
+    public void testTemplate() throws Exception {
+        checkCompletion("completion/template/index.html", "            <h3 data-bind=\"text: ^\"></h3>", false);
+    }
+
+    public void testTemplateForEach() throws Exception {
+        checkCompletion("completion/templateForEach/index.html", "    <h3 data-bind=\"text: ^\"></h3>", false);
+    }
+
+    public void testTemplateForEachAlias() throws Exception {
+        checkCompletion("completion/templateForEachAlias/index.html", "    <h3 data-bind=\"text: simple.^ \"></h3>", false);
+    }
+
+    public void testTemplateInner() throws Exception {
+        checkCompletion("completion/templateInner/index.html", "        <strong data-bind=\"text: ^\"></strong>", false);
     }
 }

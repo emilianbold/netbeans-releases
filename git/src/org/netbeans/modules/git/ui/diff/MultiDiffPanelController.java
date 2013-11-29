@@ -931,8 +931,6 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             RevisionPicker picker = new RevisionPicker(GitUtils.getRootFile(context), new File[0]);
             if (picker.open()) {
                 Revision selectedRevision = picker.getRevision();
-                selectedRevision = new Revision(selectedRevision.getRevision(), selectedRevision.getRevision(),
-                        selectedRevision.getShortMessage());
                 addToModel(selectedRevision, cmbDiffTree);
             }
         }
@@ -943,7 +941,8 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
         DefaultComboBoxModel model = (DefaultComboBoxModel) cmbDiffTree.getModel();
         for (int i = 0; i < model.getSize(); ++i) {
             final Object item = model.getElementAt(i);
-            if (item instanceof Revision && ((Revision) item).getCommitId().equals(newItem.getCommitId())) {
+            if (item instanceof Revision && ((Revision) item).getCommitId().equals(newItem.getCommitId())
+                    && ((Revision) item).getRevision().equals(newItem.getRevision())) {
                 EventQueue.invokeLater(new Runnable() {
                     @Override
                     public void run () {
@@ -1613,6 +1612,13 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             if (value instanceof Revision) {
                 Revision rev = (Revision) value;
                 value = rev.toString(true);
+                tooltip = rev.getFullMessage();
+                if (tooltip != null) {
+                    tooltip = tooltip.replace("\r\n", "\n").replace("\n", "<br>"); //NOI18N
+                    StringBuilder sb = new StringBuilder("<html><p>"); //NOI18N
+                    sb.append(tooltip).append("</p></html>"); //NOI18N
+                    tooltip = sb.toString();
+                }
             } else if (value instanceof String) {
                 value = "<html><i>" + value + "</i></html>"; //NOI18N
                 tooltip = Bundle.MSG_Revision_Select_Tooltip();

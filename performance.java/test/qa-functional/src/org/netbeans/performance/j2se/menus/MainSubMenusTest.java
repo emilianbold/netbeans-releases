@@ -43,21 +43,20 @@
  */
 package org.netbeans.performance.j2se.menus;
 
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.modules.performance.utilities.CommonUtilities;
-import org.netbeans.performance.j2se.setup.J2SESetup;
-
-import org.netbeans.jellytools.TopComponentOperator;
+import junit.framework.Test;
 import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jemmy.operators.JMenuBarOperator;
+import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.jemmy.operators.JMenuBarOperator;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2se.setup.J2SESetup;
 
 /**
  * Performance test of application main menu.</p>
- * <p>Each test method reads the label of tested menu and pushes it (using
- * mouse). The menu is then close using escape key.
+ * <p>
+ * Each test method reads the label of tested menu and pushes it (using mouse).
+ * The menu is then close using escape key.
  *
  * @author Radim Kubacki, mmirilovic@netbeans.org
  */
@@ -71,6 +70,8 @@ public class MainSubMenusTest extends PerformanceTestCase {
 
     /**
      * Creates a new instance of MainSubMenus
+     *
+     * @param testName test name
      */
     public MainSubMenusTest(String testName) {
         super(testName);
@@ -80,6 +81,9 @@ public class MainSubMenusTest extends PerformanceTestCase {
 
     /**
      * Creates a new instance of MainSubMenus
+     *
+     * @param testName test name
+     * @param performanceDataName data name
      */
     public MainSubMenusTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
@@ -87,12 +91,11 @@ public class MainSubMenusTest extends PerformanceTestCase {
         WAIT_AFTER_OPEN = 200;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(J2SESetup.class, "testCloseMemoryToolbar", "testOpenDataProject")
                 .addTest(MainSubMenusTest.class)
-                .enableModules(".*").clusters(".*")));
-        return suite;
+                .suite();
     }
 
     public void testFileOpenRecentFileMenu() {
@@ -166,9 +169,11 @@ public class MainSubMenusTest extends PerformanceTestCase {
         return org.netbeans.jellytools.Bundle.getStringTrimmed(bundle, key);
     }
 
+    @Override
     public void prepare() {
     }
 
+    @Override
     public ComponentOperator open() {
         menuBar.pushMenu(mainMenuPath + "|" + subMenuPath);
         return null;

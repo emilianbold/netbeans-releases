@@ -623,7 +623,7 @@ public final class TokenListUpdater {
         int lowestMatchIndex = change.matchIndex;
 
         AbstractToken<T> token;
-        int relexOffset = lexerInputOperation.lastTokenEndOffset(); // For debug purposes only
+        int relexOffset;
         while ((token = lexerInputOperation.nextToken()) != null) {
             // Get lookahead and state; Will certainly use them both since updater runs for inc token lists only
             int lookahead = lexerInputOperation.lookahead();

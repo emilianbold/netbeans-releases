@@ -2,16 +2,15 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
     <folder name="OptionsExport">
-        <folder name="Tasks">
-            <attr name="displayName"
-                  bundlevalue="org.netbeans.modules.mylyn.util.Bundle#Tasks_Import_Display_Name"/>
-            <attr name="position" intvalue="920"/>
-            <file name="TaskStorage">
-                <attr name="include"
+        <folder name="Team">
+            <folder name="Tasks">
+                <file name="TaskStorage">
+                    <attr name="include"
                       stringvalue="var/tasks/mylyn/.*|config/Preferences/org/netbeans/modules/mylyn/util[.]properties"/>
-                <attr name="displayName"
+                    <attr name="displayName"
                       bundlevalue="org.netbeans.modules.mylyn.util.Bundle#TaskStorage_Import_Display_Name"/>
-            </file>
+                </file>
+            </folder>
         </folder>
     </folder>
 </filesystem>

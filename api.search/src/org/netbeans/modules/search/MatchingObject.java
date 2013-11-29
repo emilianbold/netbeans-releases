@@ -57,7 +57,6 @@ import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import static java.util.logging.Level.FINER;
@@ -65,6 +64,8 @@ import static java.util.logging.Level.FINEST;
 import static java.util.logging.Level.SEVERE;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.search.TextDetail.DetailNode;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
@@ -89,6 +90,10 @@ public final class MatchingObject implements Comparable<MatchingObject>,
 
     public static final String PROP_INVALIDITY_STATUS =
             "invalidityStatus";                                         //NOI18N
+    /** Fired when number of selected tex matches changes. */
+    public static final String PROP_MATCHES_SELECTED
+            = "matchesSelected";                                        //NOI18N
+    /** Fired when the MatchingObject is selected or deselected. */
     public static final String PROP_SELECTED = "selected";              //NOI18N
     /** Fired when the matching object is removed (hidden) from results. */
     public static final String PROP_REMOVED = "removed";                //NOI18N
@@ -141,34 +146,21 @@ public final class MatchingObject implements Comparable<MatchingObject>,
      * @see  #markExpanded(boolean)
      */
     private boolean expanded = false;
-    /**
-     * holds information about which matches should be replaced and which
-     * should not be replaced.
-     * Value {@code null} means that either all or none matches are selected,
-     * depending on the value of field {@link #selected}.
-     * 
-     * @see  #selected
-     */
-    private boolean[] matchesSelection;
+
     /** holds number of selected (checked) matches */
-    private int selectedMatchesCount;
-    /**
-     * flag that indicates that the tree was not notified of this
-     * {@code MatchingObject}'s children's selection change and that
-     * it must be notified before the children nodes are made visible
-     * 
-     * @see  #markChildrenSelectionDirty()
-     */
-    private boolean childrenSelectionDirty;
+    private int selectedMatchesCount = 0;
     /** */
     private boolean valid = true;
     /** */
     private InvalidityStatus invalidityStatus = null;
     /** */
     private StringBuilder text;
-    private PropertyChangeSupport changeSupport =
+    private final PropertyChangeSupport changeSupport =
             new PropertyChangeSupport(this);
     private FileListener fileListener;
+    private final MatchSelectionListener matchSelectionListener =
+            new MatchSelectionListener();
+
     /**
      * Creates a new {@code MatchingObject} with a reference to the found
      * object (returned by {@code SearchGroup}).
@@ -217,10 +209,12 @@ public final class MatchingObject implements Comparable<MatchingObject>,
         int maxLine = lastDetail.getLine();
         int maxDigits = countDigits(maxLine);
         for (TextDetail td : textDetails) {
+            selectedMatchesCount += 1;
             int digits = countDigits(td.getLine());
             if (digits < maxDigits) {
                 td.setLineNumberIndent(indent(maxDigits - digits));
             }
+            td.addChangeListener(matchSelectionListener);
         }
     }
 
@@ -284,7 +278,6 @@ public final class MatchingObject implements Comparable<MatchingObject>,
         InvalidityStatus oldStatus = this.invalidityStatus;
         this.valid = false;
         this.invalidityStatus = invalidityStatus;
-        resultModel.objectBecameInvalid(this);
         if (fileObject != null && fileListener != null
                 && invalidityStatus == InvalidityStatus.DELETED) {
             fileObject.removeFileChangeListener(fileListener);
@@ -320,7 +313,6 @@ public final class MatchingObject implements Comparable<MatchingObject>,
         }
         
         this.selected = selected;
-        matchesSelection = null;
         changeSupport.firePropertyChange(PROP_SELECTED, !selected, selected);
     }
 
@@ -329,12 +321,22 @@ public final class MatchingObject implements Comparable<MatchingObject>,
         if (this.selected == selected) {
             return;
         }
-        if (textDetails != null) {
-            for (TextDetail td : getTextDetails()) {
-                td.setSelectedRecursively(selected);
+        matchSelectionListener.setEnabled(false);
+        int origMatchesSelected = selectedMatchesCount;
+        try {
+            if (textDetails != null) {
+                for (TextDetail td : getTextDetails()) {
+                    td.setSelectedRecursively(selected);
+                }
             }
+            setSelected(selected);
+            selectedMatchesCount = selected ? getTextDetails().size() : 0;
+            changeSupport.firePropertyChange(PROP_MATCHES_SELECTED,
+                    origMatchesSelected,
+                    selectedMatchesCount);
+        } finally {
+            matchSelectionListener.setEnabled(true);
         }
-        setSelected(selected);
     }
 
     /**
@@ -343,125 +345,7 @@ public final class MatchingObject implements Comparable<MatchingObject>,
     public boolean isSelected() {
         return selected;
     }
-    
-    /**
-     */
-    boolean isUniformSelection() {
-        return matchesSelection == null;
-    }
-    
-    /**
-     * Checks selection of this object's subnodes.
-     * 
-     * @return  {@code Boolean.TRUE}  if all subnodes are selected,
-     *          {@code Boolean.FALSE}  if all subnodes are unselected,
-     *          {@code null} if some subnodes are selected and some are
-     *                       unselected
-     */
-    Boolean checkSubnodesSelection() {
-        if (matchesSelection == null) {
-            return Boolean.valueOf(selected);
-        }
-        
-        final boolean firstMatchSelection = matchesSelection[0];
-        for (int i = 1; i < matchesSelection.length; i++) {
-            if (matchesSelection[i] != firstMatchSelection) {
-                return null;
-            }
-        }
-        return Boolean.valueOf(firstMatchSelection);
-    }
-    
-    /**
-     * 
-     * @return  {@code true} if the subnode's selection change caused change
-     *          of this object's node's selection, {@code false} otherwise
-     */
-    boolean toggleSubnodeSelection(ResultModel resultModel, int index) {
-        /* uniform selection */
-        if (matchesSelection == null) {
-            int detailsCount = resultModel.getDetailsCount(this);
-            if (detailsCount == 1) {
-                selected = !selected;
-                return true;
-            } else {
-                matchesSelection = new boolean[detailsCount];
-                Arrays.fill(matchesSelection, selected);
-                matchesSelection[index] = !selected;
 
-                boolean wasSelected = selected;
-                selectedMatchesCount = wasSelected ? detailsCount - 1 : 1;
-                selected = true;
-                return (selected != wasSelected);
-            }
-        }
-
-        /* some subnodes selected, some unselected */
-        assert selected;
-        assert (selectedMatchesCount > 0)
-               && (selectedMatchesCount < matchesSelection.length);
-        boolean wasSubnodeSelected = matchesSelection[index];
-        if (wasSubnodeSelected) {
-            if (--selectedMatchesCount == 0) {
-                matchesSelection = null;
-                selected = false;
-                return true;
-            }
-        } else {
-            if (++selectedMatchesCount == matchesSelection.length) {
-                matchesSelection = null;
-                return false;
-            }
-        }
-
-        matchesSelection[index] = !wasSubnodeSelected;
-        return false;
-    }
-    
-    /**
-     */
-    boolean isSubnodeSelected(int index) {
-        // See #189617, #177812, #129232
-        if(matchesSelection == null) {
-            return selected;
-        }
-        if((index >= 0) && (index < matchesSelection.length)) {
-            return matchesSelection[index];
-        }
-        LOG.log(Level.FINE,
-          "Illegal index={0} in the case matchesSelection.length={1}", // NOI18N
-          new Object[] { index, matchesSelection.length });
-        return false; // An associated checkbox won't be selected.
-    }
-    
-    /**
-     * Sets the {@link #childrenSelectionDirty} flag.
-     * 
-     * @see  #markChildrenSelectionClean
-     */
-    void markChildrenSelectionDirty() {
-        childrenSelectionDirty = true;
-    }
-    
-    /**
-     * Clears the {@link #childrenSelectionDirty} flag.
-     * 
-     * @see  #markChildrenSelectionDirty()
-     */
-    void markChildrenSelectionClean() {
-        childrenSelectionDirty = false;
-    }
-    
-    /**
-     * Is the {@link #childrenSelectionDirty} flag set?
-     * 
-     * @return  {@code true} if the flag is set, {@code false} otherwise
-     * @see  #markChildrenSelectionDirty()
-     */
-    boolean isChildrenSelectionDirty() {
-        return childrenSelectionDirty;
-    }
-    
     /**
      * Stores information whether the node representing this object is expanded
      * or collapsed.
@@ -589,7 +473,7 @@ public final class MatchingObject implements Comparable<MatchingObject>,
                             br.close();
                         }
                     } finally {
-                        isr.close();;
+                        isr.close();
                     }
                 } finally {
                     istm.close();
@@ -813,15 +697,15 @@ public final class MatchingObject implements Comparable<MatchingObject>,
         assert !EventQueue.isDispatchThread();
         assert isSelected();
         
-        Boolean uniformSelection = checkSubnodesSelection();
-        final boolean shouldReplaceNone = (uniformSelection == Boolean.FALSE);
-
-        if (shouldReplaceNone) {
+        StringBuilder content = text(true);  //refresh the cache, reads the file
+        List<TextDetail> textMatches = getTextDetails();
+        int toReplace = 0;
+        for (TextDetail td : textMatches) {
+            toReplace += td.isSelected() ? 1 : 0;
+        }
+        if (toReplace == 0) {
             return null;
         }
-       
-        StringBuilder content = text(true);   //refresh the cache, reads the file      
-        List<TextDetail> textMatches = getTextDetails();
 
         int offsetShift = 0;
         for (int i=0; i < textMatches.size(); i++) {
@@ -1056,7 +940,7 @@ public final class MatchingObject implements Comparable<MatchingObject>,
 
     private class DetailsChildren extends Children.Keys<TextDetail> {
 
-        private boolean replacing;
+        private final boolean replacing;
 
         public DetailsChildren(boolean replacing, ResultModel model) {
             this.replacing = replacing;
@@ -1094,6 +978,35 @@ public final class MatchingObject implements Comparable<MatchingObject>,
             if (resultModel.basicCriteria.isSearchAndReplace()) {
                 setInvalid(InvalidityStatus.CHANGED);
             }
+        }
+    }
+
+    /**
+     * Listener for changes in selection of child text details. It can be
+     * disabled if the changes are going to be initiated by this MatchingObject.
+     */
+    private class MatchSelectionListener implements ChangeListener {
+
+        private boolean enabled = true;
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            if (enabled) {
+                TextDetail td = (TextDetail) e.getSource();
+                int origMatchesSelected = selectedMatchesCount;
+                selectedMatchesCount += td.isSelected() ? 1 : -1;
+                changeSupport.firePropertyChange(PROP_MATCHES_SELECTED,
+                        origMatchesSelected, selectedMatchesCount);
+                if (selected && selectedMatchesCount == 0) {
+                    setSelected(false);
+                } else if (!selected && selectedMatchesCount > 0) {
+                    setSelected(true);
+                }
+            }
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
         }
     }
 }

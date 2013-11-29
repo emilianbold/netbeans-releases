@@ -134,7 +134,7 @@ class CreateEnumConstant implements Fix {
 
                 List<? extends Tree> members = targetTree.getMembers();
                 ArrayList<Tree> newMembers = new ArrayList<Tree>(members);
-                int pos = 0;
+                int pos = -1;
                 for (Iterator<? extends Tree> it = members.iterator(); it.hasNext();) {
                     Tree t = it.next();
                     if (t.getKind() == Kind.VARIABLE && working.getTreeUtilities().isEnumConstant((VariableTree)t) ) {

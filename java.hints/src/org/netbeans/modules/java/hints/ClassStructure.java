@@ -126,8 +126,12 @@ public class ClassStructure {
         final MethodTree mth = (MethodTree) context.getPath().getLeaf();
         final Tree parent = context.getPath().getParentPath().getLeaf();
         if (TreeUtilities.CLASS_TREE_KINDS.contains(parent.getKind()) && mth.getModifiers().getFlags().contains(Modifier.FINAL) && ((ClassTree) parent).getModifiers().getFlags().contains(Modifier.FINAL)) {
-            return ErrorDescriptionFactory.forName(context, mth, NbBundle.getMessage(ClassStructure.class, "MSG_FinalMethodInFinalClass", mth.getName()), //NOI18N
-                    FixFactory.removeModifiersFix(context.getInfo(), TreePath.getPath(context.getPath(), mth.getModifiers()), EnumSet.of(Modifier.FINAL), NbBundle.getMessage(ClassStructure.class, "FIX_RemoveFinalFromMethod", mth.getName()))); //NOI18N
+            // see defect #236974; although redundant, if the method is annotated with @SafeVarargs, we must permit final modifier.
+            ExecutableElement ee = (ExecutableElement)context.getInfo().getTrees().getElement(context.getPath());
+            if (ee == null || ee.getAnnotation(SafeVarargs.class) == null) {
+                return ErrorDescriptionFactory.forName(context, mth, NbBundle.getMessage(ClassStructure.class, "MSG_FinalMethodInFinalClass", mth.getName()), //NOI18N
+                        FixFactory.removeModifiersFix(context.getInfo(), TreePath.getPath(context.getPath(), mth.getModifiers()), EnumSet.of(Modifier.FINAL), NbBundle.getMessage(ClassStructure.class, "FIX_RemoveFinalFromMethod", mth.getName()))); //NOI18N
+            }
         }
         return null;
     }

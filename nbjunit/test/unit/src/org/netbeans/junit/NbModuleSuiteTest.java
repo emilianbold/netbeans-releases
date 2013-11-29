@@ -264,12 +264,12 @@ public class NbModuleSuiteTest extends NbTestCase {
             NbModuleSuite.emptyConfiguration().
             gui(false).
             clusters("ide").
-            clusters("java").
+            clusters("extide").
             addTest(NbModuleSuiteClusters.class)
         .suite();
         junit.textui.TestRunner.run(instance);
 
-        assertProperty("clusters", "ide:java");
+        assertProperty("clusters", "ide:extide");
     }
 
     public void testClustersCanBeCumulatedInReverseOrder() {
@@ -278,13 +278,13 @@ public class NbModuleSuiteTest extends NbTestCase {
         Test instance =
             NbModuleSuite.emptyConfiguration().
             gui(false).
-            clusters("java").
+            clusters("extide").
             clusters("ide").
             addTest(NbModuleSuiteClusters.class)
         .suite();
         junit.textui.TestRunner.run(instance);
 
-        assertProperty("clusters", "java:ide");
+        assertProperty("clusters", "extide:ide");
     }
 
     /*

@@ -75,17 +75,17 @@ import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.NbBundle;
 
-public class VariablesModel extends ViewModelSupport
-        implements TreeModel, TableModel, NodeModel
-{
-
-    private static final String EVALUATING    = "TXT_Evaluating";       // NOI18N
-
-    static final String GET_SHORT_DESCRIPTION = "getShortDescription";  // NOI18N
-
-    static final String NULL                  = "null";                 // NOI18N
+public class VariablesModel extends ViewModelSupport implements TreeModel, TableModel, NodeModel {
+    private static final String EVALUATING = "TXT_Evaluating"; // NOI18N
+    static final String GET_SHORT_DESCRIPTION = "getShortDescription"; // NOI18N
+    static final String NULL = "null"; // NOI18N
+    private final ContextProvider myContextProvider;
     //@GuardedBy("this")
     private DebugSession debugSession;
+    private List<ModelNode> myNodes;
+    private ReentrantReadWriteLock myLock = new ReentrantReadWriteLock();
+    private ReadLock myReadlock = myLock.readLock();
+    private WriteLock myWritelock = myLock.writeLock();
 
     public VariablesModel(final ContextProvider contextProvider) {
         myContextProvider = contextProvider;
@@ -97,79 +97,61 @@ public class VariablesModel extends ViewModelSupport
         myWritelock.lock();
         try {
             myNodes.clear();
-        }
-        finally {
+        } finally {
             myWritelock.unlock();
         }
         fireTreeChanged();
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.viewmodel.TreeModel#getRoot()
-     */
     @Override
     public Object getRoot() {
         return ROOT; // ROOT is defined by TreeModel
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.viewmodel.TreeModel#getChildren(java.lang.Object, int, int)
-     */
     @Override
-    public Object[] getChildren(Object parent, int from, int to)
-        throws UnknownTypeException
-    {
+    public Object[] getChildren(Object parent, int from, int to) throws UnknownTypeException {
         myReadlock.lock();
         try {
             // Should be only two cases -- ROOT or a node from our tree
             ModelNode usedParent = null;
             if (parent == ROOT) {
                 List<ModelNode> list = getTopLevelElements();
-                if ( from >= list.size() ) {
+                if (from >= list.size()) {
                     return new Object[0];
                 }
-                int end = Math.min( list.size() , to);
+                int end = Math.min(list.size(), to);
                 List<ModelNode> contexts = list.subList(from, end);
-                //Collections.sort( contexts, COMPARATOR );
-
                 return contexts.toArray(new Object[contexts.size()]);
+            } else if (parent instanceof ModelNode) {
+                usedParent = (ModelNode) parent;
             }
-            else if (parent instanceof ModelNode) {
-                usedParent = (ModelNode)parent;
-            }
-            if ( usedParent != null ){
+            if (usedParent != null) {
                 int size = ((ModelNode) parent).getChildrenSize();
-                if ( from >= size ) {
+                if (from >= size) {
                     return new Object[0];
                 }
-                int end = Math.min( size , to);
+                int end = Math.min(size, to);
                 return ((ModelNode) parent).getChildren(from, end);
             }
-        }
-        finally {
+        } finally {
             myReadlock.unlock();
         }
 
         throw new UnknownTypeException(parent + " " + parent.getClass().getName());
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.viewmodel.TreeModel#isLeaf(java.lang.Object)
-     */
     @Override
     public boolean isLeaf(Object node) throws UnknownTypeException {
         if (node == null) {
             return true;
-        }
-        else if (node == ROOT) {
+        } else if (node == ROOT) {
             return myNodes.isEmpty();
-        }
-        else if (node instanceof ModelNode) {
-            ModelNode modelNode = (ModelNode)node;
+        } else if (node instanceof ModelNode) {
+            ModelNode modelNode = (ModelNode) node;
             DebugSession session = getSession();
             if (session != null) {
                 childrenRequest(modelNode, session);
-                fillChildrenList( modelNode , session);
+                fillChildrenList(modelNode, session);
             }
             return modelNode.isLeaf();
         }
@@ -177,37 +159,27 @@ public class VariablesModel extends ViewModelSupport
         throw new UnknownTypeException(node);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.viewmodel.TreeModel#getChildrenCount(java.lang.Object)
-     */
     @Override
-    public int getChildrenCount( Object node ) throws UnknownTypeException {
+    public int getChildrenCount(Object node) throws UnknownTypeException {
         myReadlock.lock();
         try {
             if (node == ROOT) {
                 //return myNodes.size();
                 return getTopLevelElements().size();
-            }
-            else if (node instanceof ModelNode) {
+            } else if (node instanceof ModelNode) {
                 return ((ModelNode) node).getChildrenSize();
             }
 
             throw new UnknownTypeException(node);
-        }
-        finally {
+        } finally {
             myReadlock.unlock();
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.viewmodel.TableModel#getValueAt(java.lang.Object, java.lang.String)
-     */
     @Override
-    public Object getValueAt(Object node, String columnID)
-        throws UnknownTypeException
-    {
-        if ( node instanceof JToolTip ) {
-            return getTooltip( ((JToolTip) node), columnID);
+    public Object getValueAt(Object node, String columnID) throws UnknownTypeException {
+        if (node instanceof JToolTip) {
+            return getTooltip(((JToolTip) node), columnID);
         }
         String result = ""; // default is blank
         switch (columnID) {
@@ -226,9 +198,8 @@ public class VariablesModel extends ViewModelSupport
                     try {
                         result = modelNode.getValue();
                     } catch (UnsufficientValueException e) {
-                        sendValueCommand( modelNode );
-                        return NbBundle.getMessage( VariablesModel.class ,
-                                EVALUATING);
+                        sendValueCommand(modelNode);
+                        return NbBundle.getMessage(VariablesModel.class, EVALUATING);
                     }
                 } else if (node == null) {
                     result = "";
@@ -241,60 +212,42 @@ public class VariablesModel extends ViewModelSupport
         return result;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.viewmodel.TableModel#isReadOnly(java.lang.Object, java.lang.String)
-     */
     @Override
-    public boolean isReadOnly(Object node, String string)
-        throws UnknownTypeException
-    {
+    public boolean isReadOnly(Object node, String string) throws UnknownTypeException {
         return false;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.viewmodel.TableModel#setValueAt(java.lang.Object, java.lang.String, java.lang.Object)
-     */
     @Override
-    public void setValueAt(Object node, String columnID, Object value)
-        throws UnknownTypeException
-    {
+    public void setValueAt(Object node, String columnID, Object value) throws UnknownTypeException {
         assert value instanceof String;
-
         if (Constants.LOCALS_VALUE_COLUMN_ID.equals(columnID)) {
             if (!(node instanceof VariableNode)) {
                 throw new UnknownTypeException(node);
             }
-
-            ModelNode modelNode = (ModelNode)node;
-
-            if ( modelNode.isReadOnly()) {
+            ModelNode modelNode = (ModelNode) node;
+            if (modelNode.isReadOnly()) {
                 throw new UnknownTypeException(node);
             }
-
             DebugSession session = getSession();
-            if ( session == null ){
+            if (session == null) {
                 // TODO : need signal to user about inability to set value
                 return;
             }
-            PropertySetCommand command = new PropertySetCommand(
-                    session.getTransactionId() );
-            command.setData( (String)value );
+            PropertySetCommand command = new PropertySetCommand(session.getTransactionId());
+            command.setData((String) value);
             assert node instanceof AbstractVariableNode;
-            ((AbstractVariableNode)node).setupCommand( command );
+            ((AbstractVariableNode) node).setupCommand(command);
             session.sendCommandLater(command);
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.viewmodel.NodeModel#getDisplayName(java.lang.Object)
-     */
     @Override
     public String getDisplayName(Object node) throws UnknownTypeException {
         String retval = null;
-        if(node == ROOT) {
+        if (node == ROOT) {
             retval = ROOT;
-        } else if(node instanceof ModelNode) {
-            retval =  ((ModelNode) node).getName();
+        } else if (node instanceof ModelNode) {
+            retval = ((ModelNode) node).getName();
         } else if (node != null) {
             throw new UnknownTypeException(node);
         }
@@ -304,39 +257,32 @@ public class VariablesModel extends ViewModelSupport
         return (retval != null) ? retval : NULL;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.viewmodel.NodeModel#getIconBase(java.lang.Object)
-     */
     @Override
     public String getIconBase(Object node) throws UnknownTypeException {
-        if(node == null || node == ROOT) {
+        if (node == null || node == ROOT) {
             return VariableNode.LOCAL_VARIABLE_ICON;
-        } else if(node instanceof ModelNode) {
+        } else if (node instanceof ModelNode) {
             return ((ModelNode) node).getIconBase();
         }
         throw new UnknownTypeException(node);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.viewmodel.NodeModel#getShortDescription(java.lang.Object)
-     */
     @Override
     public String getShortDescription(Object node) throws UnknownTypeException {
-        if(node == null || node == ROOT) {
+        if (node == null || node == ROOT) {
             return null;
-        } else if(node instanceof ModelNode) {
+        } else if (node instanceof ModelNode) {
             return ((ModelNode) node).getShortDescription();
         }
         throw new UnknownTypeException(node);
     }
 
-    public void updateContext( ContextNode node) {
+    public void updateContext(ContextNode node) {
         myWritelock.lock();
         try {
             if (myNodes.isEmpty()) {
                 myNodes.add(node);
-            }
-            else {
+            } else {
                 boolean found = false;
                 for (ModelNode child : myNodes) {
                     if (!(child instanceof ContextNode)) {
@@ -352,57 +298,52 @@ public class VariablesModel extends ViewModelSupport
                 }
             }
             fireTreeChanged();
-        }
-        finally {
+        } finally {
             myWritelock.unlock();
         }
     }
 
-    public void updateProperty( Property property ) {
+    public void updateProperty(Property property) {
         myWritelock.lock();
         try {
-            for( ModelNode node: myNodes ){
-                if ( updateVariable( node , property ) ){
+            for (ModelNode node : myNodes) {
+                if (updateVariable(node, property)) {
                     return;
                 }
             }
-        }
-        finally {
+        } finally {
             myWritelock.unlock();
         }
     }
 
-    private boolean updateVariable( ModelNode node, Property property ) {
-        if ( node instanceof AbstractVariableNode ){
-            AbstractVariableNode var = (AbstractVariableNode)node;
+    private boolean updateVariable(ModelNode node, Property property) {
+        if (node instanceof AbstractVariableNode) {
+            AbstractVariableNode var = (AbstractVariableNode) node;
             String name = var.getFullName();
             final String propertyFullName = property.getFullName();
             String propertyName = property.getName();
-            if ((propertyFullName != null  && propertyFullName.equals(name)) || propertyName.equals(name)){
+            if ((propertyFullName != null && propertyFullName.equals(name)) || propertyName.equals(name)) {
                 Collection<ModelEvent> events = new ArrayList<>();
-                var.collectUpdates( this , AbstractModelNode.
-                        createVariable( property , var.getParent()), events);
+                var.collectUpdates(this, AbstractModelNode.createVariable(property, var.getParent()), events);
                 fireTableUpdate(events);
                 return true;
             }
         }
-        for( ModelNode child : node.getChildren( 0, node.getChildrenSize())){
-            if ( updateVariable( child , property) ){
+        for (ModelNode child : node.getChildren(0, node.getChildrenSize())) {
+            if (updateVariable(child, property)) {
                 return true;
             }
         }
         return false;
     }
 
-    private List<ModelNode> getTopLevelElements(){
+    private List<ModelNode> getTopLevelElements() {
         List<ModelNode> result = new LinkedList<>();
-        for ( ModelNode node :myNodes ){
-            if ( node instanceof ContextNode && !((ContextNode) node).isGlobal()){
-                result.addAll( Arrays.asList(
-                        node.getChildren( 0 , node.getChildrenSize())));
-            }
-            else {
-                result.add( 0, node );
+        for (ModelNode node : myNodes) {
+            if (node instanceof ContextNode && !((ContextNode) node).isGlobal()) {
+                result.addAll(Arrays.asList(node.getChildren(0, node.getChildrenSize())));
+            } else {
+                result.add(0, node);
             }
         }
         return result;
@@ -411,32 +352,28 @@ public class VariablesModel extends ViewModelSupport
     /*
      * This is how tooltips are implemented in the debugger views.
      */
-    private String getTooltip( JToolTip tooltip, String columnId )
-            throws UnknownTypeException
-    {
-        Object row = tooltip.getClientProperty(
-                VariablesModel.GET_SHORT_DESCRIPTION);
+    private String getTooltip(JToolTip tooltip, String columnId) throws UnknownTypeException {
+        Object row = tooltip.getClientProperty(VariablesModel.GET_SHORT_DESCRIPTION);
         // TODO
-        if ( row instanceof ModelNode ) {
+        if (row instanceof ModelNode) {
             return getValueAt(row, columnId).toString();
         }
-        throw new UnknownTypeException( tooltip );
+        throw new UnknownTypeException(tooltip);
     }
 
-    private void sendValueCommand( ModelNode modelNode ) {
+    private void sendValueCommand(ModelNode modelNode) {
         if (modelNode instanceof AbstractVariableNode) {
             AbstractVariableNode node = (AbstractVariableNode) modelNode;
             DebugSession session = getSession();
-            PropertyValueCommand command = new PropertyValueCommand(session
-                    .getTransactionId());
-            node.setupCommand( command );
+            PropertyValueCommand command = new PropertyValueCommand(session.getTransactionId());
+            node.setupCommand(command);
             session.sendCommandLater(command);
         }
     }
 
-    private void updateContext( ContextNode old , ContextNode node ) {
+    private void updateContext(ContextNode old, ContextNode node) {
         Collection<ModelEvent> events = new LinkedList<>();
-        old.collectUpdates(  this , node , events);
+        old.collectUpdates(this, node, events);
         fireTableUpdate(events);
     }
 
@@ -448,12 +385,12 @@ public class VariablesModel extends ViewModelSupport
         fireChangeEvents(events);
     }
 
-    private synchronized DebugSession getSession(){
+    private synchronized DebugSession getSession() {
         if (debugSession == null) {
             ContextProvider provider = getContextProvider();
-            if ( provider != null ){
-                SessionId id = (SessionId)provider.lookupFirst( null , SessionId.class );
-                if ( id != null ){
+            if (provider != null) {
+                SessionId id = (SessionId) provider.lookupFirst(null, SessionId.class);
+                if (id != null) {
                     debugSession = SessionManager.getInstance().getSession(id);
                 }
             }
@@ -466,144 +403,93 @@ public class VariablesModel extends ViewModelSupport
     }
 
     /**
-     * This method should check children availability and request them
-     * is they absent originally ( it relates to max_depth option in
-     * debugger engine ).
+     * This method should check children availability and request them is they
+     * absent originally ( it relates to max_depth option in debugger engine ).
      */
-    private void childrenRequest( ModelNode modelNode, DebugSession session ) {
+    private void childrenRequest(ModelNode modelNode, DebugSession session) {
         int size = modelNode.getChildrenSize();
-        if ( !modelNode.isLeaf() && size == 0 ) {
+        if (!modelNode.isLeaf() && size == 0) {
             assert modelNode instanceof AbstractVariableNode;
-            PropertyGetCommand getCommand = new PropertyGetCommand(
-                    session.getTransactionId() );
-            ((AbstractVariableNode)modelNode).setupCommand( getCommand );
-            session.sendCommandLater( getCommand );
+            PropertyGetCommand getCommand = new PropertyGetCommand(session.getTransactionId());
+            ((AbstractVariableNode) modelNode).setupCommand(getCommand);
+            session.sendCommandLater(getCommand);
         }
     }
 
-
     /**
-     * This method should check quantity of retrieved children.
-     * It retrieve next page of children if necessarily.
-     * This relates to max_children option in debugger engine.
+     * This method should check quantity of retrieved children. It retrieve next
+     * page of children if necessarily. This relates to max_children option in
+     * debugger engine.
      */
-    private void fillChildrenList( ModelNode modelNode, DebugSession session ) {
-        if ( !( modelNode instanceof AbstractVariableNode )){
+    private void fillChildrenList(ModelNode modelNode, DebugSession session) {
+        if (!(modelNode instanceof AbstractVariableNode)) {
             return;
         }
         AbstractVariableNode var = (AbstractVariableNode) modelNode;
         if (session != null && !var.isChildrenFilled()) {
-            PropertyGetCommand command =
-                new PropertyGetCommand( session.getTransactionId());
-            var.setupFillChildrenCommand( command );
+            PropertyGetCommand command = new PropertyGetCommand(session.getTransactionId());
+            var.setupFillChildrenCommand(command);
             session.sendCommandLater(command);
         }
     }
 
+    public static class ContextNode extends org.netbeans.modules.php.dbgp.models.nodes.ContextNode {
 
-    /*private static class ContextOrder implements Comparator<ModelNode> {
-
-        public int compare( ModelNode nodeOne, ModelNode nodeTwo ) {
-            assert nodeOne instanceof ContextNode && nodeTwo instanceof ContextNode;
-            ContextNode one = (ContextNode) nodeOne;
-            ContextNode two = (ContextNode) nodeTwo;
-            return one.getIndex()-two.getIndex();
-        }
-
-    }*/
-
-    public static class ContextNode extends
-        org.netbeans.modules.php.dbgp.models.nodes.ContextNode
-    {
-        public ContextNode( Context ctx, List<Property> properties ) {
+        public ContextNode(Context ctx, List<Property> properties) {
             super(ctx, properties);
         }
 
-        void collectUpdates( VariablesModel variablesModel,
-                ContextNode node, Collection<ModelEvent> events )
-        {
+        void collectUpdates(VariablesModel variablesModel, ContextNode node, Collection<ModelEvent> events) {
             boolean hasChanged = false;
-
-            if ( ( getVariables()== null || getVariables().isEmpty() )
-                    && node.getVariables() != null)
-            {
-                setVars( node.getVariables() );
+            if ((getVariables() == null || getVariables().isEmpty()) && node.getVariables() != null) {
+                setVars(node.getVariables());
                 hasChanged = true;
-            }
-            else if (getVariables() != null) {
+            } else if (getVariables() != null) {
                 hasChanged = updateExistedChildren(variablesModel, node, events);
-
-                hasChanged = addAbsentChildren(node) || hasChanged ;
+                hasChanged = addAbsentChildren(node) || hasChanged;
             }
-
             if (hasChanged) {
-                events.add(new ModelEvent.NodeChanged( variablesModel, this));
+                events.add(new ModelEvent.NodeChanged(variablesModel, this));
             }
-
         }
+
     }
 
-    public static abstract class AbstractVariableNode extends
-        org.netbeans.modules.php.dbgp.models.nodes.AbstractVariableNode
-    {
-        protected AbstractVariableNode( Property property,
-                AbstractModelNode parent )
-        {
+    public abstract static class AbstractVariableNode extends org.netbeans.modules.php.dbgp.models.nodes.AbstractVariableNode {
+
+        protected AbstractVariableNode(Property property, AbstractModelNode parent) {
             super(property, parent);
         }
 
         @Override
-        protected void collectUpdates( VariablesModel variablesModel,
-                VariableNode node, Collection<ModelEvent> events )
-        {
-            AbstractVariableNode newNode = (AbstractVariableNode)node;
+        protected void collectUpdates(VariablesModel variablesModel, VariableNode node, Collection<ModelEvent> events) {
+            AbstractVariableNode newNode = (AbstractVariableNode) node;
             boolean hasChanged = false;
             /*
              * Always update property.
              */
             setProperty(newNode.getProperty());
-
-            if( updatePage( newNode ) ){
-                if ( newNode.getChildrenSize() >0 ){
-                    events.add(new ModelEvent.NodeChanged( variablesModel, this));
+            if (updatePage(newNode)) {
+                if (newNode.getChildrenSize() > 0) {
+                    events.add(new ModelEvent.NodeChanged(variablesModel, this));
                 }
                 return;
             }
-
-            if ( !Property.equals(getProperty(), newNode.getProperty() )){
+            if (!Property.equals(getProperty(), newNode.getProperty())) {
                 hasChanged = true;
             }
-
-            if ( (getVariables() == null || getVariables().isEmpty())
-                    && newNode.getVariables() != null)
-            {
-                initVariables( newNode.getProperty().getChildren() );
+            if ((getVariables() == null || getVariables().isEmpty()) && newNode.getVariables() != null) {
+                initVariables(newNode.getProperty().getChildren());
                 hasChanged = true;
+            } else if (getVariables() != null) {
+                hasChanged = updateExistedChildren(variablesModel, newNode, events) || hasChanged;
+                hasChanged = addAbsentChildren(newNode) || hasChanged;
             }
-            else if (getVariables() != null) {
-                hasChanged = updateExistedChildren(variablesModel,
-                        newNode, events) || hasChanged;
-
-                hasChanged = addAbsentChildren(newNode) || hasChanged ;
-            }
-
             if (hasChanged) {
-                events.add(new ModelEvent.NodeChanged( variablesModel, this));
+                events.add(new ModelEvent.NodeChanged(variablesModel, this));
             }
         }
 
     }
-
-    //private static final ContextOrder COMPARATOR    = new ContextOrder();
-
-    private final ContextProvider myContextProvider;
-
-    private List<ModelNode> myNodes;
-
-    private ReentrantReadWriteLock myLock = new ReentrantReadWriteLock();
-
-    private ReadLock myReadlock = myLock.readLock();
-
-    private WriteLock myWritelock = myLock.writeLock();
 
 }

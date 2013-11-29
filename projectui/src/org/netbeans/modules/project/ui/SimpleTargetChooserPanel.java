@@ -55,6 +55,7 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import static org.netbeans.modules.project.ui.Bundle.*;
+import org.netbeans.modules.project.uiapi.ProjectChooserFactory;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -143,7 +144,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
         
         // check if the file name can be created
         FileObject template = Templates.getTemplate( wizard );
-
+        assert template != null : "Null template in wizard:" + wizard.getClass().getName() + ", prop WIZARD_KEY_TEMPLATE:" + wizard.getProperty( ProjectChooserFactory.WIZARD_KEY_TEMPLATE ) + ", thread:" + Thread.currentThread().getName();
         FileObject rootFolder;
         String targetFolder;
         if (gui.getTargetGroup() != null) {

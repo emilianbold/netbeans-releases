@@ -220,7 +220,7 @@ class ShowEffPomDiffAction extends AbstractAction {
                     };
 
                     if (model != null && model2 != null) {
-                        showDiff(ss, ss2, POMDataObject.annotateWithProjectName("Effective Diff - " + pom.getNameExt(), pom));
+                        showDiff(ss, ss2, "Effective Diff - " + pom.getNameExt() + POMDataObject.annotateWithProjectName(pom));
                     }
                 }
             }

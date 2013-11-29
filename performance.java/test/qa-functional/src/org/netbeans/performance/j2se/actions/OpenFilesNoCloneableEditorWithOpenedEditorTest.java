@@ -43,28 +43,28 @@
  */
 package org.netbeans.performance.j2se.actions;
 
+import junit.framework.Test;
+import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.performance.j2se.setup.J2SESetup;
 
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.actions.OpenAction;
-import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
-
 /**
- * Test of opening files if Editor is already opened.
- * OpenFilesNoCloneableEditor is used as a base for tests of opening files
- * when editor is already opened.
+ * Test of opening files if Editor is already opened. OpenFilesNoCloneableEditor
+ * is used as a base for tests of opening files when editor is already opened.
  *
- * @author  mmirilovic@netbeans.org
+ * @author mmirilovic@netbeans.org
  */
 public class OpenFilesNoCloneableEditorWithOpenedEditorTest extends OpenFilesNoCloneableEditorTest {
 
-    /** Name of file to pre-open */
+    /**
+     * Name of file to pre-open
+     */
     public static String fileName_preopen;
 
     /**
      * Creates a new instance of OpenFilesNoCloneableEditor
+     *
      * @param testName the name of the test
      */
     public OpenFilesNoCloneableEditorWithOpenedEditorTest(String testName) {
@@ -73,6 +73,7 @@ public class OpenFilesNoCloneableEditorWithOpenedEditorTest extends OpenFilesNoC
 
     /**
      * Creates a new instance of OpenFilesNoCloneableEditorWithOpenedEditor
+     *
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
      */
@@ -80,10 +81,11 @@ public class OpenFilesNoCloneableEditorWithOpenedEditorTest extends OpenFilesNoC
         super(testName, performanceDataName);
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class).addTest(OpenFilesNoCloneableEditorWithOpenedEditorTest.class).enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(J2SESetup.class, "testCloseMemoryToolbar", "testOpenDataProject")
+                .addTest(OpenFilesNoCloneableEditorWithOpenedEditorTest.class)
+                .suite();
     }
 
     @Override
@@ -93,7 +95,6 @@ public class OpenFilesNoCloneableEditorWithOpenedEditorTest extends OpenFilesNoC
         filePackage = "org.netbeans.test.performance";
         fileName = "Bundle20kB.properties";
         fileName_preopen = "Bundle.properties";
-        menuItem = OPEN;
         doMeasurement();
     }
 
@@ -104,18 +105,16 @@ public class OpenFilesNoCloneableEditorWithOpenedEditorTest extends OpenFilesNoC
         filePackage = "org.netbeans.test.performance";
         fileName = "splash.gif";
         fileName_preopen = "Main.java";
-        menuItem = OPEN;
         doMeasurement();
     }
 
     @Override
-    public void testOpening20kBFormFile(){
+    public void testOpening20kBFormFile() {
         WAIT_AFTER_OPEN = 2000;
         fileProject = "PerformanceTestData";
         filePackage = "org.netbeans.test.performance";
         fileName = "JFrame20kB.java";
         fileName_preopen = "Main.java";
-        menuItem = OPEN;
         doMeasurement();
     }
 
