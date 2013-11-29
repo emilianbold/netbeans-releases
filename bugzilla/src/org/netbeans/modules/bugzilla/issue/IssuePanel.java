@@ -4120,6 +4120,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         initializingNewTask = true;
         if(BugzillaUtil.isNbRepository(issue.getRepository())) {
             addNetbeansInfo();
+            issue.setFieldValue(IssueField.NB_ATTACH_IDE_LOG, attachLogCheckBox.isSelected() ? "1" : "0");
         }
         // Preselect the first product
         selectProduct();
