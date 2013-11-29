@@ -96,7 +96,7 @@ import org.netbeans.modules.maven.configurations.M2ConfigProvider;
 import org.netbeans.modules.maven.configurations.M2Configuration;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
-import org.netbeans.modules.maven.execute.navigator.Bundle;
+import static org.netbeans.modules.maven.execute.navigator.Bundle.*;
 import org.netbeans.modules.maven.spi.IconResources;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
@@ -127,6 +127,9 @@ import org.xml.sax.InputSource;
 public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Provider, Runnable {
     private static final @StaticResource String LIFECYCLE_ICON = "org/netbeans/modules/maven/execute/navigator/thread_running_16.png";
     private static final @StaticResource String HELP_ICON = "org/netbeans/modules/maven/execute/navigator/help.png";
+    private static final String PROP_SHOW_LIFECYCLE_GOALS = "showLifecycleGoals";
+    private static final String PROP_SHOW_HELP_GOALS = "showHelpGoals";
+    
     private static final Logger LOG = Logger.getLogger(GoalsPanel.class.getName());
 
     private final transient ExplorerManager explorerManager = new ExplorerManager();
@@ -149,6 +152,7 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
     };
 
     /** Creates new form POMInheritancePanel */
+    @Messages("HINT_Panel_hide=Click or press {0} to hide/show when the Navigator is active")
     public GoalsPanel() {
         initComponents();
         treeView = (BeanTreeView)jScrollPane1;
@@ -159,7 +163,7 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
         KeyStroke toggleKey = KeyStroke.getKeyStroke(KeyEvent.VK_T,
                 Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
         String keyText = Utilities.keyToString(toggleKey);
-        filtersPanel.setToolTipText("Click or press " +  keyText + " to hide/show when the Navigator is active"); //NOI18N
+        filtersPanel.setToolTipText(HINT_Panel_hide(keyText)); //NOI18N
 
         JComponent buttons = createFilterButtons();
         buttons.setBorder(BorderFactory.createEmptyBorder(0, 5, 5, 0));
@@ -297,16 +301,20 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
     @Messages("LBL_Wait=Please Wait...")
     private static Node createWaitNode() {
         AbstractNode an = new AbstractNode(Children.LEAF);
-        an.setIconBaseWithExtension("org/netbeans/modules/maven/navigator/wait.gif");
+        an.setIconBaseWithExtension(WAIT_GIF);
         an.setDisplayName(Bundle.LBL_Wait());
         return an;
     }
+    private static final @StaticResource String WAIT_GIF = "org/netbeans/modules/maven/resources/wait.gif";
 
     private static Node createEmptyNode() {
         AbstractNode an = new AbstractNode(Children.LEAF);
         return an;
     }
 
+    @Messages({"LBL_Show_Help=Show help goals",
+               "LBL_Show_Lifecycle=Show lifecycle bound goals"
+    })
     private JComponent createFilterButtons() {
         Box box = new Box(BoxLayout.X_AXIS);
         box.setBorder(new EmptyBorder(1, 2, 3, 5));
@@ -325,26 +333,26 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
             toolbar.setFocusable(false);
             final JToggleButton tg1 = new JToggleButton();
             tg1.setIcon(ImageUtilities.loadImageIcon(HELP_ICON, true));
-            tg1.setToolTipText("Show help goals");
-            tg1.setSelected(preferences.getBoolean("showHelpGoals", false));
+            tg1.setToolTipText(LBL_Show_Help());
+            tg1.setSelected(preferences.getBoolean(PROP_SHOW_HELP_GOALS, false));
             tg1.addActionListener(new ActionListener() {
 
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    preferences.putBoolean("showHelpGoals", tg1.isSelected());
+                    preferences.putBoolean(PROP_SHOW_HELP_GOALS, tg1.isSelected());
                     
                 }
             });
             toolbar.add(tg1);
             final JToggleButton tg2 = new JToggleButton();
             tg2.setIcon(ImageUtilities.loadImageIcon(LIFECYCLE_ICON, true));
-            tg2.setToolTipText("Show lifecycle bound goals");
-            tg2.setSelected(preferences.getBoolean("showLifecycleGoals", false));
+            tg2.setToolTipText(LBL_Show_Lifecycle());
+            tg2.setSelected(preferences.getBoolean(PROP_SHOW_LIFECYCLE_GOALS, false));
             tg2.addActionListener(new ActionListener() {
 
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    preferences.putBoolean("showLifecycleGoals", tg2.isSelected());
+                    preferences.putBoolean(PROP_SHOW_LIFECYCLE_GOALS, tg2.isSelected());
                 }
             });
             toolbar.add(tg2);
@@ -396,7 +404,7 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
                                 continue;
                             }
                             String goalString = XMLUtil.findText(goal).trim();
-                            if ("help".equals(goalString) && !preferences.getBoolean("showHelpGoals", false)) {
+                            if ("help".equals(goalString) && !preferences.getBoolean(PROP_SHOW_HELP_GOALS, false)) {
                                 continue;
                             }
                             List<Param> params = new ArrayList<Param>();
@@ -456,7 +464,7 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
                                         break;
                                     }
                                 }
-                                if (lifecycleBound && !preferences.getBoolean("showLifecycleGoals", false)) {
+                                if (lifecycleBound && !preferences.getBoolean(PROP_SHOW_LIFECYCLE_GOALS, false)) {
                                     continue; //skip lifecycle goals
                                 }
                             }
@@ -563,6 +571,7 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
         
     }
     
+     @Messages("ACT_Execute_mod=Execute Goal With Modifiers...")
      private static class MojoNode extends AbstractNode {
         
  
@@ -586,7 +595,7 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
             }
             mapp.setGoals(Collections.singletonList(mojo.a.getGroupId() + ":" + mojo.a.getArtifactId() + ":" + mojo.a.getVersion() + ":" + mojo.goal));
             Action a = ActionProviderImpl.createCustomMavenAction(mojo.prefix + ":" + mojo.goal, mapp, true, Lookup.EMPTY, project);
-            a.putValue(Action.NAME, "Execute Mojo With Modifiers...");
+            a.putValue(Action.NAME, ACT_Execute_mod());
             return new Action[] {
                 new RunGoalAction(mojo, project),
                 a
@@ -634,6 +643,7 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
         }
     }
 
+    @Messages("ACT_Execute=Execute Goal")
     private static class RunGoalAction extends AbstractAction {
         private final Mojo mojo;
         private final Project project;
@@ -641,7 +651,7 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
         public RunGoalAction(Mojo mojo, Project prj) {
             this.mojo = mojo;
             this.project = prj;
-            putValue(Action.NAME, "Execute Mojo");
+            putValue(Action.NAME, ACT_Execute());
         }
 
         @Override
