@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmFunctionPointerType;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
@@ -398,6 +399,9 @@ public class CsmBaseUtilities {
             return true;
         } else if (CsmKindUtilities.isNamespace(scope)) {
             return true;
+        } else if (CsmKindUtilities.isFunctionPointerType(scope)) {
+            CsmScope parentScope = ((CsmFunctionPointerType) scope).getScope();
+            return stopOnScope(parentScope);
         } else {
             // special check for local classes and functions
             if (CsmKindUtilities.isFunction(scope) || CsmKindUtilities.isClass(scope)) {

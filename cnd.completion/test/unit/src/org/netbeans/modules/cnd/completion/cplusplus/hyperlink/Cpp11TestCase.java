@@ -268,5 +268,21 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         performTest("bug238413.cpp", 50, 12, "bug238413.cpp", 41, 15);
         performTest("bug238413.cpp", 55, 13, "bug238413.cpp", 45, 7);
     }
-    
+
+    public void bug224031() throws Exception {
+        // Bug 224031 - typedef auto Fun(int a) -> decltype(a + a); unexpected token: ( 
+        performTest("bug224031.cpp", 3, 19, "bug224031.cpp", 3, 5);
+        performTest("bug224031.cpp", 3, 41, "bug224031.cpp", 3, 22);
+        performTest("bug224031.cpp", 3, 45, "bug224031.cpp", 3, 22);
+           
+        performTest("bug224031.cpp", 5, 34, "bug224031.cpp", 5, 14);
+        performTest("bug224031.cpp", 5, 38, "bug224031.cpp", 5, 14);
+
+        performTest("bug224031.cpp", 7, 34, "bug224031.cpp", 7, 14);
+        performTest("bug224031.cpp", 7, 38, "bug224031.cpp", 7, 14);        
+        
+        performTest("bug224031.cpp", 13, 16, "bug224031.cpp", 11, 5);        
+        performTest("bug224031.cpp", 13, 26, "bug224031.cpp", 13, 5);
+        performTest("bug224031.cpp", 13, 46, "bug224031.cpp", 13, 32);
+    }    
 }

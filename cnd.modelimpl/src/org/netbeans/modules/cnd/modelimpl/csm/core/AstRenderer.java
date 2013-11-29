@@ -1038,6 +1038,7 @@ public class AstRenderer {
                     AST nameToken = null;
                     AST ptrOperator = null;
                     CharSequence name = "";
+                    boolean cpp11StyleFunction = false;
 
                     CsmClassForwardDeclaration cfdi = null;
 
@@ -1056,7 +1057,9 @@ public class AstRenderer {
                                 break;
                             case CPPTokenTypes.CSM_TYPE_COMPOUND:
                             case CPPTokenTypes.CSM_TYPE_BUILTIN:
-                                classifier = curr;
+                                if (!cpp11StyleFunction) {
+                                    classifier = curr;
+                                }
                                 break;
                             case CPPTokenTypes.LITERAL_enum:
                                 if (AstUtil.findSiblingOfType(curr, CPPTokenTypes.RCURLY) != null) {
@@ -1132,6 +1135,12 @@ public class AstRenderer {
                                 name = "";
                                 nameToken = null;
                                 arrayDepth = 0;
+                                break;
+                                
+                            case CPPTokenTypes.POINTERTO:
+                                if (classifier != null && AstUtil.findChildOfType(classifier, CPPTokenTypes.LITERAL_auto) != null) {
+                                    cpp11StyleFunction = true;
+                                }
                                 break;
                         }
                     }
