@@ -87,6 +87,10 @@ public class KOJsEmbeddingProviderPluginTest extends CslTestBase {
         checkVirtualSource("completion/foreach/index.html");
     }
 
+    public void testForEachAlias() throws Exception {
+        checkVirtualSource("completion/foreachAlias/index.html");
+    }
+
     public void testWith() throws Exception {
         checkVirtualSource("completion/with/index.html");
     }
