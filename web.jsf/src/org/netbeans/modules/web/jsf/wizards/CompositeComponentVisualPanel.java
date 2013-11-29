@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.web.jsf.wizards;
 
 import java.awt.Component;
@@ -76,14 +75,13 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 // XXX I18N
-
 /**
  *
  * @author alexeybutenko
  */
-public class CompositeComponentVisualPanel extends javax.swing.JPanel implements ActionListener, DocumentListener  {
+public class CompositeComponentVisualPanel extends javax.swing.JPanel implements ActionListener, DocumentListener {
+
     private static final Logger LOG = Logger.getLogger(CompositeComponentVisualPanel.class.getName());
-    
     private Project project;
     private SourceGroup[] folders;
     private WebModule wm;
@@ -95,119 +93,121 @@ public class CompositeComponentVisualPanel extends javax.swing.JPanel implements
     private final Pattern FOLDER_NAME_PATTERN = Pattern.compile(".*[\\\\/](.*)");//NOI18N
     private boolean indirectModification, prefixLocked;
     private static final String COMPOSITE_LIBRARY_NS = "http://java.sun.com/jsf/composite"; //NOI18N
-    
+
     public CompositeComponentVisualPanel(Project project, SourceGroup[] folders, String selectedText) {
         this.project = project;
-        this.folders=folders;
+        this.folders = folders;
         initComponents();
-        locationCB.setRenderer( CELL_RENDERER );
+        locationCB.setRenderer(CELL_RENDERER);
 
-	if (selectedText != null) {
-	    try {
-		EditorKit kit = MimeLookup.getLookup(MimePath.parse("text/xhtml")).lookup(EditorKit.class); //NOI18N
-		Document doc = kit.createDefaultDocument();
-		doc.insertString(0, selectedText, null);
-		selectedTextPane.setEditorKit(kit);
-		selectedTextPane.setDocument(doc);
-		
-	    } catch (BadLocationException ex) {
-		Exceptions.printStackTrace(ex);
-	    }
+        if (selectedText != null) {
+            try {
+                EditorKit kit = MimeLookup.getLookup(MimePath.parse("text/xhtml")).lookup(EditorKit.class); //NOI18N
+                Document doc = kit.createDefaultDocument();
+                doc.insertString(0, selectedText, null);
+                selectedTextPane.setEditorKit(kit);
+                selectedTextPane.setDocument(doc);
+
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         } else {
             //disabled the implementation section panel
             selectedTextPane.setEnabled(false);
             implSectionLabel.setEnabled(false);
         }
-	super.validate();
+        super.validate();
 
-	initValues(null, null, null, false);
-        
-        browseButton.addActionListener( this );
-        locationCB.addActionListener( this );
-        documentNameTextField.getDocument().addDocumentListener( this );
-        folderTextField.getDocument().addDocumentListener( this );
-	prefixTextField.getDocument().addDocumentListener(new DocumentListener() {
+        initValues(null, null, null, false);
+
+        browseButton.addActionListener(this);
+        locationCB.addActionListener(this);
+        documentNameTextField.getDocument().addDocumentListener(this);
+        folderTextField.getDocument().addDocumentListener(this);
+        prefixTextField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
-	    public void insertUpdate(DocumentEvent e) {
-		prefixTextFieldModified();
-	    }
+            public void insertUpdate(DocumentEvent e) {
+                prefixTextFieldModified();
+            }
+
             @Override
-	    public void removeUpdate(DocumentEvent e) {
-		prefixTextFieldModified();
-	    }
+            public void removeUpdate(DocumentEvent e) {
+                prefixTextFieldModified();
+            }
+
             @Override
-	    public void changedUpdate(DocumentEvent e) {
-		prefixTextFieldModified();
-	    }
-	});
+            public void changedUpdate(DocumentEvent e) {
+                prefixTextFieldModified();
+            }
+        });
     }
 
     WebModule getWebModule() {
         return wm;
     }
-    
+
     void initValues(FileObject template, FileObject preselectedFolder, String documentName, boolean fromEditor) {
-	assert project != null;
+        assert project != null;
 
         //disable the prefix field and label when is not wizard invoked from editor
         prefixLabel.setEnabled(fromEditor);
         prefixTextField.setEnabled(fromEditor);
         prefixLocked = !fromEditor; //prevent the prefix computation if the prefix field is disabled
-        
-	projectTextField.setText(ProjectUtils.getInformation(project).getDisplayName());
 
-	locationCB.setModel(new DefaultComboBoxModel(folders));
-	// Guess the group we want to create the file in
-	SourceGroup preselectedGroup = getPreselectedGroup(folders, preselectedFolder);
-	// Create OS dependent relative name
-	if (preselectedGroup != null) {
-	    locationCB.setSelectedItem(preselectedGroup);
-	    if (preselectedFolder != null && preselectedFolder.getName().equals(RESOURCES_FOLDER)) {
-		folderTextField.setText(getRelativeNativeName(preselectedGroup.getRootFolder(), preselectedFolder) + File.separatorChar + COMPONENT_FOLDER);
-	    } else {
-		folderTextField.setText(RESOURCES_FOLDER + File.separatorChar + COMPONENT_FOLDER);
-	    }
-	}
+        projectTextField.setText(ProjectUtils.getInformation(project).getDisplayName());
 
-	String ext = template == null ? "" : template.getExt(); // NOI18N
-	expectedExtension = ext.length() == 0 ? "" : "." + ext; // NOI18N
+        locationCB.setModel(new DefaultComboBoxModel(folders));
+        // Guess the group we want to create the file in
+        SourceGroup preselectedGroup = getPreselectedGroup(folders, preselectedFolder);
+        // Create OS dependent relative name
+        if (preselectedGroup != null) {
+            locationCB.setSelectedItem(preselectedGroup);
+            if (preselectedFolder != null && preselectedFolder.getName().equals(RESOURCES_FOLDER)) {
+                folderTextField.setText(getRelativeNativeName(preselectedGroup.getRootFolder(), preselectedFolder) + File.separatorChar + COMPONENT_FOLDER);
+            } else {
+                folderTextField.setText(RESOURCES_FOLDER + File.separatorChar + COMPONENT_FOLDER);
+            }
+        }
 
-	String displayName = null;
-	try {
-	    if (template != null) {
-		DataObject templateDo = DataObject.find(template);
-		displayName = templateDo.getNodeDelegate().getDisplayName();
-	    }
-	} catch (DataObjectNotFoundException ex) {
-	    displayName = template.getName();
-	}
-	putClientProperty("NewFileWizard_Title", displayName);// NOI18N
-	putClientProperty(TemplateWizard.PROP_CONTENT_DATA, new String[]{NbBundle.getMessage(CompositeComponentWizardPanel.class, "LBL_SimpleTargetChooserPanel_Name")}); // NOI18N);
-	if (template != null) {
-	    final String baseName = template.getName();
-	    if (documentName == null) {
-		documentName = baseName;
-	    }
-	    if (preselectedFolder != null) {
-		int index = 0;
-		while (true) {
-		    FileObject _tmp = preselectedFolder.getFileObject(documentName, template.getExt());
-		    if (_tmp == null) {
-			break;
-		    }
-		    documentName = baseName + ++index;
-		}
-	    }
+        String ext = template == null ? "" : template.getExt(); // NOI18N
+        expectedExtension = ext.length() == 0 ? "" : "." + ext; // NOI18N
 
-	    documentNameTextField.setText(documentName);
-	    documentNameTextField.selectAll();
-	}
+        String displayName = null;
+        try {
+            if (template != null) {
+                DataObject templateDo = DataObject.find(template);
+                displayName = templateDo.getNodeDelegate().getDisplayName();
+            }
+        } catch (DataObjectNotFoundException ex) {
+            displayName = template.getName();
+        }
+        putClientProperty("NewFileWizard_Title", displayName);// NOI18N
+        putClientProperty(TemplateWizard.PROP_CONTENT_DATA, new String[]{NbBundle.getMessage(CompositeComponentWizardPanel.class, "LBL_SimpleTargetChooserPanel_Name")}); // NOI18N);
+        if (template != null) {
+            final String baseName = template.getName();
+            if (documentName == null) {
+                documentName = baseName;
+            }
+            if (preselectedFolder != null) {
+                int index = 0;
+                while (true) {
+                    FileObject _tmp = preselectedFolder.getFileObject(documentName, template.getExt());
+                    if (_tmp == null) {
+                        break;
+                    }
+                    documentName = baseName + ++index;
+                }
+            }
+
+            documentNameTextField.setText(documentName);
+            documentNameTextField.selectAll();
+        }
     }
 
-    private SourceGroup getPreselectedGroup( SourceGroup[] groups, FileObject folder ) {
-        for( int i = 0; folder != null && i < groups.length; i++ ) {
-            if( FileUtil.isParentOf( groups[i].getRootFolder(), folder )
-                || groups[i].getRootFolder().equals(folder)) {
+    private SourceGroup getPreselectedGroup(SourceGroup[] groups, FileObject folder) {
+        for (int i = 0; folder != null && i < groups.length; i++) {
+            if (FileUtil.isParentOf(groups[i].getRootFolder(), folder)
+                    || groups[i].getRootFolder().equals(folder)) {
                 return groups[i];
             }
         }
@@ -217,7 +217,7 @@ public class CompositeComponentVisualPanel extends javax.swing.JPanel implements
         return null;
     }
 
-    private String getRelativeNativeName( FileObject root, FileObject folder ) {
+    private String getRelativeNativeName(FileObject root, FileObject folder) {
         if (root == null) {
             throw new NullPointerException("null root passed to getRelativeNativeName"); // NOI18N
         }
@@ -226,65 +226,61 @@ public class CompositeComponentVisualPanel extends javax.swing.JPanel implements
 
         if (folder == null) {
             path = ""; // NOI18N
-        }
-        else {
-            path = FileUtil.getRelativePath( root, folder );
+        } else {
+            path = FileUtil.getRelativePath(root, folder);
         }
 
-        return path == null ? "" : path.replace( '/', File.separatorChar ); // NOI18N
+        return path == null ? "" : path.replace('/', File.separatorChar); // NOI18N
     }
-    
+
     public SourceGroup getTargetGroup() {
-        return (SourceGroup)locationCB.getSelectedItem();
+        return (SourceGroup) locationCB.getSelectedItem();
     }
 
     public String getCompositeComponentURI() {
-	String folder = getTargetFolder();
-	String resfslash = RESOURCES_FOLDER+"/";//NOI18N
-	if(folder.startsWith(resfslash)) {
-	    return COMPOSITE_LIBRARY_NS + "/" + folder.substring(resfslash.length()); //NOI18N //copied from JsfUtils from web.jsf.editor module
-	} else {
-	    return null; //messed, must start with resources/
-	}
+        String folder = getTargetFolder();
+        String resfslash = RESOURCES_FOLDER + "/";//NOI18N
+        if (folder.startsWith(resfslash)) {
+            return COMPOSITE_LIBRARY_NS + "/" + folder.substring(resfslash.length()); //NOI18N //copied from JsfUtils from web.jsf.editor module
+        } else {
+            return null; //messed, must start with resources/
+        }
     }
-    
+
     public String getTargetFolder() {
         String folderName = folderTextField.getText().trim();
 
-        if ( folderName.length() == 0 ) {
+        if (folderName.length() == 0) {
             return "";
-        }
-        else {
-            return folderName.replace( File.separatorChar, '/' ); // NOI18N
+        } else {
+            return folderName.replace(File.separatorChar, '/'); // NOI18N
         }
     }
-    
+
     public String getTargetName() {
-        
+
         String text = documentNameTextField.getText().trim();
-        
-        if ( text.length() == 0 ) {
+
+        if (text.length() == 0) {
             return "";
-        }
-        else {
+        } else {
             return text;
         }
     }
 
     public String getPrefix() {
-	try {
-	    Document doc = prefixTextField.getDocument();
-	    return doc.getText(0, doc.getLength()).trim();
-	} catch (BadLocationException ex) {
-	    //ignore
-	    return "";
-	}
+        try {
+            Document doc = prefixTextField.getDocument();
+            return doc.getText(0, doc.getLength()).trim();
+        } catch (BadLocationException ex) {
+            //ignore
+            return "";
+        }
     }
-        
-    /** This method is called from within the constructor to
-     * initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is
-     * always regenerated by the Form Editor.
+
+    /**
+     * This method is called from within the constructor to initialize the form. WARNING: Do NOT modify this code. The
+     * content of this method is always regenerated by the Form Editor.
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -484,9 +480,6 @@ public class CompositeComponentVisualPanel extends javax.swing.JPanel implements
         add(prefixTextField, gridBagConstraints);
         prefixTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CompositeComponentVisualPanel.class, "A11Y_Library_Prefix")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-
-    
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseButton;
     private javax.swing.JPanel customPanel;
@@ -510,93 +503,94 @@ public class CompositeComponentVisualPanel extends javax.swing.JPanel implements
     // End of variables declaration//GEN-END:variables
 
     // ActionListener implementation -------------------------------------------
-    
     @Override
     public void actionPerformed(java.awt.event.ActionEvent e) {
-        if ( browseButton == e.getSource() ) {
-            FileObject fo=null;
+        if (browseButton == e.getSource()) {
+            FileObject fo = null;
             // Show the browse dialog
 
-            SourceGroup group = (SourceGroup)locationCB.getSelectedItem();
+            SourceGroup group = (SourceGroup) locationCB.getSelectedItem();
             if (group == null) { // #161478
                 return;
             }
 
-            fo = BrowseFolders.showDialog( new SourceGroup[] { group }, org.openide.loaders.DataFolder.class,
-                                           folderTextField.getText().replace( File.separatorChar, '/' ) ); // NOI18N
+            fo = BrowseFolders.showDialog(new SourceGroup[]{group}, org.openide.loaders.DataFolder.class,
+                    folderTextField.getText().replace(File.separatorChar, '/')); // NOI18N
 
-            if ( fo != null && fo.isFolder() ) {
-                String relPath = FileUtil.getRelativePath( group.getRootFolder(), fo );
-                folderTextField.setText( relPath.replace( '/', File.separatorChar ) ); // NOI18N
+            if (fo != null && fo.isFolder()) {
+                String relPath = FileUtil.getRelativePath(group.getRootFolder(), fo);
+                folderTextField.setText(relPath.replace('/', File.separatorChar)); // NOI18N
             }
-        }
-        else if ( locationCB == e.getSource() )  {
+        } else if (locationCB == e.getSource()) {
             updateCreatedFolder();
         }
-    }    
+    }
 
     private void updateCreatedFolder() {
-        SourceGroup sg = (SourceGroup)locationCB.getSelectedItem();
-        if (sg == null) return;
+        SourceGroup sg = (SourceGroup) locationCB.getSelectedItem();
+        if (sg == null) {
+            return;
+        }
         FileObject root = sg.getRootFolder();
-        if (root == null) return;
+        if (root == null) {
+            return;
+        }
 
         String folderName = folderTextField.getText().trim();
         String documentName = documentNameTextField.getText().trim();
 
-        String createdFileName = FileUtil.getFileDisplayName( root ) +
-            ( folderName.startsWith("/") || folderName.startsWith( File.separator ) ? "" : "/" ) + // NOI18N
-            folderName +
-            ( folderName.endsWith("/") || folderName.endsWith( File.separator ) || folderName.length() == 0 ? "" : "/" ) + // NOI18N
-            documentName + expectedExtension;
+        String createdFileName = FileUtil.getFileDisplayName(root)
+                + (folderName.startsWith("/") || folderName.startsWith(File.separator) ? "" : "/") + // NOI18N
+                folderName
+                + (folderName.endsWith("/") || folderName.endsWith(File.separator) || folderName.length() == 0 ? "" : "/") + // NOI18N
+                documentName + expectedExtension;
 
-        fileTextField.setText( createdFileName.replace( '/', File.separatorChar ) ); // NOI18N
+        fileTextField.setText(createdFileName.replace('/', File.separatorChar)); // NOI18N
 
-	try {
-	    indirectModification = false; //uff, ugly, just hacking the existing code...
-	    updatePrefix();
-	} finally {
-	    indirectModification = true;
-	}
+        try {
+            indirectModification = false; //uff, ugly, just hacking the existing code...
+            updatePrefix();
+        } finally {
+            indirectModification = true;
+        }
 
         changeSupport.fireChange();
     }
 
     private void prefixTextFieldModified() {
-	if(indirectModification) {
-	    prefixLocked = true;
-	}
-	changeSupport.fireChange();
+        if (indirectModification) {
+            prefixLocked = true;
+        }
+        changeSupport.fireChange();
     }
 
     private void updatePrefix() {
-	if (!prefixLocked) {
-	    //compute the library prefix according to the folder
-	    Matcher matcher = FOLDER_NAME_PATTERN.matcher(folderTextField.getText());
-	    if (matcher.matches() && matcher.groupCount() == 1) {
-		String lastFolderName = matcher.group(1); //first group
-		prefixTextField.setText(lastFolderName.substring(0, lastFolderName.length() < 2 ? lastFolderName.length() : 2));
-	    }
-	}
+        if (!prefixLocked) {
+            //compute the library prefix according to the folder
+            Matcher matcher = FOLDER_NAME_PATTERN.matcher(folderTextField.getText());
+            if (matcher.matches() && matcher.groupCount() == 1) {
+                String lastFolderName = matcher.group(1); //first group
+                prefixTextField.setText(lastFolderName.substring(0, lastFolderName.length() < 2 ? lastFolderName.length() : 2));
+            }
+        }
     }
 
     // DocumentListener implementation -----------------------------------------
-    
     @Override
     public void changedUpdate(javax.swing.event.DocumentEvent e) {
         updateCreatedFolder();
     }
-    
+
     @Override
     public void insertUpdate(javax.swing.event.DocumentEvent e) {
         updateCreatedFolder();
     }
-    
+
     @Override
     public void removeUpdate(javax.swing.event.DocumentEvent e) {
         updateCreatedFolder();
     }
-    
+
     public void addChangeListener(ChangeListener l) {
         changeSupport.addChangeListener(l);
     }
@@ -604,52 +598,45 @@ public class CompositeComponentVisualPanel extends javax.swing.JPanel implements
     public void removeChangeListener(ChangeListener l) {
         changeSupport.removeChangeListener(l);
     }
-   
+
     public String getCreatedFilePath() {
         return fileTextField.getText();
     }
 
-
     // Rendering of the location combo box -------------------------------------
-
     private class GroupCellRenderer extends JLabel implements ListCellRenderer {
 
         public GroupCellRenderer() {
-            setOpaque( true );
+            setOpaque(true);
         }
 
         @Override
-        public Component getListCellRendererComponent( JList list, Object value, int index, boolean isSelected, boolean cellHasFocus ) {
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             if (value instanceof SourceGroup) {
-                SourceGroup group = (SourceGroup)value;
-                String projectDisplayName = ProjectUtils.getInformation( project ).getDisplayName();
+                SourceGroup group = (SourceGroup) value;
+                String projectDisplayName = ProjectUtils.getInformation(project).getDisplayName();
                 String groupDisplayName = group.getDisplayName();
-                if ( projectDisplayName.equals( groupDisplayName ) ) {
-                    setText( groupDisplayName );
-                }
-                else {
-                    setText( MessageFormat.format( "{1} - {0}", //NOI18N
-                        new Object[] { groupDisplayName, projectDisplayName, group.getRootFolder().getName() } ) );
+                if (projectDisplayName.equals(groupDisplayName)) {
+                    setText(groupDisplayName);
+                } else {
+                    setText(MessageFormat.format("{1} - {0}", //NOI18N
+                            new Object[]{groupDisplayName, projectDisplayName, group.getRootFolder().getName()}));
                 }
 
-                setIcon( group.getIcon( false ) );
+                setIcon(group.getIcon(false));
+            } else {
+                setText(value.toString());
+                setIcon(null);
             }
-            else {
-                setText( value.toString () );
-                setIcon( null );
-            }
-            if ( isSelected ) {
+            if (isSelected) {
                 setBackground(list.getSelectionBackground());
                 setForeground(list.getSelectionForeground());
-            }
-            else {
+            } else {
                 setBackground(list.getBackground());
                 setForeground(list.getForeground());
 
             }
             return this;
         }
-
     }
-
 }
