@@ -139,7 +139,7 @@ public class NewKarmaConfWizardIterator implements WizardDescriptor.Instantiatin
     private WizardDescriptor.Panel<WizardDescriptor> createWizardPanel() {
         Project project = getProject();
         assert project != null;
-        Templates.setTargetName(wizard, "karma.conf.js"); // NOI18N
+        Templates.setTargetName(wizard, "karma.conf"); // NOI18N
         ensureProperTargetFolder(project);
         return Templates
                 .buildSimpleTargetChooser(project, getSourceGroups(project))
