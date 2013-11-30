@@ -127,7 +127,7 @@ public class FsServerLocalTestBase extends NativeExecutionBaseTestCase {
         PrintWriter writer = new PrintWriter(new File(getWorkDir(), getName() + ".requests"));
         try {
             for (File d : dirs) {
-                FSSDispatcher.sendRequest(writer, new FSSRequest(FSSRequestKind.LS, d.getAbsolutePath()));
+                FSSDispatcher.sendRequest(writer, new FSSRequest(FSSRequestKind.FS_REQ_LS, d.getAbsolutePath()));
             }
         } finally {
             writer.close();
@@ -261,7 +261,7 @@ public class FsServerLocalTestBase extends NativeExecutionBaseTestCase {
         }
         
         public void requestLs(String path) {
-            FSSDispatcher.sendRequest(getWriter(), new FSSRequest(FSSRequestKind.LS, path));
+            FSSDispatcher.sendRequest(getWriter(), new FSSRequest(FSSRequestKind.FS_REQ_LS, path));
         }
     }
 

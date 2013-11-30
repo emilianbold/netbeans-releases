@@ -46,11 +46,15 @@ package org.netbeans.modules.remote.impl.fs.server;
  * Request and response kind 
  */
  public enum FSSRequestKind {
-    LS('l'), 
-    RECURSE('r'), 
-    STAT('s'), 
-    CANCEL('c'), 
-    QUIT('q'); 
+    FS_REQ_LS('l'), 
+    FS_REQ_RECURSIVE_LS('r'), 
+    FS_REQ_STAT('S'), 
+    FS_REQ_LSTAT('s'),
+    FS_REQ_CANCEL('c'), 
+    FS_REQ_QUIT('q'),
+    FS_REQ_SLEEP('P'),
+    FS_REQ_ADD_WATCH('W'),
+    FS_REQ_REMOVE_WATCH('w');
 
     private final char letter;
 

@@ -242,7 +242,7 @@ import org.openide.util.RequestProcessor;
                     int respId = buf.getInt();
                     if (respId == 0) {
                         RemoteLogger.finest("got fs_server notification: {0}", line);
-                        if (respKind == FSSResponseKind.CHANGE.getChar()) {                            
+                        if (respKind == FSSResponseKind.FS_RSP_CHANGE.getChar()) {                            
                             // example: "c 0 8 /tmp/tmp"
                             String path = buf.getString();
                             addToRefresh(path);

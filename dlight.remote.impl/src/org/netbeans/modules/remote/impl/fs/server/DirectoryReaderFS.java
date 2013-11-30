@@ -136,7 +136,7 @@ public class DirectoryReaderFS implements DirectoryReader {
         if (path.isEmpty()) {
             path = "/"; // NOI18N
         }
-        FSSRequest request = new FSSRequest(FSSRequestKind.RECURSE, path);
+        FSSRequest request = new FSSRequest(FSSRequestKind.FS_REQ_RECURSIVE_LS, path);
         List<String> paths = new ArrayList<String>();
         long time = System.currentTimeMillis();
         AtomicInteger realCnt = new AtomicInteger(0);
@@ -148,12 +148,12 @@ public class DirectoryReaderFS implements DirectoryReader {
                 response = dispatcher.dispatch(request);
                 while (true) {
                     FSSResponse.Package pkg = response.getNextPackage();
-                    if (pkg.getKind() == FSSResponseKind.END) {
+                    if (pkg.getKind() == FSSResponseKind.FS_RSP_END) {
                         break;
                     }
                     Buffer buf = pkg.getBuffer();
                     char respKind = buf.getChar();
-                    assert respKind == FSSResponseKind.RECURSE.getChar();
+                    assert respKind == FSSResponseKind.FS_RSP_RECURSIVE_LS.getChar();
                     int respId = buf.getInt();
                     assert respId == request.getId();
                     String serverPath = buf.getString();
@@ -213,7 +213,7 @@ public class DirectoryReaderFS implements DirectoryReader {
                 return entries;
             }
         }
-        FSSRequest request = new FSSRequest(FSSRequestKind.LS, path);
+        FSSRequest request = new FSSRequest(FSSRequestKind.FS_REQ_LS, path);
         long time = System.currentTimeMillis();
         RemoteStatistics.ActivityID activityID = RemoteStatistics.startChannelActivity("fs_server_ls", path); // NOI18N
         AtomicInteger realCnt = new AtomicInteger(0);
@@ -224,7 +224,7 @@ public class DirectoryReaderFS implements DirectoryReader {
             // XXX: a temporary simplistic solution
             response = dispatcher.dispatch(request);
             FSSResponse.Package pkg = response.getNextPackage();
-            assert pkg.getKind() == FSSResponseKind.LS;
+            assert pkg.getKind() == FSSResponseKind.FS_RSP_LS;
             Buffer buf = pkg.getBuffer();
             buf.getChar();
             int respId = buf.getInt();
@@ -250,9 +250,9 @@ public class DirectoryReaderFS implements DirectoryReader {
                     reqId, path);
             List<FSSResponse.Package> packages = new ArrayList<FSSResponse.Package>();
             for (FSSResponse.Package pkg = response.getNextPackage(); 
-                    pkg.getKind() != FSSResponseKind.END; 
+                    pkg.getKind() != FSSResponseKind.FS_RSP_END; 
                     pkg = response.getNextPackage()) {
-                if (pkg.getKind() == FSSResponseKind.END) {
+                if (pkg.getKind() == FSSResponseKind.FS_RSP_END) {
                     break;
                 }
                 realCnt.incrementAndGet();
@@ -271,7 +271,7 @@ public class DirectoryReaderFS implements DirectoryReader {
                     Buffer buf = pkg.getBuffer();
                     char kindChar = buf.getChar();
                     assert kindChar == pkg.getKind().getChar();
-                    assert pkg.getKind() == FSSResponseKind.ENTRY;
+                    assert pkg.getKind() == FSSResponseKind.FS_RSP_ENTRY;
                     int id = buf.getInt();
                     assert id == reqId;
                     String name = buf.getString();
