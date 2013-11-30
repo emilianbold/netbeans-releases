@@ -62,7 +62,7 @@ import org.netbeans.modules.nativeexecution.api.util.RemoteStatistics;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fs.DirEntry;
 import org.netbeans.modules.remote.impl.fs.DirEntrySftp;
-import org.netbeans.modules.remote.impl.fs.DirectoryReader;
+import org.netbeans.modules.remote.impl.fs.RemoteFileSystemTransport;
 import org.netbeans.modules.remote.impl.fs.RemoteFileObject;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemManager;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemUtils;
@@ -74,9 +74,9 @@ import org.openide.util.Exceptions;
  *
  * @author vkvashin
  */
-public class DirectoryReaderFS implements DirectoryReader {
+public class FSSTransport extends RemoteFileSystemTransport {
     
-    private static final Map<ExecutionEnvironment, DirectoryReaderFS> instances = new HashMap<ExecutionEnvironment, DirectoryReaderFS>();
+    private static final Map<ExecutionEnvironment, FSSTransport> instances = new HashMap<ExecutionEnvironment, FSSTransport>();
     private static final Object instancesLock = new Object();
     
     public static final boolean USE_FS_SERVER = RemoteFileSystemUtils.getBoolean("remote.fs_server", true);
@@ -93,21 +93,21 @@ public class DirectoryReaderFS implements DirectoryReader {
     private final AtomicInteger dirReadCnt = new AtomicInteger(0);
     private final AtomicInteger warmupCnt = new AtomicInteger(0);
     
-    public static DirectoryReaderFS getInstance(ExecutionEnvironment env) {
+    public static FSSTransport getInstance(ExecutionEnvironment env) {
         if (!USE_FS_SERVER) {
             return null;
         }
         synchronized (instancesLock) {
-            DirectoryReaderFS instance = instances.get(env);
+            FSSTransport instance = instances.get(env);
             if (instance == null) {
-                instance = new DirectoryReaderFS(env);
+                instance = new FSSTransport(env);
                 instances.put(env, instance);
             }
             return instance;
         }
     }
 
-    private DirectoryReaderFS(ExecutionEnvironment env) {
+    private FSSTransport(ExecutionEnvironment env) {
         this.env = env;
         this.dispatcher = FSSDispatcher.getInstance(env);
     }
@@ -204,7 +204,7 @@ public class DirectoryReaderFS implements DirectoryReader {
     }
     
     @Override
-    public List<DirEntry> readDirectory(String path) throws IOException, InterruptedException, CancellationException, ExecutionException {
+    protected List<DirEntry> readDirectory(String path) throws IOException, InterruptedException, CancellationException, ExecutionException {
         if (path.isEmpty()) {
             path = "/"; // NOI18N
         }
@@ -315,11 +315,11 @@ public class DirectoryReaderFS implements DirectoryReader {
     public static class Closer implements Runnable {
         @Override
         public void run() {
-            Collection<DirectoryReaderFS> inctancesCopy;
+            Collection<FSSTransport> inctancesCopy;
             synchronized (instancesLock) {                
                 inctancesCopy = instances.values();
             }
-            for (DirectoryReaderFS instance : inctancesCopy) {
+            for (FSSTransport instance : inctancesCopy) {
                 instance.shutdown();
             }
         }        
@@ -336,7 +336,7 @@ public class DirectoryReaderFS implements DirectoryReader {
         @Override
         public void connected(ExecutionEnvironment env) {
             if (USE_FS_SERVER) {
-                DirectoryReaderFS instance = getInstance(env);
+                FSSTransport instance = getInstance(env);
                 if (instance != null) {
                     instance.connected();
                 }

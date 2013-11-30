@@ -62,7 +62,7 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.netbeans.modules.remote.impl.RemoteLogger;
-import org.netbeans.modules.remote.impl.fs.server.DirectoryReaderFS;
+import org.netbeans.modules.remote.impl.fs.server.FSSTransport;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -79,7 +79,7 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
         System.setProperty("remote.fs_server.verbose", "1");
         System.setProperty("remote.fs_server.log", "true");        
         TestLogHandler.attach(RemoteLogger.getInstance());
-        new DirectoryReaderFS.Starter().run();
+        new FSSTransport.Starter().run();
     }
     
     protected RemoteFileSystem fs;
@@ -105,8 +105,8 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
     @Override
     protected void setUp() throws Exception {
         System.err.printf("\n###> setUp    %s\n", getClass().getName() + '.' + getName());
-        if (DirectoryReaderFS.getInstance(execEnv) != null) {
-            DirectoryReaderFS.getInstance(execEnv).testSetCleanupUponStart(true);
+        if (FSSTransport.getInstance(execEnv) != null) {
+            FSSTransport.getInstance(execEnv).testSetCleanupUponStart(true);
         }
         super.setUp();
         setLoggers(true);

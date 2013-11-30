@@ -51,7 +51,7 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 import org.netbeans.modules.remote.impl.RemoteLogger;
-import org.netbeans.modules.remote.impl.fs.server.DirectoryReaderFS;
+import org.netbeans.modules.remote.impl.fs.server.FSSTransport;
 import org.netbeans.modules.remote.test.RemoteApiTest;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -95,7 +95,7 @@ public class RefreshTestCase_IZ_210125 extends RemoteFileTestBase {
             assertTrue("error removing " + dirPath1 + " at " + execEnv, res.isOK());
             char[] passwd = PasswordManager.getInstance().getPassword(execEnv);
             ConnectionManager.getInstance().disconnect(execEnv);
-            DirectoryReaderFS.getInstance(execEnv).testSetCleanupUponStart(false);
+            FSSTransport.getInstance(execEnv).testSetCleanupUponStart(false);
             //sleep(100); // just in case
             PasswordManager.getInstance().storePassword(execEnv, passwd, false);
             fs = RemoteFileSystemManager.getInstance().getFileSystem(execEnv);
@@ -132,7 +132,7 @@ public class RefreshTestCase_IZ_210125 extends RemoteFileTestBase {
                 ProcessUtils.ExitStatus res = ProcessUtils.execute(getTestExecutionEnvironment(), "chmod", "-R", "700", baseDir);
                 removeRemoteDirIfNotNull(baseDir);
             }
-            DirectoryReaderFS.getInstance(execEnv).testSetCleanupUponStart(true);
+            FSSTransport.getInstance(execEnv).testSetCleanupUponStart(true);
         }        
     }
     

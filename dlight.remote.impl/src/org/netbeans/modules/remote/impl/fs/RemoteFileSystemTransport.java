@@ -42,55 +42,55 @@
 
 package org.netbeans.modules.remote.impl.fs;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
-import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo;
+import org.netbeans.modules.remote.impl.fs.server.FSSTransport;
 
 /**
- * Note: public access is needed for tests
- * 
- * @author Vladimir Kvashin
+ *
+ * @author vk155633
  */
-public class DirectoryReaderSftp implements DirectoryReader {
+public abstract class RemoteFileSystemTransport {
 
-    private final ExecutionEnvironment execEnv;    
-    
-    private DirectoryReaderSftp(ExecutionEnvironment execEnv) {
-        this.execEnv = execEnv;        
-    }
-    
-    public static DirectoryReaderSftp getInstance(ExecutionEnvironment execEnv) {
-        return new DirectoryReaderSftp(execEnv);
+    public static boolean needsClientSidePollingRefresh() {
+        return !FSSTransport.USE_FS_SERVER;
     }
 
-    @Override
-    public List<DirEntry> readDirectory(String remotePath) throws InterruptedException, CancellationException, ExecutionException {
-        if (remotePath.length() == 0) {
-            remotePath = "/"; //NOI18N
-        } else  {
-            if (!remotePath.startsWith("/")) { //NOI18N
-                throw new IllegalArgumentException("path should be absolute: " + remotePath); // NOI18N
+    public static List<DirEntry> readDirectory(ExecutionEnvironment execEnv, String path) 
+            throws IOException, InterruptedException, CancellationException, ExecutionException {
+
+        List<DirEntry> entries = null;
+        RemoteFileSystemTransport transport = FSSTransport.getInstance(execEnv);
+        if (transport != null && transport.isValid()) {
+            try {
+                entries = transport.readDirectory(path);
+                // The agreement is as follows: if a fatal error occurs
+                // (so we suppose fs_server can't work)
+                // DirectoryReaderFS throws ExecutionException or IOException 
+                // (InterruptedException and CancellationException don't mean server failed)
+                // and DirectoryReaderFS.isValid()  is set to false.
+                // In this case we need to fallback to the default (sftp) implementation
+                // TODO: consider redesign?
+            } catch (ExecutionException ex) {
+                if (transport.isValid()) {
+                    throw ex; // process as usual
+                } // else fall back to sftp implementation
+            } catch (IOException ex) {
+                if (transport.isValid()) {
+                    throw ex; // process as usual
+                } // else fall back to sftp implementation
             }
         }
-        Future<StatInfo[]> res = FileInfoProvider.ls(execEnv, remotePath);
-        StatInfo[] infos;
-        try {
-            infos = res.get();
-        } catch (InterruptedException ex) {
-            res.cancel(true);
-            throw ex;
-        }
-        List<DirEntry> newEntries = new ArrayList<DirEntry>(infos.length);
-        for (StatInfo statInfo : infos) {
-            // filtering of "." and ".." is up to provider now
-            newEntries.add(new DirEntrySftp(statInfo, statInfo.getName()));
-        }
-        return Collections.<DirEntry>unmodifiableList(newEntries);
+        if (entries == null) {
+            RemoteFileSystemTransport directoryReader = SftpTransport.getInstance(execEnv);
+            entries = directoryReader.readDirectory(path);
+        }            
+        return entries;
     }
+    
+    protected abstract List<DirEntry> readDirectory(String path) throws IOException, InterruptedException, CancellationException, ExecutionException;
+    protected abstract boolean isValid();
 }

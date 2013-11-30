@@ -58,7 +58,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.remote.impl.RemoteLogger;
-import org.netbeans.modules.remote.impl.fs.server.DirectoryReaderFS;
+import org.netbeans.modules.remote.impl.fs.server.FSSTransport;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -78,8 +78,8 @@ public class RefreshManager {
     private final Set<RemoteFileObjectBase> set = new HashSet<RemoteFileObjectBase>();
     private final Object queueLock = new Object();
     
-    private static final boolean REFRESH_ON_FOCUS = RemoteFileSystemUtils.getBoolean("cnd.remote.refresh.on.focus", !DirectoryReaderFS.USE_FS_SERVER); //NOI18N
-    public static final boolean REFRESH_ON_CONNECT = RemoteFileSystemUtils.getBoolean("cnd.remote.refresh.on.connect", !DirectoryReaderFS.USE_FS_SERVER); //NOI18N
+    private static final boolean REFRESH_ON_FOCUS = RemoteFileSystemUtils.getBoolean("cnd.remote.refresh.on.focus", RemoteFileSystemTransport.needsClientSidePollingRefresh()); //NOI18N
+    public static final boolean REFRESH_ON_CONNECT = RemoteFileSystemUtils.getBoolean("cnd.remote.refresh.on.connect", RemoteFileSystemTransport.needsClientSidePollingRefresh()); //NOI18N
 
     private final class RefreshWorker implements Runnable {
         private final boolean expected;

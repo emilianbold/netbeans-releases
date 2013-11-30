@@ -184,7 +184,7 @@ public class FileOperationsTestCase extends RemoteFileTestBase {
 
     @ForAllEnvironments
     public void testFileOperations() throws Exception {
-        List<DirEntry> entries = DirectoryReaderSftp.getInstance(execEnv).readDirectory(remoteDir);
+        List<DirEntry> entries = RemoteFileSystemTransport.readDirectory(execEnv, remoteDir);
         for(DirEntry entry : entries) {
             String name = entry.getName();
             String path = remoteDir+"/"+name;

@@ -52,6 +52,7 @@ import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.netbeans.modules.remote.impl.fs.server.FSSTransportTestAccessor;
 import org.netbeans.modules.remote.test.RemoteApiTest;
 
 /**
@@ -169,7 +170,14 @@ public class DirectoryReaderTestCase extends RemoteFileTestBase {
     @ForAllEnvironments
     public void testDirectoryReaderSftp() throws Exception {
         prepareDirectory();
-        List<DirEntry> entries = DirectoryReaderSftp.getInstance(execEnv).readDirectory(remoteDir);
+        List<DirEntry> entries = SftpTransport.getInstance(execEnv).readDirectory(remoteDir);
+        assertEntriesEqual(referenceEntries, entries, false); // sftp directory reader doesn't recognize FIFO, etc.
+    }
+
+    @ForAllEnvironments
+    public void testDirectoryReaderFSServer() throws Exception {
+        prepareDirectory();
+        List<DirEntry> entries = FSSTransportTestAccessor.readDirectory(execEnv, remoteDir);
         assertEntriesEqual(referenceEntries, entries, false); // sftp directory reader doesn't recognize FIFO, etc.
     }
 
