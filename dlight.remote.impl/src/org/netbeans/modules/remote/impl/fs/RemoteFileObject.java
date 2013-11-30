@@ -79,7 +79,7 @@ public final class RemoteFileObject extends FileObject implements Serializable {
     private final RemoteFileSystem fileSystem;
     private RemoteFileObjectBase implementor;
 
-    private static final boolean MIME_SNIFFING = getBoolean("remote.MIME.sniffing", true); //NOI18N
+    private static final boolean MIME_SNIFFING = RemoteFileSystemUtils.getBoolean("remote.MIME.sniffing", true); //NOI18N
     
     /*package*/ RemoteFileObject(RemoteFileSystem fileSystem) {
         this.fileSystem = fileSystem;
@@ -202,14 +202,6 @@ public final class RemoteFileObject extends FileObject implements Serializable {
     protected void fireFileRenamedEvent(Enumeration<FileChangeListener> en, FileRenameEvent fe) {
         super.fireFileRenamedEvent(en, fe);
     }
-
-    private static boolean getBoolean(String name, boolean result) {
-        String text = System.getProperty(name);
-        if (text != null) {
-            result = Boolean.parseBoolean(text);
-        }
-        return result;
-    }    
 
     // </editor-fold>
 

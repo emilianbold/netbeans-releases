@@ -53,6 +53,7 @@ import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.print.attribute.standard.ReferenceUriSchemesSupported;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -64,6 +65,7 @@ import org.netbeans.modules.remote.impl.fs.DirEntrySftp;
 import org.netbeans.modules.remote.impl.fs.DirectoryReader;
 import org.netbeans.modules.remote.impl.fs.RemoteFileObject;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemManager;
+import org.netbeans.modules.remote.impl.fs.RemoteFileSystemUtils;
 import org.openide.modules.OnStart;
 import org.openide.modules.OnStop;
 import org.openide.util.Exceptions;
@@ -77,7 +79,7 @@ public class DirectoryReaderFS implements DirectoryReader {
     private static final Map<ExecutionEnvironment, DirectoryReaderFS> instances = new HashMap<ExecutionEnvironment, DirectoryReaderFS>();
     private static final Object instancesLock = new Object();
     
-    public static final boolean USE_FS_SERVER = getBoolean("remote.fs_server", true);
+    public static final boolean USE_FS_SERVER = RemoteFileSystemUtils.getBoolean("remote.fs_server", true);
     public static final boolean VERBOSE_RESPONSE = Boolean.getBoolean("remote.fs_server.verbose.response");
 
     private final ExecutionEnvironment env;
@@ -304,14 +306,6 @@ public class DirectoryReaderFS implements DirectoryReader {
     private void connected() {
         dispatcher.connected();
     }
-    
-    private static boolean getBoolean(String name, boolean result) {
-        String text = System.getProperty(name);
-        if (text != null) {
-            result = Boolean.parseBoolean(text);
-        }
-        return result;
-    }    
     
     public final void testSetCleanupUponStart(boolean cleanup) {
         dispatcher.setCleanupUponStart(cleanup);

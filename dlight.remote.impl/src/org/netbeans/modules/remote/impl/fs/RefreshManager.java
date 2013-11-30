@@ -78,8 +78,8 @@ public class RefreshManager {
     private final Set<RemoteFileObjectBase> set = new HashSet<RemoteFileObjectBase>();
     private final Object queueLock = new Object();
     
-    private static final boolean REFRESH_ON_FOCUS = getBoolean("cnd.remote.refresh.on.focus", !DirectoryReaderFS.USE_FS_SERVER); //NOI18N
-    public static final boolean REFRESH_ON_CONNECT = getBoolean("cnd.remote.refresh.on.connect", !DirectoryReaderFS.USE_FS_SERVER); //NOI18N
+    private static final boolean REFRESH_ON_FOCUS = RemoteFileSystemUtils.getBoolean("cnd.remote.refresh.on.focus", !DirectoryReaderFS.USE_FS_SERVER); //NOI18N
+    public static final boolean REFRESH_ON_CONNECT = RemoteFileSystemUtils.getBoolean("cnd.remote.refresh.on.connect", !DirectoryReaderFS.USE_FS_SERVER); //NOI18N
 
     private final class RefreshWorker implements Runnable {
         private final boolean expected;
@@ -244,15 +244,7 @@ public class RefreshManager {
         updateTask.schedule(0);
         updateTaskScheduled = true;
     }
-    
-    private static boolean getBoolean(String name, boolean result) {
-        String text = System.getProperty(name);
-        if (text != null) {
-            result = Boolean.parseBoolean(text);
-        }
-        return result;
-    }
-    
+
     /*package*/ void testWaitLastRefreshFinished() {
         if (updateTaskScheduled) {
             updateTask.waitFinished();
