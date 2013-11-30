@@ -286,7 +286,7 @@ public class FileInfoProviderTest extends NativeExecutionBaseTestCase {
     }
 
     private StatInfo getStatInfo(String path) throws Exception {
-        Future<StatInfo> res = FileInfoProvider.stat(getTestExecutionEnvironment(), path);
+        Future<StatInfo> res = FileInfoProvider.lstat(getTestExecutionEnvironment(), path);
         assertNotNull(res);
         StatInfo statInfo = res.get();
         assertNotNull("stat returned null", statInfo);

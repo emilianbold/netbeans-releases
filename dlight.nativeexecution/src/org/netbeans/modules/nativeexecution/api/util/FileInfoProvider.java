@@ -364,6 +364,14 @@ public class FileInfoProvider {
         return SftpSupport.getInstance(env).stat(absPath, error);
     }
 
+    public static Future<StatInfo> lstat(ExecutionEnvironment env, String absPath) {
+        return SftpSupport.getInstance(env).lstat(absPath, new PrintWriter(System.err));
+    }
+    
+    public static Future<StatInfo> lstat(ExecutionEnvironment env, String absPath, Writer error) {
+        return SftpSupport.getInstance(env).lstat(absPath, error);
+    }
+
     public static Future<StatInfo[]> ls(ExecutionEnvironment env, String absPath) {
         return ls(env, absPath, new PrintWriter(System.err));
     }

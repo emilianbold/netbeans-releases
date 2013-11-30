@@ -563,13 +563,15 @@ class SftpSupport {
     private class StatLoader extends BaseWorker implements Callable<StatInfo> {
 
         private final String path;
+        private final boolean lstat;
 
-        public StatLoader(String path) {
+        public StatLoader(String path, boolean lstat) {
             if (path.isEmpty()) { // This make sence when clients ask path for root FileObject
                 path = "/"; //NOI18N
             }
             assert path.startsWith("/"); //NOI18N
             this.path = path;
+            this.lstat = lstat;
         }
 
         @Override
@@ -587,7 +589,7 @@ class SftpSupport {
                     ChannelSftp cftp = getChannel();
                     RemoteStatistics.ActivityID activityID = RemoteStatistics.startChannelActivity("statload", path); // NOI18N
                     try {
-                        SftpATTRS attrs = cftp.lstat(path);
+                        SftpATTRS attrs = lstat ? cftp.lstat(path) : cftp.stat(path);
                         String dirName, baseName;
                         int slashPos = path.lastIndexOf('/');
                         if (slashPos == 0) {
@@ -745,8 +747,8 @@ class SftpSupport {
         return result;
     }
 
-    /*package*/ Future<StatInfo> stat(String absPath, Writer error) {
-        StatLoader loader = new StatLoader(absPath);
+    /*package*/ Future<StatInfo> lstat(String absPath, Writer error) {
+        StatLoader loader = new StatLoader(absPath, true);
         FutureTask<StatInfo> ftask = new FutureTask<StatInfo>(loader);
         getReadRequestProcessor().post(ftask);
         if (LOG.isLoggable(Level.FINE)) {
@@ -755,6 +757,16 @@ class SftpSupport {
         return ftask;
     }
 
+    /*package*/ Future<StatInfo> stat(String absPath, Writer error) {
+        StatLoader loader = new StatLoader(absPath, false);
+        FutureTask<StatInfo> ftask = new FutureTask<StatInfo>(loader);
+        getReadRequestProcessor().post(ftask);
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "{0} schedulled", loader.getTraceName());
+        }
+        return ftask;
+    }
+    
     /*package*/ Future<StatInfo[]> ls(String absPath, Writer error) {
         LsLoader loader = new LsLoader(absPath);
         FutureTask<StatInfo[]> ftask = new FutureTask<StatInfo[]>(loader);

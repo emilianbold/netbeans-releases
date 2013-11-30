@@ -118,7 +118,7 @@ public final class HostInfoUtils {
             }
 
             try {
-                SftpSupport.getInstance(execEnv).stat(fname, null).get();
+                SftpSupport.getInstance(execEnv).lstat(fname, null).get();
                 return true;
             } catch (ExecutionException ex) {
                 if (ex.getCause() instanceof SftpIOException) {

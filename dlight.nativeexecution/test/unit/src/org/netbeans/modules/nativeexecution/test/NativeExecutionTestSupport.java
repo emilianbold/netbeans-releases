@@ -149,7 +149,7 @@ public class NativeExecutionTestSupport {
     public static boolean fileExists(ExecutionEnvironment env, String remoteFilePath)
             throws ExecutionException, InterruptedException {
         try {
-            FileInfoProvider.StatInfo stat = FileInfoProvider.stat(env, remoteFilePath).get();
+            FileInfoProvider.StatInfo stat = FileInfoProvider.lstat(env, remoteFilePath).get();
         } catch (ExecutionException ex) {
             if (notExist(ex)) {
                 return false;

@@ -142,7 +142,7 @@ abstract public class FileOperationsProvider {
             }
             if (deep > 0) {
                 deep--;
-                Future<FileInfoProvider.StatInfo> stat = FileInfoProvider.stat(getExecutionEnvironment(), file.getPath());
+                Future<FileInfoProvider.StatInfo> stat = FileInfoProvider.lstat(getExecutionEnvironment(), file.getPath());
                 try {
                     FileInfoProvider.StatInfo statInfo = stat.get();
                     switch (statInfo.getFileType()) {
@@ -187,7 +187,7 @@ abstract public class FileOperationsProvider {
             }
             if (deep > 0) {
                 deep--;
-                Future<FileInfoProvider.StatInfo> stat = FileInfoProvider.stat(getExecutionEnvironment(), file.getPath());
+                Future<FileInfoProvider.StatInfo> stat = FileInfoProvider.lstat(getExecutionEnvironment(), file.getPath());
                 try {
                     FileInfoProvider.StatInfo statInfo = stat.get();
                     switch (statInfo.getFileType()) {
@@ -230,7 +230,7 @@ abstract public class FileOperationsProvider {
             }
             if (deep > 0) {
                 deep--;
-                Future<FileInfoProvider.StatInfo> stat = FileInfoProvider.stat(getExecutionEnvironment(), file.getPath());
+                Future<FileInfoProvider.StatInfo> stat = FileInfoProvider.lstat(getExecutionEnvironment(), file.getPath());
                 try {
                     FileInfoProvider.StatInfo statInfo = stat.get();
                     switch (statInfo.getFileType()) {
@@ -285,7 +285,7 @@ abstract public class FileOperationsProvider {
             }
             if (deep > 0) {
                 deep--;
-                Future<FileInfoProvider.StatInfo> stat = FileInfoProvider.stat(getExecutionEnvironment(), file.getPath());
+                Future<FileInfoProvider.StatInfo> stat = FileInfoProvider.lstat(getExecutionEnvironment(), file.getPath());
                 try {
                     FileInfoProvider.StatInfo statInfo = stat.get();
                     switch (statInfo.getFileType()) {
@@ -335,7 +335,7 @@ abstract public class FileOperationsProvider {
             if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
                 return false;
             }
-            Future<FileInfoProvider.StatInfo> stat = FileInfoProvider.stat(getExecutionEnvironment(), file.getPath());
+            Future<FileInfoProvider.StatInfo> stat = FileInfoProvider.lstat(getExecutionEnvironment(), file.getPath());
             try {
                 FileInfoProvider.StatInfo statInfo = stat.get();
                 return statInfo != null;

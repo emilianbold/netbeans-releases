@@ -565,7 +565,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     private DirEntry getSpecialDirChildEntry(String absPath, String childName) throws InterruptedException, ExecutionException {
         StatInfo statInfo;
         try {
-            statInfo = FileInfoProvider.stat(getExecutionEnvironment(), absPath, new PrintWriter(System.err)).get();
+            statInfo = FileInfoProvider.lstat(getExecutionEnvironment(), absPath, new PrintWriter(System.err)).get();
         } catch (ExecutionException e) {
             if (RemoteFileSystemUtils.isFileNotFoundException(e)) {
                 statInfo = null;
