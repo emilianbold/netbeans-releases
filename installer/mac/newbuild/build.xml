@@ -280,7 +280,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     <target name="build-all-dmg" depends="clean,init,build-pkg,build-glassfish-v3-pkg,build-tomcat-pkg,init-bundles">
         <for-each list="${bundles}" separator="," property="bundle.type"  propertyArg="packages">
-            <delete dir="${basedir}/dist_dmg"/>                          
+            <delete dir="${basedir}/dist_dmg" failonerror="false"/>                          
             <ant target="build-dmg">
                  <property name="dmg.name" value="${dmg.prefix.name}${bundle.type}-macosx"/>  
                  <property name="mpkg.name" value="${mpkg.name_nb}"/>
@@ -293,7 +293,7 @@ Microsystems, Inc. All Rights Reserved.
             
     <target name="build-jdk-bundle-dmg" depends="clean,init,build-jdk-pkg,build-pkg,init-bundles">
         <for-each list="${bundles}" separator="," property="bundle.type"  propertyArg="packages">
-            <delete dir="${basedir}/dist_dmg"/>                          
+            <delete dir="${basedir}/dist_dmg" failonerror="false"/>                          
             <ant target="build-dmg">
                  <property name="dmg.name" value="${jdk.bundle.files.prefix}-${jdk.bundle.files.suffix}-macosx-x64"/>
                  <property name="mpkg.name" value="${mpkg.name_nb}${mpkg.prefix_nb_jdk}${mpkg.version_jdk}"/>
@@ -322,7 +322,7 @@ Microsystems, Inc. All Rights Reserved.
         <for-each list="${locales}" separator="," property="locale">
             <ant target="build-lproj-dir"/>                           
         </for-each>            
-        <delete dir="${resources.full.dir}"/>
+        <delete dir="${resources.full.dir}" failonerror="false"/>
     </target> 
        
     <target name="init-locale-propeties">
@@ -382,6 +382,8 @@ Microsystems, Inc. All Rights Reserved.
     
         
     <target name="build-dmg">   
+        <delete dir="${basedir}/dist" failonerror="false"/>                          
+        <mkdir dir="dist"/>
         <property file="${basedir}/build/sizes.pro"/>         
         <echo message="Building dmg for ${dmg.name}.dmg..."/>                    
         <property name="mpkg.file" value="${basedir}/dist_dmg/${mpkg.name}.mpkg"/>   
@@ -440,7 +442,7 @@ Microsystems, Inc. All Rights Reserved.
           <arg value="-c"/>
           <arg value="sh dmg/createdmg.sh '${dmg.name}'.dmg '${mpkg.name}' '${output.dir}'"/>
         </exec>  
-        <delete dir="dist_dmg"/>
+        <delete dir="dist_dmg" failonerror="false"/>
     </target>
 
     <target name="sign-installer" description="Sign an OS X Installer product archive '${mpkg.name}'" if="do.sign-app">
