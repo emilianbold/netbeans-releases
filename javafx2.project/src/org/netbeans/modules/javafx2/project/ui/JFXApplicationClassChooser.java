@@ -53,8 +53,6 @@ import java.awt.event.MouseListener;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.ListSelectionModel;
@@ -70,14 +68,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.javafx2.project.JFXProjectProperties;
 import org.netbeans.modules.javafx2.project.JFXProjectUtils;
-import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.awt.MouseUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -225,35 +218,17 @@ public class JFXApplicationClassChooser extends javax.swing.JPanel {
     }
     
     private void initClassesModel() {
-
+        
         final Map<FileObject,List<ClassPath>> classpathMap = JFXProjectUtils.getClassPathMap(project);
 
         RequestProcessor.getDefault().post(new Runnable() {
             @Override
             public void run() {
-                final AtomicBoolean initOK = new AtomicBoolean(true);
-                Future f = null;
-                try {
-                    f = ParserManager.parseWhenScanFinished("text/x-java", new UserTask() {
-                        @Override
-                        public void run(ResultIterator resultIterator) throws Exception {
-                            if (!initOK.get()) {
-                                initClassesModel();
-                            }
-                        }
-                    });
-                } catch (ParseException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-                final Set<String> appClassNames = isFXinSwing
-                        ? JFXProjectUtils.getMainClassNames(project)
-                        : JFXProjectUtils.getAppClassNames(classpathMap, "javafx.application.Application"); //NOI18N
 
-                if (f != null && f.isDone()) {
-                    labelScanning.setVisible(false);
-                } else {
-                    initOK.set(false);
-                }
+                final Set<String> appClassNames = isFXinSwing ? 
+                        JFXProjectUtils.getMainClassNames(project) : 
+                        JFXProjectUtils.getAppClassNames(classpathMap, "javafx.application.Application"); //NOI18N
+                
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
