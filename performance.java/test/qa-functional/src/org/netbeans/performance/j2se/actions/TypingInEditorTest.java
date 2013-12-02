@@ -113,7 +113,7 @@ public class TypingInEditorTest extends PerformanceTestCase {
     }
 
     public void testTxtEditor10() {
-        expectedTime = 100;
+        expectedTime = 300;
         fileName = "textfile.txt";
         repeatTimes = 10;
         caretPositionX = 9;
@@ -133,7 +133,7 @@ public class TypingInEditorTest extends PerformanceTestCase {
     }
 
     public void testJavaEditor10() {
-        expectedTime = 100;
+        expectedTime = 300;
         repeatTimes = 10;
         fileName = "Main.java";
         caretPositionX = 9;
@@ -144,7 +144,7 @@ public class TypingInEditorTest extends PerformanceTestCase {
     }
 
     public void testJavaEditor10Enter() {
-        expectedTime = 200;
+        expectedTime = 400;
         keyCode = KeyEvent.VK_ENTER;
         repeatTimes = 10;
         fileName = "Main.java";
