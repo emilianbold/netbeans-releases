@@ -138,63 +138,14 @@ public class DashboardRefresher {
     private void refreshDashboard() {
         List<RepositoryImpl> repositories = DashboardViewer.getInstance().getRepositories(true);
         List<Category> categories = DashboardViewer.getInstance().getCategories(true, true);
-        List<IssueImpl> changedTasks = new ArrayList<IssueImpl>();
         for (RepositoryImpl<?, ?, ?> repository : repositories) {
             for (QueryImpl query : repository.getQueries()) {
-                Collection<TaskContainer> oldTasks = getTaskContainers(query.getIssues());
                 query.refresh();
-                Collection<IssueImpl> newTasks = query.getIssues();
-                changedTasks.addAll(getChangedTasks(oldTasks, newTasks));
             }
         }
 
         for (Category category : categories) {
-            Collection<TaskContainer> oldTasks = getTaskContainers(category.getTasks());
             category.refresh();
-            List<IssueImpl> newTasks = category.getTasks();
-            changedTasks.addAll(getChangedTasks(oldTasks, newTasks));
-        }
-
-    }
-
-    private List<IssueImpl> getChangedTasks(Collection<TaskContainer> oldTasks, Collection<IssueImpl> newTasks) {
-        List<IssueImpl> changedTask = new ArrayList<IssueImpl>();
-        for (IssueImpl newIssueImpl : newTasks) {
-            boolean isChanged = true;
-            for (TaskContainer oldTask : oldTasks) {
-                if (newIssueImpl.getID().equals(oldTask.id) && newIssueImpl.getRepositoryImpl().getId().equals(oldTask.idRepository)) {
-                    if (newIssueImpl.getStatus().equals(oldTask.status)) {
-                        isChanged = false;
-                    }
-                    break;
-                }
-            }
-            if (isChanged) {
-                changedTask.add(newIssueImpl);
-            }
-        }
-
-        return changedTask;
-    }
-
-    private List<TaskContainer> getTaskContainers(Collection<IssueImpl> tasks) {
-        List<TaskContainer> containers = new ArrayList<TaskContainer>(tasks.size());
-        for (IssueImpl issueImpl : tasks) {
-            containers.add(new TaskContainer(issueImpl));
-        }
-        return containers;
-    }
-
-    private static class TaskContainer {
-
-        private final String id;
-        private final String idRepository;
-        private final IssueStatusProvider.Status status;
-
-        public TaskContainer(IssueImpl issue) {
-            this.id = issue.getID();
-            this.idRepository = issue.getRepositoryImpl().getId();
-            this.status = issue.getStatus();
         }
     }
 }
