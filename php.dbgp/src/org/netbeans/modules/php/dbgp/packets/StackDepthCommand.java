@@ -43,27 +43,20 @@
  */
 package org.netbeans.modules.php.dbgp.packets;
 
-
 /**
  * @author ads
  *
  */
 public class StackDepthCommand extends DbgpCommand {
+    static final String STACK_DEPTH = "stack_depth"; // NOI18N
 
-    static final String STACK_DEPTH     = "stack_depth";        // NOI18N
-
-    public StackDepthCommand( String transactionId ) {
-        super( STACK_DEPTH, transactionId);
+    public StackDepthCommand(String transactionId) {
+        super(STACK_DEPTH, transactionId);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpCommand#wantAcknowledgment()
-     */
     @Override
-    public boolean wantAcknowledgment()
-    {
+    public boolean wantAcknowledgment() {
         return true;
     }
-    
 
 }

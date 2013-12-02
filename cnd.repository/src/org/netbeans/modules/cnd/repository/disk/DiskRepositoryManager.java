@@ -259,20 +259,20 @@ public class DiskRepositoryManager extends BaseRepository implements RepositoryW
         boolean needMoreTime = false;
         long start = System.currentTimeMillis();
         for (int i = 0; i < unitList.length; i++) {
-            if (timeout <= 0) {
+            long rest = timeout - (System.currentTimeMillis() - start);
+            if (rest <= 0) {
                 needMoreTime = true;
                 break;
             }
 
             try {
-                if (unitList[i].maintenance(timeout)) {
+                if (unitList[i].maintenance(rest)) {
                     needMoreTime = true;
                 }
             } catch (IOException ex) {
                 RepositoryListenersManager.getInstance().fireAnException(
                         unitList[i].getId(), unitList[i].getName(), new RepositoryException(ex));
             }
-            timeout -= (System.currentTimeMillis() - start);
         }
         return needMoreTime;
     }

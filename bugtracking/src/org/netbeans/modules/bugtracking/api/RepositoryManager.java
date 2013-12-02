@@ -50,13 +50,13 @@ import java.util.Collections;
 import java.util.LinkedList;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.team.TeamRepositories;
 
 /**
  * Manages registered {@link Repository}-s and related functionality.
  * 
  * @author Tomas Stupka
+ * @since 1.85
  */
 public final class RepositoryManager {
 
@@ -68,6 +68,8 @@ public final class RepositoryManager {
      * </ul>
      * either both, old value or new value, are <code>null</code> if unknown, or at least one of them is <code>not null</code> 
      * indicating the exact character of the notified change.
+     * 
+     * @since 1.85
      */
     public static final String EVENT_REPOSITORIES_CHANGED = "bugtracking.repositories.changed"; // NOI18N
     
@@ -86,6 +88,7 @@ public final class RepositoryManager {
      * Returns the only existing <code>RepositoryManager</code> instance.
      * 
      * @return a RepositoryManager
+     * @since 1.85
      */
     public static synchronized RepositoryManager getInstance() {
         if(instance == null) {
@@ -98,6 +101,7 @@ public final class RepositoryManager {
      * Add a listener for repository related changes.
      * 
      * @param l the new listener
+     * @since 1.85
      */
     public void addPropertChangeListener(PropertyChangeListener l) {
         changeSupport.addPropertyChangeListener(l);
@@ -107,6 +111,7 @@ public final class RepositoryManager {
      * Remove a listener for repository related changes.
      * 
      * @param l the new listener
+     * @since 1.85
      */
     public void removePropertChangeListener(PropertyChangeListener l) {
         changeSupport.removePropertyChangeListener(l);
@@ -117,6 +122,7 @@ public final class RepositoryManager {
      * currently opened in a logged in team sever dashboard.
      * 
      * @return all known repositories
+     * @since 1.85
      */
     public Collection<Repository> getRepositories() {
         LinkedList<Repository> ret = new LinkedList<Repository>();
@@ -130,11 +136,11 @@ public final class RepositoryManager {
      * 
      * @param connectorId
      * @return all known repositories for the given connector
+     * @since 1.85
      */
     public Collection<Repository> getRepositories(String connectorId) {
         LinkedList<Repository> ret = new LinkedList<Repository>();
-        ret.addAll(TeamUtil.getRepositories(connectorId, false, true));
-        ret.addAll(toRepositories(registry.getRepositories(connectorId)));
+        ret.addAll(toRepositories(registry.getRepositories(connectorId, true)));
         return ret;
     }
     
@@ -144,9 +150,10 @@ public final class RepositoryManager {
      * @param connectorId
      * @param repositoryId
      * @return a Repository with the given connector- and repository id or <code>null<code>.
+     * @since 1.85
      */
     public Repository getRepository(String connectorId, String repositoryId) {
-        RepositoryImpl impl = registry.getRepository(connectorId, repositoryId);
+        RepositoryImpl impl = registry.getRepository(connectorId, repositoryId, true);
         return impl != null ? impl.getRepository() : null;
     }      
     

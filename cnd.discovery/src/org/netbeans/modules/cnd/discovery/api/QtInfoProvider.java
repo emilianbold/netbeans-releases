@@ -226,6 +226,14 @@ public abstract class QtInfoProvider {
                         result.add(baseDir.first() + File.separator + "Qt3Support"); // NOI18N
                     }
                 }
+                if (qmakeConfiguration.isPrintSupportEnabled().getValue()) {
+                    if (baseDir.second() != null) {
+                        result.add(baseDir.second() + File.separator + "QtPrintSupport.framework/Headers"); // NOI18N
+                    }
+                    if (baseDir.first() != null) {
+                        result.add(baseDir.first() + File.separator + "QtPrintSupport"); // NOI18N
+                    }
+                }
                 if (qmakeConfiguration.isSqlEnabled().getValue()) {
                     if (baseDir.second() != null) {
                         result.add(baseDir.second() + File.separator + "QtSql.framework/Headers"); // NOI18N

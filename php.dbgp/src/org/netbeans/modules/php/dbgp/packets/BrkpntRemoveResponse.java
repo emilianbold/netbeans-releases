@@ -46,23 +46,18 @@ package org.netbeans.modules.php.dbgp.packets;
 import org.netbeans.modules.php.dbgp.DebugSession;
 import org.w3c.dom.Node;
 
-
 /**
  * @author ads
  *
  */
 public class BrkpntRemoveResponse extends DbgpResponse {
 
-    BrkpntRemoveResponse( Node node ) {
+    BrkpntRemoveResponse(Node node) {
         super(node);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpMessage#process(org.netbeans.modules.php.dbgp.DebugSession, org.netbeans.modules.php.dbgp.packets.DbgpCommand)
-     */
     @Override
-    public void process( DebugSession session, DbgpCommand command )
-    {
+    public void process(DebugSession session, DbgpCommand command) {
     }
 
 }

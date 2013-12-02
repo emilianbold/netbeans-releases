@@ -64,6 +64,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.ToolBarUI;
+import org.netbeans.modules.team.commons.ColorManager;
 import org.netbeans.modules.team.server.TeamView;
 import org.netbeans.modules.team.server.ui.picker.MegaMenu;
 import org.netbeans.modules.team.server.ui.spi.DashboardProvider;
@@ -72,7 +73,6 @@ import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.server.ui.spi.TeamServer;
 import org.netbeans.modules.team.commons.treelist.ListNode;
 import org.netbeans.modules.team.commons.treelist.ProgressLabel;
-import org.netbeans.modules.team.server.api.TeamServerManager;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 

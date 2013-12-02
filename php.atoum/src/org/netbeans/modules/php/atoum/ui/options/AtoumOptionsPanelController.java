@@ -56,16 +56,16 @@ import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
-@OptionsPanelController.SubRegistration(
-    location=UiUtils.OPTIONS_PATH,
-    id=AtoumOptionsPanelController.OPTIONS_SUB_PATH,
+@UiUtils.PhpOptionsPanelRegistration(
+    id=AtoumOptionsPanelController.ID,
     displayName="#AtoumOptionsPanel.name",
 //    toolTip="#LBL_OptionsTooltip"
     position=153
 )
 public class AtoumOptionsPanelController extends OptionsPanelController implements ChangeListener {
 
-    public static final String OPTIONS_SUB_PATH = "atoum"; // NOI18N
+    static final String ID = "atoum"; // NOI18N
+    public static final String OPTIONS_SUB_PATH = UiUtils.FRAMEWORKS_AND_TOOLS_SUB_PATH+"/"+ID; // NOI18N
     public static final String OPTIONS_PATH = UiUtils.OPTIONS_PATH + "/" + OPTIONS_SUB_PATH; // NOI18N
 
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);

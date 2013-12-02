@@ -227,70 +227,74 @@ public final class CGSInfo {
 
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
-                    PHPParseResult info = (PHPParseResult) resultIterator.getParserResult();
-                    if (info != null) {
-                        int caretOffset = textComp.getCaretPosition();
-                        TypeDeclaration typeDecl = findEnclosingClassOrTrait(info, caretOffset);
-                        if (typeDecl != null) {
-                            className = typeDecl.getName().getName();
-                            if (className != null) {
-                                FileObject fileObject = info.getSnapshot().getSource().getFileObject();
-                                Index index = ElementQueryFactory.getIndexQuery(info);
-                                final ElementFilter forFilesFilter = ElementFilter.forFiles(fileObject);
-                                QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(
-                                        QualifiedName.create(className),
-                                        caretOffset,
-                                        info.getModel().getVariableScope(caretOffset));
-                                Set<ClassElement> classes = forFilesFilter.filter(index.getClasses(NameKind.exact(fullyQualifiedName)));
-                                for (ClassElement classElement : classes) {
-                                    ElementFilter forNotDeclared = ElementFilter.forExcludedElements(index.getDeclaredMethods(classElement));
-                                    final Set<MethodElement> accessibleMethods = new HashSet<>();
-                                    accessibleMethods.addAll(forNotDeclared.filter(index.getAccessibleMethods(classElement, classElement)));
-                                    accessibleMethods.addAll(
-                                            ElementFilter.forExcludedElements(accessibleMethods).filter(forNotDeclared.filter(index.getConstructors(classElement))));
-                                    accessibleMethods.addAll(
-                                            ElementFilter.forExcludedElements(accessibleMethods).filter(forNotDeclared.filter(index.getAccessibleMagicMethods(classElement))));
-                                    final Set<TypeElement> preferedTypes = forFilesFilter.prefer(ElementTransformation.toMemberTypes().transform(accessibleMethods));
-                                    final TreeElement<TypeElement> enclosingType = index.getInheritedTypesAsTree(classElement, preferedTypes);
-                                    final List<MethodProperty> methodProperties = new ArrayList<>();
-                                    final Set<MethodElement> methods = ElementFilter.forMembersOfTypes(preferedTypes).filter(accessibleMethods);
-                                    for (final MethodElement methodElement : methods) {
-                                        if (!methodElement.isFinal()) {
-                                            methodProperties.add(new MethodProperty(methodElement, enclosingType));
-                                        }
-                                    }
-                                    Collections.<MethodProperty>sort(methodProperties, MethodProperty.getComparator());
-                                    getPossibleMethods().addAll(methodProperties);
-                                }
-                            }
-
-                            List<String> existingGetters = new ArrayList<>();
-                            List<String> existingSetters = new ArrayList<>();
-
-                            PropertiesVisitor visitor = new PropertiesVisitor(existingGetters, existingSetters, Utils.getRoot(info));
-                            visitor.scan(typeDecl);
-                            String propertyName;
-                            boolean existGetter, existSetter;
-                            for (Property property : getProperties()) {
-                                propertyName = property.getName().toLowerCase();
-                                existGetter = existingGetters.contains(propertyName);
-                                existSetter = existingSetters.contains(propertyName);
-                                if (!existGetter && !existSetter) {
-                                    getPossibleGettersSetters().add(property);
-                                    getPossibleGetters().add(property);
-                                    getPossibleSetters().add(property);
-                                } else if (!existGetter) {
-                                    getPossibleGetters().add(property);
-                                } else if (!existSetter) {
-                                    getPossibleSetters().add(property);
-                                }
-                            }
-                        }
-                    }
+                    initProperties(resultIterator);
                 }
             });
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private void initProperties(ResultIterator resultIterator) throws ParseException {
+        PHPParseResult info = (PHPParseResult) resultIterator.getParserResult();
+        if (info != null) {
+            int caretOffset = textComp.getCaretPosition();
+            TypeDeclaration typeDecl = findEnclosingClassOrTrait(info, caretOffset);
+            if (typeDecl != null) {
+                className = typeDecl.getName().getName();
+                if (className != null) {
+                    FileObject fileObject = info.getSnapshot().getSource().getFileObject();
+                    Index index = ElementQueryFactory.getIndexQuery(info);
+                    final ElementFilter forFilesFilter = ElementFilter.forFiles(fileObject);
+                    QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(
+                            QualifiedName.create(className),
+                            caretOffset,
+                            info.getModel().getVariableScope(caretOffset));
+                    Set<ClassElement> classes = forFilesFilter.filter(index.getClasses(NameKind.exact(fullyQualifiedName)));
+                    for (ClassElement classElement : classes) {
+                        ElementFilter forNotDeclared = ElementFilter.forExcludedElements(index.getDeclaredMethods(classElement));
+                        final Set<MethodElement> accessibleMethods = new HashSet<>();
+                        accessibleMethods.addAll(forNotDeclared.filter(index.getAccessibleMethods(classElement, classElement)));
+                        accessibleMethods.addAll(
+                                ElementFilter.forExcludedElements(accessibleMethods).filter(forNotDeclared.filter(index.getConstructors(classElement))));
+                        accessibleMethods.addAll(
+                                ElementFilter.forExcludedElements(accessibleMethods).filter(forNotDeclared.filter(index.getAccessibleMagicMethods(classElement))));
+                        final Set<TypeElement> preferedTypes = forFilesFilter.prefer(ElementTransformation.toMemberTypes().transform(accessibleMethods));
+                        final TreeElement<TypeElement> enclosingType = index.getInheritedTypesAsTree(classElement, preferedTypes);
+                        final List<MethodProperty> methodProperties = new ArrayList<>();
+                        final Set<MethodElement> methods = ElementFilter.forMembersOfTypes(preferedTypes).filter(accessibleMethods);
+                        for (final MethodElement methodElement : methods) {
+                            if (!methodElement.isFinal()) {
+                                methodProperties.add(new MethodProperty(methodElement, enclosingType));
+                            }
+                        }
+                        Collections.<MethodProperty>sort(methodProperties, MethodProperty.getComparator());
+                        getPossibleMethods().addAll(methodProperties);
+                    }
+                }
+
+                List<String> existingGetters = new ArrayList<>();
+                List<String> existingSetters = new ArrayList<>();
+
+                PropertiesVisitor visitor = new PropertiesVisitor(existingGetters, existingSetters, Utils.getRoot(info));
+                visitor.scan(typeDecl);
+                String propertyName;
+                boolean existGetter, existSetter;
+                for (Property property : getProperties()) {
+                    propertyName = property.getName().toLowerCase();
+                    existGetter = existingGetters.contains(propertyName);
+                    existSetter = existingSetters.contains(propertyName);
+                    if (!existGetter && !existSetter) {
+                        getPossibleGettersSetters().add(property);
+                        getPossibleGetters().add(property);
+                        getPossibleSetters().add(property);
+                    } else if (!existGetter) {
+                        getPossibleGetters().add(property);
+                    } else if (!existSetter) {
+                        getPossibleSetters().add(property);
+                    }
+                }
+            }
         }
     }
 

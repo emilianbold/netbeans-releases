@@ -275,7 +275,7 @@ public final class MainWindow {
                     frame.getContentPane().add (statusLinePanel, BorderLayout.SOUTH);
                } else {
                    statusBarContainer.add( statusLinePanel, BorderLayout.CENTER );
-                   AutoHideStatusText.install( frame );
+                   AutoHideStatusText.install( frame, statusBarContainer );
                }
            } else { // custom status line provided
                JComponent status = getCustomStatusLine();

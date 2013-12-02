@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -70,6 +70,10 @@ public class GlassFishSettings {
     private static final String LBL_GF_KILL_SHOW_AGAIN
             = "GfKillWarningAgain";
 
+    /** GlassFish settings label: Show password text in properties form. */
+    private static final String LBL_GF_SHOW_PASSWORD_IN_PROPERTIES_FORM
+            = "GfShowPasswordInPropertiesForm";
+
     ////////////////////////////////////////////////////////////////////////////
     // Static methods                                                         //
     ////////////////////////////////////////////////////////////////////////////
@@ -104,9 +108,10 @@ public class GlassFishSettings {
     /**
      * Set GlassFish 3.1.2 warning show again property value.
      * <p/>
-     * @return GlassFish 3.1.2 warning show again property value to be set.
+     * @param showAgain GlassFish 3.1.2 warning show again property value
+     *                  to be set.
      */
-    public static void setGf312WarningShowAgain(boolean showAgain) {
+    public static void setGf312WarningShowAgain(final boolean showAgain) {
         settings().putBoolean(LBL_GF312_WARNING_SHOW_AGAIN, showAgain);
     }
 
@@ -124,10 +129,45 @@ public class GlassFishSettings {
     /**
      * Set GlassFish kill warning show again property value.
      * <p/>
-     * @return GlassFish kill warning show again property value to be set.
+     * @param showAgain GlassFish kill warning show again property value
+     *                  to be set.
      */
-    public static void setGfKillWarningShowAgain(boolean showAgain) {
+    public static void setGfKillWarningShowAgain(final boolean showAgain) {
         settings().putBoolean(LBL_GF_KILL_SHOW_AGAIN, showAgain);
+    }
+
+    /**
+     * Get GlassFish setting to show password text in properties form.
+     * <p/>
+     * @return GlassFish setting to show password text in properties form.
+     */
+    public static boolean getGfShowPasswordInPropertiesForm() {
+        return settings().getBoolean(
+                LBL_GF_SHOW_PASSWORD_IN_PROPERTIES_FORM, false);
+    }
+
+    /**
+     * Get GlassFish setting to show password text in properties form.
+     * <p/>
+     * @@param show GlassFish setting to show password text in properties form.
+     */
+    public static void setGfShowPasswordInPropertiesForm(final boolean show) {
+        settings().putBoolean(LBL_GF_SHOW_PASSWORD_IN_PROPERTIES_FORM, show);
+    }
+
+    /**
+     * Get system property do disable UI in NetBeans.
+     * <p/>
+     * Default value is <code>false</code>.
+     * <p/>
+     * @return Value of <code>true</code> when UI is enabled in NetBeans
+     *         or <code>false</code> otherwise.
+     */
+    public static boolean showWindowSystem() {
+        String showProperty
+                = System.getProperty("org.netbeans.core.WindowSystem.show");
+        return showProperty == null
+                || !showProperty.toLowerCase().equals("false");
     }
 
 }

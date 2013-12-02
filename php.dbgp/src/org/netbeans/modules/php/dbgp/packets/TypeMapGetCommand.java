@@ -43,25 +43,19 @@
  */
 package org.netbeans.modules.php.dbgp.packets;
 
-
 /**
  * @author ads
  *
  */
 public class TypeMapGetCommand extends DbgpCommand {
+    static final String TYPEMAP_GET = "typemap_get"; // NOI18N
 
-    static final String TYPEMAP_GET = "typemap_get";        // NOI18N
-
-    public TypeMapGetCommand( String transactionId ) {
-        super( TYPEMAP_GET, transactionId);
+    public TypeMapGetCommand(String transactionId) {
+        super(TYPEMAP_GET, transactionId);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpCommand#wantAcknowledgment()
-     */
     @Override
-    public boolean wantAcknowledgment()
-    {
+    public boolean wantAcknowledgment() {
         return true;
     }
 

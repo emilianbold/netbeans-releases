@@ -46,10 +46,13 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
@@ -179,9 +182,14 @@ public class TabbedController extends OptionsPanelController {
         if (pane != null) {
             pane.removeChangeListener(tabbedPaneChangeListener);
             pane.removeAll();
-            LinkedHashMap<String, AdvancedOption> copy = new LinkedHashMap<String, AdvancedOption>(tabTitle2Option);
-            for (String tabTitle : copy.keySet()) {
-                pane.addTab(tabTitle, new JLabel(tabTitle));
+            Map<String, AdvancedOption> synchronizedMap = Collections.synchronizedMap(tabTitle2Option);
+            Set<String> keySet = synchronizedMap.keySet();
+            synchronized (synchronizedMap) {
+                Iterator<String> i = keySet.iterator();
+                while (i.hasNext()) {
+                    String tabTitle = i.next();
+                    pane.addTab(tabTitle, new JLabel(tabTitle));
+                }
             }
             pane.addChangeListener(tabbedPaneChangeListener);
             handleTabSwitched(null, null);

@@ -62,12 +62,15 @@ import org.netbeans.modules.php.project.ui.testrunner.ControllableRerunHandler;
 import org.netbeans.modules.php.project.ui.testrunner.UnitTestRunner;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
 import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
+import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
+import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.spi.project.SingleMethod;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.openide.util.Pair;
+import org.openide.util.RequestProcessor;
 
 /**
  * Action implementation for TEST configuration.
@@ -75,6 +78,9 @@ import org.openide.util.Pair;
  * @author Tomas Mysik
  */
 class ConfigActionTest extends ConfigAction {
+
+    private static final RequestProcessor RP = new RequestProcessor(ConfigActionTest.class);
+
 
     protected ConfigActionTest(PhpProject project) {
         super(project);
@@ -149,6 +155,11 @@ class ConfigActionTest extends ConfigAction {
 
     @Override
     public void runProject() {
+        runJsTests();
+        runPhpTests();
+    }
+
+    private void runPhpTests() {
         // first, let user select test directory
         List<FileObject> testDirs = getTestDirectories(true);
         if (testDirs.isEmpty()) {
@@ -157,6 +168,21 @@ class ConfigActionTest extends ConfigAction {
         TestRunInfo testRunInfo = getTestRunInfoForDirs(testDirs, false);
         assert testRunInfo != null;
         run(testRunInfo);
+    }
+
+    private void runJsTests() {
+        final JsTestingProvider jsTestingProvider = JsTestingProviders.getDefault().getJsTestingProvider(project, false);
+        if (jsTestingProvider != null) {
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo testRunInfo
+                            = new org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo.Builder()
+                                    .build();
+                    jsTestingProvider.runTests(project, testRunInfo);
+                }
+            });
+        }
     }
 
     @Override

@@ -61,6 +61,8 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
@@ -85,6 +87,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmTypeResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.refactoring.actions.InstantRenamePerformer;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
@@ -143,15 +146,18 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
                     if (CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, selectionStart)[0] == 
                         CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, selectionEnd)[0] &&
                         isExpressionSelection(doc, selectionStart, selectionEnd)) {
-                        try {
-                            final String text = doc.getText(selectionStart, selectionEnd-selectionStart);
-                            if(text.length() > 0) {
-                                CsmOffsetable csmOffsetable = new CsmOffsetableImpl(file, selectionStart, selectionEnd, text);
-                                if (isApplicableExpression(csmOffsetable, doc)) {
-                                    createExpressionHint(res.statementInBody, csmOffsetable, doc, comp, fileObject);
+                        if (!(res.container.getStartOffset() == selectionStart &&
+                            res.container.getEndOffset() == selectionEnd)) {
+                            try {
+                                final String text = doc.getText(selectionStart, selectionEnd-selectionStart);
+                                if(text.length() > 0) {
+                                    CsmOffsetable csmOffsetable = new CsmOffsetableImpl(file, selectionStart, selectionEnd, text);
+                                    if (isApplicableExpression(csmOffsetable, doc)) {
+                                        createExpressionHint(res.statementInBody, csmOffsetable, doc, comp, fileObject);
+                                    }
                                 }
+                            } catch (BadLocationException ex) {
                             }
-                        } catch (BadLocationException ex) {
                         }
                     }
                 }
@@ -571,6 +577,8 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
             this.doc = (BaseDocument) doc;
         }
         
+        abstract protected boolean isC();
+
         protected String suggestName() {
             doc.render(new Runnable() {
 
@@ -634,6 +642,14 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
 //                    }
 //                }
                 typeText = CsmInstantiationProvider.getDefault().getInstantiatedText(resolveType);
+                if (isC()) {
+                    CsmClassifier classifier = resolveType.getClassifier();
+                    if (classifier != null) {
+                        if (classifier.getKind() == CsmDeclaration.Kind.STRUCT && !CharSequenceUtils.startsWith(typeText, "struct")) { //NOI18N
+                            typeText = "struct "+typeText; //NOI18N
+                        }
+                    }
+                }
                 return typeText;
             } finally {
                 CsmCacheManager.leave();
@@ -652,6 +668,11 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
         @Override
         public String getText() {
             return NbBundle.getMessage(LineFactoryTask.class, "FIX_AssignResultToVariable"); //NOI18N
+        }
+
+        @Override
+        protected boolean isC() {
+            return MIMENames.C_MIME_TYPE.equals(fo.getMIMEType());
         }
         
         @Override
@@ -697,6 +718,11 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
         @Override
         public String getText() {
             return NbBundle.getMessage(LineFactoryTask.class, "FIX_IntroduceVariable"); //NOI18N
+        }
+
+        @Override
+        protected boolean isC() {
+            return MIMENames.C_MIME_TYPE.equals(fo.getMIMEType());
         }
         
         @Override

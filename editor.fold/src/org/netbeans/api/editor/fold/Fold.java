@@ -405,7 +405,7 @@ public final class Fold {
         return children;
     }
     
-    private void setChildren(FoldChildren children) {
+    void setChildren(FoldChildren children) {
         this.children = children;
     }
     

@@ -558,7 +558,9 @@ public class Mercurial {
                 break;
             }
             if (VersioningSupport.isExcluded(file)) break;
-            if (HgUtils.hgExistsFor(file)){
+            // is the folder a special one where metadata should not be looked for?
+            boolean forbiddenFolder = Utils.isForbiddenFolder(file.getAbsolutePath());
+            if (!forbiddenFolder && HgUtils.hgExistsFor(file)){
                 Mercurial.LOG.log(Level.FINE, " found managed parent {0}", new Object[] { file });
                 done.clear();   // all folders added before must be removed, they ARE in fact managed by hg
                 topmost =  file;

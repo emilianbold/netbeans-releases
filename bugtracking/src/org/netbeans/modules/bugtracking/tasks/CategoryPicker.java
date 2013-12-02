@@ -43,12 +43,16 @@ package org.netbeans.modules.bugtracking.tasks;
 
 import org.netbeans.modules.team.commons.treelist.LinkButton;
 import java.awt.event.ActionEvent;
-import java.awt.event.ItemListener;
 import java.util.List;
+import java.util.MissingResourceException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.bugtracking.tasks.dashboard.DashboardViewer;
+import org.netbeans.modules.bugtracking.tasks.dashboard.TaskNode;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -56,16 +60,17 @@ import org.openide.util.NbBundle;
  */
 public class CategoryPicker extends javax.swing.JPanel {
 
-    private final List<Category> categories;
+    private List<Category> categories;
     private final Action newCatAction;
     private CategoryComboListener listener;
-
+    private final TaskNode[] taskNodes;
+    private final DashboardViewer dashboardViewer = DashboardViewer.getInstance();
 
     /**
      * Creates new form CategoryPicker
      */
-    public CategoryPicker(List<Category> categories) {
-        this.categories = categories;
+    public CategoryPicker(TaskNode... taskNodes) {
+        this.taskNodes = taskNodes;
         newCatAction = getNewCatAction();
         initComponents();
         initCombo();
@@ -130,8 +135,7 @@ public class CategoryPicker extends javax.swing.JPanel {
         return new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                DashboardTopComponent tc = DashboardTopComponent.findInstance();
-                Category category = tc.createCategory();
+                Category category = DashboardTopComponent.findInstance().createCategory();
                 if (category == null) {
                     return;
                 }
@@ -143,6 +147,23 @@ public class CategoryPicker extends javax.swing.JPanel {
     }
 
     private void initCombo() {
+        cbCategory.setModel(new DefaultComboBoxModel(new String[]{NbBundle.getMessage(CategoryPicker.class, "LBL_Loading")}));
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                initCategories();
+            }
+        });
+    }
+
+    private void initCategories() throws MissingResourceException {
+        this.categories = dashboardViewer.preloadCategories();
+        if (taskNodes.length == 1) {
+            TaskNode taskNode = taskNodes[0];
+            if (taskNode.isCategorized()) {
+                categories.remove(taskNode.getCategory());
+            }
+        }
         String[] names = new String[categories.size()];
         //names[0] = NbBundle.getMessage(CategoryPicker.class, "LBL_NoCategory"); //NOI18N
         int i = 0;
@@ -154,10 +175,17 @@ public class CategoryPicker extends javax.swing.JPanel {
             names = new String[]{NbBundle.getMessage(CategoryPicker.class, "LBL_NoCategoryAvailable")};
             categoryAvailable = false;
         }
-        cbCategory.setModel(new DefaultComboBoxModel(names));
-        if (listener != null) {
-            listener.comboItemsChanged(categoryAvailable);
-        }
+        final String[] namesF = names;
+        final boolean categoryAvailableF = categoryAvailable;
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                cbCategory.setModel(new DefaultComboBoxModel(namesF));
+                if (listener != null) {
+                    listener.comboItemsChanged(categoryAvailableF);
+                }
+            }
+        });
     }
 
     public interface CategoryComboListener {

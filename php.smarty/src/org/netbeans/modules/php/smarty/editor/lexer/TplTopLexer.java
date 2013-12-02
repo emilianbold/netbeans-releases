@@ -452,7 +452,9 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
 
                     case IN_STRING:
                         String currentStringDelimiter = endingStringDelimiter(text);
-                        if (currentStringDelimiter != null && stringDelimiter.equals(currentStringDelimiter)) {
+                        if (currentStringDelimiter != null
+                                && stringDelimiter.equals(currentStringDelimiter)
+                                && (!CharSequenceUtilities.endsWith(text, '\\' + currentStringDelimiter))) { //NOI18N
                             state = State.IN_SMARTY;
                             stringDelimiter = null;
                         }

@@ -186,6 +186,40 @@ class DiffFacility {
         return null;
     }
     
+    private void removeOrStripLastNewline(List<Line> list1) {
+        int idx = list1.size() - 1;
+        Line last1 = list1.remove(idx);
+        int firstNewline = last1.data.indexOf('\n');
+        int lastNewline = last1.data.lastIndexOf('\n');
+        if (firstNewline != lastNewline) { // NOI18N
+            String stripped = last1.data.substring(0, last1.data.lastIndexOf('\n')); // NOI18N
+            list1.add(new Line(stripped, last1.start, last1.start + stripped.length()));
+        }
+    }
+    
+    /**
+     * If trailing line comment tokens have the same text, remove them both from the list1/list2. This is a fix equivalent to
+     * bugfix #90424, but the original code discards changes to line comment contents made by the code generator. It should
+     * be sufficient to just ignore changes in non-meaningful whitespace.
+     * 
+     * See defects #90424, #125385, #208270 for details
+     * 
+     * @param list1 original lines
+     * @param list2 newly inserted lines
+     */
+    private void removeSameTrailingLineComments(List<Line> list1, List<Line> list2) {
+        String s1 = list1.get(list1.size() - 1).data;
+        String s2 = list2.get(list2.size() - 1).data;
+        assert s1.startsWith("//"); // NOI18N
+        assert s2.startsWith("//"); // NOI18N
+        s1 = s1.substring(2).trim();
+        s2 = s2.substring(2).trim();
+        if (s1.equals(s2)) {
+            list1.remove(list1.size() - 1);
+            list2.remove(list2.size() - 1);
+        }
+    }
+    
     public List<Diff> makeTokenListMatch(String text1, String text2, int currentPos) {
         TokenSequence<JavaTokenId> seq1 = TokenHierarchy.create(text1, JavaTokenId.language()).tokenSequence(JavaTokenId.language());
         TokenSequence<JavaTokenId> seq2 = TokenHierarchy.create(text2, JavaTokenId.language()).tokenSequence(JavaTokenId.language());
@@ -203,16 +237,12 @@ class DiffFacility {
             lastId2 = seq2.token().id();
             list2.add(new Line(data, seq2.offset(), seq2.offset() + data.length()));
         }
-        if (lastId1 != null && lastId1 == lastId2 && (lastId1 == JavaTokenId.LINE_COMMENT || (lastId1 == JavaTokenId.WHITESPACE && !(list1.get(list1.size() - 1).data.endsWith("\n") ^ list2.get(list2.size() - 1).data.endsWith("\n"))))) {            
-            Line last1 = list1.remove(list1.size() - 1);
-            if (last1.data.indexOf('\n') != last1.data.lastIndexOf('\n')) {
-                String stripped = last1.data.substring(0, last1.data.lastIndexOf('\n'));
-                list1.add(new Line(stripped, last1.start, last1.start + stripped.length()));
-            }
-            Line last2 = list2.remove(list2.size() - 1);
-            if (last2.data.indexOf('\n') != last2.data.lastIndexOf('\n')) {
-                String stripped = last2.data.substring(0, last2.data.lastIndexOf('\n'));
-                list2.add(new Line(stripped, last2.start, last2.start + stripped.length()));
+        if (lastId1 != null && lastId1 == lastId2) {
+            if (lastId1 == JavaTokenId.WHITESPACE && (list1.get(list1.size() - 1).data.endsWith("\n") == list2.get(list2.size() - 1).data.endsWith("\n"))) {
+                removeOrStripLastNewline(list1);
+                removeOrStripLastNewline(list2);
+            } else if (lastId1 == JavaTokenId.LINE_COMMENT) { // implies both end with a newline
+                removeSameTrailingLineComments(list1, list2);
             }
         }
         Line[] lines1 = list1.toArray(new Line[list1.size()]);

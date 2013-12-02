@@ -53,6 +53,7 @@ import java.util.*;
 import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.*;
+import org.netbeans.modules.team.commons.ColorManager;
 import org.netbeans.modules.team.server.ui.common.DashboardSupport.DashboardImpl;
 import org.netbeans.modules.team.server.ui.spi.DashboardProvider;
 import org.netbeans.modules.team.server.ui.spi.LoginHandle;

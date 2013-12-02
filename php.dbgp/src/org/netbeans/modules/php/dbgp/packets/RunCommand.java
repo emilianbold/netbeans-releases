@@ -43,25 +43,19 @@
  */
 package org.netbeans.modules.php.dbgp.packets;
 
-
 /**
  * @author ads
  *
  */
 public class RunCommand extends DbgpCommand {
+    static final String RUN = "run"; // NOI18N
 
-    static final String RUN = "run";        // NOI18N
-
-    public RunCommand( String transactionId ) {
-        super( RUN, transactionId);
+    public RunCommand(String transactionId) {
+        super(RUN, transactionId);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpCommand#needAcknowledgment()
-     */
     @Override
-    public boolean wantAcknowledgment()
-    {
+    public boolean wantAcknowledgment() {
         return false;
     }
 

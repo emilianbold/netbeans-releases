@@ -1391,7 +1391,7 @@ public final class MakeProject implements Project, MakeProjectListener {
                 ConnectionHelper.INSTANCE.ensureConnection(env);
             }     
             helper.removeMakeProjectListener(MakeProject.this);
-            projectDescriptorProvider.opening();
+            projectDescriptorProvider.opening(interrupter);
             helper.addMakeProjectListener(MakeProject.this);
             checkNeededExtensions();
             createLaunchersFileIfNeeded(dir);
@@ -1407,7 +1407,7 @@ public final class MakeProject implements Project, MakeProjectListener {
                             return;
                         }
                     }
-                    projectDescriptorProvider.opened(interrupter);
+                    projectDescriptorProvider.opened();
                     synchronized (openStateAndLock) {
                         if (openStateAndLock.get()) {
                             if (nativeProject instanceof NativeProjectProvider) {

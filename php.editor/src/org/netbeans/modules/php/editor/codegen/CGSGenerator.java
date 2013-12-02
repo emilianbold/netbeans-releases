@@ -366,13 +366,13 @@ public final class CGSGenerator implements CodeGenerator {
                 START_OF_GETTER + UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE,
                 START_OF_SETTER + UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE); //NOI18N
 
-        private String constructorTemplate;
-        private String getterTemplate;
-        private String setterTemplate;
+        private final String constructorTemplate;
+        private final String getterTemplate;
+        private final String setterTemplate;
         /**
          * The description will appear in the ui combobox.
          */
-        private String simpleDescription;
+        private final String simpleDescription;
 
         private GenWay(String simpleDescription, String constructorTemplate, String getterTemplate, String setterTemplate) {
             this.constructorTemplate = constructorTemplate;

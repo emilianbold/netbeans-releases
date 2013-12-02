@@ -71,7 +71,7 @@ public class TestRepositoryProvider implements RepositoryProvider<TestRepository
     }
 
     @Override
-    public void remove(TestRepository r) {
+    public void removed(TestRepository r) {
         r.remove();
     }
 

@@ -63,7 +63,6 @@ import org.netbeans.modules.maven.M2AuxilaryConfigImpl;
 import org.netbeans.modules.maven.configurations.M2Configuration;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
-import org.netbeans.modules.maven.execute.AbstractMavenExecutor;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -165,7 +164,10 @@ public final class MavenProjectCache {
             // #135070
             req.setRecursive(false);
             req.setOffline(true);
-            req.setUserProperties(createSystemPropsForProjectLoading(active.getProperties()));
+            //#238800 important to merge, not replace
+            Properties uprops = req.getUserProperties();
+            uprops.putAll(createUserPropsForProjectLoading(active.getProperties()));
+            req.setUserProperties(uprops);
             res = projectEmbedder.readProjectWithDependencies(req, true);
             newproject = res.getProject();
             
@@ -251,38 +253,17 @@ public final class MavenProjectCache {
     }
     
     public static boolean isFallbackproject(MavenProject prj) {
-        if ("error".equals(prj.getGroupId()) && "error".equals(prj.getArtifactId()) && Bundle.LBL_Incomplete_Project_Name().equals(prj.getName())) {
-            return true;
-        }
-        return false;
+        return "error".equals(prj.getGroupId()) && "error".equals(prj.getArtifactId()) && Bundle.LBL_Incomplete_Project_Name().equals(prj.getName());
     }
     
-    private static final Properties statics = new Properties();
-
-    public static Properties cloneStaticProps() {
-        synchronized (statics) {
-            if (statics.isEmpty()) { // not yet initialized
-                // Now a misnomer, but available to activate profiles only during NB project parse:
-                statics.setProperty("netbeans.execution", "true"); // NOI18N
-                EmbedderFactory.fillEnvVars(statics);
-                statics.putAll(AbstractMavenExecutor.excludeNetBeansProperties(System.getProperties()));
-            }
-            Properties toRet = new Properties();
-            toRet.putAll(statics);
-            return toRet;
-        }
-    }
-
-    //#158700
-    public static Properties createSystemPropsForProjectLoading(Map<String, String> activeConfiguration) {
-        Properties props = cloneStaticProps();
+    public static Properties createUserPropsForProjectLoading(Map<String, String> activeConfiguration) {
+        Properties props = new Properties();
         if (activeConfiguration != null) {
             props.putAll(activeConfiguration);
         }
-        //TODO the properties for java.home and maybe others shall be relevant to the project setup not ide setup.
-        // we got a chicken-egg situation here, the jdk used in project can be defined in the pom.xml file.
         return props;
-    }  
+    }
+    
     
     private static Mutex getMutex(File pomFile) {
         synchronized (file2Mutex) {

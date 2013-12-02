@@ -56,8 +56,11 @@ import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.spi.editor.document.UndoableEditWrapper;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -78,11 +81,23 @@ public class UndoableWrapper implements UndoableEditWrapper {
     public UndoableEdit wrap(UndoableEdit ed, Document doc) {
         if (!active.get())
             return ed;
-        if (doc.getProperty(BaseDocument.StreamDescriptionProperty) == null) {
+        final Object stream = doc.getProperty(BaseDocument.StreamDescriptionProperty);
+        DataObject dob = null;
+        if(stream != null && stream instanceof DataObject) {
+            dob = (DataObject) stream;
+        } else if(stream != null && stream instanceof FileObject) {
+            FileObject fileObject = (FileObject) stream;
+            try {
+                dob = DataObject.find(fileObject);
+            } catch (DataObjectNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        if(dob == null) {
             //no dataobject
             return ed;
-        } 
-        UndoableEditDelegate current = new UndoableEditDelegate(ed, (BaseDocument) doc, session);
+        }
+        UndoableEditDelegate current = new UndoableEditDelegate(ed, dob, session);
         UndoableEditDelegate first = docToFirst.get(doc);
         if (first == null) {
             docToFirst.put((BaseDocument) doc, current);
@@ -111,9 +126,8 @@ public class UndoableWrapper implements UndoableEditWrapper {
         private CompoundEdit inner;
         private RefactoringSession session;
 
-        private UndoableEditDelegate(UndoableEdit ed, BaseDocument doc, RefactoringSession session) {
+        private UndoableEditDelegate(UndoableEdit ed, DataObject dob, RefactoringSession session) {
             undoManager = UndoManager.getDefault();
-            DataObject dob = (DataObject) doc.getProperty(BaseDocument.StreamDescriptionProperty);
             ces = dob.getLookup().lookup(CloneableEditorSupport.class);
             //this.delegate = ed;
             this.inner = new CompoundEdit();

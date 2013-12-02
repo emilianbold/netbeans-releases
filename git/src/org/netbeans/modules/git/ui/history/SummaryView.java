@@ -455,8 +455,8 @@ class SummaryView extends AbstractSummaryView {
                         GitRevisionInfo info1 = ((GitLogEntry) selection[0]).getRepositoryRevision().getLog();
                         GitRevisionInfo info2 = ((GitLogEntry) selection[1]).getRepositoryRevision().getLog();
                         SystemAction.get(DiffAction.class).diff(VCSContext.forNodes(nodes.toArray(new Node[nodes.size()])),
-                                new Revision(info2.getRevision(), info2.getRevision(), info2.getShortMessage()),
-                                new Revision(info1.getRevision(), info1.getRevision(), info1.getShortMessage()));
+                                new Revision(info2.getRevision(), info2.getRevision(), info2.getShortMessage(), info2.getFullMessage()),
+                                new Revision(info1.getRevision(), info1.getRevision(), info1.getShortMessage(), info1.getFullMessage()));
                     }
                 }));
             }

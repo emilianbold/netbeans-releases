@@ -43,6 +43,8 @@
 package org.netbeans.modules.bugtracking.bridge.exportdiff;
 
 import java.io.File;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
@@ -52,6 +54,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.versioning.util.ExportDiffSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -61,7 +65,7 @@ import org.netbeans.modules.versioning.util.ExportDiffSupport;
 public class ExportDiffProviderImpl extends ExportDiffSupport.ExportDiffProvider implements DocumentListener, ChangeListener {
 
     private AttachPanel panel;
-    private File[] files;
+    private FileObject[] files;
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.exportdiff.AttachIssue");   // NOI18N
 
     public ExportDiffProviderImpl() {
@@ -69,7 +73,14 @@ public class ExportDiffProviderImpl extends ExportDiffSupport.ExportDiffProvider
 
     @Override
     protected void setContext(File[] files) {
-        this.files = files;
+        List<FileObject> fs = new LinkedList<FileObject>();
+        for (File file : files) {
+            FileObject fo = FileUtil.toFileObject(file);
+            if(fo != null) {
+                fs.add(fo);
+            }
+        }
+        this.files = fs.toArray(new FileObject[fs.size()]);
     }
 
     @Override

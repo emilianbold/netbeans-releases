@@ -174,6 +174,21 @@ public class SiteZip implements SiteTemplateImplementation {
     }
 
     @Override
+    public void cleanup() {
+        String template = cust.panel.getTemplate();
+        if (isRemoteUrl(template)) {
+            // noop
+            return;
+        }
+        File archiveFile = getArchiveFile();
+        if (archiveFile.isFile()) {
+            if (!archiveFile.delete()) {
+                archiveFile.deleteOnExit();
+            }
+        }
+    }
+
+    @Override
     public Collection<String> supportedLibraries() {
         return SiteHelper.stripRootFolder(FileUtilities.listJsFilesFromZipFile(getArchiveFile()));
     }

@@ -109,11 +109,16 @@ public abstract class ContextAction extends NodeAction {
 
     @Override
     protected boolean enable(Node[] nodes) {
-        File[] rootFiles = getCachedContext(nodes).getRootFiles();
-        // has at least one file as a root node -> either all rootfiles are managed or all rootfiles are unmanaged
-        // should not have mixed version and unversioned files
-        // -> action is disabled if any of the files is unmanaged
-        return rootFiles.length > 0 && SvnUtils.isManaged(rootFiles[0]);
+        if (isCacheReady()) {
+            File[] rootFiles = getCachedContext(nodes).getRootFiles();
+            // has at least one file as a root node -> either all rootfiles are managed or all rootfiles are unmanaged
+            // should not have mixed version and unversioned files
+            // -> action is disabled if any of the files is unmanaged
+            return rootFiles.length > 0 && SvnUtils.isManaged(rootFiles[0]);
+        } else {
+            LOG.log(Level.FINE, "Svn cache not yet ready, setting the action {0} disabled", getClass().getName()); //NOI18N
+            return false;
+        }
     }
     
     /**
@@ -141,6 +146,10 @@ public abstract class ContextAction extends NodeAction {
     }
 
     protected abstract void performContextAction(Node[] nodes);
+    
+    protected final boolean isCacheReady () {
+        return Subversion.getInstance().getStatusCache().ready();
+    }
 
     /** Be sure nobody overwrites */
     @Override

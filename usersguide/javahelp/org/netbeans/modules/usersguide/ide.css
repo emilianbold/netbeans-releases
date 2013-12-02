@@ -1,4 +1,4 @@
-﻿/*
+/*
  * rave.css      08/13/2004
  *
  * Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
@@ -101,13 +101,13 @@ ul ol li ol{list-style-type: lower-alpha}
 ul ol ol{list-style-type: lower-alpha}
 
 /* Graphics for notes and warnings */
-ul.note {list-style-image:url(images/tip.gif);
+ul.note {list-style-image:url(img/tip.gif);
      margin-top: 5;
      margin-bottom: 0;
 	  margin-left: 16;
 }
 
-ul.warning {list-style-image:url(images/warn.gif);
+ul.warning {list-style-image:url(img/warn.gif);
      margin-top: 5;
      margin-bottom: 0;
 	  margin-left: 16;

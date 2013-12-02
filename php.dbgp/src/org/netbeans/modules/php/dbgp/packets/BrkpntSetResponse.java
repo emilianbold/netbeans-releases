@@ -48,52 +48,43 @@ import org.netbeans.modules.php.dbgp.breakpoints.AbstractBreakpoint;
 import org.netbeans.modules.php.dbgp.packets.BrkpntSetCommand.State;
 import org.w3c.dom.Node;
 
-
 /**
  * @author ads
  *
  */
 public class BrkpntSetResponse extends DbgpResponse {
+    private static final String STATE = "state"; // NOI18N
+    private static final String ID = "id"; // NOI18N
 
-
-    private static final String STATE   = "state";       // NOI18N
-    
-    private static final String ID      = "id";          // NOI18N
-
-    BrkpntSetResponse( Node node ) {
+    BrkpntSetResponse(Node node) {
         super(node);
     }
-    
+
     public String getBreakpointId() {
-        return getAttribute(getNode(), ID );
+        return getAttribute(getNode(), ID);
     }
-    
+
     public State getState() {
-        String state = getAttribute(getNode(), STATE );
+        String state = getAttribute(getNode(), STATE);
         return State.forString(state);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpMessage#process(org.netbeans.modules.php.dbgp.DebugSession, org.netbeans.modules.php.dbgp.packets.DbgpCommand)
-     */
     @Override
-    public void process( DebugSession session, DbgpCommand command )
-    {
-        if ( !( command instanceof BrkpntSetCommand ) ){
+    public void process(DebugSession session, DbgpCommand command) {
+        if (!(command instanceof BrkpntSetCommand)) {
             return;
         }
         BrkpntSetCommand setCommand = (BrkpntSetCommand) command;
         AbstractBreakpoint breakpoint = setCommand.getBreakpoint();
-        if ( breakpoint == null ){
+        if (breakpoint == null) {
             // This is normal situation . It happens when breakpoint is fake and
-            // set f.e. for as temporary ( for run to cursor command ).  
+            // set f.e. for as temporary ( for run to cursor command ).
             return;
         }
-        breakpoint.setBreakpointId( getBreakpointId() );
-        if ( getState() == State.DISABLED ) {
+        breakpoint.setBreakpointId(getBreakpointId());
+        if (getState() == State.DISABLED) {
             breakpoint.disable();
-        }
-        else {
+        } else {
             breakpoint.enable();
         }
     }

@@ -109,6 +109,10 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
         });
         setDownloadState(DownloadState.AVAILABLE);
         updateMessageText("");
+        // Set initial radio buttons status to local server.
+        localDomainRadioButton.setSelected(true);
+        remoteDomainRadioButton.setSelected(false);
+        wizardIterator.setLocal(true);
     }
     
     private String getPreviousValue() {
@@ -155,6 +159,16 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
      */
     public void addChangeListener(ChangeListener l) {
         listeners.add(l);
+    }
+    
+    /**
+     * Get local/remote server selection.
+     * <p/>
+     * @return Value of <code>true</code> when local button is selected
+     *         and <code>false</code> when remote button is selected.
+     */
+    public boolean isLocal() {
+        return localDomainRadioButton.isSelected();
     }
     
     /**
@@ -312,6 +326,7 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        domainType = new javax.swing.ButtonGroup();
         hk2HomeLabel = new javax.swing.JLabel();
         hk2HomeTextField = new javax.swing.JTextField();
         browseButton = new javax.swing.JButton();
@@ -319,6 +334,8 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
         agreeCheckBox = new javax.swing.JCheckBox();
         readlicenseButton = new javax.swing.JButton();
         downloadStatusLabel = new javax.swing.JLabel();
+        localDomainRadioButton = new javax.swing.JRadioButton();
+        remoteDomainRadioButton = new javax.swing.JRadioButton();
 
         hk2HomeLabel.setLabelFor(hk2HomeTextField);
         org.openide.awt.Mnemonics.setLocalizedText(hk2HomeLabel, org.openide.util.NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_InstallLocation")); // NOI18N
@@ -337,7 +354,7 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
             }
         });
 
-        agreeCheckBox.setMargin(new java.awt.Insets(4, 4, 4, 4));
+        agreeCheckBox.setMargin(new java.awt.Insets(4, 0, 4, 4));
         agreeCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 agreeCheckBoxActionPerformed(evt);
@@ -360,26 +377,48 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
         downloadStatusLabel.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         downloadStatusLabel.setHorizontalTextPosition(javax.swing.SwingConstants.LEADING);
 
+        domainType.add(localDomainRadioButton);
+        localDomainRadioButton.setText(org.openide.util.NbBundle.getMessage(AddServerLocationVisualPanel.class, "AddServerLocationVisualPanel.localDomainRadioButton")); // NOI18N
+        localDomainRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                localDomainRadioButtonActionPerformed(evt);
+            }
+        });
+
+        domainType.add(remoteDomainRadioButton);
+        remoteDomainRadioButton.setText(org.openide.util.NbBundle.getMessage(AddServerLocationVisualPanel.class, "AddServerLocationVisualPanel.remoteDomainRadioButton")); // NOI18N
+        remoteDomainRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                remoteDomainRadioButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(downloadButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(agreeCheckBox)
-                        .addGap(2, 2, 2)
-                        .addComponent(readlicenseButton, javax.swing.GroupLayout.DEFAULT_SIZE, 230, Short.MAX_VALUE))
-                    .addComponent(downloadStatusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(hk2HomeLabel)
-                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(hk2HomeTextField)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(browseButton)))
+                        .addComponent(browseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(downloadStatusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(localDomainRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(downloadButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(agreeCheckBox)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(readlicenseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                            .addComponent(remoteDomainRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(hk2HomeLabel)
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -387,14 +426,18 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
             .addGroup(layout.createSequentialGroup()
                 .addComponent(hk2HomeLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
                     .addComponent(hk2HomeTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(browseButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                    .addComponent(localDomainRadioButton)
+                    .addComponent(remoteDomainRadioButton))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
                     .addComponent(downloadButton)
-                    .addComponent(agreeCheckBox)
-                    .addComponent(readlicenseButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(readlicenseButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(agreeCheckBox))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(downloadStatusLabel)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -457,16 +500,27 @@ private void agreeCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN
             downloadButton.setEnabled(agreeCheckBox.isSelected() && writableLoc);
         }
 }//GEN-LAST:event_agreeCheckBoxActionPerformed
+
+    private void remoteDomainRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_remoteDomainRadioButtonActionPerformed
+        wizardIterator.setLocal(!remoteDomainRadioButton.isSelected());
+    }//GEN-LAST:event_remoteDomainRadioButtonActionPerformed
+
+    private void localDomainRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_localDomainRadioButtonActionPerformed
+         wizardIterator.setLocal(localDomainRadioButton.isSelected());
+    }//GEN-LAST:event_localDomainRadioButtonActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox agreeCheckBox;
     private javax.swing.JButton browseButton;
+    private javax.swing.ButtonGroup domainType;
     private javax.swing.JButton downloadButton;
     private javax.swing.JLabel downloadStatusLabel;
     private javax.swing.JLabel hk2HomeLabel;
     private javax.swing.JTextField hk2HomeTextField;
+    private javax.swing.JRadioButton localDomainRadioButton;
     private javax.swing.JButton readlicenseButton;
+    private javax.swing.JRadioButton remoteDomainRadioButton;
     // End of variables declaration//GEN-END:variables
     
 }

@@ -55,7 +55,7 @@ import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.spi.QueryController.QueryMode;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
@@ -96,8 +96,8 @@ public class QueryAction extends SystemAction {
         openQuery(null, repositoryToSelect, false, QueryMode.EDIT, true);
     }
     
-    public static void createNewQueryForRepo(RepositoryImpl repositoryToSelect) {
-        openQuery(null, repositoryToSelect, true, QueryMode.EDIT, true);
+    public static void createNewQuery(RepositoryImpl repositoryToSelect, boolean suggestedSelectionOnly) {
+        openQuery(null, repositoryToSelect, suggestedSelectionOnly, QueryMode.EDIT, true);
     }
 
     public static void openQuery(QueryImpl query, RepositoryImpl repository, QueryMode mode) {

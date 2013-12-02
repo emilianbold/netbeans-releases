@@ -43,15 +43,14 @@ package org.netbeans.modules.odcs.tasks.bridge;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeListener;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
+import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.server.ui.spi.QueryAccessor;
@@ -65,7 +64,6 @@ import org.openide.util.NbBundle;
  */
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.team.server.ui.spi.QueryAccessor.class)
 public class QueryAccessorImpl extends QueryAccessor<ODCSProject> {
-    private QueryHandle naQueryHandle;
 
     public QueryAccessorImpl () {
     }
@@ -77,17 +75,26 @@ public class QueryAccessorImpl extends QueryAccessor<ODCSProject> {
 
     @Override
     public QueryHandle getAllIssuesQuery (ProjectHandle<ODCSProject> projectHandle) {
-        Repository repo = TeamUtil.getRepository(TeamProjectImpl.getInstance(projectHandle.getTeamProject()));
-        if (repo == null || !TeamUtil.isFromTeamServer(repo)) {
+        Repository repo = getRepository(projectHandle);
+        if (repo == null) {
             return null;
         }
 
         ODCSHandler handler = Support.getInstance().getODCSHandler(projectHandle, this);
         handler.registerRepository(repo, projectHandle);
-        Query allIssuesQuery = TeamUtil.getAllIssuesQuery(repo);
+        
+        Query allIssuesQuery = null;
+        Collection<Query> qs = repo.getQueries();
+        for (Query q : qs) {
+            if(QueryHandleImpl.isAllIssues(q)) {
+                allIssuesQuery = q;
+                break;
+            }
+        }
         if (allIssuesQuery == null) {
             return null;
         }
+        
         List<QueryHandle> queries = handler.getQueryHandles(projectHandle, allIssuesQuery);
         assert queries.size() == 1;
         handler.registerProject(projectHandle, queries);
@@ -97,7 +104,7 @@ public class QueryAccessorImpl extends QueryAccessor<ODCSProject> {
     @NbBundle.Messages({"LBL_NA=N/A"})
     @Override
     public List<QueryHandle> getQueries (ProjectHandle<ODCSProject> projectHandle) {
-        Repository repo = TeamUtil.getRepository(TeamProjectImpl.getInstance(projectHandle.getTeamProject()));
+        Repository repo = getRepository(projectHandle);
         assert repo != null;
 
         ODCSHandler handler = Support.getInstance().getODCSHandler(projectHandle, this);
@@ -126,7 +133,7 @@ public class QueryAccessorImpl extends QueryAccessor<ODCSProject> {
         if (!projectHandle.getTeamProject().hasTasks()) {
             return null;
         }        
-        final Repository repo = TeamUtil.getRepository(TeamProjectImpl.getInstance(projectHandle.getTeamProject()));
+        Repository repo = getRepository(projectHandle);
         return Support.getInstance().getODCSHandler(projectHandle, this).getFindIssuesAction(repo);
     }
 
@@ -135,13 +142,13 @@ public class QueryAccessorImpl extends QueryAccessor<ODCSProject> {
         if (!projectHandle.getTeamProject().hasTasks()) {
             return null;
         }
-        final Repository repo = TeamUtil.getRepository(TeamProjectImpl.getInstance(projectHandle.getTeamProject()));
+        Repository repo = getRepository(projectHandle);
         return Support.getInstance().getODCSHandler(projectHandle, this).getCreateIssueAction(repo);
     }
 
     @Override
     public Action getOpenTaskAction (ProjectHandle<ODCSProject> projectHandle, String taskId) {
-        final Repository repo = TeamUtil.getRepository(TeamProjectImpl.getInstance(projectHandle.getTeamProject()));
+        Repository repo = getRepository(projectHandle);
         return Support.getInstance().getODCSHandler(projectHandle, this).getOpenTaskAction(repo, taskId);
     }
 
@@ -185,4 +192,11 @@ public class QueryAccessorImpl extends QueryAccessor<ODCSProject> {
             al.actionPerformed(e);
         }
     }
+    
+    private Repository getRepository(ProjectHandle<ODCSProject> projectHandle) {
+        ODCSProject p = projectHandle.getTeamProject();
+        Repository repo = Util.getTeamRepository(p.getServer().getUrl().toString(), p.getId());
+        return repo;
+    }
+
 };

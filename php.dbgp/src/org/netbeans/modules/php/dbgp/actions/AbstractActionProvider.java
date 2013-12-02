@@ -51,47 +51,45 @@ import org.netbeans.modules.php.dbgp.SessionManager;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ContextProvider;
 
-
 /**
  * @author ads
  *
  */
 public abstract class AbstractActionProvider extends ActionsProviderSupport {
+    private ContextProvider myContextProvider;
 
     AbstractActionProvider(ContextProvider contextProvider) {
         myContextProvider = contextProvider;
     }
-    
-    public void setEnabled( boolean enabled ){
+
+    public void setEnabled(boolean enabled) {
         Set set = getActions();
         for (Object object : set) {
-            setEnabled( object, enabled);
+            setEnabled(object, enabled);
         }
     }
-    
-    protected DebugSession getSession(){
+
+    protected DebugSession getSession() {
         SessionId id = getSessionId();
-        if ( id == null ){
+        if (id == null) {
             return null;
         }
         return SessionManager.getInstance().getSession(id);
     }
-    
-    protected SessionId getSessionId(){
-        return 
-            (SessionId)getContextProvider().lookupFirst( null , SessionId.class );   
+
+    protected SessionId getSessionId() {
+        return (SessionId) getContextProvider().lookupFirst(null, SessionId.class);
     }
-    
+
     protected ContextProvider getContextProvider() {
         return myContextProvider;
     }
-    
+
     protected void hideSuspendAnnotations() {
         DebugSession session = getSession();
-        if ( session != null ) {
+        if (session != null) {
             session.getBridge().hideAnnotations();
         }
     }
-    
-    private ContextProvider myContextProvider;
+
 }

@@ -59,7 +59,7 @@ import org.openide.util.ImageUtilities;
 public class RecentCategoryNode extends CategoryNode {
 
     private final PropertyChangeListener recentListener;
-    private static final ImageIcon RECENT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/category_unsubmitted.png", true);
+    private static final ImageIcon RECENT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/category_recent.png", true);
 
     public RecentCategoryNode(Category category) {
         super(category, false);

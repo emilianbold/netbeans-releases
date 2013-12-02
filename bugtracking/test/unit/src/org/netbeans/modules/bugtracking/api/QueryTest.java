@@ -104,7 +104,7 @@ public class QueryTest extends NbTestCase {
         APITestQuery apiQuery = getAPIQuery();
         Query query = getQuery();
         
-        assertEquals(apiQuery.getIssues().size(), query.getIssues().size());
+        assertEquals(APIAccessor.IMPL.getImpl(query).getIssues().size(), query.getIssues().size());
     }
     
     public void testPCL() {

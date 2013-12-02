@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.31.1
+#Version 1.36.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -48,10 +48,12 @@ fld public final static java.lang.String FONTSANDCOLORS = "FontsAndColors"
 fld public final static java.lang.String GENERAL = "General"
 fld public final static java.lang.String KEYMAPS = "Keymaps"
 meth public boolean open()
+meth public boolean open(boolean)
 meth public boolean open(java.lang.String)
+meth public boolean open(java.lang.String,boolean)
 meth public static org.netbeans.api.options.OptionsDisplayer getDefault()
 supr java.lang.Object
-hfds INSTANCE,currentCategoryID,impl,log,operationCancelled
+hfds INSTANCE,categoryModel,currentCategoryID,impl,log,operationCancelled
 
 CLSS public abstract org.netbeans.spi.options.AdvancedOption
 cons protected init()

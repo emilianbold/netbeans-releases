@@ -45,7 +45,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.cnd.modelimpl.test.ModelImplBaseTestCase;
-import org.netbeans.modules.cnd.repository.impl.spi.UnitsConverter;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
@@ -188,22 +187,20 @@ public class MemoryCacheTest extends ModelImplBaseTestCase {
         private MyKey(int i) {
             this.i = i;
         }
+        
         @Override
-        public int hashCode(UnitsConverter unitsConverter) {
-            return unitsConverter == null  ? i : unitsConverter.clientToLayer(i);
+        public int hashCode(int unitID) {
+            return unitID;
         }
 
         @Override
         public int hashCode() {
-            return i;
+            return hashCode(i);
         }
 
         @Override
-        public final boolean equals(UnitsConverter unitsConverter, Key object) {
-            if (object == null || (this.getClass() != object.getClass())) {
-                return false;
-            }
-            return unitsConverter == null ?  i == object.getUnitId() : unitsConverter.clientToLayer(i) == unitsConverter.clientToLayer(object.getUnitId());
+        public final boolean equals(int thisUnitID, Key object, int objectUnitID) {
+            return thisUnitID == objectUnitID;
         }
 
         @Override
@@ -215,7 +212,7 @@ public class MemoryCacheTest extends ModelImplBaseTestCase {
                 return false;
             }
             final MyKey other = (MyKey) obj;
-            return i == other.i;
+            return equals(i, other, other.i);
         }
 
 

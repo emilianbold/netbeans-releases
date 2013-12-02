@@ -68,6 +68,7 @@ public final class CssPrepOptionsPanel extends JPanel {
     }
 
     private void init() {
+        errorLabel.setText(" "); // NOI18N
         GroupLayout containerPanelLayout = new GroupLayout(containerPanel);
         containerPanel.setLayout(containerPanelLayout);
         GroupLayout.ParallelGroup horizontalGroup = containerPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING);

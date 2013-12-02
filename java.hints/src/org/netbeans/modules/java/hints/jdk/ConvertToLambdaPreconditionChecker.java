@@ -226,7 +226,7 @@ public class ConvertToLambdaPreconditionChecker {
         public Tree visitVariable(VariableTree variableDeclTree, Trees trees) {
 
             //check for shadowed variable
-            if (isVariableShadowed(variableDeclTree.getName())) {
+            if (shadowsVariable(variableDeclTree.getName())) {
                 foundShadowedVariable = true;
             }
             return super.visitVariable(variableDeclTree, trees);
@@ -273,8 +273,8 @@ public class ConvertToLambdaPreconditionChecker {
         }
     }
 
-    private boolean isVariableShadowed(CharSequence variableName) {
-        return Utilities.isVariableShadowedInScope(variableName, localScope);
+    private boolean shadowsVariable(CharSequence variableName) {
+        return Utilities.isSymbolUsed(info, pathToNewClassTree, variableName, localScope);
     }
 
     private ExpressionTree getSelector(Tree tree) {

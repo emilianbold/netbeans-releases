@@ -50,7 +50,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.eclipse.core.runtime.CoreException;
-import org.netbeans.modules.bugtracking.util.AutoupdateSupport;
+import org.netbeans.modules.bugtracking.commons.AutoupdateSupport;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;

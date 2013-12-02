@@ -48,7 +48,7 @@ import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 
 /**
- * Subversion 1.7
+ * Subversion 1.8
  * @author tomas
  */
 public class JhlClientTest extends NbTestCase {

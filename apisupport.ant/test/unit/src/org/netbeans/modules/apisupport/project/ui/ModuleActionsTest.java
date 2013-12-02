@@ -103,4 +103,64 @@ public class ModuleActionsTest extends TestBase {
         assertEquals("null", String.valueOf(a.findTestSources(Lookups.fixed(oneTest, r), true)));
     }
     
+    public void testFindTestSourcesForSources() throws Exception {
+        NbModuleProject p = generateStandaloneModule("p");
+        FileObject source = p.getSourceDirectory();
+        FileObject one = FileUtil.createData(source, "p/One.java");
+        FileObject r = FileUtil.createData(source, "p/r.png");
+        FileObject other = FileUtil.createData(source, "p/Other.java");
+        FileObject pkg = source.getFileObject("p");
+        FileObject third = FileUtil.createData(source, "p2/Third.java");
+        
+        FileObject test = p.getTestSourceDirectory("unit");
+        FileObject oneTest = FileUtil.createData(test, "p/OneTest.java");
+        FileObject otherTest = FileUtil.createData(test, "p/OtherTest.java");
+        FileObject thirdTest = FileUtil.createData(test, "p2/ThirdTest.java");
+        
+        ModuleActions a = new ModuleActions(p);
+        assertEquals("null", String.valueOf(a.findTestSourcesForSources(Lookup.EMPTY)));
+        assertEquals("unit:p/OneTest.java", String.valueOf(a.findTestSourcesForSources(Lookups.singleton(one))));
+        assertEquals("unit:p/OneTest.java,p/OtherTest.java", String.valueOf(a.findTestSourcesForSources(Lookups.fixed(one, other))));
+        assertEquals("unit:p/**", String.valueOf(a.findTestSourcesForSources(Lookups.singleton(pkg))));
+        assertEquals("null", String.valueOf(a.findTestSourcesForSources(Lookups.singleton(r))));
+        assertEquals("null", String.valueOf(a.findTestSourcesForSources(Lookups.fixed(one, r))));
+        assertEquals("null", String.valueOf(a.findTestSourcesForSources(Lookup.EMPTY)));
+        assertEquals("unit:p/OneTest.java", String.valueOf(a.findTestSourcesForSources(Lookups.singleton(one))));
+        assertEquals("unit:p/OneTest.java,p/OtherTest.java", String.valueOf(a.findTestSourcesForSources(Lookups.fixed(one, other))));
+        assertEquals("null", String.valueOf(a.findTestSourcesForSources(Lookups.singleton(r))));
+        assertEquals("null", String.valueOf(a.findTestSourcesForSources(Lookups.fixed(one, r))));
+}
+
+    public void testFindTestSourcesForFiles() throws Exception {
+        NbModuleProject p = generateStandaloneModule("p");
+        FileObject source = p.getSourceDirectory();
+        FileObject one = FileUtil.createData(source, "p/One.java");
+        FileObject r = FileUtil.createData(source, "p/r.png");
+        FileObject other = FileUtil.createData(source, "p/Other.java");
+        FileObject pkg = source.getFileObject("p");
+        FileObject third = FileUtil.createData(source, "p2/Third.java");
+        
+        FileObject test = p.getTestSourceDirectory("unit");
+        FileObject oneTest = FileUtil.createData(test, "p/OneTest.java");
+        FileObject otherTest = FileUtil.createData(test, "p/OtherTest.java");
+        FileObject thirdTest = FileUtil.createData(test, "p2/ThirdTest.java");
+        
+        ModuleActions a = new ModuleActions(p);
+        assertEquals("null", String.valueOf(a.findTestSourcesForFiles(Lookup.EMPTY)));
+        String actual = String.valueOf(a.findTestSourcesForFiles(Lookups.fixed(oneTest, other, third)));
+        String testType = "unit";
+        String expOne = "p/OneTest.java";
+        String expOther = "p/OtherTest.java";
+        String expThird = "p2/ThirdTest.java";
+        assertTrue(actual.startsWith(testType.concat(":")));
+        assertTrue(actual.contains(expOne));
+        assertTrue(actual.contains(expOther));
+        assertTrue(actual.contains(expThird));
+        
+        actual = String.valueOf(a.findTestSourcesForFiles(Lookups.fixed(one, otherTest)));
+        assertTrue(actual.startsWith(testType.concat(":")));
+        assertTrue(actual.contains(expOne));
+        assertTrue(actual.contains(expOther));
+    }
+    
 }

@@ -492,6 +492,19 @@ public final class FoldHierarchy {
         public int foldEndGuardedLength(Fold f) {
             return f.getEndGuardedLength();
         }
+        
+        public void foldTearOut(Fold f, Collection c) {
+            int cnt = f.getFoldCount();
+            if (cnt > 0) {
+                Fold[] children = f.foldsToArray(0, cnt);
+                for (Fold x : children) {
+                    foldTearOut(x, c);
+                }
+                f.setChildren(null);
+            }
+            c.add(f);
+            f.setParent(null);
+        }
     }
 
 }

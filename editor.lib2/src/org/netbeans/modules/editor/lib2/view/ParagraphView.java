@@ -44,10 +44,12 @@
 
 package org.netbeans.modules.editor.lib2.view;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.font.FontRenderContext;
+import java.awt.Stroke;
 import java.awt.geom.Rectangle2D;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
@@ -58,7 +60,7 @@ import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
 import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
-import org.netbeans.spi.editor.highlighting.HighlightsSequence;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 
 
 /**
@@ -393,6 +395,81 @@ public final class ParagraphView extends EditorView implements EditorView.Parent
         // The background is already cleared by BasicTextUI.paintBackground() which uses component.getBackground()
         checkChildrenNotNull();
         children.paint(this, g, alloc, clipBounds);
+        
+        if (getDocumentView().op.isGuideLinesEnable()) {
+            DocumentView docView = getDocumentView();
+            CharSequence docText = DocumentUtilities.getText(docView.getDocument());
+            int textlength = getEndOffset() - getStartOffset();
+            int firstNonWhite = 0;
+            int prefixlength = 0;
+            for (; firstNonWhite < textlength; firstNonWhite++) {
+                if (!Character.isWhitespace(docText.charAt(firstNonWhite + getStartOffset()))) {
+                    break;
+                }
+                if ('\t' == docText.charAt(firstNonWhite + getStartOffset())) {
+                    prefixlength += docView.op.getTabSize();
+                } else {
+                    prefixlength++;
+                }     
+            }
+            if (firstNonWhite >= textlength) {
+                int[] guideLinesCache = docView.op.getGuideLinesCache();
+                if (guideLinesCache[0] != -1 && guideLinesCache[0] <= getStartOffset() && guideLinesCache[1] >= getEndOffset()) {
+                    prefixlength = guideLinesCache[2];
+                    firstNonWhite = 0;
+                    textlength = prefixlength != -1 ? 1 : -1;
+                } else {
+                    firstNonWhite = 0;
+                    prefixlength = 0;
+                    int secondNonWhite = getEndOffset();
+                    for (; secondNonWhite < docText.length(); secondNonWhite++) {
+                        char currentChar = docText.charAt(secondNonWhite);
+                        firstNonWhite++;
+                        if (!Character.isWhitespace(currentChar)) {
+                            break;
+                        }
+                        if ('\t' == currentChar) {
+                            prefixlength += docView.op.getTabSize();
+                        } else {
+                            prefixlength++;
+                        }
+                        if ((currentChar == '\n') || (currentChar == '\r')) {
+                            firstNonWhite = 0;
+                            prefixlength = 0;
+                        }
+                    }
+                    if (secondNonWhite >= docText.length()) {
+                        docView.op.setGuideLinesCache(getStartOffset(), secondNonWhite - firstNonWhite+1, -1);
+                        textlength = -1;
+                    } else {
+                        textlength = firstNonWhite + 1;
+                        docView.op.setGuideLinesCache(getStartOffset(), secondNonWhite - firstNonWhite+1, prefixlength);
+                    }
+                }
+            } else {
+                docView.op.setGuideLinesCache(-1, -1, -1);
+            }
+            if (firstNonWhite < textlength) {
+                Color oldColor = g.getColor();
+                Stroke oldStroke = g.getStroke();
+                
+                g.setColor(docView.op.getGuideLinesColor());
+                g.setStroke(new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{1}, 0));
+                
+                float textsize = docView.op.getDefaultCharWidth() * prefixlength;
+                float tabwidth = docView.op.getDefaultCharWidth() * docView.op.getIndentLevelSize();
+                int rowHeight = (int) docView.op.getDefaultRowHeight();
+                if (tabwidth > 0) {
+                    int x = alloc.getBounds().x;
+                    while (x < alloc.getBounds().x + alloc.getBounds().width && x < textsize) {
+                        g.drawLine(x, alloc.getBounds().y, x, alloc.getBounds().y + rowHeight);
+                        x += tabwidth;
+                    } 
+                }
+                g.setColor(oldColor);
+                g.setStroke(oldStroke);
+            }
+        }
     }
 
     @Override

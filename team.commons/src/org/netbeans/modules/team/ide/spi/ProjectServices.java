@@ -49,7 +49,8 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * Provides project relevant services for bugtracking and team as given by the underlying IDE infrastructure.
+ * Provides access to various Project relevant services so that the expected consumers (bugtracking and team modules) 
+ * are able to independently access different IDE Project infrastructures (like e.g. NetBeans or JDev). 
  * 
  * @author Tomas Stupka
  */

@@ -41,29 +41,26 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.web.actions;
 
 import java.awt.event.KeyEvent;
-
+import javax.swing.KeyStroke;
+import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.EditorWindowOperator;
+import static org.netbeans.jellytools.JellyTestCase.emptyConfiguration;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.OpenAction;
-import org.netbeans.jellytools.actions.Action.Shortcut;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.jemmy.operators.ComponentOperator;
-
+import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.web.setup.WebSetup;
 
 /**
  * Test of Paste text to opened source editor.
  *
- * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
+ * @author anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
 public class ToggleBreakpointTest extends PerformanceTestCase {
 
@@ -71,64 +68,74 @@ public class ToggleBreakpointTest extends PerformanceTestCase {
     private int line;
     private EditorOperator editorOperator;
 
-   
-    /** Creates a new instance of ToggleBreakpointTest */
+    /**
+     * Creates a new instance of ToggleBreakpointTest
+     *
+     * @param testName test name
+     */
     public ToggleBreakpointTest(String testName) {
         super(testName);
         init();
     }
-    
-    /** Creates a new instance of ToggleBreakpointTest */
+
+    /**
+     * Creates a new instance of ToggleBreakpointTest
+     *
+     * @param testName test name
+     * @param performanceDataName data name
+     */
     public ToggleBreakpointTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         init();
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(WebSetup.class)
-             .addTest(ToggleBreakpointTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(WebSetup.class)
+                .addTest(ToggleBreakpointTest.class)
+                .suite();
     }
 
-    protected void init() {
+    private void init() {
         expectedTime = UI_RESPONSE;
         WAIT_AFTER_OPEN = 200;
-        line=99;
-        file="Test.jsp";
+        line = 99;
+        file = "Test.jsp";
     }
-    
-   public void testToggleBreakpoint() {
+
+    public void testToggleBreakpoint() {
         doMeasurement();
-    }    
-    
+    }
+
+    @Override
     protected void initialize() {
         EditorOperator.closeDiscardAll();
-
-        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("TestWebProject"),"Web Pages|"+file));
-        editorOperator = new EditorWindowOperator().getEditor(file);
+        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("TestWebProject"), "Web Pages|" + file));
+        editorOperator = new EditorOperator(file);
 
     }
-    
+
+    @Override
     public void prepare() {
         editorOperator.setCaretPositionToLine(line);
         line--;
     }
-    
-    public ComponentOperator open(){
-        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
-        new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_F8, KeyEvent.CTRL_MASK)).perform(editorOperator);
+
+    @Override
+    public ComponentOperator open() {
+        repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);
+        new ActionNoBlock(null, null, KeyStroke.getKeyStroke(KeyEvent.VK_F8, KeyEvent.CTRL_MASK)).perform(editorOperator);
         return null;
     }
-    
+
+    @Override
     public void close() {
-       
+
     }
-    
+
+    @Override
     protected void shutdown() {
         repaintManager().resetRegionFilters();
         super.shutdown();
     }
-    
 }

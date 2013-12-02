@@ -50,7 +50,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.bugtracking.api.Query;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
+import org.netbeans.modules.bugtracking.commons.JiraUpdater;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
@@ -217,7 +217,7 @@ class FakeJiraSupport {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            TeamUtil.downloadAndInstallJira(projectUrl);
+            JiraUpdater.getInstance().downloadAndInstall(projectUrl);
         }
         public List<QueryResultHandle> getQueryResults() {
             if(results == null) {
@@ -262,7 +262,7 @@ class FakeJiraSupport {
         }
         @Override
         public void actionPerformed(ActionEvent e) {
-            TeamUtil.downloadAndInstallJira(projectUrl);
+            JiraUpdater.getInstance().downloadAndInstall(projectUrl);
         }
         @Override
         public ResultType getResultType() {
@@ -281,7 +281,7 @@ class FakeJiraSupport {
         return new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                TeamUtil.downloadAndInstallJira(urlString);
+                JiraUpdater.getInstance().downloadAndInstall(urlString);
             }
         };
     }

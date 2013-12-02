@@ -81,6 +81,10 @@ public class QRefreshPatchAction extends CreateRefreshAction {
     }
 
     @Override
+    @NbBundle.Messages({
+        "# {0} - repository name", "MSG_QRefreshPatchAction.err.noPatchApplied=Cannot refresh patch.\n"
+            + "No patch applied in repository \"{0}\"."
+    })
     QCommitPanel createPanel (final File root, final File[] roots) {
         QPatch currentPatch = null;
         try {
@@ -92,7 +96,7 @@ public class QRefreshPatchAction extends CreateRefreshAction {
                 }
             }
             if (currentPatch == null) {
-                NotifyDescriptor.Message e = new NotifyDescriptor.Message(NbBundle.getMessage(QRefreshPatchAction.class, "MSG_QRefreshPatchAction.err.noPatchApplied")); //NOI18N
+                NotifyDescriptor.Message e = new NotifyDescriptor.Message(Bundle.MSG_QRefreshPatchAction_err_noPatchApplied(root.getName()));
                 DialogDisplayer.getDefault().notifyLater(e);
             } else {
                 final HgLogMessage.HgRevision parent = HgCommand.getParent(root, null, currentPatch.getId());

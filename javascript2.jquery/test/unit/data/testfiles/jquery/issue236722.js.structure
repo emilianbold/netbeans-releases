@@ -1,0 +1,21 @@
+pluginWithoutElementName:METHOD:[PUBLIC]:ESCAPED{pluginWithoutElementName}ESCAPED{(}ESCAPED{settings}ESCAPED{)}<font color="#999999">ESCAPED{ : }pluginWithoutElementName.publicObj</font>:
+  _globals:CLASS:[PRIVATE]:ESCAPED{_globals}:
+    dependencies:CLASS:[PUBLIC]:ESCAPED{dependencies}:
+      jquery1.6+:METHOD:[PUBLIC]:ESCAPED{jquery1.6+}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }Boolean</font>:
+    plugins:CLASS:[PUBLIC]:ESCAPED{plugins}:
+    settings:CLASS:[PUBLIC]:ESCAPED{settings}:
+  _helper:CLASS:[PRIVATE]:ESCAPED{_helper}:
+    callPluginFunction:METHOD:[PUBLIC]:ESCAPED{callPluginFunction}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{pluginWithoutElementName}ESCAPED{, }<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{pluginFunctionName}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
+    checkDependencies:METHOD:[PUBLIC]:ESCAPED{checkDependencies}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }Boolean</font>:
+    doHook:METHOD:[PUBLIC]:ESCAPED{doHook}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{name}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
+    registerPlugin:METHOD:[PUBLIC]:ESCAPED{registerPlugin}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{name}ESCAPED{, }<font color="#999999">ESCAPED{object}ESCAPED{ }</font>ESCAPED{object}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
+      plugin:CLASS:[PRIVATE]:ESCAPED{plugin}:
+        __hooks:FIELD:[PUBLIC]:ESCAPED{__hooks}:
+  defaultSettings:CLASS:[PRIVATE]:ESCAPED{defaultSettings}:
+  myFunction:METHOD:[PRIVATE]:ESCAPED{myFunction}ESCAPED{(}ESCAPED{myParam}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
+  publicObj:CLASS:[PRIVATE]:ESCAPED{publicObj}:
+    callPluginFunction:METHOD:[PUBLIC]:ESCAPED{callPluginFunction}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{pluginWithoutElementName}ESCAPED{, }<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{pluginFunctionName}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
+    init:METHOD:[PUBLIC]:ESCAPED{init}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
+    myFunction:METHOD:[PUBLIC]:ESCAPED{myFunction}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
+    registerPlugin:METHOD:[PUBLIC]:ESCAPED{registerPlugin}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{name}ESCAPED{, }<font color="#999999">ESCAPED{object}ESCAPED{ }</font>ESCAPED{object}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
+    version:FIELD:[PUBLIC]:ESCAPED{version}<font color="#999999">ESCAPED{ : }String</font>:

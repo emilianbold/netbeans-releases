@@ -49,7 +49,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
+import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.team.server.ui.spi.QueryResultHandle;
 import org.openide.util.NbBundle;
 
@@ -92,8 +92,9 @@ class QueryResultHandleImpl extends QueryResultHandle implements ActionListener 
         return type;
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
-        TeamUtil.openQuery(query, true);
+        Util.selectQuery(query);
     }
 
     static QueryResultHandleImpl forAllStatus(Query query) {

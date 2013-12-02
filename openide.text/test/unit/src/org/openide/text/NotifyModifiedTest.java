@@ -47,6 +47,8 @@ package org.openide.text;
 import java.beans.PropertyChangeSupport;
 import java.io.StringWriter;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.*;
 import junit.framework.AssertionFailedError;
 import org.netbeans.junit.NbTestCase;
@@ -62,6 +64,7 @@ import org.openide.util.lookup.*;
  */
 public class NotifyModifiedTest extends NbTestCase
 implements CloneableEditorSupport.Env {
+    private static final Logger err = Logger.getLogger(NotifyModifiedTest.class.getName());
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
     }
@@ -73,8 +76,6 @@ implements CloneableEditorSupport.Env {
     protected CES support;
     /** the content of lookup of support */
     private InstanceContent ic;
-    /** private err manager */
-    private org.openide.ErrorManager err;
 
     
     // Env variables
@@ -96,28 +97,16 @@ implements CloneableEditorSupport.Env {
     protected int timeOut() {
         return 20000;
     }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
+    }
   
     @Override
     protected void setUp () {
         ic = new InstanceContent ();
         support = new CES (this, new AbstractLookup (ic));
-        
-        assertNotNull("ErrManager has to be in lookup", org.openide.util.Lookup.getDefault().lookup(ErrManager.class));
-        ErrManager.resetMessages();
-        ErrManager.log = getLog ();
-        
-        err = ErrManager.getDefault().getInstance(getName());
-    }
-    
-    @Override
-    protected void runTest () throws Throwable {
-        try {
-            super.runTest ();
-        } catch (AssertionFailedError ae) {
-            AssertionFailedError n = new AssertionFailedError (ae.getMessage () + "\n" + ErrManager.messages);
-            n.initCause (ae);
-            throw n;
-        }
     }
     
     //
@@ -503,43 +492,43 @@ implements CloneableEditorSupport.Env {
     public void testUndoDoesMarkFileAsDirtyIssue56963 () throws Exception {
         content = "Somecontent";
         
-        err.log("Going to open");
+        err.info("Going to open");
         final javax.swing.text.StyledDocument doc = support.openDocument();
-        err.log("Opened: " + doc);
+        err.info("Opened: " + doc);
 
         int len = doc.getLength ();
         
         assertEquals ("Content opened", "Somecontent", doc.getText (0, len));
         
-        err.log("Going to remove " + len + " characters");
+        err.info("Going to remove " + len + " characters");
         doc.remove (0, len);
-        err.log("Removed");Thread.sleep(300);
+        err.info("Removed");Thread.sleep(300);
         
         assertEquals ("Empty", 0, doc.getLength ());
         assertTrue ("Can undo", support.getUndoRedo ().canUndo ());
         
-        err.log("Going to save");
+        err.info("Going to save");
         support.saveDocument (); Thread.sleep(300);
         waitEQ ();
-        err.log("Saved");
+        err.info("Saved");
 
         assertTrue ("Can undo as well", support.getUndoRedo ().canUndo ());
         
-        err.log("Going to undo");
+        err.info("Going to undo");
         support.getUndoRedo ().undo ();
         waitEQ ();
-        err.log("Undoed");
+        err.info("Undoed");
         
         assertEquals ("Lengh it back", len, doc.getLength ());
         assertEquals ("Content is back", "Somecontent", doc.getText (0, len));
         
-        err.log("Before assertModified");
+        err.info("Before assertModified");
         support.assertModified (true, "Document is Modified");
 
-        err.log("Before redo");
+        err.info("Before redo");
         support.getUndoRedo ().redo ();
         waitEQ ();
-        err.log("After redo");
+        err.info("After redo");
         
         assertEquals ("Zero length", 0, doc.getLength ());
         
@@ -617,28 +606,28 @@ implements CloneableEditorSupport.Env {
         
         assertEquals ("Content opened", "Somecontent", doc.getText (0, len));
 
-        err.log("wait so first modification really happens later in time then the lastSaveTime is set to");
+        err.info("wait so first modification really happens later in time then the lastSaveTime is set to");
         Thread.sleep(300);
         
         doc.remove (0, len);
         
-        err.log("After remove");
+        err.info("After remove");
         assertEquals ("Empty", 0, doc.getLength ());
         assertTrue ("Can undo", support.getUndoRedo ().canUndo ());
         
-        err.log("Before save");
+        err.info("Before save");
         Thread.sleep(300); support.saveDocument (); Thread.sleep(300);
         waitEQ ();
-        err.log("After save");
+        err.info("After save");
         
         assertTrue ("Can undo as well", support.getUndoRedo ().canUndo ());
         assertEquals ("Once modified", 1, support.notifyModified);
         assertEquals ("Once unmodified after save", 1, support.notifyUnmodified);
 
-        err.log("Before undo");
+        err.info("Before undo");
         support.getUndoRedo ().undo ();
         waitEQ ();
-        err.log("After undo");
+        err.info("After undo");
         
         assertEquals ("Lengh it back", len, doc.getLength ());
         assertEquals ("Content is back", "Somecontent", doc.getText (0, len));
@@ -655,8 +644,9 @@ implements CloneableEditorSupport.Env {
         
         // does the reload
         propL.firePropertyChange (PROP_TIME, null, null);
-        // wait till reload is over
-        waitEQ ();
+
+        Thread.sleep(100); // Wait till reload will start processing
+        waitEQ (); // Wait till EDT part of the reload is over
 
         Object newDoc = support.openDocument ();
         assertSame ("Reload does not change the document", newDoc, doc);
@@ -811,72 +801,5 @@ implements CloneableEditorSupport.Env {
             assertEquals (msg, modified, isModified ());
         }
     }
-    
-    public static final class Lkp extends org.openide.util.lookup.ProxyLookup {
-        public Lkp() {
-            super(
-                Lookups.singleton(new ErrManager()),
-                Lookups.metaInfServices(Lkp.class.getClassLoader())
-            );
-        }
-    }
 
-    private static final class ErrManager extends org.openide.ErrorManager {
-        static final StringBuffer messages = new StringBuffer();
-        static int nOfMessages;
-        static final String DELIMITER = ": ";
-        static final String WARNING_MESSAGE_START = WARNING + DELIMITER;
-        /** setup in setUp */
-        static java.io.PrintStream log = System.err;
-        
-        private String prefix;
-        
-        public ErrManager () {
-            prefix = "";
-        }
-        
-        private ErrManager (String pr) {
-            this.prefix = pr;
-        }
-        
-        static void resetMessages() {
-            messages.delete(0, ErrManager.messages.length());
-            nOfMessages = 0;
-        }
-        
-        public void log(int severity, String s) {
-            synchronized (ErrManager.messages) {
-                nOfMessages++;
-                messages.append('['); log.print ('[');
-                messages.append(prefix); log.print (prefix);
-                messages.append("] - "); log.print ("] - ");
-                messages.append(s); log.println (s);
-                messages.append('\n'); 
-            }
-        }
-        
-        public Throwable annotate(Throwable t, int severity,
-                String message, String localizedMessage,
-                Throwable stackTrace, java.util.Date date) {
-            return t;
-        }
-        
-        public Throwable attachAnnotations(Throwable t, Annotation[] arr) {
-            return t;
-        }
-        
-        public org.openide.ErrorManager.Annotation[] findAnnotations(Throwable t) {
-            return null;
-        }
-        
-        public org.openide.ErrorManager getInstance(String name) {
-            return new ErrManager (name);
-        }
-        
-        public void notify(int severity, Throwable t) {
-            StringWriter w = new StringWriter ();
-            t.printStackTrace (new java.io.PrintWriter (w));
-            log (severity, w.toString ());
-        }
-    }
 }

@@ -43,68 +43,72 @@
  */
 package org.netbeans.performance.j2se.menus;
 
+import junit.framework.Test;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.modules.form.ComponentInspectorOperator;
+import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.performance.utilities.ValidatePopupMenuOnNodes;
 import org.netbeans.performance.j2se.setup.J2SESetup;
 
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.modules.form.ComponentInspectorOperator;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
-
 /**
  * Test of popup menu on node in Component Inspector.
- * @author  juhrik@netbeans.org, mmirilovic@netbeans.org
+ *
+ * @author juhrik@netbeans.org, mmirilovic@netbeans.org
  */
 public class FormInspectorNodePopupMenuTest extends ValidatePopupMenuOnNodes {
 
-
-
-    /** Creates a new instance of FormInspectorNodePopupMenu */
+    /**
+     * Creates a new instance of FormInspectorNodePopupMenu
+     *
+     * @param testName test name
+     */
     public FormInspectorNodePopupMenuTest(String testName) {
         super(testName);
     }
-    
-    /** Creates a new instance of FormInspectorNodePopupMenu */
+
+    /**
+     * Creates a new instance of FormInspectorNodePopupMenu
+     *
+     * @param testName test name
+     * @param performanceDataName data name
+     */
     public FormInspectorNodePopupMenuTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(FormInspectorNodePopupMenuTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(J2SESetup.class, "testCloseMemoryToolbar", "testOpenDataProject")
+                .addTest(FormInspectorNodePopupMenuTest.class)
+                .suite();
     }
 
-    public void testFormNodePopupMenuInspector(){
+    public void testFormNodePopupMenuInspector() {
         doMeasurement();
     }
-   
+
     @Override
-     public void initialize(){
+    public void initialize() {
         CommonUtilities.openSmallFormFile();
-     }
-    
+    }
+
     @Override
-    public void shutdown(){
+    public void shutdown() {
         EditorOperator.closeDiscardAll();
     }
 
     @Override
-    public void prepare(){
+    public void prepare() {
         String path = "[JFrame]";
         dataObjectNode = new Node(new ComponentInspectorOperator().treeComponents(), path);
         super.prepare();
     }
 
     @Override
-    public void close(){
-        if (dataObjectNode == null) {
-            Thread.dumpStack();
+    public void close() {
+        if (dataObjectNode != null) {
+            super.close();
         }
-        super.close();
     }
 }

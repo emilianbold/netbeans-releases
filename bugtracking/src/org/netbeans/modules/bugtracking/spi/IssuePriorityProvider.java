@@ -51,7 +51,8 @@ package org.netbeans.modules.bugtracking.spi;
  * </p>
  * @author Tomas Stupka
  * @param <I> the implementation specific issue type
- */
+ * @since 1.85
+*/
 public interface IssuePriorityProvider<I> {
     
     /**
@@ -62,6 +63,7 @@ public interface IssuePriorityProvider<I> {
      * @param i an implementation specific issue instance
      * @return the priority ID
      * @see IssuePriorityInfo
+     * @since 1.85
      */
     public String getPriorityID(I i);
     
@@ -77,6 +79,7 @@ public interface IssuePriorityProvider<I> {
      * 
      * @return priority infos
      * @see IssuePriorityInfo
+     * @since 1.85
      */
     public IssuePriorityInfo[] getPriorityInfos();
     

@@ -137,6 +137,11 @@ final class TaskController implements IssueController {
         task.removePropertyChangeListener(l);
     }
 
+    @Override
+    public boolean isChanged() {
+        return task.hasUnsavedChanges() || task.hasUnsavedAttachments();
+    }
+    
     void taskDeleted () {
         Mutex.EVENT.readAccess(new Mutex.Action<Void>() {
 

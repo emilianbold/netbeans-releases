@@ -149,6 +149,9 @@ public class TplBracesMatching implements BracesMatcher, BracesMatcherFactory {
                                             return new int[]{from, to,
                                                         from, tagNameEnd,
                                                         to - t3.length(), to};
+                                        } else if (atCommentTag(th, ts, delims, searchOffset)) {
+                                            // highlight only delimiters with the starting/ending asterisks
+                                            return new int[]{from, to, from, from + delims[0] + 1, to - delims[1] - 1, to};
                                         } else {
                                             return new int[]{from, to};
                                         }
