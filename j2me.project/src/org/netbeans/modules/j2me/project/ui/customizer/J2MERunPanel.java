@@ -493,39 +493,4 @@ public class J2MERunPanel extends javax.swing.JPanel {
             textComp.setText(getPropertyValue(activeConfig, getPropertyName()));
         }
     }
-
-    private static class CheckBoxDataSource extends DataSource {
-
-        private final JToggleButton checkBox;
-
-        public CheckBoxDataSource(@NonNull final String propName,
-                @NonNull final JToggleButton toggleButton,
-                @NonNull final JComboBox<?> configCombo,
-                @NonNull final Map<String, Map<String, String>> configs) {
-            super(propName, toggleButton, configCombo, configs);
-            Parameters.notNull("toggleButton", toggleButton); //NOI18N
-            this.checkBox = toggleButton;
-            toggleButton.addItemListener(new ItemListener() {
-                @Override
-                public void itemStateChanged(ItemEvent e) {
-                    changed(readValue());
-                }
-            });
-        }
-
-        @Override
-        public String getPropertyValue() {
-            return readValue();
-        }
-
-        @Override
-        public void update(String activeConfig) {
-            String prop = getPropertyValue(activeConfig, getPropertyName());
-            checkBox.setSelected(prop != null && Boolean.valueOf(prop));
-        }
-
-        final String readValue() {
-            return String.valueOf(checkBox.isSelected());
-        }
-    }
 }
