@@ -558,17 +558,9 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                     return icon;
                 }
             }
-            if (!f.exists()) {
-                //#159646: Workaround for JDK issue #6357445
-                // Can happen when a file was deleted on disk while project
-                // dialog was still open. In that case, throws an exception
-                // repeatedly from FSV.gSI during repaint.
-                return null;
-            }
             if ( 
                    !f.toString().matches("/[^/]+") && // Unix: /net, /proc, etc.
-                    f.getParentFile() != null && // do not consider drive roots
-                    f.isDirectory()) { // #173958: do not call ProjectManager.isProject now, could block
+                    f.getParentFile() != null) { // #173958: do not call ProjectManager.isProject now, could block
                 synchronized (this) {
                     if (lookingForIcon == null) {
                         lookingForIcon = f;
@@ -579,10 +571,24 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                     }
                 }
             }
-            return chooser.getFileSystemView().getSystemIcon(f);
+            try {
+                return chooser.getFileSystemView().getSystemIcon(f);
+            } catch (NullPointerException ex) {
+                //#159646: Workaround for JDK issue #6357445
+                // Can happen when a file was deleted on disk while project
+                // dialog was still open. In that case, throws an exception
+                // repeatedly from FSV.gSI during repaint.
+                return null;
+            }
         }
 
         public @Override void run() {
+            if (!lookingForIcon.isDirectory()) {
+                synchronized (this) {
+                    lookingForIcon = null;
+                }
+                return;
+            }
             File d = FileUtil.normalizeFile(lookingForIcon);
             ProjectManager.Result r = getProjectResult(d);
             Icon icon;
@@ -597,7 +603,15 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                     }
                 }
             } else {
-                icon = chooser.getFileSystemView().getSystemIcon(lookingForIcon);
+                try {
+                    icon = chooser.getFileSystemView().getSystemIcon(lookingForIcon);
+                } catch (NullPointerException ex) {
+                    //#159646: Workaround for JDK issue #6357445
+                    // Can happen when a file was deleted on disk while project
+                    // dialog was still open. In that case, throws an exception
+                    // repeatedly from FSV.gSI during repaint.
+                    icon = null;
+                }
             }
             synchronized (this) {
                 knownProjectIcons.put(lookingForIcon, icon);

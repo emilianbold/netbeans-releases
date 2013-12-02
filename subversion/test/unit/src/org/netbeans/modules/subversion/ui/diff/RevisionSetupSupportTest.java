@@ -44,7 +44,9 @@ package org.netbeans.modules.subversion.ui.diff;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.subversion.AbstractSvnTestCase;
 import org.netbeans.modules.subversion.FileInformation;
@@ -108,7 +110,7 @@ public class RevisionSetupSupportTest extends AbstractSvnTestCase {
         RepositoryFile left = new RepositoryFile(repoUrl, wc.getName() + "/folder", SVNRevision.HEAD);
         RepositoryFile right = new RepositoryFile(repoUrl, wc.getName() + "/folder", SVNRevision.HEAD);
         final RevisionSetupsSupport revSupp = new RevisionSetupsSupport(left, right, repoUrl, new Context(folder));
-        final AtomicReference<Setup[]> ref = new AtomicReference<Setup[]>();
+        final AtomicReference<Setup[]> ref = new AtomicReference<>();
         new SvnProgressSupport() {
             @Override
             protected void perform () {
@@ -136,7 +138,7 @@ public class RevisionSetupSupportTest extends AbstractSvnTestCase {
         getClient().copy(left.getFileUrl(), right.getFileUrl(), "copying...", SVNRevision.HEAD, true);
         
         final RevisionSetupsSupport revSupp = new RevisionSetupsSupport(left, right, repoUrl, new Context(folder));
-        final AtomicReference<Setup[]> ref = new AtomicReference<Setup[]>();
+        final AtomicReference<Setup[]> ref = new AtomicReference<>();
         new SvnProgressSupport() {
             @Override
             protected void perform () {
@@ -167,7 +169,7 @@ public class RevisionSetupSupportTest extends AbstractSvnTestCase {
         commit(file);
         
         final RevisionSetupsSupport revSupp = new RevisionSetupsSupport(left, right, repoUrl, new Context(folder));
-        final AtomicReference<Setup[]> ref = new AtomicReference<Setup[]>();
+        final AtomicReference<Setup[]> ref = new AtomicReference<>();
         new SvnProgressSupport() {
             @Override
             protected void perform () {
@@ -211,7 +213,7 @@ public class RevisionSetupSupportTest extends AbstractSvnTestCase {
                 return new File[] { file, file2 };
             }
         };
-        final AtomicReference<Setup[]> ref = new AtomicReference<Setup[]>();
+        final AtomicReference<Setup[]> ref = new AtomicReference<>();
         new SvnProgressSupport() {
             @Override
             protected void perform () {
@@ -221,8 +223,8 @@ public class RevisionSetupSupportTest extends AbstractSvnTestCase {
         Setup[] setups = ref.get();
         assertNotNull(setups);
         assertEquals(2, setups.length);
-        assertEquals(new HashSet<File>(Arrays.asList(file, file2)),
-                new HashSet<File>(Arrays.asList(setups[0].getBaseFile(), setups[1].getBaseFile())));
+        assertEquals(new HashSet<>(Arrays.asList(file, file2)),
+                new HashSet<>(Arrays.asList(setups[0].getBaseFile(), setups[1].getBaseFile())));
         assertEquals(FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY, setups[0].getInfo().getStatus());
         assertEquals(FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY, setups[1].getInfo().getStatus());
     }
@@ -246,7 +248,7 @@ public class RevisionSetupSupportTest extends AbstractSvnTestCase {
         commit(trunk);
         
         final RevisionSetupsSupport revSupp = new RevisionSetupsSupport(left, right, repoUrl, new Context(new File[] { trunk }));
-        final AtomicReference<Setup[]> ref = new AtomicReference<Setup[]>();
+        final AtomicReference<Setup[]> ref = new AtomicReference<>();
         new SvnProgressSupport() {
             @Override
             protected void perform () {
@@ -258,6 +260,54 @@ public class RevisionSetupSupportTest extends AbstractSvnTestCase {
         assertEquals(1, setups.length);
         assertEquals(file, setups[0].getBaseFile());
         assertEquals(FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY, setups[0].getInfo().getStatus());
+    }
+    
+    // proper test should run with svnkit
+    public void testDiffURLs_Issue239010 () throws Exception {
+        // init
+        File project = new File(wc, "project");
+        File trunk = new File(project, "trunk");
+        final File file = new File(trunk, "file");
+        final File fileDelete = new File(trunk, "deletedFolder/deleted");
+        final File fileAdded = new File(trunk, "added");
+        trunk.mkdirs();
+        file.createNewFile();
+        fileDelete.getParentFile().mkdir();
+        fileDelete.createNewFile();
+        
+        add(project);
+        commit(project);
+        
+        SVNRevision rev = getClient().getInfoFromWorkingCopy(file).getRevision();
+        RepositoryFile left = new RepositoryFile(repoUrl, wc.getName() + "/project/trunk", rev);
+        RepositoryFile right = new RepositoryFile(repoUrl, wc.getName() + "/project/trunk", SVNRevision.BASE);
+        
+        TestKit.write(file, "modification");
+        fileAdded.createNewFile();
+        add(fileAdded);
+        delete(fileDelete);
+        commit(trunk);
+        
+        update(fileDelete.getParentFile());
+        
+        final RevisionSetupsSupport revSupp = new RevisionSetupsSupport(left, right, repoUrl, new Context(new File[] { trunk }));
+        final AtomicReference<Setup[]> ref = new AtomicReference<>();
+        new SvnProgressSupport() {
+            @Override
+            protected void perform () {
+                ref.set(revSupp.computeSetupsBetweenRevisions(this));
+            }
+        }.start(RequestProcessor.getDefault(), repoUrl, "bbb").waitFinished();
+        Setup[] setups = ref.get();
+        assertNotNull(setups);
+        assertEquals(3, setups.length);
+        Map<File, Setup> setupMap = new HashMap<>();
+        for (Setup s : setups) {
+            setupMap.put(s.getBaseFile(), s);
+        }
+        assertEquals(FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY, setupMap.get(file).getInfo().getStatus());
+        assertEquals(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY, setupMap.get(fileAdded).getInfo().getStatus());
+        assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, setupMap.get(fileDelete).getInfo().getStatus());
     }
     
     private void cleanUpWC(File wc) throws IOException {
