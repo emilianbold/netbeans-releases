@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.remote.impl.fs.server.FSSTransport;
 
 /**
@@ -91,6 +92,34 @@ public abstract class RemoteFileSystemTransport {
         return entries;
     }
     
-    protected abstract List<DirEntry> readDirectory(String path) throws IOException, InterruptedException, CancellationException, ExecutionException;
+    public static FileInfoProvider.StatInfo stat(ExecutionEnvironment execEnv, String path) 
+            throws InterruptedException, CancellationException, ExecutionException {
+
+        RemoteFileSystemTransport transport = FSSTransport.getInstance(execEnv);
+        if (transport == null || ! transport.isValid()) {
+            transport = SftpTransport.getInstance(execEnv);
+        }
+        return transport.stat(path);
+    }
+    
+    public static FileInfoProvider.StatInfo lstat(ExecutionEnvironment execEnv, String path)
+            throws InterruptedException, CancellationException, ExecutionException {
+
+        RemoteFileSystemTransport transport = FSSTransport.getInstance(execEnv);
+        if (transport == null || ! transport.isValid()) {
+            transport = SftpTransport.getInstance(execEnv);
+        }
+        return transport.stat(path);
+     }
+
+    protected abstract FileInfoProvider.StatInfo stat(String path) 
+            throws InterruptedException, CancellationException, ExecutionException;
+    
+    protected abstract FileInfoProvider.StatInfo lstat(String path) 
+            throws InterruptedException, CancellationException, ExecutionException;
+
+    protected abstract List<DirEntry> readDirectory(String path) 
+            throws IOException, InterruptedException, CancellationException, ExecutionException;
+
     protected abstract boolean isValid();
 }

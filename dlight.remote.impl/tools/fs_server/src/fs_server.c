@@ -50,7 +50,7 @@ static int refresh_sleep = 1;
 
 #define FS_SERVER_MAJOR_VERSION 1
 #define FS_SERVER_MID_VERSION 0
-#define FS_SERVER_MINOR_VERSION 13
+#define FS_SERVER_MINOR_VERSION 14
 
 typedef struct fs_entry {
     int /*short?*/ name_len;
@@ -510,8 +510,8 @@ static void response_stat(int request_id, const char* path) {
         
         escape_strcpy(escaped_name, basename);
         int escaped_name_size = strlen(escaped_name);
-        fprintf(stdout, "%c %i %i %s %li %li %li %lu %lli\n",
-                FS_REQ_STAT,
+        fprintf(stdout, "%c %i %i %s %li %li %li %lu %lli %d %s\n",
+                FS_RSP_ENTRY,
                 request_id,
                 escaped_name_size,
                 escaped_name,
@@ -519,11 +519,16 @@ static void response_stat(int request_id, const char* path) {
                 (long) stat_buf.st_gid,
                 (long) stat_buf.st_mode,
                 (unsigned long) stat_buf.st_size,
-                get_mtime(&stat_buf));
+                get_mtime(&stat_buf),
+                0, "");
         fflush(stdout);
         free(escaped_name);        
     }  else {
-        report_error("error getting stat for '%s': %s\n", path, strerror(errno));
+        int err_code = errno;
+        char* strerr = strerror(err_code);
+        report_error("error getting stat for '%s': %s\n", path, strerr);
+        fprintf(stdout, "%c %i %i %s: %s\n", FS_RSP_ERROR, request_id, err_code, strerr, path);
+        fflush(stdout);
     }
 }
 
@@ -542,6 +547,9 @@ static void response_lstat(int request_id, const char* path) {
 //        }
     } else {
         report_error("error formatting response for '%s'\n", path);
+        //TODO: pass error message from response_entry_create
+        fprintf(stdout, "%c %i %i %s\n", FS_RSP_ERROR, request_id, 0/*errno?*/, "error creating response");
+        fflush(stdout);
     }
     buffer_free(&response_buf);
     buffer_free(&work_buf);

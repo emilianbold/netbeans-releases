@@ -53,7 +53,6 @@ import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
@@ -68,7 +67,6 @@ import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
@@ -565,7 +563,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     private DirEntry getSpecialDirChildEntry(String absPath, String childName) throws InterruptedException, ExecutionException {
         StatInfo statInfo;
         try {
-            statInfo = FileInfoProvider.lstat(getExecutionEnvironment(), absPath, new PrintWriter(System.err)).get();
+            statInfo = RemoteFileSystemTransport.lstat(getExecutionEnvironment(), absPath);
         } catch (ExecutionException e) {
             if (RemoteFileSystemUtils.isFileNotFoundException(e)) {
                 statInfo = null;

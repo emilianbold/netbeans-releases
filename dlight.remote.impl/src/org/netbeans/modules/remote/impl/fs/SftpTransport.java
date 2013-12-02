@@ -70,6 +70,28 @@ public class SftpTransport extends RemoteFileSystemTransport {
     }
 
     @Override
+    protected FileInfoProvider.StatInfo stat(String path) 
+            throws InterruptedException, ExecutionException {
+        return stat_or_lstat(path, false);
+    }
+
+    @Override
+    protected FileInfoProvider.StatInfo lstat(String path) 
+            throws InterruptedException, ExecutionException {
+        return stat_or_lstat(path, true);
+    }
+
+    private FileInfoProvider.StatInfo stat_or_lstat(String path, boolean lstat) 
+            throws InterruptedException, ExecutionException {
+        
+        Future<FileInfoProvider.StatInfo> stat = lstat ?
+                FileInfoProvider.lstat(execEnv, path) :
+                FileInfoProvider.stat(execEnv, path);
+        
+        return stat.get();
+    }
+    
+    @Override
     protected List<DirEntry> readDirectory(String remotePath) throws InterruptedException, CancellationException, ExecutionException {
         if (remotePath.length() == 0) {
             remotePath = "/"; //NOI18N

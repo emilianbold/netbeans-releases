@@ -53,10 +53,10 @@ import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
-import javax.print.attribute.standard.ReferenceUriSchemesSupported;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo;
 import org.netbeans.modules.nativeexecution.api.util.RemoteStatistics;
 import org.netbeans.modules.remote.impl.RemoteLogger;
@@ -68,7 +68,6 @@ import org.netbeans.modules.remote.impl.fs.RemoteFileSystemManager;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemUtils;
 import org.openide.modules.OnStart;
 import org.openide.modules.OnStop;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -112,6 +111,7 @@ public class FSSTransport extends RemoteFileSystemTransport {
         this.dispatcher = FSSDispatcher.getInstance(env);
     }
     
+    @Override
     public boolean isValid() {
         return dispatcher.isValid();
     }
@@ -201,6 +201,82 @@ public class FSSTransport extends RemoteFileSystemTransport {
         synchronized (lock) { 
             cache.clear();
         }
+    }
+
+    @Override
+    protected FileInfoProvider.StatInfo stat(String path) 
+            throws InterruptedException, ExecutionException {
+        return stat_or_lstat(path, false);
+    }
+
+    @Override
+    protected FileInfoProvider.StatInfo lstat(String path) 
+            throws InterruptedException, ExecutionException {
+        return stat_or_lstat(path, true);
+    }
+
+    private FileInfoProvider.StatInfo stat_or_lstat(String path, boolean lstat) 
+            throws InterruptedException, ExecutionException {
+
+        if (path.isEmpty()) {
+            path = "/"; // NOI18N
+        }
+
+        FSSRequestKind requestKind = lstat ? FSSRequestKind.FS_REQ_LSTAT : FSSRequestKind.FS_REQ_STAT;
+        FSSRequest request = new FSSRequest(requestKind, path);
+        long time = System.currentTimeMillis();
+        RemoteStatistics.ActivityID activityID = RemoteStatistics.startChannelActivity(
+                lstat ? "fs_server_lstat" : "fs_server_stat", path); // NOI18N
+        FSSResponse response = null;
+        try {
+            RemoteLogger.finest("Sending stat/lstat request #{0} for {1} to fs_server", 
+                    request.getId(), path);
+            try {
+                response = dispatcher.dispatch(request);
+            } catch (IOException ioe) {
+                throw new ExecutionException(ioe);
+            }
+            FSSResponse.Package pkg = response.getNextPackage();
+            if (pkg.getKind() == FSSResponseKind.FS_RSP_ENTRY) {
+                Buffer buf = pkg.getBuffer();
+                char kindChar = buf.getChar();
+                assert kindChar == pkg.getKind().getChar();
+                assert pkg.getKind() == FSSResponseKind.FS_RSP_ENTRY;
+                int id = buf.getInt();
+                assert id == request.getId();
+                String name = buf.getString();
+                int uid = buf.getInt();
+                int gid = buf.getInt();
+                int mode = buf.getInt();
+                long size = buf.getLong();
+                long mtime = buf.getLong() / 1000 * 1000; // to be consistent with jsch sftp
+                String linkTarget = buf.getString();
+                if (linkTarget.isEmpty()) {
+                    linkTarget = null;
+                }
+                StatInfo statInfo = new StatInfo(name, uid, gid, size,
+                        linkTarget, mode, new Date(mtime));
+                return statInfo;
+            } else if (pkg.getKind() == FSSResponseKind.FS_RSP_ERROR) {
+                Buffer buf = pkg.getBuffer();
+                buf.getChar(); // skip kind                
+                int id = buf.getInt();
+                assert id == request.getId();
+                int errno = buf.getInt();
+                throw new ExecutionException(new IOException(buf.getRest()));
+            } else {
+                throw new IllegalStateException("wrong response: " + pkg); //NOI18N
+            }
+            
+        } finally {
+            if (response != null) {
+                response.dispose();
+            }
+            RemoteStatistics.stopChannelActivity(activityID, 0);
+            RemoteLogger.finest("Getting stat/lstat #{0} from fs_server for {1} took {2} ms",
+                    request.getId(), path, System.currentTimeMillis() - time);
+        }
+        
     }
     
     @Override

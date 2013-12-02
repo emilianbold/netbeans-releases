@@ -31,10 +31,10 @@ enum fs_request_kind {
 enum fs_response_kind {
     FS_RSP_LS = 'l',
     FS_RSP_RECURSIVE_LS = 'r',
-    FS_RSP_STAT = 's',
     FS_RSP_ENTRY = 'e',
     FS_RSP_END = 'x',
-    FS_RSP_CHANGE = 'c'
+    FS_RSP_CHANGE = 'c',
+    FS_RSP_ERROR = 'E'
 };
 
 typedef struct fs_request {
