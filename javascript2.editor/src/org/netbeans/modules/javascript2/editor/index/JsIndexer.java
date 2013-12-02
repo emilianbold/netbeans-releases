@@ -88,7 +88,7 @@ public class JsIndexer extends EmbeddingIndexer {
             JsIndex.changeInIndex();
         }
         JsParserResult parserResult = (JsParserResult) result;
-        Model model = parserResult.getModel();
+        Model model = parserResult.getModel(true);
 
         IndexingSupport support;
         try {

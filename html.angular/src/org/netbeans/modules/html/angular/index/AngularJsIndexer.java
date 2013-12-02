@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.html.angular.index;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -54,6 +55,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.index.JsIndexer;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.Context;
@@ -62,7 +64,10 @@ import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Parameters;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -77,6 +82,7 @@ public class AngularJsIndexer extends EmbeddingIndexer{
     
     private static final ThreadLocal<Map<URI, Collection<AngularJsController>>> controllers = new ThreadLocal<>();
     private static final ThreadLocal<Map<URI, Map<String, String>>>templateControllers = new ThreadLocal<>();
+    private static final ThreadLocal<Boolean> addedToJsIndexPost = new ThreadLocal<>();
     
     public static void addController(@NonNull final URI uri, @NonNull final AngularJsController controller) {
         final Map<URI, Collection<AngularJsController>> map = controllers.get();
@@ -152,52 +158,58 @@ public class AngularJsIndexer extends EmbeddingIndexer{
     
     @Override
     protected void index(Indexable indexable, Parser.Result parserResult, Context context) {
-        Collection<AngularJsController> cons = null;
-        Map<String, String>templates = null;
-        URI uri = null;
-        try {
-            URL url = indexable.getURL();
-            if ( url != null) {
-                uri = url.toURI();
-            }
-        } catch (URISyntaxException ex) {
-            LOG.log(Level.WARNING, null, ex);
+        // TODO this is a basically hack, because the indexes are not called in layer order
+        // so we need to be sure, that the JsIndex has to be called before saving the angulra stuff. 
+        if (!addedToJsIndexPost.get().booleanValue()) {
+            addedToJsIndexPost.set(Boolean.TRUE);
+            JsIndexer.Factory.addPostScanTask(new SaveToIndex(context));
         }
-        if (uri != null) {
-            cons = getControllers(uri);
-            templates = getTemplateControllers(uri);
-            if (cons != null || templates != null) {
-                IndexingSupport support;
-                try {
-                    support = IndexingSupport.getInstance(context);
-                } catch (IOException ioe) {
-                    LOG.log(Level.WARNING, null, ioe);
-                    return;
-                }
-                IndexDocument elementDocument = support.createDocument(indexable);
-                if (cons != null) {
-                    for (AngularJsController controller : cons) {
-                        StringBuilder sb = new StringBuilder();
-                        sb.append(controller.getName()).append(":");
-                        sb.append(controller.getFqn()).append(":");
-                        sb.append(controller.getOffset());
-                        elementDocument.addPair(FIELD_CONTROLLER, sb.toString() , true, true);
-                    }
-                }
-                if (templates != null) {
-                    for(String template : templates.keySet()) {
-                        String controller = templates.get(template);
-                        StringBuilder sb = new StringBuilder();
-                        sb.append(template).append(":").append(controller);
-                        elementDocument.addPair(FIELD_TEMPLATE_CONTROLLER, sb.toString(), true, true);
-                    }
-                }
-                support.addDocument(elementDocument);
-                // remove the caches
-                removeControllers(uri);
-                removeTemplateControllers(uri);
-            }
-        }
+//        Collection<AngularJsController> cons = null;
+//        Map<String, String>templates = null;
+//        URI uri = null;
+//        try {
+//            URL url = indexable.getURL();
+//            if ( url != null) {
+//                uri = url.toURI();
+//            }
+//        } catch (URISyntaxException ex) {
+//            LOG.log(Level.WARNING, null, ex);
+//        }
+//        if (uri != null) {
+//            cons = getControllers(uri);
+//            templates = getTemplateControllers(uri);
+//            if (cons != null || templates != null) {
+//                IndexingSupport support;
+//                try {
+//                    support = IndexingSupport.getInstance(context);
+//                } catch (IOException ioe) {
+//                    LOG.log(Level.WARNING, null, ioe);
+//                    return;
+//                }
+//                IndexDocument elementDocument = support.createDocument(indexable);
+//                if (cons != null) {
+//                    for (AngularJsController controller : cons) {
+//                        StringBuilder sb = new StringBuilder();
+//                        sb.append(controller.getName()).append(":");
+//                        sb.append(controller.getFqn()).append(":");
+//                        sb.append(controller.getOffset());
+//                        elementDocument.addPair(FIELD_CONTROLLER, sb.toString() , true, true);
+//                    }
+//                }
+//                if (templates != null) {
+//                    for(String template : templates.keySet()) {
+//                        String controller = templates.get(template);
+//                        StringBuilder sb = new StringBuilder();
+//                        sb.append(template).append(":").append(controller);
+//                        elementDocument.addPair(FIELD_TEMPLATE_CONTROLLER, sb.toString(), true, true);
+//                    }
+//                }
+//                support.addDocument(elementDocument);
+//                // remove the caches
+//                removeControllers(uri);
+//                removeTemplateControllers(uri);
+//            }
+//        }
     }
     
     public static final class Factory extends EmbeddingIndexerFactory {
@@ -251,6 +263,7 @@ public class AngularJsIndexer extends EmbeddingIndexer{
             postScanTasks.set(new LinkedList<Runnable>());
             controllers.set(new HashMap<URI, Collection<AngularJsController>>());
             templateControllers.set(new HashMap<URI, Map<String, String>>());
+            addedToJsIndexPost.set(Boolean.FALSE);
             return super.scanStarted(context);
         }
         
@@ -280,4 +293,74 @@ public class AngularJsIndexer extends EmbeddingIndexer{
         }
     }
     
+    private static class SaveToIndex implements Runnable {
+
+        private final Context context;
+
+        public SaveToIndex(Context context) {
+            this.context = context;
+        }
+
+        @Override
+        public void run() {
+            Map<URI, Map<String, String>> templates = templateControllers.get();
+            Map<URI, Collection<AngularJsController>> controls = controllers.get();
+            if (templates != null && !templates.isEmpty()) {
+                IndexingSupport support;
+                try {
+                    support = IndexingSupport.getInstance(context);
+                } catch (IOException ioe) {
+                    LOG.log(Level.WARNING, null, ioe);
+                    return;
+                }
+                for (Map.Entry<URI, Map<String, String>> entry : templates.entrySet()) {
+                    URI uri = entry.getKey();
+                    Map<String, String> map = entry.getValue();
+                    File file = Utilities.toFile(uri);
+                    FileObject fo = FileUtil.toFileObject(file);
+
+                    IndexDocument elementDocument = support.createDocument(fo);
+                    for (String template : map.keySet()) {
+                        String controller = map.get(template);
+                        StringBuilder sb = new StringBuilder();
+                        sb.append(template).append(":").append(controller); //NOI18N
+                        elementDocument.addPair(FIELD_TEMPLATE_CONTROLLER, sb.toString(), true, true);
+                    }
+                    if (controls != null) {
+                        Collection<AngularJsController> cons = controls.get(uri);
+                        if (cons != null) {
+                            for (AngularJsController controller : cons) {
+                                StringBuilder sb = new StringBuilder();
+                                sb.append(controller.getName()).append(":");    //NOI18N
+                                sb.append(controller.getFqn()).append(":");     //NOI18N
+                                sb.append(controller.getOffset());
+                                elementDocument.addPair(FIELD_CONTROLLER, sb.toString(), true, true);
+                            }
+                            controls.remove(uri);
+                        }
+                    }
+                    support.addDocument(elementDocument);
+                }
+                if (controls != null && !controls.isEmpty()) {
+                    for (Map.Entry<URI, Collection<AngularJsController>> entry : controls.entrySet()) {
+                        URI uri = entry.getKey();
+                        Collection<AngularJsController> collection = entry.getValue();
+
+                        File file = Utilities.toFile(uri);
+                        FileObject fo = FileUtil.toFileObject(file);
+
+                        IndexDocument elementDocument = support.createDocument(fo);
+                        for (AngularJsController controller : collection) {
+                            StringBuilder sb = new StringBuilder();
+                            sb.append(controller.getName()).append(":");    //NOI18N
+                            sb.append(controller.getFqn()).append(":");     //NOI18N
+                            sb.append(controller.getOffset());
+                            elementDocument.addPair(FIELD_CONTROLLER, sb.toString(), true, true);
+                        }
+                        support.addDocument(elementDocument);
+                    }
+                }
+            }
+        }
+    }
 }
