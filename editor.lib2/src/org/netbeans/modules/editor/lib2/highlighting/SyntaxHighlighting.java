@@ -134,10 +134,7 @@ implements TokenHierarchyListener, ChangeListener {
     }
 
     public @Override HighlightsSequence getHighlights(int startOffset, int endOffset) {
-        long lVersion;
-        synchronized (this) {
-            lVersion = version;
-        }
+        long lVersion = getVersion();
         if (hierarchy.isActive()) {
             return new HSImpl(lVersion, hierarchy, startOffset, endOffset);
         } else {
@@ -221,10 +218,6 @@ implements TokenHierarchyListener, ChangeListener {
         return version;
     }
     
-    synchronized void setVersion(long newVersion) {
-        this.version = newVersion;
-    }
-
     private <T extends TokenId> FCSInfo<T> findFCSInfo(String mimePath, Language<T> language) {
         @SuppressWarnings("unchecked")
         FCSInfo<T> fcsInfo = (FCSInfo<T>) fcsCache.get(mimePath); // Search local cache
@@ -395,12 +388,7 @@ implements TokenHierarchyListener, ChangeListener {
                 return false;
             }
 
-            long lVersion;
-            synchronized (SyntaxHighlighting.this) {
-                lVersion = SyntaxHighlighting.this.version;
-            }
-
-            if (!checkVersion()) {
+            if (SyntaxHighlighting.this.getVersion() != this.version) {
                 finish();
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.fine("SyntaxHighlighting: Version changed => HSImpl finished at offset=" + hiEndOffset); // NOI18N
