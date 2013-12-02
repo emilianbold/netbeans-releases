@@ -112,7 +112,7 @@ implements TokenHierarchyListener, ChangeListener {
      */
     private final String mimeTypeForOptions;
 
-    private TokenHierarchy<? extends Document> hierarchy = null;
+    private final TokenHierarchy<? extends Document> hierarchy;
 
     private long version = 0;
     
@@ -128,20 +128,20 @@ implements TokenHierarchyListener, ChangeListener {
         
         // Start listening on changes in global colorings since they may affect colorings for target language
         findFCSInfo("", null);
+
+        hierarchy = TokenHierarchy.get(document);
+        hierarchy.addTokenHierarchyListener(WeakListeners.create(TokenHierarchyListener.class, this, hierarchy));
     }
 
     public @Override HighlightsSequence getHighlights(int startOffset, int endOffset) {
+        long lVersion;
         synchronized (this) {
-            if (hierarchy == null) {
-                hierarchy = TokenHierarchy.get(document);
-                hierarchy.addTokenHierarchyListener(WeakListeners.create(TokenHierarchyListener.class, this, hierarchy));
-            }
-
-            if (hierarchy.isActive()) {
-                return new HSImpl(version, hierarchy, startOffset, endOffset);
-            } else {
-                return HighlightsSequence.EMPTY;
-            }
+            lVersion = version;
+        }
+        if (hierarchy.isActive()) {
+            return new HSImpl(lVersion, hierarchy, startOffset, endOffset);
+        } else {
+            return HighlightsSequence.EMPTY;
         }
     }
 
@@ -215,6 +215,14 @@ implements TokenHierarchyListener, ChangeListener {
     @Override
     public void stateChanged(ChangeEvent e) {
         fireHighlightsChange(0, Integer.MAX_VALUE); // Recompute highlights for whole document
+    }
+
+    synchronized long getVersion() {
+        return version;
+    }
+    
+    synchronized void setVersion(long newVersion) {
+        this.version = newVersion;
     }
 
     private <T extends TokenId> FCSInfo<T> findFCSInfo(String mimePath, Language<T> language) {
@@ -383,49 +391,52 @@ implements TokenHierarchyListener, ChangeListener {
         }
         
         public @Override boolean moveNext() {
-            synchronized (SyntaxHighlighting.this) {
-                if (state == S_DONE) {
-                    return false;
-                }
-
-                if (!checkVersion()) {
-                    finish();
-                    if (LOG.isLoggable(Level.FINE)) {
-                        LOG.fine("SyntaxHighlighting: Version changed => HSImpl finished at offset=" + hiEndOffset); // NOI18N
-                    }
-                    return false;
-                }
-
-                // Check whether processing multiple parts into that token was split due to presence of '\n' char(s)
-                if (partsEndOffset != 0) { // Fetch next part
-                    while (hiEndOffset == newlineOffset) { // Newline at highlight start
-                        hiEndOffset++; // Skip newline
-                        if (updateNewlineOffset(hiEndOffset)) { // Reached endOffset
-                            finish();
-                            return false;
-                        }
-                        if (hiEndOffset >= partsEndOffset) { // Reached end of parts only by newlines
-                            finishParts();
-                            return moveTheSequence();
-                        }
-                    }
-                    hiStartOffset = hiEndOffset;
-                    if (newlineOffset < partsEndOffset) {
-                        hiEndOffset = newlineOffset;
-                    } else {
-                        hiEndOffset = partsEndOffset;
-                        finishParts();
-                    }
-                    if (LOG.isLoggable(Level.FINE)) {
-                        LOG.fine("  SH.moveNext(): part-Highlight: <" + hiStartOffset + "," + // NOI18N
-                                hiEndOffset + "> attrs=" + hiAttrs + " " + stateToString() + // NOI18N
-                                ", pEOffset=" + partsEndOffset + ", seq#=" + sequences.size() + "\n"); // NOI18N
-                    }
-                    return true;
-                }
-
-                return moveTheSequence();
+            if (state == S_DONE) {
+                return false;
             }
+
+            long lVersion;
+            synchronized (SyntaxHighlighting.this) {
+                lVersion = SyntaxHighlighting.this.version;
+            }
+
+            if (!checkVersion()) {
+                finish();
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("SyntaxHighlighting: Version changed => HSImpl finished at offset=" + hiEndOffset); // NOI18N
+                }
+                return false;
+            }
+
+            // Check whether processing multiple parts into that token was split due to presence of '\n' char(s)
+            if (partsEndOffset != 0) { // Fetch next part
+                while (hiEndOffset == newlineOffset) { // Newline at highlight start
+                    hiEndOffset++; // Skip newline
+                    if (updateNewlineOffset(hiEndOffset)) { // Reached endOffset
+                        finish();
+                        return false;
+                    }
+                    if (hiEndOffset >= partsEndOffset) { // Reached end of parts only by newlines
+                        finishParts();
+                        return moveTheSequence();
+                    }
+                }
+                hiStartOffset = hiEndOffset;
+                if (newlineOffset < partsEndOffset) {
+                    hiEndOffset = newlineOffset;
+                } else {
+                    hiEndOffset = partsEndOffset;
+                    finishParts();
+                }
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("  SH.moveNext(): part-Highlight: <" + hiStartOffset + "," + // NOI18N
+                            hiEndOffset + "> attrs=" + hiAttrs + " " + stateToString() + // NOI18N
+                            ", pEOffset=" + partsEndOffset + ", seq#=" + sequences.size() + "\n"); // NOI18N
+                }
+                return true;
+            }
+
+            return moveTheSequence();
         }
 
         public @Override int getStartOffset() {
@@ -592,10 +603,6 @@ implements TokenHierarchyListener, ChangeListener {
             hiAttrs = null;
         }
 
-        private boolean checkVersion() {
-            return this.version == SyntaxHighlighting.this.version;
-        }
-        
         private String stateToString() {
             switch (state) {
                 case S_INIT:
