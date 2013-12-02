@@ -322,13 +322,7 @@ public final class DashboardTopComponent extends TopComponent {
     }
     
     public void addTask(TaskNode... taskNodes) {
-        List<Category> categories = dashboard.getCategories(true, false);
-        for (TaskNode taskNode : taskNodes) {
-            if (taskNode.isCategorized()) {
-                categories.remove(taskNode.getCategory());
-            }
-        }
-        final CategoryPicker picker = new CategoryPicker(categories);
+        final CategoryPicker picker = new CategoryPicker(taskNodes);
         final NotifyDescriptor nd = new NotifyDescriptor(
                 picker,
                 NbBundle.getMessage(DashboardTopComponent.class, "LBL_AddTaskToCat"), //NOI18N
@@ -343,10 +337,7 @@ public final class DashboardTopComponent extends TopComponent {
                 nd.setValid(categoryAvailable);
             }
         });
-
-        if (categories.isEmpty()) {
-            nd.setValid(false);
-        }
+        nd.setValid(false);
         if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {
             Category category = picker.getChosenCategory();
             dashboard.addTaskToCategory(category, taskNodes);
