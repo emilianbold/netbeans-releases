@@ -73,6 +73,7 @@ import org.openide.filesystems.FileUtil;
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public class FixUsesPerformerTest extends PHPCodeCompletionTestBase {
+    private static final String CAN_NOT_BE_RESOLVED = "<CAN-NOT-BE-RRESOLVED>"; //NOI18N
 
     public FixUsesPerformerTest(String testName) {
         super(testName);
@@ -149,6 +150,12 @@ public class FixUsesPerformerTest extends PHPCodeCompletionTestBase {
         performTest("function addRoom(\\pl\\dagguh\\buildings\\Room $room);^", selections, false, options);
     }
 
+    public void testIssue238828() throws Exception {
+        String[] selections = new String[] {"\\First\\Second\\Util", CAN_NOT_BE_RESOLVED, CAN_NOT_BE_RESOLVED, CAN_NOT_BE_RESOLVED};
+        Options options = new Options(true, false, true, true);
+        performTest("function functionName3($param) {}^", selections, false, options);
+    }
+
     private String getTestResult(final String fileName, final String caretLine, final String[] selections, final boolean removeUnusedUses, final Options options) throws Exception {
         FileObject testFile = getTestFile(fileName);
 
@@ -185,7 +192,9 @@ public class FixUsesPerformerTest extends PHPCodeCompletionTestBase {
                             currentOptions).create();
                     final List<ItemVariant> properSelections = new ArrayList<>();
                     for (String selection : selections) {
-                        properSelections.add(new ItemVariant(selection, ItemVariant.UsagePolicy.CAN_BE_USED));
+                        properSelections.add(new ItemVariant(selection, CAN_NOT_BE_RESOLVED.equals(selection)
+                                ? ItemVariant.UsagePolicy.CAN_NOT_BE_USED
+                                : ItemVariant.UsagePolicy.CAN_BE_USED));
                     }
                     importData.caretPosition = caretOffset;
                     FixUsesPerformer fixUsesPerformer = new FixUsesPerformer(phpResult, importData, properSelections, removeUnusedUses, currentOptions);
