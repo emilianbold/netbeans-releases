@@ -500,14 +500,9 @@ static bool response_ls_recursive_visitor(char* name, struct stat *stat_buf, cha
 static void response_stat(int request_id, const char* path) {  
     struct stat stat_buf;    
     if (stat(path, &stat_buf) == 0) {
-
         int buf_size = MAXNAMLEN * 2 + 80; // *2 because of escaping. TODO: accurate size calculation
         char* escaped_name = malloc(buf_size);
-        const char* basename = strrchr(path, '/');
-        if (!basename) {
-            basename = path;
-        }    
-        
+        const char* basename = get_basename(path);
         escape_strcpy(escaped_name, basename);
         int escaped_name_size = strlen(escaped_name);
         fprintf(stdout, "%c %i %i %s %li %li %li %lu %lli %d %s\n",
@@ -535,10 +530,7 @@ static void response_stat(int request_id, const char* path) {
 static void response_lstat(int request_id, const char* path) {    
     buffer response_buf = buffer_alloc(PATH_MAX * 2); // *2 because of escaping. TODO: accurate size calculation
     buffer work_buf = buffer_alloc((PATH_MAX + MAXNAMLEN) * 2 + 2);
-    const char* basename = strrchr(path, '/');
-    if (!basename) {
-        basename = path;
-    }
+    const char* basename = get_basename(path);
     if (response_entry_create(response_buf, path, basename, work_buf)) {
         fprintf(stdout, "%c %d %s", FS_RSP_ENTRY, request_id, response_buf.data);
         fflush(stdout);

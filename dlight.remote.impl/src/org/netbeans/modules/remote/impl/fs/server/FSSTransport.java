@@ -42,6 +42,7 @@ package org.netbeans.modules.remote.impl.fs.server;
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.util.ArrayList;
@@ -263,7 +264,9 @@ public class FSSTransport extends RemoteFileSystemTransport {
                 int id = buf.getInt();
                 assert id == request.getId();
                 int errno = buf.getInt();
-                throw new ExecutionException(new IOException(buf.getRest()));
+                String emsg = buf.getRest();
+                IOException ioe = FSSUtil.createIOException(errno, emsg);
+                throw new ExecutionException(ioe);
             } else {
                 throw new IllegalStateException("wrong response: " + pkg); //NOI18N
             }

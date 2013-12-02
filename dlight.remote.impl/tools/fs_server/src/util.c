@@ -399,3 +399,13 @@ bool visit_dir_entries(const char* path,
         return false;
     }
 }
+
+const char* get_basename(const char *path) {
+    const char* basename = strrchr(path, '/');
+    if (basename) {
+        basename++; // next after '/'
+    } else {
+        basename = path;
+    }    
+    return basename;
+}

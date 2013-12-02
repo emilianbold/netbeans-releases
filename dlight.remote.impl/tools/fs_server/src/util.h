@@ -86,6 +86,8 @@ bool visit_dir_entries(
         bool (*visitor) (char* name, struct stat *st, char* link, const char* abspath, void *data), 
         void *data);
 
+const char* get_basename(const char *path);
+
 #ifdef	__cplusplus
 }
 #endif
