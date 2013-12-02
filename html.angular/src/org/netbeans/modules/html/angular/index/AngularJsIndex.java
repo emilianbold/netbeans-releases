@@ -46,6 +46,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Logger;
@@ -121,7 +122,7 @@ public class AngularJsIndex {
         }
         if (result != null && !result.isEmpty()) {
             String path = uri.toString();
-            Collection<String> controllers = new ArrayList();
+            Collection<String> controllers = new HashSet<>();
             for (IndexResult indexResult : result) {
                 String[] values = indexResult.getValues(AngularJsIndexer.FIELD_TEMPLATE_CONTROLLER);
                 for (String value : values) {

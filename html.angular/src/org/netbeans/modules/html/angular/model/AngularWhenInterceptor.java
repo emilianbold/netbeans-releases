@@ -90,8 +90,10 @@ public class AngularWhenInterceptor implements FunctionInterceptor {
                         Document document = source.getDocument(false);
                         if (document != null) {
                             content = document.getText(0, document.getLength());
+                        } else {
+                            content = fo.asText();
                         }
-                    } catch (BadLocationException ex) {
+                    } catch (BadLocationException | IOException ex) {
                         Exceptions.printStackTrace(ex);
                     }
                     if (content != null) {
