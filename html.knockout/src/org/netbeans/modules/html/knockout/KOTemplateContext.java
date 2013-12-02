@@ -77,35 +77,35 @@ public class KOTemplateContext {
                 }
                 break;
             case TAG_CLOSE_SYMBOL:
-                if (isScriptStart && scripts.peek().getId() != null) {
-                return Pair.of(true, scripts.peek().getId());
-            }
+                if (isScriptStart && !scripts.isEmpty() && scripts.peek().getId() != null) {
+                    return Pair.of(true, scripts.peek().getId());
+                }
                 isScriptStart = false;
             case TAG_CLOSE:
-                if ("script".equals(token.text().toString())) { // NOI18N
-                StackItem item = scripts.pop();
-                if (item.getId() != null) {
-                    return Pair.of(false, item.getId());
+                if ("script".equals(token.text().toString()) && !scripts.isEmpty()) { // NOI18N
+                    StackItem item = scripts.pop();
+                    if (item.getId() != null) {
+                        return Pair.of(false, item.getId());
+                    }
                 }
-            }
                 break;
             case ARGUMENT:
                 if (isScriptStart) {
-                isId = false;
-                if ("id".equals(token.text().toString())) { // NOI18N
-                    isId = true;
+                    isId = false;
+                    if ("id".equals(token.text().toString())) { // NOI18N
+                        isId = true;
+                    }
                 }
-            }
                 break;
             case VALUE:
             case VALUE_CSS:
                 if (isScriptStart && isId) {
-                CharSequence text = token.text();
-                // XXX
-                if (text.length() > 2) {
-                    scripts.peek().setId(token.text().subSequence(1, text.length() - 1).toString());
+                    CharSequence text = token.text();
+                    // XXX
+                    if (text.length() > 2 && !scripts.isEmpty()) {
+                        scripts.peek().setId(token.text().subSequence(1, text.length() - 1).toString());
+                    }
                 }
-            }
                 break;
             default:
                 break;
