@@ -2,8 +2,6 @@ Code completion result for source line:
 #{request.r|}
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-METHOD     getRealPath(String string)      [PUBLIC]   String
-METHOD     getRequestDispatcher(String st  [PUBLIC]   RequestDispatcher
 METHOD     removeAttribute(String string)  [PUBLIC]   void
 PROPERTY   reader                          [PUBLIC]   BufferedReader
 PROPERTY   remoteAddr                      [PUBLIC]   String
