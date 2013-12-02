@@ -182,7 +182,12 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
                     if (top.balance == 0) {
                         processed = true;
                         stack.pop();
-                        dataBindContext.pop();
+                        String templateId = templateContext.getCurrentScriptId();
+                        if (templateId != null) {
+                            currentTemplateContext.pop();
+                        } else {
+                            dataBindContext.pop();
+                        }
                     }
                 }
                 break;
@@ -302,7 +307,8 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
                                     dataBindContext.push(dataValue.text().toString().trim(), foreach, null);
                                 }
                             }
-
+                        } else {
+                            stack.pop();
                         }
                     }
                     if (templateId != null) {
