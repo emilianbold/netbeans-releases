@@ -135,7 +135,6 @@ public class J2MEProjectWizardIterator implements WizardDescriptor.ProgressInsta
         Map<String, String> props = new HashMap<>();
         props.put(J2MEProjectProperties.PROP_RUN_METHOD, "STANDARD"); //NOI18N
         props.put(J2MEProjectProperties.PROP_DEBUGGER_TIMEOUT, "30000"); //NOI18N
-        props.put(J2MEProjectProperties.PROP_SECURITY_DOMAIN, ""); //NOI18N
         props.put(J2MEProjectProperties.PROP_PLATFORM_CONFIGURATION, configuration);
         props.put(J2MEProjectProperties.PROP_PLATFORM_PROFILE, profile);
         props.put(J2MEProjectProperties.PROP_PLATFORM_TYPE, ((J2MEPlatform) platform).getType());

@@ -62,7 +62,6 @@ import javax.swing.plaf.UIResource;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.j2me.project.ui.customizer.J2MEProjectProperties.ComboDataSource;
 import org.netbeans.modules.j2me.project.ui.customizer.J2MEProjectProperties.DataSource;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.openide.DialogDisplayer;
@@ -91,20 +90,16 @@ public class J2MERunPanel extends javax.swing.JPanel {
 
         this.uiProperties = properties;
         configs = uiProperties.RUN_CONFIGS;
-        domainsCombo.setModel(new DefaultComboBoxModel(uiProperties.SECURITY_DOMAINS));
 
         data = new DataSource[]{
             new TextDataSource(ProjectProperties.APPLICATION_ARGS, labelCommandlineOptions, texfieldCmdOptions, configCombo, configs),
             new TextDataSource(J2MEProjectProperties.PROP_DEBUGGER_TIMEOUT, debugTimeoutLabel, debugTimeoutField, configCombo, configs),
-            new J2MEProjectProperties.ButtonGroupDataSource(J2MEProjectProperties.PROP_RUN_METHOD, buttonGroupRun, configCombo, configs),
-            new CheckBoxDataSource(J2MEProjectProperties.PROP_USE_SECURITY_DOMAIN, jCheckBoxUseSecurity, configCombo, configs),
-            new ComboDataSource(J2MEProjectProperties.PROP_SECURITY_DOMAIN, domainsCombo, configCombo, configs)
+            new J2MEProjectProperties.ButtonGroupDataSource(J2MEProjectProperties.PROP_RUN_METHOD, buttonGroupRun, configCombo, configs)
         };
 
         configChanged(uiProperties.activeConfig);
         configCombo.setRenderer(new ConfigListCellRenderer());
         configCombo.setModel(uiProperties.CONFIGS_MODEL);
-        domainsCombo.setEnabled(jCheckBoxUseSecurity.isSelected());
     }
 
     /**
@@ -128,11 +123,8 @@ public class J2MERunPanel extends javax.swing.JPanel {
         labelCommandlineOptions = new javax.swing.JLabel();
         texfieldCmdOptions = new javax.swing.JTextField();
         standardRadio = new javax.swing.JRadioButton();
-        jCheckBoxUseSecurity = new javax.swing.JCheckBox();
-        domainsCombo = new javax.swing.JComboBox();
         OTARadio = new javax.swing.JRadioButton();
         jLabel2 = new javax.swing.JLabel();
-        jSeparator1 = new javax.swing.JSeparator();
         debugTimeoutLabel = new javax.swing.JLabel();
         debugTimeoutField = new javax.swing.JTextField();
         jPanel2 = new javax.swing.JPanel();
@@ -226,28 +218,6 @@ public class J2MERunPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         panelJ2MERunOptions.add(standardRadio, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxUseSecurity, NbBundle.getMessage(J2MERunPanel.class, "J2MERunPanel.jCheckBoxUseSecurity.text")); // NOI18N
-        jCheckBoxUseSecurity.setActionCommand(NbBundle.getMessage(J2MERunPanel.class, "J2MERunPanel.jCheckBoxUseSecurity.actionCommand")); // NOI18N
-        jCheckBoxUseSecurity.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jCheckBoxUseSecurityActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 0, 0, 0);
-        panelJ2MERunOptions.add(jCheckBoxUseSecurity, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        panelJ2MERunOptions.add(domainsCombo, gridBagConstraints);
-
         buttonGroupRun.add(OTARadio);
         org.openide.awt.Mnemonics.setLocalizedText(OTARadio, NbBundle.getMessage(J2MERunPanel.class, "J2MERunPanel.OTARadio.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -266,12 +236,6 @@ public class J2MERunPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         panelJ2MERunOptions.add(jLabel2, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
-        panelJ2MERunOptions.add(jSeparator1, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(debugTimeoutLabel, org.openide.util.NbBundle.getMessage(J2MERunPanel.class, "J2MERunPanel.debugTimeoutLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -339,10 +303,6 @@ public class J2MERunPanel extends javax.swing.JPanel {
         uiProperties.activeConfig = null;
     }//GEN-LAST:event_configDelActionPerformed
 
-    private void jCheckBoxUseSecurityActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBoxUseSecurityActionPerformed
-        domainsCombo.setEnabled(jCheckBoxUseSecurity.isSelected());
-    }//GEN-LAST:event_jCheckBoxUseSecurityActionPerformed
-
     private void configChanged(String activeConfig) {
         uiProperties.CONFIGS_MODEL = new DefaultComboBoxModel();
         uiProperties.CONFIGS_MODEL.addElement("");
@@ -378,7 +338,6 @@ public class J2MERunPanel extends javax.swing.JPanel {
             }
         }
         configDel.setEnabled(activeConfig != null);
-        domainsCombo.setEnabled(jCheckBoxUseSecurity.isSelected());
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JRadioButton OTARadio;
@@ -391,12 +350,9 @@ public class J2MERunPanel extends javax.swing.JPanel {
     private javax.swing.JSeparator configSeparator;
     private javax.swing.JTextField debugTimeoutField;
     private javax.swing.JLabel debugTimeoutLabel;
-    private javax.swing.JComboBox domainsCombo;
     private javax.swing.JPanel extPanel;
-    private javax.swing.JCheckBox jCheckBoxUseSecurity;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel2;
-    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JLabel labelCommandlineOptions;
     private javax.swing.JPanel panelJ2MERunOptions;
     private javax.swing.JRadioButton standardRadio;

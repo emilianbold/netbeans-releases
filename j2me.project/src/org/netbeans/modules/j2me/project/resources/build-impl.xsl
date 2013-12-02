@@ -979,7 +979,7 @@ is divided into following sections:
             </xsl:comment>
 
             <target name="run" depends="init,clean,jar">
-                <nb-run jadfile="${{dist.dir}}/${{dist.jad}}" jarfile="{{dist.jar.file}}" jadurl="${{dist.jad.url}}" device="${{platform.device}}" platformhome="${{platform.home}}" platformtype="${{platform.type}}" execmethod="${{run.method}}" securitydomain="${{security.domain}}" commandline="${{platform.runcommandline}}" classpath="${{platform.bootclasspath}}:${{dist.dir}}/${{dist.jar}}" cmdoptions="${{run.cmd.options}}"/>
+                <nb-run jadfile="${{dist.dir}}/${{dist.jad}}" jarfile="{{dist.jar.file}}" jadurl="${{dist.jad.url}}" device="${{platform.device}}" platformhome="${{platform.home}}" platformtype="${{platform.type}}" execmethod="${{run.method}}" commandline="${{platform.runcommandline}}" classpath="${{platform.bootclasspath}}:${{dist.dir}}/${{dist.jar}}" cmdoptions="${{run.cmd.options}}"/>
             </target>
 
             <xsl:comment>
@@ -1013,7 +1013,7 @@ is divided into following sections:
 
             <target name="-debug-javame" depends="init,clean,jar">
                 <parallel>
-                    <nb-run debug="true" debugsuspend="true" debugserver="true" debuggeraddressproperty="jpda.port" platformtype="${{platform.type}}" platformhome="${{platform.home}}" device="${{platform.device}}" jadfile="${{dist.dir}}/${{dist.jad}}" jadurl="${{dist.jad.url}}" jarfile="${{dist.jar.file}}" execmethod="${{run.method}}" securitydomain="${{security.domain}}" commandline="${{platform.debugcommandline}}" classpath="${{platform.bootclasspath}}:${{dist.dir}}/${{dist.jar}}" cmdoptions="${{run.cmd.options}}"/>
+                    <nb-run debug="true" debugsuspend="true" debugserver="true" debuggeraddressproperty="jpda.port" platformtype="${{platform.type}}" platformhome="${{platform.home}}" device="${{platform.device}}" jadfile="${{dist.dir}}/${{dist.jad}}" jadurl="${{dist.jad.url}}" jarfile="${{dist.jar.file}}" execmethod="${{run.method}}" commandline="${{platform.debugcommandline}}" classpath="${{platform.bootclasspath}}:${{dist.dir}}/${{dist.jar}}" cmdoptions="${{run.cmd.options}}"/>
                     <sequential>
                         <sleep seconds="5"/>
                         <antcall target="-nbdebug"/>
