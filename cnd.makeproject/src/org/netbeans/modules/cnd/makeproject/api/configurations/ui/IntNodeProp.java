@@ -103,7 +103,7 @@ public class IntNodeProp extends Node.Property {
 
     @Override
     public Object getValue(String attributeName) {
-        if (attributeName.equals("canAutocomplete")) { //NOI18N
+        if (attributeName.equals("canAutoComplete")) { //NOI18N
             return Boolean.FALSE;
         }
         return super.getValue(attributeName);

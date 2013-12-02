@@ -153,7 +153,7 @@ public class CompilerSetNodeProp extends Node.Property<String> {
 
     @Override
     public Object getValue(String attributeName) {
-        if (attributeName.equals("canAutocomplete")) { //NOI18N
+        if (attributeName.equals("canAutoComplete")) { //NOI18N
             return Boolean.FALSE;
         }
         return super.getValue(attributeName);
