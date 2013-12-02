@@ -54,7 +54,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
@@ -66,6 +65,8 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.java.project.PackageDisplayUtils;
 import static org.netbeans.spi.java.project.support.ui.Bundle.*;
+import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ui.support.FileSensitiveActions;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.FileSystemAction;
@@ -87,6 +88,7 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -389,15 +391,18 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
         private final SourceGroup g;
         
         private Action[] actions;
+        private final Action testPackageAction;
         
         public PackageFilterNode(final Node origNode) {
             super (origNode, new PackageFilterChildren (origNode));
+            testPackageAction = FileSensitiveActions.fileCommandAction(ActionProvider.COMMAND_TEST_SINGLE, NbBundle.getMessage(TreeRootNode.class, "LBL_TestPackageAction_Name"), null);
             parent = null;
             g = null;
         }
 
         PackageFilterNode(DataFolder folder, DataFolder parent, ChangeableDataFilter filter, SourceGroup g) {
             super(folder.getNodeDelegate(), Children.create(new ReducedChildren(folder, filter, g), true));
+            testPackageAction = FileSensitiveActions.fileCommandAction(ActionProvider.COMMAND_TEST_SINGLE, NbBundle.getMessage(TreeRootNode.class, "LBL_TestPackageAction_Name"), null);
             this.parent = parent;
             this.g = g;
         }
@@ -429,6 +434,7 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
                     for( int i = 0; i < superActions.length; i++ ) {
                         if ( superActions[i] instanceof FileSystemAction ) {
                             actionList.add (null); // insert separator and new action
+                            actionList.add (testPackageAction);
                             actionList.addAll((List<Action>) org.openide.util.Utilities.actionsForPath("Projects/package/Actions"));
                         }
                         
