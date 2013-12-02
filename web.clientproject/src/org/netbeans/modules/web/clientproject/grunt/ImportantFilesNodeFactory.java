@@ -48,7 +48,6 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 import javax.swing.Icon;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
@@ -246,7 +245,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
      */
     private static final class ImportantFilesChildren extends Children.Keys<String> {
 
-        private TreeSet<String> visibleFiles = null;
+        private List<String> visibleFiles = null;
         private final FileChangeListener fclStrong = new FileChangeAdapter() {
             public @Override
             void fileRenamed(FileRenameEvent fe) {
@@ -372,7 +371,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
 
         private void refreshKeys() {
             Set<FileObject> files = new HashSet<>();
-            TreeSet<String> newVisibleFiles = new TreeSet<>();
+            List<String> newVisibleFiles = new ArrayList<>();
             for (String loc : FILES.keySet()) {
                 String locEval = project.getEvaluator().evaluate(loc);
                 if (locEval == null) {
@@ -380,8 +379,8 @@ public class ImportantFilesNodeFactory implements NodeFactory {
                     continue;
                 }
                 FileObject file = project.getProjectHelper().resolveFileObject(locEval);
-                if (file != null) {
-                    newVisibleFiles.add(loc.toLowerCase());
+                if (file != null && file.getNameExt().equals(loc)) {
+                    newVisibleFiles.add(loc);
                     files.add(file);
                 }
             }
