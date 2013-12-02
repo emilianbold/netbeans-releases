@@ -305,7 +305,7 @@ public class AngularJsIndexer extends EmbeddingIndexer{
         public void run() {
             Map<URI, Map<String, String>> templates = templateControllers.get();
             Map<URI, Collection<AngularJsController>> controls = controllers.get();
-            if (templates != null && !templates.isEmpty()) {
+            if ((templates != null && !templates.isEmpty()) || (controls != null && !controls.isEmpty())) {
                 IndexingSupport support;
                 try {
                     support = IndexingSupport.getInstance(context);
@@ -313,33 +313,35 @@ public class AngularJsIndexer extends EmbeddingIndexer{
                     LOG.log(Level.WARNING, null, ioe);
                     return;
                 }
-                for (Map.Entry<URI, Map<String, String>> entry : templates.entrySet()) {
-                    URI uri = entry.getKey();
-                    Map<String, String> map = entry.getValue();
-                    File file = Utilities.toFile(uri);
-                    FileObject fo = FileUtil.toFileObject(file);
+                if (templates != null && !templates.isEmpty()) {
+                    for (Map.Entry<URI, Map<String, String>> entry : templates.entrySet()) {
+                        URI uri = entry.getKey();
+                        Map<String, String> map = entry.getValue();
+                        File file = Utilities.toFile(uri);
+                        FileObject fo = FileUtil.toFileObject(file);
 
-                    IndexDocument elementDocument = support.createDocument(fo);
-                    for (String template : map.keySet()) {
-                        String controller = map.get(template);
-                        StringBuilder sb = new StringBuilder();
-                        sb.append(template).append(":").append(controller); //NOI18N
-                        elementDocument.addPair(FIELD_TEMPLATE_CONTROLLER, sb.toString(), true, true);
-                    }
-                    if (controls != null) {
-                        Collection<AngularJsController> cons = controls.get(uri);
-                        if (cons != null) {
-                            for (AngularJsController controller : cons) {
-                                StringBuilder sb = new StringBuilder();
-                                sb.append(controller.getName()).append(":");    //NOI18N
-                                sb.append(controller.getFqn()).append(":");     //NOI18N
-                                sb.append(controller.getOffset());
-                                elementDocument.addPair(FIELD_CONTROLLER, sb.toString(), true, true);
-                            }
-                            controls.remove(uri);
+                        IndexDocument elementDocument = support.createDocument(fo);
+                        for (String template : map.keySet()) {
+                            String controller = map.get(template);
+                            StringBuilder sb = new StringBuilder();
+                            sb.append(template).append(":").append(controller); //NOI18N
+                            elementDocument.addPair(FIELD_TEMPLATE_CONTROLLER, sb.toString(), true, true);
                         }
+                        if (controls != null) {
+                            Collection<AngularJsController> cons = controls.get(uri);
+                            if (cons != null) {
+                                for (AngularJsController controller : cons) {
+                                    StringBuilder sb = new StringBuilder();
+                                    sb.append(controller.getName()).append(":");    //NOI18N
+                                    sb.append(controller.getFqn()).append(":");     //NOI18N
+                                    sb.append(controller.getOffset());
+                                    elementDocument.addPair(FIELD_CONTROLLER, sb.toString(), true, true);
+                                }
+                                controls.remove(uri);
+                            }
+                        }
+                        support.addDocument(elementDocument);
                     }
-                    support.addDocument(elementDocument);
                 }
                 if (controls != null && !controls.isEmpty()) {
                     for (Map.Entry<URI, Collection<AngularJsController>> entry : controls.entrySet()) {
