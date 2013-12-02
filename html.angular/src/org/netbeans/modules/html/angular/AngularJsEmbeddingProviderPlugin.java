@@ -499,7 +499,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
     }
     
     private void processTemplate() {
-        if (processedTemplate > -1) {
+         if (processedTemplate > -1) {
             // was already processed
             return;
         }
@@ -516,24 +516,35 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
              Collection<String> controllersForTemplate = index.getControllersForTemplate(fo.toURI());
             for (String controllerName : controllersForTemplate) {
                 Collection<AngularJsController> controllers = index.getControllers(controllerName, true);
-                String fqn;
-                for (AngularJsController controller : controllers) {
-                    if (controller.getName().equals(controllerName)) {
-                        fqn = controller.getFqn();
-                        processedTemplate++;
-                        StringBuilder sb = new StringBuilder();
-                        sb.append("(function () {\n$scope = "); //NOI18N
-                        if (!fqn.isEmpty()) {
-                            sb.append(fqn);
+                if (!controllers.isEmpty()) {
+                    String fqn;
+                    for (AngularJsController controller : controllers) {
+                        if (controller.getName().equals(controllerName)) {
+                            fqn = controller.getFqn();
+                            processedTemplate++;
+                            StringBuilder sb = new StringBuilder();
+                            sb.append("(function () {\n$scope = "); //NOI18N
+                            if (!fqn.isEmpty()) {
+                                sb.append(fqn);
+                            } else {
+                               sb.append(controllerName);
+                            }
                             sb.append(".");
-                        } else {
-                            fqn = controllerName;
+                            sb.append("$scope;\n");   //NOI18N
+                            sb.append("\nwith ($scope) { \n"); //NOI18N
+                            embeddings.add(snapshot.create(sb.toString(), Constants.JAVASCRIPT_MIMETYPE));
+                            break;
                         }
-                        sb.append("$scope;\n");   //NOI18N
-                        sb.append("\nwith ($scope) { \n"); //NOI18N
-                        embeddings.add(snapshot.create(sb.toString(), Constants.JAVASCRIPT_MIMETYPE));
-                        break;
                     }
+                } else {
+                    processedTemplate++;
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("(function () {\n$scope = "); //NOI18N
+                    sb.append(controllerName);
+                    sb.append(".");
+                    sb.append("$scope;\n");   //NOI18N
+                    sb.append("\nwith ($scope) { \n"); //NOI18N
+                    embeddings.add(snapshot.create(sb.toString(), Constants.JAVASCRIPT_MIMETYPE));
                 }
             }
         }
