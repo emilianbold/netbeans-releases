@@ -50,7 +50,7 @@ static int refresh_sleep = 1;
 
 #define FS_SERVER_MAJOR_VERSION 1
 #define FS_SERVER_MID_VERSION 0
-#define FS_SERVER_MINOR_VERSION 14
+#define FS_SERVER_MINOR_VERSION 15
 
 typedef struct fs_entry {
     int /*short?*/ name_len;
@@ -69,7 +69,59 @@ static struct {
     pthread_mutex_t mutex;
     bool proceed;
 } state;
-        
+
+static __thread struct {
+    int err_no;
+    char* errmsg;
+    char* strerr;
+} err_info;
+
+static const int thread_emsg_bufsize = PATH_MAX * 2 + 128; // should it be less?
+static const int strerr_bufsize = PATH_MAX * 2 + 128; // should it be less?    
+
+static void err_init() {
+    err_info.err_no = 0;
+    err_info.errmsg = malloc(thread_emsg_bufsize);
+    err_info.strerr = malloc(strerr_bufsize);
+    *err_info.errmsg = 0; // just in case
+}
+
+static void err_shutdown() {
+    err_info.err_no = 0;
+    free(err_info.errmsg);
+    err_info.errmsg = NULL;
+    free(err_info.strerr);
+    err_info.strerr = NULL;
+}
+
+static int err_get_code() {
+    return err_info.err_no;
+}
+
+static const char* err_get_message() {
+    return err_info.errmsg;
+}
+
+static const char* err_to_string(int err_no) {
+#if __sun__
+    if (strerror_r(err_no, err_info.strerr, thread_emsg_bufsize)) {
+        return "";
+    } else {
+        return err_info.strerr;
+    }
+#else    
+    return strerror_r(err_no, err_info.errmsg, thread_emsg_bufsize);
+#endif
+}
+
+static void err_set(int code, const char *format, ...) {
+    err_info.err_no = code;
+    va_list args;
+    va_start (args, format);
+    vsnprintf(err_info.errmsg, thread_emsg_bufsize, format, args);
+    va_end (args);    
+}
+
 static bool state_get_proceed() {    
     bool proceed;
     mutex_lock(&state.mutex);
@@ -373,6 +425,7 @@ static bool response_entry_create(buffer response_buf,
             ssize_t sz = readlink(abspath, link, work_buf_size);
             if (sz == -1) {
                 report_error("error performing readlink for %s: %s\n", abspath, strerror(errno));
+                err_set(errno, "error performing readlink for %s: %s\n", abspath, err_to_string(errno));
                 strcpy(work_buf.data, "?");
             } else {
                 link[sz] = 0;
@@ -380,6 +433,7 @@ static bool response_entry_create(buffer response_buf,
                 work_buf_size -= (sz + escaped_link_size + 1);
                 if (work_buf_size < 0) {
                     report_error("insufficient space in buffer for %s\n", abspath);
+                    err_set(-1, "insufficient space in buffer for %s\n", abspath);
                     return false;
                 }
                 escaped_link = link + sz + 1;
@@ -398,7 +452,8 @@ static bool response_entry_create(buffer response_buf,
                 escaped_link);
         return true;
     } else {
-        report_error("error getting stat for '%s': %s\n", abspath, strerror(errno));
+        report_error("error getting lstat for '%s': %s\n", abspath, strerror(errno));
+        err_set(errno, "error getting lstat for '%s': %s\n", abspath, err_to_string(errno));
         return false;
     }
 }
@@ -540,7 +595,7 @@ static void response_lstat(int request_id, const char* path) {
     } else {
         report_error("error formatting response for '%s'\n", path);
         //TODO: pass error message from response_entry_create
-        fprintf(stdout, "%c %i %i %s\n", FS_RSP_ERROR, request_id, 0/*errno?*/, "error creating response");
+        fprintf(stdout, "%c %i %i %s\n", FS_RSP_ERROR, request_id, err_get_code(), err_get_message());
         fflush(stdout);
     }
     buffer_free(&response_buf);
@@ -697,7 +752,8 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el) {
     return true;        
 }
 
-static void block_thread_signals() {
+static void thread_init() {
+    err_init();
     sigset_t set;
     sigfillset(&set);
     sigdelset(&set, SIGUSR1);
@@ -706,10 +762,13 @@ static void block_thread_signals() {
         report_error("error blocking signals for thread: %s\n", strerror(res));
     }
 }
+static void thread_shutdown() {
+    err_shutdown();
+}
 
-static void *refresh_loop(void *data) {    
+static void *refresh_loop(void *data) {
     trace(TRACE_INFO, "Refresh manager started; sleep interval is %d\n", refresh_sleep);
-    block_thread_signals();
+    thread_init();    
     int pass = 0;
     while (dirtab_is_empty()) { //TODO: replace with notification?
         sleep(refresh_sleep ? refresh_sleep : 2);
@@ -726,13 +785,14 @@ static void *refresh_loop(void *data) {
         }
     }
     trace(TRACE_INFO, "refresh manager stopped\n");
+    thread_shutdown();
     return NULL;
 }
 
 static void *rp_loop(void *data) {
     thread_info *ti = (thread_info*) data;
     trace(TRACE_INFO, "Thread #%d started\n", ti->no);
-    block_thread_signals();
+    thread_init();
     while (true) {
         fs_request* request = blocking_queue_poll(&req_queue);
         if (request) {
@@ -747,6 +807,7 @@ static void *rp_loop(void *data) {
         }
     }
     trace(TRACE_INFO, "Thread #%d done\n", ti->no);
+    thread_shutdown();
     return NULL;
 }
 
@@ -959,6 +1020,7 @@ static void signal_empty_handler(int signal) {
 //}
 
 static void startup() {
+    err_init();
     dirtab_init(clear_persistence, refresh_explicit ? DE_WSTATE_NONE : DE_WSTATE_POLL);
     const char* basedir = dirtab_get_basedir();
     if (chdir(basedir)) {
@@ -1016,7 +1078,7 @@ static void startup() {
 //    sigaction_wrapper(SIGPIPE, &new_sigaction, NULL);    
 }
 
-static void shutdown() {   
+static void shutdown() {
     state_set_proceed(false);
     blocking_queue_shutdown(&req_queue);
     trace(TRACE_INFO, "Max. requests queue size: %d\n", blocking_queue_max_size(&req_queue));
@@ -1041,6 +1103,7 @@ static void shutdown() {
     }
     dirtab_free();
     log_close();
+    err_shutdown();
     exit(0);
 }
 
@@ -1065,9 +1128,7 @@ static void log_header(int argc, char* argv[]) {
     }    
 }
 
-int main(int argc, char* argv[]) {
-    pthread_t self = pthread_self();
-    trace(TRACE_INFO, "self=%ui\n", (unsigned) self);
+int main(int argc, char* argv[]) {    
     process_options(argc, argv);
     trace(TRACE_INFO, "Version %d.%d.%d (%s %s)\n", FS_SERVER_MAJOR_VERSION, 
             FS_SERVER_MID_VERSION, FS_SERVER_MINOR_VERSION, __DATE__, __TIME__);

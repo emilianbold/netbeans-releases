@@ -125,7 +125,7 @@ int closedir_if_not_null(DIR *d) {
 }
 
 
-static int __thread long stopwatch_start_time;
+static __thread long stopwatch_start_time;
 
 void stopwatch_start() {
     if (trace_level) {
