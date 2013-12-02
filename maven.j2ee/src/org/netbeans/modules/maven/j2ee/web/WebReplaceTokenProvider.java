@@ -234,16 +234,11 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
             FileObject[] fos = extractFileObjectsfromLookup(lookup);
             if (fos.length > 0) {
                 FileObject fo = fos[0];
-                if ("text/x-java".equals(fo.getMIMEType())) { //NOI18N
+                String mimeType = fo.getMIMEType();
+                if ("text/x-java".equals(mimeType)) { //NOI18N
                     return convertJavaAction(action, fo);
                 }
-                if ("text/x-jsp".equals(fo.getMIMEType())) { //NOI18N
-                    return action + ".deploy"; //NOI18N
-                }
-                if ("text/html".equals(fo.getMIMEType())) { //NOI18N
-                    return action + ".deploy"; //NOI18N
-                }
-                if ("text/xhtml".equals(fo.getMIMEType())) { //NOI18N
+                if ("text/x-jsp".equals(mimeType) || "text/html".equals(mimeType) || "text/xhtml".equals(mimeType)) { // NOI18N
                     return action + ".deploy"; //NOI18N
                 }
             }
