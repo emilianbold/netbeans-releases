@@ -122,12 +122,13 @@ public class J2MERunPanel extends javax.swing.JPanel {
         panelJ2MERunOptions = new javax.swing.JPanel();
         labelCommandlineOptions = new javax.swing.JLabel();
         texfieldCmdOptions = new javax.swing.JTextField();
-        standardRadio = new javax.swing.JRadioButton();
-        OTARadio = new javax.swing.JRadioButton();
         jLabel2 = new javax.swing.JLabel();
         debugTimeoutLabel = new javax.swing.JLabel();
         debugTimeoutField = new javax.swing.JTextField();
-        jPanel2 = new javax.swing.JPanel();
+        panelRunMethod = new javax.swing.JPanel();
+        standardRadio = new javax.swing.JRadioButton();
+        OTARadio = new javax.swing.JRadioButton();
+        labelRunMethod = new javax.swing.JLabel();
         extPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
@@ -208,27 +209,6 @@ public class J2MERunPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
         panelJ2MERunOptions.add(texfieldCmdOptions, gridBagConstraints);
 
-        buttonGroupRun.add(standardRadio);
-        org.openide.awt.Mnemonics.setLocalizedText(standardRadio, NbBundle.getMessage(J2MERunPanel.class, "J2MERunPanel.standardRadio.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
-        panelJ2MERunOptions.add(standardRadio, gridBagConstraints);
-
-        buttonGroupRun.add(OTARadio);
-        org.openide.awt.Mnemonics.setLocalizedText(OTARadio, NbBundle.getMessage(J2MERunPanel.class, "J2MERunPanel.OTARadio.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
-        panelJ2MERunOptions.add(OTARadio, gridBagConstraints);
-
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, NbBundle.getMessage(J2MERunPanel.class, "J2MERunPanel.jLabel2.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -253,15 +233,44 @@ public class J2MERunPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 5, 0);
         panelJ2MERunOptions.add(debugTimeoutField, gridBagConstraints);
+
+        buttonGroupRun.add(standardRadio);
+        org.openide.awt.Mnemonics.setLocalizedText(standardRadio, NbBundle.getMessage(J2MERunPanel.class, "J2MERunPanel.standardRadio.text")); // NOI18N
+
+        buttonGroupRun.add(OTARadio);
+        org.openide.awt.Mnemonics.setLocalizedText(OTARadio, NbBundle.getMessage(J2MERunPanel.class, "J2MERunPanel.OTARadio.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(labelRunMethod, java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2me/project/ui/customizer/Bundle").getString("J2MERunPanel.labelRunMethod.text"), new Object[] {})); // NOI18N
+
+        javax.swing.GroupLayout panelRunMethodLayout = new javax.swing.GroupLayout(panelRunMethod);
+        panelRunMethod.setLayout(panelRunMethodLayout);
+        panelRunMethodLayout.setHorizontalGroup(
+            panelRunMethodLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelRunMethodLayout.createSequentialGroup()
+                .addComponent(labelRunMethod)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(standardRadio)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(OTARadio)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        panelRunMethodLayout.setVerticalGroup(
+            panelRunMethodLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelRunMethodLayout.createSequentialGroup()
+                .addGap(12, 12, 12)
+                .addGroup(panelRunMethodLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(standardRadio)
+                    .addComponent(OTARadio)
+                    .addComponent(labelRunMethod)))
+        );
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        panelJ2MERunOptions.add(jPanel2, gridBagConstraints);
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
+        panelJ2MERunOptions.add(panelRunMethod, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -352,9 +361,10 @@ public class J2MERunPanel extends javax.swing.JPanel {
     private javax.swing.JLabel debugTimeoutLabel;
     private javax.swing.JPanel extPanel;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JPanel jPanel2;
     private javax.swing.JLabel labelCommandlineOptions;
+    private javax.swing.JLabel labelRunMethod;
     private javax.swing.JPanel panelJ2MERunOptions;
+    private javax.swing.JPanel panelRunMethod;
     private javax.swing.JRadioButton standardRadio;
     private javax.swing.JTextField texfieldCmdOptions;
     // End of variables declaration//GEN-END:variables
