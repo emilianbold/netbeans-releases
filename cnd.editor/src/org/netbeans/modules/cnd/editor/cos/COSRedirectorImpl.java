@@ -90,6 +90,7 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
     private static final Logger LOG = Logger.getLogger(COSRedirectorImpl.class.getName());
     private static final boolean ENABLED;
     private static final int L1_CACHE_SIZE = 10;
+    private final static long INVALID_INODE = -1L;
 
     private static final Method getDataObjectMethod;
 
@@ -120,7 +121,7 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
     private final Map<Long, COSRedirectorImpl.Storage> imap = new HashMap<Long, COSRedirectorImpl.Storage>();
     private final LinkedList<Long> cache = new LinkedList<Long>();
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-
+    
     @Override
     protected CloneableOpenSupport redirect(CloneableOpenSupport.Env env) {
         DataObject dobj = getDataObjectIfApplicable(env);
@@ -148,21 +149,10 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
         } finally {
             lock.readLock().unlock();
         }
-        Path path = FileSystems.getDefault().getPath(FileUtil.getFileDisplayName(dobj.getPrimaryFile()));
-        BasicFileAttributes attrs = null;
-        try {
-            attrs = Files.readAttributes(path, BasicFileAttributes.class);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        Object key = null;
-        if (attrs != null) {
-            key = attrs.fileKey();
-        }
-        if (key == null) {
+        long inode = getINode(dobj);
+        if (inode == INVALID_INODE) {
             return null;
-        }       
-        long inode = key.hashCode();
+        } 
         { // update L1 cache
             lock.writeLock().lock();
             try {
@@ -186,7 +176,7 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
         } finally {
             lock.writeLock().unlock();
         }
-        if (list.addDataObject(dobj, env.findCloneableOpenSupport())) {
+        if (list.addDataObject(inode, dobj, env.findCloneableOpenSupport())) {
             return null;
         }
         return list.getCloneableOpenSupport(dobj, env.findCloneableOpenSupport());
@@ -275,7 +265,7 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
         private Storage() {
         }
 
-        private boolean addDataObject(DataObject dao, CloneableOpenSupport cos) {
+        private boolean addDataObject(long origINode, DataObject dao, CloneableOpenSupport cos) {
             Iterator<COSRedirectorImpl.StorageItem> iterator = list.iterator();
             boolean found = false;
             while (iterator.hasNext()) {
@@ -291,7 +281,7 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
                 cosRef = null;
             }
             if (!found) {
-                list.add(createItem(dao));
+                list.add(createItem(origINode, dao));
             }
             if (cosRef == null || cosRef.get() == null) {
                 cosRef = new WeakReference<CloneableOpenSupport>(cos);
@@ -359,20 +349,45 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
         }
     }
 
-    private static StorageItem createItem(DataObject dao) {
-        StorageItem out = new COSRedirectorImpl.StorageItem(dao);
+    private static StorageItem createItem(long origINode, DataObject dao) {
+        StorageItem out = new COSRedirectorImpl.StorageItem(origINode, dao);
         dao.addPropertyChangeListener(out);
-        dao.getPrimaryFile().addFileChangeListener(out);
+        FileObject primaryFile = dao.getPrimaryFile();
+        primaryFile.addFileChangeListener(out);
         return out;
+    }
+    
+    private static long getINode(DataObject dao) {
+        Path path = FileSystems.getDefault().getPath(FileUtil.getFileDisplayName(dao.getPrimaryFile()));
+        BasicFileAttributes attrs = null;
+        try {
+            attrs = Files.readAttributes(path, BasicFileAttributes.class);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        Object key = null;
+        if (attrs != null) {
+            key = attrs.fileKey();
+        }
+        long inode = INVALID_INODE;
+        if (key != null) {
+            inode = key.hashCode();
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "getInode {0}[{1}], {2}", new Object[] {key, dao, inode});
+            }
+        }
+        return inode;
     }
     
     private static final class StorageItem implements PropertyChangeListener, FileChangeListener {
 
         private final DataObject dao;
+        private final long origINode;
         private final AtomicBoolean removed = new AtomicBoolean(false);
 
-        private StorageItem(DataObject dao) {
+        private StorageItem(long origINode, DataObject dao) {
             this.dao = dao;
+            this.origINode = origINode;
         }
 
         private DataObject getValidDataObject() {
@@ -409,6 +424,14 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
 
         @Override
         public void fileChanged(FileEvent fe) {
+            long curINode = getINode(dao);
+            // track file remove followed by create with the same name
+            if (origINode != curINode) {
+                LOG.log(Level.INFO, "inode file Changed {0} {1}->{2}", new Object[] {dao, origINode, curINode});
+                if (!removed.get()) {
+                    removed.set(true);
+                }
+            }
         }
 
         @Override
