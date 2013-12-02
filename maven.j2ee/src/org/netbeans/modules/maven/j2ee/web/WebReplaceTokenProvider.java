@@ -243,6 +243,9 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
                 if ("text/html".equals(fo.getMIMEType())) { //NOI18N
                     return action + ".deploy"; //NOI18N
                 }
+                if ("text/xhtml".equals(fo.getMIMEType())) { //NOI18N
+                    return action + ".deploy"; //NOI18N
+                }
             }
         }
         return null;
