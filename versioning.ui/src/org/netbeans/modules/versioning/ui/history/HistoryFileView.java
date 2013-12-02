@@ -59,6 +59,7 @@ import javax.swing.*;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.team.commons.ColorManager;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
 import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider;
@@ -1170,14 +1171,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
         }
     }
 
-    private static Color LINK_COLOR;
-    static {
-        LINK_COLOR = UIManager.getColor("nb.html.link.foreground"); //NOI18N
-        if (null == LINK_COLOR) {
-           LINK_COLOR = new Color(0x164B7B);
-        }
-    }
     public static String getHyperlinkHTMLFont() {
-        return "<font color=#" + Integer.toHexString(LINK_COLOR.getRGB() & 0xffffff) + ">";
+        return "<font color=#" + Integer.toHexString(ColorManager.getDefault().getLinkColor().getRGB() & 0xffffff) + ">"; // NOI18N
     }
 }

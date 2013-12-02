@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.team.commons.treelist;
 
+import org.netbeans.modules.team.commons.ColorManager;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;

@@ -79,7 +79,7 @@ import org.netbeans.modules.bugtracking.tasks.RecentCategory;
 import org.netbeans.modules.bugtracking.tasks.ScheduleCategory;
 import org.netbeans.modules.bugtracking.tasks.UnsubmittedCategory;
 import org.netbeans.modules.bugtracking.tasks.filter.UnsubmittedCategoryFilter;
-import org.netbeans.modules.team.commons.treelist.ColorManager;
+import org.netbeans.modules.team.commons.ColorManager;
 import org.netbeans.modules.team.commons.treelist.TreeList;
 import org.netbeans.modules.team.commons.treelist.TreeListModel;
 import org.netbeans.modules.team.commons.treelist.TreeListModelListener;

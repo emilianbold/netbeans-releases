@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.team.commons.treelist;
+package org.netbeans.modules.team.commons;
 
 import java.awt.Color;
 import javax.swing.UIManager;
