@@ -136,8 +136,8 @@ public class DashboardRefresher {
     }
 
     private void refreshDashboard() {
-        List<RepositoryImpl> repositories = DashboardViewer.getInstance().getRepositories(false);
-        List<Category> categories = DashboardViewer.getInstance().getCategories(false, true);
+        List<RepositoryImpl> repositories = DashboardViewer.getInstance().getRepositories(true);
+        List<Category> categories = DashboardViewer.getInstance().getCategories(true, true);
         List<IssueImpl> changedTasks = new ArrayList<IssueImpl>();
         for (RepositoryImpl<?, ?, ?> repository : repositories) {
             for (QueryImpl query : repository.getQueries()) {
