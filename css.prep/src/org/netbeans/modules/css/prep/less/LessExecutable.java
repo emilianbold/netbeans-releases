@@ -259,20 +259,23 @@ public class LessExecutable {
 
         @Override
         List<String> getCompileParameters(File inputFile, File outputFile, List<String> compilerOptions) {
-            StringBuilder sb = new StringBuilder(200);
-            sb.append(lessPath);
-            sb.append(" "); // NOI18N
+            StringBuilder sb = getBaseParam();
             sb.append(StringUtils.implode(super.getCompileParameters(inputFile, outputFile, compilerOptions), " ")); // NOI18N
             return Collections.singletonList(sb.toString());
         }
 
         @Override
         List<String> getVersionParameters() {
+            StringBuilder sb = getBaseParam();
+            sb.append(StringUtils.implode(super.getVersionParameters(), " ")); // NOI18N
+            return Collections.singletonList(sb.toString());
+        }
+
+        private StringBuilder getBaseParam() {
             StringBuilder sb = new StringBuilder(200);
             sb.append(lessPath);
             sb.append(" "); // NOI18N
-            sb.append(StringUtils.implode(super.getVersionParameters(), " ")); // NOI18N
-            return Collections.singletonList(sb.toString());
+            return sb;
         }
 
     }

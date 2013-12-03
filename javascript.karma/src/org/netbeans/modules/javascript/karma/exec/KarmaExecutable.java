@@ -236,20 +236,23 @@ public class KarmaExecutable {
 
         @Override
         List<String> getStartParams(int port, KarmaRunInfo karmaRunInfo) {
-            StringBuilder sb = new StringBuilder(200);
-            sb.append(karmaPath);
-            sb.append(" "); // NOI18N
+            StringBuilder sb = getBaseParam();
             sb.append(StringUtils.implode(super.getStartParams(port, karmaRunInfo), " ")); // NOI18N
             return Collections.singletonList(sb.toString());
         }
 
         @Override
         List<String> getRunParams(int port) {
+            StringBuilder sb = getBaseParam();
+            sb.append(StringUtils.implode(super.getRunParams(port), " ")); // NOI18N
+            return Collections.singletonList(sb.toString());
+        }
+
+        private StringBuilder getBaseParam() {
             StringBuilder sb = new StringBuilder(200);
             sb.append(karmaPath);
             sb.append(" "); // NOI18N
-            sb.append(StringUtils.implode(super.getRunParams(port), " ")); // NOI18N
-            return Collections.singletonList(sb.toString());
+            return sb;
         }
 
     }
