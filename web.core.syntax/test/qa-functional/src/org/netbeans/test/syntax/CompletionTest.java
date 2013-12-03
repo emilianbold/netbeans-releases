@@ -132,6 +132,7 @@ public class CompletionTest extends J2eeTestCase {
     protected final static List JS_EXTS = Arrays.asList(new String[]{"js"/*,"java"*/});
     public final static Logger LOG = Logger.getLogger(CompletionTest.class.getName());
     protected FileObject testFileObj;
+    public static boolean isJDK8 = System.getProperty("java.version").startsWith("1.8");
 
     public CompletionTest() {
         super("CompletionTest");
@@ -667,7 +668,11 @@ public class CompletionTest extends J2eeTestCase {
         if (GENERATE_GOLDEN_FILES) {
             generateGoldenFiles(this);
         } else {
-            compareReferenceFiles();
+            if (CompletionTest.isJDK8) {
+                compareReferenceFiles(this.getName() + ".ref", this.getName() + "_jdk8.pass", this.getName() + ".diff");
+            } else {
+                compareReferenceFiles();
+            }
         }
     }
 }
