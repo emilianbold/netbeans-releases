@@ -140,13 +140,17 @@ public class OrganizeImports {
         }
         return null;
     }
-
+    
     private static void doOrganizeImports(WorkingCopy copy, boolean isBulkMode) throws IllegalStateException {
+        doOrganizeImports(copy, null, isBulkMode);
+    }
+
+    public static void doOrganizeImports(WorkingCopy copy, Set<Element> addImports, boolean isBulkMode) throws IllegalStateException {
         CompilationUnitTree cu = copy.getCompilationUnit();
         List<? extends ImportTree> imports = cu.getImports();
-        if (!imports.isEmpty()) {
+        if (!imports.isEmpty() || (addImports != null && !addImports.isEmpty())) {
             List<Diagnostic> diags = copy.getDiagnostics();
-            if (!diags.isEmpty()) {
+            if (!diags.isEmpty() && !imports.isEmpty()) {
                 SourcePositions sp = copy.getTrees().getSourcePositions();
                 long startPos = sp.getStartPosition(cu, imports.get(0));
                 long endPos = sp.getEndPosition(cu, imports.get(imports.size() - 1));
@@ -161,6 +165,9 @@ public class OrganizeImports {
             Set<Element> starImports = cs.countForUsingStarImport() < Integer.MAX_VALUE ? new HashSet<Element>() : null;
             Set<Element> staticStarImports = cs.countForUsingStaticStarImport() < Integer.MAX_VALUE ? new HashSet<Element>() : null;
             Set<Element> toImport = getUsedElements(copy, cu, starImports, staticStarImports);
+            if (addImports != null) {
+                toImport.addAll(addImports);
+            }
             if (!toImport.isEmpty() || isBulkMode) {
                 List<ImportTree> imps;
                 TreeMaker maker = copy.getTreeMaker();
