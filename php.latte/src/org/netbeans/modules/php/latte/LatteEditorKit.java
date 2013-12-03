@@ -43,6 +43,7 @@ package org.netbeans.modules.php.latte;
 
 import javax.swing.Action;
 import javax.swing.text.TextAction;
+import org.netbeans.modules.csl.api.CslActions;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.php.latte.actions.ToggleBlockCommentAction;
 import org.netbeans.modules.php.latte.csl.LatteLanguage;
@@ -60,7 +61,9 @@ public class LatteEditorKit extends NbEditorKit {
 
     @Override
     protected Action[] createActions() {
-        return TextAction.augmentList(super.createActions(), new Action[] {new ToggleBlockCommentAction()});
+        return TextAction.augmentList(super.createActions(), new Action[] {
+            new ToggleBlockCommentAction(),
+            CslActions.createInstantRenameAction()});
     }
 
 }
