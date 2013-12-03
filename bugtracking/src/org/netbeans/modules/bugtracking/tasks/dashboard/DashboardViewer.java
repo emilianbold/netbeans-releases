@@ -899,12 +899,12 @@ public final class DashboardViewer implements PropertyChangeListener {
         REQUEST_PROCESSOR.post(new Runnable() {
             @Override
             public void run() {
+                titleRepositoryNode.setProgressVisible(true);
+                titleCategoryNode.setProgressVisible(true);
                 // w8 with loading to preject ot be opened
                 Callable<Void> c = new Callable<Void>() {
                     @Override
                     public Void call() throws Exception {
-                        titleRepositoryNode.setProgressVisible(true);
-                        titleCategoryNode.setProgressVisible(true);
                         loadRepositories();
                         titleRepositoryNode.setProgressVisible(false);
                         loadCategories();

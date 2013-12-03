@@ -63,10 +63,8 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.windows.WindowManager;
-import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
@@ -237,7 +235,7 @@ public final class DashboardTopComponent extends TopComponent {
         if (firstStart) {
             firstStart = false;
             //load data after the component is displayed
-            SwingUtilities.invokeLater(new Runnable() {
+            WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
                 @Override
                 public void run() {
                     dashboard.loadData();
