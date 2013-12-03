@@ -393,9 +393,11 @@ public class MEKeyTool {
                     continue;
                 }
                 s = s.trim();
-                if (s.startsWith("Owner:")) // NOI18N
-                {
+                if (s.startsWith("Owner:")) { // NOI18N
                     return s.substring("Owner:".length()).trim(); // NOI18N
+                } else if (s.startsWith("Owner ")) { // NOI18N
+                    //ME8SDK keytool has different key listing than 3.x
+                    return s.substring("Owner ".length()).trim(); // NOI18N
                 }
             }
             return null;

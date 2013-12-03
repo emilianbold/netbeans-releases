@@ -111,10 +111,17 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
         bExport.addActionListener(new ActionListener() {
             @SuppressWarnings("synthetic-access")
             @Override
-            public void actionPerformed(@SuppressWarnings("unused")
-                    final ActionEvent evt) {
-                export();
-                reloadList(cTarget.getSelectedItem());
+            public void actionPerformed(@SuppressWarnings("unused") final ActionEvent evt) {
+                setListCustomMessage(NbBundle.getMessage(ExportPanel.class, "MSG_Exporting"));
+                bExport.setEnabled(false);
+                cTarget.setEnabled(false);
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        export();
+                        reloadList(cTarget.getSelectedItem());
+                    }
+                });
             }
         });
         tKeystore.setText(bean.getKeyStorePath());
@@ -414,11 +421,27 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
     private void bDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bDeleteActionPerformed
         final Object target = cTarget.getSelectedItem();
         final Object value = list.getSelectedValue();
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                deleteKey(target, value);
+            }
+        });
+    }//GEN-LAST:event_bDeleteActionPerformed
+
+    private void deleteKey(Object target, Object value) {
         final String keytool = MEKeyTool.getMEKeyToolPath(target);
         if (value instanceof MEKeyTool.KeyDetail && keytool != null) {
             final MEKeyTool.KeyDetail key = (MEKeyTool.KeyDetail) value;
             String name = (target instanceof J2MEPlatform.Device) ? ((J2MEPlatform.Device) target).getName() : ((J2MEPlatform) target).getName();
             if (DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(NbBundle.getMessage(ExportPanel.class, "MSG_DeleteKeyConfirmation", Integer.toString(key.getOrder()), name), NbBundle.getMessage(ExportPanel.class, "TITLE_ConfirmKeyDeletion"), NotifyDescriptor.YES_NO_OPTION)) == NotifyDescriptor.YES_OPTION) { // NOI18N
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        cTarget.setEnabled(false);
+                    }
+                });
+                setListCustomMessage(NbBundle.getMessage(ExportPanel.class, "MSG_Deleting"));
                 try {
                     if (target instanceof J2MEPlatform.Device) {
                         final String keystore = MEKeyTool.keystoreForDevice((J2MEPlatform.Device) target);
@@ -436,8 +459,7 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
                 reloadList(target);
             }
         }
-
-    }//GEN-LAST:event_bDeleteActionPerformed
+    }
 
     @Override
     public void itemStateChanged(@SuppressWarnings("unused")
@@ -494,34 +516,55 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
         bDelete.setEnabled(false);
         if (target != null && !(target instanceof String)) {
             setListLoading();
-            RP.post(new Runnable() {
-                @Override
-                public void run() {
-                    final MEKeyTool.KeyDetail[] keyList = MEKeyTool.listKeys(target);
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            setList(keyList);
-                        }
-                    });
-                }
-            });
+            if (SwingUtilities.isEventDispatchThread()) {
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        reloadListImpl(target);
+                    }
+                });
+            } else {
+                reloadListImpl(target);
+            }
         } else {
             setListNotLoaded();
+            checkErrors();
         }
-        checkErrors();
+    }
+
+    private void reloadListImpl(Object target) {
+        final MEKeyTool.KeyDetail[] keyList = MEKeyTool.listKeys(target);
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                setList(keyList);
+                cTarget.setEnabled(true);
+                checkErrors();
+            }
+        });
     }
 
     private void setListNotLoaded() {
-        final DefaultListModel model = new DefaultListModel();
-        model.addElement(NbBundle.getMessage(ExportPanel.class, "LBL_NotLoaded")); // NOI18N
-        list.setModel(model);
+        setListCustomMessage(NbBundle.getMessage(ExportPanel.class, "LBL_NotLoaded")); //NOI18N
     }
 
     private void setListLoading() {
+        setListCustomMessage(NbBundle.getMessage(ExportPanel.class, "LBL_Loading")); //NOI18N
+    }
+
+    private void setListCustomMessage(final String message) {
         final DefaultListModel model = new DefaultListModel();
-        model.addElement(NbBundle.getMessage(ExportPanel.class, "LBL_Loading")); // NOI18N
-        list.setModel(model);
+        model.addElement(message);
+        if (SwingUtilities.isEventDispatchThread()) {
+            list.setModel(model);
+        } else {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    list.setModel(model);
+                }
+            });
+        }
     }
 
     private void setList(final MEKeyTool.KeyDetail[] keys) {

@@ -42,8 +42,6 @@
 package org.netbeans.modules.j2me.project.ui.customizer;
 
 import java.awt.Component;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.text.Collator;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -54,7 +52,6 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JToggleButton;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
