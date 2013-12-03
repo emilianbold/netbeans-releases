@@ -176,6 +176,7 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
     private static final URL ICON_CONFLICT_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/bugzilla/resources/conflict.png"); //NOI18N
     private static final URL ICON_UNSUBMITTED_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/bugzilla/resources/unsubmitted.png"); //NOI18N
     private boolean loading;
+    private boolean wasDuplicated;
 
     public BugzillaIssue (NbTask task, BugzillaRepository repo) {
         super(task);
@@ -668,6 +669,7 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         TaskAttribute rta = m.getLocalTaskData().getRoot();
         TaskAttribute ta = rta.getMappedAttribute(BugzillaOperation.duplicate.getInputId());
         setValue(m, ta, id);
+        wasDuplicated = true;
     }
 
     boolean canReassign() {
@@ -969,6 +971,18 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
 
                 if (!wasNew) {
                     refresh();
+                    if (wasDuplicated && !submitCmd.hasFailed()) {
+                        try {
+                            BugzillaIssue dupe = repository.getIssueCache().getIssue(getFieldValue(IssueField.DUPLICATE_ID));
+                            if(dupe != null) {
+                                // if duplicate known on client then refresh to 
+                                // avoid potential mid-air ...
+                                dupe.refresh();
+                            }
+                        } finally {
+                            wasDuplicated = false;        
+                        }
+                    }
                 } else {
                     RepositoryResponse rr = submitCmd.getRepositoryResponse();
                     if(!submitCmd.hasFailed()) {
