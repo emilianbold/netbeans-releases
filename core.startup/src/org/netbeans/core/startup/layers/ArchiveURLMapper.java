@@ -261,6 +261,7 @@ public class ArchiveURLMapper extends URLMapper {
             if (copy == null || replace) {
                 if (copy == null) {
                     copy = File.createTempFile("copy", "-" + archiveFileURI.toString().replaceFirst(".+/", "")); // NOI18N
+                    copy = copy.getCanonicalFile();
                     copy.deleteOnExit();
                 }
                 InputStream is = fo.getInputStream();
