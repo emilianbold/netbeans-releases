@@ -256,6 +256,31 @@ Microsystems, Inc. All Rights Reserved.
     </target>          
 
 
+    <target name="copy-packages-scripts" depends="init-clusters">        
+        <for-each list="${clusters}" separator="," property="cluster.name"  propertyArg="package.name">
+            <ant target="copy-scripts"/>                           
+        </for-each>
+    </target>
+    
+    <target name="copy-scripts">
+
+        <property name="pkgdir" value="${basedir}/netBeans/${package.name}/pkg"/>
+        <property name="source.scriptsdir" value="${pkgdir}/scripts"/>
+        <property name="target.scriptsdir" value="${basedir}/build/${package.name}-${nb.id}.pkg/Contents/Resources"/>
+
+        <copy todir="${target.scriptsdir}" verbose="true" overwrite="true">
+            <fileset dir="${source.scriptsdir}"/>
+        </copy>
+        
+        <copy file="${basedir}/netBeans/baseide/build/scripts/env.sh" todir="${target.scriptsdir}"/>
+        <copy file="${basedir}/netBeans/baseide/pkg/scripts/addproduct_id.sh" todir="${target.scriptsdir}"/>
+        <copy file="${basedir}/commonfiles/get_current_jdk.sh" todir="${target.scriptsdir}"/>
+        <copy file="${basedir}/commonfiles/unpack200.sh" todir="${target.scriptsdir}"/>
+
+        <chmod dir="${target.scriptsdir}" perm="ugo+x" includes="**/*"/>
+        
+    </target>          
+
     <target name="init-bundles">
         <property name="main.bundles" value="(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/webcommon-${nb.id}.pkg ./build/extide-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/javame-${nb.id}.pkg ./build/cpp-${nb.id}.pkg ./build/php-${nb.id}.pkg ./build/groovy-${nb.id}.pkg ./build/ergonomics-${nb.id}.pkg ./build/glassfish-v3-${glassfish.v3.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
                                               -javase(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/extide-${nb.id}.pkg),
@@ -410,7 +435,6 @@ Microsystems, Inc. All Rights Reserved.
                 <filter token="SIZE_EXTIDE" value="${sizeof.extide}"/>
                 <filter token="SIZE_JAVAEE" value="${sizeof.javaee}"/>
                 <filter token="SIZE_JAVAME" value="${sizeof.javame}"/>
-                <!--<filter token="SIZE_RUBY" value="${sizeof.ruby}"/>-->
                 <filter token="SIZE_GROOVY" value="${sizeof.groovy}"/>
                 <filter token="SIZE_ERGONOMICS" value="${sizeof.ergonomics}"/>
                 <filter token="SIZE_GLASSFISHV3" value="${sizeof.glassfish.v3}"/>

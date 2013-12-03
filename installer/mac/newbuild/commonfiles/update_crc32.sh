@@ -1,6 +1,4 @@
-#!/bin/sh -x
-
-#set  -x
+#!/bin/sh
 
 if [ -z "$1" ] || [ -z "$2" ] ; then
     echo "usage: $0 jarsDir nbDir"

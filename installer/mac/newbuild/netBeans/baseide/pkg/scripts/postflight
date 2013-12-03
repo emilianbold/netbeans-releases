@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/sh
 
 # The contents of this file are subject to the terms of the Common Development
 # and Distribution License (the License). You may not use this file except in
@@ -38,6 +38,9 @@ if [ -f "$dirname"/set_jdk_home.sh ]; then
 fi
 
 "$dirname"/populate_caches.sh "$NETBEANS_INSTALL_DIR"
+exit_code=$?
+echo Result of populate_caches.sh : $exit_code
+
 
 #fix for 114656
 cd "$NETBEANS_INSTALL_DIR"

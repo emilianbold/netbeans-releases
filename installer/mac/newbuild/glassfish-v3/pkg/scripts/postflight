@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/sh
 
 # The contents of this file are subject to the terms of the Common Development
 # and Distribution License (the License). You may not use this file except in
@@ -19,24 +19,22 @@
 
 set -e
 
-echo DEBUG: param0: $0
-echo DEBUG: param1: $1
-echo DEBUG: param2: $2
-echo DEBUG: param3: $4
-
 script_dir=`dirname "$0"`
+source_dir=$1
+target_dir=$2
+
 
 jdk_home=`"$script_dir"/get_current_jdk.sh`
 
 . "$script_dir"/env.sh
 
-"$script_dir"/unpack200.sh "$2" "$jdk_home"
+"$script_dir"/unpack200.sh "$target_dir" "$jdk_home"
 
-"$script_dir"/add_gfv3.sh "$NETBEANS_INSTALL_DIR" "$2"
+"$script_dir"/add_gfv3.sh "$NETBEANS_INSTALL_DIR" "$target_dir"
 
-"$script_dir"/add_javadb.sh "$NETBEANS_INSTALL_DIR" "$2/javadb"
+"$script_dir"/add_javadb.sh "$NETBEANS_INSTALL_DIR" "$target_dir/javadb"
 
-"$script_dir"/perm.sh "$2"
+"$script_dir"/perm.sh "$target_dir"
 
 #add Product ID
 "$script_dir"/addproduct_id.sh "GFMOD"

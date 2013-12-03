@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/sh
 nb_dir=$1
 gf_dir=$2
 

@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/sh
 nb_dir=$1
 
 if [ -z "$1" ]; then
@@ -18,14 +18,18 @@ then
 
     #issue 209263
     #run IDE in headless mode
+    echo Run IDE in headless mode
     sh netbeans -J-Dnetbeans.close=true --nosplash -J-Dorg.netbeans.core.WindowSystem.show=false -J-Dorg.netbeans.core.WindowSystem.show=false --userdir /tmp/tmpnb --modules --update-all
+    exit_code=$?
+    echo Run IDE returns exit code: $exit_code
     if [ ! -d /tmp/tmpnb/var/cache ]; then
+        echo Warning: No caches found -> exiting
         exit
     fi
 
     cd /tmp/tmpnb/var/cache
     # zip -r populate.zip netigso
-    zip -r populate.zip netigso
+    zip -r -q populate.zip netigso
 
     # remove useless files
     # rm -r netigso
