@@ -133,7 +133,7 @@ public class LessExecutable {
         try {
             LessExecutable lessExecutable = getDefault();
             lessExecutable.getExecutable("Less version", TMP_DIR) // NOI18N
-                    .additionalParameters(Collections.singletonList(VERSION_PARAM))
+                    .additionalParameters(lessExecutable.getVersionParameters())
                     .runAndWait(getSilentDescriptor(), versionOutputProcessorFactory, "Detecting Less version..."); // NOI18N
             String detectedVersion = versionOutputProcessorFactory.getVersion();
             if (detectedVersion != null) {
@@ -168,7 +168,7 @@ public class LessExecutable {
         }
         try {
             getExecutable(Bundle.Less_compile(), workDir)
-                    .additionalParameters(getParameters(source, target, compilerOptions))
+                    .additionalParameters(getCompileParameters(source, target, compilerOptions))
                     .runAndWait(getDescriptor(new Runnable() {
                 @Override
                 public void run() {
@@ -213,7 +213,7 @@ public class LessExecutable {
                 .showProgress(false);
     }
 
-    List<String> getParameters(File inputFile, File outputFile, List<String> compilerOptions) {
+    List<String> getCompileParameters(File inputFile, File outputFile, List<String> compilerOptions) {
         List<String> params = new ArrayList<>();
         // debug
         boolean debug = CssPrepOptions.getInstance().getLessDebug();
@@ -236,6 +236,10 @@ public class LessExecutable {
         return params;
     }
 
+    List<String> getVersionParameters() {
+        return Collections.singletonList(VERSION_PARAM);
+    }
+
     //~ Inner classes
 
     // #239065
@@ -254,11 +258,20 @@ public class LessExecutable {
         }
 
         @Override
-        List<String> getParameters(File inputFile, File outputFile, List<String> compilerOptions) {
+        List<String> getCompileParameters(File inputFile, File outputFile, List<String> compilerOptions) {
             StringBuilder sb = new StringBuilder(200);
             sb.append(lessPath);
             sb.append(" "); // NOI18N
-            sb.append(StringUtils.implode(super.getParameters(inputFile, outputFile, compilerOptions), " ")); // NOI18N
+            sb.append(StringUtils.implode(super.getCompileParameters(inputFile, outputFile, compilerOptions), " ")); // NOI18N
+            return Collections.singletonList(sb.toString());
+        }
+
+        @Override
+        List<String> getVersionParameters() {
+            StringBuilder sb = new StringBuilder(200);
+            sb.append(lessPath);
+            sb.append(" "); // NOI18N
+            sb.append(StringUtils.implode(super.getVersionParameters(), " ")); // NOI18N
             return Collections.singletonList(sb.toString());
         }
 
