@@ -374,6 +374,10 @@ public class MavenProjectSupport {
                 FileObject webXml = webModuleImpl.getDeploymentDescriptor();
                 if (webXml == null) {
                     Profile profile = JavaEEProjectSettings.getProfile(project);
+                    if (profile == null) {
+                        profile = webModuleImpl.getJ2eeProfile();
+                    }
+
                     webXml = DDHelper.createWebXml(profile, webInf);
     
                     // this should never happend if valid j2eeVersion has been parsed - see also issue #214600
