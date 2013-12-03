@@ -215,7 +215,11 @@ public abstract class JQueryCompletionItem implements CompletionProposal {
         
         @Override
         public String getCustomInsertTemplate() {
-            return getElement().getName();
+            ElementHandle handle = getElement();
+            if (handle != null) {
+                return handle.getName();
+            }
+            return null;
         }
 
     }

@@ -193,7 +193,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     // a usage of field
                     fieldName = aNode.getProperty().getName();
                     property = (JsObjectImpl)createJsObject(aNode, parserResult, modelBuilder);
-                    parent = (JsObjectImpl)property.getParent();
+//                    parent = (JsObjectImpl)property.getParent();
 //                    if(property == null) {
 //                        Identifier identifier = ModelElementFactory.create(parserResult, (IdentNode)aNode.getProperty());
 //                        if (identifier != null) {
