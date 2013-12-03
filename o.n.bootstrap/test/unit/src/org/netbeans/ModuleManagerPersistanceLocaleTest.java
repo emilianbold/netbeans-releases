@@ -54,11 +54,11 @@ import org.openide.util.NbBundle;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class ModuleManagerPersistanceTest extends NbTestCase {
+public class ModuleManagerPersistanceLocaleTest extends NbTestCase {
     private ModuleManager mgr;
     private File sampleModule;
     
-    public ModuleManagerPersistanceTest(String name) {
+    public ModuleManagerPersistanceLocaleTest(String name) {
         super(name);
     }
 
@@ -98,10 +98,10 @@ public class ModuleManagerPersistanceTest extends NbTestCase {
         Stamps.main("init");
     }
     
-    @RandomlyFails // NB-Core-Build #9913, 9915: Unstable
-    public void testModuleManagerStoresIsOSGiInfo() throws Exception {
+    public void testModuleManagerSensitiveToLocale() throws Exception {
+        Locale.setDefault(Locale.FRENCH);
         ModuleManager snd = createModuleManager();
-        assertSame("Is not OSGi, but is computed", Boolean.FALSE, snd.isOSGi(sampleModule));
+        assertNull("Cache invalidated", snd.isOSGi(sampleModule));
     }
 
     private ModuleManager createModuleManager() throws Exception {
