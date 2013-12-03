@@ -47,6 +47,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.maven.model.Profile;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
@@ -71,17 +72,24 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
     private static final String NAMESPACE = null;//FIXME add propper namespase
     private final List<String> privateProfiles = new ArrayList<String>();
     private final List<String> sharedProfiles = new ArrayList<String>();
+    private final AtomicBoolean lazyProfilesSet = new AtomicBoolean(false);
     private final AuxiliaryConfiguration ac;
     private final NbMavenProjectImpl nmp;
 
     public ProjectProfileHandlerImpl(NbMavenProjectImpl nmp, AuxiliaryConfiguration ac) {
         this.nmp = nmp;
         this.ac = ac;
-        privateProfiles.addAll(retrieveActiveProfiles(ac, false));
-        sharedProfiles.addAll(retrieveActiveProfiles(ac, true));
+    }
+
+    private void lazyInit() {
+        if (lazyProfilesSet.compareAndSet(false, true)) {
+            privateProfiles.addAll(retrieveActiveProfiles(ac, false));
+            sharedProfiles.addAll(retrieveActiveProfiles(ac, true));
+        }
     }
 
     public @Override List<String> getAllProfiles() {
+        lazyInit();
         Set<String> profileIds = new HashSet<String>();
         //pom profiles come first
         extractProfiles(profileIds);
@@ -92,9 +100,11 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
     }
 
     public @Override List<String> getActiveProfiles(boolean shared) {
+       lazyInit();
        return new ArrayList<String>(shared ? sharedProfiles : privateProfiles);
     }
     public @Override List<String> getMergedActiveProfiles(boolean shared) {
+        lazyInit();
         Set<String> profileIds = new HashSet<String>();
         MavenProject mavenProject = nmp.getOriginalMavenProject();
         List<Profile> profiles = mavenProject.getActiveProfiles();
@@ -112,6 +122,7 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
     }
 
     public @Override void disableProfile(String id, boolean shared) {
+        lazyInit();
         Element element = ac.getConfigurationFragment(PROFILES, NAMESPACE, shared);
         if (element == null) {
 
@@ -145,6 +156,7 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
     }
 
     public @Override void enableProfile(String id, boolean shared) {
+        lazyInit();
         Element element = ac.getConfigurationFragment(PROFILES, NAMESPACE, shared);
         if (element == null) {
 
