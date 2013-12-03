@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.project.ui.testrunner;
 
+import java.util.Collections;
 import org.netbeans.modules.gsf.testrunner.api.Manager;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
@@ -106,13 +107,13 @@ public class TestCaseImpl implements TestCase {
         Manager manager = testSuite.getTestSession().getManager();
         TestSession session = testSuite.getTestSession().getTestSession();
         manager.displayOutput(session, getClassName() + "::"  + testCase.getName() + "()", error); // NOI18N
-        session.addOutput("<u>" + testCase.getName() + ":</u>"); // NOI18N
+        manager.displayOutput(session, message, error);
+        testCase.addOutputLines(Collections.singletonList("<u>" + testCase.getName() + ":</u>")); // NOI18N
         for (String s : stackTrace) {
             manager.displayOutput(session, s, error);
-            session.addOutput(s.replace("<", "&lt;")); // NOI18N
+            testCase.addOutputLines(Collections.singletonList(s.replace("<", "&lt;"))); // NOI18N
         }
         manager.displayOutput(session, "", false); // NOI18N
-        session.addOutput(""); // NOI18N
     }
 
     private String[] createStackTrace(String message, String[] stackTrace) {
