@@ -104,6 +104,7 @@ public class MatchingObjectNode extends AbstractNode implements Removable {
     private boolean valid = true;
     private PropertyChangeListener validityListener;
     private PropertyChangeListener selectionListener;
+    private final boolean replacing;
     PropertySet[] propertySets;
 
     public MatchingObjectNode(Node original,
@@ -119,6 +120,7 @@ public class MatchingObjectNode extends AbstractNode implements Removable {
             ReplaceCheckableNode checkableNode) {
         super(children, Lookups.fixed(matchingObject, checkableNode,
                 matchingObject.getFileObject(), matchingObject.getDataObject()));
+        replacing = checkableNode.isCheckable();
         Parameters.notNull("original", original);                       //NOI18N
         this.matchingObject = matchingObject;
         if (matchingObject.isObjectValid()) {
@@ -170,6 +172,9 @@ public class MatchingObjectNode extends AbstractNode implements Removable {
                     "org.netbeans.modules.utilities.CopyPathToClipboard"); //NOI18N
             return new Action[]{
                         SystemAction.get(OpenMatchingObjectsAction.class),
+                        replacing && !matchingObject.isObjectValid()
+                            ? new RefreshAction(matchingObject) : null,
+                        null,
                         copyPath == null ? new CopyPathAction() : copyPath,
                         SystemAction.get(HideResultAction.class),
                         null,
@@ -461,16 +466,15 @@ public class MatchingObjectNode extends AbstractNode implements Removable {
 
         @Override
         public void propertyChange(PropertyChangeEvent e) {
-            if (matchingObject.getInvalidityStatus()
-                    == MatchingObject.InvalidityStatus.DELETED) {
-                matchingObject.removePropertyChangeListener(
-                        MatchingObject.PROP_INVALIDITY_STATUS,
-                        this);
-            }
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    setInvalidOriginal();
+                    if (matchingObject.getInvalidityStatus() == null) {
+                        resetValidOriginal();
+                        setChildren(matchingObject.getDetailsChildren(true));
+                    } else {
+                        setInvalidOriginal();
+                    }
                 }
             });
         }

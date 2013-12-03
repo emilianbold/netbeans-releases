@@ -223,7 +223,7 @@ public class MavenProjectPropsImpl {
 
 
     static class Merger implements LookupMerger<AuxiliaryProperties> {
-        private MavenProjectPropsImpl primary;
+        private final MavenProjectPropsImpl primary;
 
         Merger(MavenProjectPropsImpl primary) {
             this.primary = primary;
@@ -241,7 +241,7 @@ public class MavenProjectPropsImpl {
 
     private static class MergedAuxProperties implements AuxiliaryProperties {
         Lookup.Result<AuxiliaryProperties> props;
-        private MavenProjectPropsImpl primary;
+        private final MavenProjectPropsImpl primary;
         private MergedAuxProperties(Lookup lookup, MavenProjectPropsImpl primary) {
              props = lookup.lookupResult(AuxiliaryProperties.class);
              this.primary = primary;

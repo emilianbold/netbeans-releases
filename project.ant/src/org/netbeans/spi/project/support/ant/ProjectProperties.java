@@ -54,6 +54,7 @@ import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
@@ -173,12 +174,18 @@ final class ProjectProperties {
         private final ChangeSupport cs = new ChangeSupport(this);
         /** Atomic actions in use to save XML files. */
         private final Set<AtomicAction> saveActions = new WeakSet<AtomicAction>();
+        private final AtomicBoolean fileListenerSet = new AtomicBoolean(false);
         
         public PP(String path, AntProjectHelper helper) {
             this.path = path;
             this.helper = helper;
-            File fl = new File(FileUtil.toFile(dir()), path.replace('/', File.separatorChar));
-            FileUtil.addFileChangeListener(this, FileUtil.normalizeFile(fl));
+        }
+
+        private void lazyAttachListener() {
+            if (fileListenerSet.compareAndSet(false, true)) {
+                File fl = new File(FileUtil.toFile(dir()), path.replace('/', File.separatorChar));
+                FileUtil.addFileChangeListener(this, FileUtil.normalizeFile(fl));
+            }
         }
         
         private FileObject dir() {
@@ -186,6 +193,7 @@ final class ProjectProperties {
         }
         
         public EditableProperties getEditablePropertiesOrNull() {
+            lazyAttachListener();
             if (!loaded) {
                 properties = null;
                 FileObject fo = dir().getFileObject(path);
@@ -232,6 +240,7 @@ final class ProjectProperties {
             dir().getFileSystem().runAtomicAction(action);
         }
         public FileLock write() throws IOException {
+            lazyAttachListener();            
             if (!loaded) {
                 Logger.getLogger(ProjectProperties.class.getName()).log(Level.INFO, null,
                         new IOException("#167784: changes on disk for " + path + " in " + dir() + " clobbered by in-memory data").

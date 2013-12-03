@@ -213,6 +213,18 @@ public abstract class OptionsPanelController {
     }
 
     /**
+     * Enables to handle selection of subcategory. It is meant to be called from
+     * a composite OptionspanelController and  delegates to
+     * {@link #setCurrentSubcategory(java.lang.String)}.
+     * @param subpath path of subcategory to be selected. Path is 
+     * composed from registration names divided by slash.
+     * @since 1.38
+     */
+    public final void setSubcategory(String subpath) {
+        setCurrentSubcategory(subpath);
+    }
+
+    /**
      * 
      * Get current help context asociated with this panel.
      * 

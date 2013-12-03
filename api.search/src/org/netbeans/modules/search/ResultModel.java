@@ -84,6 +84,8 @@ public final class ResultModel {
     /** */
     final BasicSearchCriteria basicCriteria;
     /** */
+    final BasicComposition basicComposition;
+    /** */
     private final boolean isFullText;
     /** */
     final String replaceString;
@@ -107,10 +109,11 @@ public final class ResultModel {
 
     /** Creates new <code>ResultModel</code>. */
     ResultModel(BasicSearchCriteria basicSearchCriteria,
-                       String replaceString) {
+                       String replaceString, BasicComposition basicComposition) {
 
         this.replaceString = replaceString;
         this.searchAndReplace = (replaceString != null);
+        this.basicComposition = basicComposition;
 
 	basicCriteria = basicSearchCriteria;
 	isFullText = (basicCriteria != null) && basicCriteria.isFullText();        
@@ -286,6 +289,12 @@ public final class ResultModel {
     private void objectValidityChanged(MatchingObject mo) {
         if (mo.isSelected()) {
             if (mo.isValid()) {
+                synchronized (this) {
+                    totalDetailsCount = 0;
+                    for (MatchingObject item : matchingObjects) {
+                        totalDetailsCount += item.getDetailsCount();
+                    }
+                }
                 checkValid();
             } else {
                 setInvalid();
@@ -453,8 +462,7 @@ public final class ResultModel {
     synchronized void searchException(RuntimeException ex) {
         ErrorManager.Annotation[] annotations =
                 ErrorManager.getDefault().findAnnotations(ex);
-        for (int i = 0; i < annotations.length; i++) {
-            ErrorManager.Annotation annotation = annotations[i];
+        for (ErrorManager.Annotation annotation : annotations) {
             if (annotation.getSeverity() == ErrorManager.USER) {
                 finishMessage = annotation.getLocalizedMessage();
                 if (finishMessage != null) return;

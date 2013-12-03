@@ -69,6 +69,7 @@ import org.netbeans.modules.versioning.ui.history.HistoryComponent.Filter;
 import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
 import org.netbeans.swing.etable.ETable;
 import org.netbeans.swing.etable.ETableColumn;
+import org.netbeans.swing.etable.ETableColumnModel;
 import org.netbeans.swing.outline.DefaultOutlineCellRenderer;
 import org.netbeans.swing.outline.Outline;
 import org.netbeans.swing.outline.RenderDataProvider;
@@ -768,8 +769,10 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                 setPropertyColumnDescription(RevisionNode.PROPERTY_NAME_LABEL, loc.getString("LBL_LocalHistory_Column_Label_Desc"));            // NOI18N            
 
                 // comparators
-                ETableColumn etc = (ETableColumn) getOutline().getColumnModel().getColumn(0);
+                ETableColumnModel m = (ETableColumnModel) getOutline().getColumnModel();
+                ETableColumn etc = (ETableColumn) m.getColumn(0);
                 etc.setNestedComparator(new NodeComparator(etc));
+                m.setColumnSorted(etc, false, 1);                
                 int idx = 1;
                 if(versioningSystem != null) {
                     setPropertyComparator(idx++);                    

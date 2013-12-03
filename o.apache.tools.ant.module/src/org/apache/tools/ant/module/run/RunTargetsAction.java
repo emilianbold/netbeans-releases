@@ -222,6 +222,8 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
                     }
                 }
                 boolean needsep = false;
+                VerticalGridLayout vgl = new VerticalGridLayout();
+                getPopupMenu().setLayout(vgl);
                 if (defaultTarget != null) {
                     needsep = true;
                     JMenuItem menuitem = new JMenuItem(defaultTarget);
@@ -247,6 +249,8 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
                 if (!otherTargets.isEmpty()) {
                     needsep = true;
                     JMenu submenu = new JMenu(NbBundle.getMessage(RunTargetsAction.class, "LBL_run_other_targets"));
+                    VerticalGridLayout submenuVgl = new VerticalGridLayout();
+                    submenu.getPopupMenu().setLayout(submenuVgl);
                     for (String target : otherTargets) {
                         JMenuItem menuitem = new JMenuItem(target);
                         menuitem.addActionListener(new TargetMenuItemHandler(project, target));
