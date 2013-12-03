@@ -132,13 +132,14 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
         if (dobjLookup == null) {
             return null;
         }
+        CloneableOpenSupport cos = env.findCloneableOpenSupport();
         lock.readLock().lock();
         try {
-            for (long n : cache) {
+            for (Long n : cache) {
                 COSRedirectorImpl.Storage storage = imap.get(n);
                 if (storage != null) {
                     if (storage.hasDataObject(dobj)) {
-                        CloneableOpenSupport aCes = storage.getCloneableOpenSupport(dobj, env.findCloneableOpenSupport());
+                        CloneableOpenSupport aCes = storage.getCloneableOpenSupport(dobj, cos);
                         if (aCes != null) {
                             return aCes;
                         }
@@ -165,6 +166,15 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
                 lock.writeLock().unlock();
             }
         }
+        Storage list = findOrCreateINodeList(inode);
+        if (list.addDataObject(inode, dobj, cos)) {
+            return null;
+        }
+        return list.getCloneableOpenSupport(dobj, cos);
+    }
+
+    private Storage findOrCreateINodeList(long inode) {
+        assert inode != INVALID_INODE;
         COSRedirectorImpl.Storage list;
         lock.writeLock().lock();
         try {
@@ -176,10 +186,7 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
         } finally {
             lock.writeLock().unlock();
         }
-        if (list.addDataObject(inode, dobj, env.findCloneableOpenSupport())) {
-            return null;
-        }
-        return list.getCloneableOpenSupport(dobj, env.findCloneableOpenSupport());
+        return list;
     }
 
     @Override
@@ -265,7 +272,7 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
         private Storage() {
         }
 
-        private boolean addDataObject(long origINode, DataObject dao, CloneableOpenSupport cos) {
+        private synchronized boolean addDataObject(long origINode, DataObject dao, CloneableOpenSupport cos) {
             Iterator<COSRedirectorImpl.StorageItem> iterator = list.iterator();
             boolean found = false;
             while (iterator.hasNext()) {
@@ -281,7 +288,7 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
                 cosRef = null;
             }
             if (!found) {
-                list.add(createItem(origINode, dao));
+                list.add(createItem(origINode, dao, cos));
             }
             if (cosRef == null || cosRef.get() == null) {
                 cosRef = new WeakReference<CloneableOpenSupport>(cos);
@@ -293,7 +300,7 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
             return false;
         }
 
-        private void removeDataObject(DataObject dao) {
+        private synchronized void removeDataObject(DataObject dao) {
             Iterator<COSRedirectorImpl.StorageItem> iterator = list.iterator();
             while (iterator.hasNext()) {
                 COSRedirectorImpl.StorageItem next = iterator.next();
@@ -305,7 +312,7 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
             }
         }
 
-        private boolean hasDataObject(DataObject dao) {
+        private synchronized boolean hasDataObject(DataObject dao) {
             Iterator<COSRedirectorImpl.StorageItem> iterator = list.iterator();
             while (iterator.hasNext()) {
                 COSRedirectorImpl.StorageItem next = iterator.next();
@@ -319,7 +326,7 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
             return false;
         }
 
-        private CloneableOpenSupport getCloneableOpenSupport(DataObject dao, CloneableOpenSupport cos) {
+        private synchronized CloneableOpenSupport getCloneableOpenSupport(DataObject dao, CloneableOpenSupport cos) {
             CloneableOpenSupport aCos = null;
             if (cosRef != null) {
                 aCos = cosRef.get();
@@ -349,8 +356,8 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
         }
     }
 
-    private static StorageItem createItem(long origINode, DataObject dao) {
-        StorageItem out = new COSRedirectorImpl.StorageItem(origINode, dao);
+    private static StorageItem createItem(long origINode, DataObject dao, CloneableOpenSupport origCOS) {
+        StorageItem out = new COSRedirectorImpl.StorageItem(origINode, dao, origCOS);
         dao.addPropertyChangeListener(out);
         FileObject primaryFile = dao.getPrimaryFile();
         primaryFile.addFileChangeListener(out);
@@ -384,10 +391,12 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
         private final DataObject dao;
         private final long origINode;
         private final AtomicBoolean removed = new AtomicBoolean(false);
+        private final CloneableOpenSupport origCOS;
 
-        private StorageItem(long origINode, DataObject dao) {
+        private StorageItem(long origINode, DataObject dao, CloneableOpenSupport cos) {
             this.dao = dao;
             this.origINode = origINode;
+            this.origCOS = cos;
         }
 
         private DataObject getValidDataObject() {
@@ -408,7 +417,7 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
                     }
                     DataObject toBeRemoved = (DataObject) evt.getSource();
                     if (dao.equals(toBeRemoved)) {
-                        removed.set(true);
+                        checkAndUpdateIfNeeded();
                     }
                 }
             }
@@ -424,32 +433,38 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
 
         @Override
         public void fileChanged(FileEvent fe) {
-            long curINode = getINode(dao);
-            // track file remove followed by create with the same name
-            if (origINode != curINode) {
-                LOG.log(Level.INFO, "inode file Changed {0} {1}->{2}", new Object[] {dao, origINode, curINode});
-                if (!removed.get()) {
-                    removed.set(true);
-                }
-            }
+            checkAndUpdateIfNeeded();
         }
 
         @Override
         public void fileDeleted(FileEvent fe) {
-            if (!removed.get()) {
-                removed.set(true);
-            }
+            removed.set(true);
         }
 
         @Override
         public void fileRenamed(FileRenameEvent fe) {
-            if (!removed.get()) {
-                removed.set(true);
-            }
+            checkAndUpdateIfNeeded();
         }
 
         @Override
         public void fileAttributeChanged(FileAttributeEvent fe) {
+        }
+
+        private void checkAndUpdateIfNeeded() {
+            long curINode = getINode(dao);
+            // track file remove followed by create with the same name
+            // also handles file removes where curInode is invalid
+            if (origINode != curINode) {
+                LOG.log(Level.INFO, "inode file Changed {0} {1}->{2}", new Object[] {dao, origINode, curINode});
+                if (removed.compareAndSet(false, true)) {
+                    if (curINode != INVALID_INODE) {
+                        // register orig COS under new INode 
+                        COSRedirectorImpl instance = Lookup.getDefault().lookup(COSRedirectorImpl.class);
+                        Storage list = instance.findOrCreateINodeList(curINode);
+                        list.addDataObject(curINode, dao, origCOS);
+                    }
+                }
+            }
         }
     }
 }
