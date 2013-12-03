@@ -862,10 +862,10 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                     Node n = Visualizer.findNode(o);
                     if(HistoryRootNode.isLoadNext(n)) {
                         StringBuilder sb = new StringBuilder();
-                        sb.append("<html>");    // NOI18N
-                        sb.append(getHyperlinkHTMLFont());   
+                        sb.append("<html>"); // NOI18N
+                        appendHyperlinkHTMLFont(sb);   
                         sb.append(delegate.getDisplayName(o));
-                        sb.append("</font></html>");                // NOI18N
+                        sb.append("</font></html>"); // NOI18N
                         return sb.toString();
                     }
                     return delegate.getDisplayName(o);
@@ -1033,7 +1033,8 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                 int start = spans[i++];
                 if(i == 1) {
                     sb.append(s.substring(0, start));
-                    sb.append(getHyperlinkHTMLFont() + "<u>"); // NOI18N
+                    appendHyperlinkHTMLFont(sb); 
+                    sb.append("<u>"); // NOI18N
                 }
                 int end = spans[i++];
                 sb.append(s.substring(start, end));
@@ -1174,7 +1175,9 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
         }
     }
 
-    public static String getHyperlinkHTMLFont() {
-        return "<font color=#" + Integer.toHexString(ColorManager.getDefault().getLinkColor().getRGB() & 0xffffff) + ">"; // NOI18N
+    public static void appendHyperlinkHTMLFont(StringBuffer sb) {
+        sb.append("<font color=#");// NOI18N
+        sb.append(Integer.toHexString(ColorManager.getDefault().getLinkColor().getRGB() & 0xffffff));
+        sb.append(">"); // NOI18N
     }
 }
