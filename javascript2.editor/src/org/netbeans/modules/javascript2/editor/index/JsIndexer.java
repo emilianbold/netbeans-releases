@@ -98,6 +98,9 @@ public class JsIndexer extends EmbeddingIndexer {
             return;
         }
 
+        // we need to remove old documents (document per object, not file)
+        support.removeDocuments(indexable);
+
         JsObject globalObject = model.getGlobalObject();
         for (JsObject object : globalObject.getProperties().values()) {
             if (object.getParent() != null) {
