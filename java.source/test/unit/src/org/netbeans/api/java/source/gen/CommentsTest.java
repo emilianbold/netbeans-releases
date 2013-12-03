@@ -82,12 +82,17 @@ public class CommentsTest extends GeneratorTestBase {
     public CommentsTest(String name) {
         super(name);
     }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp(); 
+        CasualDiff.noInvalidCopyTos = true;
+    }
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTestSuite(CommentsTest.class);
 //        suite.addTest(new CommentsTest("testMoveMethod171345"));
-        CasualDiff.noInvalidCopyTos = true;
         return suite;
     }
     
