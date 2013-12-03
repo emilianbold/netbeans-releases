@@ -344,7 +344,7 @@ public class CompileLineService {
             Iterator<String> st = splitCommandLine(compileLine).iterator();
             while(st.hasNext()){
                 String option = st.next();
-                if (option.startsWith("--")) {
+                if (option.startsWith("--")) { // NOI18N
                     option = option.substring(1);
                 }
                 if (option.startsWith("-D")){ // NOI18N

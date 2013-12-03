@@ -330,7 +330,7 @@ public class DiscoveryUtils {
                     }
                 }
             }
-            if (option.startsWith("--")) {
+            if (option.startsWith("--")) { // NOI18N
                 option = option.substring(1);
             }
             if (option.startsWith("-D")){ // NOI18N
