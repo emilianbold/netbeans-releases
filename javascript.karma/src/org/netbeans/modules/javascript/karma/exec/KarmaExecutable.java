@@ -75,11 +75,12 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 
-public final class KarmaExecutable {
+public class KarmaExecutable {
 
     private static final Logger LOGGER = Logger.getLogger(KarmaExecutable.class.getName());
 
@@ -93,11 +94,11 @@ public final class KarmaExecutable {
     private static final String RUN_COMMAND = "run";
     private static final String PORT_PARAMETER = "--port";
 
-    private final Project project;
-    private final String karmaPath;
+    protected final Project project;
+    protected final String karmaPath;
 
 
-    private KarmaExecutable(Project project) {
+    KarmaExecutable(Project project) {
         assert project != null;
         this.project = project;
         karmaPath = KarmaPreferences.getKarma(project);
@@ -115,6 +116,9 @@ public final class KarmaExecutable {
             }
             return null;
         }
+        if (Utilities.isMac()) {
+            return new MacKarmaExecutable(project);
+        }
         return new KarmaExecutable(project);
     }
 
@@ -124,11 +128,6 @@ public final class KarmaExecutable {
     })
     @CheckForNull
     public Future<Integer> start(int port, KarmaRunInfo karmaRunInfo) {
-        List<String> params = new ArrayList<>(4);
-        params.add(START_COMMAND);
-        params.add(karmaRunInfo.getNbConfigFile());
-        params.add(PORT_PARAMETER);
-        params.add(Integer.toString(port));
         final CountDownLatch countDownLatch = new CountDownLatch(1);
         Runnable countDownTask = new Runnable() {
             @Override
@@ -137,7 +136,7 @@ public final class KarmaExecutable {
             }
         };
         Future<Integer> task = getExecutable(Bundle.KarmaExecutable_start(ProjectUtils.getInformation(project).getDisplayName()), getProjectDir())
-                .additionalParameters(params)
+                .additionalParameters(getStartParams(port, karmaRunInfo))
                 .environmentVariables(karmaRunInfo.getEnvVars())
                 .run(getStartDescriptor(karmaRunInfo, countDownTask));
         assert task != null : karmaPath;
@@ -154,12 +153,8 @@ public final class KarmaExecutable {
     }
 
     public void runTests(int port) {
-        List<String> params = new ArrayList<>(3);
-        params.add(RUN_COMMAND);
-        params.add(PORT_PARAMETER);
-        params.add(Integer.toString(port));
         getExecutable("karma run...", getProjectDir()) // NOI18N
-                .additionalParameters(params)
+                .additionalParameters(getRunParams(port))
                 // XXX wait?
                 .run(getRunDescriptor());
     }
@@ -168,8 +163,12 @@ public final class KarmaExecutable {
         return FileUtil.toFile(project.getProjectDirectory());
     }
 
+    String getCommand() {
+        return karmaPath;
+    }
+
     private ExternalExecutable getExecutable(String title, File workDir) {
-        return new ExternalExecutable(karmaPath)
+        return new ExternalExecutable(getCommand())
                 .workDir(workDir)
                 .displayName(title)
                 .noOutput(false);
@@ -190,6 +189,23 @@ public final class KarmaExecutable {
                 .inputOutput(InputOutput.NULL);
     }
 
+    List<String> getStartParams(int port, KarmaRunInfo karmaRunInfo) {
+        List<String> params = new ArrayList<>(4);
+        params.add(START_COMMAND);
+        params.add(karmaRunInfo.getNbConfigFile());
+        params.add(PORT_PARAMETER);
+        params.add(Integer.toString(port));
+        return params;
+    }
+
+    List<String> getRunParams(int port) {
+        List<String> params = new ArrayList<>(3);
+        params.add(RUN_COMMAND);
+        params.add(PORT_PARAMETER);
+        params.add(Integer.toString(port));
+        return params;
+    }
+
     @CheckForNull
     private static String validateResult(ValidationResult result) {
         if (result.isFaultless()) {
@@ -202,6 +218,41 @@ public final class KarmaExecutable {
     }
 
     //~ Inner classes
+
+    // #238974
+    private static final class MacKarmaExecutable extends KarmaExecutable {
+
+        private static final String BASH_COMMAND = "/bin/bash -lc"; // NOI18N
+
+
+        MacKarmaExecutable(Project project) {
+            super(project);
+        }
+
+        @Override
+        String getCommand() {
+            return BASH_COMMAND;
+        }
+
+        @Override
+        List<String> getStartParams(int port, KarmaRunInfo karmaRunInfo) {
+            StringBuilder sb = new StringBuilder(200);
+            sb.append(karmaPath);
+            sb.append(" "); // NOI18N
+            sb.append(StringUtils.implode(super.getStartParams(port, karmaRunInfo), " ")); // NOI18N
+            return Collections.singletonList(sb.toString());
+        }
+
+        @Override
+        List<String> getRunParams(int port) {
+            StringBuilder sb = new StringBuilder(200);
+            sb.append(karmaPath);
+            sb.append(" "); // NOI18N
+            sb.append(StringUtils.implode(super.getRunParams(port), " ")); // NOI18N
+            return Collections.singletonList(sb.toString());
+        }
+
+    }
 
     private static final class ServerLineConvertorFactory implements ExecutionDescriptor.LineConvertorFactory {
 
