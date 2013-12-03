@@ -76,6 +76,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 /**
@@ -112,11 +113,11 @@ public final class MatchingObject implements Comparable<MatchingObject>,
     /** */
     private final ResultModel resultModel;
     /** */
-    private final FileObject fileObject;
+    private FileObject fileObject;
     /** */
     private DataObject dataObject;
     /** */
-    private final long timestamp;
+    private long timestamp;
     /** */
     private int matchesCount = 0;
     /** */
@@ -128,7 +129,7 @@ public final class MatchingObject implements Comparable<MatchingObject>,
      * charset used for full-text search of the object.
      * It is {@code null} if the object was not full-text searched.
      */
-    private final Charset charset;
+    private Charset charset;
     
     /**
      * holds information on whether the {@code object} is selected
@@ -151,6 +152,8 @@ public final class MatchingObject implements Comparable<MatchingObject>,
     private int selectedMatchesCount = 0;
     /** */
     private boolean valid = true;
+    /** */
+    private boolean refreshed = false;
     /** */
     private InvalidityStatus invalidityStatus = null;
     /** */
@@ -584,10 +587,15 @@ public final class MatchingObject implements Comparable<MatchingObject>,
     /**
      */
     InvalidityStatus checkValidity() {
+        InvalidityStatus oldStatus = invalidityStatus;
         InvalidityStatus status = getFreshInvalidityStatus();
         if (status != null) {
             valid = false;
             invalidityStatus = status;
+        }
+        if (oldStatus != invalidityStatus) {
+            changeSupport.firePropertyChange(PROP_INVALIDITY_STATUS,
+                    oldStatus, invalidityStatus);
         }
         return status;
     }
@@ -631,7 +639,8 @@ public final class MatchingObject implements Comparable<MatchingObject>,
         }
         
         long stamp = f.lastModified().getTime();
-        if (stamp > resultModel.getStartTime()) {
+        if ((!refreshed && stamp > resultModel.getStartTime())
+                || (refreshed && stamp > timestamp)) {
             log(SEVERE, "file's timestamp changed since start of the search");
             if (LOG.isLoggable(FINEST)) {
                 final java.util.Calendar cal = java.util.Calendar.getInstance();
@@ -896,6 +905,59 @@ public final class MatchingObject implements Comparable<MatchingObject>,
      */
     public void remove() {
         resultModel.remove(this);
+    }
+
+    /**
+     * Refresh the node, use information from a {@link Def} instance.
+     */
+    public void refresh(Def def) {
+        refreshed = true; // ignore result set timestamp
+        this.charset = def.getCharset();
+        FileObject origFileObject = fileObject;
+        this.fileObject = def.getFileObject();
+        this.textDetails = def.getTextDetails();
+
+        dataObject = dataObject();
+        timestamp = fileObject.lastModified().getTime();
+        valid = (timestamp != 0L);
+
+        if (dataObject == null) {
+            return;
+        }
+        if (fileObject != origFileObject) {
+            if (fileListener != null) {
+                origFileObject.removeFileChangeListener(fileListener);
+            }
+            setUpDataObjValidityChecking();
+        }
+        nodeDelegate = dataObject.getNodeDelegate();
+
+        Mutex.EVENT.writeAccess(new Runnable() {
+
+            @Override
+            public void run() {
+                int origSelectedMatches = selectedMatchesCount;
+                selectedMatchesCount = 0;
+                if (textDetails != null && !textDetails.isEmpty()) {
+                    adjustTextDetails();
+                }
+
+                changeSupport.firePropertyChange(PROP_MATCHES_SELECTED,
+                        origSelectedMatches, selectedMatchesCount);
+                if (matchesCount > 0) {
+                    setSelected(true);
+                }
+                InvalidityStatus origInvStat = invalidityStatus;
+                invalidityStatus = null;
+                changeSupport.firePropertyChange(PROP_INVALIDITY_STATUS,
+                        origInvStat,
+                        invalidityStatus);
+            }
+        });
+    }
+
+    public BasicComposition getBasicComposition() {
+        return this.resultModel.basicComposition;
     }
 
     /**

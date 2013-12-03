@@ -55,9 +55,9 @@ import org.openide.util.NbBundle;
  */
 class ResultDisplayer extends SearchResultsDisplayer<MatchingObject.Def> {
 
-    private ResultModel resultModel;
-    private BasicSearchCriteria criteria;
-    private BasicComposition composition;
+    private final ResultModel resultModel;
+    private final BasicSearchCriteria criteria;
+    private final BasicComposition composition;
     private BasicAbstractResultsPanel resultPanel;
     private Node infoNode;
 
@@ -65,7 +65,7 @@ class ResultDisplayer extends SearchResultsDisplayer<MatchingObject.Def> {
             BasicComposition composition) {
         this.criteria = criteria;
         this.resultModel = new ResultModel(criteria,
-                criteria.getReplaceString());
+                criteria.getReplaceString(), composition);
         this.composition = composition;
     }
 
