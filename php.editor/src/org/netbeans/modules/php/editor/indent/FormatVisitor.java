@@ -43,6 +43,7 @@ package org.netbeans.modules.php.editor.indent;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
@@ -1873,9 +1874,15 @@ public class FormatVisitor extends DefaultVisitor {
             ts.movePrevious();
             if ((ts.token().id() == PHPTokenId.WHITESPACE
                     && countOfNewLines(ts.token().text()) == 0)) {
-                FormatToken removedWS = formatTokens.remove(formatTokens.size() - 1);
+                List<FormatToken> removedWhitespaces = new ArrayList<>();
+                do {
+                    removedWhitespaces.add(formatTokens.remove(formatTokens.size() - 1));
+                } while (formatTokens.get(formatTokens.size() - 1).isWhitespace());
                 formatTokens.add(new FormatToken.UnbreakableSequenceToken(ts.offset(), null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_END));
-                formatTokens.add(removedWS);
+                Collections.reverse(removedWhitespaces);
+                for (FormatToken formatToken : removedWhitespaces) {
+                    formatTokens.add(formatToken);
+                }
             } else {
                 formatTokens.add(new FormatToken.UnbreakableSequenceToken(ts.offset() + ts.token().length(), null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_END));
             }
