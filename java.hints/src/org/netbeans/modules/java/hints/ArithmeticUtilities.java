@@ -194,7 +194,12 @@ public class ArithmeticUtilities {
                 
             }
         }
-        Object o = new VisitorImpl(info, resolveCompileTimeConstants, enhanced).scan(tp, null);
+        Object o;
+        try {
+            o = new VisitorImpl(info, resolveCompileTimeConstants, enhanced).scan(tp, null);
+        } catch (ArithmeticException | IndexOutOfBoundsException | IllegalArgumentException ex) {
+            o = null;
+        }
         if (save) {
             if (v == null) {
                 v = new ElementValue();
@@ -451,7 +456,11 @@ public class ArithmeticUtilities {
                     VariableTree vt = (VariableTree)varPath.getLeaf();
                     if (vt.getInitializer() != null) {
                         VisitorImpl recurse = new VisitorImpl(info, true, enhanceProcessing);
-                        obj = recurse.scan(new TreePath(varPath, vt.getInitializer()), null);
+                        try {
+                            obj = recurse.scan(new TreePath(varPath, vt.getInitializer()), null);
+                        } catch (ArithmeticException | IndexOutOfBoundsException | IllegalArgumentException ex) {
+                            // no op, obj is already null.
+                        }
                     }
                 }
             } else if (entry == null) {
