@@ -145,12 +145,28 @@ public class OrganizeImports {
         doOrganizeImports(copy, null, isBulkMode);
     }
 
+    /**
+     * Performs 'organize imports' in two modes. If 'addImports' is null, it optimizes imports according to coding style.
+     * However if addImports is not null && not empty, it will add the elements in addImports, and reorder the set
+     * of import statements, but will not remove unused imports.
+     * Combination of bulk + addImports is not tested.
+     * 
+     * @param copy working copy to change
+     * @param addImports if not null, just adds and reorders imports. If null, performs optimization
+     * @param isBulkMode called from batch processing
+     * @throws IllegalStateException 
+     */
     public static void doOrganizeImports(WorkingCopy copy, Set<Element> addImports, boolean isBulkMode) throws IllegalStateException {
         CompilationUnitTree cu = copy.getCompilationUnit();
         List<? extends ImportTree> imports = cu.getImports();
-        if (!imports.isEmpty() || (addImports != null && !addImports.isEmpty())) {
+        if (imports.isEmpty()) {
+            if (addImports == null) {
+                return;
+            }
+        } else if (addImports == null) {
+            // check diag code only if in the 'optimize all' mode.
             List<Diagnostic> diags = copy.getDiagnostics();
-            if (!diags.isEmpty() && !imports.isEmpty()) {
+            if (!diags.isEmpty()) {
                 SourcePositions sp = copy.getTrees().getSourcePositions();
                 long startPos = sp.getStartPosition(cu, imports.get(0));
                 long endPos = sp.getEndPosition(cu, imports.get(imports.size() - 1));
@@ -161,57 +177,62 @@ public class OrganizeImports {
                     }
                 }
             }
-            final CodeStyle cs = CodeStyle.getDefault(copy.getFileObject());
-            Set<Element> starImports = cs.countForUsingStarImport() < Integer.MAX_VALUE ? new HashSet<Element>() : null;
-            Set<Element> staticStarImports = cs.countForUsingStaticStarImport() < Integer.MAX_VALUE ? new HashSet<Element>() : null;
-            Set<Element> toImport = getUsedElements(copy, cu, starImports, staticStarImports);
-            if (addImports != null) {
-                toImport.addAll(addImports);
-            }
-            if (!toImport.isEmpty() || isBulkMode) {
-                List<ImportTree> imps;
-                TreeMaker maker = copy.getTreeMaker();
-                if (starImports != null || staticStarImports != null) {
-                    imps = new LinkedList<ImportTree>();                    
-                    Trees trees = copy.getTrees();
-                    for (ImportTree importTree : cu.getImports()) {
-                        Tree qualIdent = importTree.getQualifiedIdentifier();
-                        if (qualIdent.getKind() == Tree.Kind.MEMBER_SELECT && "*".contentEquals(((MemberSelectTree)qualIdent).getIdentifier())) {
-                            if (importTree.isStatic()) {
-                                if (staticStarImports != null && staticStarImports.contains(trees.getElement(TreePath.getPath(cu, ((MemberSelectTree)qualIdent).getExpression()))))
-                                    imps.add(maker.Import(qualIdent, true));
-                            } else {
-                                if (starImports != null && starImports.contains(trees.getElement(TreePath.getPath(cu, ((MemberSelectTree)qualIdent).getExpression()))))
-                                    imps.add(maker.Import(qualIdent, false));
-                            }
+        }
+        final CodeStyle cs = CodeStyle.getDefault(copy.getFileObject());
+        Set<Element> starImports = cs.countForUsingStarImport() < Integer.MAX_VALUE ? new HashSet<Element>() : null;
+        Set<Element> staticStarImports = cs.countForUsingStaticStarImport() < Integer.MAX_VALUE ? new HashSet<Element>() : null;
+        Set<Element> toImport = getUsedElements(copy, cu, starImports, staticStarImports);
+        List<ImportTree> imps = new LinkedList<ImportTree>();  
+        TreeMaker maker = copy.getTreeMaker();
+        
+        if (addImports != null) {
+            // copy over all imports to be added + existing imports.
+            toImport.addAll(addImports);
+            imps.addAll(cu.getImports());
+        } else if (!toImport.isEmpty() || isBulkMode) {
+            if (starImports != null || staticStarImports != null) {
+                Trees trees = copy.getTrees();
+                for (ImportTree importTree : cu.getImports()) {
+                    Tree qualIdent = importTree.getQualifiedIdentifier();
+                    if (qualIdent.getKind() == Tree.Kind.MEMBER_SELECT && "*".contentEquals(((MemberSelectTree)qualIdent).getIdentifier())) {
+                        if (importTree.isStatic()) {
+                            if (staticStarImports != null && staticStarImports.contains(trees.getElement(TreePath.getPath(cu, ((MemberSelectTree)qualIdent).getExpression()))))
+                                imps.add(maker.Import(qualIdent, true));
+                        } else {
+                            if (starImports != null && starImports.contains(trees.getElement(TreePath.getPath(cu, ((MemberSelectTree)qualIdent).getExpression()))))
+                                imps.add(maker.Import(qualIdent, false));
                         }
                     }
-                    Collections.sort(imps, new Comparator<ImportTree>() {
-                        
-                        private CodeStyle.ImportGroups groups = cs.getImportGroups();
-                        
-                        @Override
-                        public int compare(ImportTree o1, ImportTree o2) {
-                            if (o1 == o2)
-                                return 0;
-                            String s1 = o1.getQualifiedIdentifier().toString();
-                            String s2 = o2.getQualifiedIdentifier().toString();
-                            int bal = groups.getGroupId(s1, o1.isStatic()) - groups.getGroupId(s2, o2.isStatic());
-                            return bal == 0 ? s1.compareTo(s2) : bal;
-                        }
-                    });
-                } else {
-                    imps = Collections.emptyList();
                 }
-                CompilationUnitTree cut = maker.CompilationUnit(cu.getPackageAnnotations(), cu.getPackageName(), imps, cu.getTypeDecls(), cu.getSourceFile());
-                ((JCCompilationUnit)cut).packge = ((JCCompilationUnit)cu).packge;
-                if (starImports != null || staticStarImports != null) {
-                    ((JCCompilationUnit)cut).starImportScope = ((JCCompilationUnit)cu).starImportScope;
-                }
-                CompilationUnitTree ncu = toImport.isEmpty() ? cut : GeneratorUtilities.get(copy).addImports(cut, toImport);
-                copy.rewrite(cu, ncu);
+            } else {
+                imps = Collections.emptyList();
             }
+        } else {
+            return;
         }
+        if (!imps.isEmpty()) {
+            Collections.sort(imps, new Comparator<ImportTree>() {
+
+                private CodeStyle.ImportGroups groups = cs.getImportGroups();
+
+                @Override
+                public int compare(ImportTree o1, ImportTree o2) {
+                    if (o1 == o2)
+                        return 0;
+                    String s1 = o1.getQualifiedIdentifier().toString();
+                    String s2 = o2.getQualifiedIdentifier().toString();
+                    int bal = groups.getGroupId(s1, o1.isStatic()) - groups.getGroupId(s2, o2.isStatic());
+                    return bal == 0 ? s1.compareTo(s2) : bal;
+                }
+            });
+        }
+        CompilationUnitTree cut = maker.CompilationUnit(cu.getPackageAnnotations(), cu.getPackageName(), imps, cu.getTypeDecls(), cu.getSourceFile());
+        ((JCCompilationUnit)cut).packge = ((JCCompilationUnit)cu).packge;
+        if (starImports != null || staticStarImports != null) {
+            ((JCCompilationUnit)cut).starImportScope = ((JCCompilationUnit)cu).starImportScope;
+        }
+        CompilationUnitTree ncu = toImport.isEmpty() ? cut : GeneratorUtilities.get(copy).addImports(cut, toImport);
+        copy.rewrite(cu, ncu);
     }
 
     private static Set<Element> getUsedElements(final CompilationInfo info, final CompilationUnitTree cut, final Set<Element> starImports, final Set<Element> staticStarImports) {
