@@ -43,7 +43,9 @@ package org.netbeans.modules.cnd.modelimpl.syntaxerr;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.Iterator;
+import java.util.Set;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -64,13 +66,18 @@ import org.openide.util.lookup.ServiceProviders;
 @ServiceProvider(service=CsmErrorProvider.class, position=10),
 @ServiceProvider(path=NamedOption.HIGHLIGTING_CATEGORY, service=NamedOption.class, position=900)
 })
-public class ParserErrorProvider extends CsmErrorProvider {
+public final class ParserErrorProvider extends CsmErrorProvider {
 
     private static final boolean ENABLE = CndUtils.getBoolean("cnd.parser.error.provider", true);
 
     @Override
     protected boolean validate(Request request) {
         return ENABLE && super.validate(request) && !disableAsLibraryHeaderFile(request.getFile());
+    }
+
+    @Override
+    public Set<EditorEvent> supportedEvents() {
+        return EnumSet.<EditorEvent>of(EditorEvent.DocumentBased, EditorEvent.FileBased);
     }
 
     @Override

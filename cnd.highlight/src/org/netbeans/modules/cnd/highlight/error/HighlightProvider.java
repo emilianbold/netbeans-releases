@@ -46,15 +46,21 @@ package org.netbeans.modules.cnd.highlight.error;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider.EditorEvent;
 import org.netbeans.modules.cnd.highlight.semantic.debug.InterrupterImpl;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.support.Interrupter;
@@ -67,17 +73,21 @@ import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
 import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  *
  * @author Alexander Simon
  */
-public class HighlightProvider  {
+public final class HighlightProvider  {
     
     /** for test purposes only! */
     public interface Hook {
         void highlightingDone(String absoluteFileName, List<ErrorDescription> descriptions);
     }
+    private static final boolean TRACE_TASKS = false;
     
     private Hook hook;
     
@@ -93,9 +103,15 @@ public class HighlightProvider  {
     public static HighlightProvider getInstance(){
         return instance;
     }
+    private final Lookup.Result<CsmErrorProvider> res;
+    private final RequestProcessor RP;
+    private final Map<CsmErrorProvider, MyTask> tasks;
     
     /** Creates a new instance of HighlightProvider */
     private HighlightProvider() {
+        res = Lookup.getDefault().lookupResult(CsmErrorProvider.class);
+        RP = new RequestProcessor("HighlightProvider", 1); // NOI18N
+        tasks = new ConcurrentHashMap<CsmErrorProvider, MyTask>();
     }
     
     /* package */ void update(CsmFile file, Document doc, DataObject dao, InterrupterImpl interrupter) {
@@ -108,7 +124,9 @@ public class HighlightProvider  {
     /* package */ void clear(Document doc) {
         assert doc!=null;
         if (doc instanceof BaseDocument){
-            removeAnnotations(doc);
+            for(final CsmErrorProvider provider : res.allInstances() ) {
+                removeAnnotations(doc, provider.getName());
+            }
             CppUpToDateStatusProvider.get((BaseDocument) doc).setUpToDate(UpToDateStatus.UP_TO_DATE_OK);
         }
     }
@@ -122,46 +140,40 @@ public class HighlightProvider  {
     }
     
     private void addAnnotations(final BaseDocument doc, final CsmFile file, final DataObject dao, final InterrupterImpl interrupter) {
-
-        CppUpToDateStatusProvider.get(doc).setUpToDate(UpToDateStatus.UP_TO_DATE_PROCESSING);
-        final List<ErrorDescription> descriptions = new ArrayList<ErrorDescription>();
+        EditorEvent event;
+        if (CsmFileInfoQuery.getDefault().isDocumentBasedFile(file)) {
+            event = EditorEvent.DocumentBased;
+        } else {
+            event = EditorEvent.FileBased;
+        }
+        List<CsmErrorProvider> list = new ArrayList<CsmErrorProvider>();
+        for(final CsmErrorProvider provider : res.allInstances() ) {
+            if (interrupter.cancelled()) {
+                return;
+            }
+            if (provider.supportedEvents().contains(event)) {
+                list.add(provider);
+            }
+        }
+        for(final CsmErrorProvider provider : list) {
+            if (!tasks.containsKey(provider)) {
+                tasks.put(provider, new MyTask(provider));
+            }
+        }
         if (TRACE_ANNOTATIONS) System.err.printf("\nSetting annotations for %s\n", file);
 
-        CsmErrorProvider.Response response = new CsmErrorProvider.Response() {
-            private int lastSize = descriptions.size();
-            @Override
-            public void addError(CsmErrorInfo info) {
-                if (interrupter.cancelled()) {
-                    return;
-                }
-                PositionBounds pb = createPositionBounds(dao, info.getStartOffset(), info.getEndOffset());
-                ErrorDescription desc = null;
-                if( pb != null ) {
-                    try {
-                        desc = ErrorDescriptionFactory.createErrorDescription(
-                                getSeverity(info), info.getMessage(), doc, pb.getBegin().getPosition(), pb.getEnd().getPosition());
-                    } catch (IOException ioe) {
-                        Exceptions.printStackTrace(ioe);
-                    }
-                    descriptions.add(desc);
-                    if (TRACE_ANNOTATIONS) System.err.printf("\tadded to a bag %s\n", desc.toString());
-                } else {
-                    if (TRACE_ANNOTATIONS) System.err.printf("\tCan't create PositionBounds for %s\n", info);
-                }
-            }
-            @Override
-            public void done() {
-                if( descriptions.size() > lastSize ) {
-                    lastSize = descriptions.size();
-                    if (TRACE_ANNOTATIONS) System.err.printf("Showing %d errors\n", descriptions.size());
-                    HintsController.setErrors(doc, HighlightProvider.class.getName(), descriptions);
-                }
-            }
-        };
-        removeAnnotations(doc);
-        DocumentListener listener = null;
-        if (doc != null) {
-            listener = new DocumentListener(){
+        for(final CsmErrorProvider provider : list) {
+            removeAnnotations(doc, provider.getName());
+        }
+        if (interrupter.cancelled()) {
+            return;
+        }
+        if (CsmErrorProvider.isPartial(file, new HashSet<CsmFile>())) {
+            return;
+        }
+        CppUpToDateStatusProvider.get(doc).setUpToDate(UpToDateStatus.UP_TO_DATE_PROCESSING);
+        
+        final DocumentListener listener = new DocumentListener(){
                 @Override
                 public void insertUpdate(DocumentEvent e) {
                     interrupter.cancel();
@@ -174,20 +186,43 @@ public class HighlightProvider  {
                 public void changedUpdate(DocumentEvent e) {
                 }
             };
-            doc.addDocumentListener(listener);
-        }
-        try {
-            CsmErrorProvider.getDefault().getErrors(new RequestImpl(file, doc, interrupter), response);
-        } finally {
-            if (listener != null) {
-                doc.removeDocumentListener(listener);
+        doc.addDocumentListener(listener);
+        final List<ResponseImpl> responces = new ArrayList<ResponseImpl>();
+        final RequestImpl request = new RequestImpl(file, doc, interrupter);
+        final CountDownLatch wait = new CountDownLatch(list.size());
+        for(final CsmErrorProvider provider : list) {
+            if (interrupter.cancelled()) {
+                wait.countDown();
+                continue;
             }
+            final ResponseImpl response = new ResponseImpl(provider, interrupter, dao, doc);
+            responces.add(response);
+            MyTask myTask = tasks.get(provider);
+            myTask.post(request, response, wait);
         }
-        CppUpToDateStatusProvider.get(doc).setUpToDate(UpToDateStatus.UP_TO_DATE_OK);
-        Hook theHook = this.hook;
-        if( theHook != null ) {
-            theHook.highlightingDone(file.getAbsolutePath().toString(), descriptions);
-        }
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    wait.await();
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace(System.err);
+                }
+                if (listener != null) {
+                    doc.removeDocumentListener(listener);
+                }
+                CppUpToDateStatusProvider.get(doc).setUpToDate(UpToDateStatus.UP_TO_DATE_OK);
+                Hook theHook = HighlightProvider.this.hook;
+                if( theHook != null ) {
+                    List<ErrorDescription> descriptions = new ArrayList<ErrorDescription>();
+                    for(ResponseImpl responce : responces) {
+                        descriptions.addAll(responce.descriptions);
+                    }
+                    theHook.highlightingDone(file.getAbsolutePath().toString(), descriptions);
+                }
+            }
+        });
     }
     
     private static PositionBounds createPositionBounds(DataObject dao, int start, int end) {
@@ -200,15 +235,15 @@ public class HighlightProvider  {
         return null;
     }
     
-    private void removeAnnotations(Document doc) {
-        HintsController.setErrors(doc, HighlightProvider.class.getName(), Collections.<ErrorDescription>emptyList());
+    private void removeAnnotations(Document doc, String layer) {
+        HintsController.setErrors(doc, layer, Collections.<ErrorDescription>emptyList());
     }
 
     // package-local for test purposes
-    static class RequestImpl implements CsmErrorProvider.Request {
+    static final class RequestImpl implements CsmErrorProvider.Request {
 
         private final CsmFile file;
-        private Interrupter interrupter;
+        private final Interrupter interrupter;
         private final Document document;
         
         public RequestImpl(CsmFile file, Document doc, Interrupter interrupter) {
@@ -230,6 +265,127 @@ public class HighlightProvider  {
         @Override
         public Document getDocument() {
             return document;
+        }
+    }
+
+    private static final class ResponseImpl implements CsmErrorProvider.Response {
+
+        private final List<ErrorDescription> descriptions = new ArrayList<ErrorDescription>();
+        private final CsmErrorProvider provider;
+        private final InterrupterImpl interrupter;
+        private final DataObject dao;
+        private final BaseDocument doc;
+
+        public ResponseImpl(CsmErrorProvider provider, InterrupterImpl interrupter, DataObject dao, BaseDocument doc) {
+            this.provider = provider;
+            this.interrupter = interrupter;
+            this.dao = dao;
+            this.doc = doc;
+        }
+
+        @Override
+        public void addError(CsmErrorInfo info) {
+            if (interrupter.cancelled()) {
+                return;
+            }
+            PositionBounds pb = createPositionBounds(dao, info.getStartOffset(), info.getEndOffset());
+            ErrorDescription desc = null;
+            if (pb != null) {
+                try {
+                    desc = ErrorDescriptionFactory.createErrorDescription(
+                            getSeverity(info), info.getMessage(), doc, pb.getBegin().getPosition(), pb.getEnd().getPosition());
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                }
+                descriptions.add(desc);
+                if (TRACE_ANNOTATIONS) {
+                    System.err.printf("\tadded to a bag %s\n", desc.toString());
+                }
+            } else {
+                if (TRACE_ANNOTATIONS) {
+                    System.err.printf("\tCan't create PositionBounds for %s\n", info);
+                }
+            }
+        }
+
+        @Override
+        public void done() {
+            if (TRACE_ANNOTATIONS) {
+                System.err.printf("Showing %d errors\n", descriptions.size());
+            }
+            HintsController.setErrors(doc, provider.getName(), descriptions);
+        }
+    }
+
+    private static final class RunnableImpl implements Runnable {
+
+        private final CsmErrorProvider provider;
+        private RequestImpl request;
+        private ResponseImpl response;
+        private CountDownLatch wait;
+
+        public RunnableImpl(CsmErrorProvider provider) {
+            this.provider = provider;
+        }
+
+        public void setWork(RequestImpl request, ResponseImpl response, CountDownLatch wait) {
+            synchronized(this) {
+                if (this.wait != null) {
+                    this.wait.countDown();
+                }
+                this.request = request;
+                this.response = response;
+                this.wait = wait;
+            }
+        }
+
+        @Override
+        public void run() {
+            RequestImpl aRequest;
+            ResponseImpl aResponse;
+            CountDownLatch aWait;
+            synchronized(this) {
+                aRequest = request;
+                aResponse = response;
+                aWait = wait;
+                this.request = null;
+                this.response = null;
+                this.wait = null;
+            }
+            if (aWait == null) {
+                return;
+            }
+            try {
+                if (!aRequest.isCancelled()){
+                    try {
+                        provider.getErrors(aRequest, aResponse);
+                        if (TRACE_TASKS) {System.err.println("finish "+provider);} //NOI18N
+                    } catch (AssertionError ex) {
+                        ex.printStackTrace(System.err);
+                    } catch (Exception ex) {
+                        ex.printStackTrace(System.err);
+                    }
+                }
+            } finally {
+                aWait.countDown();
+            }
+        }
+    }
+    
+    private static final class MyTask {
+        private final RunnableImpl runnable;
+        private final Task task;
+        private final RequestProcessor RP;
+        
+        private MyTask(CsmErrorProvider provider) {
+            this.RP = new RequestProcessor("Error Provider "+provider.getName(), 1); // NOI18N
+            runnable = new RunnableImpl(provider);
+            task = RP.create(runnable);
+        }
+        
+        private void post(RequestImpl request, ResponseImpl response, CountDownLatch wait) {
+            runnable.setWork(request, response, wait);
+            task.schedule(0);
         }
     }
     

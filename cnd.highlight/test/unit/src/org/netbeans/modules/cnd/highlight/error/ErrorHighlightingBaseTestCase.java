@@ -94,7 +94,7 @@ public class ErrorHighlightingBaseTestCase extends ProjectBasedTestCase {
             public void done() {
             }
         };
-        CsmErrorProvider.getDefault().getErrors(request, response);
+        CsmErrorProvider.getAllErrors(request, response);
         Collections.sort(result, new Comparator<CsmErrorInfo>() {
             @Override
             public int compare(CsmErrorInfo o1, CsmErrorInfo o2) {
