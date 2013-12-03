@@ -90,7 +90,7 @@ public final class SingleFileStorage implements FileStorage {
             return null;
         }
 
-        long fileSize = file.length();
+        final long fileSize = file.length();
 
         if (fileSize >= Integer.MAX_VALUE) {
             throw new InternalError();

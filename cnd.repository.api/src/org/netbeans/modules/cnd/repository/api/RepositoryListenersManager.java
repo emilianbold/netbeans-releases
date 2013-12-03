@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,51 +40,56 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.cnd.repository.api;
 
+import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArrayList;
-import org.netbeans.modules.cnd.repository.spi.Key;
-import org.openide.util.Exceptions;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author akrasny
+ * @author Nickolay Dalmatov
  */
-public final class RepositoryExceptions {
+/*package*/class RepositoryListenersManager {
+    private static final RepositoryListenersManager instance = new RepositoryListenersManager();
+    private CopyOnWriteArrayList<RepositoryListener>  listeners = new CopyOnWriteArrayList<RepositoryListener>();
 
-    private static final CopyOnWriteArrayList<RepositoryExceptionListener> exceptionListeners = new CopyOnWriteArrayList<RepositoryExceptionListener>();
-
-    private RepositoryExceptions() {
+    /** Creates a new instance of RepositoryListenersManager */
+    private RepositoryListenersManager() {
+        final Collection<? extends RepositoryListener> lst =
+                Lookups.forPath(RepositoryListener.PATH).lookupAll(RepositoryListener.class);
+        this.listeners = new CopyOnWriteArrayList<RepositoryListener>(lst);
+    }
+    
+    public static RepositoryListenersManager getInstance() {
+        return instance;
+    }
+    
+    public void registerListener (final RepositoryListener listener){
+        listeners.add(listener);
+    }
+    
+    public void unregisterListener(final RepositoryListener listener){
+        listeners.remove(listener);
+    }
+    
+    public boolean fireUnitOpenedEvent(final int unitId){
+        boolean toOpen = true;
+        for (RepositoryListener theListener : listeners) {
+            toOpen &= theListener.unitOpened(unitId);
+        }        
+        return toOpen;
     }
 
-    /* package*/ static void addRepositoryExceptionListener(RepositoryExceptionListener listener) {
-        exceptionListeners.add(listener);
-    }
 
-    /* package*/ static void removeRepositoryExceptionListener(RepositoryExceptionListener listener) {
-        exceptionListeners.remove(listener);
-    }
-
-    public static void throwException(Object source, int unitID, CharSequence name, Throwable ex) {
-        for (RepositoryExceptionListener listener : exceptionListeners) {
-            listener.anExceptionHappened(unitID, name, new RepositoryException(ex));
+    public void fireUnitClosedEvent(final int unitId) {
+        for (RepositoryListener theListener : listeners) {
+            theListener.unitClosed(unitId);
         }
-//        Exceptions.printStackTrace(ex);
     }
 
-    public static void throwException(Object source, Key key, Throwable ex) {
-        for (RepositoryExceptionListener listener : exceptionListeners) {
-            listener.anExceptionHappened(key.getUnitId(), key.getUnit(), new RepositoryException(ex));
-        }
-  //      Exceptions.printStackTrace(ex);
-    }
 
-    public static void throwException(Object source, Throwable ex) {
-        Exceptions.printStackTrace(ex);
-    }
+  
 }

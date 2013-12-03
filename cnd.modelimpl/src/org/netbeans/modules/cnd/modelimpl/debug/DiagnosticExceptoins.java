@@ -47,6 +47,7 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.modelimpl.uid.KeyBasedUID;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.support.RepositoryTestUtils;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  * Allows to get control as soon as an exception occurs
@@ -85,7 +86,7 @@ public class DiagnosticExceptoins {
      * See Hook.exception description for more details
      */
     public static void register(Throwable thr) {
-        thr.printStackTrace(System.err);
+        CndUtils.printStackTraceOnce(thr);
         Hook aHook = hook;
         if (aHook != null) {
             hook.exception(thr);

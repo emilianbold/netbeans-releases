@@ -72,6 +72,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.storage.data.UTF;
 import org.netbeans.modules.cnd.repository.testbench.BaseStatistics;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
 
@@ -285,7 +286,7 @@ public final class FilesAccessStrategyImpl implements ReadLayerCapability, Write
                  return fileStorage.read(key);
              }
          } catch (IOException ex) {
-             Exceptions.printStackTrace(ex);
+             RepositoryExceptions.throwException(this, key, ex);
          }
          return null;
     }
@@ -303,7 +304,7 @@ public final class FilesAccessStrategyImpl implements ReadLayerCapability, Write
                 fileStorage.write(key, data);
             }
         } catch (IOException ex) {
-            RepositoryExceptions.throwException(this, ex);
+            RepositoryExceptions.throwException(this, key, ex);
         }
 
     }

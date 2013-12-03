@@ -69,6 +69,8 @@ public final class LayerIndex {
 
     private final File cacheDirectoryFile;
     private int version;
+    private static final String INDEX_FILE_NAME = "index";//NOI18N
+    private static final String UNITS_INDEX_FILE_NAME = "project-index";//NOI18N
     private long lastModificationTime;
     private final List<FileSystem> fileSystems = new ArrayList<FileSystem>();
     private final List<UnitDescriptor> units = new ArrayList<UnitDescriptor>();
@@ -82,7 +84,7 @@ public final class LayerIndex {
     boolean load(int persistMechanismVersion, boolean recreateOnFail) {
         this.version = persistMechanismVersion;
 
-        File indexFile = new File(cacheDirectoryFile, "index"); // NOI18N
+        File indexFile = new File(cacheDirectoryFile, INDEX_FILE_NAME); 
 
         // If no index file - it's OK.
         if (!indexFile.exists()) {
@@ -163,7 +165,7 @@ public final class LayerIndex {
 
     void store() throws IOException {
         final long currentTime = System.currentTimeMillis();
-        File indexFile = new File(cacheDirectoryFile, "index"); // NOI18N
+        File indexFile = new File(cacheDirectoryFile, INDEX_FILE_NAME); 
         DataOutputStream out = null;
         try {
             out = RepositoryImplUtil.getBufferedDataOutputStream(indexFile);
@@ -269,7 +271,7 @@ public final class LayerIndex {
         if (!unitDir.exists()) {
             unitDir.mkdirs();
         }
-        return new File(unitDir, "project-index"); // NOI18N
+        return new File(unitDir, UNITS_INDEX_FILE_NAME);
     }
 
     int registerUnit(UnitDescriptor unitDescriptor) {

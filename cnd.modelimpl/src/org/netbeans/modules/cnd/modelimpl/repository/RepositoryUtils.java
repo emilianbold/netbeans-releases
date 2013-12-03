@@ -59,10 +59,11 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDManager;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
 import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.api.RepositoryException;
+import org.netbeans.modules.cnd.repository.api.RepositoryExceptionListener;
 import org.netbeans.modules.cnd.repository.impl.spi.UnitsConverter;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
-import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
+import org.netbeans.modules.cnd.repository.api.RepositoryListener;
 import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
@@ -257,8 +258,8 @@ public final class RepositoryUtils {
 
     public static void startup() {
         Repository.startup(CURRENT_VERSION_OF_PERSISTENCY);
-//        Repository.unregisterRepositoryListener(getRepositoryListenerProxy());
-//        Repository.registerRepositoryListener(getRepositoryListenerProxy());
+        Repository.addRepositoryExceptionListener(getRepositoryListenerProxy());
+        Repository.registerRepositoryListener(getRepositoryListenerProxy());
     }
 
     private static RepositoryListenerProxy myRepositoryListenerProxy;
@@ -279,6 +280,8 @@ public final class RepositoryUtils {
     public static void shutdown() {
         // we intentionally do not unregister listener here since it will be automatically
         // unregistered as soon as shutdown (which is async.) finishes
+        Repository.removeRepositoryExceptionListener(getRepositoryListenerProxy());
+        Repository.unregisterRepositoryListener(getRepositoryListenerProxy());        
         Repository.shutdown();
     }
 
@@ -355,9 +358,13 @@ public final class RepositoryUtils {
         Repository.openUnit(unitId);
     }
 
-    public static void unregisterRepositoryListener(RepositoryListener listener) {
+//    public static void unregisterRepositoryListener(RepositoryListener listener) {
 //        Repository.unregisterRepositoryListener(listener);
-    }
+//    }
+//    
+//    public static void removeRepositoryExceptionListener(RepositoryExceptionListener listener) {
+//        Repository.removeRepositoryExceptionListener(listener);
+//    }    
 
     private static boolean isTracingKey(Key key) {
         if (TRACE_ARGS) {
@@ -372,8 +379,8 @@ public final class RepositoryUtils {
         }
     }
 
-    private static class RepositoryListenerProxy implements RepositoryListener {
-        private RepositoryListener parent = RepositoryListenerImpl.instance();
+    private static class RepositoryListenerProxy implements RepositoryListener, RepositoryExceptionListener {
+        private RepositoryListenerImpl parent = RepositoryListenerImpl.instance();
         private Map<Integer,Integer> wasErrors = new ConcurrentHashMap<Integer,Integer>();
         private boolean fatalError = false;
         private RepositoryListenerProxy(){
@@ -391,8 +398,8 @@ public final class RepositoryUtils {
             fatalError = false;
         }
         @Override
-        public boolean unitOpened(int unitId, CharSequence unitName) {
-            return parent.unitOpened(unitId, unitName);
+        public boolean unitOpened(int unitId) {
+            return parent.unitOpened(unitId);
         }
 
 //        @Override
@@ -401,8 +408,8 @@ public final class RepositoryUtils {
 //        }
 
         @Override
-        public void unitClosed(int unitId, CharSequence unitName) {
-            parent.unitClosed(unitId, unitName);
+        public void unitClosed(int unitId) {
+            parent.unitClosed(unitId);
         }
 
 //        @Override
@@ -410,10 +417,10 @@ public final class RepositoryUtils {
 //            parent.unitRemoved(unitId, unitName);
 //        }
 
-//        @Override
+        @Override
         public void anExceptionHappened(final int unitId, CharSequence unitName, RepositoryException exc) {
             primitiveErrorStrategy(unitId, exc);
-//            parent.anExceptionHappened(unitId, unitName, exc);
+            parent.anExceptionHappened(unitId, unitName, exc);
         }
 
         /**

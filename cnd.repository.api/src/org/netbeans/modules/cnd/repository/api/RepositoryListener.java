@@ -41,25 +41,32 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.repository.spi;
+package org.netbeans.modules.cnd.repository.api;
 
 /**
  *
  * @author Nickolay Dalmatov
  */
 public interface RepositoryListener {
+    
+    /**
+     * You can also register this listener as a service
+     */
+    public static final String PATH = "CND/RepositoryListener"; //NOI18N
+   
 
     /**
      * invoked once an access to not yet opened unit happens
      *
-     * @param unitName String the name of the unit
+     * @param unitId
+     * @return 
      */
-    boolean unitOpened(int unitId, CharSequence unitName);
+    boolean unitOpened(int unitId);
 
     /**
      * invoked once a unit is closed
      *
-     * @param unitName String the name of the unit
+     * @param unitId
      */
-    void unitClosed(int unitId, CharSequence unitName);
+    void unitClosed(int unitId);
 }

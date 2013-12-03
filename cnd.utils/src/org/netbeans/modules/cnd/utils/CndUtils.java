@@ -62,7 +62,7 @@ public class CndUtils {
     private static final Logger LOG = Logger.getLogger("cnd.logger"); // NOI18N
 
     private static boolean releaseMode;
-    private static volatile Exception lastAssertion;
+    private static volatile Throwable lastAssertion;
 
     static {
         String text = System.getProperty("cnd.release.mode");
@@ -211,7 +211,7 @@ public class CndUtils {
         }
     }
 
-    public static Exception getLastAssertion() {
+    public static Throwable getLastAssertion() {
         return lastAssertion;
     }
 
@@ -245,6 +245,15 @@ public class CndUtils {
                 CndUtils.assertTrueInConsole(false, message + ' ' + file.getPath());
             }
         }
+    }
+    
+    
+    public static void printStackTraceOnce(Throwable exception, int stackCompareSize) {
+        DLightLibsCommonLogger.printStackTraceOnce(exception, Level.INFO, true, stackCompareSize);
+    }
+    
+    public static void printStackTraceOnce(Throwable exception) {
+        DLightLibsCommonLogger.printStackTraceOnce(exception, Level.INFO, true);
     }
 
     public static void assertNonUiThread() {

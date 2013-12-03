@@ -59,6 +59,8 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.repository.api.FilePath;
+import org.netbeans.modules.cnd.repository.api.RepositoryException;
+import org.netbeans.modules.cnd.repository.api.RepositoryExceptions;
 import org.netbeans.modules.cnd.repository.api.UnitDescriptor;
 import org.netbeans.modules.cnd.repository.impl.spi.Layer;
 import org.netbeans.modules.cnd.repository.impl.spi.LayerDescriptor;
@@ -299,6 +301,7 @@ import org.openide.util.Lookup;
                 }
             }
         }
+        RepositoryExceptions.throwException(this, key, new RepositoryException(true));
         return null;
     }
 

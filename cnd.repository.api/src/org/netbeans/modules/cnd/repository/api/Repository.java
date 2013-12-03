@@ -98,11 +98,13 @@ public final class Repository {
 
     public static void openUnit(int unitId) {
         implRef.get().openUnit(unitId);
+        RepositoryListenersManager.getInstance().fireUnitOpenedEvent(unitId);
     }
 
     public static void closeUnit(int unitId, boolean cleanRepository,
             Set<Integer> requiredUnits) {
         implRef.get().closeUnit(unitId, cleanRepository, requiredUnits);
+        RepositoryListenersManager.getInstance().fireUnitClosedEvent(unitId);
     }
 
     public static void removeUnit(int unitId) {
@@ -138,6 +140,14 @@ public final class Repository {
     // Called concurrently
     public static int getUnitId(UnitDescriptor unitDescriptor) {
         return implRef.get().getUnitID(unitDescriptor);
+    }
+    
+    public static void registerRepositoryListener(RepositoryListener listener) {
+        RepositoryListenersManager.getInstance().registerListener(listener);
+    }    
+    
+    public static void unregisterRepositoryListener(RepositoryListener listener) {
+        RepositoryListenersManager.getInstance().unregisterListener(listener);
     }
 
     public static void addRepositoryExceptionListener(RepositoryExceptionListener listener) {
