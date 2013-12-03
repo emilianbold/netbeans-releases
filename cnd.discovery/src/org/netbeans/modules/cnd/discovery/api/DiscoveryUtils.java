@@ -330,6 +330,9 @@ public class DiscoveryUtils {
                     }
                 }
             }
+            if (option.startsWith("--")) {
+                option = option.substring(1);
+            }
             if (option.startsWith("-D")){ // NOI18N
                 String macro;
                 if (option.equals("-D") && st.hasNext()){  //NOI18N
