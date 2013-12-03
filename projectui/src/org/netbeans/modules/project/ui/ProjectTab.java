@@ -826,17 +826,21 @@ public class ProjectTab extends TopComponent
                     Integer projectTabTopPos = prjTabScrollCoordinates.y;
                     Integer projectTabBottomPos = prjTabScrollCoordinates.y + prjTabScrollCoordinates.height + 
                             (nodeSelectionProjectPanel.isMinimized()?0:(NodeSelectionProjectPanel.COMPONENT_HEIGHT));
-                    Double projectNodePos = projectNodeCoordinates.y + (projectNodeCoordinates.height * 0.5);
-                    Double selectedNodePos = selectedNodeCoordinates.y + (selectedNodeCoordinates.height * 0.5);
-                    //Adding and subtacting 1 for project tab bottom y-index, b/c this index is slightly changing, when panel appears, then disappears and again appears
-                    if ((projectTabTopPos < projectNodePos && projectTabBottomPos > projectNodePos)
-                         || (projectTabTopPos > selectedNodePos 
-                            || (projectTabBottomPos < selectedNodePos
-                            || projectTabBottomPos + 1 < selectedNodePos 
-                            || projectTabBottomPos - 1 < selectedNodePos))) {
-                        nodeSelectionProjectPanel.minimize();
+                    if (projectNodeCoordinates != null && selectedNodeCoordinates != null) {
+                        Double projectNodePos = projectNodeCoordinates.y + (projectNodeCoordinates.height * 0.5);
+                        Double selectedNodePos = selectedNodeCoordinates.y + (selectedNodeCoordinates.height * 0.5);
+                        //Adding and subtacting 1 for project tab bottom y-index, b/c this index is slightly changing, when panel appears, then disappears and again appears
+                        if ((projectTabTopPos < projectNodePos && projectTabBottomPos > projectNodePos)
+                             || (projectTabTopPos > selectedNodePos 
+                                || (projectTabBottomPos < selectedNodePos
+                                || projectTabBottomPos + 1 < selectedNodePos 
+                                || projectTabBottomPos - 1 < selectedNodePos))) {
+                            nodeSelectionProjectPanel.minimize();
+                        } else {
+                            nodeSelectionProjectPanel.maximize();
+                        }
                     } else {
-                        nodeSelectionProjectPanel.maximize();
+                        nodeSelectionProjectPanel.minimize();
                     }
                 }
             });

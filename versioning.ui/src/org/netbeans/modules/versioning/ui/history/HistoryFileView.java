@@ -59,6 +59,7 @@ import javax.swing.*;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.team.commons.ColorManager;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
 import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider;
@@ -858,7 +859,8 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                     Node n = Visualizer.findNode(o);
                     if(HistoryRootNode.isLoadNext(n)) {
                         StringBuilder sb = new StringBuilder();
-                        sb.append("<html><font color=#0000FF>");    // NOI18N
+                        sb.append("<html>");    // NOI18N
+                        sb.append(getHyperlinkHTMLFont());   
                         sb.append(delegate.getDisplayName(o));
                         sb.append("</font></html>");                // NOI18N
                         return sb.toString();
@@ -1028,7 +1030,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                 int start = spans[i++];
                 if(i == 1) {
                     sb.append(s.substring(0, start));
-                    sb.append("<font color=#0000FF><u>"); // NOI18N
+                    sb.append(getHyperlinkHTMLFont() + "<u>"); // NOI18N
                 }
                 int end = spans[i++];
                 sb.append(s.substring(start, end));
@@ -1168,5 +1170,8 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
             loadVCSEntries(History.toProxies(tc.getFiles()), false); 
         }
     }
-    
+
+    public static String getHyperlinkHTMLFont() {
+        return "<font color=#" + Integer.toHexString(ColorManager.getDefault().getLinkColor().getRGB() & 0xffffff) + ">"; // NOI18N
+    }
 }

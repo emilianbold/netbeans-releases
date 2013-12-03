@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.team.commons.treelist;
 
+import org.netbeans.modules.team.commons.ColorManager;
 import java.awt.event.MouseEvent;
 import java.util.logging.Logger;
 import java.awt.BorderLayout;

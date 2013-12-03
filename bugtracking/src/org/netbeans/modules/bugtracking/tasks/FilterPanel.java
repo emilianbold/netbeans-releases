@@ -51,7 +51,7 @@ import org.netbeans.modules.bugtracking.settings.DashboardSettings;
 import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions.SortDialogAction;
 import org.netbeans.modules.bugtracking.tasks.filter.ScheduleCategoryFilter;
-import org.netbeans.modules.team.commons.treelist.ColorManager;
+import org.netbeans.modules.team.commons.ColorManager;
 import org.netbeans.modules.team.commons.treelist.TreeLabel;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;

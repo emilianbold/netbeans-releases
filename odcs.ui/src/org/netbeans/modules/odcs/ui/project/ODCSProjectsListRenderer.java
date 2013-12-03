@@ -49,7 +49,6 @@ package org.netbeans.modules.odcs.ui.project;
 
 import org.netbeans.modules.team.server.ui.common.URLDisplayerAction;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -62,9 +61,8 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JPanel;
 import javax.swing.JTextArea;
-import org.netbeans.modules.team.server.ui.common.ColorManager;
+import org.netbeans.modules.team.commons.ColorManager;
 import org.netbeans.modules.team.server.ui.common.LinkButton;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;

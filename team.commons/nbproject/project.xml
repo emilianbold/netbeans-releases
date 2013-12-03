@@ -167,6 +167,8 @@
                 <friend>org.netbeans.modules.team.server</friend>
                 <friend>org.netbeans.modules.mylyn.util</friend>
                 <friend>eu.doppel_helix.netbeans.MantisIntegration</friend>
+                <friend>org.netbeans.modules.versioning.ui</friend> 
+                <package>org.netbeans.modules.team.commons</package>
                 <package>org.netbeans.modules.team.commons.treelist</package>
                 <package>org.netbeans.modules.team.ide.spi</package>
                 <package>org.netbeans.modules.team.spi</package>
