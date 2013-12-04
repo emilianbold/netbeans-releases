@@ -47,11 +47,12 @@ import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.test.git.operators.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.netbeans.test.git.operators.CommitOperator;
 import org.netbeans.test.git.utils.TestKit;
 
@@ -95,8 +96,11 @@ public class CommitUiTest extends JellyTestCase {
                 NewProjectWizardOperator.invoke().close();
             }
 
-            TestKit.loadOpenProject(PROJECT_NAME, getDataDir());
-            new EventTool().waitNoEvent(3000);
+            TestKit.prepareGitProject(TestKit.PROJECT_CATEGORY, TestKit.PROJECT_TYPE, TestKit.PROJECT_NAME);
+            new EventTool().waitNoEvent(2000);
+            while (IndexingBridge.getInstance().isIndexingInProgress()) {
+                Thread.sleep(3000);
+            }
             TestKit.createNewElements(PROJECT_NAME, "xx", "NewClass");
             new EventTool().waitNoEvent(1000);
             TestKit.createNewElement(PROJECT_NAME, "xx", "NewClass2");

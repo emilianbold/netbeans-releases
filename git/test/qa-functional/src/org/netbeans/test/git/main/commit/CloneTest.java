@@ -52,7 +52,6 @@ import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.NbModuleSuite;
@@ -107,7 +106,8 @@ public class CloneTest extends JellyTestCase {
             NbDialogOperator ndo;
             JButtonOperator bo;
             JTextFieldOperator tfo;
-            TestKit.loadOpenProject(TestKit.PROJECT_NAME, getDataDir());
+            File work = TestKit.prepareGitProject(TestKit.PROJECT_CATEGORY, TestKit.PROJECT_TYPE, TestKit.PROJECT_NAME);
+            String path = work.getAbsolutePath() + File.separator + "clone";
             new EventTool().waitNoEvent(2000);
 
             while (IndexingBridge.getInstance().isIndexingInProgress()) {
@@ -118,6 +118,8 @@ public class CloneTest extends JellyTestCase {
             nodeFile = new ProjectsTabOperator().getProjectRootNode(TestKit.PROJECT_NAME);
             nodeFile.performMenuActionNoBlock("Team|Remote|Clone");
             ndo = new NbDialogOperator("Clone Repository");
+            tfo = new JTextFieldOperator(ndo, 1);
+            tfo.setText(path);
             bo = new JButtonOperator(ndo, "Finish");
             bo.push();
             new EventTool().waitNoEvent(2000);

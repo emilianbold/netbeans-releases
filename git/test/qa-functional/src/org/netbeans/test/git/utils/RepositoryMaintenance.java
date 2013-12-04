@@ -60,7 +60,7 @@ public final class RepositoryMaintenance {
         }
         folder.delete();
     }
-
+    
     public static int loadRepositoryFromFile(File repo, String dumpPath) {
         int value = -1;
 
