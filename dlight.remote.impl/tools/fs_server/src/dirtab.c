@@ -425,13 +425,6 @@ const char*  dirtab_get_element_cache_path(dirtab_element *el) {
     return el->cache_path;
 }
 
-#ifdef TEST
-static const char* get_cache_path(const char* abspath) {
-    const dirtab_element *el = (dirtab_element *) dirtab_get_element(abspath);
-    return el->cache_path;
-}
-#endif
-
 void dirtab_visit(bool (*visitor) (const char* path, int index, dirtab_element* el)) {
     mutex_lock(&table.mutex);
     int size = table.size;
