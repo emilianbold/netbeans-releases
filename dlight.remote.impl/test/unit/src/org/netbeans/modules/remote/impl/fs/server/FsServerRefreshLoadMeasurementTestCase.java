@@ -156,7 +156,7 @@ public class FsServerRefreshLoadMeasurementTestCase extends FsServerLocalTestBas
         //  real 20.01
         //  user 8.04
         //  sys 11.74
-        analyzeTime(String.format("Refreshing %d dirs during %ds with sleep interval %ds:", dirCount, sleepInterval, refreshInterval), 
+        analyzeTime(String.format("Refresh: %ds; %d dirs; %d servers; interval %ds:", sleepInterval,dirCount, servers.length, refreshInterval), 
                 servers, System.err);
     }
     
@@ -178,9 +178,9 @@ public class FsServerRefreshLoadMeasurementTestCase extends FsServerLocalTestBas
             String line1 = err.get(err.size() - 3);
             String line2 = err.get(err.size() - 2);
             String line3 = err.get(err.size() - 1);
-            assert line1.startsWith("real ");
-            assert line2.startsWith("user ");
-            assert line3.startsWith("sys ");
+            assertStartsWith(line1, "real ");
+            assertStartsWith(line2, "user ");
+            assertStartsWith(line3, "sys ");
             float real = Float.parseFloat(line1.substring(4).trim());
             float user = Float.parseFloat(line2.substring(4).trim());
             float sys  = Float.parseFloat(line3.substring(4).trim());
@@ -195,6 +195,12 @@ public class FsServerRefreshLoadMeasurementTestCase extends FsServerLocalTestBas
                 total_real, total_user, total_sys, 
                 (total_user+total_sys)*100/total_real, total_user*100/total_real, total_sys*100/total_real);
         ps.printf("%s\n\n", sep);
+    }
+
+    private static void assertStartsWith(String text, String prefix) {
+        if (!text.startsWith(prefix)) {
+            assertTrue("'" + text + "' does not start with '" + prefix + "'" , false);
+        }
     }
     
     private void shutDownSevers(FSServer[] servers, int waitMillis) throws InterruptedException {
