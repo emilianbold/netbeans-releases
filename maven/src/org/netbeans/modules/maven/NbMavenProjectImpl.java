@@ -274,7 +274,7 @@ public final class NbMavenProjectImpl implements Project {
             req.setUpdateSnapshots(false);
             Properties props = MavenProjectCache.createSystemPropsForProjectLoading();
             if (properties != null) {
-                req.setUserProperties(props);
+                req.setUserProperties(properties);
             }
             req.setSystemProperties(props);
             //MEVENIDE-634 i'm wondering if this fixes the issue

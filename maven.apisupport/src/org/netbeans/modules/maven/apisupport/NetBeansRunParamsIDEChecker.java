@@ -44,6 +44,7 @@ package org.netbeans.modules.maven.apisupport;
 
 import java.io.File;
 import java.util.Collections;
+import java.util.HashMap;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.settings.Settings;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
@@ -94,7 +95,7 @@ public class NetBeansRunParamsIDEChecker implements PrerequisitesChecker {
         MavenProject prj = config.getMavenProject();
         String eval;
         try {
-            eval = (String) new NBPluginParameterExpressionEvaluator(prj, new Settings(), config.getProperties()).evaluate(val);
+            eval = (String) new NBPluginParameterExpressionEvaluator(prj, new Settings(), new HashMap<String, String>(), config.getProperties()).evaluate(val);
         } catch (ExpressionEvaluationException ex) {
             Exceptions.printStackTrace(ex);
             return true;
