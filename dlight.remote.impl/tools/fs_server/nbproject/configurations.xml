@@ -6,10 +6,17 @@
         <in>array.c</in>
         <in>array.h</in>
         <in>blocking_queue.c</in>
+        <in>blocking_queue.h</in>
         <in>dirtab.c</in>
+        <in>dirtab.h</in>
+        <in>exitcodes.h</in>
+        <in>fs_common.h</in>
         <in>fs_server.c</in>
+        <in>fs_server.h</in>
         <in>queue.c</in>
+        <in>queue.h</in>
         <in>util.c</in>
+        <in>util.h</in>
       </df>
       <df name="test">
         <in>test_main.c</in>
@@ -61,15 +68,35 @@
       </makefileType>
       <item path="src/array.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="src/array.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/blocking_queue.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/dirtab.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="src/dirtab.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/exitcodes.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/fs_common.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/fs_server.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/fs_server.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/queue.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="src/queue.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/util.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/util.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="test/test_main.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
       </item>
     </conf>
     <conf name="Solaris-x86" type="0">
@@ -92,23 +119,51 @@
             </incDir>
             <preprocessorList>
               <Elem>SOLARIS</Elem>
-              <Elem>_POSIX_PTHREAD_SEMANTICS</Elem>
               <Elem>__EXTENSIONS__</Elem>
             </preprocessorList>
           </cTool>
         </makeTool>
       </makefileType>
+      <folder path="0/src">
+        <cTool>
+          <preprocessorList>
+            <Elem>_POSIX_PTHREAD_SEMANTICS</Elem>
+          </preprocessorList>
+        </cTool>
+      </folder>
       <item path="src/array.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/array.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="src/blocking_queue.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/dirtab.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="src/fs_server.c" ex="false" tool="0" flavor2="0">
+      <item path="src/dirtab.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/exitcodes.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/fs_common.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/fs_server.c" ex="false" tool="0" flavor2="9">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="src/fs_server.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/queue.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="src/queue.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/util.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/util.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="test/test_main.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
       </item>
     </conf>
     <conf name="Solaris_Townes" type="0">
@@ -145,17 +200,33 @@
       </folder>
       <item path="src/array.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="src/array.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="src/blocking_queue.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/dirtab.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/dirtab.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/exitcodes.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/fs_common.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/fs_server.c" ex="false" tool="0" flavor2="9">
         <cTool>
         </cTool>
       </item>
+      <item path="src/fs_server.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/queue.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="src/queue.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/util.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/util.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="test/test_main.c" ex="false" tool="0" flavor2="2">
         <cTool>
@@ -180,31 +251,60 @@
             <incDir>
               <pElem>.</pElem>
             </incDir>
-            <preprocessorList>
-              <Elem>_GNU_SOURCE</Elem>
-            </preprocessorList>
           </cTool>
         </makeTool>
       </makefileType>
+      <folder path="0/src">
+        <cTool>
+          <preprocessorList>
+            <Elem>SOLARIS</Elem>
+            <Elem>_POSIX_PTHREAD_SEMANTICS</Elem>
+            <Elem>__EXTENSIONS__</Elem>
+          </preprocessorList>
+        </cTool>
+      </folder>
       <folder path="0/test">
         <cTool>
           <preprocessorList>
             <Elem>LINUX</Elem>
+            <Elem>_GNU_SOURCE</Elem>
             <Elem>_XOPEN_SOURCE=700</Elem>
           </preprocessorList>
         </cTool>
       </folder>
       <item path="src/array.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="src/array.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/blocking_queue.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/dirtab.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="src/fs_server.c" ex="false" tool="0" flavor2="0">
+      <item path="src/dirtab.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/exitcodes.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/fs_common.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/fs_server.c" ex="false" tool="0" flavor2="9">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="src/fs_server.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/queue.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="src/queue.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/util.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/util.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="test/test_main.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
       </item>
     </conf>
     <conf name="MacOS" type="0">
@@ -225,13 +325,17 @@
             <incDir>
               <pElem>.</pElem>
             </incDir>
-            <preprocessorList>
-              <Elem>MAXOSX</Elem>
-              <Elem>_DARWIN_C_SOURCE</Elem>
-            </preprocessorList>
           </cTool>
         </makeTool>
       </makefileType>
+      <folder path="0/src">
+        <cTool>
+          <preprocessorList>
+            <Elem>MAXOSX</Elem>
+            <Elem>_DARWIN_C_SOURCE</Elem>
+          </preprocessorList>
+        </cTool>
+      </folder>
       <folder path="0/test">
         <cTool>
           <preprocessorList>
@@ -243,15 +347,37 @@
       </folder>
       <item path="src/array.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="src/array.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/blocking_queue.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/dirtab.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="src/fs_server.c" ex="false" tool="0" flavor2="0">
+      <item path="src/dirtab.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/exitcodes.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/fs_common.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/fs_server.c" ex="false" tool="0" flavor2="9">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="src/fs_server.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/queue.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="src/queue.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/util.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/util.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="test/test_main.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
       </item>
     </conf>
     <conf name="Test_on_Linux" type="0">
@@ -271,6 +397,7 @@
           <cTool>
             <preprocessorList>
               <Elem>LINUX</Elem>
+              <Elem>TEST</Elem>
               <Elem>_GNU_SOURCE</Elem>
               <Elem>_XOPEN_SOURCE=700</Elem>
             </preprocessorList>
@@ -284,52 +411,39 @@
           </incDir>
         </cTool>
       </folder>
-      <folder path="0/test">
-        <cTool>
-          <preprocessorList>
-            <Elem>TEST</Elem>
-          </preprocessorList>
-        </cTool>
-      </folder>
       <item path="src/array.c" ex="false" tool="0" flavor2="0">
-        <cTool>
-          <preprocessorList>
-            <Elem>TEST</Elem>
-          </preprocessorList>
-        </cTool>
+      </item>
+      <item path="src/array.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="0">
-        <cTool>
-          <preprocessorList>
-            <Elem>TEST</Elem>
-          </preprocessorList>
-        </cTool>
+      </item>
+      <item path="src/blocking_queue.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/dirtab.c" ex="false" tool="0" flavor2="2">
         <cTool>
         </cTool>
       </item>
+      <item path="src/dirtab.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/exitcodes.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/fs_common.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/fs_server.c" ex="false" tool="0" flavor2="9">
         <cTool>
         </cTool>
       </item>
+      <item path="src/fs_server.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/queue.c" ex="false" tool="0" flavor2="0">
-        <cTool>
-          <preprocessorList>
-            <Elem>TEST</Elem>
-          </preprocessorList>
-        </cTool>
+      </item>
+      <item path="src/queue.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/util.c" ex="false" tool="0" flavor2="0">
-        <cTool>
-          <preprocessorList>
-            <Elem>TEST</Elem>
-          </preprocessorList>
-        </cTool>
       </item>
-      <item path="test/test_main.c" ex="false" tool="0" flavor2="9">
-        <cTool>
-        </cTool>
+      <item path="src/util.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="test/test_main.c" ex="false" tool="0" flavor2="0">
       </item>
     </conf>
     <conf name="Solaris-SPARC" type="0">
@@ -352,23 +466,51 @@
             </incDir>
             <preprocessorList>
               <Elem>SOLARIS</Elem>
-              <Elem>_POSIX_PTHREAD_SEMANTICS</Elem>
               <Elem>__EXTENSIONS__</Elem>
             </preprocessorList>
           </cTool>
         </makeTool>
       </makefileType>
+      <folder path="0/src">
+        <cTool>
+          <preprocessorList>
+            <Elem>_POSIX_PTHREAD_SEMANTICS</Elem>
+          </preprocessorList>
+        </cTool>
+      </folder>
       <item path="src/array.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/array.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="src/blocking_queue.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/dirtab.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="src/fs_server.c" ex="false" tool="0" flavor2="0">
+      <item path="src/dirtab.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/exitcodes.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/fs_common.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/fs_server.c" ex="false" tool="0" flavor2="9">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="src/fs_server.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/queue.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="src/queue.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/util.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/util.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="test/test_main.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
       </item>
     </conf>
     <conf name="Linux64" type="0">
@@ -399,15 +541,31 @@
       </makefileType>
       <item path="src/array.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="src/array.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/blocking_queue.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/dirtab.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="src/dirtab.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/exitcodes.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/fs_common.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/fs_server.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/fs_server.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/queue.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="src/queue.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/util.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/util.h" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
     <conf name="Debug_Linux32" type="0">
@@ -436,17 +594,49 @@
           </cTool>
         </makeTool>
       </makefileType>
-      <item path="src/array.c" ex="false" tool="0" flavor2="0">
+      <item path="src/array.c" ex="false" tool="0" flavor2="9">
+        <cTool>
+        </cTool>
       </item>
-      <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="0">
+      <item path="src/array.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/dirtab.c" ex="false" tool="0" flavor2="0">
+      <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="9">
+        <cTool>
+        </cTool>
       </item>
-      <item path="src/fs_server.c" ex="false" tool="0" flavor2="0">
+      <item path="src/blocking_queue.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/queue.c" ex="false" tool="0" flavor2="0">
+      <item path="src/dirtab.c" ex="false" tool="0" flavor2="9">
+        <cTool>
+        </cTool>
       </item>
-      <item path="src/util.c" ex="false" tool="0" flavor2="0">
+      <item path="src/dirtab.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/exitcodes.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/fs_common.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/fs_server.c" ex="false" tool="0" flavor2="9">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="src/fs_server.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/queue.c" ex="false" tool="0" flavor2="9">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="src/queue.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/util.c" ex="false" tool="0" flavor2="9">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="src/util.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="test/test_main.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
       </item>
     </conf>
     <conf name="Debug_Linux64" type="0">
@@ -475,17 +665,49 @@
           </cTool>
         </makeTool>
       </makefileType>
-      <item path="src/array.c" ex="false" tool="0" flavor2="0">
+      <item path="src/array.c" ex="false" tool="0" flavor2="9">
+        <cTool>
+        </cTool>
       </item>
-      <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="0">
+      <item path="src/array.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/dirtab.c" ex="false" tool="0" flavor2="0">
+      <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="9">
+        <cTool>
+        </cTool>
       </item>
-      <item path="src/fs_server.c" ex="false" tool="0" flavor2="0">
+      <item path="src/blocking_queue.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/queue.c" ex="false" tool="0" flavor2="0">
+      <item path="src/dirtab.c" ex="false" tool="0" flavor2="9">
+        <cTool>
+        </cTool>
       </item>
-      <item path="src/util.c" ex="false" tool="0" flavor2="0">
+      <item path="src/dirtab.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/exitcodes.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/fs_common.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/fs_server.c" ex="false" tool="0" flavor2="9">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="src/fs_server.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/queue.c" ex="false" tool="0" flavor2="9">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="src/queue.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/util.c" ex="false" tool="0" flavor2="9">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="src/util.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="test/test_main.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
       </item>
     </conf>
     <conf name="Debug_Solaris-x86" type="0">
@@ -530,21 +752,35 @@
         <cTool>
         </cTool>
       </item>
+      <item path="src/blocking_queue.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/dirtab.c" ex="false" tool="0" flavor2="9">
         <cTool>
         </cTool>
+      </item>
+      <item path="src/dirtab.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/exitcodes.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/fs_common.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/fs_server.c" ex="false" tool="0" flavor2="9">
         <cTool>
         </cTool>
       </item>
+      <item path="src/fs_server.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/queue.c" ex="false" tool="0" flavor2="9">
         <cTool>
         </cTool>
       </item>
+      <item path="src/queue.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/util.c" ex="false" tool="0" flavor2="9">
         <cTool>
         </cTool>
+      </item>
+      <item path="src/util.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="test/test_main.c" ex="false" tool="0" flavor2="2">
         <cTool>
