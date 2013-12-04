@@ -1219,14 +1219,8 @@
                       <Group type="102" attributes="0">
                           <Component id="searchButton" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="saveChangesButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
                           <Component id="cancelChangesButton" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="32767" attributes="0"/>
-                          <Component id="saveButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="separatorLabel3" min="-2" pref="2" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
                           <Component id="refreshConfigurationButton" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -1244,10 +1238,7 @@
                   <EmptySpace max="32767" attributes="0"/>
                   <Group type="103" groupAlignment="2" attributes="0">
                       <Component id="refreshConfigurationButton" alignment="2" min="-2" max="-2" attributes="0"/>
-                      <Component id="separatorLabel3" alignment="2" min="-2" pref="18" max="-2" attributes="0"/>
-                      <Component id="saveButton" linkSize="3" alignment="2" min="-2" max="-2" attributes="0"/>
                       <Component id="cancelChangesButton" alignment="2" min="-2" max="-2" attributes="0"/>
-                      <Component id="saveChangesButton" alignment="2" min="-2" max="-2" attributes="0"/>
                       <Component id="searchButton" alignment="2" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
@@ -1494,39 +1485,6 @@
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
           </AuxValues>
         </Component>
-        <Component class="javax.swing.JButton" name="saveChangesButton">
-          <Properties>
-            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/odcs/tasks/query/Bundle.properties" key="QueryPanel.saveChangesButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-            </Property>
-          </Properties>
-          <AccessibilityProperties>
-            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/c2c/tasks/query/Bundle.properties" key="QueryPanel.saveChangesButton.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-            </Property>
-          </AccessibilityProperties>
-          <AuxValues>
-            <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
-          </AuxValues>
-        </Component>
-        <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="saveButton">
-          <Properties>
-            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/odcs/tasks/query/Bundle.properties" key="QueryPanel.saveButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-            </Property>
-          </Properties>
-          <AccessibilityProperties>
-            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/c2c/tasks/query/Bundle.properties" key="QueryPanel.saveButton.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-            </Property>
-          </AccessibilityProperties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="saveButtonActionPerformed"/>
-          </Events>
-          <AuxValues>
-            <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
-          </AuxValues>
-        </Component>
         <Container class="javax.swing.JPanel" name="gotoPanel">
           <Properties>
             <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
@@ -1620,18 +1578,6 @@
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
           </AuxValues>
         </Component>
-        <Component class="javax.swing.JLabel" name="separatorLabel3">
-          <Properties>
-            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/c2c/tasks/query/Bundle.properties" key="QueryPanel.separatorLabel3.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-            </Property>
-            <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-              <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
-                <LineBorder/>
-              </Border>
-            </Property>
-          </Properties>
-        </Component>
       </SubComponents>
     </Container>
     <Container class="javax.swing.JPanel" name="queryHeaderPanel">
@@ -1716,10 +1662,8 @@
                       <Component id="findIssuesButton" alignment="2" min="-2" max="-2" attributes="0"/>
                       <Component id="jLabel8" alignment="2" min="-2" pref="17" max="-2" attributes="0"/>
                       <Component id="cloneQueryButton" alignment="2" min="-2" max="-2" attributes="0"/>
-                      <Group type="103" alignment="2" groupAlignment="2" attributes="0">
-                          <Component id="webButton" linkSize="3" alignment="2" min="-2" max="-2" attributes="0"/>
-                          <Component id="separatorLabel1" linkSize="3" alignment="2" min="-2" max="-2" attributes="0"/>
-                      </Group>
+                      <Component id="webButton" alignment="2" min="-2" max="-2" attributes="0"/>
+                      <Component id="separatorLabel1" alignment="2" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>

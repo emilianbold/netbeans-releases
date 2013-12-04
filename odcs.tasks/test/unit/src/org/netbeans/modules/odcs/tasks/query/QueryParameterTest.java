@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.odcs.tasks.query;
 
-import org.netbeans.modules.odcs.tasks.query.QueryParameters;
 import com.tasktop.c2c.server.common.service.domain.criteria.ColumnCriteria;
 import com.tasktop.c2c.server.common.service.domain.criteria.Criteria;
 import com.tasktop.c2c.server.common.service.domain.criteria.Criteria.Operator;
@@ -108,7 +107,7 @@ public class QueryParameterTest extends NbTestCase {
         JCheckBox chk1 = new JCheckBox();
         JCheckBox chk2 = new JCheckBox();
         JTextField txt = new JTextField();
-        ByTextParameter cp = new QueryParameters.ByTextParameter(txt, chk1, chk2);
+        ByTextParameter cp = new QueryParameters(). new ByTextParameter(txt, chk1, chk2);
         assertTrue(chk1.isEnabled());
         assertTrue(chk2.isEnabled());
         assertTrue(txt.isEnabled());
@@ -122,7 +121,7 @@ public class QueryParameterTest extends NbTestCase {
         JCheckBox chk1 = new JCheckBox();
         JCheckBox chk2 = new JCheckBox();
         JTextField txt = new JTextField();
-        ByTextParameter cp = new QueryParameters.ByTextParameter(txt, chk1, chk2);
+        ByTextParameter cp = new QueryParameters(). new ByTextParameter(txt, chk1, chk2);
         
         assertFalse(cp.hasChanged());
         
@@ -155,7 +154,7 @@ public class QueryParameterTest extends NbTestCase {
         JCheckBox chk1 = new JCheckBox();
         JCheckBox chk2 = new JCheckBox();
         JTextField txt = new JTextField();
-        ByTextParameter cp = new QueryParameters.ByTextParameter(txt, chk1, chk2);
+        ByTextParameter cp = new QueryParameters(). new ByTextParameter(txt, chk1, chk2);
         
         assertEquals("", txt.getText());
         assertFalse(chk1.isSelected());
@@ -191,7 +190,7 @@ public class QueryParameterTest extends NbTestCase {
         JCheckBox chk1 = new JCheckBox();
         JCheckBox chk2 = new JCheckBox();
         JTextField txt = new JTextField();
-        ByTextParameter p = new QueryParameters.ByTextParameter(txt, chk1, chk2);
+        ByTextParameter p = new QueryParameters(). new ByTextParameter(txt, chk1, chk2);
         
         ColumnCriteria cc1 = new ColumnCriteria(Column.SUMMARY.getColumnName(), Criteria.Operator.STRING_CONTAINS, VALUE1);
         p.addCriteriaValue(Criteria.Operator.OR, cc1);
@@ -231,7 +230,7 @@ public class QueryParameterTest extends NbTestCase {
         JCheckBox chk1 = new JCheckBox();
         JCheckBox chk2 = new JCheckBox();
         JTextField txt = new JTextField();
-        ByTextParameter cp = new QueryParameters.ByTextParameter(txt, chk1, chk2);
+        ByTextParameter cp = new QueryParameters(). new ByTextParameter(txt, chk1, chk2);
         
         chk1.setSelected(true);
         chk2.setSelected(true);
@@ -248,7 +247,7 @@ public class QueryParameterTest extends NbTestCase {
             
     public void testComboParameterEnabled() {
         JComboBox combo = new JComboBox();
-        ComboParameter cp = new QueryParameters.ComboParameter(QueryParameters.Column.COMMENT, combo);
+        ComboParameter cp = new QueryParameters().new ComboParameter(QueryParameters.Column.COMMENT, combo);
         assertTrue(combo.isEnabled());
         cp.setEnabled(false);
         assertFalse(combo.isEnabled());
@@ -256,7 +255,7 @@ public class QueryParameterTest extends NbTestCase {
     
     public void testComboParametersValues() {
         JComboBox combo = new JComboBox();
-        ComboParameter cp = new QueryParameters.ComboParameter(QueryParameters.Column.COMMENT, combo);
+        ComboParameter cp = new QueryParameters().new ComboParameter(QueryParameters.Column.COMMENT, combo);
         assertEquals(QueryParameters.Column.COMMENT, cp.getColumn());
         assertNull(combo.getSelectedItem());
         assertEquals((String)null, cp.getValues());
@@ -275,7 +274,7 @@ public class QueryParameterTest extends NbTestCase {
     
     public void testComboParameterChanged() {
         JComboBox combo = new JComboBox();
-        ComboParameter cp = new QueryParameters.ComboParameter(QueryParameters.Column.COMMENT, combo);
+        ComboParameter cp = new QueryParameters().new ComboParameter(QueryParameters.Column.COMMENT, combo);
         
         cp.populate(VALUES);
         assertFalse(cp.hasChanged());
@@ -292,7 +291,7 @@ public class QueryParameterTest extends NbTestCase {
     
     public void testComboCleared() {
         JComboBox combo = new JComboBox();
-        ComboParameter cp = new QueryParameters.ComboParameter(QueryParameters.Column.COMMENT, combo);
+        ComboParameter cp = new QueryParameters().new ComboParameter(QueryParameters.Column.COMMENT, combo);
         
         combo.setModel(new DefaultComboBoxModel(VALUES.toArray(new String[VALUES.size()])));
         combo.setSelectedIndex(1);
@@ -304,7 +303,7 @@ public class QueryParameterTest extends NbTestCase {
 
     public void testListParameterEnabled() {
         JList list = new JList();
-        ListParameter lp = new ListParameter(list, QueryParameters.Column.COMMENT);
+        ListParameter lp = new QueryParameters().new ListParameter(list, QueryParameters.Column.COMMENT);
         assertTrue(list.isEnabled());
         lp.setEnabled(false);
         assertFalse(list.isEnabled());
@@ -312,7 +311,7 @@ public class QueryParameterTest extends NbTestCase {
     
     public void testListParameters() {
         JList list = new JList();
-        ListParameter lp = new ListParameter(list, QueryParameters.Column.COMMENT);
+        ListParameter lp = new QueryParameters().new ListParameter(list, QueryParameters.Column.COMMENT);
         assertEquals(QueryParameters.Column.COMMENT, lp.getColumn());
         assertEquals(-1, list.getSelectedIndex());
         lp.populate(VALUES);
@@ -338,7 +337,7 @@ public class QueryParameterTest extends NbTestCase {
     
     public void testListParametersChanged() {
         JList list = new JList();
-        ListParameter lp = new ListParameter(list, QueryParameters.Column.COMMENT);
+        ListParameter lp = new QueryParameters().new ListParameter(list, QueryParameters.Column.COMMENT);
         
         lp.populate(VALUES);
         assertFalse(lp.hasChanged());
@@ -397,7 +396,7 @@ public class QueryParameterTest extends NbTestCase {
     
     public void testTextFieldParameterEnabled() {
         JTextField text = new JTextField();
-        TextFieldParameter tp = new TextFieldParameter(QueryParameters.Column.COMMENT, text);
+        TextFieldParameter tp = new QueryParameters().new TextFieldParameter(QueryParameters.Column.COMMENT, text);
         assertTrue(text.isEnabled());
         tp.setEnabled(false);
         assertFalse(text.isEnabled());
@@ -405,7 +404,7 @@ public class QueryParameterTest extends NbTestCase {
 
     public void testTextFieldParameter() throws UnsupportedEncodingException {
         JTextField text = new JTextField();
-        TextFieldParameter tp = new TextFieldParameter(QueryParameters.Column.COMMENT, text);
+        TextFieldParameter tp = new QueryParameters().new TextFieldParameter(QueryParameters.Column.COMMENT, text);
         assertEquals(QueryParameters.Column.COMMENT, tp.getColumn());
         assertEquals("", text.getText());
 
@@ -420,7 +419,7 @@ public class QueryParameterTest extends NbTestCase {
     
     public void testTextFieldParameterChanged() throws UnsupportedEncodingException {
         JTextField text = new JTextField();
-        TextFieldParameter tp = new TextFieldParameter(QueryParameters.Column.COMMENT, text);
+        TextFieldParameter tp = new QueryParameters().new TextFieldParameter(QueryParameters.Column.COMMENT, text);
 
         assertFalse(tp.hasChanged());
         
@@ -433,7 +432,7 @@ public class QueryParameterTest extends NbTestCase {
 
     public void testTextParameterCleared() {
         JTextField text = new JTextField();
-        TextFieldParameter tp = new TextFieldParameter(QueryParameters.Column.COMMENT, text);
+        TextFieldParameter tp = new QueryParameters().new TextFieldParameter(QueryParameters.Column.COMMENT, text);
 
         text.setText(VALUE2);
         
@@ -444,7 +443,7 @@ public class QueryParameterTest extends NbTestCase {
     
     public void testCheckBoxParameterEnabled() {
         JCheckBox checkbox = new JCheckBox();
-        CheckBoxParameter cp = new CheckBoxParameter(checkbox, QueryParameters.Column.COMMENT);
+        CheckBoxParameter cp = new QueryParameters().new CheckBoxParameter(checkbox, QueryParameters.Column.COMMENT);
         assertTrue(checkbox.isEnabled());
         cp.setEnabled(false);
         assertFalse(checkbox.isEnabled());
@@ -452,7 +451,7 @@ public class QueryParameterTest extends NbTestCase {
     
     public void testCheckBoxParameter() {
         JCheckBox checkbox = new JCheckBox();
-        CheckBoxParameter cp = new CheckBoxParameter(checkbox, QueryParameters.Column.COMMENT);
+        CheckBoxParameter cp = new QueryParameters().new CheckBoxParameter(checkbox, QueryParameters.Column.COMMENT);
         assertEquals(QueryParameters.Column.COMMENT, cp.getColumn());
         assertFalse(checkbox.isSelected());
 
@@ -467,7 +466,7 @@ public class QueryParameterTest extends NbTestCase {
 
     public void testCheckBoxParameterCleared() {
         JCheckBox checkbox = new JCheckBox();
-        CheckBoxParameter cp = new CheckBoxParameter(checkbox, QueryParameters.Column.COMMENT);
+        CheckBoxParameter cp = new QueryParameters().new CheckBoxParameter(checkbox, QueryParameters.Column.COMMENT);
 
         checkbox.setSelected(true);
         
@@ -482,7 +481,7 @@ public class QueryParameterTest extends NbTestCase {
         JCheckBox chk3 = new JCheckBox();
         JCheckBox chk4 = new JCheckBox();
         JList list = new JList();
-        ByPeopleParameter cp = new ByPeopleParameter(list, chk1, chk2, chk3, chk4);
+        ByPeopleParameter cp = new QueryParameters().new ByPeopleParameter(list, chk1, chk2, chk3, chk4);
         assertTrue(chk1.isEnabled());
         assertTrue(chk2.isEnabled());
         assertTrue(chk3.isEnabled());
@@ -502,7 +501,7 @@ public class QueryParameterTest extends NbTestCase {
         JCheckBox chk3 = new JCheckBox();
         JCheckBox chk4 = new JCheckBox();
         JList list = new JList();
-        ByPeopleParameter cp = new ByPeopleParameter(list, chk1, chk2, chk3, chk4);
+        ByPeopleParameter cp = new QueryParameters().new ByPeopleParameter(list, chk1, chk2, chk3, chk4);
         
         assertEquals(-1, list.getSelectedIndex());
         assertFalse(chk1.isSelected());
@@ -553,7 +552,7 @@ public class QueryParameterTest extends NbTestCase {
         JCheckBox chk3 = new JCheckBox();
         JCheckBox chk4 = new JCheckBox();
         JList list = new JList();
-        ByPeopleParameter bpp = new ByPeopleParameter(list, chk1, chk2, chk3, chk4);
+        ByPeopleParameter bpp = new QueryParameters().new ByPeopleParameter(list, chk1, chk2, chk3, chk4);
         
         assertFalse(bpp.hasChanged());
         
@@ -606,7 +605,7 @@ public class QueryParameterTest extends NbTestCase {
         JCheckBox chk3 = new JCheckBox();
         JCheckBox chk4 = new JCheckBox();
         JList list = new JList();
-        ByPeopleParameter p = new ByPeopleParameter(list, chk1, chk2, chk3, chk4);
+        ByPeopleParameter p = new QueryParameters().new ByPeopleParameter(list, chk1, chk2, chk3, chk4);
         
         List<TaskUserProfile> users = getUsers();
         p.populatePeople(getUsers());
@@ -685,7 +684,7 @@ public class QueryParameterTest extends NbTestCase {
         JCheckBox chk3 = new JCheckBox();
         JCheckBox chk4 = new JCheckBox();
         JList list = new JList();
-        ByPeopleParameter p = new ByPeopleParameter(list, chk1, chk2, chk3, chk4);
+        ByPeopleParameter p = new QueryParameters().new ByPeopleParameter(list, chk1, chk2, chk3, chk4);
         
         chk1.setSelected(true);
         chk2.setSelected(true);
@@ -713,7 +712,7 @@ public class QueryParameterTest extends NbTestCase {
         JComboBox combo = new JComboBox();
         JTextField from = new JTextField();
         JTextField to = new JTextField();
-        ByDateParameter cp = new ByDateParameter(combo, from, to);
+        ByDateParameter cp = new QueryParameters().new ByDateParameter(combo, from, to);
         
         assertTrue(combo.isEnabled());
         assertTrue(from.isEnabled());
@@ -728,7 +727,7 @@ public class QueryParameterTest extends NbTestCase {
         JComboBox combo = new JComboBox();
         JTextField from = new JTextField();
         JTextField to = new JTextField();
-        ByDateParameter p = new ByDateParameter(combo, from, to);
+        ByDateParameter p = new QueryParameters().new ByDateParameter(combo, from, to);
         
         assertEquals(0, combo.getSelectedIndex());
         assertTrue(from.getText().trim().isEmpty());
@@ -756,7 +755,7 @@ public class QueryParameterTest extends NbTestCase {
         JComboBox combo = new JComboBox();
         JTextField from = new JTextField();
         JTextField to = new JTextField();
-        ByDateParameter p = new ByDateParameter(combo, from, to);
+        ByDateParameter p = new QueryParameters().new ByDateParameter(combo, from, to);
         
         assertFalse(p.hasChanged());
         
@@ -786,7 +785,7 @@ public class QueryParameterTest extends NbTestCase {
         JComboBox combo = new JComboBox();
         JTextField from = new JTextField();
         JTextField to = new JTextField();
-        ByDateParameter p = new ByDateParameter(combo, from, to);
+        ByDateParameter p = new QueryParameters().new ByDateParameter(combo, from, to);
         
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         String fromString = "2012-10-01";
@@ -813,7 +812,7 @@ public class QueryParameterTest extends NbTestCase {
         JComboBox combo = new JComboBox();
         JTextField from = new JTextField();
         JTextField to = new JTextField();
-        ByDateParameter p = new ByDateParameter(combo, from, to);
+        ByDateParameter p = new QueryParameters().new ByDateParameter(combo, from, to);
         
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         String fromString = "2012-10-01";
@@ -840,7 +839,7 @@ public class QueryParameterTest extends NbTestCase {
         JComboBox combo = new JComboBox();
         JTextField from = new JTextField();
         JTextField to = new JTextField();
-        ByDateParameter p = new ByDateParameter(combo, from, to);
+        ByDateParameter p = new QueryParameters().new ByDateParameter(combo, from, to);
         
         combo.setSelectedIndex(1);
         from.setText("2012-10-01");
