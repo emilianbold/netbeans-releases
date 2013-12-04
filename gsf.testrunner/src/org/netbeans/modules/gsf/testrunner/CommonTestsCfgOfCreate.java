@@ -780,13 +780,15 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
             break;
         }
         chkIntegrationTests = chkBoxes[0];
-        chkIntegrationTests.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                updateClassName();
-                checkUpdatingExistingTestClass();
-            }
-        });
+        if (chkIntegrationTests != null) { // java provider found
+            chkIntegrationTests.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    updateClassName();
+                    checkUpdatingExistingTestClass();
+                }
+            });
+        }
         
         panel.setLayout(new GridBagLayout());
         
@@ -818,7 +820,9 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
         gbcRight.insets.bottom = 0;
         panel.add(lblFramework,      gbcLeft);
         panel.add(cboxFramework,     gbcRight);
-        panel.add(chkIntegrationTests,     gbcRight);
+        if (chkIntegrationTests != null) { // java provider found
+            panel.add(chkIntegrationTests,     gbcRight);
+        }
         
         return panel;
     }
