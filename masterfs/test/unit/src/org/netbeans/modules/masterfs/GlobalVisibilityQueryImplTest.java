@@ -56,8 +56,9 @@ import org.openide.util.lookup.ProxyLookup;
  */
 public class GlobalVisibilityQueryImplTest extends TestCase {
     private static GlobalVisibilityQueryImpl vq = new GlobalVisibilityQueryImpl() {
+        @Override
         protected String getIgnoredFiles() {
-            return "^(CVS|SCCS|vssver.?\\.scc|#.*#|%.*%|\\.(cvsignore|svn|DS_Store)|_svn)$|~$|^\\..*$";//NOI18N
+            return "^^(CVS|SCCS|vssver.?\\.scc|#.*#|%.*%|_svn)$|~$|^\\.(?!(htaccess|git.+|hgignore)$).*$";//NOI18N
         }
     };
     
@@ -79,6 +80,11 @@ public class GlobalVisibilityQueryImplTest extends TestCase {
         assertFalse(vq.isVisible("_svn"));
         
         assertFalse(vq.isVisible(".telnetrc"));                                
+        assertFalse(vq.isVisible(".git"));
+        assertTrue(vq.isVisible(".gitignore"));
+        assertTrue(vq.isVisible(".gitkeep"));
+        assertFalse(vq.isVisible(".hg"));
+        assertTrue(vq.isVisible(".hgignore"));
     }
             
     public static class TestLookup extends ProxyLookup {
