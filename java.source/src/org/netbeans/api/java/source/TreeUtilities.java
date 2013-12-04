@@ -236,14 +236,18 @@ public final class TreeUtilities {
 
             assert assertsEnabled = true;
 
-            if (true) {
-                TreePath tp = info.getCompilationUnit() == tree ? new TreePath(info.getCompilationUnit()) : TreePath.getPath(info.getCompilationUnit(), tree);
+            TreePath tp = info.getCompilationUnit() == tree ? new TreePath(info.getCompilationUnit()) : TreePath.getPath(info.getCompilationUnit(), tree);
 
-                if (tp == null) {
-                    Logger.getLogger(TreeUtilities.class.getName()).log(assertsEnabled ? Level.WARNING : Level.FINE, "Comment automap requested for Tree not from the root compilation info. Please, make sure to call GeneratorUtilities.importComments before Treeutilities.getComments. Tree: {0}", tree);
-                    Logger.getLogger(TreeUtilities.class.getName()).log(assertsEnabled ? Level.INFO : Level.FINE, "Caller", new Exception());
-                    automap = false;
+            if (tp == null) {
+                if (assertsEnabled) {
+                    // HACK: if info is a working copy, the tree might be introduced by rewriting; 
+                    // in that case, no log should be printed
+                    if (!(info instanceof WorkingCopy) && ((WorkingCopy)info).validateIsReplacement(tree)) {
+                        Logger.getLogger(TreeUtilities.class.getName()).log(assertsEnabled ? Level.WARNING : Level.FINE, "Comment automap requested for Tree not from the root compilation info. Please, make sure to call GeneratorUtilities.importComments before Treeutilities.getComments. Tree: {0}", tree);
+                        Logger.getLogger(TreeUtilities.class.getName()).log(assertsEnabled ? Level.INFO : Level.FINE, "Caller", new Exception());
+                    }
                 }
+                automap = false;
             }
 
             if (automap) {
