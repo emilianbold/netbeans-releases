@@ -646,14 +646,14 @@ static int entry_comparator(const void *element1, const void *element2) {
 
 static bool refresh_visitor(const char* path, int index, dirtab_element* el) {
     if (is_prohibited(path)) {
-        trace(TRACE_FINE, "refresh manager: skipping %s\n", path);
+        trace(TRACE_FINER, "refresh manager: skipping %s\n", path);
         return true;
     }
     if (dirtab_get_watch_state(el) != DE_WSTATE_POLL) {
-        trace(TRACE_FINE, "refresh manager: not polling %s\n", path);
+        trace(TRACE_FINER, "refresh manager: not polling %s\n", path);
         return true;
     }
-    trace(TRACE_FINE, "refresh manager: visiting %s\n", path);
+    trace(TRACE_FINER, "refresh manager: visiting %s\n", path);
     
     array/*<fs_entry>*/ old_entries;
     array/*<fs_entry>*/ new_entries;
@@ -661,7 +661,7 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el) {
     dirtab_state state = dirtab_get_state(el);
     if (state == DE_STATE_REFRESH_SENT) {
         dirtab_unlock(el);
-        trace(TRACE_FINE, "refresh notification already sent for %s\n", path);
+        trace(TRACE_FINER, "refresh notification already sent for %s\n", path);
         return true;
     }
     bool success = read_entries_from_cache(&old_entries, el, path);
@@ -686,53 +686,53 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el) {
             fs_entry *old_entry = array_get(&old_entries, i);
             if (new_entry->name_len != old_entry->name_len) {
                 differs = true;
-                trace(TRACE_INFO, "refresh manager: names differ (1) in directory %s: %s vs %s\n", path, new_entry->name, old_entry->name);
+                trace(TRACE_FINE, "refresh manager: names differ (1) in directory %s: %s vs %s\n", path, new_entry->name, old_entry->name);
                 break;
             }
             if (strcmp(new_entry->name, old_entry->name) != 0) {
                 differs = true;
-                trace(TRACE_INFO, "refresh manager: names differ (2) in directory %s: %s vs %s\n", path, new_entry->name, old_entry->name);
+                trace(TRACE_FINE, "refresh manager: names differ (2) in directory %s: %s vs %s\n", path, new_entry->name, old_entry->name);
                 break;
             }
             // names are same; check types (modes))
             if (new_entry->mode != old_entry->mode) {
                 differs = true;
-                trace(TRACE_INFO, "refresh manager: modes differ for %s/%s: %d vs %d\n", path, new_entry->name, new_entry->mode, old_entry->mode);
+                trace(TRACE_FINE, "refresh manager: modes differ for %s/%s: %d vs %d\n", path, new_entry->name, new_entry->mode, old_entry->mode);
                 break;
             }
             // if links, then check links
             if (S_ISLNK(new_entry->mode)) {
                 if (new_entry->link_len != old_entry->link_len) {
                     differs = true;
-                    trace(TRACE_INFO, "refresh manager: links differ (1) for %s/%s: %s vs %s\n", path, new_entry->name, new_entry->link, old_entry->link);
+                    trace(TRACE_FINE, "refresh manager: links differ (1) for %s/%s: %s vs %s\n", path, new_entry->name, new_entry->link, old_entry->link);
                     break;
                 }
                 if (strcmp(new_entry->link, old_entry->link) != 0) {
                     differs = true;
-                    trace(TRACE_INFO, "refresh manager: links differ (2) for %s/%s: %s vs %s\n", path, new_entry->name, new_entry->link, old_entry->link);
+                    trace(TRACE_FINE, "refresh manager: links differ (2) for %s/%s: %s vs %s\n", path, new_entry->name, new_entry->link, old_entry->link);
                     break;
                 }                
             }
             // names, modes and link targets are same
             if (new_entry->uid != old_entry->uid) {
                 differs = true;
-                trace(TRACE_INFO, "refresh manager: uids differ for %s/%s: %d vs %d\n", path, new_entry->name, new_entry->uid, old_entry->uid);
+                trace(TRACE_FINE, "refresh manager: uids differ for %s/%s: %d vs %d\n", path, new_entry->name, new_entry->uid, old_entry->uid);
                 break;
             }
             if (new_entry->gid != old_entry->gid) {
                 differs = true;
-                trace(TRACE_INFO, "refresh manager: gids differ for %s/%s: %d vs %d\n", path, new_entry->name, new_entry->gid, old_entry->gid);
+                trace(TRACE_FINE, "refresh manager: gids differ for %s/%s: %d vs %d\n", path, new_entry->name, new_entry->gid, old_entry->gid);
                 break;
             }
             if (S_ISREG(new_entry->mode)) {
                 if (new_entry->size != old_entry->size) {
                     differs = true;
-                    trace(TRACE_INFO, "refresh manager: sizes differ for %s/%s: %d vs %d\n", path, new_entry->name, new_entry->size, old_entry->size);
+                    trace(TRACE_FINE, "refresh manager: sizes differ for %s/%s: %d vs %d\n", path, new_entry->name, new_entry->size, old_entry->size);
                     break;
                 }
                 if (new_entry->mtime != old_entry->mtime) {
                     differs = true;
-                    trace(TRACE_INFO, "refresh manager: times differ for %s/%s: %lld vs %lld\n", path, new_entry->name, new_entry->mtime, old_entry->mtime);
+                    trace(TRACE_FINE, "refresh manager: times differ for %s/%s: %lld vs %lld\n", path, new_entry->name, new_entry->mtime, old_entry->mtime);
                     break;
                 }
             }
@@ -775,28 +775,28 @@ static void *refresh_loop(void *data) {
     }
     while (state_get_proceed()) {
         pass++;
-        trace(TRACE_INFO, "refresh manager, pass %d\n", pass);
+        trace(TRACE_FINE, "refresh manager, pass %d\n", pass);
         dirtab_flush(); // TODO: find the appropriate place
         stopwatch_start();
         dirtab_visit(refresh_visitor);
-        stopwatch_stop(TRACE_INFO, "refresh cycle");
+        stopwatch_stop(TRACE_FINE, "refresh cycle");
         if (refresh_sleep) {
             sleep(refresh_sleep);
         }
     }
-    trace(TRACE_INFO, "refresh manager stopped\n");
+    trace(TRACE_INFO, "Refresh manager stopped\n");
     thread_shutdown();
     return NULL;
 }
 
 static void *rp_loop(void *data) {
     thread_info *ti = (thread_info*) data;
-    trace(TRACE_INFO, "Thread #%d started\n", ti->no);
+    trace(TRACE_FINE, "Thread #%d started\n", ti->no);
     thread_init();
     while (true) {
         fs_request* request = blocking_queue_poll(&req_queue);
         if (request) {
-            trace(TRACE_INFO, "thread[%d] request #%d sz=%d kind=%c len=%d path=%s\n", 
+            trace(TRACE_FINE, "thread[%d] request #%d sz=%d kind=%c len=%d path=%s\n", 
                     ti->no, request->id, request->size, request->kind, request->len, request->path);
             process_request(request);
             free(request);
@@ -806,7 +806,7 @@ static void *rp_loop(void *data) {
             }
         }
     }
-    trace(TRACE_INFO, "Thread #%d done\n", ti->no);
+    trace(TRACE_FINE    , "Thread #%d done\n", ti->no);
     thread_shutdown();
     return NULL;
 }
@@ -847,7 +847,7 @@ static void main_loop() {
     char *raw_req_buffer = malloc(buf_size);
     char *req_buffer = malloc(buf_size);
     while(fgets(raw_req_buffer, buf_size, stdin)) {
-        trace(TRACE_INFO, "request: %s", raw_req_buffer); // no LF since buffer ends it anyhow 
+        trace(TRACE_FINE, "request: %s", raw_req_buffer); // no LF since buffer ends it anyhow 
         log_print(raw_req_buffer);
         fs_request* request = decode_request(raw_req_buffer, (fs_request*) req_buffer, buf_size);
         if (request) {
@@ -1041,12 +1041,12 @@ static void startup() {
     int curr_thread = 0;
     if (rp_thread_count > 1) {
         blocking_queue_init(&req_queue);
-        trace(TRACE_INFO, "Staring %d threads\n", rp_thread_count);        
         for (curr_thread = 0; curr_thread < rp_thread_count; curr_thread++) {
             trace(TRACE_FINE, "Starting thread #%d...\n", curr_thread);
             rp_threads[curr_thread].no = curr_thread;
             pthread_create(&rp_threads[curr_thread].id, NULL, &rp_loop, &rp_threads[curr_thread]);
         }
+        trace(TRACE_INFO, "Started %d response threads\n", rp_thread_count);        
     } else {
         trace(TRACE_INFO, "Starting in single-thread mode\n");
     }
@@ -1088,13 +1088,13 @@ static void shutdown() {
     trace(TRACE_INFO, "Shutting down. Joining threads...\n");
     // NB: we aren't joining refresh thread; it's safe
     for (int i = 0; i < rp_thread_count; i++) {
-        trace(TRACE_INFO, "Shutting down. Joining thread #%i [%ui]\n", i, rp_threads[i].id);
+        trace(TRACE_FINE, "Shutting down. Joining thread #%i [%ui]\n", i, rp_threads[i].id);
         pthread_join(rp_threads[i].id, NULL);
     }
     if (refresh) {
         int refresh_thread_idx = rp_thread_count;
         pthread_kill(rp_threads[refresh_thread_idx].id, SIGUSR1);
-        trace(TRACE_INFO, "Shutting down. Joining refresh thread #%i [%ui]\n", refresh_thread_idx, rp_threads[refresh_thread_idx].id);
+        trace(TRACE_FINE, "Shutting down. Joining refresh thread #%i [%ui]\n", refresh_thread_idx, rp_threads[refresh_thread_idx].id);
         pthread_join(rp_threads[refresh_thread_idx].id, NULL);
     }
     
@@ -1104,6 +1104,7 @@ static void shutdown() {
     dirtab_free();
     log_close();
     err_shutdown();
+    trace(TRACE_INFO, "Shut down.\n");
     exit(0);
 }
 
