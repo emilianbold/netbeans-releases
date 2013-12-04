@@ -467,7 +467,7 @@ public class WrappingTest extends FormattingOptionsTest {
         try {
             disabledBracesGeneration();
             fo.getAllLanguageTabsAndIndentsOperator().getRightMargin().setValue(25);
-            fo.getWrappingOperator().getCaseStatements().selectItem(WrappingOperator.IF_LONG);
+            fo.getWrappingOperator().getAssertStatement().selectItem(WrappingOperator.IF_LONG);
             fo.ok();
             formatFileAndCompare("general", "Wrapping2.java");
         } finally {
