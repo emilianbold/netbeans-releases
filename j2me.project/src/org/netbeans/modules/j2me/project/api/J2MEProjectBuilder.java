@@ -97,7 +97,7 @@ public final class J2MEProjectBuilder {
     private static final Logger LOG = Logger.getLogger(J2MEProjectBuilder.class.getName());
     private static final String DEFAULT_MAIN_TEMPLATE = "Templates/j2me/Midlet.java";  //NOI18N
     private static final SpecificationVersion VERSION_8 = new SpecificationVersion("8.0"); //NOI18N
-    private static final String ME_PROCESSOR_PATH = "lib/me_plugin.jar";    //NOI18N
+    private static final String ME_PROCESSOR_PATH = "lib/compiler/me_plugin.jar";    //NOI18N
 
     private final File projectDirectory;
     private final String name;
