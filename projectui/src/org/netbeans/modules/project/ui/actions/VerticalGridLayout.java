@@ -47,7 +47,7 @@ import java.awt.Dimension;
 import java.awt.LayoutManager2;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JMenuItem;
 
 /**
  *
@@ -153,7 +153,7 @@ public class VerticalGridLayout implements LayoutManager2 {
     private int getMaxCellHeight() {
         int cellHeight = 0;
         for (Component c : this.components) {
-            if ((c instanceof JRadioButtonMenuItem) && c.getPreferredSize().height > cellHeight) {
+            if ((c instanceof JMenuItem) && c.getPreferredSize().height > cellHeight) {
                 cellHeight = c.getPreferredSize().height;
             }
         }
@@ -163,7 +163,7 @@ public class VerticalGridLayout implements LayoutManager2 {
     private int getMaxCellWidth() {
         int cellWidth = 0;
         for (Component c : this.components) {
-            if ((c instanceof JRadioButtonMenuItem) && c.getPreferredSize().width > cellWidth) {
+            if ((c instanceof JMenuItem) && c.getPreferredSize().width > cellWidth) {
                 cellWidth = c.getPreferredSize().width;
             }
         }
@@ -173,7 +173,7 @@ public class VerticalGridLayout implements LayoutManager2 {
     private int getRadioButtonMenuItemsCount() {
         int cnt = 0;
         for (Component c : this.components) {
-            if (c instanceof JRadioButtonMenuItem) {
+            if (c instanceof JMenuItem) {
                 cnt++;
             }
         }

@@ -150,6 +150,7 @@ public class OpenSubprojects extends NodeAction implements Presenter.Popup{
             }
         }
         if(subProjects != null && !subProjects.isEmpty()) {
+            menu.getPopupMenu().setLayout(new VerticalGridLayout());
             final JMenuItem openAllProjectsItem = new JMenuItem(new AbstractAction() {
 
                 @Override

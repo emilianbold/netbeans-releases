@@ -75,6 +75,10 @@ public class ScheduleCategory extends Category {
     }
 
     @Override
+    public void reload() {
+    }
+
+    @Override
     public List<IssueImpl> getTasks() {
         IssueImpl[] scheduledTasks = schedulingManager.getScheduledTasks(scheduleInfo, dashboardViewer.getRepositories(true).toArray(new RepositoryImpl[0]));
         return Arrays.asList(scheduledTasks);

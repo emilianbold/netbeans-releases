@@ -54,9 +54,9 @@ import javax.swing.JCheckBoxMenuItem;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
+import org.netbeans.test.git.operators.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.NewJavaProjectNameLocationStepOperator;
+import org.netbeans.test.git.operators.NewJavaProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
@@ -69,6 +69,7 @@ import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JMenuItemOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.modules.versioning.util.IndexingBridge;
+import org.netbeans.test.git.operators.CommitOperator;
 //import org.netbeans.junit.ide.ProjectSupport;
 
 /**
@@ -115,6 +116,46 @@ public final class TestKit {
 
         waitForScanFinishedSimple();//ProjectSupport.waitScanFinished();//AndQueueEmpty(); // test fails if there is waitForScanAndQueueEmpty()...
 
+        return file;
+    }
+
+    public static File prepareGitProject(String prj_category, String prj_type, String prj_name) throws Exception {
+        NbDialogOperator ndo;
+        //create temporary folder for test
+        String folder = "work" + File.separator + "w" + System.currentTimeMillis();
+        File file = new File("/tmp", folder); // NOI18N
+        file.mkdirs();
+        RepositoryMaintenance.deleteFolder(file);
+        file.mkdirs();
+        File file1 = new File("/tmp", folder + File.separator + "clone");
+        file1.mkdirs();
+        //PseudoVersioned project
+        NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
+        npwo.selectCategory(prj_category);
+        npwo.selectProject(prj_type);
+        npwo.next();
+        NewJavaProjectNameLocationStepOperator npnlso = new NewJavaProjectNameLocationStepOperator();
+        new JTextFieldOperator(npnlso, 1).setText(file.getAbsolutePath());
+        new JTextFieldOperator(npnlso, 0).setText(prj_name);
+        new JTextFieldOperator(npnlso, 4).setText("javaapp.Main");
+        new NewProjectWizardOperator().finish();
+
+        waitForScanFinishedSimple();//ProjectSupport.waitScanFinished();//AndQueueEmpty(); // test fails if there is waitForScanAndQueueEmpty()...
+
+        Node rootNode = new ProjectsTabOperator().getProjectRootNode(prj_name);
+        rootNode.performPopupActionNoBlock("Versioning|Initialize Git Repository");
+
+        ndo = new NbDialogOperator("Initialize a Git Repository");
+        ndo.ok();
+
+        waitForScanFinishedSimple();
+
+        CommitOperator cmo = CommitOperator.invoke(rootNode);
+        cmo.setCommitMessage("init");
+        cmo.commit();
+
+        waitForScanFinishedSimple();
+        
         return file;
     }
 
@@ -223,7 +264,6 @@ public final class TestKit {
 
     public static void finalRemove() throws Exception {
         closeProject("JavaApp");
-        //closeProject("SVNApplication");
         RepositoryMaintenance.deleteFolder(new File("/tmp/work"));
     }
 

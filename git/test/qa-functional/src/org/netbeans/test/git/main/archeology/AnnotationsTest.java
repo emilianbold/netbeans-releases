@@ -51,9 +51,10 @@ import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.test.git.operators.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.netbeans.test.git.utils.MessageHandler;
 import org.netbeans.test.git.utils.TestKit;
 
@@ -105,8 +106,13 @@ public class AnnotationsTest extends JellyTestCase {
 
             log.addHandler(mh);
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
-            TestKit.loadOpenProject(PROJECT_NAME, getDataDir());
-            new EventTool().waitNoEvent(3000);
+            TestKit.prepareGitProject(TestKit.PROJECT_CATEGORY, TestKit.PROJECT_TYPE, TestKit.PROJECT_NAME);
+            new EventTool().waitNoEvent(2000);
+            
+            while (IndexingBridge.getInstance().isIndexingInProgress()) {
+                Thread.sleep(3000);
+            }
+            
             Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
             node.performPopupAction("Git|Show Annotations");
             new EventTool().waitNoEvent(2000);

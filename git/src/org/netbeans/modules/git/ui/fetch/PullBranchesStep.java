@@ -146,9 +146,7 @@ public class PullBranchesStep extends AbstractWizardPanel implements WizardDescr
     }
 
     public void setRemote (GitRemoteConfig remote) {
-        if (this.remote != remote && (this.remote == null || remote == null)) {
-            this.remote = remote;
-        }
+        this.remote = remote;
         validateBeforeNext();
     }
 

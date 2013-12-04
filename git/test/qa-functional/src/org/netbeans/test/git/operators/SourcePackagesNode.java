@@ -42,62 +42,55 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.masterfs;
+package org.netbeans.test.git.operators;
 
-import junit.framework.*;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
-import org.openide.util.lookup.ProxyLookup;
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jellytools.actions.ExploreFromHereAction;
+import org.netbeans.jellytools.actions.FindAction;
+import org.netbeans.jellytools.nodes.Node;
 
-/**
- *
- * @author Radek Matous
+/** Node representing Source packages node under project node.
+ * @author Jiri.Skrivanek@sun.com
  */
-public class GlobalVisibilityQueryImplTest extends TestCase {
-    private static GlobalVisibilityQueryImpl vq = new GlobalVisibilityQueryImpl() {
-        @Override
-        protected String getIgnoredFiles() {
-            return "^^(CVS|SCCS|vssver.?\\.scc|#.*#|%.*%|_svn)$|~$|^\\.(?!(htaccess|git.+|hgignore)$).*$";//NOI18N
-        }
-    };
+public class SourcePackagesNode extends Node {
+
+    private static final String SOURCE_PACKAGES_LABEL = Bundle.getString(
+                                "org.netbeans.modules.java.j2seproject.Bundle",
+                                "NAME_src.dir");
+    static final ExploreFromHereAction exploreFromHereAction = new ExploreFromHereAction();
+    static final FindAction findAction = new FindAction();
     
-    static {
-        System.setProperty("org.openide.util.Lookup", GlobalVisibilityQueryImplTest.TestLookup.class.getName());
+    /** Finds Source Packages node under project with given name
+     * @param projectName display name of project
+     */
+    public SourcePackagesNode(String projectName) {
+        super(new ProjectsTabOperator().getProjectRootNode(projectName), SOURCE_PACKAGES_LABEL);
+    }
+
+    /** Finds Source Packages node under given project node.
+     * @param projectNode project node in the Projects view
+     */
+    public SourcePackagesNode(Node projectNode) {
+        super(projectNode, SOURCE_PACKAGES_LABEL);
+    }
+
+    /** tests popup menu items for presence */    
+    public void verifyPopup() {
+        verifyPopup(new Action[]{
+            exploreFromHereAction,
+            findAction,
+        });
     }
     
-    public GlobalVisibilityQueryImplTest (String testName) {
-        super(testName);
+    /** performs ExploreFromHereAction with this node */    
+    public void exploreFromHere() {
+        exploreFromHereAction.perform(this);
     }
     
-    public void testVisibility() {        
-        assertFalse(vq.isVisible(".#telnetrc"));
-        assertFalse(vq.isVisible("._telnetrc"));
-        assertFalse(vq.isVisible(".#_telnetrc"));
-        assertFalse(vq.isVisible(".cvsignore"));
-        assertFalse(vq.isVisible("CVS"));                
-        assertFalse(vq.isVisible(".svn"));
-        assertFalse(vq.isVisible("_svn"));
-        
-        assertFalse(vq.isVisible(".telnetrc"));                                
-        assertFalse(vq.isVisible(".git"));
-        assertTrue(vq.isVisible(".gitignore"));
-        assertTrue(vq.isVisible(".gitkeep"));
-        assertFalse(vq.isVisible(".hg"));
-        assertTrue(vq.isVisible(".hgignore"));
+    /** performs FindAction with this node */    
+    public void find() {
+        findAction.perform(this);
     }
-            
-    public static class TestLookup extends ProxyLookup {
-        public TestLookup() {
-            super();
-            setLookups(new Lookup[] {getInstanceLookup()});
-        }
-        
-        private Lookup getInstanceLookup() {
-            InstanceContent instanceContent = new InstanceContent();
-            instanceContent.add(vq);
-            Lookup instanceLookup = new AbstractLookup(instanceContent);
-            return instanceLookup;
-        }        
-    }    
 }
