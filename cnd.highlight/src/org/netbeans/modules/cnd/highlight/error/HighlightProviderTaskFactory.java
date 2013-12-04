@@ -74,21 +74,22 @@ public final class HighlightProviderTaskFactory extends TaskFactory {
 
     @Override
     public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
-        return Collections.singletonList(new ErrorsHighlighter(new InterrupterImpl()));
+        return Collections.singletonList(new ErrorsHighlighter());
     }
 
     private final class ErrorsHighlighter extends ParserResultTask<CndParserResult> {
 
-        private final InterrupterImpl interrupter;
+        private InterrupterImpl interrupter = new InterrupterImpl();;
 
-        public ErrorsHighlighter(InterrupterImpl interrupter) {
-            this.interrupter = interrupter;
+        public ErrorsHighlighter() {
         }
 
         @Override
         public void run(CndParserResult result, SchedulerEvent event) {
+            synchronized(this) {
+                this.interrupter = new InterrupterImpl();
+            }
             try {
-                interrupter.resume();
                 final FileObject fo = result.getSnapshot().getSource().getFileObject();
                 if (fo == null) {
                     return;
@@ -106,7 +107,7 @@ public final class HighlightProviderTaskFactory extends TaskFactory {
         }
 
         @Override
-        public void cancel() {
+        public synchronized void cancel() {
             interrupter.cancel();
         }
 

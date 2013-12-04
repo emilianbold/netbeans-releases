@@ -155,6 +155,10 @@ public abstract class CsmErrorProvider extends NamedOption {
     public abstract Set<EditorEvent> supportedEvents();
 
     public static boolean disableAsLibraryHeaderFile(CsmFile file) {
+        // partially included files are excluded
+        if (CsmErrorProvider.isPartial(file, new HashSet<CsmFile>())) {
+            return true;
+        }
         // in release mode we skip library files, because it's very irritating
         // for user to see errors in system libraries
         return CndUtils.isReleaseMode() && (file != null) && file.isHeaderFile() && 
@@ -191,11 +195,9 @@ public abstract class CsmErrorProvider extends NamedOption {
 
         @Override
         public void doGetErrors(Request request, Response response) {
-            if (! isPartial(request.getFile(), new HashSet<CsmFile>())) {
-                Thread currentThread = Thread.currentThread();
-                currentThread.setName("Provider "+getName()+" prosess "+request.getFile().getAbsolutePath()); // NOI18N
-                getErrorsImpl(request, response);
-            }
+            Thread currentThread = Thread.currentThread();
+            currentThread.setName("Provider "+getName()+" prosess "+request.getFile().getAbsolutePath()); // NOI18N
+            getErrorsImpl(request, response);
         }
 
         @Override

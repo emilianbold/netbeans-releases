@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
@@ -106,6 +107,7 @@ public final class HighlightProvider  {
     private final Lookup.Result<CsmErrorProvider> res;
     private final RequestProcessor RP;
     private final Map<CsmErrorProvider, MyTask> tasks;
+    private final AtomicInteger processingLevel = new AtomicInteger(0);
     
     /** Creates a new instance of HighlightProvider */
     private HighlightProvider() {
@@ -162,31 +164,12 @@ public final class HighlightProvider  {
         }
         if (TRACE_ANNOTATIONS) System.err.printf("\nSetting annotations for %s\n", file);
 
-        for(final CsmErrorProvider provider : list) {
-            removeAnnotations(doc, provider.getName());
-        }
         if (interrupter.cancelled()) {
             return;
         }
-        if (CsmErrorProvider.isPartial(file, new HashSet<CsmFile>())) {
-            return;
-        }
         CppUpToDateStatusProvider.get(doc).setUpToDate(UpToDateStatus.UP_TO_DATE_PROCESSING);
+        processingLevel.incrementAndGet();
         
-        final DocumentListener listener = new DocumentListener(){
-                @Override
-                public void insertUpdate(DocumentEvent e) {
-                    interrupter.cancel();
-                }
-                @Override
-                public void removeUpdate(DocumentEvent e) {
-                    interrupter.cancel();
-                }
-                @Override
-                public void changedUpdate(DocumentEvent e) {
-                }
-            };
-        doc.addDocumentListener(listener);
         final List<ResponseImpl> responces = new ArrayList<ResponseImpl>();
         final RequestImpl request = new RequestImpl(file, doc, interrupter);
         final CountDownLatch wait = new CountDownLatch(list.size());
@@ -209,10 +192,10 @@ public final class HighlightProvider  {
                 } catch (InterruptedException ex) {
                     ex.printStackTrace(System.err);
                 }
-                if (listener != null) {
-                    doc.removeDocumentListener(listener);
+
+                if (processingLevel.decrementAndGet() == 0) {
+                    CppUpToDateStatusProvider.get(doc).setUpToDate(UpToDateStatus.UP_TO_DATE_OK);
                 }
-                CppUpToDateStatusProvider.get(doc).setUpToDate(UpToDateStatus.UP_TO_DATE_OK);
                 Hook theHook = HighlightProvider.this.hook;
                 if( theHook != null ) {
                     List<ErrorDescription> descriptions = new ArrayList<ErrorDescription>();
@@ -352,9 +335,7 @@ public final class HighlightProvider  {
                 this.response = null;
                 this.wait = null;
             }
-            if (aWait == null) {
-                return;
-            }
+            assert aWait != null : provider.getName();
             try {
                 if (!aRequest.isCancelled()){
                     try {
