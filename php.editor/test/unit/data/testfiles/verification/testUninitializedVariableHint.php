@@ -94,5 +94,11 @@ foreach ($refArr as &$refVar) {
 }
 unset($refVar);
 
+function fnc239089($types, &$var1, &$problem = null) {}
+
+function functionName239089() {
+    fnc239089("ok", $shouldBeOkInRefs);
+}
+
 //END
 ?>
