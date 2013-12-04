@@ -1065,6 +1065,15 @@ public final class DashboardViewer implements PropertyChangeListener {
         return unsubmittedCategoryNode;
     }
 
+    private void updateCategories() {
+        synchronized (LOCK_CATEGORIES) {
+            for (CategoryNode categoryNode : categoryNodes) {
+                categoryNode.getCategory().reload();
+                categoryNode.updateContent();
+            }
+        }
+    }
+
     private void updateRepositories(Collection<RepositoryImpl> addedRepositories, Collection<RepositoryImpl> removedRepositories) {
         synchronized (LOCK_REPOSITORIES) {
             List<RepositoryNode> toAdd = new ArrayList<RepositoryNode>();
@@ -1128,6 +1137,7 @@ public final class DashboardViewer implements PropertyChangeListener {
             }
         }
         updateUnsubmitedCategories(toRemove, toAdd);
+        updateCategories();
     }
 
     private RepositoryNode createRepositoryNode(RepositoryImpl repository) {

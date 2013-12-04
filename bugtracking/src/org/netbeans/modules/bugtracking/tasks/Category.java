@@ -104,6 +104,11 @@ public class Category {
         return true;
     }
 
+    public void reload() {
+        this.loaded = false;
+        refresh();
+    }
+
    /**
      * Return int value user for sorting category nodes. Default value is 100. Sorting is ascending.
      *
@@ -144,7 +149,7 @@ public class Category {
         }
     }
 
-    private void refreshTasks() {
+    protected void refreshTasks() {
         Map<RepositoryImpl, List<String>> map = getTasksToRepository(this.getTasks());
         Set<RepositoryImpl> repositoryKeys = map.keySet();
         for (RepositoryImpl repository : repositoryKeys) {
