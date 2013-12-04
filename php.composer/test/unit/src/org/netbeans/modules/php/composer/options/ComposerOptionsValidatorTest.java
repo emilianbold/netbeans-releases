@@ -110,4 +110,40 @@ public class ComposerOptionsValidatorTest extends NbTestCase {
         assertTrue(result.hasErrors());
     }
 
+    public void testValidAuthorName() {
+        ValidationResult result = new ComposerOptionsValidator()
+                .validateAuthorName("Jon Doe")
+                .getResult();
+        assertFalse(result.hasErrors());
+        assertFalse(result.hasWarnings());
+        result = new ComposerOptionsValidator()
+                .validateAuthorName("John Doe von Bahnhof")
+                .getResult();
+        assertFalse(result.hasErrors());
+        assertFalse(result.hasWarnings());
+    }
+
+    public void testInvalidAuthorName() {
+        ValidationResult result = new ComposerOptionsValidator()
+                .validateAuthorName(null)
+                .getResult();
+        assertTrue(result.hasErrors());
+        result = new ComposerOptionsValidator()
+                .validateAuthorName("")
+                .getResult();
+        assertTrue(result.hasErrors());
+        result = new ComposerOptionsValidator()
+                .validateAuthorName("1")
+                .getResult();
+        assertTrue(result.hasErrors());
+        result = new ComposerOptionsValidator()
+                .validateAuthorName("junichi11")
+                .getResult();
+        assertTrue(result.hasErrors());
+        result = new ComposerOptionsValidator()
+                .validateAuthorName("junichi 11 junichi")
+                .getResult();
+        assertTrue(result.hasErrors());
+    }
+
 }

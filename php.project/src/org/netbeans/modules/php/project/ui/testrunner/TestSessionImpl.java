@@ -62,6 +62,7 @@ public class TestSessionImpl implements TestSession {
     private volatile Coverage coverage;
     private volatile boolean coverageSet = false;
     private volatile boolean frozen = false;
+    private volatile boolean testException = false;
 
 
     TestSessionImpl(Manager manager, org.netbeans.modules.gsf.testrunner.api.TestSession testSession, PhpTestingProvider testingProvider) {
@@ -126,6 +127,14 @@ public class TestSessionImpl implements TestSession {
 
     public org.netbeans.modules.gsf.testrunner.api.TestSession getTestSession() {
         return testSession;
+    }
+
+    public boolean isTestException() {
+        return testException;
+    }
+
+    public void setTestException(boolean testException) {
+        this.testException = testException;
     }
 
     void freeze() {

@@ -41,9 +41,6 @@
  */
 package org.netbeans.modules.php.composer.options;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.regex.Pattern;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.validation.ValidationResult;
@@ -57,6 +54,8 @@ public final class ComposerOptionsValidator {
 
     private static final Pattern VENDOR_REGEX = Pattern.compile("^[a-z0-9-]+$"); // NOI18N
     private static final Pattern EMAIL_REGEX = Pattern.compile("^\\w+[\\.\\w\\-]*@\\w+[\\.\\w\\-]*\\.[a-z]{2,}$", Pattern.CASE_INSENSITIVE); // NOI18N
+    private static final Pattern AUTHOR_NAME_REGEX = Pattern.compile("^[^\\d]+$"); // NOI18N
+
 
     private final ValidationResult result = new ValidationResult();
 
@@ -94,10 +93,15 @@ public final class ComposerOptionsValidator {
         return this;
     }
 
-    @NbBundle.Messages("ComposerOptionsValidator.error.noAuthorName=Author name cannot be empty.")
-    private ComposerOptionsValidator validateAuthorName(String authorName) {
+    @NbBundle.Messages({
+        "ComposerOptionsValidator.error.noAuthorName=Author name cannot be empty.",
+        "ComposerOptionsValidator.error.authorNameNumber=Author name cannot contain number.",
+    })
+    ComposerOptionsValidator validateAuthorName(String authorName) {
         if (!StringUtils.hasText(authorName)) {
             result.addError(new ValidationResult.Message("authorName", Bundle.ComposerOptionsValidator_error_noAuthorName())); // NOI18N
+        } else if (!AUTHOR_NAME_REGEX.matcher(authorName).matches()) {
+            result.addError(new ValidationResult.Message("authorName", Bundle.ComposerOptionsValidator_error_authorNameNumber())); // NOI18N
         }
         return this;
     }

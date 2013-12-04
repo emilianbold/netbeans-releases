@@ -668,7 +668,7 @@ public class CompletionTest extends J2eeTestCase {
         if (GENERATE_GOLDEN_FILES) {
             generateGoldenFiles(this);
         } else {
-            if (CompletionTest.isJDK8) {
+            if (CompletionTest.isJDK8 && (new File(getWorkDir(), this.getName() + "_jdk8.pass")).exists()) {
                 compareReferenceFiles(this.getName() + ".ref", this.getName() + "_jdk8.pass", this.getName() + ".diff");
             } else {
                 compareReferenceFiles();

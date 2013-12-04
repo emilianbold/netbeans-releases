@@ -81,7 +81,7 @@ public class JavaScriptDebugger extends GeneralHTMLProject {
         eo.select(text); // NOI18N
         final int line = eo.getLineNumber();
         // toggle breakpoint via pop-up menu
-        new ToggleBreakpointAction().perform(eo.txtEditorPane());
+        new ToggleBreakpointAction().performShortcut(eo.txtEditorPane());
         // wait breakpoint established
         new Waiter(new Waitable() {
             @Override
