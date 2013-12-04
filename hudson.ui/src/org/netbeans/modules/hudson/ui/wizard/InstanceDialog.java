@@ -48,13 +48,9 @@ import java.awt.Dialog;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
-import org.netbeans.modules.hudson.api.ConnectionBuilder;
 import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonManager;
 import org.netbeans.modules.hudson.api.HudsonVersion;
@@ -111,40 +107,43 @@ public class InstanceDialog extends DialogDescriptor {
         panel.showChecking();
         dialog.pack();
         RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run() {
-                try {
-                    URL u = new URL(panel.getUrl());
-                    HttpURLConnection connection = new ConnectionBuilder().homeURL(u).url(new URL(u, "?checking=redirects")).httpConnection(); // NOI18N
-                    String sVersion = connection.getHeaderField("X-Hudson"); // NOI18N
-                    connection.disconnect();
-                    if (sVersion == null) {
-                        problem(NbBundle.getMessage(InstanceDialog.class, "MSG_WrongVersion", HudsonVersion.SUPPORTED_VERSION));
+                Utilities.HudsonURLCheckResult checkResult
+                        = Utilities.checkHudsonURL(panel.getUrl());
+
+                switch (checkResult) {
+                    case OK:
+                        break;
+                    case WRONG_VERSION:
+                        problem(NbBundle.getMessage(InstanceDialog.class,
+                                "MSG_WrongVersion", //NOI18N
+                                HudsonVersion.SUPPORTED_VERSION));
                         return;
-                    }
-                    HudsonVersion version = new HudsonVersion(sVersion);
-                    if (!Utilities.isSupportedVersion(version)) {
-                        problem(NbBundle.getMessage(InstanceDialog.class, "MSG_WrongVersion", HudsonVersion.SUPPORTED_VERSION));
+                    case INCORRECT_REDIRECTS:
+                        problem(NbBundle.getMessage(InstanceDialog.class,
+                                "MSG_incorrect_redirects")); //NOI18N
                         return;
-                    }
-                    if (!"checking=redirects".equals(connection.getURL().getQuery())) { // NOI18N
-                        problem(NbBundle.getMessage(InstanceDialog.class, "MSG_incorrect_redirects"));
+                    default:
+                        problem(NbBundle.getMessage(InstanceDialog.class,
+                                "MSG_FailedToConnect")); //NOI18N
                         return;
-                    }
-                    // stats
-                    UsageLogging.logUI(NbBundle.getBundle(InstanceDialog.class), "UI_HUDSON_SERVER_REGISTERED"); // NOI18N
-                    UsageLogging.logUsage(InstanceDialog.class, "USG_HUDSON_SERVER_REGISTERED"); // NOI18N
-                } catch (IOException x) {
-                    LOG.log(Level.INFO, null, x);
-                    problem(NbBundle.getMessage(InstanceDialog.class, "MSG_FailedToConnect"));
-                    return;
                 }
-                created = HudsonManager.addInstance(panel.getDisplayName(), panel.getUrl(), panel.getSyncTime(), true);
+                created = HudsonManager.addInstance(panel.getDisplayName(),
+                        panel.getUrl(), panel.getSyncTime(), true);
+
                 EventQueue.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         dialog.dispose();
                         UI.selectNode(panel.getUrl());
                     }
                 });
+                // stats
+                UsageLogging.logUI(NbBundle.getBundle(InstanceDialog.class),
+                        "UI_HUDSON_SERVER_REGISTERED");                 //NOI18N
+                UsageLogging.logUsage(InstanceDialog.class,
+                        "USG_HUDSON_SERVER_REGISTERED");                //NOI18N
             }
             private void problem(final String explanation) {
                 EventQueue.invokeLater(new Runnable() {
