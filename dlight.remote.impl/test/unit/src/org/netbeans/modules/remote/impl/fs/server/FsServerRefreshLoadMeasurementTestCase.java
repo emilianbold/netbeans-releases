@@ -45,6 +45,7 @@ package org.netbeans.modules.remote.impl.fs.server;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -52,7 +53,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.netbeans.modules.nativeexecution.test.RcFile;
-import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -79,6 +79,8 @@ public class FsServerRefreshLoadMeasurementTestCase extends FsServerLocalTestBas
         final int dirCount = rcFile.get(SECTION, "dir_count", 10000);
         //final boolean different = rcFile.get(SECTION, "dirs_differ", false);
         final String startPath = rcFile.get(SECTION, "start_path", getNetBeansSourceDir().getAbsolutePath());
+        final int refreshInterval = rcFile.get(SECTION, "refresh_interval", 2);
+        final int traceLevel = rcFile.get(SECTION, "trace_level", 0);
         
         /** Allows not to waste time in filling cache for subsequent runs */
         final boolean skipInit = rcFile.get(SECTION, "skip_init", false);
@@ -124,7 +126,7 @@ public class FsServerRefreshLoadMeasurementTestCase extends FsServerLocalTestBas
 
             shutDownSevers(servers, 2000);
             sleep(2000);
-            analyzeTime("Filling:", servers);
+            analyzeTime("Filling:", servers, System.err);
             System.out.printf("\n\n");
         }
 
@@ -136,8 +138,8 @@ public class FsServerRefreshLoadMeasurementTestCase extends FsServerLocalTestBas
                     "-l", // log requests
                     "-p", // persist responses
                     "-d", dirNames[i], 
-                    "-r", Integer.toString(rcFile.get(SECTION, "refresh_interval", 2)),
-                    "-v", Integer.toString(rcFile.get(SECTION, "trace_level", 0)));
+                    "-r", Integer.toString(refreshInterval),
+                    "-v", Integer.toString(traceLevel));
         }
         System.out.printf("%s: launched %d instances of fs_server with %d refresh threads each\n", getName(), serverCount, threadCount);
 
@@ -154,12 +156,12 @@ public class FsServerRefreshLoadMeasurementTestCase extends FsServerLocalTestBas
         //  real 20.01
         //  user 8.04
         //  sys 11.74
-        sleep(2000);
-        analyzeTime("Refreshing:", servers);
+        analyzeTime(String.format("Refreshing %d dirs during %ds with sleep interval %ds:", dirCount, sleepInterval, refreshInterval), 
+                servers, System.err);
     }
     
-    private void analyzeTime(String heading, FSServer[] servers) throws IOException {
-
+    private static void analyzeTime(String heading, FSServer[] servers, PrintStream ps) throws IOException {
+        
         String sep   = "----------------------------------------------------\n";
         String title = "PID            Real    User    Sys  %CPU  %Usr  %Sys\n";
         String format = "%-12s %6.1f  %6.1f %6.1f  %4.1f  %4.1f  %4.1f\n";
@@ -168,7 +170,8 @@ public class FsServerRefreshLoadMeasurementTestCase extends FsServerLocalTestBas
         float total_user = 0;
         float total_sys = 0;
         
-        System.out.printf("\n\n%s%s\n%s%s%s", sep, heading, sep, title, sep);
+        ps.flush();
+        ps.printf("\n\n%s%s\n%s%s%s", sep, heading, sep, title, sep);
 
         for (FSServer server : servers) {
             List<String> err = server.getStdErr();
@@ -184,14 +187,14 @@ public class FsServerRefreshLoadMeasurementTestCase extends FsServerLocalTestBas
             total_real += real;
             total_user += user;
             total_sys += sys;
-            System.out.printf(format, "" + server.getProcess().getPID(), 
+            ps.printf(format, "" + server.getProcess().getPID(), 
                     real, user, sys, 
                     (user+sys)*100/real, user*100/real, sys*100/real);
         }
-        System.out.printf(format, "Total", 
+        ps.printf(format, "Total", 
                 total_real, total_user, total_sys, 
                 (total_user+total_sys)*100/total_real, total_user*100/total_real, total_sys*100/total_real);
-        System.out.printf("%s\n\n", sep);
+        ps.printf("%s\n\n", sep);
     }
     
     private void shutDownSevers(FSServer[] servers, int waitMillis) throws InterruptedException {
