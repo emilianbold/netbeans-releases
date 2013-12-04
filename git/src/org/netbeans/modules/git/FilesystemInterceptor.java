@@ -103,7 +103,8 @@ class FilesystemInterceptor extends VCSInterceptor {
     private static final RequestProcessor rp = new RequestProcessor("GitRefresh", 1, true);
     private final GitFolderEventsHandler gitFolderEventsHandler;
     private final CommandUsageLogger commandLogger;
-    private static final boolean AUTOMATIC_REFRESH_ENABLED = !"true".equals(System.getProperty("versioning.git.autoRefreshDisabled", "false")); //NOI18N
+    // not final due to tests
+    private static boolean AUTOMATIC_REFRESH_ENABLED = !"true".equals(System.getProperty("versioning.git.autoRefreshDisabled", "false")); //NOI18N
     private static final String INDEX_FILE_NAME = "index"; //NOI18N
     private static final String HEAD_FILE_NAME = "HEAD"; //NOI18N
     private static final String REFS_FILE_NAME = "refs"; //NOI18N
@@ -677,6 +678,7 @@ class FilesystemInterceptor extends VCSInterceptor {
 
         @Override
         public Boolean call () throws Exception {
+            LOG.log(Level.FINE, "Canceling the auto refresh progress monitor");
             Git.getInstance().getVCSInterceptor().shutdownMonitor.cancel();
             try {
                 Git.getInstance().getVCSInterceptor().refreshTask.waitFinished(3000);
