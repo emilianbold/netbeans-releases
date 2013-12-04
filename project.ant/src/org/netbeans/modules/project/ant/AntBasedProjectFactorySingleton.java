@@ -262,8 +262,8 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
         }
         AntProjectHelper helper = HELPER_CALLBACK.createHelper(projectDirectory, projectXml, state, provider);
         Project project = provider.createProject(helper);
-        project2Helper.put(project, new WeakReference<AntProjectHelper>(helper));
         synchronized (helper2Project) {
+            project2Helper.put(project, new WeakReference<AntProjectHelper>(helper));
             helper2Project.put(helper, new WeakReference<Project>(project));
         }
         synchronized (AntBasedProjectFactorySingleton.class) {
@@ -408,14 +408,19 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
     }
 
     public @Override void saveProject(Project project) throws IOException, ClassCastException {
-        Reference<AntProjectHelper> helperRef = project2Helper.get(project);
+        Reference<AntProjectHelper> helperRef;
+        synchronized (helper2Project) {
+            helperRef = project2Helper.get(project);
+        }
         if (helperRef == null) {
             StringBuilder sBuff = new StringBuilder("#191029: no project helper for a ");
             sBuff.append(project.getClass().getName()).append('\n'); // NOI18N
             sBuff.append("argument project: ").append(project).append(" => ").append(project.hashCode()).append('\n'); // NOI18N
             sBuff.append("project2Helper keys: " + "\n"); // NOI18N
+            synchronized (helper2Project) {
             for (Project prj : project2Helper.keySet()) {
                 sBuff.append("    project: ").append(prj).append(" => ").append(prj.hashCode()).append('\n'); // NOI18N
+            }
             }
             // Happens occasionally, no clue why. Maybe someone saving project before ctor has finished?
             LOG.warning(sBuff.toString());
@@ -450,12 +455,15 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
      * @return the corresponding Ant project helper object, or null if it is unknown
      */
     public static AntProjectHelper getHelperFor(Project p) {
-        Reference<AntProjectHelper> helperRef = project2Helper.get(p);
+        Reference<AntProjectHelper> helperRef;
+        synchronized (helper2Project) {
+        helperRef = project2Helper.get(p);
         if (helperRef == null) {
             p = p.getLookup().lookup(Project.class);
             if (p != null) {
                 helperRef = project2Helper.get(p);
             }
+        }
         }
         return helperRef != null ? helperRef.get() : null;
     }
