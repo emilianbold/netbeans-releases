@@ -51,10 +51,10 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.versioning.util.IndexingBridge;
+import org.netbeans.test.git.operators.SourcePackagesNode;
 import org.netbeans.test.git.operators.VersioningOperator;
 import org.netbeans.test.git.utils.MessageHandler;
 import org.netbeans.test.git.utils.TestKit;
@@ -108,8 +108,8 @@ public class IgnoreTest extends JellyTestCase {
             }
 
             TestKit.showStatusLabels();
-            TestKit.loadOpenProject(PROJECT_NAME, getDataDir());
-            new EventTool().waitNoEvent(1000);
+            TestKit.prepareGitProject(TestKit.PROJECT_CATEGORY, TestKit.PROJECT_TYPE, TestKit.PROJECT_NAME);
+            new EventTool().waitNoEvent(2000);
             while (IndexingBridge.getInstance().isIndexingInProgress()) {
                 Thread.sleep(3000);
             }

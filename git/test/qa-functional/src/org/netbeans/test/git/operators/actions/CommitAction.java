@@ -50,7 +50,7 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
 public class CommitAction extends ActionNoBlock {
 
     /**
-     * "Mercurial" menu item.
+     * "Git" menu item.
      */
     public static final String GIT_ITEM = "Git";
 

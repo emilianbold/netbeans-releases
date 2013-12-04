@@ -51,7 +51,7 @@ import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.test.git.operators.SourcePackagesNode;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.TimeoutExpiredException;
@@ -117,7 +117,7 @@ public class CommitDataTest extends JellyTestCase {
             JTableOperator table;
 
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
-            TestKit.loadOpenProject(PROJECT_NAME, getDataDir());
+            TestKit.prepareGitProject(TestKit.PROJECT_CATEGORY, TestKit.PROJECT_TYPE, TestKit.PROJECT_NAME);
             new EventTool().waitNoEvent(2000);
 
             while (IndexingBridge.getInstance().isIndexingInProgress()) {
@@ -220,7 +220,7 @@ public class CommitDataTest extends JellyTestCase {
             String[] expected = {"pp.bmp", "pp.dib", "pp.GIF", "pp.JFIF", "pp.JPE", "pp.JPEG", "pp.JPG", "pp.PNG", "pp.TIF", "pp.TIFF", "pp.zip", "text.txt", "test.jar"};
 
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
-            File work = TestKit.loadOpenProject(PROJECT_NAME, getDataDir());
+            File work = TestKit.prepareGitProject(TestKit.PROJECT_CATEGORY, TestKit.PROJECT_TYPE, TestKit.PROJECT_NAME);
             new EventTool().waitNoEvent(2000);
 
             while (IndexingBridge.getInstance().isIndexingInProgress()) {
