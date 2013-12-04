@@ -53,6 +53,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntBuildExtender;
+import org.netbeans.modules.j2me.project.api.PropertyEvaluatorProvider;
+import org.netbeans.modules.j2me.project.api.UpdateHelperProvider;
 import org.netbeans.modules.j2me.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.j2me.project.ui.customizer.J2MECompositeCategoryProvider;
 import org.netbeans.modules.j2me.project.ui.customizer.J2MEProjectProperties;
@@ -347,7 +349,9 @@ public class J2MEProject implements Project {
                 LookupProviderSupport.createActionProviderMerger(),
                 UILookupMergerSupport.createPrivilegedTemplatesMerger(),
                 UILookupMergerSupport.createRecommendedTemplatesMerger(),
-                UILookupMergerSupport.createProjectProblemsProviderMerger()
+                UILookupMergerSupport.createProjectProblemsProviderMerger(),
+                new UHPImpl(),
+                new PEPImpl()
         );
         return LookupProviderSupport.createCompositeLookup(base, EXTENSION_POINT);
     }
@@ -454,6 +458,20 @@ public class J2MEProject implements Project {
         @Override
         public Project getOwningProject() {
             return J2MEProject.this;
+        }
+    }
+
+    private final class UHPImpl implements UpdateHelperProvider {
+        @Override
+        public UpdateHelper getUpdateHelper() {
+            return J2MEProject.this.getUpdateHelper();
+        }
+    }
+
+    private final class PEPImpl implements PropertyEvaluatorProvider {
+        @Override
+        public PropertyEvaluator getPropertyEvaluator() {
+            return J2MEProject.this.evaluator();
         }
     }
 }
