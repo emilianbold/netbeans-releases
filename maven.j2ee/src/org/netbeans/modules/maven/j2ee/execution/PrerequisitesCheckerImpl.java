@@ -140,8 +140,14 @@ public class PrerequisitesCheckerImpl implements PrerequisitesChecker, LateBound
         }
         J2eeModuleProvider provider = config.getProject().getLookup().lookup(J2eeModuleProvider.class);
         if (provider != null) {
-            if (ExecutionChecker.DEV_NULL.equals(provider.getServerID())
-                    || ExecutionChecker.DEV_NULL.equals(provider.getServerInstanceID())) {
+            String serverID = provider.getServerID();
+            String serverInstanceID = provider.getServerInstanceID();
+
+            if (serverID == null ||
+                serverInstanceID == null ||
+                ExecutionChecker.DEV_NULL.equals(serverID) ||
+                ExecutionChecker.DEV_NULL.equals(serverInstanceID)) {
+
                 return true;
             }
             try {
