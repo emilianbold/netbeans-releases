@@ -103,14 +103,14 @@ static const char* err_get_message() {
 }
 
 static const char* err_to_string(int err_no) {
-#if __sun__
+#if __linux__
+    return strerror_r(err_no, err_info.errmsg, thread_emsg_bufsize);
+#else    
     if (strerror_r(err_no, err_info.strerr, thread_emsg_bufsize)) {
         return "";
     } else {
         return err_info.strerr;
     }
-#else    
-    return strerror_r(err_no, err_info.errmsg, thread_emsg_bufsize);
 #endif
 }
 
