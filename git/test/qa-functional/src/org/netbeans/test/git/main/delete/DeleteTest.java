@@ -50,7 +50,7 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.test.git.operators.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.junit.NbModuleSuite;
@@ -106,16 +106,16 @@ public class DeleteTest extends JellyTestCase {
                 NewProjectWizardOperator.invoke().close();
             }
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
-            TestKit.loadOpenProject(PROJECT_NAME, getDataDir());
+            TestKit.prepareGitProject(TestKit.PROJECT_CATEGORY, TestKit.PROJECT_TYPE, TestKit.PROJECT_NAME);
+            new EventTool().waitNoEvent(2000);
+            while (IndexingBridge.getInstance().isIndexingInProgress()) {
+                Thread.sleep(3000);
+            }
 
             MessageHandler mh = new MessageHandler("Refreshing");
             log.addHandler(mh);
 
             Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
-
-            while (IndexingBridge.getInstance().isIndexingInProgress()) {
-                Thread.sleep(3000);
-            }
 
             //node.performPopupAction("Git|Show Changes");
             VersioningOperator vo = VersioningOperator.invoke();
@@ -192,16 +192,16 @@ public class DeleteTest extends JellyTestCase {
                 NewProjectWizardOperator.invoke().close();
             }
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
-            TestKit.loadOpenProject(PROJECT_NAME, getDataDir());
+            TestKit.prepareGitProject(TestKit.PROJECT_CATEGORY, TestKit.PROJECT_TYPE, TestKit.PROJECT_NAME);
+            new EventTool().waitNoEvent(2000);
+            while (IndexingBridge.getInstance().isIndexingInProgress()) {
+                Thread.sleep(3000);
+            }
 
             MessageHandler mh = new MessageHandler("Refreshing");
             log.addHandler(mh);
 
             Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
-
-            while (IndexingBridge.getInstance().isIndexingInProgress()) {
-                Thread.sleep(3000);
-            }
 
             VersioningOperator vo = VersioningOperator.invoke();
 
